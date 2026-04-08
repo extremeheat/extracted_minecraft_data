@@ -72,23 +72,23 @@ public class ConfirmLinkScreen extends ConfirmScreen {
 
    public static void confirmLinkNow(final Screen parentScreen, final String uri, final boolean trusted) {
       Minecraft minecraft = Minecraft.getInstance();
-      minecraft.gui.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
+      minecraft.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
          if (shouldOpen) {
             Util.getPlatform().openUri(uri);
          }
 
-         minecraft.gui.setScreen(parentScreen);
+         minecraft.setScreen(parentScreen);
       }, uri, trusted));
    }
 
    public static void confirmLinkNow(final @Nullable Screen parentScreen, final URI uri, final boolean trusted) {
       Minecraft minecraft = Minecraft.getInstance();
-      minecraft.gui.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
+      minecraft.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
          if (shouldOpen) {
             Util.getPlatform().openUri(uri);
          }
 
-         minecraft.gui.setScreen(parentScreen);
+         minecraft.setScreen(parentScreen);
       }, uri.toString(), trusted));
    }
 

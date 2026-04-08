@@ -123,7 +123,7 @@ public class GameModeSwitcherScreen extends Screen {
    public boolean keyReleased(final KeyEvent event) {
       if (this.minecraft.options.keyDebugModifier.matches(event)) {
          this.switchToHoveredGameMode();
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
          return true;
       } else {
          return super.keyReleased(event);
@@ -133,7 +133,7 @@ public class GameModeSwitcherScreen extends Screen {
    public boolean mouseReleased(final MouseButtonEvent event) {
       if (this.minecraft.options.keyDebugModifier.matchesMouse(event)) {
          this.switchToHoveredGameMode();
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
          return true;
       } else {
          return super.mouseReleased(event);

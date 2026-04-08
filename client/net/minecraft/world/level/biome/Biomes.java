@@ -60,7 +60,6 @@ public abstract class Biomes {
    public static final ResourceKey<Biome> DRIPSTONE_CAVES = register("dripstone_caves");
    public static final ResourceKey<Biome> LUSH_CAVES = register("lush_caves");
    public static final ResourceKey<Biome> DEEP_DARK = register("deep_dark");
-   public static final ResourceKey<Biome> SULFUR_CAVES = register("sulfur_caves");
    public static final ResourceKey<Biome> NETHER_WASTES = register("nether_wastes");
    public static final ResourceKey<Biome> WARPED_FOREST = register("warped_forest");
    public static final ResourceKey<Biome> CRIMSON_FOREST = register("crimson_forest");

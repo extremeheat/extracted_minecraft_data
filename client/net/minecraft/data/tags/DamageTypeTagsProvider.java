@@ -33,7 +33,6 @@ public class DamageTypeTagsProvider extends KeyTagProvider<DamageType> {
       this.tag(DamageTypeTags.NO_IMPACT).add(DamageTypes.DROWN);
       this.tag(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL).add(DamageTypes.FELL_OUT_OF_WORLD);
       this.tag(DamageTypeTags.WITHER_IMMUNE_TO).add(DamageTypes.DROWN);
-      this.tag(DamageTypeTags.SULFUR_CUBE_WITH_BLOCK_IMMUNE_TO).add(DamageTypes.ARROW, DamageTypes.CACTUS, DamageTypes.DRY_OUT, DamageTypes.FALL, DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_BLOCK, DamageTypes.FALLING_STALACTITE, DamageTypes.FREEZE, DamageTypes.MACE_SMASH, DamageTypes.MOB_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_PROJECTILE, DamageTypes.PLAYER_ATTACK, DamageTypes.PLAYER_EXPLOSION, DamageTypes.SPEAR, DamageTypes.SPIT, DamageTypes.STALAGMITE, DamageTypes.STING, DamageTypes.SWEET_BERRY_BUSH, DamageTypes.THROWN, DamageTypes.TRIDENT, DamageTypes.WIND_CHARGE);
       this.tag(DamageTypeTags.IGNITES_ARMOR_STANDS).add(DamageTypes.IN_FIRE, DamageTypes.CAMPFIRE);
       this.tag(DamageTypeTags.BURNS_ARMOR_STANDS).add(DamageTypes.ON_FIRE);
       this.tag(DamageTypeTags.AVOIDS_GUARDIAN_THORNS).add(DamageTypes.MAGIC, DamageTypes.THORNS).addTag(DamageTypeTags.IS_EXPLOSION);

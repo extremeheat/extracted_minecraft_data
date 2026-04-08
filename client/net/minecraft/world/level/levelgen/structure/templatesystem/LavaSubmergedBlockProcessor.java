@@ -7,8 +7,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.jspecify.annotations.Nullable;
 
-public class LavaSubmergedBlockProcessor implements StructureProcessor {
-   public static final MapCodec<LavaSubmergedBlockProcessor> MAP_CODEC = MapCodec.unit(() -> INSTANCE);
+public class LavaSubmergedBlockProcessor extends StructureProcessor {
+   public static final MapCodec<LavaSubmergedBlockProcessor> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final LavaSubmergedBlockProcessor INSTANCE = new LavaSubmergedBlockProcessor();
 
    public LavaSubmergedBlockProcessor() {
@@ -21,7 +21,7 @@ public class LavaSubmergedBlockProcessor implements StructureProcessor {
       return wasLavaBefore && !Block.isShapeFullBlock(processedBlockInfo.state().getShape(level, pos)) ? new StructureTemplate.StructureBlockInfo(pos, Blocks.LAVA.defaultBlockState(), processedBlockInfo.nbt()) : processedBlockInfo;
    }
 
-   public MapCodec<LavaSubmergedBlockProcessor> codec() {
-      return MAP_CODEC;
+   protected StructureProcessorType<?> getType() {
+      return StructureProcessorType.LAVA_SUBMERGED_BLOCK;
    }
 }

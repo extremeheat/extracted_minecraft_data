@@ -73,11 +73,11 @@ public class JoinMultiplayerScreen extends Screen {
       }).width(100).build());
       topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.direct"), (button) -> {
          this.editingServer = new ServerData(I18n.get("selectServer.defaultName"), "", ServerData.Type.OTHER);
-         this.minecraft.gui.setScreen(new DirectJoinServerScreen(this, this::directJoinCallback, this.editingServer));
+         this.minecraft.setScreen(new DirectJoinServerScreen(this, this::directJoinCallback, this.editingServer));
       }).width(100).build());
       topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.add"), (button) -> {
          this.editingServer = new ServerData("", "", ServerData.Type.OTHER);
-         this.minecraft.gui.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.add.title"), this::addServerCallback, this.editingServer));
+         this.minecraft.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.add.title"), this::addServerCallback, this.editingServer));
       }).width(100).build());
       this.editButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.edit"), (button) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
@@ -85,7 +85,7 @@ public class JoinMultiplayerScreen extends Screen {
             ServerData current = ((ServerSelectionList.OnlineServerEntry)entry).getServerData();
             this.editingServer = new ServerData(current.name, current.ip, ServerData.Type.OTHER);
             this.editingServer.copyFrom(current);
-            this.minecraft.gui.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.edit.title"), this::editServerCallback, this.editingServer));
+            this.minecraft.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.edit.title"), this::editServerCallback, this.editingServer));
          }
 
       }).width(74).build());
@@ -98,7 +98,7 @@ public class JoinMultiplayerScreen extends Screen {
                Component warning = Component.translatable("selectServer.deleteWarning", serverName);
                Component yes = Component.translatable("selectServer.deleteButton");
                Component no = CommonComponents.GUI_CANCEL;
-               this.minecraft.gui.setScreen(new ConfirmScreen(this::deleteCallback, title, warning, yes, no));
+               this.minecraft.setScreen(new ConfirmScreen(this::deleteCallback, title, warning, yes, no));
             }
          }
 
@@ -119,7 +119,7 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    public void tick() {
@@ -143,7 +143,7 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    private void refreshServerList() {
-      this.minecraft.gui.setScreen(new JoinMultiplayerScreen(this.lastScreen));
+      this.minecraft.setScreen(new JoinMultiplayerScreen(this.lastScreen));
    }
 
    private void deleteCallback(final boolean result) {
@@ -155,7 +155,7 @@ public class JoinMultiplayerScreen extends Screen {
          this.serverSelectionList.updateOnlineServers(this.servers);
       }
 
-      this.minecraft.gui.setScreen(this);
+      this.minecraft.setScreen(this);
    }
 
    private void editServerCallback(final boolean result) {
@@ -169,7 +169,7 @@ public class JoinMultiplayerScreen extends Screen {
          this.serverSelectionList.updateOnlineServers(this.servers);
       }
 
-      this.minecraft.gui.setScreen(this);
+      this.minecraft.setScreen(this);
    }
 
    private void addServerCallback(final boolean result) {
@@ -187,7 +187,7 @@ public class JoinMultiplayerScreen extends Screen {
          this.serverSelectionList.updateOnlineServers(this.servers);
       }
 
-      this.minecraft.gui.setScreen(this);
+      this.minecraft.setScreen(this);
    }
 
    private void directJoinCallback(final boolean result) {
@@ -201,7 +201,7 @@ public class JoinMultiplayerScreen extends Screen {
             this.join(serverData);
          }
       } else {
-         this.minecraft.gui.setScreen(this);
+         this.minecraft.setScreen(this);
       }
 
    }

@@ -6,13 +6,12 @@ import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
 import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class SignEditScreen extends AbstractSignEditScreen {
    public static final float MAGIC_SCALE_NUMBER = 62.500004F;
    public static final float MAGIC_TEXT_SCALE = 0.9765628F;
-   private static final Vector3fc TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
+   private static final Vector3f TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
    private Model.@Nullable Simple signModel;
 
    public SignEditScreen(final SignBlockEntity sign, final boolean isFrontText, final boolean shouldFilter) {
@@ -40,7 +39,7 @@ public class SignEditScreen extends AbstractSignEditScreen {
       }
    }
 
-   protected Vector3fc getSignTextScale() {
+   protected Vector3f getSignTextScale() {
       return TEXT_SCALE;
    }
 }

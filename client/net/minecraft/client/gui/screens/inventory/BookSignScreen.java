@@ -42,7 +42,7 @@ public class BookSignScreen extends Screen {
    protected void init() {
       Button finalizeButton = Button.builder(Component.translatable("book.finalizeButton"), (button) -> {
          this.saveChanges();
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
       }).bounds(this.width / 2 - 100, 196, 98, 20).build();
       finalizeButton.active = false;
       this.titleBox = (EditBox)this.addRenderableWidget(new EditBox(this.minecraft.font, (this.width - 114) / 2 - 3, 50, 114, 20, TITLE_EDIT_BOX));
@@ -56,7 +56,7 @@ public class BookSignScreen extends Screen {
       this.addRenderableWidget(finalizeButton);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
          this.titleValue = this.titleBox.getValue();
-         this.minecraft.gui.setScreen(this.bookEditScreen);
+         this.minecraft.setScreen(this.bookEditScreen);
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
    }
 
@@ -76,7 +76,7 @@ public class BookSignScreen extends Screen {
    public boolean keyPressed(final KeyEvent event) {
       if (this.titleBox.isFocused() && !this.titleBox.getValue().isEmpty() && event.isConfirmation()) {
          this.saveChanges();
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
          return true;
       } else {
          return super.keyPressed(event);

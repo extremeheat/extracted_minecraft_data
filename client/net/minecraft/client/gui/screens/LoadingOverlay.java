@@ -72,10 +72,10 @@ public class LoadingOverlay extends Overlay {
       float fadeInAnim = this.fadeInStart > -1L ? (float)(now - this.fadeInStart) / 500.0F : -1.0F;
       float logoAlpha;
       if (fadeOutAnim >= 1.0F) {
-         if (this.minecraft.gui.screen() != null) {
-            this.minecraft.gui.screen().extractRenderStateWithTooltipAndSubtitles(graphics, 0, 0, a);
+         if (this.minecraft.screen != null) {
+            this.minecraft.screen.extractRenderStateWithTooltipAndSubtitles(graphics, 0, 0, a);
          } else {
-            this.minecraft.gui.hud.extractDeferredSubtitles();
+            this.minecraft.gui.extractDeferredSubtitles();
          }
 
          int alpha = Mth.ceil((1.0F - Mth.clamp(fadeOutAnim - 1.0F, 0.0F, 1.0F)) * 255.0F);
@@ -83,10 +83,10 @@ public class LoadingOverlay extends Overlay {
          graphics.fill(0, 0, width, height, replaceAlpha(BRAND_BACKGROUND.getAsInt(), alpha));
          logoAlpha = 1.0F - Mth.clamp(fadeOutAnim - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
-         if (this.minecraft.gui.screen() != null && fadeInAnim < 1.0F) {
-            this.minecraft.gui.screen().extractRenderStateWithTooltipAndSubtitles(graphics, mouseX, mouseY, a);
+         if (this.minecraft.screen != null && fadeInAnim < 1.0F) {
+            this.minecraft.screen.extractRenderStateWithTooltipAndSubtitles(graphics, mouseX, mouseY, a);
          } else {
-            this.minecraft.gui.hud.extractDeferredSubtitles();
+            this.minecraft.gui.extractDeferredSubtitles();
          }
 
          int alpha = Mth.ceil(Mth.clamp((double)fadeInAnim, 0.15, 1.0) * 255.0);
@@ -115,7 +115,7 @@ public class LoadingOverlay extends Overlay {
       }
 
       if (fadeOutAnim >= 2.0F) {
-         this.minecraft.gui.setOverlay((Overlay)null);
+         this.minecraft.setOverlay((Overlay)null);
       }
 
    }
@@ -130,9 +130,9 @@ public class LoadingOverlay extends Overlay {
          }
 
          this.fadeOutStart = Util.getMillis();
-         if (this.minecraft.gui.screen() != null) {
+         if (this.minecraft.screen != null) {
             Window window = this.minecraft.getWindow();
-            this.minecraft.gui.screen().init(window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            this.minecraft.screen.init(window.getGuiScaledWidth(), window.getGuiScaledHeight());
          }
       }
 
@@ -151,6 +151,10 @@ public class LoadingOverlay extends Overlay {
       graphics.fill(x0 + 1, y1, x1 - 1, y1 - 1, white);
       graphics.fill(x0, y0, x0 + 1, y1, white);
       graphics.fill(x1, y0, x1 - 1, y1, white);
+   }
+
+   public boolean isPauseScreen() {
+      return true;
    }
 
    private static class LogoTexture extends ReloadableTexture {

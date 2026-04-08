@@ -40,10 +40,10 @@ public class CreditsAndAttributionScreen extends Screen {
    }
 
    private void openCreditsScreen() {
-      this.minecraft.gui.setScreen(new WinScreen(false, () -> this.minecraft.gui.setScreen(this)));
+      this.minecraft.setScreen(new WinScreen(false, () -> this.minecraft.setScreen(this)));
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 }

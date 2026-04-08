@@ -16,14 +16,11 @@ import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.Nullable;
 
 public class VideoSettingsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.videoTitle");
@@ -35,20 +32,17 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private static final Component DISPLAY_HEADER;
    private static final Component QUALITY_HEADER;
    private static final Component PREFERENCES_HEADER;
-   private static final Component GRAPHICS_API_REQUIRES_RESTART;
    private final GpuWarnlistManager gpuWarnlistManager;
    private final int oldMipmaps;
    private final int oldAnisotropyBit;
    private final TextureFilteringMethod oldTextureFiltering;
-   private final LinearLayout header = LinearLayout.vertical().spacing(2);
-   private @Nullable StringWidget restartWarning;
 
    private static OptionInstance<?>[] qualityOptions(final Options options) {
       return new OptionInstance[]{options.biomeBlendRadius(), options.renderDistance(), options.prioritizeChunkUpdates(), options.simulationDistance(), options.ambientOcclusion(), options.cloudStatus(), options.particles(), options.mipmapLevels(), options.entityShadows(), options.entityDistanceScaling(), options.menuBackgroundBlurriness(), options.cloudRange(), options.cutoutLeaves(), options.improvedTransparency(), options.textureFiltering(), options.maxAnisotropyBit(), options.weatherRadius()};
    }
 
    private static OptionInstance<?>[] displayOptions(final Options options) {
-      return new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma(), options.preferredGraphicsBackend()};
+      return new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma()};
    }
 
    private static OptionInstance<?>[] preferenceOptions(final Options options) {
@@ -105,17 +99,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addSmall(preferenceOptions(this.options));
    }
 
-   protected void addTitle() {
-      this.header.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
-      this.header.addChild(new StringWidget(this.title, this.font));
-      if (this.options.hasPreferredGraphicsBackendChanged()) {
-         this.restartWarning = new StringWidget(GRAPHICS_API_REQUIRES_RESTART, this.font);
-         this.header.addChild(this.restartWarning);
-      }
-
-      this.layout.addToHeader(this.header);
-   }
-
    public void tick() {
       if (this.list != null) {
          AbstractWidget var2 = this.list.findOption(this.options.maxAnisotropyBit());
@@ -123,21 +106,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
             AbstractSliderButton maxAnisotropy = (AbstractSliderButton)var2;
             maxAnisotropy.active = this.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC;
          }
-      }
-
-      boolean needsRestart = this.options.hasPreferredGraphicsBackendChanged();
-      if (needsRestart && (this.restartWarning == null || !this.restartWarning.visible)) {
-         if (this.restartWarning == null) {
-            this.restartWarning = new StringWidget(GRAPHICS_API_REQUIRES_RESTART, this.font);
-            this.header.addChild(this.restartWarning);
-            this.addRenderableWidget(this.restartWarning);
-         }
-
-         this.restartWarning.visible = true;
-         this.repositionElements();
-      } else if (!needsRestart && this.restartWarning != null && this.restartWarning.visible) {
-         this.restartWarning.visible = false;
-         this.repositionElements();
       }
 
       super.tick();
@@ -179,16 +147,16 @@ public class VideoSettingsScreen extends OptionsSubScreen {
                warningMessage.add(Component.translatable("options.graphics.warning.version", versionWarnings).withStyle(ChatFormatting.GRAY));
             }
 
-            this.minecraft.gui.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, warningMessage, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (btn) -> {
+            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, warningMessage, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (btn) -> {
                this.options.improvedTransparency().set(true);
                Minecraft.getInstance().levelRenderer.allChanged();
                this.gpuWarnlistManager.dismissWarning();
-               this.minecraft.gui.setScreen(this);
+               this.minecraft.setScreen(this);
             }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, (btn) -> {
                this.gpuWarnlistManager.dismissWarning();
                this.options.improvedTransparency().set(false);
                this.updateTransparencyButton();
-               this.minecraft.gui.setScreen(this);
+               this.minecraft.setScreen(this);
             }))));
          }
 
@@ -256,6 +224,5 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       DISPLAY_HEADER = Component.translatable("options.video.display.header");
       QUALITY_HEADER = Component.translatable("options.video.quality.header");
       PREFERENCES_HEADER = Component.translatable("options.video.preferences.header");
-      GRAPHICS_API_REQUIRES_RESTART = Component.translatable("options.graphicsApi.restart").withColor(-2142128);
    }
 }

@@ -111,7 +111,7 @@ public class WorldOpenFlows {
          } catch (Exception e) {
             LOGGER.warn("Failed to load datapacks, can't proceed with server load", e);
             levelSourceAccess.safeClose();
-            this.minecraft.gui.setScreen(parentScreen);
+            this.minecraft.setScreen(parentScreen);
          }
 
       }
@@ -123,11 +123,11 @@ public class WorldOpenFlows {
       } catch (IOException e) {
          LOGGER.warn("Failed to read level {} data", levelId, e);
          SystemToast.onWorldAccessFailure(this.minecraft, levelId);
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
          return null;
       } catch (ContentValidationException e) {
          LOGGER.warn("{}", e.getMessage());
-         this.minecraft.gui.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.gui.setScreen((Screen)null)));
+         this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen((Screen)null)));
          return null;
       }
    }
@@ -200,7 +200,7 @@ public class WorldOpenFlows {
          backupWarning = Component.translatable("selectWorld.backupWarning.experimental");
       }
 
-      this.minecraft.gui.setScreen(new BackupConfirmScreen(cancelCallback, (backup, eraseCache) -> EditWorldScreen.conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var1) -> proceedCallback.run(), this.minecraft), backupQuestion, backupWarning, false));
+      this.minecraft.setScreen(new BackupConfirmScreen(cancelCallback, (backup, eraseCache) -> EditWorldScreen.conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var1) -> proceedCallback.run(), this.minecraft), backupQuestion, backupWarning, false));
    }
 
    public static void confirmWorldCreation(final Minecraft minecraft, final CreateWorldScreen parent, final Lifecycle lifecycle, final Runnable task, final boolean skipWarning) {
@@ -208,15 +208,15 @@ public class WorldOpenFlows {
          if (confirmed) {
             task.run();
          } else {
-            minecraft.gui.setScreen(parent);
+            minecraft.setScreen(parent);
          }
 
       };
       if (!skipWarning && lifecycle != Lifecycle.stable()) {
          if (lifecycle == Lifecycle.experimental()) {
-            minecraft.gui.setScreen(new ConfirmScreen(callback, Component.translatable("selectWorld.warning.experimental.title"), Component.translatable("selectWorld.warning.experimental.question")));
+            minecraft.setScreen(new ConfirmScreen(callback, Component.translatable("selectWorld.warning.experimental.title"), Component.translatable("selectWorld.warning.experimental.question")));
          } else {
-            minecraft.gui.setScreen(new ConfirmScreen(callback, Component.translatable("selectWorld.warning.deprecated.title"), Component.translatable("selectWorld.warning.deprecated.question")));
+            minecraft.setScreen(new ConfirmScreen(callback, Component.translatable("selectWorld.warning.deprecated.title"), Component.translatable("selectWorld.warning.deprecated.question")));
          }
       } else {
          task.run();
@@ -241,7 +241,7 @@ public class WorldOpenFlows {
          levelDataTag = worldAccess.getUnfixedDataTag(false);
          summary = worldAccess.fixAndGetSummaryFromTag(levelDataTag);
       } catch (NbtException | ReportedNbtException | IOException var10) {
-         this.minecraft.gui.setScreen(new RecoverWorldDataScreen(this.minecraft, (success) -> {
+         this.minecraft.setScreen(new RecoverWorldDataScreen(this.minecraft, (success) -> {
             if (success) {
                this.openWorldLoadLevelData(worldAccess, onCancel);
             } else {
@@ -269,7 +269,7 @@ public class WorldOpenFlows {
    private void openWorldCheckVersionCompatibility(final LevelStorageSource.LevelStorageAccess worldAccess, final LevelSummary summary, final Dynamic<?> levelDataTag, final Runnable onCancel) {
       if (!summary.isCompatible()) {
          worldAccess.safeClose();
-         this.minecraft.gui.setScreen(new AlertScreen(onCancel, Component.translatable("selectWorld.incompatible.title").withColor(-65536), Component.translatable("selectWorld.incompatible.description", summary.getWorldVersionName())));
+         this.minecraft.setScreen(new AlertScreen(onCancel, Component.translatable("selectWorld.incompatible.title").withColor(-65536), Component.translatable("selectWorld.incompatible.description", summary.getWorldVersionName())));
       } else {
          LevelSummary.BackupStatus backupStatus = summary.backupStatus();
          if (backupStatus.shouldBackup()) {
@@ -281,7 +281,7 @@ public class WorldOpenFlows {
             }
 
             Component backupWarning = Component.translatable(warningKey, summary.getWorldVersionName(), SharedConstants.getCurrentVersion().name());
-            this.minecraft.gui.setScreen(new BackupConfirmScreen(() -> {
+            this.minecraft.setScreen(new BackupConfirmScreen(() -> {
                worldAccess.safeClose();
                onCancel.run();
             }, (backup, eraseCache) -> this.createBackupAndOpenWorld(worldAccess, levelDataTag, onCancel, backup), backupQuestion, backupWarning, false));
@@ -377,13 +377,13 @@ public class WorldOpenFlows {
       } catch (Exception e) {
          LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", e);
          if (!safeMode) {
-            this.minecraft.gui.setScreen(new DatapackLoadFailureScreen(() -> {
+            this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> {
                worldAccess.safeClose();
                onCancel.run();
             }, () -> this.openWorldLoadLevelStem(worldAccess, levelDataTag, true, onCancel)));
          } else {
             worldAccess.safeClose();
-            this.minecraft.gui.setScreen(new AlertScreen(onCancel, Component.translatable("datapackFailure.safeMode.failed.title"), Component.translatable("datapackFailure.safeMode.failed.description"), CommonComponents.GUI_BACK, true));
+            this.minecraft.setScreen(new AlertScreen(onCancel, Component.translatable("datapackFailure.safeMode.failed.title"), Component.translatable("datapackFailure.safeMode.failed.description"), CommonComponents.GUI_BACK, true));
          }
 
          return;
@@ -431,7 +431,7 @@ public class WorldOpenFlows {
 
    private void openWorldCheckDiskSpace(final LevelStorageSource.LevelStorageAccess worldAccess, final WorldStem worldStem, final DownloadedPackSource packSource, final PackRepository packRepository, final Runnable onCancel) {
       if (worldAccess.checkForLowDiskSpace()) {
-         Screen screen = new ConfirmScreen((skip) -> {
+         this.minecraft.setScreen(new ConfirmScreen((skip) -> {
             if (skip) {
                this.openWorldDoLoad(worldAccess, worldStem, packRepository);
             } else {
@@ -441,8 +441,7 @@ public class WorldOpenFlows {
                onCancel.run();
             }
 
-         }, Component.translatable("selectWorld.warning.lowDiskSpace.title").withStyle(ChatFormatting.RED), Component.translatable("selectWorld.warning.lowDiskSpace.description"), CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK);
-         this.minecraft.gui.setScreen(screen);
+         }, Component.translatable("selectWorld.warning.lowDiskSpace.title").withStyle(ChatFormatting.RED), Component.translatable("selectWorld.warning.lowDiskSpace.description"), CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
       } else {
          this.openWorldDoLoad(worldAccess, worldStem, packRepository);
       }
@@ -467,9 +466,9 @@ public class WorldOpenFlows {
 
    private CompletableFuture<Boolean> promptBundledPackLoadFailure() {
       CompletableFuture<Boolean> result = new CompletableFuture();
+      Minecraft var10000 = this.minecraft;
       Objects.requireNonNull(result);
-      Screen screen = new ConfirmScreen(result::complete, Component.translatable("multiplayer.texturePrompt.failure.line1"), Component.translatable("multiplayer.texturePrompt.failure.line2"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL);
-      this.minecraft.gui.setScreen(screen);
+      var10000.setScreen(new ConfirmScreen(result::complete, Component.translatable("multiplayer.texturePrompt.failure.line1"), Component.translatable("multiplayer.texturePrompt.failure.line2"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
       return result;
    }
 }

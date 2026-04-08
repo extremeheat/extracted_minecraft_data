@@ -209,7 +209,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return !this.isSwimming();
    }
 
-   public boolean wantsToSwim() {
+   private boolean wantsToSwim() {
       if (this.searchingForLand) {
          return true;
       } else {
@@ -277,10 +277,6 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public void setSearchingForLand(final boolean searchingForLand) {
       this.searchingForLand = searchingForLand;
-   }
-
-   public boolean isSearchingForLand() {
-      return this.searchingForLand;
    }
 
    public void rideTick() {
@@ -474,38 +470,41 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   private static class DrownedMoveControl<T extends Drowned> extends MoveControl<T> {
-      public DrownedMoveControl(final T drowned) {
+   private static class DrownedMoveControl extends MoveControl {
+      private final Drowned drowned;
+
+      public DrownedMoveControl(final Drowned drowned) {
          super(drowned);
+         this.drowned = drowned;
       }
 
       public void tick() {
-         LivingEntity target = ((Drowned)this.mob).getTarget();
-         if (((Drowned)this.mob).wantsToSwim() && ((Drowned)this.mob).isInWater()) {
-            if (target != null && target.getY() > ((Drowned)this.mob).getY() || ((Drowned)this.mob).isSearchingForLand()) {
-               ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add(0.0, 0.002, 0.0));
+         LivingEntity target = this.drowned.getTarget();
+         if (this.drowned.wantsToSwim() && this.drowned.isInWater()) {
+            if (target != null && target.getY() > this.drowned.getY() || this.drowned.searchingForLand) {
+               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, 0.002, 0.0));
             }
 
-            if (this.operation != MoveControl.Operation.MOVE_TO || ((Drowned)this.mob).getNavigation().isDone()) {
-               ((Drowned)this.mob).setSpeed(0.0F);
+            if (this.operation != MoveControl.Operation.MOVE_TO || this.drowned.getNavigation().isDone()) {
+               this.drowned.setSpeed(0.0F);
                return;
             }
 
-            double xd = this.wantedX - ((Drowned)this.mob).getX();
-            double yd = this.wantedY - ((Drowned)this.mob).getY();
-            double zd = this.wantedZ - ((Drowned)this.mob).getZ();
+            double xd = this.wantedX - this.drowned.getX();
+            double yd = this.wantedY - this.drowned.getY();
+            double zd = this.wantedZ - this.drowned.getZ();
             double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
             yd /= dd;
             float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-            ((Drowned)this.mob).setYRot(this.rotlerp(((Drowned)this.mob).getYRot(), yRotD, 90.0F));
-            (this.mob).yBodyRot = ((Drowned)this.mob).getYRot();
-            float targetSpeed = (float)(this.speedModifier * ((Drowned)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
-            float newSpeed = Mth.lerp(0.125F, ((Drowned)this.mob).getSpeed(), targetSpeed);
-            ((Drowned)this.mob).setSpeed(newSpeed);
-            ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add((double)newSpeed * xd * 0.005, (double)newSpeed * yd * 0.1, (double)newSpeed * zd * 0.005));
+            this.drowned.setYRot(this.rotlerp(this.drowned.getYRot(), yRotD, 90.0F));
+            this.drowned.yBodyRot = this.drowned.getYRot();
+            float targetSpeed = (float)(this.speedModifier * this.drowned.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float newSpeed = Mth.lerp(0.125F, this.drowned.getSpeed(), targetSpeed);
+            this.drowned.setSpeed(newSpeed);
+            this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add((double)newSpeed * xd * 0.005, (double)newSpeed * yd * 0.1, (double)newSpeed * zd * 0.005));
          } else {
-            if (!((Drowned)this.mob).onGround()) {
-               ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add(0.0, -0.008, 0.0));
+            if (!this.drowned.onGround()) {
+               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, -0.008, 0.0));
             }
 
             super.tick();

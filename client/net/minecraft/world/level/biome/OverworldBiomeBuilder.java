@@ -1,7 +1,6 @@
 package net.minecraft.world.level.biome;
 
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
@@ -14,6 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.NoiseData;
 import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.BoundedFloatFunction;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -95,12 +95,12 @@ public final class OverworldBiomeBuilder {
    private void addDebugBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
       HolderLookup.Provider builtIns = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
       HolderGetter<DensityFunction> densityFunctions = builtIns.lookupOrThrow(Registries.DENSITY_FUNCTION);
-      DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.CONTINENTS)));
-      DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.EROSION)));
-      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED)));
+      DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.CONTINENTS));
+      DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.EROSION));
+      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED));
       biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
-      CubicSpline<?> erosionOffsetSpline = TerrainProvider.buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, Float2FloatFunction.identity());
-      if (erosionOffsetSpline instanceof CubicSpline.Multipoint<?> multipoint) {
+      CubicSpline<?, ?> erosionOffsetSpline = TerrainProvider.buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, BoundedFloatFunction.IDENTITY);
+      if (erosionOffsetSpline instanceof CubicSpline.Multipoint<?, ?> multipoint) {
          ResourceKey<Biome> biome = Biomes.DESERT;
 
          for(float location : multipoint.locations()) {
@@ -109,8 +109,8 @@ public final class OverworldBiomeBuilder {
          }
       }
 
-      CubicSpline<?> overworldOffset = TerrainProvider.overworldOffset(continents, erosion, ridges, false);
-      if (overworldOffset instanceof CubicSpline.Multipoint<?> multipoint) {
+      CubicSpline<?, ?> overworldOffset = TerrainProvider.overworldOffset(continents, erosion, ridges, false);
+      if (overworldOffset instanceof CubicSpline.Multipoint<?, ?> multipoint) {
          for(float location : multipoint.locations()) {
             biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(location), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), Biomes.SNOWY_TAIGA));
          }
@@ -319,7 +319,6 @@ public final class OverworldBiomeBuilder {
    private void addUndergroundBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
       this.addUndergroundBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(0.8F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.DRIPSTONE_CAVES);
       this.addUndergroundBiome(biomes, this.FULL_RANGE, Climate.Parameter.span(0.7F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.LUSH_CAVES);
-      this.addUndergroundBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(-1.1F, -0.95F), 0.0F, Biomes.SULFUR_CAVES);
       this.addBottomBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.erosions[0], this.erosions[1]), this.FULL_RANGE, 0.0F, Biomes.DEEP_DARK);
    }
 

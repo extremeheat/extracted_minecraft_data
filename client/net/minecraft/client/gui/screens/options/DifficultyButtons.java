@@ -20,7 +20,7 @@ public record DifficultyButtons(LayoutElement layout, CycleButton<Difficulty> di
 
    public static DifficultyButtons create(final Minecraft minecraft, final Level level, final Screen screen) {
       CycleButton<Difficulty> difficultyButton = CycleButton.builder(Difficulty::getDisplayName, level.getDifficulty()).withValues(Difficulty.values()).create(0, 0, 150, 20, Component.translatable("options.difficulty"), (button, value) -> minecraft.getConnection().send(new ServerboundChangeDifficultyPacket(value)));
-      LockIconButton lockButton = new LockIconButton(0, 0, (button) -> minecraft.gui.setScreen(new ConfirmScreen((result) -> onLockCallback(result, minecraft, screen, difficultyButton, (LockIconButton)button), Component.translatable("difficulty.lock.title"), Component.translatable("difficulty.lock.question", level.getLevelData().getDifficulty().getDisplayName()))));
+      LockIconButton lockButton = new LockIconButton(0, 0, (button) -> minecraft.setScreen(new ConfirmScreen((result) -> onLockCallback(result, minecraft, screen, difficultyButton, (LockIconButton)button), Component.translatable("difficulty.lock.title"), Component.translatable("difficulty.lock.question", level.getLevelData().getDifficulty().getDisplayName()))));
       difficultyButton.setWidth(difficultyButton.getWidth() - lockButton.getWidth());
       lockButton.setLocked(isDifficultyLocked(level));
       lockButton.active = !lockButton.isLocked() && playerHasPermissionToChangeDifficulty(minecraft);
@@ -47,7 +47,7 @@ public record DifficultyButtons(LayoutElement layout, CycleButton<Difficulty> di
    }
 
    private static void onLockCallback(final boolean result, final Minecraft minecraft, final Screen screen, final CycleButton<Difficulty> difficultyButton, final LockIconButton lockButton) {
-      minecraft.gui.setScreen(screen);
+      minecraft.setScreen(screen);
       if (result) {
          minecraft.getConnection().send(new ServerboundLockDifficultyPacket(true));
          lockButton.setLocked(true);

@@ -384,7 +384,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          bee.setInLoveTime(Math.max(0, bee.getInLoveTime() - ticksInHive));
       }
 
-      private static void updateBeeAge(final int ticksInHive, final Bee bee) {
+      private static void updateBeeAge(int ticksInHive, final Bee bee) {
          if (!bee.isAgeLocked()) {
             int age = bee.getAge();
             if (age < 0) {

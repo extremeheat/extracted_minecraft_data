@@ -31,8 +31,8 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    private static boolean canBeNylium(final BlockState state, final LevelReader level, final BlockPos pos) {
       BlockPos above = pos.above();
       BlockState aboveState = level.getBlockState(above);
-      int lightDampeningTopFace = LightEngine.getLightDampeningInto(state, aboveState, Direction.UP, aboveState.getLightDampening());
-      return lightDampeningTopFace < 15;
+      int lightBlockInto = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightDampening());
+      return lightBlockInto < 15;
    }
 
    protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {

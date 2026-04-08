@@ -67,9 +67,6 @@ public final class BlockTags {
    public static final TagKey<Block> MOSS_BLOCKS = create("moss_blocks");
    public static final TagKey<Block> GRASS_BLOCKS = create("grass_blocks");
    public static final TagKey<Block> TERRACOTTA = create("terracotta");
-   public static final TagKey<Block> GLAZED_TERRACOTTA = create("glazed_terracotta");
-   public static final TagKey<Block> CONCRETE = create("concrete");
-   public static final TagKey<Block> CONCRETE_POWDERS = create("concrete_powders");
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL = create("completes_find_tree_tutorial");
    public static final TagKey<Block> SHULKER_BOXES = create("shulker_boxes");
    public static final TagKey<Block> COPPER_CHESTS = create("copper_chests");
@@ -89,6 +86,7 @@ public final class BlockTags {
    public static final TagKey<Block> BANNERS = create("banners");
    public static final TagKey<Block> PIGLIN_REPELLENTS = create("piglin_repellents");
    public static final TagKey<Block> BADLANDS_TERRACOTTA = create("badlands_terracotta");
+   public static final TagKey<Block> CONCRETE_POWDER = create("concrete_powder");
    public static final TagKey<Block> FLOWER_POTS = create("flower_pots");
    public static final TagKey<Block> ENDERMAN_HOLDABLE = create("enderman_holdable");
    public static final TagKey<Block> ICE = create("ice");
@@ -164,9 +162,6 @@ public final class BlockTags {
    public static final TagKey<Block> MINEABLE_WITH_SHOVEL = create("mineable/shovel");
    public static final TagKey<Block> SWORD_EFFICIENT = create("sword_efficient");
    public static final TagKey<Block> SWORD_INSTANTLY_MINES = create("sword_instantly_mines");
-   public static final TagKey<Block> SHEARS_EXTREME_BREAKING_SPEED = create("shears_extreme_breaking_speed");
-   public static final TagKey<Block> SHEARS_MAJOR_BREAKING_SPEED = create("shears_major_breaking_speed");
-   public static final TagKey<Block> SHEARS_MINOR_BREAKING_SPEED = create("shears_minor_breaking_speed");
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
    public static final TagKey<Block> NEEDS_IRON_TOOL = create("needs_iron_tool");
    public static final TagKey<Block> NEEDS_STONE_TOOL = create("needs_stone_tool");
@@ -254,7 +249,6 @@ public final class BlockTags {
    public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
    public static final TagKey<Block> BLOCKS_WIND_CHARGE_EXPLOSIONS = create("blocks_wind_charge_explosions");
    public static final TagKey<Block> DOES_NOT_BLOCK_HOPPERS = create("does_not_block_hoppers");
-   public static final TagKey<Block> SUPPRESSES_BOUNCE = create("suppresses_bounce");
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS = create("triggers_ambient_desert_sand_block_sounds");
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");

@@ -80,7 +80,7 @@ public class TestBlockEditScreen extends Screen {
    }
 
    private void onCancel() {
-      this.minecraft.gui.setScreen((Screen)null);
+      this.minecraft.setScreen((Screen)null);
    }
 
    private void updateMode(final TestBlockMode value) {

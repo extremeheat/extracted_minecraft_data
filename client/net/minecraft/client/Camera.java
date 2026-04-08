@@ -40,9 +40,9 @@ import org.jspecify.annotations.Nullable;
 public class Camera implements TrackedWaypoint.Camera {
    public static final float PROJECTION_Z_NEAR = 0.05F;
    private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
-   private static final Vector3fc FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
-   private static final Vector3fc UP = new Vector3f(0.0F, 1.0F, 0.0F);
-   private static final Vector3fc LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
+   private static final Vector3f FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
+   private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
+   private static final Vector3f LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
    public static final float BASE_HUD_FOV = 70.0F;
    private boolean initialized;
    private @Nullable Level level;
@@ -193,7 +193,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private Matrix4f createProjectionMatrixForCulling() {
       float fovForCulling = Math.max(this.fov, (float)(Integer)this.minecraft.options.fov().get());
       Matrix4f projection = new Matrix4f();
-      return projection.perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, RenderSystem.getDevice().getDeviceInfo().isZZeroToOne());
+      return projection.perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, RenderSystem.getDevice().isZZeroToOne());
    }
 
    public Frustum getCullFrustum() {

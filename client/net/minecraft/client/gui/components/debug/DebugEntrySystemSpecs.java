@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components.debug;
 
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.systems.DeviceInfo;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Locale;
@@ -19,8 +19,8 @@ public class DebugEntrySystemSpecs implements DebugScreenEntry {
    }
 
    public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
-      DeviceInfo deviceInfo = RenderSystem.getDevice().getDeviceInfo();
-      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "CPU: %s", GLX._getCpuInfo()), String.format(Locale.ROOT, "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), deviceInfo.vendorName()), deviceInfo.name(), String.format(Locale.ROOT, "%s %s", deviceInfo.backendName(), deviceInfo.driverInfo())));
+      GpuDevice device = RenderSystem.getDevice();
+      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "CPU: %s", GLX._getCpuInfo()), String.format(Locale.ROOT, "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), device.getVendor()), device.getRenderer(), String.format(Locale.ROOT, "%s %s", device.getBackendName(), device.getVersion())));
    }
 
    public boolean isAllowed(final boolean reducedDebugInfo) {

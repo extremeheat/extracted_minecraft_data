@@ -75,8 +75,8 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
          this.checked = true;
          if (this.getContentLength(this.worldDownload.downloadLink()) >= 5368709120L) {
             Component popupMessage = Component.translatable("mco.download.confirmation.oversized", Unit.humanReadable(5368709120L));
-            this.minecraft.gui.setScreen(RealmsPopups.warningAcknowledgePopupScreen(this, popupMessage, (var1) -> {
-               this.minecraft.gui.setScreen(this);
+            this.minecraft.setScreen(RealmsPopups.warningAcknowledgePopupScreen(this, popupMessage, (popupScreen) -> {
+               this.minecraft.setScreen(this);
                this.downloadSave();
             }));
          } else {
@@ -122,7 +122,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
          this.callback.accept(true);
       }
 
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {

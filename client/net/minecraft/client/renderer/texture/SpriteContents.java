@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -12,6 +11,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -283,7 +283,7 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
             GpuTexture texture = device.createTexture((Supplier)(() -> {
                String var10000 = String.valueOf(SpriteContents.this.name);
                return var10000 + " animation frame " + frame;
-            }), 5, GpuFormat.RGBA8_UNORM, SpriteContents.this.width, SpriteContents.this.height, 1, SpriteContents.this.byMipLevel.length);
+            }), 5, TextureFormat.RGBA8, SpriteContents.this.width, SpriteContents.this.height, 1, SpriteContents.this.byMipLevel.length);
             int offsetX = this.getFrameX(frame) * SpriteContents.this.width;
             int offsetY = this.getFrameY(frame) * SpriteContents.this.height;
 

@@ -42,7 +42,7 @@ public class ShareToLanScreen extends Screen {
       this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (button, value) -> this.gameMode = value));
       this.addRenderableWidget(CycleButton.onOffBuilder(this.commands).create(this.width / 2 + 5, 100, 150, 20, ALLOW_COMMANDS_LABEL, (button, value) -> this.commands = value));
       Button startButton = Button.builder(Component.translatable("lanServer.start"), (button) -> {
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
          Component message;
          if (singleplayerServer.publishServer(this.gameMode, this.commands, this.port)) {
             message = PublishCommand.getSuccessMessage(this.port);
@@ -50,7 +50,7 @@ public class ShareToLanScreen extends Screen {
             message = Component.translatable("commands.publish.failed");
          }
 
-         this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
+         this.minecraft.gui.getChat().addClientSystemMessage(message);
          this.minecraft.getNarrator().saySystemQueued(message);
          this.minecraft.updateTitle();
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build();
@@ -76,7 +76,7 @@ public class ShareToLanScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private @Nullable Component tryParsePort(final String value) {

@@ -58,7 +58,6 @@ public class NoiseData {
       register(context, Noises.ICEBERG_PILLAR, -6, 1.0, 1.0, 1.0, 1.0);
       register(context, Noises.ICEBERG_PILLAR_ROOF, -3, 1.0);
       register(context, Noises.ICEBERG_SURFACE, -6, 1.0, 1.0, 1.0);
-      register(context, Noises.SULFUR_CAVE_GRADIENT, -5, 1.0, 0.0, 1.0);
       register(context, Noises.SWAMP, -2, 1.0);
       register(context, Noises.CALCITE, -9, 1.0, 1.0, 1.0, 1.0);
       register(context, Noises.GRAVEL, -8, 1.0, 1.0, 1.0, 1.0);

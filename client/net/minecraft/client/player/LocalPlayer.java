@@ -324,7 +324,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void clientSideCloseContainer() {
       super.closeContainer();
-      this.minecraft.gui.setScreen((Screen)null);
+      this.minecraft.setScreen((Screen)null);
    }
 
    public void hurtTo(final float newHealth) {
@@ -403,7 +403,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       boolean newGamemasterPermission = newPermissions.hasPermission(Permissions.COMMANDS_GAMEMASTER);
       this.permissions = newPermissions;
       if (previousGamemasterPermission != newGamemasterPermission) {
-         Screen var5 = this.minecraft.gui.screen();
+         Screen var5 = this.minecraft.screen;
          if (var5 instanceof HasGamemasterPermissionReaction) {
             HasGamemasterPermissionReaction screen = (HasGamemasterPermissionReaction)var5;
             screen.onGamemasterPermissionChanged(newGamemasterPermission);
@@ -418,15 +418,15 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void refreshChatAbilities() {
       this.chatAbilities = this.minecraft.computeChatAbilities();
-      this.minecraft.gui.hud.getChat().setVisibleMessageFilter(this.chatAbilities.visibleMessagesFilter());
+      this.minecraft.gui.getChat().setVisibleMessageFilter(this.chatAbilities.visibleMessagesFilter());
    }
 
    public void sendSystemMessage(final Component message) {
-      this.minecraft.gui.chatListener().handleSystemMessage(message, true);
+      this.minecraft.getChatListener().handleSystemMessage(message, true);
    }
 
    public void sendOverlayMessage(final Component message) {
-      this.minecraft.gui.chatListener().handleOverlay(message);
+      this.minecraft.getChatListener().handleOverlay(message);
    }
 
    private void moveTowardsClosestSpace(final double x, final double z) {
@@ -588,45 +588,45 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
       if (sign instanceof HangingSignBlockEntity hangingSign) {
-         this.minecraft.gui.setScreen(new HangingSignEditScreen(hangingSign, isFrontText, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.setScreen(new HangingSignEditScreen(hangingSign, isFrontText, this.minecraft.isTextFilteringEnabled()));
       } else {
-         this.minecraft.gui.setScreen(new SignEditScreen(sign, isFrontText, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.setScreen(new SignEditScreen(sign, isFrontText, this.minecraft.isTextFilteringEnabled()));
       }
 
    }
 
    public void openMinecartCommandBlock(final MinecartCommandBlock commandBlock) {
-      this.minecraft.gui.setScreen(new MinecartCommandBlockEditScreen(commandBlock));
+      this.minecraft.setScreen(new MinecartCommandBlockEditScreen(commandBlock));
    }
 
    public void openCommandBlock(final CommandBlockEntity commandBlock) {
-      this.minecraft.gui.setScreen(new CommandBlockEditScreen(commandBlock));
+      this.minecraft.setScreen(new CommandBlockEditScreen(commandBlock));
    }
 
    public void openStructureBlock(final StructureBlockEntity structureBlock) {
-      this.minecraft.gui.setScreen(new StructureBlockEditScreen(structureBlock));
+      this.minecraft.setScreen(new StructureBlockEditScreen(structureBlock));
    }
 
    public void openTestBlock(final TestBlockEntity testBlock) {
-      this.minecraft.gui.setScreen(new TestBlockEditScreen(testBlock));
+      this.minecraft.setScreen(new TestBlockEditScreen(testBlock));
    }
 
    public void openTestInstanceBlock(final TestInstanceBlockEntity testInstanceBlock) {
-      this.minecraft.gui.setScreen(new TestInstanceBlockEditScreen(testInstanceBlock));
+      this.minecraft.setScreen(new TestInstanceBlockEditScreen(testInstanceBlock));
    }
 
    public void openJigsawBlock(final JigsawBlockEntity jigsawBlock) {
-      this.minecraft.gui.setScreen(new JigsawBlockEditScreen(jigsawBlock));
+      this.minecraft.setScreen(new JigsawBlockEditScreen(jigsawBlock));
    }
 
    public void openDialog(final Holder<Dialog> dialog) {
-      this.connection.showDialog(dialog, this.minecraft.gui.screen());
+      this.connection.showDialog(dialog, this.minecraft.screen);
    }
 
    public void openItemGui(final ItemStack itemStack, final InteractionHand hand) {
       WritableBookContent content = (WritableBookContent)itemStack.get(DataComponents.WRITABLE_BOOK_CONTENT);
       if (content != null) {
-         this.minecraft.gui.setScreen(new BookEditScreen(this, itemStack, hand, content));
+         this.minecraft.setScreen(new BookEditScreen(this, itemStack, hand, content));
       }
 
    }
@@ -731,7 +731,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          --this.sprintTriggerTime;
       }
 
-      if (!(this.minecraft.gui.screen() instanceof LevelLoadingScreen)) {
+      if (!(this.minecraft.screen instanceof LevelLoadingScreen)) {
          this.handlePortalTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
          this.processPortalCooldown();
       }
@@ -901,12 +901,12 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.oPortalEffectIntensity = this.portalEffectIntensity;
       float step = 0.0F;
       if (active && this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
-         if (this.minecraft.gui.screen() != null && !this.minecraft.gui.screen().isAllowedInPortal()) {
-            if (this.minecraft.gui.screen() instanceof AbstractContainerScreen) {
+         if (this.minecraft.screen != null && !this.minecraft.screen.isAllowedInPortal()) {
+            if (this.minecraft.screen instanceof AbstractContainerScreen) {
                this.closeContainer();
             }
 
-            this.minecraft.gui.setScreen((Screen)null);
+            this.minecraft.setScreen((Screen)null);
          }
 
          if (this.portalEffectIntensity == 0.0F) {

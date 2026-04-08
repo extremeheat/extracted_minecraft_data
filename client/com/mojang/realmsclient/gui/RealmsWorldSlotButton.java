@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsSlot;
-import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.util.RealmsTextureManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -27,14 +26,12 @@ public class RealmsWorldSlotButton extends Button {
    private static final Component SWITCH_TO_MINIGAME_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip.minigame");
    private static final Component SWITCH_TO_WORLD_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip");
    private static final Component MINIGAME = Component.translatable("mco.worldSlot.minigame");
-   private final RealmsConfigureWorldScreen configureWorldScreen;
    private final int slotIndex;
    private final StringWidget slotNameWidget;
    private State state;
 
-   public RealmsWorldSlotButton(final RealmsConfigureWorldScreen configureWorldScreen, final int x, final int y, final int width, final int height, final int slotIndex, final RealmsServer serverData, final Button.OnPress onPress) {
+   public RealmsWorldSlotButton(final int x, final int y, final int width, final int height, final int slotIndex, final RealmsServer serverData, final Button.OnPress onPress) {
       super(x, y, width, height, CommonComponents.EMPTY, onPress, DEFAULT_NARRATION);
-      this.configureWorldScreen = configureWorldScreen;
       this.slotIndex = slotIndex;
       this.state = this.setServerData(serverData);
       this.slotNameWidget = new StringWidget(Component.literal(this.state.slotName), Minecraft.getInstance().font);
@@ -122,13 +119,6 @@ public class RealmsWorldSlotButton extends Button {
       this.slotNameWidget.extractRenderState(graphics, mouseX, mouseY, a);
       if (this.state.activeSlot) {
          graphics.centeredText(Minecraft.getInstance().font, (Component)RealmsMainScreen.getVersionComponent(this.state.slotVersion, this.state.compatibility.isCompatible()), x + this.width / 2, y + this.height + 2, -1);
-      }
-
-   }
-
-   protected void extractTooltipForNextRenderPass(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      if (Minecraft.getInstance().gui.screen() == this.configureWorldScreen) {
-         super.extractTooltipForNextRenderPass(graphics, mouseX, mouseY);
       }
 
    }

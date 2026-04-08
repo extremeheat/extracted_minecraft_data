@@ -28,10 +28,10 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       BlockPos origin = context.origin();
       LargeDripstoneConfiguration config = context.config();
       RandomSource random = context.random();
-      if (!SpeleothemUtils.isEmptyOrWater(level, origin)) {
+      if (!DripstoneUtils.isEmptyOrWater(level, origin)) {
          return false;
       } else {
-         Optional<Column> column = Column.scan(level, origin, config.floorToCeilingSearchRange, SpeleothemUtils::isEmptyOrWater, (state) -> SpeleothemUtils.isBaseOrLava(state, Blocks.DRIPSTONE_BLOCK, config.replaceableBlocks));
+         Optional<Column> column = Column.scan(level, origin, config.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, DripstoneUtils::isDripstoneBaseOrLava);
          if (!column.isEmpty() && column.get() instanceof Column.Range) {
             Column.Range columnRange = (Column.Range)column.get();
             if (columnRange.height() < 4) {
@@ -81,7 +81,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
       for(BlockPos.MutableBlockPos pos = origin.atY(range.floor() + 2).mutable(); pos.getY() < range.ceiling() - 1; pos.move(Direction.UP)) {
          BlockPos windAdjustedPos = wind.offset(pos);
-         if (SpeleothemUtils.isEmptyOrWater(level, windAdjustedPos) || level.getBlockState(windAdjustedPos).is(Blocks.DRIPSTONE_BLOCK)) {
+         if (DripstoneUtils.isEmptyOrWater(level, windAdjustedPos) || level.getBlockState(windAdjustedPos).is(Blocks.DRIPSTONE_BLOCK)) {
             level.setBlock(windAdjustedPos, Blocks.CREEPER_HEAD.defaultBlockState(), 2);
          }
       }
@@ -126,7 +126,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
                   return false;
                }
 
-               if (SpeleothemUtils.isCircleMostlyEmbeddedInStone(level, wind.offset(newRoot), this.radius)) {
+               if (DripstoneUtils.isCircleMostlyEmbeddedInStone(level, wind.offset(newRoot), this.radius)) {
                   this.root = newRoot;
                   return true;
                }
@@ -141,7 +141,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
 
       private int getHeightAtRadius(final float checkRadius) {
-         return (int)SpeleothemUtils.getSpeleothemHeight((double)checkRadius, (double)this.radius, this.scale, this.bluntness);
+         return (int)DripstoneUtils.getDripstoneHeight((double)checkRadius, (double)this.radius, this.scale, this.bluntness);
       }
 
       private void placeBlocks(final WorldGenLevel level, final RandomSource random, final WindOffsetter wind) {
@@ -161,7 +161,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
                      for(int i = 0; i < height && pos.getY() < maxY; ++i) {
                         BlockPos windAdjustedPos = wind.offset(pos);
-                        if (SpeleothemUtils.isEmptyOrWaterOrLava(level, windAdjustedPos)) {
+                        if (DripstoneUtils.isEmptyOrWaterOrLava(level, windAdjustedPos)) {
                            hasBeenOutOfStone = true;
                            Block block = SharedConstants.DEBUG_LARGE_DRIPSTONE ? Blocks.GLASS : Blocks.DRIPSTONE_BLOCK;
                            level.setBlock(windAdjustedPos, block.defaultBlockState(), 2);

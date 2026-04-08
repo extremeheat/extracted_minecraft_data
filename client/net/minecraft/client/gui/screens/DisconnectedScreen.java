@@ -50,9 +50,9 @@ public class DisconnectedScreen extends Screen {
       this.details.report().ifPresent((report) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (button) -> Util.getPlatform().openPath(report.getParent())).width(200).build()));
       Button backButton;
       if (this.minecraft.allowsMultiplayer()) {
-         backButton = Button.builder(this.buttonText, (var1) -> this.minecraft.gui.setScreen(this.parent)).width(200).build();
+         backButton = Button.builder(this.buttonText, (button) -> this.minecraft.setScreen(this.parent)).width(200).build();
       } else {
-         backButton = Button.builder(TO_TITLE, (var1) -> this.minecraft.gui.setScreen(new TitleScreen())).width(200).build();
+         backButton = Button.builder(TO_TITLE, (button) -> this.minecraft.setScreen(new TitleScreen())).width(200).build();
       }
 
       this.layout.addChild(backButton);

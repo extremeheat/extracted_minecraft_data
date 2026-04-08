@@ -265,8 +265,8 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
             this.pack.select();
          } else {
             Component reason = this.pack.getCompatibility().getConfirmation();
-            this.minecraft.gui.setScreen(new ConfirmScreen((result) -> {
-               this.minecraft.gui.setScreen(this.parent.screen);
+            this.minecraft.setScreen(new ConfirmScreen((result) -> {
+               this.minecraft.setScreen(this.parent.screen);
                if (result) {
                   this.pack.select();
                }

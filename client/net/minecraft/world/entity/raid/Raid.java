@@ -615,7 +615,7 @@ public class Raid {
    }
 
    public static ItemStackTemplate getOminousBannerTemplate(final HolderGetter<BannerPattern> patternGetter) {
-      return new ItemStackTemplate(Items.BANNER.white(), getBannerComponentPatch(patternGetter));
+      return new ItemStackTemplate(Items.WHITE_BANNER, getBannerComponentPatch(patternGetter));
    }
 
    public static ItemStack getOminousBannerInstance(final HolderGetter<BannerPattern> patternGetter) {

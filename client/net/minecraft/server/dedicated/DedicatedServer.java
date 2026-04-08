@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.CrashReportDetail;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
 import net.minecraft.SharedConstants;
@@ -398,8 +398,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public SystemReport fillServerSystemReport(final SystemReport systemReport) {
-      systemReport.setDetail("Is Modded", (CrashReportDetail)(() -> this.getModdedStatus().fullDescription()));
-      systemReport.setDetail("Type", (CrashReportDetail)(() -> "Dedicated Server"));
+      systemReport.setDetail("Is Modded", (Supplier)(() -> this.getModdedStatus().fullDescription()));
+      systemReport.setDetail("Type", (Supplier)(() -> "Dedicated Server"));
       return systemReport;
    }
 

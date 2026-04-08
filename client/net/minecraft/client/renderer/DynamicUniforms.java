@@ -12,9 +12,6 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 public class DynamicUniforms implements AutoCloseable {
-   private static final Vector4fc WHITE = new Vector4f(1.0F, 1.0F, 1.0F, 1.0F);
-   private static final Vector3fc NO_OFFSET = new Vector3f();
-   private static final Matrix4fc IDENTITY_TEXTURE_TRANSFORM = new Matrix4f();
    public static final int TRANSFORM_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putVec4().putVec3().putMat4f().get();
    public static final int CHUNK_SECTION_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putFloat().putIVec2().putIVec3().get();
    private static final int INITIAL_CAPACITY = 2;
@@ -37,24 +34,8 @@ public class DynamicUniforms implements AutoCloseable {
       this.chunkSections.close();
    }
 
-   public GpuBufferSlice writeTransform(final Matrix4f modelView) {
-      return this.writeTransform(new Transform(modelView, WHITE, NO_OFFSET, IDENTITY_TEXTURE_TRANSFORM));
-   }
-
-   public GpuBufferSlice writeTransform(final Matrix4f modelView, final Vector4f colorModulator) {
-      return this.writeTransform(new Transform(modelView, colorModulator, NO_OFFSET, IDENTITY_TEXTURE_TRANSFORM));
-   }
-
-   public GpuBufferSlice writeTransform(final Matrix4f modelView, final Matrix4f textureMatrix) {
-      return this.writeTransform(new Transform(modelView, WHITE, NO_OFFSET, textureMatrix));
-   }
-
-   public GpuBufferSlice writeTransform(final Matrix4f modelView, final Vector4f colorModulator, final Vector3f modelOffset, final Matrix4f textureMatrix) {
-      return this.writeTransform(new Transform(modelView, colorModulator, modelOffset, textureMatrix));
-   }
-
-   public GpuBufferSlice writeTransform(final Transform uniform) {
-      return this.transforms.writeUniform(uniform);
+   public GpuBufferSlice writeTransform(final Matrix4fc modelView, final Vector4fc colorModulator, final Vector3fc modelOffset, final Matrix4fc textureMatrix) {
+      return this.transforms.writeUniform(new Transform(new Matrix4f(modelView), new Vector4f(colorModulator), new Vector3f(modelOffset), new Matrix4f(textureMatrix)));
    }
 
    public GpuBufferSlice[] writeTransforms(final Transform... transforms) {

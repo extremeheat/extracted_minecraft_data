@@ -82,10 +82,10 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
          Minecraft minecraft = this.tutorial.getMinecraft();
          if (this.moveCompleted == -1 && this.moveToast == null) {
             this.moveToast = new TutorialToast(minecraft.font, TutorialToast.Icons.MOVEMENT_KEYS, MOVE_TITLE, MOVE_DESCRIPTION, true);
-            minecraft.gui.toastManager().addToast(this.moveToast);
+            minecraft.getToastManager().addToast(this.moveToast);
          } else if (this.moveCompleted != -1 && this.timeWaiting - this.moveCompleted >= 20 && this.lookCompleted == -1 && this.lookToast == null) {
             this.lookToast = new TutorialToast(minecraft.font, TutorialToast.Icons.MOUSE, LOOK_TITLE, LOOK_DESCRIPTION, true);
-            minecraft.gui.toastManager().addToast(this.lookToast);
+            minecraft.getToastManager().addToast(this.lookToast);
          }
       }
 

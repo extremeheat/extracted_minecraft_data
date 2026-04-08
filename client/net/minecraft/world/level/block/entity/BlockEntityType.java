@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -69,7 +68,6 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<TestBlockEntity> TEST_BLOCK;
    public static final BlockEntityType<TestInstanceBlockEntity> TEST_INSTANCE_BLOCK;
    public static final BlockEntityType<CopperGolemStatueBlockEntity> COPPER_GOLEM_STATUE;
-   public static final BlockEntityType<PotentSulfurEntity> POTENT_SULFUR;
    private static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
    private final BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
@@ -82,10 +80,6 @@ public class BlockEntityType<T extends BlockEntity> {
 
       Util.fetchChoiceType(References.BLOCK_ENTITY, name);
       return (BlockEntityType)Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, (String)name, new BlockEntityType(factory, Set.of(validBlocks)));
-   }
-
-   private static <T extends BlockEntity> BlockEntityType<T> register(final String name, final BlockEntitySupplier<? extends T> factory, final List<Block> validBlocks) {
-      return register(name, factory, (Block[])validBlocks.toArray(new Block[0]));
    }
 
    private BlockEntityType(final BlockEntitySupplier<? extends T> factory, final Set<Block> validBlocks) {
@@ -120,7 +114,7 @@ public class BlockEntityType<T extends BlockEntity> {
 
    static {
       FURNACE = register("furnace", FurnaceBlockEntity::new, Blocks.FURNACE);
-      CHEST = register("chest", ChestBlockEntity::new, Util.copyAndAdd(Blocks.COPPER_CHEST.asList(), Blocks.CHEST));
+      CHEST = register("chest", ChestBlockEntity::new, Blocks.CHEST, Blocks.COPPER_CHEST, Blocks.EXPOSED_COPPER_CHEST, Blocks.WEATHERED_COPPER_CHEST, Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
       TRAPPED_CHEST = register("trapped_chest", TrappedChestBlockEntity::new, Blocks.TRAPPED_CHEST);
       ENDER_CHEST = register("ender_chest", EnderChestBlockEntity::new, Blocks.ENDER_CHEST);
       JUKEBOX = register("jukebox", JukeboxBlockEntity::new, Blocks.JUKEBOX);
@@ -139,12 +133,12 @@ public class BlockEntityType<T extends BlockEntity> {
       DAYLIGHT_DETECTOR = register("daylight_detector", DaylightDetectorBlockEntity::new, Blocks.DAYLIGHT_DETECTOR);
       HOPPER = register("hopper", HopperBlockEntity::new, Blocks.HOPPER);
       COMPARATOR = register("comparator", ComparatorBlockEntity::new, Blocks.COMPARATOR);
-      BANNER = register("banner", BannerBlockEntity::new, Util.join(Blocks.BANNER.asList(), Blocks.WALL_BANNER.asList()));
+      BANNER = register("banner", BannerBlockEntity::new, Blocks.WHITE_BANNER, Blocks.ORANGE_BANNER, Blocks.MAGENTA_BANNER, Blocks.LIGHT_BLUE_BANNER, Blocks.YELLOW_BANNER, Blocks.LIME_BANNER, Blocks.PINK_BANNER, Blocks.GRAY_BANNER, Blocks.LIGHT_GRAY_BANNER, Blocks.CYAN_BANNER, Blocks.PURPLE_BANNER, Blocks.BLUE_BANNER, Blocks.BROWN_BANNER, Blocks.GREEN_BANNER, Blocks.RED_BANNER, Blocks.BLACK_BANNER, Blocks.WHITE_WALL_BANNER, Blocks.ORANGE_WALL_BANNER, Blocks.MAGENTA_WALL_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, Blocks.YELLOW_WALL_BANNER, Blocks.LIME_WALL_BANNER, Blocks.PINK_WALL_BANNER, Blocks.GRAY_WALL_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, Blocks.CYAN_WALL_BANNER, Blocks.PURPLE_WALL_BANNER, Blocks.BLUE_WALL_BANNER, Blocks.BROWN_WALL_BANNER, Blocks.GREEN_WALL_BANNER, Blocks.RED_WALL_BANNER, Blocks.BLACK_WALL_BANNER);
       STRUCTURE_BLOCK = register("structure_block", StructureBlockEntity::new, Blocks.STRUCTURE_BLOCK);
       END_GATEWAY = register("end_gateway", TheEndGatewayBlockEntity::new, Blocks.END_GATEWAY);
       COMMAND_BLOCK = register("command_block", CommandBlockEntity::new, Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK);
-      SHULKER_BOX = register("shulker_box", ShulkerBoxBlockEntity::new, Util.copyAndAdd(Blocks.DYED_SHULKER_BOX.asList(), Blocks.SHULKER_BOX));
-      BED = register("bed", BedBlockEntity::new, (List)Blocks.BED.asList());
+      SHULKER_BOX = register("shulker_box", ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX);
+      BED = register("bed", BedBlockEntity::new, Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED);
       CONDUIT = register("conduit", ConduitBlockEntity::new, Blocks.CONDUIT);
       BARREL = register("barrel", BarrelBlockEntity::new, Blocks.BARREL);
       SMOKER = register("smoker", SmokerBlockEntity::new, Blocks.SMOKER);
@@ -167,8 +161,7 @@ public class BlockEntityType<T extends BlockEntity> {
       VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
       TEST_BLOCK = register("test_block", TestBlockEntity::new, Blocks.TEST_BLOCK);
       TEST_INSTANCE_BLOCK = register("test_instance_block", TestInstanceBlockEntity::new, Blocks.TEST_INSTANCE_BLOCK);
-      COPPER_GOLEM_STATUE = register("copper_golem_statue", CopperGolemStatueBlockEntity::new, (List)Blocks.COPPER_GOLEM_STATUE.asList());
-      POTENT_SULFUR = register("potent_sulfur", PotentSulfurEntity::new, Blocks.POTENT_SULFUR);
+      COPPER_GOLEM_STATUE = register("copper_golem_statue", CopperGolemStatueBlockEntity::new, Blocks.COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
       OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);
    }
 

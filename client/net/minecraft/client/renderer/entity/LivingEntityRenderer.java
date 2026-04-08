@@ -243,7 +243,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          }
       }
 
-      return !Minecraft.getInstance().gui.hud.isHidden() && entity != minecraft.getCameraEntity() && isVisibleToPlayer && !entity.isVehicle();
+      return Minecraft.renderNames() && entity != minecraft.getCameraEntity() && isVisibleToPlayer && !entity.isVehicle();
    }
 
    public boolean isEntityUpsideDown(final T mob) {

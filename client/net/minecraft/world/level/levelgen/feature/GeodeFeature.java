@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BuddingAmethystBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,7 +62,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
          int z = config.outerWallDistance.sample(random);
          BlockPos pos = origin.offset(x, y, z);
          BlockState state = level.getBlockState(pos);
-         if (state.isAir() || state.is(blockSettings.invalidBlocks())) {
+         if (state.isAir() || state.is(blockSettings.invalidBlocks)) {
             ++numInvalidPoints;
             if (numInvalidPoints > config.invalidBlocksThreshold) {
                return false;
@@ -97,8 +95,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       }
 
       List<BlockPos> potentialCrystalPlacements = Lists.newArrayList();
-      HolderSet<Block> cantReplace = config.geodeBlockSettings.cannotReplace();
-      Predicate<BlockState> canReplace = (s) -> !s.is(cantReplace);
+      Predicate<BlockState> canReplace = isReplaceable(config.geodeBlockSettings.cannotReplace);
 
       for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(minGenOffset, minGenOffset, minGenOffset), origin.offset(maxGenOffset, maxGenOffset, maxGenOffset))) {
          double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * config.noiseMultiplier;
@@ -125,27 +122,27 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
                   }
                }
             } else if (distSumShell >= innerAir) {
-               this.safeSetBlock(level, pointInside, blockSettings.fillingProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.fillingProvider.getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= innermostBlockLayer) {
                boolean useAlternateLayer = (double)random.nextFloat() < config.useAlternateLayer0Chance;
                if (useAlternateLayer) {
-                  this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider.getState(level, random, pointInside), canReplace);
                } else {
-                  this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider.getState(level, random, pointInside), canReplace);
                }
 
                if ((!config.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < config.usePotentialPlacementsChance) {
                   potentialCrystalPlacements.add(pointInside.immutable());
                }
             } else if (distSumShell >= innerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.middleLayerProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.middleLayerProvider.getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= outerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.outerLayerProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.outerLayerProvider.getState(level, random, pointInside), canReplace);
             }
          }
       }
 
-      List<BlockState> innerPlacements = blockSettings.innerPlacements();
+      List<BlockState> innerPlacements = blockSettings.innerPlacements;
 
       for(BlockPos crystalPos : potentialCrystalPlacements) {
          BlockState blockState = (BlockState)Util.getRandom(innerPlacements, random);

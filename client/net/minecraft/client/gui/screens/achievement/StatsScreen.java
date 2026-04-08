@@ -166,7 +166,7 @@ public class StatsScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private static String getTranslationKey(final Stat<Identifier> stat) {

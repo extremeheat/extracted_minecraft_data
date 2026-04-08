@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -15,7 +14,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.util.ARGB;
@@ -69,16 +67,28 @@ public class TextureUtil {
 
       if (bufferLength > 2147483647L) {
          throw new IllegalArgumentException("Exporting textures larger than 2GB is not supported");
-      } else if (texture.getFormat() != GpuFormat.RGBA8_UNORM) {
-         throw new IllegalArgumentException("Exporting textures other than RGBA8_UNORM is not supported");
       } else {
          GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", 9, bufferLength);
          CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
          Runnable onCopyComplete = () -> {
             try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
                ByteBuffer data = read.data();
-               Objects.requireNonNull(data);
-               IntUnaryOperator decodeTexel = data::getInt;
+               IntUnaryOperator var10000;
+               switch (texture.getFormat()) {
+                  case RED8 -> var10000 = (byteOffset) -> {
+   int luminance = Byte.toUnsignedInt(data.get(byteOffset));
+   return ARGB.color(luminance, luminance, luminance);
+};
+                  case RED8I -> var10000 = (byteOffset) -> {
+   int luminance = data.get(byteOffset) + 128;
+   return ARGB.color(luminance, luminance, luminance);
+};
+                  case RGBA8 -> var10000 = (byteOffset) -> data.getInt(byteOffset);
+                  case DEPTH32 -> var10000 = (byteOffset) -> ARGB.gray(data.getFloat(byteOffset));
+                  default -> throw new MatchException((String)null, (Throwable)null);
+               }
+
+               IntUnaryOperator decodeTexel = var10000;
                int offset = 0;
 
                for(int i = 0; i <= maxMipLevel; ++i) {

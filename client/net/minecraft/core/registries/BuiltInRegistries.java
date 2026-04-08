@@ -146,8 +146,7 @@ import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBindings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorTypes;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -229,7 +228,7 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends SurfaceRules.RuleSource>> MATERIAL_RULE;
    public static final Registry<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPE;
    public static final Registry<MapCodec<? extends Block>> BLOCK_TYPE;
-   public static final Registry<MapCodec<? extends StructureProcessor>> STRUCTURE_PROCESSOR;
+   public static final Registry<StructureProcessorType<?>> STRUCTURE_PROCESSOR;
    public static final Registry<StructurePoolElementType<?>> STRUCTURE_POOL_ELEMENT;
    public static final Registry<MapCodec<? extends PoolAliasBinding>> POOL_ALIAS_BINDING_TYPE;
    public static final Registry<DecoratedPotPattern> DECORATED_POT_PATTERN;
@@ -405,7 +404,7 @@ public class BuiltInRegistries {
       MATERIAL_RULE = registerSimple(Registries.MATERIAL_RULE, SurfaceRules.RuleSource::bootstrap);
       DENSITY_FUNCTION_TYPE = registerSimple(Registries.DENSITY_FUNCTION_TYPE, DensityFunctions::bootstrap);
       BLOCK_TYPE = registerSimple(Registries.BLOCK_TYPE, BlockTypes::bootstrap);
-      STRUCTURE_PROCESSOR = registerSimple(Registries.STRUCTURE_PROCESSOR, StructureProcessorTypes::bootstrap);
+      STRUCTURE_PROCESSOR = registerSimple(Registries.STRUCTURE_PROCESSOR, (registry) -> StructureProcessorType.BLOCK_IGNORE);
       STRUCTURE_POOL_ELEMENT = registerSimple(Registries.STRUCTURE_POOL_ELEMENT, (registry) -> StructurePoolElementType.EMPTY);
       POOL_ALIAS_BINDING_TYPE = registerSimple(Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap);
       DECORATED_POT_PATTERN = registerSimple(Registries.DECORATED_POT_PATTERN, DecoratedPotPatterns::bootstrap);

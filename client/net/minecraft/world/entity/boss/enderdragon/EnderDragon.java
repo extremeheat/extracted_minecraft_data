@@ -446,6 +446,11 @@ public class EnderDragon extends Mob implements Enemy {
             if (source.getEntity() instanceof Player || source.is(DamageTypeTags.ALWAYS_HURTS_ENDER_DRAGONS)) {
                float healthBefore = this.getHealth();
                this.reallyHurt(level, source, damage);
+               if (this.isDeadOrDying() && !this.phaseManager.getCurrentPhase().isSitting()) {
+                  this.setHealth(1.0F);
+                  this.phaseManager.setPhase(EnderDragonPhase.DYING);
+               }
+
                if (this.phaseManager.getCurrentPhase().isSitting()) {
                   this.sittingDamageReceived = this.sittingDamageReceived + healthBefore - this.getHealth();
                   if (this.sittingDamageReceived > 0.25F * this.getMaxHealth()) {
@@ -466,14 +471,6 @@ public class EnderDragon extends Mob implements Enemy {
 
    protected void reallyHurt(final ServerLevel level, final DamageSource source, final float damage) {
       super.hurtServer(level, source, damage);
-   }
-
-   protected void handleKillingBlow() {
-      if (!this.phaseManager.getCurrentPhase().isSitting()) {
-         this.setHealth(1.0F);
-         this.phaseManager.setPhase(EnderDragonPhase.DYING);
-      }
-
    }
 
    public void knockback(final double power, final double xd, final double zd) {

@@ -1239,24 +1239,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public SystemReport fillSystemReport(final SystemReport systemReport) {
-      systemReport.setDetail("Server Running", (CrashReportDetail)(() -> Boolean.toString(this.running)));
+      systemReport.setDetail("Server Running", (Supplier)(() -> Boolean.toString(this.running)));
       if (this.playerList != null) {
-         systemReport.setDetail("Player Count", (CrashReportDetail)(() -> {
+         systemReport.setDetail("Player Count", (Supplier)(() -> {
             int var10000 = this.playerList.getPlayerCount();
             return var10000 + " / " + this.playerList.getMaxPlayers() + "; " + String.valueOf(this.playerList.getPlayers());
          }));
       }
 
-      systemReport.setDetail("Active Data Packs", (CrashReportDetail)(() -> PackRepository.displayPackList(this.packRepository.getSelectedPacks())));
-      systemReport.setDetail("Available Data Packs", (CrashReportDetail)(() -> PackRepository.displayPackList(this.packRepository.getAvailablePacks())));
-      systemReport.setDetail("Enabled Feature Flags", (CrashReportDetail)(() -> FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(Identifier::toString).collect(Collectors.joining(", "))));
-      systemReport.setDetail("World Generation", (CrashReportDetail)(() -> this.worldData.worldGenSettingsLifecycle().toString()));
-      systemReport.setDetail("World Seed", (CrashReportDetail)(() -> String.valueOf(this.worldGenSettings.options().seed())));
+      systemReport.setDetail("Active Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getSelectedPacks())));
+      systemReport.setDetail("Available Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getAvailablePacks())));
+      systemReport.setDetail("Enabled Feature Flags", (Supplier)(() -> (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(Identifier::toString).collect(Collectors.joining(", "))));
+      systemReport.setDetail("World Generation", (Supplier)(() -> this.worldData.worldGenSettingsLifecycle().toString()));
+      systemReport.setDetail("World Seed", (Supplier)(() -> String.valueOf(this.worldGenSettings.options().seed())));
       SuppressedExceptionCollector var10002 = this.suppressedExceptions;
       Objects.requireNonNull(var10002);
       systemReport.setDetail("Suppressed Exceptions", var10002::dump);
       if (this.serverId != null) {
-         systemReport.setDetail("Server Id", (CrashReportDetail)(() -> this.serverId));
+         systemReport.setDetail("Server Id", (Supplier)(() -> this.serverId));
       }
 
       return this.fillServerSystemReport(systemReport);
@@ -1972,7 +1972,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   break label50;
                }
 
-               modules.sort(Comparator.comparing((modulex) -> modulex.name()));
+               modules.sort(Comparator.comparing((modulex) -> modulex.name));
                Iterator t = modules.iterator();
 
                while(true) {

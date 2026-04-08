@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
@@ -41,7 +41,7 @@ public abstract class ReloadableTexture extends AbstractTexture {
       this.close();
       Identifier var10002 = this.resourceId;
       Objects.requireNonNull(var10002);
-      this.texture = device.createTexture(var10002::toString, 5, GpuFormat.RGBA8_UNORM, image.getWidth(), image.getHeight(), 1, 1);
+      this.texture = device.createTexture(var10002::toString, 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
       this.textureView = device.createTextureView(this.texture);
       device.createCommandEncoder().writeToTexture(this.texture, image);
    }

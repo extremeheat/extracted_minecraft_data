@@ -54,7 +54,7 @@ public class FramerateLimitTracker {
             }
          }
 
-         return this.minecraft.level != null || this.minecraft.gui.screen() == null && this.minecraft.gui.overlay() == null ? FramerateLimitTracker.FramerateThrottleReason.NONE : FramerateLimitTracker.FramerateThrottleReason.OUT_OF_LEVEL_MENU;
+         return this.minecraft.level != null || this.minecraft.screen == null && this.minecraft.getOverlay() == null ? FramerateLimitTracker.FramerateThrottleReason.NONE : FramerateLimitTracker.FramerateThrottleReason.OUT_OF_LEVEL_MENU;
       }
    }
 

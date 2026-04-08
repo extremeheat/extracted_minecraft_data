@@ -152,26 +152,16 @@ public abstract class AgeableMob extends PathfinderMob {
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
-      if (this.canBeABaby()) {
-         output.putInt("Age", this.getAge());
-         output.putInt("ForcedAge", this.forcedAge);
-         output.putBoolean("AgeLocked", this.isAgeLocked());
-      }
-
-   }
-
-   protected boolean canBeABaby() {
-      return true;
+      output.putInt("Age", this.getAge());
+      output.putInt("ForcedAge", this.forcedAge);
+      output.putBoolean("AgeLocked", this.isAgeLocked());
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
-      if (this.canBeABaby()) {
-         this.setAge(input.getIntOr("Age", 0));
-         this.forcedAge = input.getIntOr("ForcedAge", 0);
-         this.setAgeLocked(input.getBooleanOr("AgeLocked", false));
-      }
-
+      this.setAge(input.getIntOr("Age", 0));
+      this.forcedAge = input.getIntOr("ForcedAge", 0);
+      this.setAgeLocked(input.getBooleanOr("AgeLocked", false));
    }
 
    public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
@@ -241,15 +231,12 @@ public abstract class AgeableMob extends PathfinderMob {
       return -24000;
    }
 
-   public final boolean isBaby() {
-      return this.canBeABaby() && this.getAge() < 0;
+   public boolean isBaby() {
+      return this.getAge() < 0;
    }
 
-   public final void setBaby(final boolean baby) {
-      if (this.canBeABaby()) {
-         this.setAge(baby ? this.getBabyStartAge() : 0);
-      }
-
+   public void setBaby(final boolean baby) {
+      this.setAge(baby ? this.getBabyStartAge() : 0);
    }
 
    public static int getSpeedUpSecondsWhenFeeding(final int ticksUntilAdult) {

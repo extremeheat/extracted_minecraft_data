@@ -22,6 +22,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    private final ShadowFeatureRenderer shadowFeatureRenderer = new ShadowFeatureRenderer();
    private final FlameFeatureRenderer flameFeatureRenderer = new FlameFeatureRenderer();
    private final ModelFeatureRenderer modelFeatureRenderer = new ModelFeatureRenderer();
+   private final ModelPartFeatureRenderer modelPartFeatureRenderer = new ModelPartFeatureRenderer();
    private final NameTagFeatureRenderer nameTagFeatureRenderer = new NameTagFeatureRenderer();
    private final TextFeatureRenderer textFeatureRenderer = new TextFeatureRenderer();
    private final LeashFeatureRenderer leashFeatureRenderer = new LeashFeatureRenderer();
@@ -29,7 +30,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    private final CustomFeatureRenderer customFeatureRenderer = new CustomFeatureRenderer();
    private final BlockFeatureRenderer blockFeatureRenderer = new BlockFeatureRenderer();
    private final ParticleFeatureRenderer particleFeatureRenderer = new ParticleFeatureRenderer();
-   private final ShapeOutlineFeatureRenderer shapeOutlineFeatureRenderer = new ShapeOutlineFeatureRenderer();
 
    public FeatureRenderDispatcher(final SubmitNodeStorage submitNodeStorage, final ModelManager modelManager, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource, final Font font, final GameRenderState gameRenderState) {
       super();
@@ -49,6 +49,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
       while(var1.hasNext()) {
          SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
          this.modelFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.modelPartFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
          this.flameFeatureRenderer.renderSolid(collection, this.bufferSource, this.atlasManager);
          this.leashFeatureRenderer.renderSolid(collection, this.bufferSource);
          this.itemFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource);
@@ -66,23 +67,22 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
          this.shadowFeatureRenderer.renderTranslucent(collection, this.bufferSource);
          this.modelFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
+         this.modelPartFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
          this.nameTagFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.font);
          this.textFeatureRenderer.renderTranslucent(collection, this.bufferSource);
          this.itemFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.modelManager.getBlockStateModelSet(), this.outlineBufferSource, this.crumblingBufferSource, this.gameRenderState.optionsRenderState);
          this.customFeatureRenderer.renderTranslucent(collection, this.bufferSource);
-         this.shapeOutlineFeatureRenderer.renderTranslucent(collection, this.bufferSource, false);
       }
 
    }
 
-   public void renderTranslucentAfterTerrain() {
+   public void renderTranslucentParticles() {
       ObjectIterator var1 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
       while(var1.hasNext()) {
          SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
          this.particleFeatureRenderer.renderTranslucent(collection);
-         this.shapeOutlineFeatureRenderer.renderTranslucent(collection, this.bufferSource, true);
       }
 
    }
@@ -94,9 +94,8 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    public void renderAllFeatures() {
       this.renderSolidFeatures();
       this.renderTranslucentFeatures();
-      this.renderTranslucentAfterTerrain();
+      this.renderTranslucentParticles();
       this.clearSubmitNodes();
-      this.bufferSource.endBatch();
    }
 
    public void endFrame() {

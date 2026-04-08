@@ -124,7 +124,7 @@ public class ChatListener {
             LocalPlayer receiver = this.minecraft.player;
             if (receiver != null && receiver.chatAbilities().canReceivePlayerMessages()) {
                Component decoratedMessage = boundChatType.decorate(CHAT_VALIDATION_ERROR);
-               this.minecraft.gui.hud.getChat().addPlayerMessage(decoratedMessage, (MessageSignature)null, GuiMessageTag.chatError());
+               this.minecraft.gui.getChat().addPlayerMessage(decoratedMessage, (MessageSignature)null, GuiMessageTag.chatError());
                this.minecraft.getNarrator().saySystemChatQueued(boundChatType.decorateNarration(CHAT_VALIDATION_ERROR));
                this.previousMessageTime = Util.getMillis();
                return true;
@@ -141,7 +141,7 @@ public class ChatListener {
          LocalPlayer receiver = this.minecraft.player;
          if (receiver != null && receiver.chatAbilities().canReceivePlayerMessages()) {
             Component decoratedMessage = boundChatType.decorate(message);
-            this.minecraft.gui.hud.getChat().addPlayerMessage(decoratedMessage, (MessageSignature)null, GuiMessageTag.system());
+            this.minecraft.gui.getChat().addPlayerMessage(decoratedMessage, (MessageSignature)null, GuiMessageTag.system());
             this.narrateChatMessage(boundChatType, message);
             this.logSystemMessage(decoratedMessage, received);
             this.previousMessageTime = Util.getMillis();
@@ -163,12 +163,12 @@ public class ChatListener {
             MessageSignature signature = message.signature();
             FilterMask filterMask = message.filterMask();
             if (filterMask.isEmpty()) {
-               this.minecraft.gui.hud.getChat().addPlayerMessage(decoratedMessage, signature, tag);
+               this.minecraft.gui.getChat().addPlayerMessage(decoratedMessage, signature, tag);
                this.narrateChatMessage(boundChatType, message.decoratedContent());
             } else {
                Component filteredContent = filterMask.applyWithFormatting(message.signedContent());
                if (filteredContent != null) {
-                  this.minecraft.gui.hud.getChat().addPlayerMessage(boundChatType.decorate(filteredContent), signature, tag);
+                  this.minecraft.gui.getChat().addPlayerMessage(boundChatType.decorate(filteredContent), signature, tag);
                   this.narrateChatMessage(boundChatType, filteredContent);
                }
             }
@@ -207,10 +207,10 @@ public class ChatListener {
          LocalPlayer receiver = this.minecraft.player;
          if (receiver != null && receiver.chatAbilities().canReceiveSystemMessages()) {
             if (remote) {
-               this.minecraft.gui.hud.getChat().addServerSystemMessage(message);
+               this.minecraft.gui.getChat().addServerSystemMessage(message);
                this.logSystemMessage(message, Instant.now());
             } else {
-               this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
+               this.minecraft.gui.getChat().addClientSystemMessage(message);
             }
 
             this.minecraft.getNarrator().saySystemChatQueued(message);
@@ -219,7 +219,7 @@ public class ChatListener {
    }
 
    public void handleOverlay(final Component message) {
-      this.minecraft.gui.hud.setOverlayMessage(message, false);
+      this.minecraft.gui.setOverlayMessage(message, false);
       this.minecraft.getNarrator().saySystemQueued(message);
    }
 

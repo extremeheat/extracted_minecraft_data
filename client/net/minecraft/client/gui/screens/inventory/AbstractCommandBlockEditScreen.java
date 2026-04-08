@@ -103,7 +103,7 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
          commandBlock.setLastOutput((Component)null);
       }
 
-      this.minecraft.gui.setScreen((Screen)null);
+      this.minecraft.setScreen((Screen)null);
    }
 
    protected abstract void populateAndSendPacket();

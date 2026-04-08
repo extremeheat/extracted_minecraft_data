@@ -113,7 +113,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void onPacketError(final Packet packet, final Exception cause) {
       LOGGER.error("Failed to handle packet {}, disconnecting", packet, cause);
-      ClientCommonPacketListener.super.onPacketError(packet, cause);
       Optional<Path> report = this.storeDisconnectionReport(packet, cause);
       Optional<URI> bugReportLink = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::link);
       this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), report, bugReportLink));
@@ -182,7 +181,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          if (serverPackStatus != ServerData.ServerPackStatus.PROMPT && (!required || serverPackStatus != ServerData.ServerPackStatus.DISABLED)) {
             this.minecraft.getDownloadedPackSource().pushPack(packId, url, hash);
          } else {
-            this.minecraft.gui.setScreen(this.addOrUpdatePackPrompt(packId, url, hash, required, (Component)packet.prompt().orElse((Object)null)));
+            this.minecraft.setScreen(this.addOrUpdatePackPrompt(packId, url, hash, required, (Component)packet.prompt().orElse((Object)null)));
          }
 
       }
@@ -241,7 +240,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void handleShowDialog(final ClientboundShowDialogPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.showDialog(packet.dialog(), this.minecraft.gui.screen());
+      this.showDialog(packet.dialog(), this.minecraft.screen);
    }
 
    protected abstract DialogConnectionAccess createDialogAccess();
@@ -280,7 +279,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
          Screen screen = DialogScreens.createFromData(dialog.value(), previousScreen, connectionAccess);
          if (screen != null) {
-            this.minecraft.gui.setScreen(screen);
+            this.minecraft.setScreen(screen);
          } else {
             LOGGER.warn("Failed to show dialog for data {}", dialog);
          }
@@ -294,16 +293,16 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void clearDialog() {
-      Screen currentReturnScreen = this.minecraft.gui.screen();
+      Screen currentReturnScreen = this.minecraft.screen;
       if (currentReturnScreen instanceof DialogScreen.WarningScreen existingWarningScreen) {
          currentReturnScreen = existingWarningScreen.returnScreen();
          if (currentReturnScreen instanceof DialogScreen<?> dialogScreen) {
             existingWarningScreen.updateReturnScreen(dialogScreen.previousScreen());
          }
       } else {
-         currentReturnScreen = this.minecraft.gui.screen();
+         currentReturnScreen = this.minecraft.screen;
          if (currentReturnScreen instanceof DialogScreen<?> dialog) {
-            this.minecraft.gui.setScreen(dialog.previousScreen());
+            this.minecraft.setScreen(dialog.previousScreen());
          }
       }
 
@@ -384,7 +383,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    private Screen addOrUpdatePackPrompt(final UUID packId, final URL url, final String hash, final boolean required, final @Nullable Component prompt) {
-      Screen currentScreen = this.minecraft.gui.screen();
+      Screen currentScreen = this.minecraft.screen;
       if (currentScreen instanceof PackConfirmScreen promptScreen) {
          return promptScreen.update(this.minecraft, packId, url, hash, required, prompt);
       } else {
@@ -405,7 +404,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       private PackConfirmScreen(final @Nullable Minecraft minecraft, final Screen parentScreen, final List<PendingRequest> requests, final @Nullable boolean required, final Component prompt) {
          Objects.requireNonNull(ClientCommonPacketListenerImpl.this);
          super((result) -> {
-            minecraft.gui.setScreen(parentScreen);
+            minecraft.setScreen(parentScreen);
             DownloadedPackSource packSource = minecraft.getDownloadedPackSource();
             if (result) {
                if (ClientCommonPacketListenerImpl.this.serverData != null) {

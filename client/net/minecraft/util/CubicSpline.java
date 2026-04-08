@@ -6,149 +6,80 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.mutable.MutableObject;
 
-public sealed interface CubicSpline<I> {
-   CubicSpline<I> mapCoordinates(UnaryOperator<I> mapper);
-
-   float minValue();
-
-   float maxValue();
-
+public interface CubicSpline<C, I extends BoundedFloatFunction<C>> extends BoundedFloatFunction<C> {
    @VisibleForDebug
    String parityString();
 
-   static <C, I extends BoundedFloatFunction<C>> float sample(final CubicSpline<I> spline, final C coordinate) {
-      Objects.requireNonNull(spline);
-      byte var3 = 0;
-      float var10000;
-      //$FF: var3->value
-      //0->net/minecraft/util/CubicSpline$Multipoint
-      //1->net/minecraft/util/CubicSpline$Constant
-      switch (spline.typeSwitch<invokedynamic>(spline, var3)) {
-         case 0:
-            Multipoint<I> multipoint = (Multipoint)spline;
-            var10000 = CubicSpline.Multipoint.sample(multipoint, coordinate);
-            break;
-         case 1:
-            Constant<I> constant = (Constant)spline;
-            var10000 = constant.value();
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
-      }
+   CubicSpline<C, I> mapAll(final CoordinateVisitor<I> visitor);
 
-      return var10000;
-   }
-
-   static <C, I extends BoundedFloatFunction<C>> BoundedFloatFunction<C> asSampler(final CubicSpline<I> spline) {
-      Objects.requireNonNull(spline);
-      byte var2 = 0;
-      BoundedFloatFunction var10000;
-      //$FF: var2->value
-      //0->net/minecraft/util/CubicSpline$Multipoint
-      //1->net/minecraft/util/CubicSpline$Constant
-      switch (spline.typeSwitch<invokedynamic>(spline, var2)) {
-         case 0:
-            final Multipoint<I> multipoint = (Multipoint)spline;
-            var10000 = new BoundedFloatFunction<C>() {
-               public float apply(final C c) {
-                  return CubicSpline.Multipoint.sample(multipoint, c);
+   static <C, I extends BoundedFloatFunction<C>> Codec<CubicSpline<C, I>> codec(final Codec<I> coordinateCodec) {
+      MutableObject<Codec<CubicSpline<C, I>>> result = new MutableObject();
+      Codec<Point<C, I>> pointCodec = RecordCodecBuilder.create((i) -> i.group(Codec.FLOAT.fieldOf("location").forGetter(Point::location), Codec.lazyInitialized(result).fieldOf("value").forGetter(Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(Point::derivative)).apply(i, (x$0, x$1, x$2) -> {
+            record Point<C, I extends BoundedFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
+               Point {
+                  super();
                }
-
-               public float minValue() {
-                  return multipoint.minValue();
-               }
-
-               public float maxValue() {
-                  return multipoint.maxValue();
-               }
-            };
-            break;
-         case 1:
-            Constant<I> constant = (Constant)spline;
-            var10000 = BoundedFloatFunction.constant(constant.value());
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
-   static <I extends BoundedFloatFunction<?>> Codec<CubicSpline<I>> codec(final Codec<I> coordinateCodec) {
-      return Codec.recursive("CubicSpline", (subSplineCodec) -> Codec.either(Codec.FLOAT, CubicSpline.Multipoint.codec(coordinateCodec, subSplineCodec)).xmap((e) -> (CubicSpline)e.map(Constant::new, (m) -> m), (spline) -> {
-            Objects.requireNonNull(spline);
-            CubicSpline selector1$temp = spline;
-            int index$2 = 0;
-
-            while(true) {
-               Either var10000;
-               //$FF: index$2->value
-               //0->net/minecraft/util/CubicSpline$Constant
-               //1->net/minecraft/util/CubicSpline$Multipoint
-               switch (selector1$temp.typeSwitch<invokedynamic>(selector1$temp, index$2)) {
-                  case 0:
-                     Constant $b$0 = (Constant)selector1$temp;
-                     Constant var9 = $b$0;
-
-                     try {
-                        var10 = var9.value();
-                     } catch (Throwable var7) {
-                        throw new MatchException(var7.toString(), var7);
-                     }
-
-                     float patt3$temp = var10;
-                     if (false) {
-                        index$2 = 1;
-                        continue;
-                     }
-
-                     var10000 = Either.left(patt3$temp);
-                     break;
-                  case 1:
-                     Multipoint<I> multipoint = (Multipoint)selector1$temp;
-                     var10000 = Either.right(multipoint);
-                     break;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
-               }
-
-               return var10000;
             }
+
+            return new Point(x$0, x$1, x$2);
          }));
+      Codec<Multipoint<C, I>> multipointCodec = RecordCodecBuilder.create((i) -> i.group(coordinateCodec.fieldOf("coordinate").forGetter(Multipoint::coordinate), ExtraCodecs.nonEmptyList(pointCodec.listOf()).fieldOf("points").forGetter((m) -> IntStream.range(0, m.locations.length).mapToObj((p) -> new Point(m.locations()[p], (CubicSpline)m.values().get(p), m.derivatives()[p])).toList())).apply(i, (coordinate, points) -> {
+            float[] locations = new float[points.size()];
+            ImmutableList.Builder<CubicSpline<C, I>> values = ImmutableList.builder();
+            float[] derivatives = new float[points.size()];
+
+            for(int p = 0; p < points.size(); ++p) {
+               Point<C, I> point = (Point)points.get(p);
+               locations[p] = point.location();
+               values.add(point.value());
+               derivatives[p] = point.derivative();
+            }
+
+            return CubicSpline.Multipoint.create(coordinate, locations, values.build(), derivatives);
+         }));
+      result.setValue(Codec.either(Codec.FLOAT, multipointCodec).xmap((e) -> (CubicSpline)e.map(Constant::new, (m) -> m), (s) -> {
+         Either var10000;
+         if (s instanceof Constant<C, I> c) {
+            var10000 = Either.left(c.value());
+         } else {
+            var10000 = Either.right((Multipoint)s);
+         }
+
+         return var10000;
+      }));
+      return (Codec)result.get();
    }
 
-   static <I> CubicSpline<I> constant(final float value) {
-      return new Constant<I>(value);
+   static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> constant(final float value) {
+      return new Constant<C, I>(value);
    }
 
-   static <I extends BoundedFloatFunction<?>> Builder<I> builder(final I coordinate) {
-      return new Builder<I>(coordinate);
+   static <C, I extends BoundedFloatFunction<C>> Builder<C, I> builder(final I coordinate) {
+      return new Builder<C, I>(coordinate);
    }
 
-   static <I extends BoundedFloatFunction<?>> Builder<I> builder(final I coordinate, final Float2FloatFunction valueTransformer) {
-      return new Builder<I>(coordinate, valueTransformer);
+   static <C, I extends BoundedFloatFunction<C>> Builder<C, I> builder(final I coordinate, final BoundedFloatFunction<Float> valueTransformer) {
+      return new Builder<C, I>(coordinate, valueTransformer);
    }
 
    @VisibleForDebug
-   public static record Multipoint<I extends BoundedFloatFunction<?>>(I coordinate, float[] locations, List<CubicSpline<I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<I> {
+   public static record Multipoint<C, I extends BoundedFloatFunction<C>>(I coordinate, float[] locations, List<CubicSpline<C, I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<C, I> {
       public Multipoint {
          super();
          validateSizes(locations, values, derivatives);
       }
 
-      public Multipoint(final I coordinate, final float[] locations, final List<CubicSpline<I>> values, final float[] derivatives) {
+      private static <C, I extends BoundedFloatFunction<C>> Multipoint<C, I> create(final I coordinate, final float[] locations, final List<CubicSpline<C, I>> values, final float[] derivatives) {
+         validateSizes(locations, values, derivatives);
          int lastIndex = locations.length - 1;
          float minValue = 1.0F / 0.0F;
          float maxValue = -1.0F / 0.0F;
@@ -168,7 +99,7 @@ public sealed interface CubicSpline<I> {
             maxValue = Math.max(maxValue, Math.max(edge1, edge2));
          }
 
-         for(CubicSpline<I> value : values) {
+         for(CubicSpline<C, I> value : values) {
             minValue = Math.min(minValue, value.minValue());
             maxValue = Math.max(maxValue, value.maxValue());
          }
@@ -177,8 +108,8 @@ public sealed interface CubicSpline<I> {
             float x1 = locations[i];
             float x2 = locations[i + 1];
             float xDiff = x2 - x1;
-            CubicSpline<I> v1 = (CubicSpline)values.get(i);
-            CubicSpline<I> v2 = (CubicSpline)values.get(i + 1);
+            CubicSpline<C, I> v1 = (CubicSpline)values.get(i);
+            CubicSpline<C, I> v2 = (CubicSpline)values.get(i + 1);
             float min1 = v1.minValue();
             float max1 = v1.maxValue();
             float min2 = v2.minValue();
@@ -201,7 +132,7 @@ public sealed interface CubicSpline<I> {
             }
          }
 
-         this(coordinate, locations, values, derivatives, minValue, maxValue);
+         return new Multipoint<C, I>(coordinate, locations, values, derivatives, minValue, maxValue);
       }
 
       private static float linearExtend(final float input, final float[] locations, final float value, final float[] derivatives, final int index) {
@@ -209,7 +140,7 @@ public sealed interface CubicSpline<I> {
          return derivative == 0.0F ? value : value + derivative * (input - locations[index]);
       }
 
-      private static <I> void validateSizes(final float[] locations, final List<CubicSpline<I>> values, final float[] derivatives) {
+      private static <C, I extends BoundedFloatFunction<C>> void validateSizes(final float[] locations, final List<CubicSpline<C, I>> values, final float[] derivatives) {
          if (locations.length == values.size() && locations.length == derivatives.length) {
             if (locations.length == 0) {
                throw new IllegalArgumentException("Cannot create a multipoint spline with no points");
@@ -219,28 +150,24 @@ public sealed interface CubicSpline<I> {
          }
       }
 
-      public static <C, I extends BoundedFloatFunction<C>> float sample(final Multipoint<I> sampler, final C c) {
-         return sample(sampler.coordinate, sampler.derivatives, sampler.locations, sampler.values, c);
-      }
-
-      private static <C, I extends BoundedFloatFunction<C>> float sample(final I coordinate, final float[] derivatives, final float[] locations, final List<CubicSpline<I>> values, final C c) {
-         float input = coordinate.apply(c);
-         int start = findIntervalStart(locations, input);
-         int lastIndex = locations.length - 1;
+      public float apply(final C c) {
+         float input = this.coordinate.apply(c);
+         int start = findIntervalStart(this.locations, input);
+         int lastIndex = this.locations.length - 1;
          if (start < 0) {
-            return linearExtend(input, locations, CubicSpline.sample((CubicSpline)values.getFirst(), c), derivatives, 0);
+            return linearExtend(input, this.locations, ((CubicSpline)this.values.get(0)).apply(c), this.derivatives, 0);
          } else if (start == lastIndex) {
-            return linearExtend(input, locations, CubicSpline.sample((CubicSpline)values.get(lastIndex), c), derivatives, lastIndex);
+            return linearExtend(input, this.locations, ((CubicSpline)this.values.get(lastIndex)).apply(c), this.derivatives, lastIndex);
          } else {
-            float x1 = locations[start];
-            float x2 = locations[start + 1];
+            float x1 = this.locations[start];
+            float x2 = this.locations[start + 1];
             float t = (input - x1) / (x2 - x1);
-            CubicSpline<I> f1 = (CubicSpline)values.get(start);
-            CubicSpline<I> f2 = (CubicSpline)values.get(start + 1);
-            float d1 = derivatives[start];
-            float d2 = derivatives[start + 1];
-            float y1 = CubicSpline.sample(f1, c);
-            float y2 = CubicSpline.sample(f2, c);
+            BoundedFloatFunction<C> f1 = (BoundedFloatFunction)this.values.get(start);
+            BoundedFloatFunction<C> f2 = (BoundedFloatFunction)this.values.get(start + 1);
+            float d1 = this.derivatives[start];
+            float d2 = this.derivatives[start + 1];
+            float y1 = f1.apply(c);
+            float y2 = f2.apply(c);
             float a = d1 * (x2 - x1) - (y2 - y1);
             float b = -d2 * (x2 - x1) + (y2 - y1);
             float offset = Mth.lerp(t, y1, y2) + t * (1.0F - t) * Mth.lerp(t, a, b);
@@ -255,64 +182,27 @@ public sealed interface CubicSpline<I> {
       @VisibleForTesting
       public String parityString() {
          String var10000 = String.valueOf(this.coordinate);
-         return "Spline{coordinate=" + var10000 + ", locations=" + toString(this.locations) + ", derivatives=" + toString(this.derivatives) + ", values=" + (String)this.values.stream().map(CubicSpline::parityString).collect(Collectors.joining(", ", "[", "]")) + "}";
+         return "Spline{coordinate=" + var10000 + ", locations=" + this.toString(this.locations) + ", derivatives=" + this.toString(this.derivatives) + ", values=" + (String)this.values.stream().map(CubicSpline::parityString).collect(Collectors.joining(", ", "[", "]")) + "}";
       }
 
-      private static String toString(final float[] arr) {
+      private String toString(final float[] arr) {
          Stream var10000 = IntStream.range(0, arr.length).mapToDouble((i) -> (double)arr[i]).mapToObj((f) -> String.format(Locale.ROOT, "%.3f", f));
          return "[" + (String)var10000.collect(Collectors.joining(", ")) + "]";
       }
 
-      public CubicSpline<I> mapCoordinates(final UnaryOperator<I> mapper) {
-         return new Multipoint<I>((BoundedFloatFunction)mapper.apply(this.coordinate), this.locations, this.values.stream().map((v) -> v.mapCoordinates(mapper)).toList(), this.derivatives);
-      }
-
-      public static <I extends BoundedFloatFunction<?>> Codec<Multipoint<I>> codec(final Codec<I> coordinateCodec, final Codec<CubicSpline<I>> subSplineCodec) {
-         return RecordCodecBuilder.create((i) -> i.group(coordinateCodec.fieldOf("coordinate").forGetter(Multipoint::coordinate), ExtraCodecs.nonEmptyList(CubicSpline.Multipoint.Point.codec(subSplineCodec).listOf()).fieldOf("points").forGetter(Multipoint::packToPoints)).apply(i, Multipoint::createFromPoints));
-      }
-
-      private List<Point<I>> packToPoints() {
-         int pointCount = this.locations.length;
-         List<Point<I>> list = new ArrayList(pointCount);
-
-         for(int p = 0; p < pointCount; ++p) {
-            list.add(new Point(this.locations[p], (CubicSpline)this.values.get(p), this.derivatives[p]));
-         }
-
-         return list;
-      }
-
-      private static <I extends BoundedFloatFunction<?>> Multipoint<I> createFromPoints(final I coordinate, final List<Point<I>> points) {
-         int pointCount = points.size();
-         float[] locations = new float[pointCount];
-         ImmutableList.Builder<CubicSpline<I>> values = ImmutableList.builderWithExpectedSize(pointCount);
-         float[] derivatives = new float[pointCount];
-
-         for(int p = 0; p < pointCount; ++p) {
-            Point<I> point = (Point)points.get(p);
-            locations[p] = point.location();
-            values.add(point.value());
-            derivatives[p] = point.derivative();
-         }
-
-         return new Multipoint<I>(coordinate, locations, values.build(), derivatives);
-      }
-
-      private static record Point<I extends BoundedFloatFunction<?>>(float location, CubicSpline<I> value, float derivative) {
-         private Point {
-            super();
-         }
-
-         public static <I extends BoundedFloatFunction<?>> Codec<Point<I>> codec(final Codec<CubicSpline<I>> subSplineCodec) {
-            return RecordCodecBuilder.create((i) -> i.group(Codec.FLOAT.fieldOf("location").forGetter(Point::location), subSplineCodec.fieldOf("value").forGetter(Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(Point::derivative)).apply(i, Point::new));
-         }
+      public CubicSpline<C, I> mapAll(final CoordinateVisitor<I> visitor) {
+         return create(visitor.visit(this.coordinate), this.locations, this.values().stream().map((v) -> v.mapAll(visitor)).toList(), this.derivatives);
       }
    }
 
    @VisibleForDebug
-   public static record Constant<I>(float value) implements CubicSpline<I> {
+   public static record Constant<C, I extends BoundedFloatFunction<C>>(float value) implements CubicSpline<C, I> {
       public Constant {
          super();
+      }
+
+      public float apply(final C c) {
+         return this.value;
       }
 
       public String parityString() {
@@ -327,23 +217,23 @@ public sealed interface CubicSpline<I> {
          return this.value;
       }
 
-      public CubicSpline<I> mapCoordinates(final UnaryOperator<I> mapper) {
+      public CubicSpline<C, I> mapAll(final CoordinateVisitor<I> visitor) {
          return this;
       }
    }
 
-   public static final class Builder<I extends BoundedFloatFunction<?>> {
+   public static final class Builder<C, I extends BoundedFloatFunction<C>> {
       private final I coordinate;
-      private final Float2FloatFunction valueTransformer;
+      private final BoundedFloatFunction<Float> valueTransformer;
       private final FloatList locations;
-      private final List<CubicSpline<I>> values;
+      private final List<CubicSpline<C, I>> values;
       private final FloatList derivatives;
 
       protected Builder(final I coordinate) {
-         this(coordinate, Float2FloatFunction.identity());
+         this(coordinate, BoundedFloatFunction.IDENTITY);
       }
 
-      protected Builder(final I coordinate, final Float2FloatFunction valueTransformer) {
+      protected Builder(final I coordinate, final BoundedFloatFunction<Float> valueTransformer) {
          super();
          this.locations = new FloatArrayList();
          this.values = Lists.newArrayList();
@@ -352,19 +242,19 @@ public sealed interface CubicSpline<I> {
          this.valueTransformer = valueTransformer;
       }
 
-      public Builder<I> addPoint(final float location, final float value) {
-         return this.addPoint(location, new Constant((Float)this.valueTransformer.apply(value)), 0.0F);
+      public Builder<C, I> addPoint(final float location, final float value) {
+         return this.addPoint(location, new Constant(this.valueTransformer.apply(value)), 0.0F);
       }
 
-      public Builder<I> addPoint(final float location, final float value, final float derivative) {
-         return this.addPoint(location, new Constant((Float)this.valueTransformer.apply(value)), derivative);
+      public Builder<C, I> addPoint(final float location, final float value, final float derivative) {
+         return this.addPoint(location, new Constant(this.valueTransformer.apply(value)), derivative);
       }
 
-      public Builder<I> addPoint(final float location, final CubicSpline<I> sampler) {
+      public Builder<C, I> addPoint(final float location, final CubicSpline<C, I> sampler) {
          return this.addPoint(location, sampler, 0.0F);
       }
 
-      private Builder<I> addPoint(final float location, final CubicSpline<I> sampler, final float derivative) {
+      private Builder<C, I> addPoint(final float location, final CubicSpline<C, I> sampler, final float derivative) {
          if (!this.locations.isEmpty() && location <= this.locations.getFloat(this.locations.size() - 1)) {
             throw new IllegalArgumentException("Please register points in ascending order");
          } else {
@@ -375,12 +265,16 @@ public sealed interface CubicSpline<I> {
          }
       }
 
-      public CubicSpline<I> build() {
+      public CubicSpline<C, I> build() {
          if (this.locations.isEmpty()) {
             throw new IllegalStateException("No elements added");
          } else {
-            return new Multipoint<I>(this.coordinate, this.locations.toFloatArray(), List.copyOf(this.values), this.derivatives.toFloatArray());
+            return CubicSpline.Multipoint.<C, I>create(this.coordinate, this.locations.toFloatArray(), ImmutableList.copyOf(this.values), this.derivatives.toFloatArray());
          }
       }
+   }
+
+   public interface CoordinateVisitor<I> {
+      I visit(final I input);
    }
 }

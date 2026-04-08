@@ -51,8 +51,8 @@ public class VillagerTrade implements Validatable {
       this.doubleTradePriceEnchantments = doubleTradePriceEnchantments;
    }
 
-   public VillagerTrade(final TradeCost wants, final Optional<TradeCost> additionalWants, final ItemStackTemplate gives, final int maxUses, final int xp, final float reputationDiscount, final Optional<LootItemCondition> merchantPredicate, final List<LootItemFunction> givenItemModifiers, final HolderSet<Enchantment> doubleTradePriceEnchantments) {
-      this(wants, additionalWants, gives, ConstantValue.exactly((float)maxUses), ConstantValue.exactly(reputationDiscount), ConstantValue.exactly((float)xp), merchantPredicate, givenItemModifiers, Optional.of(doubleTradePriceEnchantments));
+   public VillagerTrade(final TradeCost wants, final Optional<TradeCost> additionalWants, final ItemStackTemplate gives, final int maxUses, final int xp, final float reputationDiscount, final Optional<LootItemCondition> merchantPredicate, final List<LootItemFunction> givenItemModifiers, final Optional<HolderSet<Enchantment>> doubleTradePriceEnchantments) {
+      this(wants, additionalWants, gives, ConstantValue.exactly((float)maxUses), ConstantValue.exactly(reputationDiscount), ConstantValue.exactly((float)xp), merchantPredicate, givenItemModifiers, doubleTradePriceEnchantments);
    }
 
    public VillagerTrade(final TradeCost wants, final Optional<TradeCost> additionalWants, final ItemStackTemplate gives, final int maxUses, final int xp, final float reputationDiscount, final Optional<LootItemCondition> merchantPredicate, final List<LootItemFunction> givenItemModifiers) {

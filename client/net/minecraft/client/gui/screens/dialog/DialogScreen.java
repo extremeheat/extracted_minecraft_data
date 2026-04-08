@@ -118,7 +118,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    }
 
    private Button createWarningButton() {
-      ImageButton result = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (var1) -> this.minecraft.gui.setScreen(DialogScreen.WarningScreen.create(this.minecraft, this.connectionAccess, this)), Component.translatable("menu.custom_screen_info.button_narration"));
+      ImageButton result = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (button) -> this.minecraft.setScreen(DialogScreen.WarningScreen.create(this.minecraft, this.connectionAccess, this)), Component.translatable("menu.custom_screen_info.button_narration"));
       result.setTooltip(Tooltip.create(Component.translatable("menu.custom_screen_info.tooltip")));
       return result;
    }
@@ -152,7 +152,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       if (closeAction.isPresent()) {
          this.handleDialogClickEvent((ClickEvent)closeAction.get(), screenToActivate);
       } else {
-         this.minecraft.gui.setScreen(screenToActivate);
+         this.minecraft.setScreen(screenToActivate);
       }
 
    }
@@ -185,7 +185,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
          case 2:
             ClickEvent.Custom custom = (ClickEvent.Custom)event;
             this.connectionAccess.sendCustomAction(custom.id(), custom.payload());
-            this.minecraft.gui.setScreen(activeScreen);
+            this.minecraft.setScreen(activeScreen);
             break;
          default:
             defaultHandleClickEvent(event, this.minecraft, activeScreen);
@@ -235,7 +235,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
             if (disconnect) {
                connectionAccess.disconnect(DialogScreen.DISCONNECT);
             } else {
-               minecraft.gui.setScreen((Screen)returnScreen.get());
+               minecraft.setScreen((Screen)returnScreen.get());
             }
 
          }, Component.translatable("menu.custom_screen_info.title"), Component.translatable("menu.custom_screen_info.contents"), CommonComponents.disconnectButtonLabel(minecraft.isLocalServer()), CommonComponents.GUI_BACK);

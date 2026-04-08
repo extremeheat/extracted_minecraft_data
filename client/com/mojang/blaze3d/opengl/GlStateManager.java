@@ -108,16 +108,6 @@ public class GlStateManager {
 
    }
 
-   public static void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
-      RenderSystem.assertOnRenderThread();
-      if (modeRgb != BLEND.modeRgb || modeAlpha != BLEND.modeAlpha) {
-         BLEND.modeRgb = modeRgb;
-         BLEND.modeAlpha = modeAlpha;
-         glBlendEquationSeparate(modeRgb, modeAlpha);
-      }
-
-   }
-
    public static int glGetProgrami(final int program, final int pname) {
       RenderSystem.assertOnRenderThread();
       return GL20.glGetProgrami(program, pname);
@@ -329,11 +319,6 @@ public class GlStateManager {
    public static void glBlendFuncSeparate(final int srcColor, final int dstColor, final int srcAlpha, final int dstAlpha) {
       RenderSystem.assertOnRenderThread();
       GL14.glBlendFuncSeparate(srcColor, dstColor, srcAlpha, dstAlpha);
-   }
-
-   public static void glBlendEquationSeparate(final int modeRgb, final int modeAlpha) {
-      RenderSystem.assertOnRenderThread();
-      GL20C.glBlendEquationSeparate(modeRgb, modeAlpha);
    }
 
    public static String glGetShaderInfoLog(final int shader, final int maxLength) {
@@ -570,10 +555,8 @@ public class GlStateManager {
       public final BooleanState mode = new BooleanState(3042);
       public int srcRgb = 1;
       public int dstRgb = 0;
-      public int modeRgb = 32774;
       public int srcAlpha = 1;
       public int dstAlpha = 0;
-      public int modeAlpha = 32774;
 
       private BlendState() {
          super();

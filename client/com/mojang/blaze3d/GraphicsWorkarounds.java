@@ -52,7 +52,7 @@ public class GraphicsWorkarounds {
 
    private static boolean isIntelGen11(final GpuDevice gpuDevice) {
       String cpuInfo = GLX._getCpuInfo().toLowerCase(Locale.ROOT);
-      String renderer = gpuDevice.getDeviceInfo().name().toLowerCase(Locale.ROOT);
+      String renderer = gpuDevice.getRenderer().toLowerCase(Locale.ROOT);
       if (cpuInfo.contains("intel") && renderer.contains("intel") && !renderer.contains("mesa")) {
          if (renderer.endsWith("gen11")) {
             return true;
@@ -103,10 +103,10 @@ public class GraphicsWorkarounds {
 
    private static boolean isGlOnDx12(final GpuDevice gpuDevice) {
       boolean isWindowsArm64 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
-      return isWindowsArm64 || gpuDevice.getDeviceInfo().name().startsWith("D3D12");
+      return isWindowsArm64 || gpuDevice.getRenderer().startsWith("D3D12");
    }
 
    private static boolean isAmd(final GpuDevice gpuDevice) {
-      return gpuDevice.getDeviceInfo().name().contains("AMD");
+      return gpuDevice.getRenderer().contains("AMD");
    }
 }

@@ -66,9 +66,6 @@ public final class ItemTags {
    public static final TagKey<Item> MOSS_BLOCKS = bind("moss_blocks");
    public static final TagKey<Item> GRASS_BLOCKS = bind("grass_blocks");
    public static final TagKey<Item> TERRACOTTA = bind("terracotta");
-   public static final TagKey<Item> GLAZED_TERRACOTTA = bind("glazed_terracotta");
-   public static final TagKey<Item> CONCRETE = bind("concrete");
-   public static final TagKey<Item> CONCRETE_POWDERS = bind("concrete_powders");
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL = bind("completes_find_tree_tutorial");
    public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");
    public static final TagKey<Item> COPPER_CHESTS = bind("copper_chests");
@@ -78,16 +75,6 @@ public final class ItemTags {
    public static final TagKey<Item> CHAINS = bind("chains");
    public static final TagKey<Item> LANTERNS = bind("lanterns");
    public static final TagKey<Item> BARS = bind("bars");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_BOUNCY = bind("sulfur_cube_archetype/bouncy");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_REGULAR = bind("sulfur_cube_archetype/regular");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_SLOW_FLAT = bind("sulfur_cube_archetype/slow_flat");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_FAST_FLAT = bind("sulfur_cube_archetype/fast_flat");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_LIGHT = bind("sulfur_cube_archetype/light");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_FAST_SLIDING = bind("sulfur_cube_archetype/fast_sliding");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING = bind("sulfur_cube_archetype/slow_sliding");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_STICKY = bind("sulfur_cube_archetype/sticky");
-   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE = bind("sulfur_cube_archetype/high_resistance");
-   public static final TagKey<Item> SULFUR_CUBE_SWALLOWABLE = bind("sulfur_cube_swallowable");
    public static final TagKey<Item> SIGNS = bind("signs");
    public static final TagKey<Item> HANGING_SIGNS = bind("hanging_signs");
    public static final TagKey<Item> BEE_FOOD = bind("bee_food");
@@ -136,7 +123,6 @@ public final class ItemTags {
    public static final TagKey<Item> NAUTILUS_BUCKET_FOOD = bind("nautilus_bucket_food");
    public static final TagKey<Item> NAUTILUS_FOOD = bind("nautilus_food");
    public static final TagKey<Item> NAUTILUS_TAMING_ITEMS = bind("nautilus_taming_items");
-   public static final TagKey<Item> SULFUR_CUBE_FOOD = bind("sulfur_cube_food");
    public static final TagKey<Item> NON_FLAMMABLE_WOOD = bind("non_flammable_wood");
    public static final TagKey<Item> BOATS = bind("boats");
    public static final TagKey<Item> CHEST_BOATS = bind("chest_boats");

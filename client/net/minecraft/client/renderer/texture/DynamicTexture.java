@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,14 +37,14 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
 
    private void createTexture(final Supplier<String> label) {
       GpuDevice device = RenderSystem.getDevice();
-      this.texture = device.createTexture(label, 5, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
+      this.texture = device.createTexture(label, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
       this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = device.createTextureView(this.texture);
    }
 
    private void createTexture(final String label) {
       GpuDevice device = RenderSystem.getDevice();
-      this.texture = device.createTexture(label, 5, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
+      this.texture = device.createTexture(label, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
       this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = device.createTextureView(this.texture);
    }

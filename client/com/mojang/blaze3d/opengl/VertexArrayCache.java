@@ -69,15 +69,10 @@ public abstract class VertexArrayCache {
                GlStateManager._enableVertexAttribArray(i);
             }
 
-            int glExternalId = GlConst.toGlExternalId(element.format());
-            int glType = GlConst.toGlType(element.format());
-            boolean isIntegerFormat = GlConst.isGlFormatInteger(glExternalId);
-            boolean isNormalizedFormat = GlConst.isFormatNormalized(element.format());
-            int channelCount = GlConst.glFormatChannelCount(glExternalId);
-            if (isIntegerFormat) {
-               GlStateManager._vertexAttribIPointer(i, channelCount, glType, vertexSize, (long)format.getOffset(element));
+            if (!element.normalized() && element.type() != VertexFormatElement.Type.FLOAT) {
+               GlStateManager._vertexAttribIPointer(i, element.count(), GlConst.toGl(element.type()), vertexSize, (long)format.getOffset(element));
             } else {
-               GlStateManager._vertexAttribPointer(i, channelCount, glType, isNormalizedFormat, vertexSize, (long)format.getOffset(element));
+               GlStateManager._vertexAttribPointer(i, element.count(), GlConst.toGl(element.type()), element.normalized(), vertexSize, (long)format.getOffset(element));
             }
          }
 
@@ -123,15 +118,10 @@ public abstract class VertexArrayCache {
                for(int i = 0; i < elements.size(); ++i) {
                   VertexFormatElement element = (VertexFormatElement)elements.get(i);
                   GlStateManager._enableVertexAttribArray(i);
-                  int glExternalId = GlConst.toGlExternalId(element.format());
-                  int glType = GlConst.toGlType(element.format());
-                  boolean isIntegerFormat = GlConst.isGlFormatInteger(glExternalId);
-                  boolean isNormalizedFormat = GlConst.isFormatNormalized(element.format());
-                  int channelCount = GlConst.glFormatChannelCount(glExternalId);
-                  if (isIntegerFormat) {
-                     ARBVertexAttribBinding.glVertexAttribIFormat(i, channelCount, glType, format.getOffset(element));
+                  if (!element.normalized() && element.type() != VertexFormatElement.Type.FLOAT) {
+                     ARBVertexAttribBinding.glVertexAttribIFormat(i, element.count(), GlConst.toGl(element.type()), format.getOffset(element));
                   } else {
-                     ARBVertexAttribBinding.glVertexAttribFormat(i, channelCount, glType, isNormalizedFormat, format.getOffset(element));
+                     ARBVertexAttribBinding.glVertexAttribFormat(i, element.count(), GlConst.toGl(element.type()), element.normalized(), format.getOffset(element));
                   }
 
                   ARBVertexAttribBinding.glVertexAttribBinding(i, 0);

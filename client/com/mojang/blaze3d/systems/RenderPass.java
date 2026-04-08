@@ -17,19 +17,16 @@ public class RenderPass implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final RenderPassBackend backend;
    private final GpuDeviceBackend device;
-   private final Runnable onFinish;
-   private boolean isClosed;
    private int pushedDebugGroups;
 
-   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final Runnable onFinish) {
+   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device) {
       super();
       this.backend = backend;
       this.device = device;
-      this.onFinish = onFinish;
    }
 
    public void pushDebugGroup(final Supplier<String> label) {
-      if (this.isClosed) {
+      if (this.backend.isClosed()) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
          ++this.pushedDebugGroups;
@@ -38,21 +35,13 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void popDebugGroup() {
-      if (this.isClosed) {
+      if (this.backend.isClosed()) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else if (this.pushedDebugGroups == 0) {
          throw new IllegalStateException("Can't pop more debug groups than was pushed!");
       } else {
          --this.pushedDebugGroups;
          this.backend.popDebugGroup();
-      }
-   }
-
-   public void writeTimestamp(final GpuQueryPool pool, final int index) {
-      if (index >= 0 && index <= pool.size()) {
-         this.backend.writeTimestamp(pool, index);
-      } else {
-         throw new IllegalStateException("Index " + index + " is out of range for query pool of size " + pool.size());
       }
    }
 
@@ -69,7 +58,7 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void setUniform(final String name, final GpuBufferSlice value) {
-      int alignment = this.device.getDeviceInfo().limits().minUniformOffsetAlignment();
+      int alignment = this.device.getUniformOffsetAlignment();
       if (value.offset() % (long)alignment > 0L) {
          throw new IllegalArgumentException("Uniform buffer offset must be aligned to " + alignment);
       } else {
@@ -94,7 +83,7 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void drawIndexed(final int baseVertex, final int firstIndex, final int indexCount, final int instanceCount) {
-      if (this.isClosed) {
+      if (this.backend.isClosed()) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
          this.backend.drawIndexed(baseVertex, firstIndex, indexCount, instanceCount);
@@ -102,7 +91,7 @@ public class RenderPass implements AutoCloseable {
    }
 
    public <T> void drawMultipleIndexed(final Collection<Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final VertexFormat.@Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
-      if (this.isClosed) {
+      if (this.backend.isClosed()) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
          this.backend.drawMultipleIndexed(draws, defaultIndexBuffer, defaultIndexType, dynamicUniforms, uniformArgument);
@@ -110,7 +99,7 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void draw(final int firstVertex, final int vertexCount) {
-      if (this.isClosed) {
+      if (this.backend.isClosed()) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
          this.backend.draw(firstVertex, vertexCount);
@@ -118,13 +107,12 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void close() {
-      if (!this.isClosed) {
-         this.isClosed = true;
+      if (!this.backend.isClosed()) {
          if (this.pushedDebugGroups > 0) {
             throw new IllegalStateException("Render pass had debug groups left open!");
          }
 
-         this.onFinish.run();
+         this.backend.close();
       }
 
    }

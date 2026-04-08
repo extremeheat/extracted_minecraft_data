@@ -158,7 +158,6 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, filledBucketBehavior);
-      DispenserBlock.registerBehavior(Items.SULFUR_CUBE_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
          public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
@@ -289,7 +288,22 @@ public interface DispenseItemBehavior {
       });
       ShulkerBoxDispenseBehavior shulkerBoxDispenseBehavior = new ShulkerBoxDispenseBehavior();
       DispenserBlock.registerBehavior(Items.SHULKER_BOX, shulkerBoxDispenseBehavior);
-      Items.DYED_SHULKER_BOX.forEach((item) -> DispenserBlock.registerBehavior(item, shulkerBoxDispenseBehavior));
+      DispenserBlock.registerBehavior(Items.WHITE_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.ORANGE_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.MAGENTA_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.LIGHT_BLUE_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.YELLOW_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.LIME_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.PINK_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.GRAY_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.LIGHT_GRAY_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.CYAN_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.PURPLE_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.BLUE_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.BROWN_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.GREEN_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.RED_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      DispenserBlock.registerBehavior(Items.BLACK_SHULKER_BOX, shulkerBoxDispenseBehavior);
       DispenserBlock.registerBehavior(Items.GLASS_BOTTLE, new OptionalDispenseItemBehavior() {
          private ItemStack takeLiquid(final BlockSource source, final ItemStack dispensed, final ItemStack filledItemStack) {
             source.level().gameEvent((Entity)null, GameEvent.FLUID_PICKUP, source.pos());

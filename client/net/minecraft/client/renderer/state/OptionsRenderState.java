@@ -14,6 +14,7 @@ public class OptionsRenderState {
    public int maxAnisotropyValue;
    public TextureFilteringMethod textureFiltering;
    public boolean bobView;
+   public boolean hideGui;
    public float screenEffectScale;
    public double glintSpeed;
    public double glintStrength;

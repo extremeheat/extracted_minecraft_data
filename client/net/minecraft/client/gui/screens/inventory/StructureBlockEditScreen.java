@@ -80,7 +80,7 @@ public class StructureBlockEditScreen extends Screen {
 
    private void onDone() {
       if (this.sendToServer(StructureBlockEntity.UpdateType.UPDATE_DATA)) {
-         this.minecraft.gui.setScreen((Screen)null);
+         this.minecraft.setScreen((Screen)null);
       }
 
    }
@@ -93,7 +93,7 @@ public class StructureBlockEditScreen extends Screen {
       this.structure.setStrict(this.initialStrict);
       this.structure.setShowAir(this.initialShowAir);
       this.structure.setShowBoundingBox(this.initialShowBoundingBox);
-      this.minecraft.gui.setScreen((Screen)null);
+      this.minecraft.setScreen((Screen)null);
    }
 
    protected void init() {
@@ -109,14 +109,14 @@ public class StructureBlockEditScreen extends Screen {
       this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.save"), (button) -> {
          if (this.structure.getMode() == StructureMode.SAVE) {
             this.sendToServer(StructureBlockEntity.UpdateType.SAVE_AREA);
-            this.minecraft.gui.setScreen((Screen)null);
+            this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
       this.loadButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.load"), (button) -> {
          if (this.structure.getMode() == StructureMode.LOAD) {
             this.sendToServer(StructureBlockEntity.UpdateType.LOAD_AREA);
-            this.minecraft.gui.setScreen((Screen)null);
+            this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
@@ -127,7 +127,7 @@ public class StructureBlockEditScreen extends Screen {
       this.detectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.detect_size"), (button) -> {
          if (this.structure.getMode() == StructureMode.SAVE) {
             this.sendToServer(StructureBlockEntity.UpdateType.SCAN_AREA);
-            this.minecraft.gui.setScreen((Screen)null);
+            this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());

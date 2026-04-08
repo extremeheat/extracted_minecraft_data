@@ -63,7 +63,7 @@ public class WaitingForResponseScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.previousScreen);
+      this.minecraft.setScreen(this.previousScreen);
    }
 
    public @Nullable Screen previousScreen() {

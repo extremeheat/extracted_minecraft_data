@@ -1,17 +1,16 @@
 package net.minecraft;
 
+import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -33,7 +32,7 @@ public class SystemReport {
    private static final String OPERATING_SYSTEM;
    private static final String JAVA_VERSION;
    private static final String JAVA_VM_VERSION;
-   private final List<CrashReportCategory.Entry> entries = new ArrayList();
+   private final Map<String, String> entries = Maps.newLinkedHashMap();
 
    public SystemReport() {
       super();
@@ -42,7 +41,7 @@ public class SystemReport {
       this.setDetail("Operating System", OPERATING_SYSTEM);
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);
-      this.setDetail("Memory", (CrashReportDetail)(() -> {
+      this.setDetail("Memory", (Supplier)(() -> {
          Runtime runtime = Runtime.getRuntime();
          long max = runtime.maxMemory();
          long total = runtime.totalMemory();
@@ -52,12 +51,12 @@ public class SystemReport {
          long freeMb = free / 1048576L;
          return free + " bytes (" + freeMb + " MiB) / " + total + " bytes (" + totalMb + " MiB) up to " + max + " bytes (" + maxMb + " MiB)";
       }));
-      this.setDetail("Memory (heap)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage())));
-      this.setDetail("Memory (non-head)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
-      this.setDetail("CPUs", (CrashReportDetail)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
+      this.setDetail("Memory (heap)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage())));
+      this.setDetail("Memory (non-head)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
+      this.setDetail("CPUs", (Supplier)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
-      this.setDetail("JVM Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
-      this.setDetail("Debug Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
+      this.setDetail("JVM Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
+      this.setDetail("Debug Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
    }
 
    private static String printMemoryUsage(final MemoryUsage memoryUsage) {
@@ -71,15 +70,15 @@ public class SystemReport {
    }
 
    public void setDetail(final String key, final String value) {
-      this.entries.add(new CrashReportCategory.Entry(key, value));
+      this.entries.put(key, value);
    }
 
-   public void setDetail(final String key, final CrashReportDetail<Object> valueSupplier) {
+   public void setDetail(final String key, final Supplier<String> valueSupplier) {
       try {
-         this.entries.add(new CrashReportCategory.Entry(key, valueSupplier.call()));
-      } catch (Throwable t) {
-         LOGGER.warn("Failed to get system info for {}", key, t);
-         this.entries.add(new CrashReportCategory.Entry(key, t));
+         this.setDetail(key, (String)valueSupplier.get());
+      } catch (Exception e) {
+         LOGGER.warn("Failed to get system info for {}", key, e);
+         this.setDetail(key, "ERR");
       }
 
    }
@@ -97,7 +96,6 @@ public class SystemReport {
          action.run();
       } catch (Throwable t) {
          LOGGER.warn("Failed retrieving info for group {}", group, t);
-         this.entries.add(new CrashReportCategory.Entry(group, t));
       }
 
    }
@@ -111,8 +109,8 @@ public class SystemReport {
 
       for(PhysicalMemory physicalMemory : memoryPackages) {
          String prefix = String.format(Locale.ROOT, "Memory slot #%d ", memorySlot++);
-         this.setDetail(prefix + "capacity (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(physicalMemory.getCapacity()))));
-         this.setDetail(prefix + "clockSpeed (GHz)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", (float)physicalMemory.getClockSpeed() / 1.0E9F)));
+         this.setDetail(prefix + "capacity (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(physicalMemory.getCapacity()))));
+         this.setDetail(prefix + "clockSpeed (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)physicalMemory.getClockSpeed() / 1.0E9F)));
          String var10001 = prefix + "type";
          Objects.requireNonNull(physicalMemory);
          this.setDetail(var10001, physicalMemory::getMemoryType);
@@ -121,10 +119,10 @@ public class SystemReport {
    }
 
    private void putVirtualMemory(final VirtualMemory virtualMemory) {
-      this.setDetail("Virtual memory max (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualMax()))));
-      this.setDetail("Virtual memory used (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualInUse()))));
-      this.setDetail("Swap memory total (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapTotal()))));
-      this.setDetail("Swap memory used (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapUsed()))));
+      this.setDetail("Virtual memory max (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualMax()))));
+      this.setDetail("Virtual memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualInUse()))));
+      this.setDetail("Swap memory total (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapTotal()))));
+      this.setDetail("Swap memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapUsed()))));
    }
 
    private void putMemory(final GlobalMemory memory) {
@@ -143,7 +141,7 @@ public class SystemReport {
          var10001 = prefix + "vendor";
          Objects.requireNonNull(graphicsCard);
          this.setDetail(var10001, graphicsCard::getVendor);
-         this.setDetail(prefix + "VRAM (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(graphicsCard.getVRam()))));
+         this.setDetail(prefix + "VRAM (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(graphicsCard.getVRam()))));
          var10001 = prefix + "deviceId";
          Objects.requireNonNull(graphicsCard);
          this.setDetail(var10001, graphicsCard::getDeviceId);
@@ -164,10 +162,10 @@ public class SystemReport {
       this.setDetail("Identifier", processorIdentifier::getIdentifier);
       Objects.requireNonNull(processorIdentifier);
       this.setDetail("Microarchitecture", processorIdentifier::getMicroarchitecture);
-      this.setDetail("Frequency (GHz)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", (float)processorIdentifier.getVendorFreq() / 1.0E9F)));
-      this.setDetail("Number of physical packages", (CrashReportDetail)(() -> String.valueOf(processor.getPhysicalPackageCount())));
-      this.setDetail("Number of physical CPUs", (CrashReportDetail)(() -> String.valueOf(processor.getPhysicalProcessorCount())));
-      this.setDetail("Number of logical CPUs", (CrashReportDetail)(() -> String.valueOf(processor.getLogicalProcessorCount())));
+      this.setDetail("Frequency (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)processorIdentifier.getVendorFreq() / 1.0E9F)));
+      this.setDetail("Number of physical packages", (Supplier)(() -> String.valueOf(processor.getPhysicalPackageCount())));
+      this.setDetail("Number of physical CPUs", (Supplier)(() -> String.valueOf(processor.getPhysicalProcessorCount())));
+      this.setDetail("Number of logical CPUs", (Supplier)(() -> String.valueOf(processor.getLogicalProcessorCount())));
    }
 
    private void putStorage() {
@@ -197,8 +195,6 @@ public class SystemReport {
       } catch (InvalidPathException e) {
          LOGGER.warn("{} is not a path", id, e);
          this.setDetail(key, "<invalid path>");
-      } catch (FileNotFoundException | NoSuchFileException var7) {
-         this.setDetail(key, "<no such file>");
       } catch (Exception e) {
          LOGGER.warn("Failed retrieving storage space for {}", id, e);
          this.setDetail(key, "ERR");
@@ -209,18 +205,18 @@ public class SystemReport {
    public void appendToCrashReportString(final StringBuilder sb) {
       sb.append("-- ").append("System Details").append(" --\n");
       sb.append("Details:");
-      this.entries.forEach((entry) -> {
+      this.entries.forEach((key, value) -> {
          sb.append("\n\t");
-         sb.append(entry.key());
+         sb.append(key);
          sb.append(": ");
-         sb.append(entry.value());
+         sb.append(value);
       });
    }
 
    public String toLineSeparatedString() {
-      return (String)this.entries.stream().map((e) -> {
-         String var10000 = e.key();
-         return var10000 + ": " + e.value();
+      return (String)this.entries.entrySet().stream().map((e) -> {
+         String var10000 = (String)e.getKey();
+         return var10000 + ": " + (String)e.getValue();
       }).collect(Collectors.joining(System.lineSeparator()));
    }
 

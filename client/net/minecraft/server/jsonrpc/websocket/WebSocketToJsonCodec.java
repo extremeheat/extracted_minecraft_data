@@ -13,8 +13,7 @@ public class WebSocketToJsonCodec extends MessageToMessageDecoder<TextWebSocketF
    }
 
    protected void decode(final ChannelHandlerContext ctx, final TextWebSocketFrame msg, final List<Object> out) {
-      String message = msg.text();
-      JsonElement parsedMessage = JsonParser.parseString(message);
-      out.add(parsedMessage);
+      JsonElement json = JsonParser.parseString(msg.text());
+      out.add(json);
    }
 }

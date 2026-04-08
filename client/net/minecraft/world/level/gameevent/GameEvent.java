@@ -22,7 +22,6 @@ public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> BLOCK_DETACH = register("block_detach");
    public static final Holder.Reference<GameEvent> BLOCK_OPEN = register("block_open");
    public static final Holder.Reference<GameEvent> BLOCK_PLACE = register("block_place");
-   public static final Holder.Reference<GameEvent> BOUNCE = register("bounce");
    public static final Holder.Reference<GameEvent> CONTAINER_CLOSE = register("container_close");
    public static final Holder.Reference<GameEvent> CONTAINER_OPEN = register("container_open");
    public static final Holder.Reference<GameEvent> DRINK = register("drink");

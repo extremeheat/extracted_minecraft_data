@@ -1,15 +1,16 @@
 package net.minecraft.client.gui.render;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -22,9 +23,10 @@ import org.jspecify.annotations.Nullable;
 
 public class GuiItemAtlas implements AutoCloseable {
    private static final int MINIMUM_TEXTURE_SIZE = 512;
-   private static final int MAXIMUM_TEXTURE_SIZE = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
+   private static final int MAXIMUM_TEXTURE_SIZE = RenderSystem.getDevice().getMaxTextureSize();
    private final SubmitNodeCollector submitNodeCollector;
    private final FeatureRenderDispatcher featureRenderDispatcher;
+   private final MultiBufferSource.BufferSource bufferSource;
    private final int textureSize;
    private final int slotTextureSize;
    private final GpuTexture texture;
@@ -36,20 +38,21 @@ public class GuiItemAtlas implements AutoCloseable {
    private final Projection projection = new Projection();
    private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("items");
 
-   public GuiItemAtlas(final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final int textureSize, final int slotTextureSize) {
+   public GuiItemAtlas(final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final MultiBufferSource.BufferSource bufferSource, final int textureSize, final int slotTextureSize) {
       super();
       this.submitNodeCollector = submitNodeCollector;
       this.featureRenderDispatcher = featureRenderDispatcher;
+      this.bufferSource = bufferSource;
       int storageSize = textureSize / slotTextureSize;
       this.textureSize = textureSize;
       this.slotTextureSize = slotTextureSize;
       GpuDevice device = RenderSystem.getDevice();
-      this.texture = device.createTexture("UI items atlas", 13, GpuFormat.RGBA8_UNORM, textureSize, textureSize, 1, 1);
+      this.texture = device.createTexture("UI items atlas", 13, TextureFormat.RGBA8, textureSize, textureSize, 1, 1);
       this.textureView = device.createTextureView(this.texture);
-      this.depthTexture = device.createTexture("UI items atlas depth", 9, GpuFormat.D32_FLOAT, textureSize, textureSize, 1, 1);
+      this.depthTexture = device.createTexture("UI items atlas depth", 9, TextureFormat.DEPTH32, textureSize, textureSize, 1, 1);
       this.depthTextureView = device.createTextureView(this.depthTexture);
       this.allocator = new DynamicAtlasAllocator<Object>(storageSize, storageSize);
-      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0);
+      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
    }
 
    public static int computeTextureSizeFor(final int slotTextureSize, final int requiredSlotCount) {
@@ -93,7 +96,7 @@ public class GuiItemAtlas implements AutoCloseable {
       int bottom = top + this.slotTextureSize;
       GpuDevice device = RenderSystem.getDevice();
       if (clear) {
-         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
+         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       }
 
       this.poseStack.pushPose();
@@ -108,6 +111,7 @@ public class GuiItemAtlas implements AutoCloseable {
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(lighting);
       item.submit(this.poseStack, this.submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
       this.featureRenderDispatcher.renderAllFeatures();
+      this.bufferSource.endBatch();
       RenderSystem.disableScissorForRenderTypeDraws();
       RenderSystem.outputColorTextureOverride = null;
       RenderSystem.outputDepthTextureOverride = null;

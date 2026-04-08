@@ -1,8 +1,8 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -220,7 +220,7 @@ public class RenderPipeline {
          }
       }
 
-      public Builder withUniform(final String name, final UniformType type, final GpuFormat format) {
+      public Builder withUniform(final String name, final UniformType type, final TextureFormat format) {
          if (this.uniforms.isEmpty()) {
             this.uniforms = Optional.of(new ArrayList());
          }
@@ -352,16 +352,16 @@ public class RenderPipeline {
       }
    }
 
-   public static record UniformDescription(String name, UniformType type, @Nullable GpuFormat gpuFormat) {
+   public static record UniformDescription(String name, UniformType type, @Nullable TextureFormat textureFormat) {
       public UniformDescription(final String name, final UniformType type) {
-         this(name, type, (GpuFormat)null);
+         this(name, type, (TextureFormat)null);
          if (type == UniformType.TEXEL_BUFFER) {
             throw new IllegalArgumentException("Texel buffer needs a texture format");
          }
       }
 
-      public UniformDescription(final String name, final GpuFormat gpuFormat) {
-         this(name, UniformType.TEXEL_BUFFER, gpuFormat);
+      public UniformDescription(final String name, final TextureFormat textureFormat) {
+         this(name, UniformType.TEXEL_BUFFER, textureFormat);
       }
 
       public UniformDescription {

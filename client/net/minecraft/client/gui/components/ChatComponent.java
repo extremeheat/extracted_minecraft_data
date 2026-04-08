@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
-import net.minecraft.client.CommandHistory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
@@ -57,7 +56,6 @@ public class ChatComponent {
    private static final Component RESTRICTED_CHAT_MESSAGE;
    private static final Component RESTRICTED_CHAT_MESSAGE_WITH_HOVER;
    private final Minecraft minecraft;
-   private final CommandHistory commandHistory;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
    private final List<GuiMessage> allMessages = Lists.newArrayList();
    private final List<GuiMessage.Line> trimmedMessages = Lists.newArrayList();
@@ -71,8 +69,7 @@ public class ChatComponent {
    public ChatComponent(final Minecraft minecraft) {
       super();
       this.minecraft = minecraft;
-      this.commandHistory = new CommandHistory(minecraft.gameDirectory.toPath());
-      this.recentChat.addAll(this.commandHistory.history());
+      this.recentChat.addAll(minecraft.commandHistory().history());
    }
 
    public void tick() {
@@ -132,7 +129,7 @@ public class ChatComponent {
          double chatLineSpacing = (Double)this.minecraft.options.chatLineSpacing().get();
          final int entryHeight = (int)((double)messageHeight * (chatLineSpacing + 1.0));
          final int entryBottomToMessageY = (int)Math.round(8.0 * (chatLineSpacing + 1.0) - 4.0 * chatLineSpacing);
-         long queueSize = this.minecraft.gui.chatListener().queueSize();
+         long queueSize = this.minecraft.getChatListener().queueSize();
          AlphaCalculator alphaCalculator = isForeground ? ChatComponent.AlphaCalculator.FULLY_VISIBLE : ChatComponent.AlphaCalculator.timeBased(ticks);
          graphics.updatePose((pose) -> {
             pose.scale(scale, scale);
@@ -216,13 +213,13 @@ public class ChatComponent {
    }
 
    public void clearMessages(final boolean history) {
-      this.minecraft.gui.chatListener().flushQueue();
+      this.minecraft.getChatListener().flushQueue();
       this.messageDeletionQueue.clear();
       this.trimmedMessages.clear();
       this.allMessages.clear();
       if (history) {
          this.recentChat.clear();
-         this.recentChat.addAll(this.commandHistory.history());
+         this.recentChat.addAll(this.minecraft.commandHistory().history());
       }
 
    }
@@ -240,7 +237,7 @@ public class ChatComponent {
    }
 
    private void addMessage(final Component contents, final @Nullable MessageSignature signature, final GuiMessageSource source, final @Nullable GuiMessageTag tag) {
-      GuiMessage message = new GuiMessage(this.minecraft.gui.hud.getGuiTicks(), contents, signature, source, tag);
+      GuiMessage message = new GuiMessage(this.minecraft.gui.getGuiTicks(), contents, signature, source, tag);
       if (this.visibleMessageFilter.test(message)) {
          this.logChatMessage(message);
          this.addMessageToDisplayQueue(message);
@@ -292,7 +289,7 @@ public class ChatComponent {
    }
 
    private void processMessageDeletionQueue() {
-      int time = this.minecraft.gui.hud.getGuiTicks();
+      int time = this.minecraft.gui.getGuiTicks();
       this.messageDeletionQueue.removeIf((entry) -> {
          if (time >= entry.deletableAfter()) {
             return this.deleteMessageOrDelay(entry.signature()) == null;
@@ -311,7 +308,7 @@ public class ChatComponent {
    }
 
    private @Nullable DelayedMessageDeletion deleteMessageOrDelay(final MessageSignature signature) {
-      int time = this.minecraft.gui.hud.getGuiTicks();
+      int time = this.minecraft.gui.getGuiTicks();
       ListIterator<GuiMessage> iterator = this.allMessages.listIterator();
 
       while(iterator.hasNext()) {
@@ -365,7 +362,7 @@ public class ChatComponent {
       }
 
       if (message.startsWith("/")) {
-         this.commandHistory.addCommand(message);
+         this.minecraft.commandHistory().addCommand(message);
       }
 
    }
@@ -390,7 +387,7 @@ public class ChatComponent {
    }
 
    public boolean isChatFocused() {
-      return this.minecraft.gui.screen() instanceof ChatScreen;
+      return this.minecraft.screen instanceof ChatScreen;
    }
 
    private int getWidth() {
@@ -446,11 +443,11 @@ public class ChatComponent {
    }
 
    public void openScreen(final ChatMethod chatMethod, final ChatScreen.ChatConstructor<?> chat) {
-      this.minecraft.gui.setScreen(this.createScreen(chatMethod, chat));
+      this.minecraft.setScreen(this.createScreen(chatMethod, chat));
    }
 
    public void preserveCurrentChatScreen() {
-      Screen var2 = this.minecraft.gui.screen();
+      Screen var2 = this.minecraft.screen;
       if (var2 instanceof ChatScreen chatScreen) {
          this.preservedScreen = chatScreen;
       }

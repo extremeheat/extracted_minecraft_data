@@ -42,13 +42,13 @@ public class RealmsCreateWorldFlow {
    }
 
    public static void createWorld(final Minecraft minecraft, final Screen returnScreen, final Screen lastScreen, final int slot, final RealmsServer realmsServer, final @Nullable RealmCreationTask realmCreationTask) {
-      CreateWorldScreen.openFresh(minecraft, () -> minecraft.gui.setScreen(returnScreen), (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> {
+      CreateWorldScreen.openFresh(minecraft, () -> minecraft.setScreen(returnScreen), (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> {
          Path worldFolder;
          try {
             worldFolder = createTemporaryWorldFolder(finalLayers.compositeAccess(), worldDataAndGenSettings, gameRules, tempDataPackDir);
          } catch (IOException e) {
             LOGGER.warn("Failed to create temporary world folder", e);
-            minecraft.gui.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));
+            minecraft.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));
             return true;
          }
 

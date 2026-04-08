@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.HoneycombItem;
@@ -36,17 +35,6 @@ public class CopperChestBlock extends ChestBlock {
    public CopperChestBlock(final WeatheringCopper.WeatherState weatherState, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
       super(() -> BlockEntityType.CHEST, openSound, closeSound, properties);
       this.weatherState = weatherState;
-   }
-
-   public static SoundEvent getHingeSound(final WeatheringCopper.WeatherState state, final boolean open) {
-      SoundEvent var10000;
-      switch (state) {
-         case WEATHERED -> var10000 = open ? SoundEvents.COPPER_CHEST_WEATHERED_OPEN : SoundEvents.COPPER_CHEST_WEATHERED_CLOSE;
-         case OXIDIZED -> var10000 = open ? SoundEvents.COPPER_CHEST_OXIDIZED_OPEN : SoundEvents.COPPER_CHEST_OXIDIZED_CLOSE;
-         default -> var10000 = open ? SoundEvents.COPPER_CHEST_OPEN : SoundEvents.COPPER_CHEST_CLOSE;
-      }
-
-      return var10000;
    }
 
    public boolean chestCanConnectTo(final BlockState blockState) {
@@ -105,7 +93,7 @@ public class CopperChestBlock extends ChestBlock {
 
    public static BlockState getFromCopperBlock(final Block copperBlock, final Direction facing, final Level level, final BlockPos pos) {
       Map var10000 = COPPER_TO_COPPER_CHEST_MAPPING;
-      Block var10002 = Blocks.COPPER_CHEST.unaffected();
+      Block var10002 = Blocks.COPPER_CHEST;
       Objects.requireNonNull(var10002);
       CopperChestBlock block = (CopperChestBlock)((Supplier)var10000.getOrDefault(copperBlock, var10002::asBlock)).get();
       ChestType chestType = block.getChestType(level, pos, facing);
@@ -122,6 +110,6 @@ public class CopperChestBlock extends ChestBlock {
    }
 
    static {
-      COPPER_TO_COPPER_CHEST_MAPPING = Map.of(Blocks.COPPER_BLOCK.unaffected(), (Supplier)() -> Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_BLOCK.exposed(), (Supplier)() -> Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_BLOCK.weathered(), (Supplier)() -> Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_BLOCK.oxidized(), (Supplier)() -> Blocks.COPPER_CHEST.oxidized(), Blocks.COPPER_BLOCK.waxed(), (Supplier)() -> Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_BLOCK.waxedExposed(), (Supplier)() -> Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_BLOCK.waxedWeathered(), (Supplier)() -> Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_BLOCK.waxedOxidized(), (Supplier)() -> Blocks.COPPER_CHEST.oxidized());
+      COPPER_TO_COPPER_CHEST_MAPPING = Map.of(Blocks.COPPER_BLOCK, (Supplier)() -> Blocks.COPPER_CHEST, Blocks.EXPOSED_COPPER, (Supplier)() -> Blocks.EXPOSED_COPPER_CHEST, Blocks.WEATHERED_COPPER, (Supplier)() -> Blocks.WEATHERED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, (Supplier)() -> Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_COPPER_BLOCK, (Supplier)() -> Blocks.COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER, (Supplier)() -> Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER, (Supplier)() -> Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER, (Supplier)() -> Blocks.OXIDIZED_COPPER_CHEST);
    }
 }

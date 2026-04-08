@@ -57,12 +57,8 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       if (this.visible) {
          this.isHovered = graphics.containsPointInScissor(mouseX, mouseY) && this.areCoordinatesInRectangle((double)mouseX, (double)mouseY);
          this.extractWidgetRenderState(graphics, mouseX, mouseY, a);
-         this.extractTooltipForNextRenderPass(graphics, mouseX, mouseY);
+         this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, this.isHovered(), this.isFocused(), this.getRectangle());
       }
-   }
-
-   protected void extractTooltipForNextRenderPass(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, this.isHovered(), this.isFocused(), this.getRectangle());
    }
 
    protected void handleCursor(final GuiGraphicsExtractor graphics) {

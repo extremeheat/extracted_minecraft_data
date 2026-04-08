@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -16,8 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 import org.jspecify.annotations.Nullable;
 
-public class BlockAgeProcessor implements StructureProcessor {
-   public static final MapCodec<BlockAgeProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("mossiness").forGetter((p) -> p.mossiness)).apply(i, BlockAgeProcessor::new));
+public class BlockAgeProcessor extends StructureProcessor {
+   public static final MapCodec<BlockAgeProcessor> CODEC;
    private static final float PROBABILITY_OF_REPLACING_FULL_BLOCK = 0.5F;
    private static final float PROBABILITY_OF_REPLACING_STAIRS = 0.5F;
    private static final float PROBABILITY_OF_REPLACING_OBSIDIAN = 0.15F;
@@ -94,11 +93,12 @@ public class BlockAgeProcessor implements StructureProcessor {
       return blocks[random.nextInt(blocks.length)];
    }
 
-   public MapCodec<BlockAgeProcessor> codec() {
-      return MAP_CODEC;
+   protected StructureProcessorType<?> getType() {
+      return StructureProcessorType.BLOCK_AGE;
    }
 
    static {
+      CODEC = Codec.FLOAT.fieldOf("mossiness").xmap(BlockAgeProcessor::new, (p) -> p.mossiness);
       NON_MOSSY_REPLACEMENTS = new BlockState[]{Blocks.STONE_SLAB.defaultBlockState(), Blocks.STONE_BRICK_SLAB.defaultBlockState()};
    }
 }

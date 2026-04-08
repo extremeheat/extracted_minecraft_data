@@ -65,7 +65,7 @@ public class ManageServerScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private void updateAddButtonStatus() {

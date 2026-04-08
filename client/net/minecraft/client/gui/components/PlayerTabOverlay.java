@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.Hud;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
@@ -56,16 +56,16 @@ public class PlayerTabOverlay {
    private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((p) -> -p.getTabListOrder()).thenComparingInt((p) -> p.getGameMode() == GameType.SPECTATOR ? 1 : 0).thenComparing((p) -> (String)Optionull.mapOrDefault(p.getTeam(), PlayerTeam::getName, "")).thenComparing((p) -> p.getProfile().name(), String::compareToIgnoreCase);
    public static final int MAX_ROWS_PER_COL = 20;
    private final Minecraft minecraft;
-   private final Hud hud;
+   private final Gui gui;
    private @Nullable Component footer;
    private @Nullable Component header;
    private boolean visible;
    private final Map<UUID, HealthState> healthStates = new Object2ObjectOpenHashMap();
 
-   public PlayerTabOverlay(final Minecraft minecraft, final Hud hud) {
+   public PlayerTabOverlay(final Minecraft minecraft, final Gui gui) {
       super();
       this.minecraft = minecraft;
-      this.hud = hud;
+      this.gui = gui;
    }
 
    public Component getNameForDisplay(final PlayerInfo info) {
@@ -270,10 +270,10 @@ public class PlayerTabOverlay {
 
    private void extractTablistHearts(final int yo, final int left, final int right, final UUID profileId, final GuiGraphicsExtractor graphics, final int score) {
       HealthState health = (HealthState)this.healthStates.computeIfAbsent(profileId, (id) -> new HealthState(score));
-      health.update(score, (long)this.hud.getGuiTicks());
+      health.update(score, (long)this.gui.getGuiTicks());
       int fullHearts = Mth.positiveCeilDiv(Math.max(score, health.displayedValue()), 2);
       int heartsToRender = Math.max(score, Math.max(health.displayedValue(), 20)) / 2;
-      boolean blink = health.isBlinking((long)this.hud.getGuiTicks());
+      boolean blink = health.isBlinking((long)this.gui.getGuiTicks());
       if (fullHearts > 0) {
          int widthPerHeart = Mth.floor(Math.min((float)(right - left - 4) / (float)heartsToRender, 9.0F));
          if (widthPerHeart <= 3) {

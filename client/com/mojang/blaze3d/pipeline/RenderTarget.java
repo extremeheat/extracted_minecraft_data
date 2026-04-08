@@ -1,12 +1,12 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -73,19 +73,27 @@ public abstract class RenderTarget {
    public void createBuffers(final int width, final int height) {
       RenderSystem.assertOnRenderThread();
       GpuDevice device = RenderSystem.getDevice();
-      int maxTextureSize = device.getDeviceInfo().limits().maxTextureSize();
+      int maxTextureSize = device.getMaxTextureSize();
       if (width > 0 && width <= maxTextureSize && height > 0 && height <= maxTextureSize) {
          this.width = width;
          this.height = height;
          if (this.useDepth) {
-            this.depthTexture = device.createTexture((Supplier)(() -> this.label + " / Depth"), 15, GpuFormat.D32_FLOAT, width, height, 1, 1);
+            this.depthTexture = device.createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, width, height, 1, 1);
             this.depthTextureView = device.createTextureView(this.depthTexture);
          }
 
-         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, GpuFormat.RGBA8_UNORM, width, height, 1, 1);
+         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, width, height, 1, 1);
          this.colorTextureView = device.createTextureView(this.colorTexture);
       } else {
          throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + maxTextureSize + ")");
+      }
+   }
+
+   public void blitToScreen() {
+      if (this.colorTexture == null) {
+         throw new IllegalStateException("Can't blit to screen, color texture doesn't exist yet");
+      } else {
+         RenderSystem.getDevice().createCommandEncoder().presentTexture(this.colorTextureView);
       }
    }
 

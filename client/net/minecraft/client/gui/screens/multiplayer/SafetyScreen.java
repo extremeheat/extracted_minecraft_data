@@ -28,14 +28,14 @@ public class SafetyScreen extends WarningScreen {
             this.minecraft.options.save();
          }
 
-         this.minecraft.gui.setScreen(new JoinMultiplayerScreen(this.previous));
+         this.minecraft.setScreen(new JoinMultiplayerScreen(this.previous));
       }).build());
       footer.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
       return footer;
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.previous);
+      this.minecraft.setScreen(this.previous);
    }
 
    static {

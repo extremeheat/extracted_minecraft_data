@@ -1,5 +1,6 @@
 package com.mojang.math;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -71,35 +72,30 @@ public class MatrixUtil {
 
    }
 
-   public static void eigenvalueJacobi(final Matrix3f inOut, final int steps, final Quaternionf result) {
-      result.identity();
+   public static Quaternionf eigenvalueJacobi(final Matrix3f inOut, final int steps) {
+      Quaternionf v = new Quaternionf();
       Matrix3f scratchMat = new Matrix3f();
       Quaternionf scratchQ = new Quaternionf();
 
       for(int i = 0; i < steps; ++i) {
-         stepJacobi(inOut, scratchMat, scratchQ, result);
+         stepJacobi(inOut, scratchMat, scratchQ, v);
       }
 
-      result.normalize();
+      v.normalize();
+      return v;
    }
 
-   public static void svdDecompose(final Matrix4fc input, final Vector3f t, final Quaternionf u, final Vector3f s, final Quaternionf v) {
-      float scaleFactor = 1.0F / input.m33();
-      svdDecompose((new Matrix3f(input)).scale(scaleFactor), u, s, v);
-      input.getTranslation(t).mul(scaleFactor);
-   }
-
-   private static void svdDecompose(final Matrix3f input, final Quaternionf u, final Vector3f s, final Quaternionf v) {
-      Matrix3f scratch = new Matrix3f(input);
-      scratch.transpose();
-      scratch.mul(input);
-      eigenvalueJacobi(scratch, 5, v);
-      float columnScaleSquare0 = scratch.m00;
-      float columnScaleSquare1 = scratch.m11;
+   public static Triple<Quaternionf, Vector3f, Quaternionf> svdDecompose(final Matrix3f matrix) {
+      Matrix3f b = new Matrix3f(matrix);
+      b.transpose();
+      b.mul(matrix);
+      Quaternionf v = eigenvalueJacobi(b, 5);
+      float columnScaleSquare0 = b.m00;
+      float columnScaleSquare1 = b.m11;
       boolean zeroColumn0 = (double)columnScaleSquare0 < 1.0E-6;
       boolean zeroColumn1 = (double)columnScaleSquare1 < 1.0E-6;
-      Matrix3f u012s = input.rotate(v);
-      u.identity();
+      Matrix3f u012s = matrix.rotate(v);
+      Quaternionf u = new Quaternionf();
       Quaternionf tmpQ = new Quaternionf();
       GivensParameters p;
       if (zeroColumn0) {
@@ -109,7 +105,7 @@ public class MatrixUtil {
       }
 
       Quaternionf qt0 = p.aroundZ(tmpQ);
-      Matrix3f u12s = p.aroundZ(scratch);
+      Matrix3f u12s = p.aroundZ(b);
       u.mul(qt0);
       u12s.transpose().mul(u012s);
       if (zeroColumn0) {
@@ -130,11 +126,11 @@ public class MatrixUtil {
       }
 
       Quaternionf qt2 = p.aroundX(tmpQ);
-      Matrix3f sm = p.aroundX(u12s);
+      Matrix3f s = p.aroundX(u12s);
       u.mul(qt2);
-      sm.transpose().mul(u2s);
-      s.set(sm.m00, sm.m11, sm.m22);
-      v.conjugate();
+      s.transpose().mul(u2s);
+      Vector3f scale = new Vector3f(s.m00, s.m11, s.m22);
+      return Triple.of(u, scale, v.conjugate());
    }
 
    public static boolean checkPropertyRaw(final Matrix4fc matrix, final int property) {

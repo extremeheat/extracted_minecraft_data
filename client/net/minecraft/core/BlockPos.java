@@ -27,6 +27,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Immutable
 public class BlockPos extends Vec3i {
@@ -423,15 +424,15 @@ public class BlockPos extends Vec3i {
    }
 
    public static int breadthFirstTraversal(final BlockPos startPos, final int maxDepth, final int maxCount, final BiConsumer<BlockPos, Consumer<BlockPos>> neighbourProvider, final Function<BlockPos, TraversalNodeStatus> nodeProcessor) {
-      Queue<Node> nodes = new ArrayDeque();
+      Queue<Pair<BlockPos, Integer>> nodes = new ArrayDeque();
       LongSet visited = new LongOpenHashSet();
-      nodes.add(new Node(startPos, 0));
+      nodes.add(Pair.of(startPos, 0));
       int count = 0;
 
       while(!nodes.isEmpty()) {
-         Node node = (Node)nodes.poll();
-         BlockPos currentPos = node.pos;
-         int depth = node.depth;
+         Pair<BlockPos, Integer> node = (Pair)nodes.poll();
+         BlockPos currentPos = (BlockPos)node.getLeft();
+         int depth = (Integer)node.getRight();
          long currentPosLong = currentPos.asLong();
          if (visited.add(currentPosLong)) {
             TraversalNodeStatus next = (TraversalNodeStatus)nodeProcessor.apply(currentPos);
@@ -446,15 +447,7 @@ public class BlockPos extends Vec3i {
                }
 
                if (depth < maxDepth) {
-                  neighbourProvider.accept(currentPos, (Consumer)(pos) -> {
-                     record Node(BlockPos pos, int depth) {
-                        Node {
-                           super();
-                        }
-                     }
-
-                     nodes.add(new Node(pos, depth + 1));
-                  });
+                  neighbourProvider.accept(currentPos, (Consumer)(pos) -> nodes.add(Pair.of(pos, depth + 1)));
                }
             }
          }

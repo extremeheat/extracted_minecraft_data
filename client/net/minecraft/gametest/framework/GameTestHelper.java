@@ -28,7 +28,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.FillBiomeCommand;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -177,24 +176,11 @@ public class GameTestHelper {
       return entities;
    }
 
-   public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos, final Rotation rotation) {
-      Rotation rot = this.getTestRotation().getRotated(rotation);
-      return (E)this.spawn(entityType, Vec3.atBottomCenterOf(pos), (EntitySpawnReason)null, rot);
-   }
-
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos) {
-      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null, (Rotation)null);
-   }
-
-   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
-      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
+      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
-      return (E)this.spawn(entityType, pos, spawnReason, (Rotation)null);
-   }
-
-   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason, final @Nullable Rotation rotation) {
       ServerLevel level = this.getLevel();
       E entity = entityType.create(level, EntitySpawnReason.STRUCTURE);
       if (entity == null) {
@@ -206,7 +192,7 @@ public class GameTestHelper {
          }
 
          Vec3 absoluteVec = this.absoluteVec(pos);
-         float yRot = entity.rotate(rotation == null ? this.getTestRotation() : rotation);
+         float yRot = entity.rotate(this.getTestRotation());
          entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, yRot, entity.getXRot());
          entity.setYBodyRot(yRot);
          entity.setYHeadRot(yRot);
@@ -218,6 +204,10 @@ public class GameTestHelper {
          level.addFreshEntityWithPassengers(entity);
          return entity;
       }
+   }
+
+   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
+      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
    }
 
    public void hurt(final Entity entity, final DamageSource source, final float damage) {
@@ -291,12 +281,6 @@ public class GameTestHelper {
 
    public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final float x, final float y, final float z) {
       return (E)this.spawnWithNoFreeWill(entityType, new Vec3((double)x, (double)y, (double)z));
-   }
-
-   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final BlockPos pos, final Rotation rotation) {
-      E entity = (E)(this.spawn(entityType, pos, rotation));
-      entity.removeFreeWill();
-      return entity;
    }
 
    public void moveTo(final Mob mob, final float x, final float y, final float z) {
@@ -378,24 +362,6 @@ public class GameTestHelper {
             return false;
          }
       };
-   }
-
-   public Player makeMockServerPlayer(final GameType gameType) {
-      <undefinedtype> player = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"), ClientInformation.createDefault()) {
-         {
-            Objects.requireNonNull(GameTestHelper.this);
-         }
-
-         public GameType gameMode() {
-            return gameType;
-         }
-
-         public boolean isClientAuthoritative() {
-            return false;
-         }
-      };
-      gameType.updatePlayerAbilities(player.getAbilities());
-      return player;
    }
 
    /** @deprecated */
@@ -1079,17 +1045,7 @@ public class GameTestHelper {
 
    public <N> void assertValueEqual(final N value, final N expected, final Component valueName) {
       if (!value.equals(expected)) {
-         throw this.assertionException("test.error.value_not_equal", valueName, expected, value);
-      }
-   }
-
-   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final String valueName) {
-      this.assertValueInBetween(lowerBound, value, upperBound, (Component)Component.literal(valueName));
-   }
-
-   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final Component valueName) {
-      if (value.compareTo(lowerBound) < 0 || value.compareTo(upperBound) > 0) {
-         throw this.assertionException("test.error.value_not_in_between", valueName, lowerBound, upperBound, value);
+         throw this.assertionException("test.error.value_not_equal", valueName, value, expected);
       }
    }
 

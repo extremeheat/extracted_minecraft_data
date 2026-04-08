@@ -854,7 +854,6 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       this.addToTooltip(DataComponents.DYED_COLOR, context, display, builder, tooltipFlag);
       this.addToTooltip(DataComponents.PROFILE, context, display, builder, tooltipFlag);
       this.addToTooltip(DataComponents.LORE, context, display, builder, tooltipFlag);
-      this.addToTooltip(DataComponents.SULFUR_CUBE_CONTENT, context, display, builder, tooltipFlag);
       this.addAttributeTooltips(builder, display, player);
       this.addUnitComponentToTooltip(DataComponents.INTANGIBLE_PROJECTILE, INTANGIBLE_TOOLTIP, display, builder);
       this.addUnitComponentToTooltip(DataComponents.UNBREAKABLE, UNBREAKABLE_TOOLTIP, display, builder);

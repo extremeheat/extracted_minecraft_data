@@ -192,7 +192,6 @@ public class EntityRenderers {
       register(EntityType.SQUID, (context) -> new SquidRenderer(context, new SquidModel(context.bakeLayer(ModelLayers.SQUID)), new SquidModel(context.bakeLayer(ModelLayers.SQUID_BABY))));
       register(EntityType.STRAY, StrayRenderer::new);
       register(EntityType.STRIDER, StriderRenderer::new);
-      register(EntityType.SULFUR_CUBE, SulfurCubeRenderer::new);
       register(EntityType.TADPOLE, TadpoleRenderer::new);
       register(EntityType.TEXT_DISPLAY, DisplayRenderer.TextDisplayRenderer::new);
       register(EntityType.TNT, TntRenderer::new);

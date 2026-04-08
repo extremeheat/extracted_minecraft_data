@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.textures;
 
-import com.mojang.blaze3d.GpuFormat;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,7 +11,7 @@ public abstract class GpuTexture implements AutoCloseable {
    public static final int USAGE_TEXTURE_BINDING = 4;
    public static final int USAGE_RENDER_ATTACHMENT = 8;
    public static final int USAGE_CUBEMAP_COMPATIBLE = 16;
-   private final GpuFormat format;
+   private final TextureFormat format;
    private final int width;
    private final int height;
    private final int depthOrLayers;
@@ -20,7 +19,7 @@ public abstract class GpuTexture implements AutoCloseable {
    private final @GpuTexture.Usage int usage;
    private final String label;
 
-   public GpuTexture(final @GpuTexture.Usage int usage, final String label, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture(final @GpuTexture.Usage int usage, final String label, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       super();
       this.usage = usage;
       this.label = label;
@@ -47,7 +46,7 @@ public abstract class GpuTexture implements AutoCloseable {
       return this.mipLevels;
    }
 
-   public GpuFormat getFormat() {
+   public TextureFormat getFormat() {
       return this.format;
    }
 

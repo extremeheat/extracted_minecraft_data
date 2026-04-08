@@ -82,7 +82,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       helper.addChild(SpacerElement.height(2));
       this.closeOpenButton = (Button)helper.addChild(Button.builder(Component.empty(), (button) -> {
          if (serverData.state == RealmsServer.State.OPEN) {
-            minecraft.gui.setScreen(RealmsPopups.customPopupScreen(configurationScreen, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (popup) -> {
+            minecraft.setScreen(RealmsPopups.customPopupScreen(configurationScreen, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (popup) -> {
                this.save();
                configurationScreen.closeTheWorld();
             }));
@@ -116,7 +116,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    }
 
    private void openPreferenceSelector() {
-      this.minecraft.gui.setScreen(new RealmsPreferredRegionSelectionScreen(this.configurationScreen, this::applyRegionPreferenceSelection, this.regionServiceQuality, this.preferredRegionSelection));
+      this.minecraft.setScreen(new RealmsPreferredRegionSelectionScreen(this.configurationScreen, this::applyRegionPreferenceSelection, this.regionServiceQuality, this.preferredRegionSelection));
    }
 
    private void applyRegionPreferenceSelection(final RegionSelectionPreference preference, final RealmsRegion region) {

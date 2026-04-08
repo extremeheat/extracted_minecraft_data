@@ -93,7 +93,7 @@ public class TitleScreen extends Screen {
 
    protected void init() {
       if (this.splash == null) {
-         this.splash = this.minecraft.gui.splashManager().getSplash();
+         this.splash = this.minecraft.getSplashManager().getSplash();
       }
 
       int copyrightWidth = this.font.width((FormattedText)COPYRIGHT_TEXT);
@@ -107,15 +107,15 @@ public class TitleScreen extends Screen {
       }
 
       topPos = this.createTestWorldButton(topPos, 24);
-      SpriteIconButton language = (SpriteIconButton)this.addRenderableWidget(CommonButtons.language(20, (var1) -> this.minecraft.gui.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true));
+      SpriteIconButton language = (SpriteIconButton)this.addRenderableWidget(CommonButtons.language(20, (button) -> this.minecraft.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true));
       int var10001 = this.width / 2 - 124;
       topPos += 36;
       language.setPosition(var10001, topPos);
-      this.addRenderableWidget(Button.builder(Component.translatable("menu.options"), (var1) -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options, false))).bounds(this.width / 2 - 100, topPos, 98, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("menu.options"), (button) -> this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options, false))).bounds(this.width / 2 - 100, topPos, 98, 20).build());
       this.addRenderableWidget(Button.builder(Component.translatable("menu.quit"), (button) -> this.minecraft.stop()).bounds(this.width / 2 + 2, topPos, 98, 20).build());
-      SpriteIconButton accessibility = (SpriteIconButton)this.addRenderableWidget(CommonButtons.accessibility(20, (var1) -> this.minecraft.gui.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true));
+      SpriteIconButton accessibility = (SpriteIconButton)this.addRenderableWidget(CommonButtons.accessibility(20, (button) -> this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true));
       accessibility.setPosition(this.width / 2 + 104, topPos);
-      this.addRenderableWidget(new PlainTextButton(copyrightX, this.height - 10, copyrightWidth, 10, COPYRIGHT_TEXT, (var1) -> this.minecraft.gui.setScreen(new CreditsAndAttributionScreen(this)), this.font));
+      this.addRenderableWidget(new PlainTextButton(copyrightX, this.height - 10, copyrightWidth, 10, COPYRIGHT_TEXT, (button) -> this.minecraft.setScreen(new CreditsAndAttributionScreen(this)), this.font));
       if (this.realmsNotificationsScreen == null) {
          this.realmsNotificationsScreen = new RealmsNotificationsScreen();
       }
@@ -128,23 +128,23 @@ public class TitleScreen extends Screen {
 
    private int createTestWorldButton(int topPos, final int spacing) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.gui.setScreen(this))).bounds(this.width / 2 - 100, topPos += spacing, 200, 20).build());
+         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (button) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.setScreen(this))).bounds(this.width / 2 - 100, topPos += spacing, 200, 20).build());
       }
 
       return topPos;
    }
 
    private int createNormalMenuOptions(int topPos, final int spacing) {
-      this.addRenderableWidget(Button.builder(Component.translatable("menu.singleplayer"), (var1) -> this.minecraft.gui.setScreen(new SelectWorldScreen(this))).bounds(this.width / 2 - 100, topPos, 200, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("menu.singleplayer"), (button) -> this.minecraft.setScreen(new SelectWorldScreen(this))).bounds(this.width / 2 - 100, topPos, 200, 20).build());
       Component multiplayerDisabledReason = this.getMultiplayerDisabledReason();
       boolean multiplayerAllowed = multiplayerDisabledReason == null;
       Tooltip tooltip = multiplayerDisabledReason != null ? Tooltip.create(multiplayerDisabledReason) : null;
       int var6;
       ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), (button) -> {
          Screen screen = (Screen)(this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this));
-         this.minecraft.gui.setScreen(screen);
+         this.minecraft.setScreen(screen);
       }).bounds(this.width / 2 - 100, var6 = topPos + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
-      ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.online"), (var1) -> this.minecraft.gui.setScreen(new RealmsMainScreen(this))).bounds(this.width / 2 - 100, topPos = var6 + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
+      ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.online"), (button) -> this.minecraft.setScreen(new RealmsMainScreen(this))).bounds(this.width / 2 - 100, topPos = var6 + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
       return topPos;
    }
 
@@ -167,7 +167,7 @@ public class TitleScreen extends Screen {
       boolean demoWorldPresent = this.checkDemoWorldPresence();
       this.addRenderableWidget(Button.builder(Component.translatable("menu.playdemo"), (button) -> {
          if (demoWorldPresent) {
-            this.minecraft.createWorldOpenFlows().openWorld("Demo_World", () -> this.minecraft.gui.setScreen(this));
+            this.minecraft.createWorldOpenFlows().openWorld("Demo_World", () -> this.minecraft.setScreen(this));
          } else {
             this.minecraft.createWorldOpenFlows().createFreshLevel("Demo_World", MinecraftServer.DEMO_SETTINGS, WorldOptions.DEMO_OPTIONS, WorldPresets::createNormalWorldDimensions, this);
          }
@@ -179,7 +179,7 @@ public class TitleScreen extends Screen {
 
          try (LevelStorageSource.LevelStorageAccess levelAccess = levelSource.createAccess("Demo_World")) {
             if (levelAccess.hasWorldData()) {
-               this.minecraft.gui.setScreen(new ConfirmScreen(this::confirmDemo, Component.translatable("selectWorld.deleteQuestion"), Component.translatable("selectWorld.deleteWarning", MinecraftServer.DEMO_SETTINGS.levelName()), Component.translatable("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL));
+               this.minecraft.setScreen(new ConfirmScreen(this::confirmDemo, Component.translatable("selectWorld.deleteQuestion"), Component.translatable("selectWorld.deleteWarning", MinecraftServer.DEMO_SETTINGS.levelName()), Component.translatable("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL));
             }
          } catch (IOException e) {
             SystemToast.onWorldAccessFailure(this.minecraft, "Demo_World");
@@ -278,7 +278,7 @@ public class TitleScreen extends Screen {
          }
       }
 
-      this.minecraft.gui.setScreen(this);
+      this.minecraft.setScreen(this);
    }
 
    public boolean canInterruptWithAnotherScreen() {

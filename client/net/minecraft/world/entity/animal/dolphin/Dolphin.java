@@ -185,6 +185,10 @@ public class Dolphin extends AgeableWaterCreature {
       return 1;
    }
 
+   protected boolean canRide(final Entity vehicle) {
+      return true;
+   }
+
    protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
       return slot == EquipmentSlot.MAINHAND && this.canPickUpLoot();
    }

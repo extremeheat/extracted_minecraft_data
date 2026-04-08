@@ -69,7 +69,6 @@ public interface EasingType {
    public static final class CubicBezier implements EasingType {
       public static final Codec<CubicBezier> CODEC = RecordCodecBuilder.create((i) -> i.group(EasingType.CubicBezierControls.CODEC.fieldOf("cubic_bezier").forGetter((b) -> b.controls)).apply(i, CubicBezier::new));
       private static final int NEWTON_RAPHSON_ITERATIONS = 4;
-      private static final float MAX_STEP = 0.25F;
       private final CubicBezierControls controls;
       private final CubicCurve xCurve;
       private final CubicCurve yCurve;
@@ -86,48 +85,19 @@ public interface EasingType {
       }
 
       public float apply(final float x) {
-         return this.yCurve.sample(this.solveT(x));
-      }
-
-      private float solveT(final float x) {
          float t = x;
 
          for(int i = 0; i < 4; ++i) {
-            float error = this.xCurve.sample(t) - x;
-            if (Math.abs(error) < 1.0E-5F) {
-               return t;
-            }
-
             float gradient = this.xCurve.sampleGradient(t);
             if (gradient < 1.0E-5F) {
                break;
             }
 
-            t -= Mth.clamp(error / gradient, -0.25F, 0.25F);
-         }
-
-         return this.solveTBisect(x, t);
-      }
-
-      private float solveTBisect(final float x, final float initialT) {
-         float t0 = 0.0F;
-         float t1 = 1.0F;
-
-         float t;
-         for(t = initialT; t0 < t1; t = (t1 + t0) / 2.0F) {
             float error = this.xCurve.sample(t) - x;
-            if (Math.abs(error) < 1.0E-5F) {
-               return t;
-            }
-
-            if (error < 0.0F) {
-               t0 = t;
-            } else {
-               t1 = t;
-            }
+            t -= error / gradient;
          }
 
-         return t;
+         return this.yCurve.sample(t);
       }
 
       public boolean equals(final Object obj) {

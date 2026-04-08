@@ -124,11 +124,11 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
          if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(codeOfConduct)) {
             this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
          } else {
-            Screen lastScreen = this.minecraft.gui.screen();
-            this.minecraft.gui.setScreen(new CodeOfConductScreen(this.serverData, lastScreen, codeOfConduct, (accepted) -> {
+            Screen lastScreen = this.minecraft.screen;
+            this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, lastScreen, codeOfConduct, (accepted) -> {
                if (accepted) {
                   this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
-                  this.minecraft.gui.setScreen(lastScreen);
+                  this.minecraft.setScreen(lastScreen);
                } else {
                   this.createDialogAccess().disconnect(DISCONNECTED_MESSAGE);
                }

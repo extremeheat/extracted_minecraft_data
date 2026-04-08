@@ -174,7 +174,6 @@ public class BlockTypes {
       Registry.register(registry, (String)"powder_snow", PowderSnowBlock.CODEC);
       Registry.register(registry, (String)"powered", PoweredBlock.CODEC);
       Registry.register(registry, (String)"powered_rail", PoweredRailBlock.CODEC);
-      Registry.register(registry, (String)"potent_sulfur", PotentSulfurBlock.CODEC);
       Registry.register(registry, (String)"pressure_plate", PressurePlateBlock.CODEC);
       Registry.register(registry, (String)"pumpkin", PumpkinBlock.CODEC);
       Registry.register(registry, (String)"rail", RailBlock.CODEC);
@@ -268,7 +267,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"weathering_copper_grate", WeatheringCopperGrateBlock.CODEC);
       Registry.register(registry, (String)"weathering_copper_slab", WeatheringCopperSlabBlock.CODEC);
       Registry.register(registry, (String)"weathering_copper_stair", WeatheringCopperStairBlock.CODEC);
-      Registry.register(registry, (String)"weathering_copper_trapdoor", WeatheringCopperTrapDoorBlock.CODEC);
+      Registry.register(registry, (String)"weathering_copper_trap_door", WeatheringCopperTrapDoorBlock.CODEC);
       Registry.register(registry, (String)"weathering_lantern", WeatheringLanternBlock.CODEC);
       Registry.register(registry, (String)"weathering_lightning_rod", WeatheringLightningRodBlock.CODEC);
       Registry.register(registry, (String)"web", WebBlock.CODEC);

@@ -49,7 +49,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
       this.serverData = serverData;
       GridLayout.RowHelper helper = this.layout.spacing(8).createRowHelper(1);
       this.invitedList = (InvitedObjectSelectionList)helper.addChild(new InvitedObjectSelectionList(configurationScreen.width, this.calculateListHeight()), LayoutSettings.defaults().alignVerticallyTop().alignHorizontallyCenter());
-      helper.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (var3) -> minecraft.gui.setScreen(new RealmsInviteScreen(configurationScreen, serverData))).build(), LayoutSettings.defaults().alignVerticallyBottom().alignHorizontallyCenter());
+      helper.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (button) -> minecraft.setScreen(new RealmsInviteScreen(configurationScreen, serverData))).build(), LayoutSettings.defaults().alignVerticallyBottom().alignHorizontallyCenter());
       this.updateData(serverData);
    }
 
@@ -162,9 +162,9 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
                   RealmsPlayersTab.this.updateData(RealmsPlayersTab.this.serverData);
                }
 
-               RealmsPlayersTab.this.minecraft.gui.setScreen(RealmsPlayersTab.this.configurationScreen);
+               RealmsPlayersTab.this.minecraft.setScreen(RealmsPlayersTab.this.configurationScreen);
             }, RealmsPlayersTab.QUESTION_TITLE, Component.translatable("mco.configure.world.uninvite.player", playerInfo.name));
-            RealmsPlayersTab.this.minecraft.gui.setScreen(confirmScreen);
+            RealmsPlayersTab.this.minecraft.setScreen(confirmScreen);
          }
 
       }

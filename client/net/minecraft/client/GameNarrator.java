@@ -86,7 +86,7 @@ public class GameNarrator {
    public void updateNarratorStatus(final NarratorStatus status) {
       this.clear();
       this.narrateMessage(Component.translatable("options.narrator").append(" : ").append(status.getName()).getString(), true);
-      ToastManager toastManager = Minecraft.getInstance().gui.toastManager();
+      ToastManager toastManager = Minecraft.getInstance().getToastManager();
       if (this.narrator.active()) {
          if (status == NarratorStatus.OFF) {
             SystemToast.addOrUpdate(toastManager, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), (Component)null);

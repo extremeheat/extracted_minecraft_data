@@ -760,13 +760,16 @@ public class Panda extends Animal {
       }
    }
 
-   private static class PandaMoveControl<T extends Panda> extends MoveControl<T> {
-      public PandaMoveControl(final T mob) {
+   private static class PandaMoveControl extends MoveControl {
+      private final Panda panda;
+
+      public PandaMoveControl(final Panda mob) {
          super(mob);
+         this.panda = mob;
       }
 
       public void tick() {
-         if (((Panda)this.mob).canPerformAction()) {
+         if (this.panda.canPerformAction()) {
             super.tick();
          }
       }

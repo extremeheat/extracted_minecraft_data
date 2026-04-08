@@ -49,7 +49,7 @@ public class QuickPlay {
    public static void connect(final Minecraft minecraft, final GameConfig.QuickPlayVariant quickPlayVariant, final RealmsClient realmsClient) {
       if (!quickPlayVariant.isEnabled()) {
          LOGGER.error("Quick play disabled");
-         minecraft.gui.setScreen(new TitleScreen());
+         minecraft.setScreen(new TitleScreen());
       } else {
          Objects.requireNonNull(quickPlayVariant);
          byte var4 = 0;
@@ -79,7 +79,7 @@ public class QuickPlay {
             case 3:
                GameConfig.QuickPlayDisabled disabled = (GameConfig.QuickPlayDisabled)quickPlayVariant;
                LOGGER.error("Quick play disabled");
-               minecraft.gui.setScreen(new TitleScreen());
+               minecraft.setScreen(new TitleScreen());
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
@@ -105,10 +105,10 @@ public class QuickPlay {
 
    private static void joinSingleplayerWorld(final Minecraft minecraft, final @Nullable String identifier) {
       if (!StringUtil.isBlank(identifier) && minecraft.getLevelSource().levelExists(identifier)) {
-         minecraft.createWorldOpenFlows().openWorld(identifier, () -> minecraft.gui.setScreen(new TitleScreen()));
+         minecraft.createWorldOpenFlows().openWorld(identifier, () -> minecraft.setScreen(new TitleScreen()));
       } else {
          Screen parent = new SelectWorldScreen(new TitleScreen());
-         minecraft.gui.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
+         minecraft.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
       }
    }
 
@@ -134,21 +134,21 @@ public class QuickPlay {
          realmsServerList = realmsClient.listRealms();
       } catch (NumberFormatException var8) {
          Screen parent = new RealmsMainScreen(new TitleScreen());
-         minecraft.gui.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
+         minecraft.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
          return;
       } catch (RealmsServiceException var9) {
          Screen parent = new TitleScreen();
-         minecraft.gui.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, REALM_CONNECT, TO_TITLE));
+         minecraft.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, REALM_CONNECT, TO_TITLE));
          return;
       }
 
       RealmsServer server = (RealmsServer)realmsServerList.servers().stream().filter((realmsServer) -> realmsServer.id == realmId).findFirst().orElse((Object)null);
       if (server == null) {
          Screen parent = new RealmsMainScreen(new TitleScreen());
-         minecraft.gui.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
+         minecraft.setScreen(new DisconnectedScreen(parent, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
       } else {
          TitleScreen titleScreen = new TitleScreen();
-         minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(titleScreen, new LongRunningTask[]{new GetServerDetailsTask(titleScreen, server)}));
+         minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(titleScreen, new LongRunningTask[]{new GetServerDetailsTask(titleScreen, server)}));
       }
    }
 }

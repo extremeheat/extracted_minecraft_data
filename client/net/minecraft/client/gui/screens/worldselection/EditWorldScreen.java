@@ -92,7 +92,7 @@ public class EditWorldScreen extends Screen {
 
          Util.getPlatform().openPath(path);
       }).width(200).build());
-      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.gui.setScreen(new BackupConfirmScreen(() -> minecraft.gui.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.gui.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true))).width(200).build());
+      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.setScreen(new BackupConfirmScreen(() -> minecraft.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(bottomButtonRow);
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
@@ -152,12 +152,12 @@ public class EditWorldScreen extends Screen {
       }, Util.backgroundExecutor()).thenApplyAsync((size) -> {
          Component title = Component.translatable("selectWorld.edit.backupCreated", access.getLevelId());
          Component message = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)size / 1048576.0));
-         minecraft.gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         minecraft.getToastManager().addToast(SystemToast.multiline(minecraft, SystemToast.SystemToastId.WORLD_BACKUP, title, message));
          return true;
       }, minecraft).exceptionallyAsync((exception) -> {
          Component title = Component.translatable("selectWorld.edit.backupFailed");
          Component message = Component.literal(exception.getMessage());
-         minecraft.gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         minecraft.getToastManager().addToast(SystemToast.multiline(minecraft, SystemToast.SystemToastId.WORLD_BACKUP, title, message));
          return false;
       }, minecraft);
    }

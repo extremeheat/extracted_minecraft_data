@@ -61,7 +61,7 @@ public record PostChainConfig(Map<Identifier, InternalTarget> internalTargets, L
       }
    }
 
-   public sealed interface Input permits PostChainConfig.TargetInput, PostChainConfig.TextureInput {
+   public sealed interface Input permits PostChainConfig.TextureInput, PostChainConfig.TargetInput {
       Codec<Input> CODEC = Codec.xor(PostChainConfig.TextureInput.CODEC, PostChainConfig.TargetInput.CODEC).xmap((either) -> (Input)either.map(Function.identity(), Function.identity()), (input) -> {
          Objects.requireNonNull(input);
          int index$1 = 0;

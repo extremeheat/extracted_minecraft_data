@@ -19,8 +19,8 @@ public class BufferBuilder implements VertexConsumer {
    private int vertices;
    private final VertexFormat format;
    private final VertexFormat.Mode mode;
-   private final boolean blockFormat;
-   private final boolean entityFormat;
+   private final boolean fastFormat;
+   private final boolean fullFormat;
    private final int vertexSize;
    private final int initialElementsToFill;
    private final int[] offsetsByElement;
@@ -38,8 +38,10 @@ public class BufferBuilder implements VertexConsumer {
          this.vertexSize = format.getVertexSize();
          this.initialElementsToFill = format.getElementsMask() & ~VertexFormatElement.POSITION.mask();
          this.offsetsByElement = format.getOffsetsByElement();
-         this.blockFormat = format == DefaultVertexFormat.BLOCK;
-         this.entityFormat = format == DefaultVertexFormat.ENTITY;
+         boolean isFullFormat = format == DefaultVertexFormat.ENTITY;
+         boolean isBlockFormat = format == DefaultVertexFormat.BLOCK;
+         this.fastFormat = isFullFormat || isBlockFormat;
+         this.fullFormat = isFullFormat;
       }
    }
 
@@ -148,7 +150,9 @@ public class BufferBuilder implements VertexConsumer {
    public VertexConsumer addVertex(final float x, final float y, final float z) {
       long pointer = this.beginVertex() + (long)this.offsetsByElement[VertexFormatElement.POSITION.id()];
       this.elementsToFill = this.initialElementsToFill;
-      putVec3f(pointer, x, y, z);
+      MemoryUtil.memPutFloat(pointer, x);
+      MemoryUtil.memPutFloat(pointer + 4L, y);
+      MemoryUtil.memPutFloat(pointer + 8L, z);
       return this;
    }
 
@@ -222,7 +226,9 @@ public class BufferBuilder implements VertexConsumer {
    public VertexConsumer setNormal(final float x, final float y, final float z) {
       long pointer = this.beginElement(VertexFormatElement.NORMAL);
       if (pointer != -1L) {
-         putNormals(pointer, x, y, z);
+         MemoryUtil.memPutByte(pointer, normalIntValue(x));
+         MemoryUtil.memPutByte(pointer + 1L, normalIntValue(y));
+         MemoryUtil.memPutByte(pointer + 2L, normalIntValue(z));
       }
 
       return this;
@@ -241,39 +247,33 @@ public class BufferBuilder implements VertexConsumer {
       return (byte)((int)(Mth.clamp(c, -1.0F, 1.0F) * 127.0F) & 255);
    }
 
-   private static void putVec3f(final long pointer, final float x, final float y, final float z) {
-      MemoryUtil.memPutFloat(pointer, x);
-      MemoryUtil.memPutFloat(pointer + 4L, y);
-      MemoryUtil.memPutFloat(pointer + 8L, z);
-   }
-
-   private static void putNormals(final long pointer, final float nx, final float ny, final float nz) {
-      MemoryUtil.memPutByte(pointer, normalIntValue(nx));
-      MemoryUtil.memPutByte(pointer + 1L, normalIntValue(ny));
-      MemoryUtil.memPutByte(pointer + 2L, normalIntValue(nz));
-   }
-
    public void addVertex(final float x, final float y, final float z, final int color, final float u, final float v, final int overlayCoords, final int lightCoords, final float nx, final float ny, final float nz) {
-      if (this.blockFormat) {
+      if (this.fastFormat) {
          long pointer = this.beginVertex();
-         putVec3f(pointer, x, y, z);
+         MemoryUtil.memPutFloat(pointer + 0L, x);
+         MemoryUtil.memPutFloat(pointer + 4L, y);
+         MemoryUtil.memPutFloat(pointer + 8L, z);
          putRgba(pointer + 12L, color);
          MemoryUtil.memPutFloat(pointer + 16L, u);
          MemoryUtil.memPutFloat(pointer + 20L, v);
-         putPackedUv(pointer + 24L, lightCoords);
-      } else if (this.entityFormat) {
-         long pointer = this.beginVertex();
-         putVec3f(pointer, x, y, z);
-         putRgba(pointer + 12L, color);
-         MemoryUtil.memPutFloat(pointer + 16L, u);
-         MemoryUtil.memPutFloat(pointer + 20L, v);
-         putPackedUv(pointer + 24L, overlayCoords);
-         putPackedUv(pointer + 28L, lightCoords);
-         putNormals(pointer + 32L, nx, ny, nz);
+         long lightStart;
+         if (this.fullFormat) {
+            putPackedUv(pointer + 24L, overlayCoords);
+            lightStart = pointer + 28L;
+         } else {
+            lightStart = pointer + 24L;
+         }
+
+         putPackedUv(lightStart + 0L, lightCoords);
+         if (this.fullFormat) {
+            MemoryUtil.memPutByte(lightStart + 4L, normalIntValue(nx));
+            MemoryUtil.memPutByte(lightStart + 5L, normalIntValue(ny));
+            MemoryUtil.memPutByte(lightStart + 6L, normalIntValue(nz));
+         }
+
       } else {
          VertexConsumer.super.addVertex(x, y, z, color, u, v, overlayCoords, lightCoords, nx, ny, nz);
       }
-
    }
 
    static {

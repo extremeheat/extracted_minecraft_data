@@ -27,17 +27,13 @@ public class CallbackDeviceTracker extends AbstractDeviceTracker {
    }
 
    public static boolean isSupported() {
-      if (!ALC10.alcIsExtensionPresent(0L, "ALC_SOFT_system_events")) {
-         return false;
-      } else {
-         for(int eventType : SUBSCRIBED_EVENT_TYPES) {
-            if (!isSupportedForPlaybackDevice(eventType)) {
-               return false;
-            }
+      for(int eventType : SUBSCRIBED_EVENT_TYPES) {
+         if (!isSupportedForPlaybackDevice(eventType)) {
+            return false;
          }
-
-         return true;
       }
+
+      return true;
    }
 
    public static CallbackDeviceTracker createAndInstall(final DeviceList deviceList) {

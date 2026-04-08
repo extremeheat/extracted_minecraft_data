@@ -163,7 +163,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
    }
 
    public boolean readyForShearing() {
-      return !this.isBaby();
+      return this.isAlive() && !this.isBaby();
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

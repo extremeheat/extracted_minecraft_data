@@ -7,7 +7,7 @@ public abstract class Overlay implements Renderable {
       super();
    }
 
-   public boolean isPausing() {
+   public boolean isPauseScreen() {
       return true;
    }
 

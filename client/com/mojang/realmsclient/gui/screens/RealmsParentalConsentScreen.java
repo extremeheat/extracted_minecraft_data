@@ -39,7 +39,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    protected void repositionElements() {

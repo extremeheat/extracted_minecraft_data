@@ -92,13 +92,13 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
                if (!this.uploadStarted) {
                   this.uploadStarted = true;
                   this.minecraft.execute(() -> {
-                     this.minecraft.gui.setScreen(this);
+                     this.minecraft.setScreen(this);
                      this.upload();
                   });
                }
 
             }));
-            this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, (LongRunningTask[])tasks.toArray(new LongRunningTask[0])));
+            this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, (LongRunningTask[])tasks.toArray(new LongRunningTask[0])));
          }
       }
 
@@ -111,7 +111,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    }
 
    private void onBack() {
-      this.minecraft.gui.setScreen(new RealmsConfigureWorldScreen(new RealmsMainScreen(new TitleScreen()), this.realmId));
+      this.minecraft.setScreen(new RealmsConfigureWorldScreen(new RealmsMainScreen(new TitleScreen()), this.realmId));
    }
 
    private void onCancel() {
@@ -120,7 +120,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       if (realmsWorldUpload != null) {
          realmsWorldUpload.cancel();
       } else {
-         this.minecraft.gui.setScreen(this.lastScreen);
+         this.minecraft.setScreen(this.lastScreen);
       }
 
    }

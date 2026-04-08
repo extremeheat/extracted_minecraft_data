@@ -31,7 +31,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.SelectableEntry;
@@ -161,7 +160,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          if (levels.isEmpty()) {
             switch (this.entryType.ordinal()) {
                case 0:
-                  CreateWorldScreen.openFresh(this.minecraft, () -> this.minecraft.gui.setScreen((Screen)null));
+                  CreateWorldScreen.openFresh(this.minecraft, () -> this.minecraft.setScreen((Screen)null));
                   break;
                case 1:
                   this.clearEntries();
@@ -234,7 +233,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
    }
 
    private void handleLevelLoadFailure(final Component message) {
-      this.minecraft.gui.setScreen(new ErrorScreen(Component.translatable("selectWorld.unable_to_load"), message));
+      this.minecraft.setScreen(new ErrorScreen(Component.translatable("selectWorld.unable_to_load"), message));
    }
 
    public int getRowWidth() {
@@ -269,7 +268,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
 
    public void returnToScreen() {
       this.reloadWorldList();
-      this.minecraft.gui.setScreen(this.screen);
+      this.minecraft.setScreen(this.screen);
    }
 
    public Screen getScreen() {
@@ -545,7 +544,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       public void joinWorld() {
          if (this.summary.primaryActionActive()) {
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-               this.minecraft.gui.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.gui.setScreen(this.screen)));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
             } else {
                WorldOpenFlows var10000 = this.minecraft.createWorldOpenFlows();
                String var10001 = this.summary.getLevelId();
@@ -557,9 +556,9 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public void deleteWorld() {
-         this.minecraft.gui.setScreen(new ConfirmScreen((result) -> {
+         this.minecraft.setScreen(new ConfirmScreen((result) -> {
             if (result) {
-               this.minecraft.gui.setScreen(new ProgressScreen(true));
+               this.minecraft.setScreen(new ProgressScreen(true));
                this.doDeleteWorld();
             }
 
@@ -594,7 +593,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             return;
          } catch (ContentValidationException e) {
             WorldSelectionList.LOGGER.warn("{}", e.getMessage());
-            this.minecraft.gui.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.gui.setScreen(this.screen)));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
             return;
          }
 
@@ -612,7 +611,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             return;
          }
 
-         this.minecraft.gui.setScreen(editScreen);
+         this.minecraft.setScreen(editScreen);
       }
 
       public void recreateWorld() {
@@ -625,8 +624,8 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             Path dataPackDir = CreateWorldScreen.createTempDataPackDirFromExistingWorld(access.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
             creationContext.validate();
             if (creationContext.options().isOldCustomizedWorld()) {
-               this.minecraft.gui.setScreen(new ConfirmScreen((result) -> {
-                  Gui var10000 = this.minecraft.gui;
+               this.minecraft.setScreen(new ConfirmScreen((result) -> {
+                  Minecraft var10000 = this.minecraft;
                   Object var5;
                   if (result) {
                      Minecraft var10001 = this.minecraft;
@@ -640,7 +639,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
                   var10000.setScreen((Screen)var5);
                }, Component.translatable("selectWorld.recreate.customized.title"), Component.translatable("selectWorld.recreate.customized.text"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
             } else {
-               Gui var10000 = this.minecraft.gui;
+               Minecraft var10000 = this.minecraft;
                Minecraft var10001 = this.minecraft;
                WorldSelectionList var10002 = this.list;
                Objects.requireNonNull(var10002);
@@ -648,10 +647,10 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             }
          } catch (ContentValidationException e) {
             WorldSelectionList.LOGGER.warn("{}", e.getMessage());
-            this.minecraft.gui.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.gui.setScreen(this.screen)));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
          } catch (Exception e) {
             WorldSelectionList.LOGGER.error("Unable to recreate world", e);
-            this.minecraft.gui.setScreen(new AlertScreen(() -> this.minecraft.gui.setScreen(this.screen), Component.translatable("selectWorld.recreate.error.title"), Component.translatable("selectWorld.recreate.error.text")));
+            this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this.screen), Component.translatable("selectWorld.recreate.error.title"), Component.translatable("selectWorld.recreate.error.text")));
          }
 
       }
@@ -719,14 +718,14 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         int labelX = (this.minecraft.gui.screen().width - this.minecraft.font.width((FormattedText)LOADING_LABEL)) / 2;
+         int labelX = (this.minecraft.screen.width - this.minecraft.font.width((FormattedText)LOADING_LABEL)) / 2;
          int var10000 = this.getContentY();
          int var10001 = this.getContentHeight();
          Objects.requireNonNull(this.minecraft.font);
          int labelY = var10000 + (var10001 - 9) / 2;
          graphics.text(this.minecraft.font, (Component)LOADING_LABEL, labelX, labelY, -1);
          String dots = LoadingDotsText.get(Util.getMillis());
-         int dotsX = (this.minecraft.gui.screen().width - this.minecraft.font.width(dots)) / 2;
+         int dotsX = (this.minecraft.screen.width - this.minecraft.font.width(dots)) / 2;
          Objects.requireNonNull(this.minecraft.font);
          int dotsY = labelY + 9;
          graphics.text(this.minecraft.font, dots, dotsX, dotsY, -8355712);

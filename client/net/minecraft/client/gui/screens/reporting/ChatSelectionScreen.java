@@ -109,7 +109,7 @@ public class ChatSelectionScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    public Component getNarrationMessage() {

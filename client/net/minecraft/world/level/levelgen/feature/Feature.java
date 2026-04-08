@@ -22,10 +22,10 @@ import net.minecraft.world.level.levelgen.feature.configurations.BlockColumnConf
 import net.minecraft.world.level.levelgen.feature.configurations.BlockPileConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ColumnFeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.CompositeFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.CountConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DeltaFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.DripstoneClusterConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.FallenTreeConfiguration;
@@ -38,6 +38,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.MultifaceGrowth
 import net.minecraft.world.level.levelgen.feature.configurations.NetherForestVegetationConfig;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.PointedDripstoneConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomBooleanFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
@@ -46,11 +47,9 @@ import net.minecraft.world.level.levelgen.feature.configurations.ReplaceSphereCo
 import net.minecraft.world.level.levelgen.feature.configurations.RootSystemConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SculkPatchConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.SpeleothemClusterConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.SpeleothemConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.SimpleRandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SpringConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.TemplateFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TwistingVinesConfig;
 import net.minecraft.world.level.levelgen.feature.configurations.UnderwaterMagmaConfiguration;
@@ -110,14 +109,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> BASALT_PILLAR;
    public static final Feature<OreConfiguration> SCATTERED_ORE;
    public static final Feature<RandomFeatureConfiguration> RANDOM_SELECTOR;
-   public static final Feature<CompositeFeatureConfiguration> SIMPLE_RANDOM_SELECTOR;
+   public static final Feature<SimpleRandomFeatureConfiguration> SIMPLE_RANDOM_SELECTOR;
    public static final Feature<RandomBooleanFeatureConfiguration> RANDOM_BOOLEAN_SELECTOR;
-   public static final Feature<CompositeFeatureConfiguration> SEQUENCE;
-   public static final Feature<TemplateFeatureConfiguration> TEMPLATE;
    public static final Feature<GeodeConfiguration> GEODE;
-   public static final Feature<SpeleothemClusterConfiguration> SPELEOTHEM_CLUSTER;
+   public static final Feature<DripstoneClusterConfiguration> DRIPSTONE_CLUSTER;
    public static final Feature<LargeDripstoneConfiguration> LARGE_DRIPSTONE;
-   public static final Feature<SpeleothemConfiguration> SPELEOTHEM;
+   public static final Feature<PointedDripstoneConfiguration> POINTED_DRIPSTONE;
    public static final Feature<SculkPatchConfiguration> SCULK_PATCH;
    private final MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
@@ -240,14 +237,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       BASALT_PILLAR = register("basalt_pillar", new BasaltPillarFeature(NoneFeatureConfiguration.CODEC));
       SCATTERED_ORE = register("scattered_ore", new ScatteredOreFeature(OreConfiguration.CODEC));
       RANDOM_SELECTOR = register("random_selector", new RandomSelectorFeature(RandomFeatureConfiguration.CODEC));
-      SIMPLE_RANDOM_SELECTOR = register("simple_random_selector", new SimpleRandomSelectorFeature(CompositeFeatureConfiguration.CODEC));
+      SIMPLE_RANDOM_SELECTOR = register("simple_random_selector", new SimpleRandomSelectorFeature(SimpleRandomFeatureConfiguration.CODEC));
       RANDOM_BOOLEAN_SELECTOR = register("random_boolean_selector", new RandomBooleanSelectorFeature(RandomBooleanFeatureConfiguration.CODEC));
-      SEQUENCE = register("sequence", new SequenceFeature(CompositeFeatureConfiguration.CODEC));
-      TEMPLATE = register("template", new TemplateFeature(TemplateFeatureConfiguration.CODEC));
       GEODE = register("geode", new GeodeFeature(GeodeConfiguration.CODEC));
-      SPELEOTHEM_CLUSTER = register("speleothem_cluster", new SpeleothemClusterFeature(SpeleothemClusterConfiguration.CODEC));
+      DRIPSTONE_CLUSTER = register("dripstone_cluster", new DripstoneClusterFeature(DripstoneClusterConfiguration.CODEC));
       LARGE_DRIPSTONE = register("large_dripstone", new LargeDripstoneFeature(LargeDripstoneConfiguration.CODEC));
-      SPELEOTHEM = register("speleothem", new SpeleothemFeature(SpeleothemConfiguration.CODEC));
+      POINTED_DRIPSTONE = register("pointed_dripstone", new PointedDripstoneFeature(PointedDripstoneConfiguration.CODEC));
       SCULK_PATCH = register("sculk_patch", new SculkPatchFeature(SculkPatchConfiguration.CODEC));
    }
 }

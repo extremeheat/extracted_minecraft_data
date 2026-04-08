@@ -18,7 +18,7 @@ public class ProfilerSamplerAdapter {
    }
 
    public Set<MetricSampler> newSamplersFoundInProfiler(final Supplier<ProfileCollector> profiler) {
-      Set<MetricSampler> newSamplers = (Set)((ProfileCollector)profiler.get()).getChartedPaths().stream().filter((pathAndCategory) -> !this.previouslyFoundSamplerNames.contains(pathAndCategory.getFirst())).map((pathAndCategory) -> samplerForProfilingPath(profiler, (String)pathAndCategory.getFirst(), (MetricCategory)pathAndCategory.getSecond())).collect(Collectors.toSet());
+      Set<MetricSampler> newSamplers = (Set)((ProfileCollector)profiler.get()).getChartedPaths().stream().filter((pathAndCategory) -> !this.previouslyFoundSamplerNames.contains(pathAndCategory.getLeft())).map((pathAndCategory) -> samplerForProfilingPath(profiler, (String)pathAndCategory.getLeft(), (MetricCategory)pathAndCategory.getRight())).collect(Collectors.toSet());
 
       for(MetricSampler sampler : newSamplers) {
          this.previouslyFoundSamplerNames.add(sampler.getName());

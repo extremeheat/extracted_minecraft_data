@@ -202,8 +202,8 @@ public class Vex extends Monster implements TraceableEntity {
       DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Vex.class, EntityDataSerializers.BYTE);
    }
 
-   private class VexMoveControl<T extends Mob> extends MoveControl<T> {
-      public VexMoveControl(final T vex) {
+   private class VexMoveControl extends MoveControl {
+      public VexMoveControl(final Vex vex) {
          Objects.requireNonNull(Vex.this);
          super(vex);
       }

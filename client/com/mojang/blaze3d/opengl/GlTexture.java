@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -16,7 +16,7 @@ public class GlTexture extends GpuTexture {
    protected boolean closed;
    private int views;
 
-   protected GlTexture(final @GpuTexture.Usage int usage, final String label, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels, final int id) {
+   protected GlTexture(final @GpuTexture.Usage int usage, final String label, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels, final int id) {
       super(usage, label, format, width, height, depthOrLayers, mipLevels);
       this.id = id;
    }

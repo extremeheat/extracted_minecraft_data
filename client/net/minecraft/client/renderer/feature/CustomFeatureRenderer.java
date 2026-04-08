@@ -23,8 +23,9 @@ public class CustomFeatureRenderer {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
       for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.solidCustomGeometrySubmits.entrySet()) {
+         VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
+
          for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
-            VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
             customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
          }
       }
@@ -35,8 +36,9 @@ public class CustomFeatureRenderer {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
       for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.translucentCustomGeometrySubmits.entrySet()) {
+         VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
+
          for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
-            VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
             customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
          }
       }

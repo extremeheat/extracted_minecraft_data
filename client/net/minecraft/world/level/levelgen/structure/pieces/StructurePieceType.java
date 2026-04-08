@@ -59,7 +59,7 @@ public interface StructurePieceType {
    StructurePieceType JUNGLE_PYRAMID_PIECE = setPieceId(JungleTemplePiece::new, "TeJP");
    StructurePieceType OCEAN_RUIN = setTemplatePieceId(OceanRuinPieces.OceanRuinPiece::create, "ORP");
    StructurePieceType IGLOO = setTemplatePieceId(IglooPieces.IglooPiece::new, "Iglu");
-   StructurePieceType RUINED_PORTAL = setFullContextPieceId(RuinedPortalPiece::new, "RUPO");
+   StructurePieceType RUINED_PORTAL = setTemplatePieceId(RuinedPortalPiece::new, "RUPO");
    StructurePieceType SWAMPLAND_HUT = setPieceId(SwampHutPiece::new, "TeSH");
    StructurePieceType DESERT_PYRAMID_PIECE = setPieceId(DesertPyramidPiece::new, "TeDP");
    StructurePieceType OCEAN_MONUMENT_BUILDING = setPieceId(OceanMonumentPieces.MonumentBuilding::new, "OMB");
@@ -81,7 +81,7 @@ public interface StructurePieceType {
    StructurePieceType NETHER_FOSSIL = setTemplatePieceId(NetherFossilPieces.NetherFossilPiece::new, "NeFos");
    StructurePieceType JIGSAW = setFullContextPieceId(PoolElementStructurePiece::new, "jigsaw");
 
-   StructurePiece load(StructurePieceSerializationContext context, CompoundTag tag);
+   StructurePiece load(final StructurePieceSerializationContext context, final CompoundTag tag);
 
    private static StructurePieceType setFullContextPieceId(final StructurePieceType type, final String id) {
       return (StructurePieceType)Registry.register(BuiltInRegistries.STRUCTURE_PIECE, (String)id.toLowerCase(Locale.ROOT), type);

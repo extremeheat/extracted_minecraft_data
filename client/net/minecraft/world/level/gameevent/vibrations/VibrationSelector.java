@@ -3,14 +3,15 @@ package net.minecraft.world.level.gameevent.vibrations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class VibrationSelector {
-   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> o.currentVibrationData.map(VibrationEvent::event)), Codec.LONG.fieldOf("tick").forGetter((o) -> (Long)o.currentVibrationData.map(VibrationEvent::tick).orElse(-1L))).apply(i, VibrationSelector::new));
-   private Optional<VibrationEvent> currentVibrationData;
+   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> o.currentVibrationData.map(Pair::getLeft)), Codec.LONG.fieldOf("tick").forGetter((o) -> (Long)o.currentVibrationData.map(Pair::getRight).orElse(-1L))).apply(i, VibrationSelector::new));
+   private Optional<Pair<VibrationInfo, Long>> currentVibrationData;
 
    public VibrationSelector(final Optional<VibrationInfo> currentVibration, final long tick) {
       super();
-      this.currentVibrationData = currentVibration.map((vibrationInfo) -> new VibrationEvent(vibrationInfo, tick));
+      this.currentVibrationData = currentVibration.map((vibrationInfo) -> Pair.of(vibrationInfo, tick));
    }
 
    public VibrationSelector() {
@@ -20,7 +21,7 @@ public class VibrationSelector {
 
    public void addCandidate(final VibrationInfo newVibration, final long tickTime) {
       if (this.shouldReplaceVibration(newVibration, tickTime)) {
-         this.currentVibrationData = Optional.of(new VibrationEvent(newVibration, tickTime));
+         this.currentVibrationData = Optional.of(Pair.of(newVibration, tickTime));
       }
 
    }
@@ -29,12 +30,12 @@ public class VibrationSelector {
       if (this.currentVibrationData.isEmpty()) {
          return true;
       } else {
-         VibrationEvent previousData = (VibrationEvent)this.currentVibrationData.get();
-         long previousTick = previousData.tick();
+         Pair<VibrationInfo, Long> previousData = (Pair)this.currentVibrationData.get();
+         long previousTick = (Long)previousData.getRight();
          if (tickTime != previousTick) {
             return false;
          } else {
-            VibrationInfo previousVibration = previousData.event();
+            VibrationInfo previousVibration = (VibrationInfo)previousData.getLeft();
             if (newVibration.distance() < previousVibration.distance()) {
                return true;
             } else if (newVibration.distance() > previousVibration.distance()) {
@@ -50,17 +51,11 @@ public class VibrationSelector {
       if (this.currentVibrationData.isEmpty()) {
          return Optional.empty();
       } else {
-         return ((VibrationEvent)this.currentVibrationData.get()).tick() < time ? Optional.of(((VibrationEvent)this.currentVibrationData.get()).event()) : Optional.empty();
+         return (Long)((Pair)this.currentVibrationData.get()).getRight() < time ? Optional.of((VibrationInfo)((Pair)this.currentVibrationData.get()).getLeft()) : Optional.empty();
       }
    }
 
    public void startOver() {
       this.currentVibrationData = Optional.empty();
-   }
-
-   private static record VibrationEvent(VibrationInfo event, long tick) {
-      private VibrationEvent {
-         super();
-      }
    }
 }

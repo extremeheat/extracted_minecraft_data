@@ -1,10 +1,10 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -69,7 +69,7 @@ public class MainTarget extends RenderTarget {
 
    private @Nullable GpuTexture allocateColorAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, GpuFormat.RGBA8_UNORM, dimension.width, dimension.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
@@ -77,7 +77,7 @@ public class MainTarget extends RenderTarget {
 
    private @Nullable GpuTexture allocateDepthAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, GpuFormat.D32_FLOAT, dimension.width, dimension.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
@@ -95,7 +95,7 @@ public class MainTarget extends RenderTarget {
 
       private static List<Dimension> listWithFallback(final int width, final int height) {
          RenderSystem.assertOnRenderThread();
-         int maxTextureSize = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
+         int maxTextureSize = RenderSystem.getDevice().getMaxTextureSize();
          return width > 0 && width <= maxTextureSize && height > 0 && height <= maxTextureSize ? ImmutableList.of(new Dimension(width, height), MainTarget.DEFAULT_DIMENSIONS) : ImmutableList.of(MainTarget.DEFAULT_DIMENSIONS);
       }
 

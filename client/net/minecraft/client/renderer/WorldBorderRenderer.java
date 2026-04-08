@@ -30,7 +30,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class WorldBorderRenderer implements AutoCloseable {
+public class WorldBorderRenderer {
    public static final Identifier FORCEFIELD_LOCATION = Identifier.withDefaultNamespace("textures/misc/forcefield.png");
    private boolean needsRebuild = true;
    private double lastMinX;
@@ -46,10 +46,6 @@ public class WorldBorderRenderer implements AutoCloseable {
       super();
       this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16L * (long)DefaultVertexFormat.POSITION_TEX.getVertexSize());
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-   }
-
-   public void close() {
-      this.worldBorderBuffer.close();
    }
 
    private void rebuildWorldBorderBuffer(final WorldBorderRenderState state, final double renderDistance, final double cameraZ, final double cameraX, final float halfHeightY, final float v1, final float v0) {
@@ -145,7 +141,7 @@ public class WorldBorderRenderer implements AutoCloseable {
          }
 
          GpuBuffer indexBuffer = this.indices.getBuffer(6);
-         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), new Vector4f(red, green, blue, (float)state.alpha), new Vector3f((float)(this.lastMinX - cameraX), (float)(-cameraPos.y), (float)(this.lastMinZ - cameraZ)), (new Matrix4f()).translation(offset, offset, 0.0F));
+         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(red, green, blue, (float)state.alpha), new Vector3f((float)(this.lastMinX - cameraX), (float)(-cameraPos.y), (float)(this.lastMinZ - cameraZ)), (new Matrix4f()).translation(offset, offset, 0.0F));
 
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
             renderPass.setPipeline(renderPipeline);

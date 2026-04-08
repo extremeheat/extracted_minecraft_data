@@ -30,6 +30,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.client.model.object.book.BookModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -80,9 +81,9 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
-import org.joml.Quaternionfc;
+import org.joml.Quaternionf;
 import org.joml.Vector2ic;
-import org.joml.Vector3fc;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public class GuiGraphicsExtractor {
@@ -572,12 +573,12 @@ public class GuiGraphicsExtractor {
 
    }
 
-   public void entity(final EntityRenderState renderState, final float scale, final Vector3fc translation, final Quaternionfc rotation, final @Nullable Quaternionfc overrideCameraAngle, final int x0, final int y0, final int x1, final int y1) {
+   public void entity(final EntityRenderState renderState, final float scale, final Vector3f translation, final Quaternionf rotation, final @Nullable Quaternionf overrideCameraAngle, final int x0, final int y0, final int x1, final int y1) {
       renderState.lightCoords = 15728880;
       this.guiRenderState.addPicturesInPictureState(new GuiEntityRenderState(renderState, translation, rotation, overrideCameraAngle, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
-   public void skin(final Model.Simple playerModel, final Identifier texture, final float scale, final float rotationX, final float rotationY, final float pivotY, final int x0, final int y0, final int x1, final int y1) {
+   public void skin(final PlayerModel playerModel, final Identifier texture, final float scale, final float rotationX, final float rotationY, final float pivotY, final int x0, final int y0, final int x1, final int y1) {
       this.guiRenderState.addPicturesInPictureState(new GuiSkinRenderState(playerModel, texture, rotationX, rotationY, pivotY, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 

@@ -49,7 +49,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
 
          if ((this.timeWaiting >= 600 || this.resetCount > 3) && this.toast == null) {
             this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, true);
-            minecraft.gui.toastManager().addToast(this.toast);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }

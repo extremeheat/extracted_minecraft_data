@@ -41,7 +41,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -60,6 +59,7 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -603,13 +603,16 @@ public class Axolotl extends Animal implements Bucketable {
       }
    }
 
-   private static class AxolotlMoveControl<T extends Axolotl> extends SmoothSwimmingMoveControl<T> {
-      public AxolotlMoveControl(final T axolotl) {
+   private static class AxolotlMoveControl extends SmoothSwimmingMoveControl {
+      private final Axolotl axolotl;
+
+      public AxolotlMoveControl(final Axolotl axolotl) {
          super(axolotl, 85, 10, 0.1F, 0.5F, false);
+         this.axolotl = axolotl;
       }
 
       public void tick() {
-         if (!((Axolotl)this.mob).isPlayingDead()) {
+         if (!this.axolotl.isPlayingDead()) {
             super.tick();
          }
 

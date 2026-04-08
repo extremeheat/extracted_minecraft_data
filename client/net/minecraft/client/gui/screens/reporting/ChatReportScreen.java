@@ -34,11 +34,11 @@ public class ChatReportScreen extends AbstractReportScreen<ChatReport.Builder> {
    }
 
    protected void addContent() {
-      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (b) -> this.minecraft.gui.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, (updatedReport) -> {
+      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (b) -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, (updatedReport) -> {
             this.reportBuilder = updatedReport;
             this.onReportChanged();
          }))).width(280).build());
-      this.selectReasonButton = Button.builder(SELECT_REASON, (b) -> this.minecraft.gui.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (reason) -> {
+      this.selectReasonButton = Button.builder(SELECT_REASON, (b) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (reason) -> {
             ((ChatReport.Builder)this.reportBuilder).setReason(reason);
             this.onReportChanged();
          }))).width(280).build();

@@ -97,7 +97,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       if (block instanceof WeatheringCopper copper) {
          return (WeatheringCopper.WeatherState)copper.getAge();
       } else {
-         return (WeatheringCopper.WeatherState)((WeatheringCopper)Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(state.getBlock())).filter((weatheringCopper) -> weatheringCopper instanceof WeatheringCopper).map((weatheringCopper) -> (WeatheringCopper)weatheringCopper).orElse((WeatheringCopper)Blocks.COPPER_BLOCK.unaffected())).getAge();
+         return (WeatheringCopper.WeatherState)((WeatheringCopper)Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(state.getBlock())).filter((weatheringCopper) -> weatheringCopper instanceof WeatheringCopper).map((weatheringCopper) -> (WeatheringCopper)weatheringCopper).orElse((WeatheringCopper)Blocks.COPPER_BLOCK)).getAge();
       }
    }
 

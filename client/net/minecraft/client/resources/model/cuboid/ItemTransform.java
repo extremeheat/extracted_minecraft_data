@@ -46,9 +46,9 @@ public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemTransform> {
-      private static final Vector3fc DEFAULT_ROTATION = new Vector3f();
-      private static final Vector3fc DEFAULT_TRANSLATION = new Vector3f();
-      private static final Vector3fc DEFAULT_SCALE = new Vector3f(1.0F, 1.0F, 1.0F);
+      private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
+      private static final Vector3f DEFAULT_TRANSLATION = new Vector3f(0.0F, 0.0F, 0.0F);
+      private static final Vector3f DEFAULT_SCALE = new Vector3f(1.0F, 1.0F, 1.0F);
       public static final float MAX_TRANSLATION = 5.0F;
       public static final float MAX_SCALE = 4.0F;
 
@@ -58,18 +58,18 @@ public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc
 
       public ItemTransform deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
          JsonObject object = json.getAsJsonObject();
-         Vector3f rotation = getVector3f(object, "rotation", DEFAULT_ROTATION);
-         Vector3f translation = getVector3f(object, "translation", DEFAULT_TRANSLATION);
+         Vector3f rotation = this.getVector3f(object, "rotation", DEFAULT_ROTATION);
+         Vector3f translation = this.getVector3f(object, "translation", DEFAULT_TRANSLATION);
          translation.mul(0.0625F);
          translation.set(Mth.clamp(translation.x, -5.0F, 5.0F), Mth.clamp(translation.y, -5.0F, 5.0F), Mth.clamp(translation.z, -5.0F, 5.0F));
-         Vector3f scale = getVector3f(object, "scale", DEFAULT_SCALE);
+         Vector3f scale = this.getVector3f(object, "scale", DEFAULT_SCALE);
          scale.set(Mth.clamp(scale.x, -4.0F, 4.0F), Mth.clamp(scale.y, -4.0F, 4.0F), Mth.clamp(scale.z, -4.0F, 4.0F));
          return new ItemTransform(rotation, translation, scale);
       }
 
-      private static Vector3f getVector3f(final JsonObject object, final String key, final Vector3fc def) {
+      private Vector3f getVector3f(final JsonObject object, final String key, final Vector3f def) {
          if (!object.has(key)) {
-            return new Vector3f(def);
+            return def;
          } else {
             JsonArray vecArray = GsonHelper.getAsJsonArray(object, key);
             if (vecArray.size() != 3) {

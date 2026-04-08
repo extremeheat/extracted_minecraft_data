@@ -166,7 +166,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public boolean readyForShearing() {
-      return !this.isSheared() && !this.isBaby();
+      return this.isAlive() && !this.isSheared() && !this.isBaby();
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

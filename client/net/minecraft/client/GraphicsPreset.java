@@ -34,7 +34,7 @@ public enum GraphicsPreset implements StringRepresentable {
    }
 
    public void apply(final Minecraft minecraft) {
-      OptionsSubScreen screen = minecraft.gui != null && minecraft.gui.screen() instanceof OptionsSubScreen ? (OptionsSubScreen)minecraft.gui.screen() : null;
+      OptionsSubScreen screen = minecraft.screen instanceof OptionsSubScreen ? (OptionsSubScreen)minecraft.screen : null;
       GpuDevice device = RenderSystem.getDevice();
       switch (this.ordinal()) {
          case 0:

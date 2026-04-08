@@ -31,7 +31,7 @@ public class UpgradeProgress {
    private volatile @Nullable DataFixTypes dataFixType;
    private volatile Status status;
    private volatile @Nullable Type type;
-   private final AtomicLong lastLoggedProgressTime;
+   private AtomicLong lastLoggedProgressTime;
 
    public UpgradeProgress() {
       super();

@@ -33,10 +33,10 @@ public final class ReportingContext {
    public void draftReportHandled(final Minecraft minecraft, final Screen lastScreen, final Runnable onDiscard, final boolean quitToTitle) {
       if (this.draftReport != null) {
          Report report = this.draftReport.copy();
-         minecraft.gui.setScreen(new ConfirmScreen((response) -> {
+         minecraft.setScreen(new ConfirmScreen((response) -> {
             this.setReportDraft((Report)null);
             if (response) {
-               minecraft.gui.setScreen(report.createScreen(lastScreen, this));
+               minecraft.setScreen(report.createScreen(lastScreen, this));
             } else {
                onDiscard.run();
             }

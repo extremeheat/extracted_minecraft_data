@@ -43,7 +43,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    private Button createGameRulesButton() {
       Button gameRulesButton = Button.builder(GAME_RULES, (button) -> {
          if (this.minecraft.player != null) {
-            this.minecraft.gui.setScreen(new InWorldGameRulesScreen(this.minecraft.player.connection, (var1) -> this.minecraft.gui.setScreen(this), this));
+            this.minecraft.setScreen(new InWorldGameRulesScreen(this.minecraft.player.connection, (result) -> this.minecraft.setScreen(this), this));
          }
 
       }).build();
@@ -58,7 +58,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    private Button createRestrictionsButton() {
       return Button.builder(RESTRICTIONS, (var1) -> {
          if (this.minecraft.player != null) {
-            this.minecraft.gui.setScreen(new RestrictionsScreen(this, this.minecraft.player.chatAbilities()));
+            this.minecraft.setScreen(new RestrictionsScreen(this, this.minecraft.player.chatAbilities()));
          }
 
       }).build();
@@ -69,13 +69,13 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       if (!hasGamemasterPermission) {
-         this.minecraft.gui.setScreen(this.lastScreen);
-         Screen var3 = this.minecraft.gui.screen();
+         this.minecraft.setScreen(this.lastScreen);
+         Screen var3 = this.minecraft.screen;
          if (var3 instanceof HasGamemasterPermissionReaction) {
             HasGamemasterPermissionReaction screen = (HasGamemasterPermissionReaction)var3;
             screen.onGamemasterPermissionChanged(hasGamemasterPermission);

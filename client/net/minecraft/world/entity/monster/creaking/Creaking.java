@@ -503,13 +503,14 @@ public class Creaking extends Monster {
       }
    }
 
-   private static class CreakingMoveControl<T extends Creaking> extends MoveControl<T> {
-      public CreakingMoveControl(final T creaking) {
+   private class CreakingMoveControl extends MoveControl {
+      public CreakingMoveControl(final Creaking creaking) {
+         Objects.requireNonNull(Creaking.this);
          super(creaking);
       }
 
       public void tick() {
-         if (((Creaking)this.mob).canMove()) {
+         if (Creaking.this.canMove()) {
             super.tick();
          }
 

@@ -1,27 +1,32 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import org.jspecify.annotations.Nullable;
 
-public record ProtectedBlockProcessor(HolderSet<Block> cannotReplace) implements StructureProcessor {
-   public static final MapCodec<ProtectedBlockProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("value").forGetter(ProtectedBlockProcessor::cannotReplace)).apply(i, ProtectedBlockProcessor::new));
+public class ProtectedBlockProcessor extends StructureProcessor {
+   public final TagKey<Block> cannotReplace;
+   public static final MapCodec<ProtectedBlockProcessor> CODEC;
 
-   public ProtectedBlockProcessor {
+   public ProtectedBlockProcessor(final TagKey<Block> cannotReplace) {
       super();
+      this.cannotReplace = cannotReplace;
    }
 
    public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
-      return !level.getBlockState(processedBlockInfo.pos()).is(this.cannotReplace) ? processedBlockInfo : null;
+      return Feature.isReplaceable(this.cannotReplace).test(level.getBlockState(processedBlockInfo.pos())) ? processedBlockInfo : null;
    }
 
-   public MapCodec<ProtectedBlockProcessor> codec() {
-      return MAP_CODEC;
+   protected StructureProcessorType<?> getType() {
+      return StructureProcessorType.PROTECTED_BLOCKS;
+   }
+
+   static {
+      CODEC = TagKey.hashedCodec(Registries.BLOCK).xmap(ProtectedBlockProcessor::new, (e) -> e.cannotReplace).fieldOf("value");
    }
 }

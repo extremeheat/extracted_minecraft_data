@@ -24,7 +24,6 @@ public class GuiRenderState {
    private @Nullable ScreenRectangle lastElementBounds;
    public @Nullable PanoramaRenderState panoramaRenderState;
    public int clearColorOverride;
-   public boolean isHudHidden;
 
    public GuiRenderState() {
       super();

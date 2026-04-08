@@ -3,9 +3,7 @@ package net.minecraft.client.main;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
 import com.mojang.blaze3d.TracyBootstrap;
-import com.mojang.blaze3d.platform.ClientShutdownWatchdog;
 import com.mojang.blaze3d.platform.DisplayData;
-import com.mojang.blaze3d.platform.NativeLibrariesBootstrap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
@@ -32,7 +30,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.Optionull;
 import net.minecraft.SharedConstants;
-import net.minecraft.SuppressForbidden;
 import net.minecraft.client.ClientBootstrap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -59,15 +56,7 @@ public class Main {
    }
 
    public static void main(final String[] args) {
-      OptionParser parser;
-      try {
-         parser = new OptionParser();
-      } catch (Throwable t) {
-         logEarlyException(t);
-         System.exit(-4);
-         return;
-      }
-
+      OptionParser parser = new OptionParser();
       parser.allowsUnrecognizedOptions();
       parser.accepts("demo");
       parser.accepts("disableMultiplayer");
@@ -75,7 +64,6 @@ public class Main {
       parser.accepts("fullscreen");
       parser.accepts("checkGlErrors");
       OptionSpec<Void> renderDebugLabelsOption = parser.accepts("renderDebugLabels");
-      OptionSpec<Void> vulkanValidationOption = parser.accepts("vulkanValidation");
       OptionSpec<Void> jfrProfilingOption = parser.accepts("jfrProfile");
       OptionSpec<Void> tracyProfilingOption = parser.accepts("tracy");
       OptionSpec<Void> tracyNoImageOption = parser.accepts("tracyNoImages");
@@ -104,30 +92,9 @@ public class Main {
       OptionSpec<String> assetIndexOption = parser.accepts("assetIndex").withRequiredArg();
       OptionSpec<String> versionTypeString = parser.accepts("versionType").withRequiredArg().defaultsTo("release", new String[0]);
       OptionSpec<String> nonOption = parser.nonOptions();
-
-      OptionSet optionSet;
-      try {
-         optionSet = parser.parse(args);
-      } catch (Throwable t) {
-         logEarlyException(t);
-         System.exit(-5);
-         return;
-      }
-
+      OptionSet optionSet = parser.parse(args);
       File gameDir = (File)parseArgument(optionSet, gameDirOption);
       String launchedVersion = (String)parseArgument(optionSet, versionOption);
-
-      try {
-         NativeLibrariesBootstrap.loadLibraries();
-      } catch (Throwable t) {
-         CrashReport report = CrashReport.forThrowable(t, "Loading native libraries");
-         CrashReportCategory initialization = report.addCategory("Initialization");
-         NativeModuleLister.addCrashSection(initialization);
-         Minecraft.fillReport((Minecraft)null, (LanguageManager)null, launchedVersion, (Options)null, report);
-         Minecraft.crash((Minecraft)null, gameDir, report, -3);
-         return;
-      }
-
       String stage = "Pre-bootstrap";
 
       Logger logger;
@@ -166,7 +133,7 @@ public class Main {
          if (hostName != null) {
             try {
                proxy = new Proxy(Type.SOCKS, new InetSocketAddress(hostName, (Integer)parseArgument(optionSet, proxyPortOption)));
-            } catch (Exception var70) {
+            } catch (Exception var74) {
             }
          }
 
@@ -191,7 +158,6 @@ public class Main {
          boolean captureTracyImages = !optionSet.has(tracyNoImageOption);
          boolean renderDebugLabels = optionSet.has(renderDebugLabelsOption);
          String versionType = (String)parseArgument(optionSet, versionTypeString);
-         boolean vulkanValidation = optionSet.has(vulkanValidationOption);
          File assetsDir = optionSet.has(assetsDirOption) ? (File)parseArgument(optionSet, assetsDirOption) : new File(gameDir, "assets/");
          File resourcePackDir = optionSet.has(resourcePackDirOption) ? (File)parseArgument(optionSet, resourcePackDirOption) : new File(gameDir, "resourcepacks/");
          UUID uuid = hasValidUuid(uuidOption, optionSet, logger) ? UndashedUuid.fromStringLenient((String)uuidOption.value(optionSet)) : UUIDUtil.createOfflinePlayerUUID((String)usernameOption.value(optionSet));
@@ -201,7 +167,7 @@ public class Main {
          String quickPlayLogPath = (String)parseArgument(optionSet, quickPlayPathOption);
          GameConfig.QuickPlayVariant quickPlayVariant = getQuickPlayVariant(optionSet, quickPlaySingleplayerOption, quickPlayMultiplayerOption, quickPlayRealmsOption);
          User user = new User((String)usernameOption.value(optionSet), uuid, (String)accessTokenOption.value(optionSet), emptyStringToEmptyOptional(xuid), emptyStringToEmptyOptional(clientId));
-         gameConfig = new GameConfig(new GameConfig.UserData(user, proxy), new DisplayData(width, height, fullscreenWidth, fullscreenHeight, isFullscreen), new GameConfig.FolderData(gameDir, resourcePackDir, assetsDir, assetIndex), new GameConfig.GameData(isDemo, launchedVersion, versionType, disableMultiplayer, disableChat, captureTracyImages, vulkanValidation, renderDebugLabels, optionSet.has(offlineDeveloperMode)), new GameConfig.QuickPlayData(quickPlayLogPath, quickPlayVariant));
+         gameConfig = new GameConfig(new GameConfig.UserData(user, proxy), new DisplayData(width, height, fullscreenWidth, fullscreenHeight, isFullscreen), new GameConfig.FolderData(gameDir, resourcePackDir, assetsDir, assetIndex), new GameConfig.GameData(isDemo, launchedVersion, versionType, disableMultiplayer, disableChat, captureTracyImages, renderDebugLabels, optionSet.has(offlineDeveloperMode)), new GameConfig.QuickPlayData(quickPlayLogPath, quickPlayVariant));
          Util.startTimerHackThread();
          dataFixerOptimization.join();
       } catch (Throwable t) {
@@ -209,7 +175,7 @@ public class Main {
          CrashReportCategory initialization = report.addCategory("Initialization");
          NativeModuleLister.addCrashSection(initialization);
          Minecraft.fillReport((Minecraft)null, (LanguageManager)null, launchedVersion, (Options)null, report);
-         Minecraft.crash((Minecraft)null, gameDir, report, -1);
+         Minecraft.crash((Minecraft)null, gameDir, report);
          return;
       }
 
@@ -227,12 +193,12 @@ public class Main {
       };
       shutdownThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(logger));
       Runtime.getRuntime().addShutdownHook(shutdownThread);
-      Minecraft minecraft = null;
+      Minecraft newMinecraft = null;
 
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
-         minecraft = new Minecraft(gameConfig);
+         newMinecraft = new Minecraft(gameConfig);
       } catch (SilentInitException e) {
          Util.shutdownExecutors();
          logger.warn("Failed to create window: ", e);
@@ -241,30 +207,20 @@ public class Main {
          CrashReport report = CrashReport.forThrowable(t, "Initializing game");
          CrashReportCategory initialization = report.addCategory("Initialization");
          NativeModuleLister.addCrashSection(initialization);
-         Minecraft.fillReport(minecraft, (LanguageManager)null, gameConfig.game.launchVersion, (Options)null, report);
-         Minecraft.crash(minecraft, gameConfig.location.gameDirectory, report, -1);
+         Minecraft.fillReport(newMinecraft, (LanguageManager)null, gameConfig.game.launchVersion, (Options)null, report);
+         Minecraft.crash(newMinecraft, gameConfig.location.gameDirectory, report);
          return;
       }
 
-      minecraft.run();
+      Minecraft minecraft = newMinecraft;
+      newMinecraft.run();
 
       try {
-         minecraft.exitWorldAndClose();
-      } catch (Throwable t) {
-         CrashReport report = CrashReport.forThrowable(t, "Game shutdown");
-         Minecraft.fillReport((Minecraft)null, (LanguageManager)null, launchedVersion, (Options)null, report);
-         Minecraft.crash((Minecraft)null, gameDir, report, -6);
-         return;
+         minecraft.stop();
+      } finally {
+         newMinecraft.destroy();
       }
 
-      ClientShutdownWatchdog.startShutdownWatchdog("post-main", (Minecraft)null, gameConfig, Thread.currentThread().threadId());
-   }
-
-   @SuppressForbidden(
-      reason = "Logging not available yet"
-   )
-   private static void logEarlyException(final Throwable t) {
-      t.printStackTrace();
    }
 
    private static GameConfig.QuickPlayVariant getQuickPlayVariant(final OptionSet optionSet, final OptionSpec<String> quickPlaySingleplayerOption, final OptionSpec<String> quickPlayMultiplayerOption, final OptionSpec<String> quickPlayRealmsOption) {

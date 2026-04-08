@@ -165,7 +165,7 @@ public class RealmsMainScreen extends RealmsScreen {
       this.serverList = new RealmsServerList(this.minecraft);
       this.realmSelectionList = new RealmSelectionList();
       Component invitesTitle = Component.translatable("mco.invites.title");
-      this.pendingInvitesButton = new NotificationButton(invitesTitle, INVITE_SPRITE, (var2) -> this.minecraft.gui.setScreen(new RealmsPendingInvitesScreen(this, invitesTitle)), (Component)null);
+      this.pendingInvitesButton = new NotificationButton(invitesTitle, INVITE_SPRITE, (b) -> this.minecraft.setScreen(new RealmsPendingInvitesScreen(this, invitesTitle)), (Component)null);
       Component newsTitle = Component.translatable("mco.news");
       this.newsButton = new NotificationButton(newsTitle, NEWS_SPRITE, (b) -> {
          String newsLink = this.newsLink;
@@ -201,7 +201,7 @@ public class RealmsMainScreen extends RealmsScreen {
          if (errorScreen == null) {
             this.dataSubscription = this.initDataFetcher(this.minecraft.realmsDataFetcher());
          } else {
-            this.minecraft.gui.setScreen(errorScreen);
+            this.minecraft.setScreen(errorScreen);
          }
 
       }, this.screenExecutor);
@@ -220,7 +220,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private void updateLayout() {
@@ -376,7 +376,7 @@ public class RealmsMainScreen extends RealmsScreen {
             if (notification instanceof RealmsNotification.InfoPopup popup) {
                PopupScreen popupScreen = popup.buildScreen(this, this::dismissNotification);
                if (popupScreen != null) {
-                  this.minecraft.gui.setScreen(popupScreen);
+                  this.minecraft.setScreen(popupScreen);
                   this.markNotificationsAsSeen(List.of(notification));
                   break;
                }
@@ -474,11 +474,11 @@ public class RealmsMainScreen extends RealmsScreen {
    private void onRenew(final @Nullable RealmsServer server) {
       if (server != null) {
          String extensionUrl = CommonLinks.extendRealms(server.remoteSubscriptionId, this.minecraft.getUser().getProfileId(), server.expiredTrial);
-         this.minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
+         this.minecraft.setScreen(new ConfirmLinkScreen((result) -> {
             if (result) {
                Util.getPlatform().openUri(extensionUrl);
             } else {
-               this.minecraft.gui.setScreen(this);
+               this.minecraft.setScreen(this);
             }
 
          }, extensionUrl, true));
@@ -488,7 +488,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
    private void configureClicked(final @Nullable RealmsServer selectedServer) {
       if (selectedServer != null && this.minecraft.isLocalPlayer(selectedServer.ownerUUID)) {
-         this.minecraft.gui.setScreen(new RealmsConfigureWorldScreen(this, selectedServer.id));
+         this.minecraft.setScreen(new RealmsConfigureWorldScreen(this, selectedServer.id));
       }
 
    }
@@ -496,7 +496,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private void leaveClicked(final @Nullable RealmsServer selectedServer) {
       if (selectedServer != null && !this.minecraft.isLocalPlayer(selectedServer.ownerUUID)) {
          Component popupMessage = Component.translatable("mco.configure.world.leave.question.line1");
-         this.minecraft.gui.setScreen(RealmsPopups.infoPopupScreen(this, popupMessage, (var2) -> this.leaveServer(selectedServer)));
+         this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, popupMessage, (popup) -> this.leaveServer(selectedServer)));
       }
 
    }
@@ -523,12 +523,12 @@ public class RealmsMainScreen extends RealmsScreen {
                RealmsMainScreen.this.minecraft.execute(RealmsMainScreen::refreshServerList);
             } catch (RealmsServiceException e) {
                RealmsMainScreen.LOGGER.error("Couldn't configure world", e);
-               RealmsMainScreen.this.minecraft.execute(() -> RealmsMainScreen.this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(e, RealmsMainScreen.this)));
+               RealmsMainScreen.this.minecraft.execute(() -> RealmsMainScreen.this.minecraft.setScreen(new RealmsGenericErrorScreen(e, RealmsMainScreen.this)));
             }
 
          }
       }).start();
-      this.minecraft.gui.setScreen(this);
+      this.minecraft.setScreen(this);
    }
 
    private void dismissNotification(final UUID uuid) {
@@ -576,7 +576,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void openTrialAvailablePopup() {
-      this.minecraft.gui.setScreen(new AddRealmPopupScreen(this, this.trialsAvailable));
+      this.minecraft.setScreen(new AddRealmPopupScreen(this, this.trialsAvailable));
    }
 
    public static void play(final @Nullable RealmsServer server, final Screen cancelScreen) {
@@ -586,25 +586,25 @@ public class RealmsMainScreen extends RealmsScreen {
    public static void play(final @Nullable RealmsServer server, final Screen cancelScreen, final boolean skipCompatibility) {
       if (server != null) {
          if (!isSnapshot() || skipCompatibility || server.isMinigameActive()) {
-            Minecraft.getInstance().gui.setScreen(new RealmsLongRunningMcoTaskScreen(cancelScreen, new LongRunningTask[]{new GetServerDetailsTask(cancelScreen, server)}));
+            Minecraft.getInstance().setScreen(new RealmsLongRunningMcoTaskScreen(cancelScreen, new LongRunningTask[]{new GetServerDetailsTask(cancelScreen, server)}));
             return;
          }
 
          switch (server.compatibility) {
-            case COMPATIBLE -> Minecraft.getInstance().gui.setScreen(new RealmsLongRunningMcoTaskScreen(cancelScreen, new LongRunningTask[]{new GetServerDetailsTask(cancelScreen, server)}));
+            case COMPATIBLE -> Minecraft.getInstance().setScreen(new RealmsLongRunningMcoTaskScreen(cancelScreen, new LongRunningTask[]{new GetServerDetailsTask(cancelScreen, server)}));
             case UNVERIFIABLE -> confirmToPlay(server, cancelScreen, Component.translatable("mco.compatibility.unverifiable.title").withColor(-171), Component.translatable("mco.compatibility.unverifiable.message"), CommonComponents.GUI_CONTINUE);
             case NEEDS_DOWNGRADE -> confirmToPlay(server, cancelScreen, Component.translatable("selectWorld.backupQuestion.downgrade").withColor(-2142128), Component.translatable("mco.compatibility.downgrade.description", Component.literal(server.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171)), Component.translatable("mco.compatibility.downgrade"));
             case NEEDS_UPGRADE -> upgradeRealmAndPlay(server, cancelScreen);
-            case INCOMPATIBLE -> Minecraft.getInstance().gui.setScreen((new PopupScreen.Builder(cancelScreen, INCOMPATIBLE_POPUP_TITLE)).addMessage(Component.translatable("mco.compatibility.incompatible.series.popup.message", Component.literal(server.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171))).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
-            case RELEASE_TYPE_INCOMPATIBLE -> Minecraft.getInstance().gui.setScreen((new PopupScreen.Builder(cancelScreen, INCOMPATIBLE_POPUP_TITLE)).addMessage(INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
+            case INCOMPATIBLE -> Minecraft.getInstance().setScreen((new PopupScreen.Builder(cancelScreen, INCOMPATIBLE_POPUP_TITLE)).addMessage(Component.translatable("mco.compatibility.incompatible.series.popup.message", Component.literal(server.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171))).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
+            case RELEASE_TYPE_INCOMPATIBLE -> Minecraft.getInstance().setScreen((new PopupScreen.Builder(cancelScreen, INCOMPATIBLE_POPUP_TITLE)).addMessage(INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
          }
       }
 
    }
 
    private static void confirmToPlay(final RealmsServer server, final Screen lastScreen, final Component title, final Component message, final Component confirmButton) {
-      Minecraft.getInstance().gui.setScreen((new PopupScreen.Builder(lastScreen, title)).addMessage(message).addButton(confirmButton, (var2) -> {
-         Minecraft.getInstance().gui.setScreen(new RealmsLongRunningMcoTaskScreen(lastScreen, new LongRunningTask[]{new GetServerDetailsTask(lastScreen, server)}));
+      Minecraft.getInstance().setScreen((new PopupScreen.Builder(lastScreen, title)).addMessage(message).addButton(confirmButton, (popupScreen) -> {
+         Minecraft.getInstance().setScreen(new RealmsLongRunningMcoTaskScreen(lastScreen, new LongRunningTask[]{new GetServerDetailsTask(lastScreen, server)}));
          refreshServerList();
       }).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build());
    }
@@ -982,7 +982,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int textYPos = var10000 - 9 / 2;
          graphics.text(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, this.getContentX() + 40 - 2, textYPos - 5, -8388737);
          graphics.text(RealmsMainScreen.this.font, (Component)Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")), this.getContentX() + 40 - 2, textYPos + 5, -8355712);
-         this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, hovered, this.isFocused() && RealmsMainScreen.this.minecraft.gui.screen() == RealmsMainScreen.this, new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
+         this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, hovered, this.isFocused(), new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -1001,7 +1001,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       private void addSnapshotRealm() {
          RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
-         RealmsMainScreen.this.minecraft.gui.setScreen((new PopupScreen.Builder(RealmsMainScreen.this, Component.translatable("mco.snapshot.createSnapshotPopup.title"))).addMessage(Component.translatable("mco.snapshot.createSnapshotPopup.text")).addButton(Component.translatable("mco.selectServer.create"), (var1) -> RealmsMainScreen.this.minecraft.gui.setScreen(new RealmsCreateRealmScreen(RealmsMainScreen.this, this.parent, true))).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build());
+         RealmsMainScreen.this.minecraft.setScreen((new PopupScreen.Builder(RealmsMainScreen.this, Component.translatable("mco.snapshot.createSnapshotPopup.title"))).addMessage(Component.translatable("mco.snapshot.createSnapshotPopup.text")).addButton(Component.translatable("mco.selectServer.create"), (popup) -> RealmsMainScreen.this.minecraft.setScreen(new RealmsCreateRealmScreen(RealmsMainScreen.this, this.parent, true))).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build());
       }
 
       public Component getNarration() {
@@ -1125,7 +1125,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private void createUnitializedRealm() {
          RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
          RealmsCreateRealmScreen createScreen = new RealmsCreateRealmScreen(RealmsMainScreen.this, this.serverData, this.serverData.isSnapshotRealm());
-         RealmsMainScreen.this.minecraft.gui.setScreen(createScreen);
+         RealmsMainScreen.this.minecraft.setScreen(createScreen);
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {

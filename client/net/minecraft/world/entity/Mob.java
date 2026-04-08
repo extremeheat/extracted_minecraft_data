@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -22,13 +21,11 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.debug.DebugBrainDump;
 import net.minecraft.util.debug.DebugGoalInfo;
 import net.minecraft.util.debug.DebugPathInfo;
@@ -75,7 +72,6 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -575,7 +571,6 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
             ItemStack toEquip = slot.limit(itemStack);
             this.setItemSlotAndDropWhenKilled(slot, toEquip);
-            this.persistenceRequired = true;
             return toEquip;
          } else {
             return ItemStack.EMPTY;
@@ -586,37 +581,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    protected void setItemSlotAndDropWhenKilled(final EquipmentSlot slot, final ItemStack itemStack) {
       this.setItemSlot(slot, itemStack);
       this.setGuaranteedDrop(slot);
+      this.persistenceRequired = true;
    }
 
    protected boolean canShearEquipment(final Player player) {
       return !this.isVehicle();
-   }
-
-   protected boolean attemptToShearEquipment(final Player player, final InteractionHand hand, final ItemStack heldItem) {
-      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
-         ItemStack itemStack = this.getItemBySlot(slot);
-         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
-         if (equippable != null && equippable.canBeSheared() && (!EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || player.isCreative())) {
-            this.shearItem(player, hand, heldItem, slot, itemStack);
-            this.playSound((SoundEvent)equippable.shearingSound().value());
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   protected void shearItem(final Player player, final InteractionHand hand, final ItemStack heldItem, final EquipmentSlot slot, final ItemStack itemStackToShear) {
-      heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
-      Vec3 equipmentSpawnOffset = this.getAttachments().getAverage(EntityAttachment.PASSENGER);
-      this.setItemSlot(slot, ItemStack.EMPTY);
-      this.gameEvent(GameEvent.SHEAR, player);
-      Level var8 = this.level();
-      if (var8 instanceof ServerLevel serverLevel) {
-         this.spawnAtLocation(serverLevel, itemStackToShear, equipmentSpawnOffset);
-         CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
-      }
-
    }
 
    public void setGuaranteedDrop(final EquipmentSlot slot) {
@@ -884,6 +853,10 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
    private boolean hasValidEquippableItemForSlot(final EquipmentSlot slot) {
       return this.hasItemInSlot(slot) && this.isEquippableInSlot(this.getItemBySlot(slot), slot);
+   }
+
+   public void setBodyArmorItem(final ItemStack item) {
+      this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, item);
    }
 
    public Container createEquipmentSlotContainer(final EquipmentSlot slot) {
@@ -1430,12 +1403,6 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    public void removeFreeWill() {
       this.removeAllGoals((goal) -> true);
       this.getBrain().removeAllBehaviors();
-   }
-
-   @VisibleForDebug
-   @VisibleForTesting
-   public GoalSelector getGoalSelector() {
-      return this.goalSelector;
    }
 
    public void removeAllGoals(final Predicate<Goal> predicate) {

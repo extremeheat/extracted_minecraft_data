@@ -56,7 +56,7 @@ public class ConnectScreen extends Screen {
    }
 
    public static void startConnecting(final Screen parent, final Minecraft minecraft, final ServerAddress hostAndPort, final ServerData data, final boolean isQuickPlay, final @Nullable TransferState transferState) {
-      if (minecraft.gui.screen() instanceof ConnectScreen) {
+      if (minecraft.screen instanceof ConnectScreen) {
          LOGGER.error("Attempt to connect while already connecting");
       } else {
          Component connectFailedTitle;
@@ -77,7 +77,7 @@ public class ConnectScreen extends Screen {
          minecraft.prepareForMultiplayer();
          minecraft.updateReportEnvironment(ReportEnvironment.thirdParty(data.ip));
          minecraft.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, data.ip, data.name);
-         minecraft.gui.setScreen(screen);
+         minecraft.setScreen(screen);
          screen.connect(minecraft, hostAndPort, data, transferState);
       }
    }
@@ -103,7 +103,7 @@ public class ConnectScreen extends Screen {
                }
 
                if (resolvedAddress.isEmpty()) {
-                  minecraft.execute(() -> minecraft.gui.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)));
+                  minecraft.execute(() -> minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)));
                   return;
                }
 
@@ -158,7 +158,7 @@ public class ConnectScreen extends Screen {
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var9);
                String message = address == null ? cause.getMessage() : cause.getMessage().replaceAll(address.getHostName() + ":" + address.getPort(), "").replaceAll(address.toString(), "");
-               minecraft.execute(() -> minecraft.gui.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", message))));
+               minecraft.execute(() -> minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", message))));
             }
 
          }
@@ -212,7 +212,7 @@ public class ConnectScreen extends Screen {
             }
          }
 
-         this.minecraft.gui.setScreen(this.parent);
+         this.minecraft.setScreen(this.parent);
       }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
    }
 

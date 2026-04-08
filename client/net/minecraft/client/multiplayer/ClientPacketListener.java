@@ -42,6 +42,7 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.components.toasts.RecipeToast;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.DeathScreen;
@@ -430,7 +431,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.pingDebugMonitor = new PingDebugMonitor(this, minecraft.getDebugOverlay().getPingLogger());
       this.debugSubscriber = new ClientDebugSubscriber(this, minecraft.getDebugOverlay());
       if (cookie.chatState() != null) {
-         minecraft.gui.hud.getChat().restoreState(cookie.chatState());
+         minecraft.gui.getChat().restoreState(cookie.chatState());
       }
 
       this.potionBrewing = PotionBrewing.bootstrap(this.enabledFeatures);
@@ -526,8 +527,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.quickPlayLog().log(this.minecraft);
       this.serverEnforcesSecureChat = packet.enforcesSecureChat();
       if (this.serverData != null && !this.seenInsecureChatWarning && !this.enforcesSecureChat()) {
-         SystemToast toast = new SystemToast(SystemToast.SystemToastId.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST);
-         this.minecraft.gui.toastManager().addToast(toast);
+         SystemToast toast = SystemToast.multiline(this.minecraft, SystemToast.SystemToastId.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST);
+         this.minecraft.getToastManager().addToast(toast);
          this.seenInsecureChatWarning = true;
       }
 
@@ -887,9 +888,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleConfigurationStart(final ClientboundStartConfigurationPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.chatListener().flushQueue();
+      this.minecraft.getChatListener().flushQueue();
       this.sendChatAcknowledgement();
-      ChatComponent.State chatState = this.minecraft.gui.hud.getChat().storeState();
+      ChatComponent.State chatState = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
       this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(new LevelLoadTracker(), this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, chatState, this.customReportDetails, this.serverLinks(), this.seenPlayers, this.seenInsecureChatWarning)));
       this.send(ServerboundConfigurationAcknowledgedPacket.INSTANCE);
@@ -933,9 +934,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleSystemChat(final ClientboundSystemChatPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (packet.overlay()) {
-         this.minecraft.gui.chatListener().handleOverlay(packet.content());
+         this.minecraft.getChatListener().handleOverlay(packet.content());
       } else {
-         this.minecraft.gui.chatListener().handleSystemMessage(packet.content(), true);
+         this.minecraft.getChatListener().handleSystemMessage(packet.content(), true);
       }
 
    }
@@ -957,7 +958,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             PlayerInfo sender = this.getPlayerInfo(senderId);
             if (sender == null) {
                LOGGER.error("Received player chat packet for unknown player with ID: {}", senderId);
-               this.minecraft.gui.chatListener().handleChatMessageError(senderId, packet.signature(), packet.chatType());
+               this.minecraft.getChatListener().handleChatMessageError(senderId, packet.signature(), packet.chatType());
             } else {
                RemoteChatSession chatSession = sender.getChatSession();
                SignedMessageLink link;
@@ -970,9 +971,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                PlayerChatMessage message = new PlayerChatMessage(link, packet.signature(), (SignedMessageBody)body.get(), packet.unsignedContent(), packet.filterMask());
                message = sender.getMessageValidator().updateAndValidate(message);
                if (message != null) {
-                  this.minecraft.gui.chatListener().handlePlayerChatMessage(message, sender.getProfile(), packet.chatType());
+                  this.minecraft.getChatListener().handlePlayerChatMessage(message, sender.getProfile(), packet.chatType());
                } else {
-                  this.minecraft.gui.chatListener().handleChatMessageError(senderId, packet.signature(), packet.chatType());
+                  this.minecraft.getChatListener().handleChatMessageError(senderId, packet.signature(), packet.chatType());
                }
 
             }
@@ -982,7 +983,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleDisguisedChat(final ClientboundDisguisedChatPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.chatListener().handleDisguisedChatMessage(packet.message(), packet.chatType());
+      this.minecraft.getChatListener().handleDisguisedChatMessage(packet.message(), packet.chatType());
    }
 
    public void handleDeleteChat(final ClientboundDeleteChatPacket packet) {
@@ -992,8 +993,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.connection.disconnect(INVALID_PACKET);
       } else {
          this.lastSeenMessages.ignorePending((MessageSignature)signature.get());
-         if (!this.minecraft.gui.chatListener().removeFromDelayedMessageQueue((MessageSignature)signature.get())) {
-            this.minecraft.gui.hud.getChat().deleteMessage((MessageSignature)signature.get());
+         if (!this.minecraft.getChatListener().removeFromDelayedMessageQueue((MessageSignature)signature.get())) {
+            this.minecraft.gui.getChat().deleteMessage((MessageSignature)signature.get());
          }
 
       }
@@ -1066,7 +1067,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                      }
 
                      Component message = Component.translatable("mount.onboard", this.minecraft.options.keyShift.getTranslatedKeyMessage());
-                     this.minecraft.gui.hud.setOverlayMessage(message, false);
+                     this.minecraft.gui.setOverlayMessage(message, false);
                      this.minecraft.getNarrator().saySystemNow(message);
                   }
                }
@@ -1214,8 +1215,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       newPlayer.setPortalCooldown(spawnInfo.portalCooldown());
       newPlayer.portalEffectIntensity = oldPlayer.portalEffectIntensity;
       newPlayer.oPortalEffectIntensity = oldPlayer.oPortalEffectIntensity;
-      if (this.minecraft.gui.screen() instanceof DeathScreen || this.minecraft.gui.screen() instanceof DeathScreen.TitleConfirmScreen) {
-         this.minecraft.gui.setScreen((Screen)null);
+      if (this.minecraft.screen instanceof DeathScreen || this.minecraft.screen instanceof DeathScreen.TitleConfirmScreen) {
+         this.minecraft.setScreen((Screen)null);
       }
 
       this.minecraft.gameMode.setLocalMode(spawnInfo.gameType(), spawnInfo.previousGameType());
@@ -1257,11 +1258,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (entity instanceof AbstractHorse horse) {
          HorseInventoryMenu menu = new HorseInventoryMenu(packet.getContainerId(), player.getInventory(), container, horse, inventoryColumns);
          player.containerMenu = menu;
-         this.minecraft.gui.setScreen(new HorseInventoryScreen(menu, player.getInventory(), horse, inventoryColumns));
+         this.minecraft.setScreen(new HorseInventoryScreen(menu, player.getInventory(), horse, inventoryColumns));
       } else if (entity instanceof AbstractNautilus nautilus) {
          NautilusInventoryMenu menu = new NautilusInventoryMenu(packet.getContainerId(), player.getInventory(), container, nautilus, inventoryColumns);
          player.containerMenu = menu;
-         this.minecraft.gui.setScreen(new NautilusInventoryScreen(menu, player.getInventory(), nautilus, inventoryColumns));
+         this.minecraft.setScreen(new NautilusInventoryScreen(menu, player.getInventory(), nautilus, inventoryColumns));
       }
 
    }
@@ -1277,7 +1278,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ItemStack itemStack = packet.getItem();
       int slot = packet.getSlot();
       this.minecraft.getTutorial().onGetItem(itemStack);
-      Screen var7 = this.minecraft.gui.screen();
+      Screen var7 = this.minecraft.screen;
       boolean creative;
       if (var7 instanceof CreativeModeInventoryScreen screen) {
          creative = !screen.isInventoryOpen();
@@ -1298,7 +1299,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          player.containerMenu.setItem(slot, packet.getStateId(), itemStack);
       }
 
-      if (this.minecraft.gui.screen() instanceof CreativeModeInventoryScreen) {
+      if (this.minecraft.screen instanceof CreativeModeInventoryScreen) {
          player.inventoryMenu.setRemoteSlot(slot, itemStack);
          player.inventoryMenu.broadcastChanges();
       }
@@ -1308,7 +1309,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleSetCursorItem(final ClientboundSetCursorItemPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.minecraft.getTutorial().onGetItem(packet.contents());
-      if (!(this.minecraft.gui.screen() instanceof CreativeModeInventoryScreen)) {
+      if (!(this.minecraft.screen instanceof CreativeModeInventoryScreen)) {
          this.minecraft.player.containerMenu.setCarried(packet.contents());
       }
 
@@ -1362,8 +1363,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
          reporter.close();
-         if (blockEntity instanceof CommandBlockEntity && this.minecraft.gui.screen() instanceof CommandBlockEditScreen) {
-            ((CommandBlockEditScreen)this.minecraft.gui.screen()).updateGui();
+         if (blockEntity instanceof CommandBlockEntity && this.minecraft.screen instanceof CommandBlockEditScreen) {
+            ((CommandBlockEditScreen)this.minecraft.screen).updateGui();
          }
 
       });
@@ -1417,9 +1418,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (event == ClientboundGameEventPacket.CHANGE_GAME_MODE) {
          this.minecraft.gameMode.setLocalMode(GameType.byId(param));
       } else if (event == ClientboundGameEventPacket.WIN_GAME) {
-         this.minecraft.gui.setScreen(new WinScreen(true, () -> {
+         this.minecraft.setScreen(new WinScreen(true, () -> {
             player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.gui.setScreen((Screen)null);
+            this.minecraft.setScreen((Screen)null);
          }));
       } else if (event == ClientboundGameEventPacket.DEMO_EVENT) {
          Options options = this.minecraft.options;
@@ -1437,7 +1438,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
          if (message != null) {
-            this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
+            this.minecraft.gui.getChat().addClientSystemMessage(message);
             this.minecraft.getNarrator().saySystemQueued(message);
          }
       } else if (event == ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND) {
@@ -1464,7 +1465,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void openDemoIntroScreen(final Options options) {
-      this.minecraft.gui.setScreen((new PopupScreen.Builder((Screen)null, Component.translatable("demo.help.title"))).addMessage(CommonComponents.joinLines(Component.translatable("demo.help.movementShort", options.keyUp.getTranslatedKeyMessage(), options.keyLeft.getTranslatedKeyMessage(), options.keyDown.getTranslatedKeyMessage(), options.keyRight.getTranslatedKeyMessage()), Component.translatable("demo.help.movementMouse"), Component.translatable("demo.help.jump", options.keyJump.getTranslatedKeyMessage()), Component.translatable("demo.help.inventory", options.keyInventory.getTranslatedKeyMessage()))).addMessage(Component.translatable("demo.help.fullWrapped")).addButton(Component.translatable("demo.help.buy"), (popupScreen) -> ConfirmLinkScreen.confirmLinkNow((Screen)null, (URI)CommonLinks.BUY_MINECRAFT_JAVA)).addButton(Component.translatable("demo.help.later"), (popupScreen) -> {
+      this.minecraft.setScreen((new PopupScreen.Builder((Screen)null, Component.translatable("demo.help.title"))).addMessage(CommonComponents.joinLines(Component.translatable("demo.help.movementShort", options.keyUp.getTranslatedKeyMessage(), options.keyLeft.getTranslatedKeyMessage(), options.keyDown.getTranslatedKeyMessage(), options.keyRight.getTranslatedKeyMessage()), Component.translatable("demo.help.movementMouse"), Component.translatable("demo.help.jump", options.keyJump.getTranslatedKeyMessage()), Component.translatable("demo.help.inventory", options.keyInventory.getTranslatedKeyMessage()))).addMessage(Component.translatable("demo.help.fullWrapped")).addButton(Component.translatable("demo.help.buy"), (popupScreen) -> ConfirmLinkScreen.confirmLinkNow((Screen)null, (URI)CommonLinks.BUY_MINECRAFT_JAVA)).addButton(Component.translatable("demo.help.later"), (popupScreen) -> {
          this.minecraft.mouseHandler.grabMouse();
          popupScreen.onClose();
       }).build());
@@ -1476,11 +1477,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       this.levelLoadTracker.startClientLoad(player, level, this.minecraft.levelRenderer);
-      Screen var5 = this.minecraft.gui.screen();
+      Screen var5 = this.minecraft.screen;
       if (var5 instanceof LevelLoadingScreen loadingScreen) {
          loadingScreen.update(this.levelLoadTracker, reason);
       } else {
-         this.minecraft.gui.hud.getChat().preserveCurrentChatScreen();
+         this.minecraft.gui.getChat().preserveCurrentChatScreen();
          this.minecraft.setScreenAndShow(new LevelLoadingScreen(this.levelLoadTracker, reason));
       }
 
@@ -1574,7 +1575,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.player.getStats().setValue(this.minecraft.player, stat, amount);
       }
 
-      Screen var7 = this.minecraft.gui.screen();
+      Screen var7 = this.minecraft.screen;
       if (var7 instanceof StatsScreen statsScreen) {
          statsScreen.onStatsUpdated();
       }
@@ -1595,7 +1596,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
          if (entry.notification()) {
-            RecipeToast.addOrUpdate(this.minecraft.gui.toastManager(), entry.contents().display());
+            RecipeToast.addOrUpdate(this.minecraft.getToastManager(), entry.contents().display());
          }
       }
 
@@ -1623,7 +1624,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private void refreshRecipeBook(final ClientRecipeBook recipeBook) {
       recipeBook.rebuildCollections();
       this.searchTrees.updateRecipes(recipeBook, this.level);
-      Screen var3 = this.minecraft.gui.screen();
+      Screen var3 = this.minecraft.screen;
       if (var3 instanceof RecipeUpdateListener updateListener) {
          updateListener.recipesUpdated();
       }
@@ -1673,7 +1674,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity player = this.level.getEntity(packet.playerId());
       if (player == this.minecraft.player) {
          if (this.minecraft.player.shouldShowDeathScreen()) {
-            this.minecraft.gui.setScreen(new DeathScreen(packet.message(), this.level.getLevelData().isHardcore(), this.minecraft.player));
+            this.minecraft.setScreen(new DeathScreen(packet.message(), this.level.getLevelData().isHardcore(), this.minecraft.player));
          } else {
             this.minecraft.player.respawn();
          }
@@ -1685,7 +1686,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.levelData.setDifficulty(packet.difficulty());
       this.levelData.setDifficultyLocked(packet.locked());
-      Screen var3 = this.minecraft.gui.screen();
+      Screen var3 = this.minecraft.screen;
       if (var3 instanceof HasDifficultyReaction screen) {
          screen.onDifficultyChanged();
       }
@@ -1744,9 +1745,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleTitlesClear(final ClientboundClearTitlesPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.clearTitles();
+      this.minecraft.gui.clearTitles();
       if (packet.shouldResetTimes()) {
-         this.minecraft.gui.hud.resetTitleTimes();
+         this.minecraft.gui.resetTitleTimes();
       }
 
    }
@@ -1770,28 +1771,28 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void setActionBarText(final ClientboundSetActionBarTextPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.setOverlayMessage(packet.text(), false);
+      this.minecraft.gui.setOverlayMessage(packet.text(), false);
    }
 
    public void setTitleText(final ClientboundSetTitleTextPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.setTitle(packet.text());
+      this.minecraft.gui.setTitle(packet.text());
    }
 
    public void setSubtitleText(final ClientboundSetSubtitleTextPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.setSubtitle(packet.text());
+      this.minecraft.gui.setSubtitle(packet.text());
    }
 
    public void setTitlesAnimation(final ClientboundSetTitlesAnimationPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.setTimes(packet.getFadeIn(), packet.getStay(), packet.getFadeOut());
+      this.minecraft.gui.setTimes(packet.getFadeIn(), packet.getStay(), packet.getFadeOut());
    }
 
    public void handleTabListCustomisation(final ClientboundTabListPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.getTabList().setHeader(packet.header().getString().isEmpty() ? null : packet.header());
-      this.minecraft.gui.hud.getTabList().setFooter(packet.footer().getString().isEmpty() ? null : packet.footer());
+      this.minecraft.gui.getTabList().setHeader(packet.header().getString().isEmpty() ? null : packet.header());
+      this.minecraft.gui.getTabList().setFooter(packet.footer().getString().isEmpty() ? null : packet.footer());
    }
 
    public void handleRemoveMobEffect(final ClientboundRemoveMobEffectPacket packet) {
@@ -1913,7 +1914,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleGameRuleValues(final ClientboundGameRuleValuesPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      Screen var3 = this.minecraft.gui.screen();
+      Screen var3 = this.minecraft.screen;
       if (var3 instanceof InWorldGameRulesScreen inWorldGameRulesScreen) {
          inWorldGameRulesScreen.onGameRuleValuesUpdated(packet.values());
       }
@@ -1935,7 +1936,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleBossUpdate(final ClientboundBossEventPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.gui.hud.getBossOverlay().update(packet);
+      this.minecraft.gui.getBossOverlay().update(packet);
    }
 
    public void handleItemCooldown(final ClientboundCooldownPacket packet) {
@@ -1978,7 +1979,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ItemStack held = this.minecraft.player.getItemInHand(packet.getHand());
       BookViewScreen.BookAccess bookAccess = BookViewScreen.BookAccess.fromItem(held);
       if (bookAccess != null) {
-         this.minecraft.gui.setScreen(new BookViewScreen(bookAccess));
+         this.minecraft.setScreen(new BookViewScreen(bookAccess));
       }
 
    }
@@ -2155,7 +2156,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       AbstractContainerMenu containerMenu = this.minecraft.player.containerMenu;
       if (containerMenu.containerId == packet.containerId()) {
-         Screen var4 = this.minecraft.gui.screen();
+         Screen var4 = this.minecraft.screen;
          if (var4 instanceof RecipeUpdateListener) {
             RecipeUpdateListener listener = (RecipeUpdateListener)var4;
             listener.fillGhostRecipe(packet.recipeDisplay());
@@ -2258,7 +2259,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleTestInstanceBlockStatus(final ClientboundTestInstanceBlockStatus packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      Screen var3 = this.minecraft.gui.screen();
+      Screen var3 = this.minecraft.screen;
       if (var3 instanceof TestInstanceBlockEditScreen editScreen) {
          editScreen.setStatus(packet.status(), packet.size());
       }
@@ -2437,7 +2438,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       switch (this.verifyCommand(command).ordinal()) {
          case 0:
             this.send(new ServerboundChatCommandPacket(command));
-            this.minecraft.gui.setScreen(screenAfterCommand);
+            this.minecraft.setScreen(screenAfterCommand);
             break;
          case 1:
             this.openCommandSendConfirmationWindow(command, "multiplayer.confirm_command.parse_errors", screenAfterCommand);
@@ -2468,12 +2469,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void openSendConfirmationWindow(final String command, final String messageKey, final Component acceptButton, final Runnable onAccept) {
-      Screen currentScreen = this.minecraft.gui.screen();
-      this.minecraft.gui.setScreen(new ConfirmScreen((result) -> {
+      Screen currentScreen = this.minecraft.screen;
+      this.minecraft.setScreen(new ConfirmScreen((result) -> {
          if (result) {
             onAccept.run();
          } else {
-            this.minecraft.gui.setScreen(currentScreen);
+            this.minecraft.setScreen(currentScreen);
          }
 
       }, COMMAND_SEND_CONFIRM_TITLE, Component.translatable(messageKey, Component.literal(command).withStyle(ChatFormatting.YELLOW)), acceptButton, currentScreen != null ? CommonComponents.GUI_BACK : CommonComponents.GUI_CANCEL));
@@ -2482,18 +2483,25 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private void openCommandSendConfirmationWindow(final String command, final String messageKey, final @Nullable Screen screenAfterCommand) {
       this.openSendConfirmationWindow(command, messageKey, BUTTON_RUN_COMMAND, () -> {
          this.send(new ServerboundChatCommandPacket(command));
-         this.minecraft.gui.setScreen(screenAfterCommand);
+         this.minecraft.setScreen(screenAfterCommand);
       });
    }
 
    private void openSignedCommandSendConfirmationWindow(final String command, final String messageKey, final @Nullable Screen screenAfterCommand) {
       boolean canOpenChatScreen = screenAfterCommand == null && this.minecraft.player != null && this.minecraft.player.chatAbilities().canSendCommands();
       if (canOpenChatScreen) {
-         this.openSendConfirmationWindow(command, messageKey, BUTTON_SUGGEST_COMMAND, () -> this.minecraft.gui.openChatAndAddText(ChatComponent.ChatMethod.COMMAND, command));
+         this.openSendConfirmationWindow(command, messageKey, BUTTON_SUGGEST_COMMAND, () -> {
+            this.minecraft.openChatScreen(ChatComponent.ChatMethod.COMMAND);
+            Screen patt0$temp = this.minecraft.screen;
+            if (patt0$temp instanceof ChatScreen chatScreen) {
+               chatScreen.insertText(command, false);
+            }
+
+         });
       } else {
          this.openSendConfirmationWindow(command, messageKey, CommonComponents.GUI_COPY_TO_CLIPBOARD, () -> {
             this.minecraft.keyboardHandler.setClipboard("/" + command);
-            this.minecraft.gui.setScreen(screenAfterCommand);
+            this.minecraft.setScreen(screenAfterCommand);
          });
       }
 
@@ -2533,6 +2541,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             this.notifyPlayerLoaded();
             this.levelLoadTracker = null;
          }
+      }
+
+      if (this.level != null) {
+         this.clockManager.tick(this.level.getGameTime());
       }
 
    }

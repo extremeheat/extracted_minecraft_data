@@ -236,7 +236,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
 
    public void equipBodyArmor(final Player player, final ItemStack itemStack) {
       if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY)) {
-         this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, itemStack.consumeAndReturn(1, player));
+         this.setBodyArmorItem(itemStack.consumeAndReturn(1, player));
       }
 
    }

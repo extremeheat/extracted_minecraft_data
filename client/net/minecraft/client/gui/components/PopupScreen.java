@@ -111,7 +111,7 @@ public class PopupScreen extends Screen {
          this.onClose.run();
       }
 
-      this.minecraft.gui.setScreen(this.backgroundScreen);
+      this.minecraft.setScreen(this.backgroundScreen);
    }
 
    public static class Builder {

@@ -94,7 +94,7 @@ public class CrashReportCategory {
       return this;
    }
 
-   public CrashReportCategory setDetail(final String key, final @Nullable Object value) {
+   public CrashReportCategory setDetail(final String key, final Object value) {
       this.entries.add(new Entry(key, value));
       return this;
    }
@@ -146,9 +146,9 @@ public class CrashReportCategory {
 
       for(Entry entry : this.entries) {
          builder.append("\n\t");
-         builder.append(entry.key());
+         builder.append(entry.getKey());
          builder.append(": ");
-         builder.append(entry.value());
+         builder.append(entry.getValue());
       }
 
       if (this.stackTrace != null && this.stackTrace.length > 0) {
@@ -176,24 +176,31 @@ public class CrashReportCategory {
       return category.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(levelHeightAccessor, pos)));
    }
 
-   public static record Entry(String key, String value) {
-      public Entry(final String key, final @Nullable Object rawValue) {
-         String value;
-         if (rawValue == null) {
-            value = "~~NULL~~";
-         } else if (rawValue instanceof Throwable) {
-            Throwable t = (Throwable)rawValue;
-            String var10000 = t.getClass().getSimpleName();
-            value = "~~ERROR~~ " + var10000 + ": " + t.getMessage();
+   private static class Entry {
+      private final String key;
+      private final String value;
+
+      public Entry(final String key, final @Nullable Object value) {
+         super();
+         this.key = key;
+         if (value == null) {
+            this.value = "~~NULL~~";
+         } else if (value instanceof Throwable) {
+            Throwable t = (Throwable)value;
+            String var10001 = t.getClass().getSimpleName();
+            this.value = "~~ERROR~~ " + var10001 + ": " + t.getMessage();
          } else {
-            value = rawValue.toString();
+            this.value = value.toString();
          }
 
-         this(key, value);
       }
 
-      public Entry {
-         super();
+      public String getKey() {
+         return this.key;
+      }
+
+      public String getValue() {
+         return this.value;
       }
    }
 }

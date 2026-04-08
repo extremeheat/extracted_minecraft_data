@@ -11,7 +11,6 @@ import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 
 public class Mth {
    private static final long UUID_VERSION = 61440L;
@@ -25,9 +24,9 @@ public class Mth {
    public static final float RAD_TO_DEG = 57.295776F;
    public static final float EPSILON = 1.0E-5F;
    public static final float SQRT_OF_TWO = sqrt(2.0F);
-   public static final Vector3fc Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
-   public static final Vector3fc X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
-   public static final Vector3fc Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
+   public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
+   public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
+   public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
    private static final int SIN_QUANTIZATION = 65536;
    private static final int SIN_MASK = 65535;
    private static final int COS_OFFSET = 16384;
@@ -237,19 +236,6 @@ public class Mth {
 
       if (normalizedAngle < -180.0) {
          normalizedAngle += 360.0;
-      }
-
-      return normalizedAngle;
-   }
-
-   public static float wrapDegrees90(final float angle) {
-      float normalizedAngle = angle % 90.0F;
-      if (normalizedAngle >= 45.0F) {
-         normalizedAngle -= 90.0F;
-      }
-
-      if (normalizedAngle < -45.0F) {
-         normalizedAngle += 90.0F;
       }
 
       return normalizedAngle;
@@ -734,9 +720,9 @@ public class Mth {
       }
    }
 
-   public static Quaternionf rotationAroundAxis(final Vector3fc axis, final Quaternionf rotation, final Quaternionf result) {
+   public static Quaternionf rotationAroundAxis(final Vector3f axis, final Quaternionf rotation, final Quaternionf result) {
       float projectedLength = axis.dot(rotation.x, rotation.y, rotation.z);
-      return result.set(axis.x() * projectedLength, axis.y() * projectedLength, axis.z() * projectedLength, rotation.w).normalize();
+      return result.set(axis.x * projectedLength, axis.y * projectedLength, axis.z * projectedLength, rotation.w).normalize();
    }
 
    public static int mulAndTruncate(final Fraction fraction, final int factor) {

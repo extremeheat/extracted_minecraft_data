@@ -76,7 +76,7 @@ public class PlayerSocialManager {
    public void addPlayer(final PlayerInfo info) {
       GameProfile gameProfile = info.getProfile();
       this.discoveredNamesToUUID.put(gameProfile.name(), gameProfile.id());
-      Screen var4 = this.minecraft.gui.screen();
+      Screen var4 = this.minecraft.screen;
       if (var4 instanceof SocialInteractionsScreen screen) {
          screen.onAddPlayer(info);
       }
@@ -84,7 +84,7 @@ public class PlayerSocialManager {
    }
 
    public void removePlayer(final UUID id) {
-      Screen var3 = this.minecraft.gui.screen();
+      Screen var3 = this.minecraft.screen;
       if (var3 instanceof SocialInteractionsScreen screen) {
          screen.onRemovePlayer(id);
       }

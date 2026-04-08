@@ -320,13 +320,14 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    protected void holdInMainHand(final ItemStack itemStack) {
       this.setItemSlotAndDropWhenKilled(EquipmentSlot.MAINHAND, itemStack);
-      this.setPersistenceRequired();
    }
 
    protected void holdInOffHand(final ItemStack itemStack) {
-      this.setItemSlotAndDropWhenKilled(EquipmentSlot.OFFHAND, itemStack);
-      if (!itemStack.is(PiglinAi.BARTERING_ITEM)) {
-         this.setPersistenceRequired();
+      if (itemStack.is(PiglinAi.BARTERING_ITEM)) {
+         this.setItemSlot(EquipmentSlot.OFFHAND, itemStack);
+         this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
+      } else {
+         this.setItemSlotAndDropWhenKilled(EquipmentSlot.OFFHAND, itemStack);
       }
 
    }

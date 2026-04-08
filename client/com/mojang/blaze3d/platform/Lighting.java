@@ -10,16 +10,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.CardinalLighting;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 import org.lwjgl.system.MemoryStack;
 
 public class Lighting implements AutoCloseable {
-   private static final Vector3fc DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
-   private static final Vector3fc DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, 1.0F, 0.7F)).normalize();
-   private static final Vector3fc NETHER_DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
-   private static final Vector3fc NETHER_DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, -1.0F, 0.7F)).normalize();
-   private static final Vector3fc INVENTORY_DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, -1.0F, 1.0F)).normalize();
-   private static final Vector3fc INVENTORY_DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, -1.0F, 0.0F)).normalize();
+   private static final Vector3f DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
+   private static final Vector3f DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, 1.0F, 0.7F)).normalize();
+   private static final Vector3f NETHER_DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
+   private static final Vector3f NETHER_DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, -1.0F, 0.7F)).normalize();
+   private static final Vector3f INVENTORY_DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, -1.0F, 1.0F)).normalize();
+   private static final Vector3f INVENTORY_DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, -1.0F, 0.0F)).normalize();
    public static final int UBO_SIZE = (new Std140SizeCalculator()).putVec3().putVec3().get();
    private final GpuBuffer buffer;
    private final long paddedSize;
@@ -27,7 +26,7 @@ public class Lighting implements AutoCloseable {
    public Lighting() {
       super();
       GpuDevice device = RenderSystem.getDevice();
-      this.paddedSize = (long)Mth.roundToward(UBO_SIZE, device.getDeviceInfo().limits().minUniformOffsetAlignment());
+      this.paddedSize = (long)Mth.roundToward(UBO_SIZE, device.getUniformOffsetAlignment());
       this.buffer = device.createBuffer(() -> "Lighting UBO", 136, this.paddedSize * (long)Lighting.Entry.values().length);
       Matrix4f flatPose = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
       this.updateBuffer(Lighting.Entry.ITEMS_FLAT, flatPose.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), flatPose.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
@@ -46,7 +45,7 @@ public class Lighting implements AutoCloseable {
 
    }
 
-   private void updateBuffer(final Entry entry, final Vector3fc light0, final Vector3fc light1) {
+   private void updateBuffer(final Entry entry, final Vector3f light0, final Vector3f light1) {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {

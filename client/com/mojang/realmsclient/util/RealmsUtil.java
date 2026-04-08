@@ -85,7 +85,7 @@ public class RealmsUtil {
 
    public static Consumer<RealmsServiceException> openScreenOnFailure(final Function<RealmsServiceException, Screen> errorScreen) {
       Minecraft minecraft = Minecraft.getInstance();
-      return (e) -> minecraft.execute(() -> minecraft.gui.setScreen((Screen)errorScreen.apply(e)));
+      return (e) -> minecraft.execute(() -> minecraft.setScreen((Screen)errorScreen.apply(e)));
    }
 
    public static Consumer<RealmsServiceException> openScreenAndLogOnFailure(final Function<RealmsServiceException, Screen> errorScreen, final String errorMessage) {

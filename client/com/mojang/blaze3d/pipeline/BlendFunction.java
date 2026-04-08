@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.platform.BlendOp;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
 
-public record BlendFunction(BlendEquation color, BlendEquation alpha) {
+public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, SourceFactor sourceAlpha, DestFactor destAlpha) {
    public static final BlendFunction LIGHTNING;
    public static final BlendFunction GLINT;
    public static final BlendFunction OVERLAY;
@@ -13,24 +13,8 @@ public record BlendFunction(BlendEquation color, BlendEquation alpha) {
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
    public static final BlendFunction INVERT;
 
-   public BlendFunction(final BlendFactor srcColorFactor, final BlendFactor dstColorFactor, final BlendOp colorOp, final BlendFactor srcAlphaFactor, final BlendFactor dstAlphaFactor, final BlendOp alphaOp) {
-      this(new BlendEquation(srcColorFactor, dstColorFactor, colorOp), new BlendEquation(srcAlphaFactor, dstAlphaFactor, alphaOp));
-   }
-
-   public BlendFunction(final BlendFactor srcColorFactor, final BlendFactor dstColorFactor, final BlendFactor srcAlphaFactor, final BlendFactor dstAlphaFactor) {
-      this(srcColorFactor, dstColorFactor, BlendOp.ADD, srcAlphaFactor, dstAlphaFactor, BlendOp.ADD);
-   }
-
-   public BlendFunction(final BlendEquation equation) {
-      this(equation, equation);
-   }
-
-   public BlendFunction(final BlendFactor srcFactor, final BlendFactor dstFactor, final BlendOp op) {
-      this(new BlendEquation(srcFactor, dstFactor, op));
-   }
-
-   public BlendFunction(final BlendFactor srcFactor, final BlendFactor dstFactor) {
-      this(new BlendEquation(srcFactor, dstFactor, BlendOp.ADD));
+   public BlendFunction(final SourceFactor source, final DestFactor dest) {
+      this(source, dest, source, dest);
    }
 
    public BlendFunction {
@@ -38,13 +22,13 @@ public record BlendFunction(BlendEquation color, BlendEquation alpha) {
    }
 
    static {
-      LIGHTNING = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
-      GLINT = new BlendFunction(BlendFactor.SRC_COLOR, BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE);
-      OVERLAY = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE, BlendFactor.ONE, BlendFactor.ZERO);
-      TRANSLUCENT = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA, BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA);
-      TRANSLUCENT_PREMULTIPLIED_ALPHA = new BlendFunction(BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA, BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA);
-      ADDITIVE = new BlendFunction(BlendFactor.ONE, BlendFactor.ONE);
-      ENTITY_OUTLINE_BLIT = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA, BlendFactor.ZERO, BlendFactor.ONE);
-      INVERT = new BlendFunction(BlendFactor.ONE_MINUS_DST_COLOR, BlendFactor.ONE_MINUS_SRC_COLOR, BlendFactor.ONE, BlendFactor.ZERO);
+      LIGHTNING = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
+      GLINT = new BlendFunction(SourceFactor.SRC_COLOR, DestFactor.ONE, SourceFactor.ZERO, DestFactor.ONE);
+      OVERLAY = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE, SourceFactor.ONE, DestFactor.ZERO);
+      TRANSLUCENT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+      TRANSLUCENT_PREMULTIPLIED_ALPHA = new BlendFunction(SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+      ADDITIVE = new BlendFunction(SourceFactor.ONE, DestFactor.ONE);
+      ENTITY_OUTLINE_BLIT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ZERO, DestFactor.ONE);
+      INVERT = new BlendFunction(SourceFactor.ONE_MINUS_DST_COLOR, DestFactor.ONE_MINUS_SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO);
    }
 }

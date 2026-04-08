@@ -142,7 +142,7 @@ public class CreateWorldScreen extends Screen {
       minecraft.managedBlock(loadResult::isDone);
       long end = Util.getMillis();
       LOGGER.debug("Resource load for world creation blocked for {} ms", end - start);
-      minecraft.gui.setScreen(new CreateWorldScreen(minecraft, onClose, (WorldCreationContext)loadResult.join(), Optional.of(worldPreset), OptionalLong.empty(), createWorld));
+      minecraft.setScreen(new CreateWorldScreen(minecraft, onClose, (WorldCreationContext)loadResult.join(), Optional.of(worldPreset), OptionalLong.empty(), createWorld));
    }
 
    public static CreateWorldScreen createFromExisting(final Minecraft minecraft, final Runnable onClose, final LevelSettings levelSettings, final WorldCreationContext worldCreationContext, final @Nullable Path newDataPackDir) {
@@ -313,7 +313,7 @@ public class CreateWorldScreen extends Screen {
    private void openExperimentsScreen(final WorldDataConfiguration dataConfiguration) {
       Pair<Path, PackRepository> settings = this.getDataPackSelectionSettings(dataConfiguration);
       if (settings != null) {
-         this.minecraft.gui.setScreen(new ExperimentsScreen(this, (PackRepository)settings.getSecond(), (packRepository) -> this.tryApplyNewDataPacks(packRepository, false, this::openExperimentsScreen)));
+         this.minecraft.setScreen(new ExperimentsScreen(this, (PackRepository)settings.getSecond(), (packRepository) -> this.tryApplyNewDataPacks(packRepository, false, this::openExperimentsScreen)));
       }
 
    }
@@ -321,7 +321,7 @@ public class CreateWorldScreen extends Screen {
    private void openDataPackSelectionScreen(final WorldDataConfiguration dataConfiguration) {
       Pair<Path, PackRepository> settings = this.getDataPackSelectionSettings(dataConfiguration);
       if (settings != null) {
-         this.minecraft.gui.setScreen(new PackSelectionScreen((PackRepository)settings.getSecond(), (packRepository) -> this.tryApplyNewDataPacks(packRepository, true, this::openDataPackSelectionScreen), (Path)settings.getFirst(), Component.translatable("dataPack.title")));
+         this.minecraft.setScreen(new PackSelectionScreen((PackRepository)settings.getSecond(), (packRepository) -> this.tryApplyNewDataPacks(packRepository, true, this::openDataPackSelectionScreen), (Path)settings.getFirst(), Component.translatable("dataPack.title")));
       }
 
    }
@@ -331,11 +331,11 @@ public class CreateWorldScreen extends Screen {
       List<String> newDisabled = (List)packRepository.getAvailableIds().stream().filter((id) -> !newEnabled.contains(id)).collect(ImmutableList.toImmutableList());
       WorldDataConfiguration newConfig = new WorldDataConfiguration(new DataPackConfig(newEnabled, newDisabled), this.uiState.getSettings().dataConfiguration().enabledFeatures());
       if (this.uiState.tryUpdateDataConfiguration(newConfig)) {
-         this.minecraft.gui.setScreen(this);
+         this.minecraft.setScreen(this);
       } else {
          FeatureFlagSet requestedFeatureFlags = packRepository.getRequestedFeatureFlags();
          if (FeatureFlags.isExperimental(requestedFeatureFlags) && isDataPackScreen) {
-            this.minecraft.gui.setScreen(new ConfirmExperimentalFeaturesScreen(packRepository.getSelectedPacks(), (accepted) -> {
+            this.minecraft.setScreen(new ConfirmExperimentalFeaturesScreen(packRepository.getSelectedPacks(), (accepted) -> {
                if (accepted) {
                   this.applyNewPackConfig(packRepository, newConfig, onAbort);
                } else {
@@ -378,7 +378,7 @@ public class CreateWorldScreen extends Screen {
       var10000.thenAcceptAsync(var10001::setSettings, this.minecraft).handleAsync((nothing, throwable) -> {
          if (throwable != null) {
             LOGGER.warn("Failed to validate datapack", throwable);
-            this.minecraft.gui.setScreen(new ConfirmScreen((retry) -> {
+            this.minecraft.setScreen(new ConfirmScreen((retry) -> {
                if (retry) {
                   onAbort.accept(this.uiState.getSettings().dataConfiguration());
                } else {
@@ -387,7 +387,7 @@ public class CreateWorldScreen extends Screen {
 
             }, Component.translatable("dataPack.validation.failed"), CommonComponents.EMPTY, Component.translatable("dataPack.validation.back"), Component.translatable("dataPack.validation.reset")));
          } else {
-            this.minecraft.gui.setScreen(this);
+            this.minecraft.setScreen(this);
          }
 
          return null;
@@ -660,7 +660,7 @@ public class CreateWorldScreen extends Screen {
       private void openPresetEditor() {
          PresetEditor editor = CreateWorldScreen.this.uiState.getPresetEditor();
          if (editor != null) {
-            CreateWorldScreen.this.minecraft.gui.setScreen(editor.createEditScreen(CreateWorldScreen.this, CreateWorldScreen.this.uiState.getSettings()));
+            CreateWorldScreen.this.minecraft.setScreen(editor.createEditScreen(CreateWorldScreen.this, CreateWorldScreen.this.uiState.getSettings()));
          }
 
       }
@@ -701,8 +701,8 @@ public class CreateWorldScreen extends Screen {
       }
 
       private void openGameRulesScreen() {
-         CreateWorldScreen.this.minecraft.gui.setScreen(new WorldCreationGameRulesScreen(CreateWorldScreen.this.uiState.getGameRules().copy(CreateWorldScreen.this.uiState.getSettings().dataConfiguration().enabledFeatures()), (gameRules) -> {
-            CreateWorldScreen.this.minecraft.gui.setScreen(CreateWorldScreen.this);
+         CreateWorldScreen.this.minecraft.setScreen(new WorldCreationGameRulesScreen(CreateWorldScreen.this.uiState.getGameRules().copy(CreateWorldScreen.this.uiState.getSettings().dataConfiguration().enabledFeatures()), (gameRules) -> {
+            CreateWorldScreen.this.minecraft.setScreen(CreateWorldScreen.this);
             WorldCreationUiState var10001 = CreateWorldScreen.this.uiState;
             Objects.requireNonNull(var10001);
             gameRules.ifPresent(var10001::setGameRules);

@@ -49,7 +49,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
 
          if (this.timeWaiting >= 1200 && this.toast == null) {
             this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
-            minecraft.gui.toastManager().addToast(this.toast);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }

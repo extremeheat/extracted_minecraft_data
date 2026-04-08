@@ -1,12 +1,9 @@
 package net.minecraft.data.worldgen;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Noises;
 import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -47,8 +44,6 @@ public class SurfaceRuleData {
    private static final SurfaceRules.RuleSource NETHER_WART_BLOCK;
    private static final SurfaceRules.RuleSource CRIMSON_NYLIUM;
    private static final SurfaceRules.RuleSource ENDSTONE;
-   private static final BlockState CINNABAR;
-   private static final BlockState SULFUR;
 
    public SurfaceRuleData() {
       super();
@@ -101,7 +96,6 @@ public class SurfaceRuleData {
 
       SurfaceRules.RuleSource ruleAbovePreliminarySurface = SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), mainRuleCloseToSurface);
       builder.add(doPreliminarySurfaceCheck ? ruleAbovePreliminarySurface : mainRuleCloseToSurface);
-      builder.add(SurfaceRules.ifTrue(SurfaceRules.isBiome(Biomes.SULFUR_CAVES), SurfaceRules.noiseGradient(Noises.SULFUR_CAVE_GRADIENT, List.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(CINNABAR), Optional.of(SULFUR), Optional.of(CINNABAR), Optional.of(CINNABAR), Optional.of(CINNABAR)))));
       builder.add(SurfaceRules.ifTrue(SurfaceRules.verticalGradient("deepslate", VerticalAnchor.absolute(0), VerticalAnchor.absolute(8)), DEEPSLATE));
       return SurfaceRules.sequence((SurfaceRules.RuleSource[])builder.build().toArray((x$0) -> new SurfaceRules.RuleSource[x$0]));
    }
@@ -138,8 +132,8 @@ public class SurfaceRuleData {
    static {
       AIR = makeStateRule(Blocks.AIR);
       BEDROCK = makeStateRule(Blocks.BEDROCK);
-      WHITE_TERRACOTTA = makeStateRule(Blocks.DYED_TERRACOTTA.white());
-      ORANGE_TERRACOTTA = makeStateRule(Blocks.DYED_TERRACOTTA.orange());
+      WHITE_TERRACOTTA = makeStateRule(Blocks.WHITE_TERRACOTTA);
+      ORANGE_TERRACOTTA = makeStateRule(Blocks.ORANGE_TERRACOTTA);
       TERRACOTTA = makeStateRule(Blocks.TERRACOTTA);
       RED_SAND = makeStateRule(Blocks.RED_SAND);
       RED_SANDSTONE = makeStateRule(Blocks.RED_SANDSTONE);
@@ -171,7 +165,5 @@ public class SurfaceRuleData {
       NETHER_WART_BLOCK = makeStateRule(Blocks.NETHER_WART_BLOCK);
       CRIMSON_NYLIUM = makeStateRule(Blocks.CRIMSON_NYLIUM);
       ENDSTONE = makeStateRule(Blocks.END_STONE);
-      CINNABAR = Blocks.CINNABAR.defaultBlockState();
-      SULFUR = Blocks.SULFUR.defaultBlockState();
    }
 }

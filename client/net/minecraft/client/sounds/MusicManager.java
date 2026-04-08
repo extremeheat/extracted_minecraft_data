@@ -72,7 +72,7 @@ public class MusicManager {
       this.currentMusic = SimpleSoundInstance.forMusic(soundEvent);
       switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
          case STARTED:
-            this.minecraft.gui.toastManager().showNowPlayingToast();
+            this.minecraft.getToastManager().showNowPlayingToast();
             this.toastShown = true;
             break;
          case STARTED_SILENTLY:
@@ -84,7 +84,7 @@ public class MusicManager {
 
    public void showNowPlayingToastIfNeeded() {
       if (!this.toastShown) {
-         this.minecraft.gui.toastManager().showNowPlayingToast();
+         this.minecraft.getToastManager().showNowPlayingToast();
          this.toastShown = true;
       }
 
@@ -101,7 +101,7 @@ public class MusicManager {
       if (this.currentMusic != null) {
          this.minecraft.getSoundManager().stop(this.currentMusic);
          this.currentMusic = null;
-         this.minecraft.gui.toastManager().hideNowPlayingToast();
+         this.minecraft.getToastManager().hideNowPlayingToast();
       }
 
       this.nextSongDelay += 100;

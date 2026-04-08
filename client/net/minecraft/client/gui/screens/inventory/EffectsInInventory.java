@@ -7,8 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
@@ -69,7 +69,7 @@ public class EffectsInInventory {
          Component duration = MobEffectUtil.formatDuration(effect, 1.0F, this.minecraft.level.tickRateManager().tickrate());
          int textureWidth = this.extractBackground(graphics, font, effectText, duration, x0, y0, isAmbient, maxWidth);
          this.extractText(graphics, effectText, duration, font, x0, y0, textureWidth, yStep, mouseX, mouseY);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)Hud.getMobEffectSprite(effect.getEffect()), x0 + 7, y0 + 7, 18, 18);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)Gui.getMobEffectSprite(effect.getEffect()), x0 + 7, y0 + 7, 18, 18);
          y0 += yStep;
       }
 

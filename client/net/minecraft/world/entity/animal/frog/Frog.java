@@ -50,7 +50,7 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.cubemob.Slime;
+import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
@@ -229,8 +229,11 @@ public class Frog extends Animal {
       return frog;
    }
 
-   protected boolean canBeABaby() {
+   public boolean isBaby() {
       return false;
+   }
+
+   public void setBaby(final boolean baby) {
    }
 
    public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {

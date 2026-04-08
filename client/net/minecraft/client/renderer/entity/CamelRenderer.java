@@ -23,7 +23,7 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
       this.addLayer(createCamelSaddleLayer(context, this, EquipmentClientInfo.LayerType.CAMEL_SADDLE, ModelLayers.CAMEL_SADDLE));
    }
 
-   protected static SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(final EntityRendererProvider.Context context, final MobRenderer<Camel, CamelRenderState, CamelModel> renderer, final EquipmentClientInfo.LayerType saddleLayerType, final ModelLayerLocation saddleModelLayer) {
+   protected static SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(final EntityRendererProvider.Context context, MobRenderer<Camel, CamelRenderState, CamelModel> renderer, final EquipmentClientInfo.LayerType saddleLayerType, final ModelLayerLocation saddleModelLayer) {
       return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(renderer, context.getEquipmentRenderer(), saddleLayerType, (state) -> state.saddle, new CamelSaddleModel(context.bakeLayer(saddleModelLayer)), (EntityModel)null);
    }
 
@@ -40,7 +40,7 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
       extractAdditionalState(entity, state, partialTicks);
    }
 
-   static void extractAdditionalState(final Camel entity, final CamelRenderState state, final float partialTicks) {
+   static void extractAdditionalState(Camel entity, CamelRenderState state, float partialTicks) {
       state.saddle = entity.getItemBySlot(EquipmentSlot.SADDLE).copy();
       state.isRidden = entity.isVehicle();
       state.jumpCooldown = getJumpCooldown(entity, partialTicks);

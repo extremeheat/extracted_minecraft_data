@@ -24,8 +24,10 @@ public class RenderBuffers {
          map.put(Sheets.translucentBlockItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
          put(map, Sheets.cutoutItemSheet());
          put(map, Sheets.translucentItemSheet());
+         put(map, RenderTypes.armorEntityGlint());
          put(map, RenderTypes.glint());
          put(map, RenderTypes.glintTranslucent());
+         put(map, RenderTypes.entityGlint());
          put(map, RenderTypes.waterMask());
       });
       this.bufferSource = MultiBufferSource.immediateWithBuffers(fixedBuffers, new ByteBufferBuilder(786432));

@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -10,6 +9,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.Writer;
@@ -59,7 +59,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    public TextureAtlas(final Identifier location) {
       super();
       this.location = location;
-      this.maxSupportedTextureSize = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
+      this.maxSupportedTextureSize = RenderSystem.getDevice().getMaxTextureSize();
    }
 
    private void createTexture(final int newWidth, final int newHeight, final int newMipLevel) {
@@ -68,7 +68,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       this.close();
       Identifier var10002 = this.location;
       Objects.requireNonNull(var10002);
-      this.texture = device.createTexture(var10002::toString, 15, GpuFormat.RGBA8_UNORM, newWidth, newHeight, 1, newMipLevel + 1);
+      this.texture = device.createTexture(var10002::toString, 15, TextureFormat.RGBA8, newWidth, newHeight, 1, newMipLevel + 1);
       this.textureView = device.createTextureView(this.texture);
       this.width = newWidth;
       this.height = newHeight;
@@ -95,7 +95,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
          List<TextureAtlasSprite> sprites = new ArrayList();
          List<SpriteContents.AnimationState> animationStates = new ArrayList();
          int animatedSpriteCount = (int)preparations.regions().values().stream().filter(TextureAtlasSprite::isAnimated).count();
-         int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getDeviceInfo().limits().minUniformOffsetAlignment());
+         int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
          int uboBlockSize = spriteUboSize * this.mipLevelCount;
          ByteBuffer spriteUboBuffer = MemoryUtil.memAlloc(animatedSpriteCount * uboBlockSize);
          int animationIndex = 0;
@@ -141,7 +141,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
 
    private void uploadInitialContents() {
       GpuDevice device = RenderSystem.getDevice();
-      int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, device.getDeviceInfo().limits().minUniformOffsetAlignment());
+      int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
       int uboBlockSize = spriteUboSize * this.mipLevelCount;
       GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
       List<TextureAtlasSprite> staticSprites = this.sprites.stream().filter((s) -> !s.isAnimated()).toList();
@@ -151,7 +151,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       for(int i = 0; i < staticSprites.size(); ++i) {
          TextureAtlasSprite sprite = (TextureAtlasSprite)staticSprites.get(i);
          sprite.uploadSpriteUbo(buffer, i * uboBlockSize, this.maxMipLevel, this.width, this.height, spriteUboSize);
-         GpuTexture scratchTexture = device.createTexture((Supplier)(() -> sprite.contents().name().toString()), 5, GpuFormat.RGBA8_UNORM, sprite.contents().width(), sprite.contents().height(), 1, this.mipLevelCount);
+         GpuTexture scratchTexture = device.createTexture((Supplier)(() -> sprite.contents().name().toString()), 5, TextureFormat.RGBA8, sprite.contents().width(), sprite.contents().height(), 1, this.mipLevelCount);
          GpuTextureView[] views = new GpuTextureView[this.mipLevelCount];
 
          for(int level = 0; level <= this.maxMipLevel; ++level) {
@@ -270,7 +270,6 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    public void clearTextureData() {
       this.sprites.forEach(TextureAtlasSprite::close);
       this.sprites = List.of();
-      this.animatedTexturesStates.forEach(SpriteContents.AnimationState::close);
       this.animatedTexturesStates = List.of();
       this.texturesByName = Map.of();
       this.missingSprite = null;

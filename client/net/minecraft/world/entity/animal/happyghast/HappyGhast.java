@@ -569,7 +569,7 @@ public class HappyGhast extends Animal {
 
       public void tick() {
          if (HappyGhast.this.isOnStillTimeout()) {
-            float closeAngle = Mth.wrapDegrees90(HappyGhast.this.getYRot());
+            float closeAngle = wrapDegrees90(HappyGhast.this.getYRot());
             HappyGhast.this.setYRot(HappyGhast.this.getYRot() - closeAngle);
             HappyGhast.this.setYHeadRot(HappyGhast.this.getYRot());
          } else if (this.lookAtCooldown > 0) {
@@ -582,6 +582,19 @@ public class HappyGhast extends Animal {
          } else {
             Ghast.faceMovementDirection(this.mob);
          }
+      }
+
+      public static float wrapDegrees90(final float angle) {
+         float normalizedAngle = angle % 90.0F;
+         if (normalizedAngle >= 45.0F) {
+            normalizedAngle -= 90.0F;
+         }
+
+         if (normalizedAngle < -45.0F) {
+            normalizedAngle += 90.0F;
+         }
+
+         return normalizedAngle;
       }
    }
 

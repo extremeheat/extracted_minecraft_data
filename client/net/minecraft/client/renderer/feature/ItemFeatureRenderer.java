@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.math.MatrixUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -89,8 +90,7 @@ public class ItemFeatureRenderer {
    }
 
    private static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final PoseStack.@Nullable Pose foilDecalPose) {
-      RenderType foilRenderType = useTransparentGlint(renderType) ? RenderTypes.glintTranslucent() : RenderTypes.glint();
-      VertexConsumer foilBuffer = bufferSource.getBuffer(foilRenderType);
+      VertexConsumer foilBuffer = bufferSource.getBuffer(getFoilRenderType(renderType, true));
       if (foilDecalPose != null) {
          foilBuffer = new SheetedDecalTextureGenerator(foilBuffer, foilDecalPose, 0.0078125F);
       }
@@ -107,6 +107,18 @@ public class ItemFeatureRenderer {
       }
 
       return foilDecalPose;
+   }
+
+   public static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final boolean sheeted, final boolean hasFoil) {
+      return hasFoil ? VertexMultiConsumer.create(bufferSource.getBuffer(getFoilRenderType(renderType, sheeted)), bufferSource.getBuffer(renderType)) : bufferSource.getBuffer(renderType);
+   }
+
+   public static RenderType getFoilRenderType(final RenderType baseRenderType, final boolean sheeted) {
+      if (useTransparentGlint(baseRenderType)) {
+         return RenderTypes.glintTranslucent();
+      } else {
+         return sheeted ? RenderTypes.glint() : RenderTypes.entityGlint();
+      }
    }
 
    private static boolean useTransparentGlint(final RenderType renderType) {

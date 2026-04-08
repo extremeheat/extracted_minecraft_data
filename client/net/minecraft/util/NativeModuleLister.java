@@ -44,7 +44,7 @@ public class NativeModuleLister {
 
          for(Tlhelp32.MODULEENTRY32W module : Kernel32Util.getModules(selfHandle)) {
             String name = module.szModule();
-            Optional<NativeModuleVersion> versionInfo = tryGetModuleVersion(module.szExePath());
+            Optional<NativeModuleVersion> versionInfo = tryGetVersion(module.szExePath());
             result.add(new NativeModuleInfo(name, versionInfo));
          }
 
@@ -52,46 +52,42 @@ public class NativeModuleLister {
       }
    }
 
-   public static Optional<NativeModuleVersion> tryGetModuleVersion(final String path) {
-      if (!Platform.isWindows()) {
-         return Optional.empty();
-      } else {
-         try {
-            IntByReference dwDummy = new IntByReference();
-            int versionLength = Version.INSTANCE.GetFileVersionInfoSize(path, dwDummy);
-            if (versionLength == 0) {
-               int lastError = Native.getLastError();
-               if (lastError != 1813 && lastError != 1812) {
-                  throw new Win32Exception(lastError);
-               } else {
-                  return Optional.empty();
-               }
+   private static Optional<NativeModuleVersion> tryGetVersion(final String path) {
+      try {
+         IntByReference dwDummy = new IntByReference();
+         int versionLength = Version.INSTANCE.GetFileVersionInfoSize(path, dwDummy);
+         if (versionLength == 0) {
+            int lastError = Native.getLastError();
+            if (lastError != 1813 && lastError != 1812) {
+               throw new Win32Exception(lastError);
             } else {
-               Pointer lpData = new Memory((long)versionLength);
-               if (!Version.INSTANCE.GetFileVersionInfo(path, 0, versionLength, lpData)) {
-                  throw new Win32Exception(Native.getLastError());
+               return Optional.empty();
+            }
+         } else {
+            Pointer lpData = new Memory((long)versionLength);
+            if (!Version.INSTANCE.GetFileVersionInfo(path, 0, versionLength, lpData)) {
+               throw new Win32Exception(Native.getLastError());
+            } else {
+               IntByReference size = new IntByReference();
+               Pointer translationsBuffer = queryVersionValue(lpData, "\\VarFileInfo\\Translation", size);
+               int[] langsAndCodepages = translationsBuffer.getIntArray(0L, size.getValue() / 4);
+               OptionalInt maybeLangAndCodepage = findLangAndCodepage(langsAndCodepages);
+               if (maybeLangAndCodepage.isEmpty()) {
+                  return Optional.empty();
                } else {
-                  IntByReference size = new IntByReference();
-                  Pointer translationsBuffer = queryVersionValue(lpData, "\\VarFileInfo\\Translation", size);
-                  int[] langsAndCodepages = translationsBuffer.getIntArray(0L, size.getValue() / 4);
-                  OptionalInt maybeLangAndCodepage = findLangAndCodepage(langsAndCodepages);
-                  if (maybeLangAndCodepage.isEmpty()) {
-                     return Optional.empty();
-                  } else {
-                     int langAndCodepage = maybeLangAndCodepage.getAsInt();
-                     int lang = langAndCodepage & '\uffff';
-                     int codepage = (langAndCodepage & -65536) >> 16;
-                     String description = queryVersionString(lpData, langTableKey("FileDescription", lang, codepage), size);
-                     String companyName = queryVersionString(lpData, langTableKey("CompanyName", lang, codepage), size);
-                     String fileVersion = queryVersionString(lpData, langTableKey("FileVersion", lang, codepage), size);
-                     return Optional.of(new NativeModuleVersion(description, fileVersion, companyName));
-                  }
+                  int langAndCodepage = maybeLangAndCodepage.getAsInt();
+                  int lang = langAndCodepage & '\uffff';
+                  int codepage = (langAndCodepage & -65536) >> 16;
+                  String description = queryVersionString(lpData, langTableKey("FileDescription", lang, codepage), size);
+                  String companyName = queryVersionString(lpData, langTableKey("CompanyName", lang, codepage), size);
+                  String fileVersion = queryVersionString(lpData, langTableKey("FileVersion", lang, codepage), size);
+                  return Optional.of(new NativeModuleVersion(description, fileVersion, companyName));
                }
             }
-         } catch (Exception e) {
-            LOGGER.info("Failed to find module info for {}", path, e);
-            return Optional.empty();
          }
+      } catch (Exception e) {
+         LOGGER.info("Failed to find module info for {}", path, e);
+         return Optional.empty();
       }
    }
 
@@ -136,9 +132,16 @@ public class NativeModuleLister {
       category.setDetail("Modules", (CrashReportDetail)(() -> (String)listModules().stream().sorted(Comparator.comparing((module) -> module.name)).map((e) -> "\n\t\t" + String.valueOf(e)).collect(Collectors.joining())));
    }
 
-   public static record NativeModuleVersion(String description, String version, String company) {
-      public NativeModuleVersion {
+   public static class NativeModuleVersion {
+      public final String description;
+      public final String version;
+      public final String company;
+
+      public NativeModuleVersion(final String description, final String version, final String company) {
          super();
+         this.description = description;
+         this.version = version;
+         this.company = company;
       }
 
       public String toString() {
@@ -146,9 +149,14 @@ public class NativeModuleLister {
       }
    }
 
-   public static record NativeModuleInfo(String name, Optional<NativeModuleVersion> version) {
-      public NativeModuleInfo {
+   public static class NativeModuleInfo {
+      public final String name;
+      public final Optional<NativeModuleVersion> version;
+
+      public NativeModuleInfo(final String name, final Optional<NativeModuleVersion> version) {
          super();
+         this.name = name;
+         this.version = version;
       }
 
       public String toString() {

@@ -57,7 +57,7 @@ public class LightmapRenderStateExtractor {
             EndFlashState endFlashState = level.endFlashState();
             if (endFlashState != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
                float intensity = endFlashState.getIntensity(partialTicks);
-               if (this.minecraft.gui.hud.getBossOverlay().shouldCreateWorldFog()) {
+               if (this.minecraft.gui.getBossOverlay().shouldCreateWorldFog()) {
                   renderState.skyFactor += intensity / 3.0F;
                } else {
                   renderState.skyFactor += intensity;

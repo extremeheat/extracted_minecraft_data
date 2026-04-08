@@ -426,8 +426,8 @@ public class Block extends BlockBehaviour implements ItemLike {
       entity.causeFallDamage(fallDistance, 1.0F, entity.damageSources().fall());
    }
 
-   public float getBounceRestitution() {
-      return this.bounceRestitution;
+   public void updateEntityMovementAfterFallOn(final BlockGetter level, final Entity entity) {
+      entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
    public float getFriction() {

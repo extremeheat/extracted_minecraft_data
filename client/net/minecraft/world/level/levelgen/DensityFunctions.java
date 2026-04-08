@@ -7,11 +7,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.doubles.Double2DoubleFunction;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.BoundedFloatFunction;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.ExtraCodecs;
@@ -76,11 +78,11 @@ public final class DensityFunctions {
    }
 
    private static <O> KeyDispatchDataCodec<O> singleFunctionArgumentCodec(final Function<DensityFunction, O> constructor, final Function<O, DensityFunction> getter) {
-      return singleArgumentCodec(DensityFunction.CODEC, constructor, getter);
+      return singleArgumentCodec(DensityFunction.HOLDER_HELPER_CODEC, constructor, getter);
    }
 
    private static <O> KeyDispatchDataCodec<O> doubleFunctionArgumentCodec(final BiFunction<DensityFunction, DensityFunction, O> constructor, final Function<O, DensityFunction> firstArgumentGetter, final Function<O, DensityFunction> secondArgumentGetter) {
-      return KeyDispatchDataCodec.<O>of(RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("argument1").forGetter(firstArgumentGetter), DensityFunction.CODEC.fieldOf("argument2").forGetter(secondArgumentGetter)).apply(i, constructor)));
+      return KeyDispatchDataCodec.<O>of(RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument1").forGetter(firstArgumentGetter), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("argument2").forGetter(secondArgumentGetter)).apply(i, constructor)));
    }
 
    private static <O> KeyDispatchDataCodec<O> makeCodec(final MapCodec<O> dataCodec) {
@@ -183,7 +185,7 @@ public final class DensityFunctions {
       return DensityFunctions.TwoArgumentSimpleFunction.create(DensityFunctions.TwoArgumentSimpleFunction.Type.MAX, f1, f2);
    }
 
-   public static DensityFunction spline(final CubicSpline<Spline.Coordinate> spline) {
+   public static DensityFunction spline(final CubicSpline<Spline.Point, Spline.Coordinate> spline) {
       return new Spline(spline);
    }
 
@@ -582,7 +584,7 @@ public final class DensityFunctions {
    }
 
    protected static record WeirdScaledSampler(DensityFunction input, DensityFunction.NoiseHolder noise, RarityValueMapper rarityValueMapper) implements TransformerWithContext {
-      private static final MapCodec<WeirdScaledSampler> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(WeirdScaledSampler::input), DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(WeirdScaledSampler::noise), DensityFunctions.WeirdScaledSampler.RarityValueMapper.CODEC.fieldOf("rarity_value_mapper").forGetter(WeirdScaledSampler::rarityValueMapper)).apply(i, WeirdScaledSampler::new));
+      private static final MapCodec<WeirdScaledSampler> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(WeirdScaledSampler::input), DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(WeirdScaledSampler::noise), DensityFunctions.WeirdScaledSampler.RarityValueMapper.CODEC.fieldOf("rarity_value_mapper").forGetter(WeirdScaledSampler::rarityValueMapper)).apply(i, WeirdScaledSampler::new));
       public static final KeyDispatchDataCodec<WeirdScaledSampler> CODEC;
 
       protected WeirdScaledSampler {
@@ -641,7 +643,7 @@ public final class DensityFunctions {
    }
 
    protected static record ShiftedNoise(DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise) implements DensityFunction {
-      private static final MapCodec<ShiftedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("shift_x").forGetter(ShiftedNoise::shiftX), DensityFunction.CODEC.fieldOf("shift_y").forGetter(ShiftedNoise::shiftY), DensityFunction.CODEC.fieldOf("shift_z").forGetter(ShiftedNoise::shiftZ), Codec.DOUBLE.fieldOf("xz_scale").forGetter(ShiftedNoise::xzScale), Codec.DOUBLE.fieldOf("y_scale").forGetter(ShiftedNoise::yScale), DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(ShiftedNoise::noise)).apply(i, ShiftedNoise::new));
+      private static final MapCodec<ShiftedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_x").forGetter(ShiftedNoise::shiftX), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_y").forGetter(ShiftedNoise::shiftY), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_z").forGetter(ShiftedNoise::shiftZ), Codec.DOUBLE.fieldOf("xz_scale").forGetter(ShiftedNoise::xzScale), Codec.DOUBLE.fieldOf("y_scale").forGetter(ShiftedNoise::yScale), DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(ShiftedNoise::noise)).apply(i, ShiftedNoise::new));
       public static final KeyDispatchDataCodec<ShiftedNoise> CODEC;
 
       protected ShiftedNoise {
@@ -681,7 +683,7 @@ public final class DensityFunctions {
    }
 
    private static record RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange) implements DensityFunction {
-      public static final MapCodec<RangeChoice> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(RangeChoice::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min_inclusive").forGetter(RangeChoice::minInclusive), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max_exclusive").forGetter(RangeChoice::maxExclusive), DensityFunction.CODEC.fieldOf("when_in_range").forGetter(RangeChoice::whenInRange), DensityFunction.CODEC.fieldOf("when_out_of_range").forGetter(RangeChoice::whenOutOfRange)).apply(i, RangeChoice::new));
+      public static final MapCodec<RangeChoice> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(RangeChoice::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min_inclusive").forGetter(RangeChoice::minInclusive), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max_exclusive").forGetter(RangeChoice::maxExclusive), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("when_in_range").forGetter(RangeChoice::whenInRange), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("when_out_of_range").forGetter(RangeChoice::whenOutOfRange)).apply(i, RangeChoice::new));
       public static final KeyDispatchDataCodec<RangeChoice> CODEC;
 
       private RangeChoice {
@@ -849,7 +851,7 @@ public final class DensityFunctions {
    }
 
    protected static record Clamp(DensityFunction input, double minValue, double maxValue) implements PureTransformer {
-      private static final MapCodec<Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(Clamp::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min").forGetter(Clamp::minValue), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max").forGetter(Clamp::maxValue)).apply(i, Clamp::new));
+      private static final MapCodec<Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.DIRECT_CODEC.fieldOf("input").forGetter(Clamp::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min").forGetter(Clamp::minValue), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max").forGetter(Clamp::maxValue)).apply(i, Clamp::new));
       public static final KeyDispatchDataCodec<Clamp> CODEC;
 
       protected Clamp {
@@ -1167,21 +1169,17 @@ public final class DensityFunctions {
       }
    }
 
-   public static final class Spline implements DensityFunction {
-      private static final Codec<CubicSpline<Coordinate>> SPLINE_CODEC;
+   public static record Spline(CubicSpline<Point, Coordinate> spline) implements DensityFunction {
+      private static final Codec<CubicSpline<Point, Coordinate>> SPLINE_CODEC;
       private static final MapCodec<Spline> DATA_CODEC;
       public static final KeyDispatchDataCodec<Spline> CODEC;
-      private final CubicSpline<Coordinate> spline;
-      private final BoundedFloatFunction<Point> sampler;
 
-      public Spline(final CubicSpline<Coordinate> spline) {
+      public Spline {
          super();
-         this.spline = spline;
-         this.sampler = CubicSpline.asSampler(spline);
       }
 
       public double compute(final DensityFunction.FunctionContext context) {
-         return (double)this.sampler.apply(new Point(context));
+         return (double)this.spline.apply(new Point(context));
       }
 
       public double minValue() {
@@ -1197,41 +1195,11 @@ public final class DensityFunctions {
       }
 
       public DensityFunction mapAll(final DensityFunction.Visitor visitor) {
-         return visitor.apply(new Spline(this.spline.mapCoordinates((c) -> c.mapAll(visitor))));
+         return visitor.apply(new Spline(this.spline.mapAll((c) -> c.mapAll(visitor))));
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
          return CODEC;
-      }
-
-      public CubicSpline<Coordinate> spline() {
-         return this.spline;
-      }
-
-      public boolean equals(final Object obj) {
-         if (obj == this) {
-            return true;
-         } else {
-            boolean var10000;
-            if (obj instanceof Spline) {
-               Spline splineFunction = (Spline)obj;
-               if (this.spline.equals(splineFunction.spline)) {
-                  var10000 = true;
-                  return var10000;
-               }
-            }
-
-            var10000 = false;
-            return var10000;
-         }
-      }
-
-      public int hashCode() {
-         return this.spline.hashCode();
-      }
-
-      public String toString() {
-         return this.spline.toString();
       }
 
       static {
@@ -1240,27 +1208,51 @@ public final class DensityFunctions {
          CODEC = DensityFunctions.<Spline>makeCodec(DATA_CODEC);
       }
 
-      public static record Coordinate(DensityFunction function) implements BoundedFloatFunction<Point> {
+      public static record Coordinate(Holder<DensityFunction> function) implements BoundedFloatFunction<Point> {
          public static final Codec<Coordinate> CODEC;
 
          public Coordinate {
             super();
          }
 
+         public String toString() {
+            Optional<ResourceKey<DensityFunction>> key = this.function.unwrapKey();
+            if (key.isPresent()) {
+               ResourceKey<DensityFunction> name = (ResourceKey)key.get();
+               if (name == NoiseRouterData.CONTINENTS) {
+                  return "continents";
+               }
+
+               if (name == NoiseRouterData.EROSION) {
+                  return "erosion";
+               }
+
+               if (name == NoiseRouterData.RIDGES) {
+                  return "weirdness";
+               }
+
+               if (name == NoiseRouterData.RIDGES_FOLDED) {
+                  return "ridges";
+               }
+            }
+
+            return "Coordinate[" + String.valueOf(this.function) + "]";
+         }
+
          public float apply(final Point point) {
-            return (float)this.function.compute(point.context());
+            return (float)((DensityFunction)this.function.value()).compute(point.context());
          }
 
          public float minValue() {
-            return (float)this.function.minValue();
+            return this.function.isBound() ? (float)((DensityFunction)this.function.value()).minValue() : -1.0F / 0.0F;
          }
 
          public float maxValue() {
-            return (float)this.function.maxValue();
+            return this.function.isBound() ? (float)((DensityFunction)this.function.value()).maxValue() : 1.0F / 0.0F;
          }
 
          public Coordinate mapAll(final DensityFunction.Visitor visitor) {
-            return new Coordinate(this.function.mapAll(visitor));
+            return new Coordinate(Holder.direct(((DensityFunction)this.function.value()).mapAll(visitor)));
          }
 
          static {
@@ -1339,7 +1331,7 @@ public final class DensityFunctions {
    }
 
    private static record FindTopSurface(DensityFunction density, DensityFunction upperBound, int lowerBound, int cellHeight) implements DensityFunction {
-      private static final MapCodec<FindTopSurface> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("density").forGetter(FindTopSurface::density), DensityFunction.CODEC.fieldOf("upper_bound").forGetter(FindTopSurface::upperBound), Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("lower_bound").forGetter(FindTopSurface::lowerBound), ExtraCodecs.POSITIVE_INT.fieldOf("cell_height").forGetter(FindTopSurface::cellHeight)).apply(i, FindTopSurface::new));
+      private static final MapCodec<FindTopSurface> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("density").forGetter(FindTopSurface::density), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("upper_bound").forGetter(FindTopSurface::upperBound), Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("lower_bound").forGetter(FindTopSurface::lowerBound), ExtraCodecs.POSITIVE_INT.fieldOf("cell_height").forGetter(FindTopSurface::cellHeight)).apply(i, FindTopSurface::new));
       public static final KeyDispatchDataCodec<FindTopSurface> CODEC;
 
       private FindTopSurface {

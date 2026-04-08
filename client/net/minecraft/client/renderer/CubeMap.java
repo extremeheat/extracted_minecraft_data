@@ -23,6 +23,8 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class CubeMap implements AutoCloseable {
    private static final int SIDES = 6;
@@ -58,7 +60,7 @@ public class CubeMap implements AutoCloseable {
       modelViewStack.rotationX(3.1415927F);
       modelViewStack.rotateX(rotXInDegrees * 0.017453292F);
       modelViewStack.rotateY(rotYInDegrees * 0.017453292F);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
       modelViewStack.popMatrix();
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {

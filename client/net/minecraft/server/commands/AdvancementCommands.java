@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.Iterables;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -43,75 +42,67 @@ public class AdvancementCommands {
    }
 
    private static int perform(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final Collection<AdvancementHolder> advancements, final boolean showAdvancements) throws CommandSyntaxException {
-      int advancementCount = 0;
-      int playerCount = 0;
+      int count = 0;
 
       for(ServerPlayer player : players) {
-         int changedAdvancements = action.perform(player, advancements, showAdvancements);
-         if (changedAdvancements > 0) {
-            ++playerCount;
-         }
-
-         advancementCount += changedAdvancements;
+         count += action.perform(player, advancements, showAdvancements);
       }
 
-      if (advancementCount == 0) {
+      if (count == 0) {
          if (advancements.size() == 1) {
-            Component advancementName = Advancement.name((AdvancementHolder)Iterables.getOnlyElement(advancements));
             if (players.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.one.failure", advancementName, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.one.failure", Advancement.name((AdvancementHolder)advancements.iterator().next()), ((ServerPlayer)players.iterator().next()).getDisplayName()));
             } else {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.many.failure", advancementName, players.size()));
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.many.failure", Advancement.name((AdvancementHolder)advancements.iterator().next()), players.size()));
             }
          } else if (players.size() == 1) {
-            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.one.failure", advancements.size(), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
+            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.one.failure", advancements.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()));
          } else {
             throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.many.failure", advancements.size(), players.size()));
          }
       } else {
          if (advancements.size() == 1) {
-            Component advancementName = Advancement.name((AdvancementHolder)Iterables.getOnlyElement(advancements));
             if (players.size() == 1) {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.one.success", advancementName, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.one.success", Advancement.name((AdvancementHolder)advancements.iterator().next()), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
             } else {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.many.success", advancementName, playerCount), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.many.success", Advancement.name((AdvancementHolder)advancements.iterator().next()), players.size()), true);
             }
          } else if (players.size() == 1) {
-            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.one.success", advancementCount, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
+            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.one.success", advancements.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.many.success", advancementCount, playerCount), true);
+            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.many.success", advancements.size(), players.size()), true);
          }
 
-         return advancementCount;
+         return count;
       }
    }
 
    private static int performCriterion(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final AdvancementHolder holder, final String criterion) throws CommandSyntaxException {
-      int playerCount = 0;
+      int count = 0;
       Advancement advancement = holder.value();
       if (!advancement.criteria().containsKey(criterion)) {
          throw ERROR_CRITERION_NOT_FOUND.create(Advancement.name(holder), criterion);
       } else {
          for(ServerPlayer player : players) {
             if (action.performCriterion(player, holder, criterion)) {
-               ++playerCount;
+               ++count;
             }
          }
 
-         if (playerCount == 0) {
+         if (count == 0) {
             if (players.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.one.failure", criterion, Advancement.name(holder), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.one.failure", criterion, Advancement.name(holder), ((ServerPlayer)players.iterator().next()).getDisplayName()));
             } else {
                throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.many.failure", criterion, Advancement.name(holder), players.size()));
             }
          } else {
             if (players.size() == 1) {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.one.success", criterion, Advancement.name(holder), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.one.success", criterion, Advancement.name(holder), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
             } else {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.many.success", criterion, Advancement.name(holder), playerCount), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.many.success", criterion, Advancement.name(holder), players.size()), true);
             }
 
-            return playerCount;
+            return count;
          }
       }
    }

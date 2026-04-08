@@ -87,7 +87,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && !notLocalPlayer) {
          this.children = ImmutableList.of();
       } else {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.gui.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this, chatDisabledOrBlocked)), false), Component.translatable("gui.socialInteractions.report")) {
+         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this, chatDisabledOrBlocked)), false), Component.translatable("gui.socialInteractions.report")) {
             {
                Objects.requireNonNull(PlayerEntry.this);
             }
@@ -235,7 +235,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
 
    private void onHiddenOrShown(final boolean isHidden, final Component message) {
       this.updateHideAndShowButton(isHidden);
-      this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
+      this.minecraft.gui.getChat().addClientSystemMessage(message);
       this.minecraft.getNarrator().saySystemNow(message);
    }
 

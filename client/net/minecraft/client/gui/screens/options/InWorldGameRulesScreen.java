@@ -62,11 +62,11 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
 
    public void onClose() {
       if (this.hasPendingChanges()) {
-         this.minecraft.gui.setScreen(new ConfirmScreen((confirmed) -> {
+         this.minecraft.setScreen(new ConfirmScreen((confirmed) -> {
             if (confirmed) {
                this.closeAndDiscardChanges();
             } else {
-               this.minecraft.gui.setScreen(this);
+               this.minecraft.setScreen(this);
             }
 
          }, Component.translatable("editGamerule.inGame.discardChanges.title"), Component.translatable("editGamerule.inGame.discardChanges.message")));
@@ -115,8 +115,8 @@ public class InWorldGameRulesScreen extends AbstractGameRulesScreen implements H
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       if (!hasGamemasterPermission) {
-         this.minecraft.gui.setScreen(this.lastScreen);
-         Screen var3 = this.minecraft.gui.screen();
+         this.minecraft.setScreen(this.lastScreen);
+         Screen var3 = this.minecraft.screen;
          if (var3 instanceof HasGamemasterPermissionReaction) {
             HasGamemasterPermissionReaction screen = (HasGamemasterPermissionReaction)var3;
             screen.onGamemasterPermissionChanged(hasGamemasterPermission);

@@ -104,7 +104,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    }
 
    protected boolean shouldShowName(final T entity, final double distanceToCameraSq) {
-      return !Minecraft.getInstance().gui.hud.isHidden() && this.entityRenderDispatcher.crosshairPickEntity == entity && entity.getItem().getCustomName() != null;
+      return Minecraft.renderNames() && this.entityRenderDispatcher.crosshairPickEntity == entity && entity.getItem().getCustomName() != null;
    }
 
    protected Component getNameTag(final T entity) {

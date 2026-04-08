@@ -60,6 +60,7 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -74,7 +75,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class Parrot extends ShoulderRidingEntity {
+public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID;
    private static final Predicate<Mob> NOT_PARROT_PREDICATE;
    private static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP;
@@ -104,7 +105,7 @@ public class Parrot extends ShoulderRidingEntity {
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected boolean canBeABaby() {
+   public boolean isBaby() {
       return false;
    }
 
@@ -360,10 +361,6 @@ public class Parrot extends ShoulderRidingEntity {
 
    public boolean isFlying() {
       return !this.onGround();
-   }
-
-   protected boolean omnidirectionalAirMover() {
-      return true;
    }
 
    protected boolean canFlyToOwner() {

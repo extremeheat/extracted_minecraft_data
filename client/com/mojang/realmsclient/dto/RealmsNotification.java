@@ -157,12 +157,12 @@ public class RealmsNotification {
             if (this.urlButton != null) {
                builder.addButton(this.urlButton.urlText.createComponent(RealmsNotification.BUTTON_TEXT_FALLBACK), (popup) -> {
                   Minecraft minecraft = Minecraft.getInstance();
-                  minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
+                  minecraft.setScreen(new ConfirmLinkScreen((result) -> {
                      if (result) {
                         Util.getPlatform().openUri(this.urlButton.url);
-                        minecraft.gui.setScreen(parentScreen);
+                        minecraft.setScreen(parentScreen);
                      } else {
-                        minecraft.gui.setScreen(popup);
+                        minecraft.setScreen(popup);
                      }
 
                   }, this.urlButton.url, true));

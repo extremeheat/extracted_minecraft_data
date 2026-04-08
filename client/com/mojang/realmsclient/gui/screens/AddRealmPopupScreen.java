@@ -123,6 +123,6 @@ public class AddRealmPopupScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.backgroundScreen);
+      this.minecraft.setScreen(this.backgroundScreen);
    }
 }

@@ -46,7 +46,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
          if (this.timeWaiting >= 6000 && this.toast == null) {
             this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
-            minecraft.gui.toastManager().addToast(this.toast);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }

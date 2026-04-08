@@ -5,7 +5,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
@@ -17,8 +19,8 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
    private boolean usedOnThisFrame;
    private @Nullable Object modelOnTextureIdentity;
 
-   public OversizedItemRenderer() {
-      super();
+   public OversizedItemRenderer(final MultiBufferSource.BufferSource bufferSource) {
+      super(bufferSource);
    }
 
    public boolean usedOnThisFrame() {
@@ -37,7 +39,7 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
       return OversizedItemRenderState.class;
    }
 
-   protected void renderToTexture(final OversizedItemRenderState renderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+   protected void renderToTexture(final OversizedItemRenderState renderState, final PoseStack poseStack) {
       poseStack.scale(1.0F, -1.0F, -1.0F);
       GuiItemRenderState guiItemRenderState = renderState.guiItemRenderState();
       ScreenRectangle itemBounds = guiItemRenderState.oversizedItemBounds();
@@ -55,7 +57,10 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
       }
 
-      itemStackRenderState.submit(poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      FeatureRenderDispatcher featureRenderDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
+      itemStackRenderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      featureRenderDispatcher.renderAllFeatures();
       this.modelOnTextureIdentity = itemStackRenderState.getModelIdentity();
    }
 

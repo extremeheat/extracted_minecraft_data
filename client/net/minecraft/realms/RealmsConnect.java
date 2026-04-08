@@ -93,7 +93,7 @@ public class RealmsConnect {
                }
 
                DisconnectedScreen screen = new DisconnectedScreen(RealmsConnect.this.onlineScreen, Component.translatable("mco.connect.failed"), Component.translatable("disconnect.genericReason", message), CommonComponents.GUI_BACK);
-               minecraft.execute(() -> minecraft.gui.setScreen(screen));
+               minecraft.execute(() -> minecraft.setScreen(screen));
             }
 
          }

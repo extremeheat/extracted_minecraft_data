@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -12,8 +11,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-public class RuleProcessor implements StructureProcessor {
-   public static final MapCodec<RuleProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ProcessorRule.CODEC.listOf().fieldOf("rules").forGetter((p) -> p.rules)).apply(i, RuleProcessor::new));
+public class RuleProcessor extends StructureProcessor {
+   public static final MapCodec<RuleProcessor> CODEC;
    private final ImmutableList<ProcessorRule> rules;
 
    public RuleProcessor(final List<? extends ProcessorRule> rules) {
@@ -36,7 +35,11 @@ public class RuleProcessor implements StructureProcessor {
       return processedBlockInfo;
    }
 
-   public MapCodec<RuleProcessor> codec() {
-      return MAP_CODEC;
+   protected StructureProcessorType<?> getType() {
+      return StructureProcessorType.RULE;
+   }
+
+   static {
+      CODEC = ProcessorRule.CODEC.listOf().fieldOf("rules").xmap(RuleProcessor::new, (p) -> p.rules);
    }
 }

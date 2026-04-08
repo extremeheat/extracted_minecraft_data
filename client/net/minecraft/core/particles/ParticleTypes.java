@@ -15,9 +15,6 @@ public class ParticleTypes {
    public static final ParticleType<BlockParticleOption> BLOCK = register("block", false, BlockParticleOption::codec, BlockParticleOption::streamCodec);
    public static final ParticleType<BlockParticleOption> BLOCK_MARKER = register("block_marker", true, BlockParticleOption::codec, BlockParticleOption::streamCodec);
    public static final SimpleParticleType BUBBLE = register("bubble", false);
-   public static final SimpleParticleType SULFUR_BUBBLES = register("sulfur_bubbles", false);
-   public static final SimpleParticleType NOXIOUS_GAS = register("noxious_gas", false);
-   public static final SimpleParticleType NOXIOUS_GAS_CLOUD = register("noxious_gas_cloud", false);
    public static final SimpleParticleType CLOUD = register("cloud", false);
    public static final SimpleParticleType COPPER_FIRE_FLAME = register("copper_fire_flame", false);
    public static final SimpleParticleType CRIT = register("crit", false);
@@ -131,7 +128,6 @@ public class ParticleTypes {
    public static final SimpleParticleType TRIAL_OMEN = register("trial_omen", false);
    public static final ParticleType<BlockParticleOption> BLOCK_CRUMBLE = register("block_crumble", false, BlockParticleOption::codec, BlockParticleOption::streamCodec);
    public static final SimpleParticleType FIREFLY = register("firefly", false);
-   public static final SimpleParticleType SULFUR_CUBE_GOO = register("sulfur_cube_goo", false);
    public static final Codec<ParticleOptions> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ParticleOptions> STREAM_CODEC;
 

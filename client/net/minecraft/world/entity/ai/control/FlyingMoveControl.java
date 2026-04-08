@@ -4,11 +4,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
-public class FlyingMoveControl<T extends Mob> extends MoveControl<T> {
+public class FlyingMoveControl extends MoveControl {
    private final int maxTurn;
    private final boolean hoversInPlace;
 
-   public FlyingMoveControl(final T mob, final int maxTurn, final boolean hoversInPlace) {
+   public FlyingMoveControl(final Mob mob, final int maxTurn, final boolean hoversInPlace) {
       super(mob);
       this.maxTurn = maxTurn;
       this.hoversInPlace = hoversInPlace;

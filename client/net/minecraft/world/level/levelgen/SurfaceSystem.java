@@ -16,7 +16,6 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.BlockColumn;
@@ -314,13 +313,13 @@ public class SurfaceSystem {
    }
 
    static {
-      WHITE_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.white()).defaultBlockState();
-      ORANGE_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.orange()).defaultBlockState();
+      WHITE_TERRACOTTA = Blocks.WHITE_TERRACOTTA.defaultBlockState();
+      ORANGE_TERRACOTTA = Blocks.ORANGE_TERRACOTTA.defaultBlockState();
       TERRACOTTA = Blocks.TERRACOTTA.defaultBlockState();
-      YELLOW_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.yellow()).defaultBlockState();
-      BROWN_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.brown()).defaultBlockState();
-      RED_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.red()).defaultBlockState();
-      LIGHT_GRAY_TERRACOTTA = ((Block)Blocks.DYED_TERRACOTTA.lightGray()).defaultBlockState();
+      YELLOW_TERRACOTTA = Blocks.YELLOW_TERRACOTTA.defaultBlockState();
+      BROWN_TERRACOTTA = Blocks.BROWN_TERRACOTTA.defaultBlockState();
+      RED_TERRACOTTA = Blocks.RED_TERRACOTTA.defaultBlockState();
+      LIGHT_GRAY_TERRACOTTA = Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState();
       PACKED_ICE = Blocks.PACKED_ICE.defaultBlockState();
       SNOW_BLOCK = Blocks.SNOW_BLOCK.defaultBlockState();
    }

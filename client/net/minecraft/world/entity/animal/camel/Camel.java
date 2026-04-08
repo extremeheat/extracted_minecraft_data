@@ -86,7 +86,7 @@ public class Camel extends AbstractHorse {
 
    public Camel(final EntityType<? extends Camel> type, final Level level) {
       super(type, level);
-      this.moveControl = new CamelMoveControl(this);
+      this.moveControl = new CamelMoveControl();
       this.lookControl = new CamelLookControl();
       GroundPathNavigation navigation = (GroundPathNavigation)this.getNavigation();
       navigation.setCanFloat(true);
@@ -632,14 +632,15 @@ public class Camel extends AbstractHorse {
       }
    }
 
-   private static class CamelMoveControl<T extends Camel> extends MoveControl<T> {
-      public CamelMoveControl(final T camel) {
-         super(camel);
+   private class CamelMoveControl extends MoveControl {
+      public CamelMoveControl() {
+         Objects.requireNonNull(Camel.this);
+         super(Camel.this);
       }
 
       public void tick() {
-         if (this.operation == MoveControl.Operation.MOVE_TO && !((Camel)this.mob).isLeashed() && ((Camel)this.mob).isCamelSitting() && !((Camel)this.mob).isInPoseTransition() && ((Camel)this.mob).canCamelChangePose()) {
-            ((Camel)this.mob).standUp();
+         if (this.operation == MoveControl.Operation.MOVE_TO && !Camel.this.isLeashed() && Camel.this.isCamelSitting() && !Camel.this.isInPoseTransition() && Camel.this.canCamelChangePose()) {
+            Camel.this.standUp();
          }
 
          super.tick();

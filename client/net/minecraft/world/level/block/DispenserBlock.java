@@ -14,10 +14,8 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.core.dispenser.SpawnEggItemBehavior;
-import net.minecraft.core.dispenser.SulfurCubeBlockDispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -118,8 +116,6 @@ public class DispenserBlock extends BaseEntityBlock {
    private static DispenseItemBehavior getDefaultDispenseMethod(final ItemStack itemStack) {
       if (itemStack.has(DataComponents.EQUIPPABLE)) {
          return EquipmentDispenseItemBehavior.INSTANCE;
-      } else if (itemStack.is(ItemTags.SULFUR_CUBE_SWALLOWABLE)) {
-         return SulfurCubeBlockDispenseItemBehavior.INSTANCE;
       } else {
          return (DispenseItemBehavior)(itemStack.getItem() instanceof SpawnEggItem && itemStack.has(DataComponents.ENTITY_DATA) ? SpawnEggItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
       }

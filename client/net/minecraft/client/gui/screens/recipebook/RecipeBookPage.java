@@ -139,7 +139,7 @@ public class RecipeBookPage {
    }
 
    public void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      if (this.minecraft.gui.screen() != null && this.hoveredButton != null && !this.overlay.isVisible()) {
+      if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack displayStack = this.hoveredButton.getDisplayStack();
          Identifier tooltipStyle = (Identifier)displayStack.get(DataComponents.TOOLTIP_STYLE);
          graphics.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), mouseX, mouseY, tooltipStyle);

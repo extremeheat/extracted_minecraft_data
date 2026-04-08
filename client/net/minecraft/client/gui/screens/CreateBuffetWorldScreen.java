@@ -49,7 +49,7 @@ public class CreateBuffetWorldScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.parent);
+      this.minecraft.setScreen(this.parent);
    }
 
    protected void init() {

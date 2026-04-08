@@ -91,7 +91,6 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final float friction;
    protected final float speedFactor;
    protected final float jumpFactor;
-   protected final float bounceRestitution;
    protected final boolean dynamicShape;
    protected final FeatureFlagSet requiredFeatures;
    protected final Properties properties;
@@ -109,7 +108,6 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.friction = properties.friction;
       this.speedFactor = properties.speedFactor;
       this.jumpFactor = properties.jumpFactor;
-      this.bounceRestitution = properties.bounceRestitution;
       this.dynamicShape = properties.dynamicShape;
       this.requiredFeatures = properties.requiredFeatures;
       this.properties = properties;
@@ -424,7 +422,6 @@ public abstract class BlockBehaviour implements FeatureElement {
       private float friction;
       private float speedFactor;
       private float jumpFactor;
-      private float bounceRestitution;
       private @Nullable ResourceKey<Block> id;
       private DependantName<Block, Optional<ResourceKey<LootTable>>> drops;
       private DependantName<Block, String> descriptionId;
@@ -506,7 +503,6 @@ public abstract class BlockBehaviour implements FeatureElement {
          copyTo.soundType = copyFrom.soundType;
          copyTo.friction = copyFrom.friction;
          copyTo.speedFactor = copyFrom.speedFactor;
-         copyTo.bounceRestitution = copyFrom.bounceRestitution;
          copyTo.dynamicShape = copyFrom.dynamicShape;
          copyTo.canOcclude = copyFrom.canOcclude;
          copyTo.isAir = copyFrom.isAir;
@@ -563,11 +559,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public Properties jumpFactor(final float jumpFactor) {
          this.jumpFactor = jumpFactor;
-         return this;
-      }
-
-      public Properties bounceRestitution(final float bounceRestitution) {
-         this.bounceRestitution = bounceRestitution;
          return this;
       }
 

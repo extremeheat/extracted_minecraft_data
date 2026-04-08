@@ -7,7 +7,6 @@ import net.minecraft.resources.Identifier;
 
 public class Attributes {
    public static final double DEFAULT_ATTACK_SPEED = 4.0;
-   public static final Holder<Attribute> AIR_DRAG_MODIFIER = register("air_drag_modifier", (new RangedAttribute("attribute.name.air_drag_modifier", 1.0, 0.0, 2048.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR = register("armor", (new RangedAttribute("attribute.name.armor", 0.0, 0.0, 30.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR_TOUGHNESS = register("armor_toughness", (new RangedAttribute("attribute.name.armor_toughness", 0.0, 0.0, 20.0)).setSyncable(true));
    public static final Holder<Attribute> ATTACK_DAMAGE = register("attack_damage", new RangedAttribute("attribute.name.attack_damage", 2.0, 0.0, 2048.0));
@@ -15,7 +14,6 @@ public class Attributes {
    public static final Holder<Attribute> ATTACK_SPEED = register("attack_speed", (new RangedAttribute("attribute.name.attack_speed", 4.0, 0.0, 1024.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_BREAK_SPEED = register("block_break_speed", (new RangedAttribute("attribute.name.block_break_speed", 1.0, 0.0, 1024.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_INTERACTION_RANGE = register("block_interaction_range", (new RangedAttribute("attribute.name.block_interaction_range", 4.5, 0.0, 64.0)).setSyncable(true));
-   public static final Holder<Attribute> BOUNCINESS = register("bounciness", (new RangedAttribute("attribute.name.bounciness", 0.0, 0.0, 1.0)).setSyncable(true));
    public static final Holder<Attribute> BURNING_TIME;
    public static final Holder<Attribute> CAMERA_DISTANCE;
    public static final Holder<Attribute> EXPLOSION_KNOCKBACK_RESISTANCE;
@@ -23,7 +21,6 @@ public class Attributes {
    public static final Holder<Attribute> FALL_DAMAGE_MULTIPLIER;
    public static final Holder<Attribute> FLYING_SPEED;
    public static final Holder<Attribute> FOLLOW_RANGE;
-   public static final Holder<Attribute> FRICTION_MODIFIER;
    public static final Holder<Attribute> GRAVITY;
    public static final Holder<Attribute> JUMP_STRENGTH;
    public static final Holder<Attribute> KNOCKBACK_RESISTANCE;
@@ -66,10 +63,9 @@ public class Attributes {
       FALL_DAMAGE_MULTIPLIER = register("fall_damage_multiplier", (new RangedAttribute("attribute.name.fall_damage_multiplier", 1.0, 0.0, 100.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEGATIVE));
       FLYING_SPEED = register("flying_speed", (new RangedAttribute("attribute.name.flying_speed", 0.4, 0.0, 1024.0)).setSyncable(true));
       FOLLOW_RANGE = register("follow_range", new RangedAttribute("attribute.name.follow_range", 32.0, 0.0, 2048.0));
-      FRICTION_MODIFIER = register("friction_modifier", (new RangedAttribute("attribute.name.friction_modifier", 1.0, 0.0, 2048.0)).setSyncable(true));
       GRAVITY = register("gravity", (new RangedAttribute("attribute.name.gravity", 0.08, -1.0, 1.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEUTRAL));
       JUMP_STRENGTH = register("jump_strength", (new RangedAttribute("attribute.name.jump_strength", 0.41999998688697815, 0.0, 32.0)).setSyncable(true));
-      KNOCKBACK_RESISTANCE = register("knockback_resistance", new RangedAttribute("attribute.name.knockback_resistance", 0.0, -2.0, 1.0));
+      KNOCKBACK_RESISTANCE = register("knockback_resistance", new RangedAttribute("attribute.name.knockback_resistance", 0.0, 0.0, 1.0));
       LUCK = register("luck", (new RangedAttribute("attribute.name.luck", 0.0, -1024.0, 1024.0)).setSyncable(true));
       MAX_ABSORPTION = register("max_absorption", (new RangedAttribute("attribute.name.max_absorption", 0.0, 0.0, 2048.0)).setSyncable(true));
       MAX_HEALTH = register("max_health", (new RangedAttribute("attribute.name.max_health", 20.0, 1.0, 1024.0)).setSyncable(true));

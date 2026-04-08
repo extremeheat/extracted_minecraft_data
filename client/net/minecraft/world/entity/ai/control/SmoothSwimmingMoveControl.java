@@ -4,7 +4,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
-public class SmoothSwimmingMoveControl<T extends Mob> extends MoveControl<T> {
+public class SmoothSwimmingMoveControl extends MoveControl {
    private static final float FULL_SPEED_TURN_THRESHOLD = 10.0F;
    private static final float STOP_TURN_THRESHOLD = 60.0F;
    private final int maxTurnX;
@@ -13,7 +13,7 @@ public class SmoothSwimmingMoveControl<T extends Mob> extends MoveControl<T> {
    private final float outsideWaterSpeedModifier;
    private final boolean applyGravity;
 
-   public SmoothSwimmingMoveControl(final T mob, final int maxTurnX, final int maxTurnY, final float inWaterSpeedModifier, final float outsideWaterSpeedModifier, final boolean applyGravity) {
+   public SmoothSwimmingMoveControl(final Mob mob, final int maxTurnX, final int maxTurnY, final float inWaterSpeedModifier, final float outsideWaterSpeedModifier, final boolean applyGravity) {
       super(mob);
       this.maxTurnX = maxTurnX;
       this.maxTurnY = maxTurnY;

@@ -507,7 +507,7 @@ public class LevelEventHandler {
       SoundInstance instance = SimpleSoundInstance.forJukeboxSong(sound, Vec3.atCenterOf(pos));
       this.playingJukeboxSongs.put(pos, instance);
       this.minecraft.getSoundManager().play(instance);
-      this.minecraft.gui.hud.setNowPlaying(song.description());
+      this.minecraft.gui.setNowPlaying(song.description());
       this.notifyNearbyEntities(this.level, pos, true);
    }
 

@@ -1,9 +1,19 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -28,6 +40,8 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -44,14 +58,22 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
 public class DebugScreenOverlay {
+   private static final float CROSSHAIR_SCALE = 0.01F;
+   private static final int CROSSHAIR_INDEX_COUNT = 36;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;
    private final Minecraft minecraft;
    private final Font font;
+   private final GpuBuffer crosshairBuffer;
+   private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies;
    private @Nullable ChunkPos lastPos;
    private @Nullable LevelChunk clientChunk;
    private @Nullable CompletableFuture<LevelChunk> serverChunk;
@@ -59,10 +81,10 @@ public class DebugScreenOverlay {
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
    private boolean renderLightmapTexture;
-   private final LocalSampleLogger frameTimeLogger = new LocalSampleLogger(1);
-   private final LocalSampleLogger tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
-   private final LocalSampleLogger pingLogger = new LocalSampleLogger(1);
-   private final LocalSampleLogger bandwidthLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger frameTimeLogger;
+   private final LocalSampleLogger tickTimeLogger;
+   private final LocalSampleLogger pingLogger;
+   private final LocalSampleLogger bandwidthLogger;
    private final Map<RemoteDebugSampleType, LocalSampleLogger> remoteSupportingLoggers;
    private final FpsDebugChart fpsChart;
    private final TpsDebugChart tpsChart;
@@ -72,6 +94,11 @@ public class DebugScreenOverlay {
 
    public DebugScreenOverlay(final Minecraft minecraft) {
       super();
+      this.crosshairIndicies = RenderSystem.getSequentialBuffer(VertexFormat.Mode.LINES);
+      this.frameTimeLogger = new LocalSampleLogger(1);
+      this.tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
+      this.pingLogger = new LocalSampleLogger(1);
+      this.bandwidthLogger = new LocalSampleLogger(1);
       this.remoteSupportingLoggers = Map.of(RemoteDebugSampleType.TICK_TIME, this.tickTimeLogger);
       this.minecraft = minecraft;
       this.font = minecraft.font;
@@ -80,6 +107,27 @@ public class DebugScreenOverlay {
       this.pingChart = new PingDebugChart(this.font, this.pingLogger);
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
+
+      try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH.getVertexSize() * 12 * 2)) {
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 1.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 1.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
+
+         try (MeshData meshData = bufferBuilder.buildOrThrow()) {
+            this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", 32, meshData.vertexBuffer());
+         }
+      }
+
    }
 
    public void clearChunkCache() {
@@ -89,7 +137,7 @@ public class DebugScreenOverlay {
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       Options options = this.minecraft.options;
-      if (this.minecraft.isGameLoadFinished() && (!this.minecraft.gui.hud.isHidden() || this.minecraft.gui.screen() != null)) {
+      if (this.minecraft.isGameLoadFinished() && (!options.hideGui || this.minecraft.screen != null)) {
          Collection<Identifier> visibleEntries = this.minecraft.debugEntries.getCurrentlyEnabled();
          if (!visibleEntries.isEmpty()) {
             graphics.nextStratum();
@@ -329,7 +377,7 @@ public class DebugScreenOverlay {
 
    public boolean showDebugScreen() {
       DebugScreenEntryList entries = this.minecraft.debugEntries;
-      return (entries.isOverlayVisible() || !entries.getCurrentlyEnabled().isEmpty()) && (!this.minecraft.gui.hud.isHidden() || this.minecraft.gui.screen() != null);
+      return (entries.isOverlayVisible() || !entries.getCurrentlyEnabled().isEmpty()) && (!this.minecraft.options.hideGui || this.minecraft.screen != null);
    }
 
    public boolean showProfilerChart() {
@@ -418,5 +466,35 @@ public class DebugScreenOverlay {
       this.tickTimeLogger.reset();
       this.pingLogger.reset();
       this.bandwidthLogger.reset();
+   }
+
+   public void render3dCrosshair(final CameraRenderState cameraState, final int guiScale) {
+      Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+      modelViewStack.pushMatrix();
+      modelViewStack.translate(0.0F, 0.0F, -1.0F);
+      modelViewStack.rotateX(cameraState.xRot * 0.017453292F);
+      modelViewStack.rotateY(cameraState.yRot * 0.017453292F);
+      float crosshairScale = 0.01F * (float)guiScale;
+      modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
+      RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
+      RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;
+      RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+      GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
+      GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
+      GpuBuffer indexBuffer = this.crosshairIndicies.getBuffer(36);
+      GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+         renderPass.setPipeline(renderPipelineOutline);
+         RenderSystem.bindDefaultUniforms(renderPass);
+         renderPass.setVertexBuffer(0, this.crosshairBuffer);
+         renderPass.setIndexBuffer(indexBuffer, this.crosshairIndicies.type());
+         renderPass.setUniform("DynamicTransforms", dynamicTransform);
+         renderPass.drawIndexed(0, 0, 18, 1);
+         renderPass.setPipeline(renderPipelineFill);
+         renderPass.drawIndexed(0, 18, 18, 1);
+      }
+
+      modelViewStack.popMatrix();
    }
 }

@@ -1116,22 +1116,6 @@ public class Util {
       return ImmutableList.builderWithExpectedSize(list.size() + 1).add(element).addAll(list).build();
    }
 
-   public static <T> List<T> join(final List<T>... lists) {
-      int size = 0;
-
-      for(List<T> list : lists) {
-         size += list.size();
-      }
-
-      ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(size);
-
-      for(List<T> list : lists) {
-         builder.addAll(list);
-      }
-
-      return builder.build();
-   }
-
    public static <K, V> Map<K, V> copyAndPut(final Map<K, V> map, final K key, final V value) {
       return ImmutableMap.builderWithExpectedSize(map.size() + 1).putAll(map).put(key, value).buildKeepingLast();
    }
