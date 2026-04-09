@@ -339,7 +339,6 @@ public class ItemInHandRenderer {
       }
 
       this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-      this.minecraft.renderBuffers().bufferSource().endBatch();
    }
 
    @VisibleForTesting

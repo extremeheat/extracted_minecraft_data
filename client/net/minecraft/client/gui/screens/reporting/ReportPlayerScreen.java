@@ -42,7 +42,7 @@ public class ReportPlayerScreen extends Screen {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild(new StringWidget(this.title, this.font), this.layout.newCellSettings().paddingBottom(6));
       this.layout.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), this.layout.newCellSettings().paddingBottom(6));
-      Button chatButton = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (b) -> this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()))).build());
+      Button chatButton = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (var1) -> this.minecraft.gui.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()))).build());
       if (this.chatDisabledOrBlocked) {
          chatButton.active = false;
          chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.chat_disabled_or_blocked")));
@@ -54,8 +54,8 @@ public class ReportPlayerScreen extends Screen {
          chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.no_messages", this.player.getPlayerName())));
       }
 
-      this.layout.addChild(Button.builder(REPORT_SKIN, (b) -> this.minecraft.setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()))).build());
-      this.layout.addChild(Button.builder(REPORT_NAME, (b) -> this.minecraft.setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()))).build());
+      this.layout.addChild(Button.builder(REPORT_SKIN, (var1) -> this.minecraft.gui.setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()))).build());
+      this.layout.addChild(Button.builder(REPORT_NAME, (b) -> this.minecraft.gui.setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()))).build());
       this.layout.addChild(SpacerElement.height(20));
       this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (b) -> this.onClose()).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
@@ -68,6 +68,6 @@ public class ReportPlayerScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 }

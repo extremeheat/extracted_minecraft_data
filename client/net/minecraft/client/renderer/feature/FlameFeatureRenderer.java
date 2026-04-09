@@ -3,10 +3,11 @@ package net.minecraft.client.renderer.feature;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
@@ -38,7 +39,7 @@ public class FlameFeatureRenderer {
       pose.translate(0.0F, 0.0F, 0.3F - (float)((int)h) * 0.02F);
       float zo = 0.0F;
       int ss = 0;
-      VertexConsumer buffer = bufferSource.getBuffer(Sheets.cutoutBlockSheet());
+      VertexConsumer buffer = bufferSource.getBuffer(RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS));
 
       for(int lightCoords = LightCoordsUtil.withBlock(state.lightCoords, 15); h > 0.0F; ++ss) {
          TextureAtlasSprite tex = ss % 2 == 0 ? fire1 : fire2;

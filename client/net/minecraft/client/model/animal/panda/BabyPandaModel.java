@@ -26,7 +26,7 @@ public class BabyPandaModel extends PandaModel {
       return LayerDefinition.create(mesh, 64, 64);
    }
 
-   protected void animateSitting(PandaRenderState state) {
+   protected void animateSitting(final PandaRenderState state) {
       this.body.xRot = Mth.rotLerpRad(state.sitAmount, this.body.xRot, 0.17453292F);
       this.body.z = Mth.lerp(state.sitAmount, this.body.z, -1.5F);
       this.head.z = Mth.lerp(state.sitAmount, this.head.z, -11.5F);

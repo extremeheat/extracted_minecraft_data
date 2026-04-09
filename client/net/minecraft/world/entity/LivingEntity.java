@@ -84,7 +84,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
-import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -183,9 +182,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected static final EntityDimensions SLEEPING_DIMENSIONS;
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
-   private static final float WATER_FLOAT_IMPULSE = 0.04F;
+   protected static final float LIQUID_FLOAT_IMPULSE = 0.04F;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
+   public static final float BASE_AIR_DRAG = 0.91F;
+   public static final float BASE_VERTICAL_DRAG_FOR_NON_FLYERS = 0.98F;
    private int currentImpulseContextResetGraceTime = 0;
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
    private final AttributeMap attributes;
@@ -304,7 +305,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public static AttributeSupplier.Builder createLivingAttributes() {
-      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE);
+      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE).add(Attributes.BOUNCINESS).add(Attributes.AIR_DRAG_MODIFIER).add(Attributes.FRICTION_MODIFIER);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
@@ -460,6 +461,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    protected float getBlockSpeedFactor() {
       return Mth.lerp((float)this.getAttributeValue(Attributes.MOVEMENT_EFFICIENCY), super.getBlockSpeedFactor(), 1.0F);
+   }
+
+   private static float computeModifiedFriction(final float friction, final float modifier) {
+      return Mth.clamp(1.0F - (1.0F - friction) * modifier, 0.0F, 1.0F);
    }
 
    public float getLuck() {
@@ -1119,7 +1124,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public boolean isDeadOrDying() {
-      return this.getHealth() <= 0.0F;
+      return this.getHealth() <= 0.0F || this.dead;
    }
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, float damage) {
@@ -1424,7 +1429,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             LOGGER.info("Named entity {} died: {}", this, this.getCombatTracker().getDeathMessage().getString());
          }
 
-         this.dead = true;
+         this.handleKillingBlow();
          this.getCombatTracker().recheckStatus();
          Level var5 = this.level();
          if (var5 instanceof ServerLevel) {
@@ -1440,6 +1445,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
          this.setPose(Pose.DYING);
       }
+   }
+
+   protected void handleKillingBlow() {
+      this.dead = true;
    }
 
    protected void createWitherRose(final @Nullable LivingEntity killer) {
@@ -2093,6 +2102,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.attackAnim = (float)this.swingTime / (float)currentSwingDuration;
    }
 
+   protected double getEntityBounciness() {
+      return this.getAttributeValue(Attributes.BOUNCINESS);
+   }
+
    public @Nullable AttributeInstance getAttribute(final Holder<Attribute> attribute) {
       return this.getAttributes().getInstance(attribute);
    }
@@ -2351,8 +2364,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    private void travelInAir(final Vec3 input) {
       BlockPos posBelow = this.getBlockPosBelowThatAffectsMyMovement();
-      float blockFriction = this.onGround() ? this.level().getBlockState(posBelow).getBlock().getFriction() : 1.0F;
-      float friction = blockFriction * 0.91F;
+      float blockFriction = this.onGround() ? computeModifiedFriction(this.level().getBlockState(posBelow).getBlock().getFriction(), (float)this.getAttributeValue(Attributes.FRICTION_MODIFIER)) : 1.0F;
       Vec3 movement = this.handleRelativeFrictionAndCalculateMovement(input, blockFriction);
       double movementY = movement.y;
       MobEffectInstance levitationEffect = this.getEffect(MobEffects.LEVITATION);
@@ -2371,13 +2383,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (this.shouldDiscardFriction()) {
          this.setDeltaMovement(movement.x, movementY, movement.z);
       } else {
-         float verticalFriction = this instanceof FlyingAnimal ? friction : 0.98F;
+         float entityAirDragModifier = (float)this.getAttributeValue(Attributes.AIR_DRAG_MODIFIER);
+         float airDrag = computeModifiedFriction(0.91F, entityAirDragModifier);
+         float friction = blockFriction * airDrag;
+         float verticalFriction = this.omnidirectionalAirMover() ? friction : computeModifiedFriction(0.98F, entityAirDragModifier);
          this.setDeltaMovement(movement.x * (double)friction, movementY * (double)verticalFriction, movement.z * (double)friction);
       }
 
    }
 
-   private void travelInFluid(final Vec3 input) {
+   protected void travelInFluid(final Vec3 input) {
       boolean isFalling = this.getDeltaMovement().y <= 0.0;
       double oldY = this.getY();
       double baseGravity = this.getEffectiveGravity();
@@ -2807,7 +2822,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private void detectEquipmentUpdates() {
-      Map<EquipmentSlot, ItemStack> changedItems = this.collectEquipmentChanges();
+      Map<EquipmentSlot, ItemStack> changedItems = this.collectEquipmentChanges(this.lastEquipmentItems);
       if (changedItems != null) {
          this.handleHandSwap(changedItems);
          if (!changedItems.isEmpty()) {
@@ -2817,11 +2832,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   private @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
+   protected @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges(final Map<EquipmentSlot, ItemStack> lastEquipmentItems) {
       Map<EquipmentSlot, ItemStack> changedItems = null;
 
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {
-         ItemStack previous = (ItemStack)this.lastEquipmentItems.get(slot);
+         ItemStack previous = (ItemStack)lastEquipmentItems.get(slot);
          ItemStack current = this.getItemBySlot(slot);
          if (this.equipmentHasChanged(previous, current)) {
             if (changedItems == null) {
@@ -2849,9 +2864,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                   }
 
                }));
-               Level var7 = this.level();
-               if (var7 instanceof ServerLevel) {
-                  ServerLevel serverLevel = (ServerLevel)var7;
+               Level var8 = this.level();
+               if (var8 instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)var8;
                   EnchantmentHelper.runLocationChangedEffects(serverLevel, current, this, slot);
                }
             }
@@ -3016,7 +3031,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (this.level().isClientSide()) {
-         this.calculateEntityAnimation(this instanceof FlyingAnimal);
+         this.calculateEntityAnimation(this.omnidirectionalAirMover());
       }
 
       profiler.pop();

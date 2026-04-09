@@ -14,8 +14,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
@@ -184,7 +184,7 @@ public class IntegratedServer extends MinecraftServer {
 
    public SystemReport fillServerSystemReport(final SystemReport systemReport) {
       systemReport.setDetail("Type", "Integrated Server");
-      systemReport.setDetail("Is Modded", (Supplier)(() -> this.getModdedStatus().fullDescription()));
+      systemReport.setDetail("Is Modded", (CrashReportDetail)(() -> this.getModdedStatus().fullDescription()));
       Minecraft var10002 = this.minecraft;
       Objects.requireNonNull(var10002);
       systemReport.setDetail("Launched Version", var10002::getLaunchedVersion);

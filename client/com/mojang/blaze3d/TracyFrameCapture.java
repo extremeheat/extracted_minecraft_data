@@ -9,7 +9,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.jtracy.TracyClient;
 import java.util.OptionalInt;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -35,7 +34,7 @@ public class TracyFrameCapture implements AutoCloseable {
       this.width = 320;
       this.height = 180;
       GpuDevice device = RenderSystem.getDevice();
-      this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1, 1);
+      this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, GpuFormat.RGBA8_UNORM, this.width, this.height, 1, 1);
       this.frameBufferView = device.createTextureView(this.frameBuffer);
       this.pixelbuffer = device.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(this.width * this.height) * 4L);
    }
@@ -59,7 +58,7 @@ public class TracyFrameCapture implements AutoCloseable {
          this.height = height;
          GpuDevice device = RenderSystem.getDevice();
          this.frameBuffer.close();
-         this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, width, height, 1, 1);
+         this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, GpuFormat.RGBA8_UNORM, width, height, 1, 1);
          this.frameBufferView.close();
          this.frameBufferView = device.createTextureView(this.frameBuffer);
          this.pixelbuffer.close();

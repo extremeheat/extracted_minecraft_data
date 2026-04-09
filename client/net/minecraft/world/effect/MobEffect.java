@@ -85,7 +85,7 @@ public class MobEffect implements FeatureElement {
       return true;
    }
 
-   public void applyInstantenousEffect(final ServerLevel level, final @Nullable Entity source, final @Nullable Entity owner, final LivingEntity mob, final int amplification, final double scale) {
+   public void applyInstantaneousEffect(final ServerLevel level, final @Nullable Entity source, final @Nullable Entity owner, final LivingEntity mob, final int amplification, final double scale) {
       this.applyEffectTick(level, mob, amplification);
    }
 
@@ -106,7 +106,7 @@ public class MobEffect implements FeatureElement {
    public void onMobHurt(final ServerLevel level, final LivingEntity mob, final int amplifier, final DamageSource source, final float damage) {
    }
 
-   public boolean isInstantenous() {
+   public boolean isInstantaneous() {
       return false;
    }
 

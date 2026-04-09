@@ -130,7 +130,7 @@ public class BlockStateProperties {
    public static final EnumProperty<BambooLeaves> BAMBOO_LEAVES;
    public static final EnumProperty<Tilt> TILT;
    public static final EnumProperty<Direction> VERTICAL_DIRECTION;
-   public static final EnumProperty<DripstoneThickness> DRIPSTONE_THICKNESS;
+   public static final EnumProperty<SpeleothemThickness> SPELEOTHEM_THICKNESS;
    public static final EnumProperty<SculkSensorPhase> SCULK_SENSOR_PHASE;
    public static final BooleanProperty SLOT_0_OCCUPIED;
    public static final BooleanProperty SLOT_1_OCCUPIED;
@@ -224,7 +224,7 @@ public class BlockStateProperties {
       BAMBOO_LEAVES = EnumProperty.<BambooLeaves>create("leaves", BambooLeaves.class);
       TILT = EnumProperty.<Tilt>create("tilt", Tilt.class);
       VERTICAL_DIRECTION = EnumProperty.create("vertical_direction", Direction.class, Direction.UP, Direction.DOWN);
-      DRIPSTONE_THICKNESS = EnumProperty.<DripstoneThickness>create("thickness", DripstoneThickness.class);
+      SPELEOTHEM_THICKNESS = EnumProperty.<SpeleothemThickness>create("thickness", SpeleothemThickness.class);
       SCULK_SENSOR_PHASE = EnumProperty.<SculkSensorPhase>create("sculk_sensor_phase", SculkSensorPhase.class);
       SLOT_0_OCCUPIED = BooleanProperty.create("slot_0_occupied");
       SLOT_1_OCCUPIED = BooleanProperty.create("slot_1_occupied");

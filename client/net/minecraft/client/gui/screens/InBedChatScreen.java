@@ -31,10 +31,10 @@ public class InBedChatScreen extends ChatScreen {
       String text = this.input.getValue();
       if (!this.isDraft && !text.isEmpty()) {
          this.exitReason = ChatScreen.ExitReason.DONE;
-         this.minecraft.setScreen(new ChatScreen(text, false));
+         this.minecraft.gui.setScreen(new ChatScreen(text, false));
       } else {
          this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
       }
 
    }

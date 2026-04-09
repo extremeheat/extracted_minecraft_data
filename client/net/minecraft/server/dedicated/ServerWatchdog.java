@@ -6,6 +6,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Timer;
@@ -25,6 +27,7 @@ public class ServerWatchdog implements Runnable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final long MAX_SHUTDOWN_TIME = 10000L;
    private static final int SHUTDOWN_STATUS = 1;
+   private static final Comparator<ThreadInfo> THREAD_INFO_COMPARATOR = Comparator.comparing(ThreadInfo::isDaemon).thenComparing(ThreadInfo::getThreadState).thenComparing(ThreadInfo::getThreadName);
    private final DedicatedServer server;
    private final long maxTickTimeNanos;
 
@@ -72,8 +75,9 @@ public class ServerWatchdog implements Runnable {
    public static CrashReport createWatchdogCrashReport(final String message, final long mainThreadId) {
       ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
       ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(true, true);
+      Arrays.sort(threadInfos, THREAD_INFO_COMPARATOR);
       StringBuilder builder = new StringBuilder();
-      Error exception = new Error("Watchdog");
+      Error exception = new Error("Watchdog (" + message + ")");
 
       for(ThreadInfo threadInfo : threadInfos) {
          if (threadInfo.getThreadId() == mainThreadId) {

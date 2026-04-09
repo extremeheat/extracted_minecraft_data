@@ -32,7 +32,7 @@ public class ColorLerper {
          return -1644826;
       } else {
          int src = color.getTextureDiffuseColor();
-         return ARGB.color(255, Mth.floor((float)ARGB.red(src) * brightness), Mth.floor((float)ARGB.green(src) * brightness), Mth.floor((float)ARGB.blue(src) * brightness));
+         return ARGB.color(255, Mth.clamp(Mth.floor((float)ARGB.red(src) * brightness), 0, 255), Mth.clamp(Mth.floor((float)ARGB.green(src) * brightness), 0, 255), Mth.clamp(Mth.floor((float)ARGB.blue(src) * brightness), 0, 255));
       }
    }
 

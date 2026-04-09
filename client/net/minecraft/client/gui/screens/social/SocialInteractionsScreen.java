@@ -152,7 +152,7 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    private void showPage(final Page page) {

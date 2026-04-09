@@ -181,7 +181,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          }
       }
 
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
       if (this.stateChanged) {
          this.lastScreen.resetScreen();
       }
@@ -259,11 +259,11 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          this.stateChanged();
       } catch (RealmsServiceException e) {
          LOGGER.error("Couldn't save slot settings", e);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(e, this));
+         this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(e, this));
          return;
       }
 
-      this.minecraft.setScreen(this);
+      this.minecraft.gui.setScreen(this);
    }
 
    public void saveSettings(final String name, final String desc, final RegionSelectionPreference preference, final @Nullable RealmsRegion region) {
@@ -282,21 +282,21 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          this.stateChanged();
       } catch (RealmsServiceException e) {
          LOGGER.error("Couldn't save settings", e);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(e, this));
+         this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(e, this));
          return;
       }
 
-      this.minecraft.setScreen(this);
+      this.minecraft.gui.setScreen(this);
    }
 
    public void openTheWorld(final boolean join) {
       RealmsConfigureWorldScreen screenWithKnownData = this.getNewScreenWithKnownData(this.serverData);
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new OpenServerTask(this.serverData, screenWithKnownData, join, this.minecraft)}));
+      this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new OpenServerTask(this.serverData, screenWithKnownData, join, this.minecraft)}));
    }
 
    public void closeTheWorld() {
       RealmsConfigureWorldScreen screenWithKnownData = this.getNewScreenWithKnownData(this.serverData);
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new CloseServerTask(this.serverData, screenWithKnownData)}));
+      this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new CloseServerTask(this.serverData, screenWithKnownData)}));
    }
 
    public void stateChanged() {

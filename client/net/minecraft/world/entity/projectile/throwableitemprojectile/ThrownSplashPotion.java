@@ -54,8 +54,8 @@ public class ThrownSplashPotion extends AbstractThrownPotion {
 
                   for(MobEffectInstance effectInstance : mobEffects) {
                      Holder<MobEffect> effect = effectInstance.getEffect();
-                     if (((MobEffect)effect.value()).isInstantenous()) {
-                        ((MobEffect)effect.value()).applyInstantenousEffect(level, this, this.getOwner(), entity, effectInstance.getAmplifier(), scale);
+                     if (((MobEffect)effect.value()).isInstantaneous()) {
+                        ((MobEffect)effect.value()).applyInstantaneousEffect(level, this, this.getOwner(), entity, effectInstance.getAmplifier(), scale);
                      } else {
                         int duration = effectInstance.mapDuration((d) -> (int)(scale * (double)d * (double)durationScale + 0.5));
                         MobEffectInstance newEffect = new MobEffectInstance(effect, duration, effectInstance.getAmplifier(), effectInstance.isAmbient(), effectInstance.isVisible());

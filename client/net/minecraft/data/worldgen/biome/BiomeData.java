@@ -71,6 +71,7 @@ public abstract class BiomeData {
       context.register(Biomes.DRIPSTONE_CAVES, OverworldBiomes.dripstoneCaves(placedFeatures, carvers));
       context.register(Biomes.LUSH_CAVES, OverworldBiomes.lushCaves(placedFeatures, carvers));
       context.register(Biomes.DEEP_DARK, OverworldBiomes.deepDark(placedFeatures, carvers));
+      context.register(Biomes.SULFUR_CAVES, OverworldBiomes.sulfurCaves(placedFeatures, carvers));
       context.register(Biomes.NETHER_WASTES, NetherBiomes.netherWastes(placedFeatures, carvers));
       context.register(Biomes.WARPED_FOREST, NetherBiomes.warpedForest(placedFeatures, carvers));
       context.register(Biomes.CRIMSON_FOREST, NetherBiomes.crimsonForest(placedFeatures, carvers));

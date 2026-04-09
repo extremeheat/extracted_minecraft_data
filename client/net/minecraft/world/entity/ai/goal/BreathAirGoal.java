@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.LevelReader;
@@ -33,12 +32,12 @@ public class BreathAirGoal extends Goal {
    }
 
    public void start() {
-      this.findAirPosition();
       this.mob.getNavigation().stop();
+      this.findAirPosition();
    }
 
    private void findAirPosition() {
-      Iterable<BlockPos> between = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 1.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() - 1.0), Mth.floor(this.mob.getX() + 1.0), Mth.floor(this.mob.getY() + 8.0), Mth.floor(this.mob.getZ() + 1.0));
+      Iterable<BlockPos> between = BlockPos.neighborColumn(this.mob.getBlockX(), this.mob.getBlockY(), this.mob.getBlockZ(), this.mob.getBlockY() + 8);
       BlockPos destinationPos = null;
 
       for(BlockPos pos : between) {

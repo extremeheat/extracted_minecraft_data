@@ -1,16 +1,16 @@
 {
-    "id": "26.1.2-rc-1",
-    "name": "26.1.2 Release Candidate 1",
-    "world_version": 4789,
+    "id": "26.2-snapshot-2",
+    "name": "26.2 Snapshot 2",
+    "world_version": 4884,
     "series_id": "main",
-    "protocol_version": 1073742131,
+    "protocol_version": 1073742132,
     "pack_version": {
-        "resource_major": 84,
+        "resource_major": 85,
         "resource_minor": 0,
         "data_major": 101,
-        "data_minor": 1
+        "data_minor": 2
     },
-    "build_time": "2026-04-08T12:46:23+00:00",
+    "build_time": "2026-04-09T12:25:14+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
     "stable": false,

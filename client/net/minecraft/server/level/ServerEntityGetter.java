@@ -3,6 +3,7 @@ package net.minecraft.server.level;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -45,6 +46,21 @@ public interface ServerEntityGetter extends EntityGetter {
       }
 
       return nearestEntity;
+   }
+
+   default <T extends Entity> @Nullable T getNearestEntity(final List<? extends T> entities, final double x, final double y, final double z) {
+      double best = -1.0;
+      T result = null;
+
+      for(T entity : entities) {
+         double dist = entity.distanceToSqr(x, y, z);
+         if (best == -1.0 || dist < best) {
+            best = dist;
+            result = entity;
+         }
+      }
+
+      return result;
    }
 
    default <T extends LivingEntity> @Nullable T getNearestEntity(final List<? extends T> entities, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z) {

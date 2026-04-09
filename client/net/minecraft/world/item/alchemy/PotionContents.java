@@ -154,8 +154,8 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
 
          Player player = var10000;
          this.forEachEffect((effect) -> {
-            if (((MobEffect)effect.getEffect().value()).isInstantenous()) {
-               ((MobEffect)effect.getEffect().value()).applyInstantenousEffect(serverLevel, player, player, entity, effect.getAmplifier(), 1.0);
+            if (((MobEffect)effect.getEffect().value()).isInstantaneous()) {
+               ((MobEffect)effect.getEffect().value()).applyInstantaneousEffect(serverLevel, player, player, entity, effect.getAmplifier(), 1.0);
             } else {
                entity.addEffect(effect);
             }

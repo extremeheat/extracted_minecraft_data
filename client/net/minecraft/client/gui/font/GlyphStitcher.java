@@ -46,7 +46,7 @@ public class GlyphStitcher implements AutoCloseable {
       int nextIndex = this.textures.size();
       Identifier name = this.textureName(nextIndex);
       boolean isColored = glyphBitmap.isColored();
-      GlyphRenderTypes renderTypes = isColored ? GlyphRenderTypes.createForColorTexture(name) : GlyphRenderTypes.createForIntensityTexture(name);
+      GlyphRenderTypes renderTypes = isColored ? GlyphRenderTypes.createForColorTexture(name) : GlyphRenderTypes.createForGrayscaleTexture(name);
       Objects.requireNonNull(name);
       FontTexture texture = new FontTexture(name::toString, renderTypes, isColored);
       this.textures.add(texture);

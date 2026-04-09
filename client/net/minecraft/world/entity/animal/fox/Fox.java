@@ -140,7 +140,7 @@ public class Fox extends Animal {
    public Fox(final EntityType<? extends Fox> type, final Level level) {
       super(type, level);
       this.lookControl = new FoxLookControl();
-      this.moveControl = new FoxMoveControl();
+      this.moveControl = new FoxMoveControl(this);
       this.setPathfindingMalus(PathType.DAMAGING_IN_NEIGHBOR, 0.0F);
       this.setPathfindingMalus(PathType.DAMAGING, 0.0F);
       this.setCanPickUpLoot(true);
@@ -599,7 +599,7 @@ public class Fox extends Animal {
       this.setFaceplanted(false);
    }
 
-   private boolean canMove() {
+   public boolean canMove() {
       return !this.isSleeping() && !this.isSitting() && !this.isFaceplanted();
    }
 
@@ -773,14 +773,13 @@ public class Fox extends Animal {
       }
    }
 
-   private class FoxMoveControl extends MoveControl {
-      public FoxMoveControl() {
-         Objects.requireNonNull(Fox.this);
-         super(Fox.this);
+   private static class FoxMoveControl<T extends Fox> extends MoveControl<T> {
+      public FoxMoveControl(final T fox) {
+         super(fox);
       }
 
       public void tick() {
-         if (Fox.this.canMove()) {
+         if (((Fox)this.mob).canMove()) {
             super.tick();
          }
 

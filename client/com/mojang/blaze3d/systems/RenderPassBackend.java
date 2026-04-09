@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
-public interface RenderPassBackend extends AutoCloseable {
+public interface RenderPassBackend {
    void pushDebugGroup(final Supplier<String> label);
 
    void popDebugGroup();
@@ -37,7 +37,5 @@ public interface RenderPassBackend extends AutoCloseable {
 
    void draw(final int firstVertex, final int vertexCount);
 
-   void close();
-
-   boolean isClosed();
+   void writeTimestamp(GpuQueryPool pool, int index);
 }

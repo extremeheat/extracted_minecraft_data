@@ -13,8 +13,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
-public class BlockRotProcessor extends StructureProcessor {
-   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((t) -> t.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((t) -> t.integrity)).apply(i, BlockRotProcessor::new));
+public class BlockRotProcessor implements StructureProcessor {
+   public static final MapCodec<BlockRotProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((t) -> t.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((t) -> t.integrity)).apply(i, BlockRotProcessor::new));
    private final Optional<HolderSet<Block>> rottableBlocks;
    private final float integrity;
 
@@ -37,7 +37,7 @@ public class BlockRotProcessor extends StructureProcessor {
       return (!this.rottableBlocks.isPresent() || originalBlockInfo.state().is((HolderSet)this.rottableBlocks.get())) && !(random.nextFloat() <= this.integrity) ? null : processedBlockInfo;
    }
 
-   protected StructureProcessorType<?> getType() {
-      return StructureProcessorType.BLOCK_ROT;
+   public MapCodec<BlockRotProcessor> codec() {
+      return MAP_CODEC;
    }
 }

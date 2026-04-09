@@ -97,7 +97,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.font = font;
       this.title = title;
       this.screenExecutor = (runnable) -> minecraft.execute(() -> {
-            if (minecraft.screen == this) {
+            if (minecraft.gui.screen() == this) {
                runnable.run();
             }
 
@@ -221,7 +221,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public void onClose() {
-      this.minecraft.setScreen((Screen)null);
+      this.minecraft.gui.setScreen((Screen)null);
    }
 
    protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(final T widget) {
@@ -298,8 +298,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          case 2:
             ClickEvent.Custom custom = (ClickEvent.Custom)event;
             player.connection.send(new ServerboundCustomClickActionPacket(custom.id(), custom.payload()));
-            if (minecraft.screen != activeScreen) {
-               minecraft.setScreen(activeScreen);
+            if (minecraft.gui.screen() != activeScreen) {
+               minecraft.gui.setScreen(activeScreen);
             }
             break;
          default:
@@ -374,8 +374,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
 
       boolean shouldActivateScreen = var20;
-      if (shouldActivateScreen && minecraft.screen != activeScreen) {
-         minecraft.setScreen(activeScreen);
+      if (shouldActivateScreen && minecraft.gui.screen() != activeScreen) {
+         minecraft.gui.setScreen(activeScreen);
       }
 
    }
@@ -385,12 +385,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          return false;
       } else {
          if ((Boolean)minecraft.options.chatLinksPrompt().get()) {
-            minecraft.setScreen(new ConfirmLinkScreen((result) -> {
+            minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
                if (result) {
                   Util.getPlatform().openUri(uri);
                }
 
-               minecraft.setScreen(screen);
+               minecraft.gui.setScreen(screen);
             }, uri.toString(), false));
          } else {
             Util.getPlatform().openUri(uri);
@@ -468,7 +468,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.extractMenuBackground(graphics);
       }
 
-      this.minecraft.gui.extractDeferredSubtitles();
+      this.minecraft.gui.hud.extractDeferredSubtitles();
    }
 
    protected void extractBlurredBackground(final GuiGraphicsExtractor graphics) {

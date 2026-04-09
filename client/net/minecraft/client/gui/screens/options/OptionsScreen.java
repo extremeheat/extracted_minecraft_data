@@ -91,7 +91,7 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public Screen getLastScreen() {
@@ -100,11 +100,11 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
 
    private void applyPacks(final PackRepository packRepository) {
       this.options.updateResourcePacks(packRepository);
-      this.minecraft.setScreen(this);
+      this.minecraft.gui.setScreen(this);
    }
 
    private LayoutElement createOnlineButton() {
-      return Button.builder(Component.translatable("options.online"), (button) -> this.minecraft.setScreen(new OnlineOptionsScreen(this, this.options))).bounds(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20).build();
+      return Button.builder(Component.translatable("options.online"), (var1) -> this.minecraft.gui.setScreen(new OnlineOptionsScreen(this, this.options))).bounds(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20).build();
    }
 
    private LayoutElement createWorldOptionsButtonOrDifficultyButton(final Level level) {
@@ -112,7 +112,7 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
          this.difficultyButtons = DifficultyButtons.create(this.minecraft, level, this);
          return this.difficultyButtons.layout();
       } else {
-         return Button.builder(Component.translatable("options.worldOptions.button"), (button) -> this.minecraft.setScreen(new WorldOptionsScreen(this, level))).build();
+         return Button.builder(Component.translatable("options.worldOptions.button"), (var2) -> this.minecraft.gui.setScreen(new WorldOptionsScreen(this, level))).build();
       }
    }
 
@@ -129,11 +129,11 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
    }
 
    private Button openScreenButton(final Component message, final Supplier<Screen> screenToScreen) {
-      return Button.builder(message, (button) -> this.minecraft.setScreen((Screen)screenToScreen.get())).build();
+      return Button.builder(message, (var2) -> this.minecraft.gui.setScreen((Screen)screenToScreen.get())).build();
    }
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
-      this.minecraft.setScreen(new OptionsScreen(this.lastScreen, this.minecraft.options, true));
+      this.minecraft.gui.setScreen(new OptionsScreen(this.lastScreen, this.minecraft.options, true));
    }
 
    public void added() {

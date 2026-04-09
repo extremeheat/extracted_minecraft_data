@@ -79,6 +79,7 @@ import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
+import net.minecraft.world.item.component.SulfurCubeContent;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
@@ -183,6 +184,7 @@ public class DataComponents {
    public static final DataComponentType<ItemContainerContents> CONTAINER = register("container", (b) -> b.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<BlockItemStateProperties> BLOCK_STATE = register("block_state", (b) -> b.persistent(BlockItemStateProperties.CODEC).networkSynchronized(BlockItemStateProperties.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Bees> BEES = register("bees", (b) -> b.persistent(Bees.CODEC).networkSynchronized(Bees.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<SulfurCubeContent> SULFUR_CUBE_CONTENT = register("sulfur_cube_content", (b) -> b.persistent(SulfurCubeContent.CODEC).networkSynchronized(SulfurCubeContent.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<LockCode> LOCK = register("lock", (b) -> b.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", (b) -> b.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentType<Holder<SoundEvent>> BREAK_SOUND = register("break_sound", (b) -> b.persistent(SoundEvent.CODEC).networkSynchronized(SoundEvent.STREAM_CODEC).cacheEncoding());

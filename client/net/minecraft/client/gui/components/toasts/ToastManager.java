@@ -81,7 +81,7 @@ public class ToastManager {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
-      if (!this.minecraft.options.hideGui) {
+      if (!this.minecraft.gui.hud.isHidden()) {
          int screenWidth = graphics.guiWidth();
          if (!this.visibleToasts.isEmpty()) {
             graphics.nextStratum();
@@ -91,7 +91,7 @@ public class ToastManager {
             toast.extractRenderState(graphics, screenWidth);
          }
 
-         if (((MusicToastDisplayState)this.minecraft.options.musicToast().get()).renderToast() && this.nowPlayingToast != null && (this.minecraft.screen == null || !(this.minecraft.screen instanceof PauseScreen))) {
+         if (((MusicToastDisplayState)this.minecraft.options.musicToast().get()).renderToast() && this.nowPlayingToast != null && (this.minecraft.gui.screen() == null || !(this.minecraft.gui.screen() instanceof PauseScreen))) {
             this.nowPlayingToast.extractRenderState(graphics, screenWidth);
          }
 

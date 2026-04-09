@@ -70,7 +70,7 @@ public class RestrictionsScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.previousScreen);
+      this.minecraft.gui.setScreen(this.previousScreen);
    }
 
    protected void repositionElements() {

@@ -1,15 +1,12 @@
 package com.mojang.blaze3d.systems;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.platform.BackendOptions;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
@@ -19,7 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.Mth;
@@ -35,6 +31,7 @@ import org.slf4j.Logger;
 
 public class RenderSystem {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final double DEFAULT_DEPTH_CLEAR_VALUE = 0.0;
    public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
    private static @Nullable Thread renderThread;
@@ -63,7 +60,6 @@ public class RenderSystem {
    private static @Nullable GpuBufferSlice shaderLightDirections;
    private static @Nullable GpuBufferSlice projectionMatrixBuffer;
    private static @Nullable GpuBufferSlice savedProjectionMatrixBuffer;
-   private static String apiDescription;
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
@@ -115,17 +111,6 @@ public class RenderSystem {
       return pollingEvents.get() && Util.getMillis() - pollEventsWaitStart.get() > 200L;
    }
 
-   public static void flipFrame(final @Nullable TracyFrameCapture tracyFrameCapture) {
-      Tesselator.getInstance().clear();
-      getDevice().presentFrame();
-      if (tracyFrameCapture != null) {
-         tracyFrameCapture.endFrame();
-      }
-
-      dynamicUniforms.reset();
-      Minecraft.getInstance().levelRenderer.endFrame();
-   }
-
    public static void setShaderFog(final GpuBufferSlice fog) {
       shaderFog = fog;
    }
@@ -158,12 +143,8 @@ public class RenderSystem {
       return String.format(Locale.ROOT, "LWJGL version %s", GLX._getLWJGLVersion());
    }
 
-   public static String getApiDescription() {
-      return apiDescription;
-   }
-
-   public static TimeSource.NanoTimeSource initBackendSystem(final BackendOptions options) {
-      LongSupplier var10000 = GLX._initGlfw(options);
+   public static TimeSource.NanoTimeSource initBackendSystem() {
+      LongSupplier var10000 = GLX._initGlfw();
       Objects.requireNonNull(var10000);
       return var10000::getAsLong;
    }
@@ -173,10 +154,24 @@ public class RenderSystem {
          throw new IllegalStateException("RenderSystem.DEVICE already initialized");
       } else {
          DEVICE = device;
-         apiDescription = getDevice().getImplementationInformation();
          dynamicUniforms = new DynamicUniforms();
          samplerCache.initialize();
       }
+   }
+
+   public static void shutdownRenderer() {
+      sharedSequential.close();
+      sharedSequentialQuad.close();
+      sharedSequentialLines.close();
+      samplerCache.close();
+      if (dynamicUniforms != null) {
+         dynamicUniforms.close();
+      }
+
+      if (DEVICE != null) {
+         DEVICE.close();
+      }
+
    }
 
    public static void setErrorCallback(final GLFWErrorCallbackI onFullscreenError) {
@@ -210,9 +205,9 @@ public class RenderSystem {
       return projectionMatrixBuffer;
    }
 
-   public static Matrix4f getModelViewMatrix() {
+   public static Matrix4f getModelViewMatrixCopy() {
       assertOnRenderThread();
-      return modelViewStack;
+      return new Matrix4f(modelViewStack);
    }
 
    public static Matrix4fStack getModelViewStack() {
@@ -314,7 +309,6 @@ public class RenderSystem {
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
       shaderFog = null;
-      apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
@@ -322,7 +316,7 @@ public class RenderSystem {
       samplerCache = new SamplerCache();
    }
 
-   public static final class AutoStorageIndexBuffer {
+   public static final class AutoStorageIndexBuffer implements AutoCloseable {
       private final int vertexStride;
       private final int indexStride;
       private final IndexGenerator generator;
@@ -336,6 +330,13 @@ public class RenderSystem {
          this.vertexStride = vertexStride;
          this.indexStride = indexStride;
          this.generator = generator;
+      }
+
+      public void close() {
+         if (this.buffer != null) {
+            this.buffer.close();
+         }
+
       }
 
       public boolean hasStorage(final int indexCount) {

@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
@@ -20,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
@@ -61,10 +61,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
    }
 
-   public void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final boolean sheeted, final boolean hasFoil, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
-      this.order(0).submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, sheeted, hasFoil, tintedColor, crumblingOverlay, outlineColor);
-   }
-
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
       this.order(0).submitMovingBlock(poseStack, movingBlockRenderState);
    }
@@ -75,6 +71,10 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public void submitBreakingBlockModel(final PoseStack poseStack, final BlockStateModel model, final long seed, final int progress) {
       this.order(0).submitBreakingBlockModel(poseStack, model, seed, progress);
+   }
+
+   public void submitShapeOutline(final PoseStack poseStack, final VoxelShape shape, final RenderType renderType, final int color, final float width, final boolean afterTerrain) {
+      this.order(0).submitShapeOutline(poseStack, shape, renderType, color, width, afterTerrain);
    }
 
    public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
@@ -138,12 +138,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, int outlineColor) {
-      public ModelPartSubmit {
-         super();
-      }
-   }
-
    public static record TranslucentModelSubmit<S>(ModelSubmit<S> modelSubmit, RenderType renderType, Vector3f position) {
       public TranslucentModelSubmit {
          super();
@@ -176,6 +170,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public static record BreakingBlockModelSubmit(PoseStack.Pose pose, BlockStateModel model, long seed, int progress) {
       public BreakingBlockModelSubmit {
+         super();
+      }
+   }
+
+   public static record ShapeOutlineSubmit(PoseStack.Pose pose, VoxelShape shape, RenderType renderType, int color, float width, boolean afterTerrain) {
+      public ShapeOutlineSubmit {
          super();
       }
    }

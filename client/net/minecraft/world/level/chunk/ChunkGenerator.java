@@ -124,6 +124,8 @@ public abstract class ChunkGenerator {
    public @Nullable Pair<BlockPos, Holder<Structure>> findNearestMapStructure(final ServerLevel level, final HolderSet<Structure> wantedStructures, final BlockPos pos, final int maxSearchRadius, final boolean createReference) {
       if (SharedConstants.DEBUG_DISABLE_FEATURES) {
          return null;
+      } else if (!level.getServer().getWorldGenSettings().options().generateStructures()) {
+         return null;
       } else {
          ChunkGeneratorStructureState generatorState = level.getChunkSource().getGeneratorState();
          Map<StructurePlacement, Set<Holder<Structure>>> placementScans = new Object2ObjectArrayMap();

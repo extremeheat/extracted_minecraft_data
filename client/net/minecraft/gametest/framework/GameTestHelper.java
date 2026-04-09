@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.FillBiomeCommand;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -44,7 +44,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
@@ -167,47 +166,51 @@ public class GameTestHelper {
    }
 
    public <E extends Entity> List<E> spawn(final EntityType<E> entityType, final Vec3 pos, final int amount) {
-      List<E> entities = new ArrayList();
-
-      for(int i = 0; i < amount; ++i) {
-         entities.add(this.spawn(entityType, pos));
-      }
-
-      return entities;
+      return this.spawnEntity(entityType, pos).spawn(amount);
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos) {
       return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
    }
 
-   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
-      ServerLevel level = this.getLevel();
-      E entity = entityType.create(level, EntitySpawnReason.STRUCTURE);
-      if (entity == null) {
-         throw this.assertionException(BlockPos.containing(pos), "test.error.spawn_failure", entityType.builtInRegistryHolder().getRegisteredName());
-      } else {
-         if (entity instanceof Mob) {
-            Mob mob = (Mob)entity;
-            mob.setPersistenceRequired();
-         }
-
-         Vec3 absoluteVec = this.absoluteVec(pos);
-         float yRot = entity.rotate(this.getTestRotation());
-         entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, yRot, entity.getXRot());
-         entity.setYBodyRot(yRot);
-         entity.setYHeadRot(yRot);
-         if (spawnReason != null && entity instanceof Mob) {
-            Mob mob = (Mob)entity;
-            mob.finalizeSpawn(this.getLevel(), this.getLevel().getCurrentDifficultyAt(mob.blockPosition()), spawnReason, (SpawnGroupData)null);
-         }
-
-         level.addFreshEntityWithPassengers(entity);
-         return entity;
-      }
-   }
-
    public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
       return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
+   }
+
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
+      return (E)this.spawnEntity(entityType, pos).spawnReason(spawnReason).spawn();
+   }
+
+   public <E extends Entity> GameTestEntityBuilder<E> spawnEntity(final EntityType<E> entityType, final Vec3 position) {
+      return new GameTestEntityBuilder<E>(this, entityType, position);
+   }
+
+   public <E extends Entity> GameTestEntityBuilder<E> spawnEntity(final EntityType<E> entityType, final BlockPos position) {
+      return this.spawnEntity(entityType, Vec3.atBottomCenterOf(position));
+   }
+
+   public <E extends Entity> GameTestEntityBuilder<E> spawnEntity(final EntityType<E> entityType, final int x, final int y, final int z) {
+      return this.spawnEntity(entityType, new BlockPos(x, y, z));
+   }
+
+   public <E extends Entity> GameTestEntityBuilder<E> spawnEntity(final EntityType<E> entityType, final float x, final float y, final float z) {
+      return this.spawnEntity(entityType, new Vec3((double)x, (double)y, (double)z));
+   }
+
+   public <E extends Mob> GameTestMobBuilder<E> spawnMob(final EntityType<E> entityType, final Vec3 position) {
+      return new GameTestMobBuilder<E>(this, entityType, position);
+   }
+
+   public <E extends Mob> GameTestMobBuilder<E> spawnMob(final EntityType<E> entityType, final BlockPos position) {
+      return this.spawnMob(entityType, Vec3.atBottomCenterOf(position));
+   }
+
+   public <E extends Mob> GameTestMobBuilder<E> spawnMob(final EntityType<E> entityType, final int x, final int y, final int z) {
+      return this.spawnMob(entityType, new BlockPos(x, y, z));
+   }
+
+   public <E extends Mob> GameTestMobBuilder<E> spawnMob(final EntityType<E> entityType, final float x, final float y, final float z) {
+      return this.spawnMob(entityType, new Vec3((double)x, (double)y, (double)z));
    }
 
    public void hurt(final Entity entity, final DamageSource source, final float damage) {
@@ -264,9 +267,7 @@ public class GameTestHelper {
    }
 
    public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final BlockPos pos) {
-      E entity = (E)(this.spawn(entityType, pos));
-      entity.removeFreeWill();
-      return entity;
+      return (E)this.spawnMob(entityType, pos).withNoFreeWill().spawn();
    }
 
    public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final int x, final int y, final int z) {
@@ -362,6 +363,24 @@ public class GameTestHelper {
             return false;
          }
       };
+   }
+
+   public Player makeMockServerPlayer(final GameType gameType) {
+      <undefinedtype> player = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"), ClientInformation.createDefault()) {
+         {
+            Objects.requireNonNull(GameTestHelper.this);
+         }
+
+         public GameType gameMode() {
+            return gameType;
+         }
+
+         public boolean isClientAuthoritative() {
+            return false;
+         }
+      };
+      gameType.updatePlayerAbilities(player.getAbilities());
+      return player;
    }
 
    /** @deprecated */
@@ -1045,7 +1064,17 @@ public class GameTestHelper {
 
    public <N> void assertValueEqual(final N value, final N expected, final Component valueName) {
       if (!value.equals(expected)) {
-         throw this.assertionException("test.error.value_not_equal", valueName, value, expected);
+         throw this.assertionException("test.error.value_not_equal", valueName, expected, value);
+      }
+   }
+
+   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final String valueName) {
+      this.assertValueInBetween(lowerBound, value, upperBound, (Component)Component.literal(valueName));
+   }
+
+   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final Component valueName) {
+      if (value.compareTo(lowerBound) < 0 || value.compareTo(upperBound) > 0) {
+         throw this.assertionException("test.error.value_not_in_between", valueName, lowerBound, upperBound, value);
       }
    }
 

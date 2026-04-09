@@ -389,6 +389,7 @@ import net.minecraft.util.datafix.schemas.V4543;
 import net.minecraft.util.datafix.schemas.V4648;
 import net.minecraft.util.datafix.schemas.V4656;
 import net.minecraft.util.datafix.schemas.V4771;
+import net.minecraft.util.datafix.schemas.V4881;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -412,7 +413,7 @@ public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
    private static final DataFixerBuilder.Result DATA_FIXER;
    private static final FileFixerUpper FILE_FIXER;
-   public static final int BLENDING_VERSION = 4295;
+   public static final int BLENDING_VERSION = 4882;
 
    private DataFixers() {
       super();
@@ -897,9 +898,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var305 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var305);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var305::contains));
+      Set var306 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var306);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var306::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1091,8 +1092,6 @@ public class DataFixers {
       fixerUpper.addFixer(new DropChancesFormatFix(v4293));
       Schema v4294 = fixerUpper.addSchema(4294, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlockPropertyRenameAndFix(v4294, "CreakingHeartBlockStateFix", "minecraft:creaking_heart", "active", "creaking_heart_state", (value) -> value.equals("true") ? "awake" : "uprooted"));
-      Schema blendingSchema = fixerUpper.addSchema(4295, SAME_NAMESPACED);
-      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4296 = fixerUpper.addSchema(4296, SAME_NAMESPACED);
       fixerUpper.addFixer(new AreaEffectCloudDurationScaleFix(v4296));
       Schema v4297 = fixerUpper.addSchema(4297, SAME_NAMESPACED);
@@ -1191,6 +1190,11 @@ public class DataFixers {
       fileFixerUpper.addFixer(new RemoveObsoleteFilesFileFix(v4772));
       Schema v4773 = fileFixerUpper.addSchema(fixerUpper, 4773, SAME_NAMESPACED);
       fileFixerUpper.addFixer(new GeneratedStructuresRenameFileFix(v4773));
+      Schema v4881 = fixerUpper.addSchema(4881, V4881::new);
+      fixerUpper.addFixer(new AddNewChoices(v4881, "Added Sulfur Cube", References.ENTITY));
+      fixerUpper.addFixer(new AddNewChoices(v4881, "Added Potent Sulfur", References.BLOCK_ENTITY));
+      Schema blendingSchema = fixerUpper.addSchema(4882, SAME_NAMESPACED);
+      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

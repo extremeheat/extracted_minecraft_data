@@ -20,8 +20,10 @@ import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 
@@ -51,24 +53,25 @@ public interface OrderedSubmitNodeCollector {
    }
 
    default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite) {
-      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
    default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, tintedColor, crumblingOverlay, 0);
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, tintedColor, crumblingOverlay, 0);
    }
 
-   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final boolean sheeted, final boolean hasFoil) {
-      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, sheeted, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
+      Model.Simple model = new Model.Simple(modelPart, (var1) -> renderType);
+      this.submitModel(model, Unit.INSTANCE, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
    }
-
-   void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor);
 
    void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState);
 
    void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor);
 
    void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress);
+
+   void submitShapeOutline(PoseStack poseStack, VoxelShape shape, RenderType renderType, int color, float width, boolean afterTerrain);
 
    void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType);
 

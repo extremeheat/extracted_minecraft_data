@@ -130,24 +130,6 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       super.fallOn(level, state, pos, entity, fallDistance * 0.5);
    }
 
-   public void updateEntityMovementAfterFallOn(final BlockGetter level, final Entity entity) {
-      if (entity.isSuppressingBounce()) {
-         super.updateEntityMovementAfterFallOn(level, entity);
-      } else {
-         this.bounceUp(entity);
-      }
-
-   }
-
-   private void bounceUp(final Entity entity) {
-      Vec3 movement = entity.getDeltaMovement();
-      if (movement.y < 0.0) {
-         double factor = entity instanceof LivingEntity ? 1.0 : 0.8;
-         entity.setDeltaMovement(movement.x, -movement.y * 0.6600000262260437 * factor, movement.z);
-      }
-
-   }
-
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
       if (directionToNeighbour == getNeighbourDirection((BedPart)state.getValue(PART), (Direction)state.getValue(FACING))) {
          return neighbourState.is(this) && neighbourState.getValue(PART) != state.getValue(PART) ? (BlockState)state.setValue(OCCUPIED, (Boolean)neighbourState.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();

@@ -81,7 +81,7 @@ public class CreateFlatWorldScreen extends Screen {
 
       }).build());
       topFooterButtons.addChild(Button.builder(Component.translatable("createWorld.customize.presets"), (button) -> {
-         this.minecraft.setScreen(new PresetFlatWorldScreen(this));
+         this.minecraft.gui.setScreen(new PresetFlatWorldScreen(this));
          this.generator.updateLayers();
          this.updateButtonValidity();
       }).build());
@@ -120,7 +120,7 @@ public class CreateFlatWorldScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.parent);
+      this.minecraft.gui.setScreen(this.parent);
    }
 
    private class DetailsList extends ObjectSelectionList<Entry> {

@@ -47,7 +47,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          EffectEntry entry = (EffectEntry)Util.getRandom(this.effects, context.getRandom());
          Holder<MobEffect> effect = entry.effect();
          int duration = entry.duration().getInt(context);
-         if (!((MobEffect)effect.value()).isInstantenous()) {
+         if (!((MobEffect)effect.value()).isInstantaneous()) {
             duration *= 20;
          }
 

@@ -64,7 +64,7 @@ public class MouseHandler {
       Window window = this.minecraft.getWindow();
       if (handle == window.handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();
-         if (this.minecraft.screen != null) {
+         if (this.minecraft.gui.screen() != null) {
             this.minecraft.setLastInputType(InputType.MOUSE);
          }
 
@@ -85,15 +85,15 @@ public class MouseHandler {
             this.activeButton = null;
          }
 
-         if (this.minecraft.getOverlay() == null) {
-            if (this.minecraft.screen == null) {
+         if (this.minecraft.gui.overlay() == null) {
+            if (this.minecraft.gui.screen() == null) {
                if (!this.mouseGrabbed && pressed) {
                   this.grabMouse();
                }
             } else {
                double xm = this.getScaledXPos(window);
                double ym = this.getScaledYPos(window);
-               Screen screen = this.minecraft.screen;
+               Screen screen = this.minecraft.gui.screen();
                MouseButtonEvent event = new MouseButtonEvent(xm, ym, buttonInfo);
                if (pressed) {
                   screen.afterMouseAction();
@@ -131,7 +131,7 @@ public class MouseHandler {
             }
          }
 
-         if (this.minecraft.screen == null && this.minecraft.getOverlay() == null) {
+         if (this.minecraft.gui.screen() == null && this.minecraft.gui.overlay() == null) {
             if (buttonInfo.button() == 0) {
                this.isLeftPressed = pressed;
             } else if (buttonInfo.button() == 2) {
@@ -178,12 +178,12 @@ public class MouseHandler {
          double scrollSensitivity = (Double)this.minecraft.options.mouseWheelSensitivity().get();
          double scaledXOffset = (discreteScroll ? Math.signum(xoffset) : xoffset) * scrollSensitivity;
          double scaledYOffset = (discreteScroll ? Math.signum(yoffset) : yoffset) * scrollSensitivity;
-         if (this.minecraft.getOverlay() == null) {
-            if (this.minecraft.screen != null) {
+         if (this.minecraft.gui.overlay() == null) {
+            if (this.minecraft.gui.screen() != null) {
                double xm = this.getScaledXPos(this.minecraft.getWindow());
                double ym = this.getScaledYPos(this.minecraft.getWindow());
-               this.minecraft.screen.mouseScrolled(xm, ym, scaledXOffset, scaledYOffset);
-               this.minecraft.screen.afterMouseAction();
+               this.minecraft.gui.screen().mouseScrolled(xm, ym, scaledXOffset, scaledYOffset);
+               this.minecraft.gui.screen().afterMouseAction();
             } else if (this.minecraft.player != null) {
                Vector2i wheelXY = this.scrollWheelHandler.onMouseScroll(scaledXOffset, scaledYOffset);
                if (wheelXY.x == 0 && wheelXY.y == 0) {
@@ -192,8 +192,8 @@ public class MouseHandler {
 
                int wheel = wheelXY.y == 0 ? -wheelXY.x : wheelXY.y;
                if (this.minecraft.player.isSpectator()) {
-                  if (this.minecraft.gui.getSpectatorGui().isMenuActive()) {
-                     this.minecraft.gui.getSpectatorGui().onMouseScrolled(-wheel);
+                  if (this.minecraft.gui.hud.getSpectatorGui().isMenuActive()) {
+                     this.minecraft.gui.hud.getSpectatorGui().onMouseScrolled(-wheel);
                   } else {
                      float speed = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)wheelXY.y * 0.005F, 0.0F, 0.2F);
                      this.minecraft.player.getAbilities().setFlyingSpeed(speed);
@@ -210,8 +210,8 @@ public class MouseHandler {
 
    private void onDrop(final long handle, final List<Path> files, final int failedCount) {
       this.minecraft.getFramerateLimitTracker().onInputReceived();
-      if (this.minecraft.screen != null) {
-         this.minecraft.screen.onFilesDrop(files);
+      if (this.minecraft.gui.screen() != null) {
+         this.minecraft.gui.screen().onFilesDrop(files);
       }
 
       if (failedCount > 0) {
@@ -269,13 +269,13 @@ public class MouseHandler {
       double mousea = time - this.lastHandleMovementTime;
       this.lastHandleMovementTime = time;
       if (this.minecraft.isWindowActive()) {
-         Screen screen = this.minecraft.screen;
+         Screen screen = this.minecraft.gui.screen();
          boolean mouseMoved = this.accumulatedDX != 0.0 || this.accumulatedDY != 0.0;
          if (mouseMoved) {
             this.minecraft.getFramerateLimitTracker().onInputReceived();
          }
 
-         if (screen != null && this.minecraft.getOverlay() == null && mouseMoved) {
+         if (screen != null && this.minecraft.gui.overlay() == null && mouseMoved) {
             Window window = this.minecraft.getWindow();
             double xm = this.getScaledXPos(window);
             double ym = this.getScaledYPos(window);
@@ -402,7 +402,7 @@ public class MouseHandler {
             this.xpos = (double)(this.minecraft.getWindow().getScreenWidth() / 2);
             this.ypos = (double)(this.minecraft.getWindow().getScreenHeight() / 2);
             InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), 212995, this.xpos, this.ypos);
-            this.minecraft.setScreen((Screen)null);
+            this.minecraft.gui.setScreen((Screen)null);
             this.minecraft.missTime = 10000;
             this.ignoreFirstMove = true;
          }

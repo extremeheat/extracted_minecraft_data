@@ -6,29 +6,19 @@ import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.cubemob.Slime;
 
-public class SlimeRenderer extends MobRenderer<Slime, SlimeRenderState, SlimeModel> {
+public class SlimeRenderer extends AbstractCubeMobRenderer<Slime, SlimeRenderState, SlimeModel> {
    public static final Identifier SLIME_LOCATION = Identifier.withDefaultNamespace("textures/entity/slime/slime.png");
 
    public SlimeRenderer(final EntityRendererProvider.Context context) {
-      super(context, new SlimeModel(context.bakeLayer(ModelLayers.SLIME)), 0.25F);
+      super(context, new SlimeModel(context.bakeLayer(ModelLayers.SLIME)));
       this.addLayer(new SlimeOuterLayer(this, context.getModelSet()));
    }
 
-   protected float getShadowRadius(final SlimeRenderState state) {
-      return (float)state.size * 0.25F;
-   }
-
    protected void scale(final SlimeRenderState state, final PoseStack poseStack) {
-      float s = 0.999F;
-      poseStack.scale(0.999F, 0.999F, 0.999F);
-      poseStack.translate(0.0F, 0.001F, 0.0F);
-      float size = (float)state.size;
-      float ss = state.squish / (size * 0.5F + 1.0F);
-      float w = 1.0F / (ss + 1.0F);
-      poseStack.scale(w * size, 1.0F / w * size, w * size);
+      super.scale(state, poseStack);
+      this.downscaleSlightly(poseStack);
    }
 
    public Identifier getTextureLocation(final SlimeRenderState state) {
@@ -37,11 +27,5 @@ public class SlimeRenderer extends MobRenderer<Slime, SlimeRenderState, SlimeMod
 
    public SlimeRenderState createRenderState() {
       return new SlimeRenderState();
-   }
-
-   public void extractRenderState(final Slime entity, final SlimeRenderState state, final float partialTicks) {
-      super.extractRenderState(entity, state, partialTicks);
-      state.squish = Mth.lerp(partialTicks, entity.oSquish, entity.squish);
-      state.size = entity.getSize();
    }
 }

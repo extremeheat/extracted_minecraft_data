@@ -95,8 +95,8 @@ public class ModelBlockRenderer {
       for(BlockStateModelPart part : parts) {
          for(Direction direction : DIRECTIONS) {
             int cacheMask = 1 << direction.ordinal();
-            boolean validCacheForDirection = (cacheValid & cacheMask) == 1;
-            boolean shouldRenderFace = (shouldRenderFaceCache & cacheMask) == 1;
+            boolean validCacheForDirection = (cacheValid & cacheMask) != 0;
+            boolean shouldRenderFace = (shouldRenderFaceCache & cacheMask) != 0;
             if (!validCacheForDirection || shouldRenderFace) {
                List<BakedQuad> culledQuads = part.getQuads(direction);
                if (!culledQuads.isEmpty()) {
@@ -133,8 +133,8 @@ public class ModelBlockRenderer {
       for(BlockStateModelPart part : parts) {
          for(Direction direction : DIRECTIONS) {
             int cacheMask = 1 << direction.ordinal();
-            boolean validCacheForDirection = (cacheValid & cacheMask) == 1;
-            boolean shouldRenderFace = (shouldRenderFaceCache & cacheMask) == 1;
+            boolean validCacheForDirection = (cacheValid & cacheMask) != 0;
+            boolean shouldRenderFace = (shouldRenderFaceCache & cacheMask) != 0;
             if (!validCacheForDirection || shouldRenderFace) {
                List<BakedQuad> culledQuads = part.getQuads(direction);
                if (!culledQuads.isEmpty()) {

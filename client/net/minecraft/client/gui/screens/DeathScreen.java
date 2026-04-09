@@ -65,11 +65,11 @@ public class DeathScreen extends Screen {
                this.exitToTitleScreen();
             } else {
                this.player.respawn();
-               this.minecraft.setScreen((Screen)null);
+               this.minecraft.gui.setScreen((Screen)null);
             }
 
          }, Component.translatable("deathScreen.quit.confirm"), CommonComponents.EMPTY, Component.translatable("deathScreen.titleScreen"), Component.translatable("deathScreen.respawn"));
-         this.minecraft.setScreen(confirm);
+         this.minecraft.gui.setScreen(confirm);
          confirm.setDelay(20);
       }
    }
@@ -80,7 +80,7 @@ public class DeathScreen extends Screen {
       }
 
       this.minecraft.disconnectWithSavingScreen();
-      this.minecraft.setScreen(new TitleScreen());
+      this.minecraft.gui.setScreen(new TitleScreen());
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

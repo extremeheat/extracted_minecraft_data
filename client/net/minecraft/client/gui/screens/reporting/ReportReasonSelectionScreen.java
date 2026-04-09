@@ -61,7 +61,7 @@ public class ReportReasonSelectionScreen extends Screen {
             this.onSelectedReason.accept(selected.getReason());
          }
 
-         this.minecraft.setScreen(this.lastScreen);
+         this.minecraft.gui.setScreen(this.lastScreen);
       }).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
@@ -125,7 +125,7 @@ public class ReportReasonSelectionScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public class ReasonSelectionList extends ObjectSelectionList<Entry> {

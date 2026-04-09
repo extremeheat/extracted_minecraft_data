@@ -65,10 +65,10 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    private void createWorld(final RealmsServer server, final boolean initializeSnapshotRealm) {
       if (!server.isSnapshotRealm() && initializeSnapshotRealm) {
          AtomicBoolean canceled = new AtomicBoolean();
-         this.minecraft.setScreen(new AlertScreen(() -> {
+         this.minecraft.gui.setScreen(new AlertScreen(() -> {
             canceled.set(true);
             this.lastScreen.resetScreen();
-            this.minecraft.setScreen(this.lastScreen);
+            this.minecraft.gui.setScreen(this.lastScreen);
          }, Component.translatable("mco.upload.preparing"), Component.empty()));
          CompletableFuture.supplyAsync(() -> createSnapshotRealm(server), Util.backgroundExecutor()).thenAcceptAsync((snapshotServer) -> {
             if (!canceled.get()) {
@@ -85,7 +85,7 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
                errorMessage = Component.translatable("mco.errorMessage.initialize.failed");
             }
 
-            this.minecraft.setScreen(new RealmsGenericErrorScreen(errorMessage, this.lastScreen));
+            this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(errorMessage, this.lastScreen));
             return null;
          }, this.minecraft);
       } else {
@@ -108,12 +108,12 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
       RealmCreationTask realmCreationTask = new RealmCreationTask(server.id, this.nameBox.getValue(), this.descriptionBox.getValue());
       RealmsResetWorldScreen resetWorldScreen = RealmsResetWorldScreen.forNewRealm(this, server, realmCreationTask, () -> this.minecraft.execute(() -> {
             RealmsMainScreen.refreshServerList();
-            this.minecraft.setScreen(this.lastScreen);
+            this.minecraft.gui.setScreen(this.lastScreen);
          }));
-      this.minecraft.setScreen(resetWorldScreen);
+      this.minecraft.gui.setScreen(resetWorldScreen);
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 }

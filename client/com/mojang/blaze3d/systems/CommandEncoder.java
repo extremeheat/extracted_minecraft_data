@@ -18,11 +18,30 @@ public class CommandEncoder {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final GpuDeviceBackend device;
    private final CommandEncoderBackend backend;
+   private boolean isInRenderPass;
+   private final @Nullable TracyGpuProfiler profiler;
 
-   public CommandEncoder(final GpuDeviceBackend device, final CommandEncoderBackend backend) {
+   public CommandEncoder(final @Nullable TracyGpuProfiler profiler, final GpuDeviceBackend device, final CommandEncoderBackend backend) {
       super();
+      this.profiler = profiler;
       this.device = device;
       this.backend = backend;
+   }
+
+   protected CommandEncoderBackend backend() {
+      return this.backend;
+   }
+
+   public void submit() {
+      this.backend.submit();
+      if (this.profiler != null) {
+         this.profiler.endFrame();
+      }
+
+   }
+
+   protected boolean isInRenderPass() {
+      return this.isInRenderPass;
    }
 
    public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
@@ -30,7 +49,7 @@ public class CommandEncoder {
    }
 
    public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          if (clearDepth.isPresent() && depthTexture == null) {
@@ -58,13 +77,31 @@ public class CommandEncoder {
                }
             }
 
-            return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth), this.device);
+            this.isInRenderPass = true;
+            if (this.profiler != null) {
+               this.profiler.pushZone(this, (String)label.get());
+            }
+
+            return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth), this.device, this::submitRenderPass);
          }
       }
    }
 
+   protected void submitRenderPass() {
+      if (!this.isInRenderPass) {
+         throw new IllegalStateException("Can't submit a render pass if one isn't open");
+      } else {
+         this.isInRenderPass = false;
+         this.backend.submitRenderPass();
+         if (this.profiler != null) {
+            this.profiler.popZone(this);
+         }
+
+      }
+   }
+
    public void clearColorTexture(final GpuTexture colorTexture, final int clearColor) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          this.verifyColorTexture(colorTexture);
@@ -73,7 +110,7 @@ public class CommandEncoder {
    }
 
    public void clearColorAndDepthTextures(final GpuTexture colorTexture, final int clearColor, final GpuTexture depthTexture, final double clearDepth) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          this.verifyColorTexture(colorTexture);
@@ -83,7 +120,7 @@ public class CommandEncoder {
    }
 
    public void clearColorAndDepthTextures(final GpuTexture colorTexture, final int clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          this.verifyColorTexture(colorTexture);
@@ -94,7 +131,7 @@ public class CommandEncoder {
    }
 
    public void clearDepthTexture(final GpuTexture depthTexture, final double clearDepth) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          this.verifyDepthTexture(depthTexture);
@@ -103,7 +140,7 @@ public class CommandEncoder {
    }
 
    public void writeToBuffer(final GpuBufferSlice destination, final ByteBuffer data) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          this.backend.writeToBuffer(destination, data);
@@ -115,7 +152,7 @@ public class CommandEncoder {
    }
 
    public GpuBuffer.MappedView mapBuffer(final GpuBufferSlice slice, final boolean read, final boolean write) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          GpuBuffer buffer = slice.buffer();
@@ -137,7 +174,7 @@ public class CommandEncoder {
    }
 
    public void copyToBuffer(final GpuBufferSlice source, final GpuBufferSlice target) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          GpuBuffer sourceBuffer = source.buffer();
@@ -184,7 +221,7 @@ public class CommandEncoder {
    }
 
    public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int sourceX, final int sourceY) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
          if (sourceX + width <= source.getWidth() && sourceY + height <= source.getHeight()) {
@@ -211,7 +248,7 @@ public class CommandEncoder {
    }
 
    public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final NativeImage.Format format, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
          if (width * height * format.components() > source.remaining()) {
@@ -235,7 +272,7 @@ public class CommandEncoder {
    }
 
    public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          this.backend.copyTextureToBuffer(source, destination, offset, callback, mipLevel);
@@ -243,7 +280,7 @@ public class CommandEncoder {
    }
 
    public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel, final int x, final int y, final int width, final int height) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < source.getMipLevels()) {
          if ((long)width * (long)height * (long)source.getFormat().pixelSize() + offset > destination.size()) {
@@ -272,7 +309,7 @@ public class CommandEncoder {
    }
 
    public void copyTextureToTexture(final GpuTexture source, final GpuTexture destination, final int mipLevel, final int destX, final int destY, final int sourceX, final int sourceY, final int width, final int height) {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < source.getMipLevels() && mipLevel < destination.getMipLevels()) {
          if (destX + width <= destination.getWidth(mipLevel) && destY + height <= destination.getHeight(mipLevel)) {
@@ -303,34 +340,20 @@ public class CommandEncoder {
       }
    }
 
-   public void presentTexture(final GpuTextureView textureView) {
-      if (this.backend.isInRenderPass()) {
-         throw new IllegalStateException("Close the existing render pass before performing additional commands");
-      } else if (!textureView.texture().getFormat().hasColorAspect()) {
-         throw new IllegalStateException("Cannot present a non-color texture!");
-      } else if ((textureView.texture().usage() & 8) == 0) {
-         throw new IllegalStateException("Color texture must have USAGE_RENDER_ATTACHMENT to presented to the screen");
-      } else if (textureView.texture().getDepthOrLayers() > 1) {
-         throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported for presentation");
-      } else {
-         this.backend.presentTexture(textureView);
-      }
-   }
-
    public GpuFence createFence() {
-      if (this.backend.isInRenderPass()) {
+      if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          return this.backend.createFence();
       }
    }
 
-   public GpuQuery timerQueryBegin() {
-      return this.backend.timerQueryBegin();
-   }
-
-   public void timerQueryEnd(final GpuQuery query) {
-      this.backend.timerQueryEnd(query);
+   public void writeTimestamp(final GpuQueryPool pool, final int index) {
+      if (index >= 0 && index <= pool.size()) {
+         this.backend.writeTimestamp(pool, index);
+      } else {
+         throw new IllegalStateException("Index " + index + " is out of range for query pool of size " + pool.size());
+      }
    }
 
    private void verifyColorTexture(final GpuTexture colorTexture) {

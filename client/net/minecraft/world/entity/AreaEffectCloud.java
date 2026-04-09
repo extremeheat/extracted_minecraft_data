@@ -245,8 +245,8 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                                  this.victims.put(entity, this.tickCount + this.reapplicationDelay);
 
                                  for(MobEffectInstance effect : allEffects) {
-                                    if (((MobEffect)effect.getEffect().value()).isInstantenous()) {
-                                       ((MobEffect)effect.getEffect().value()).applyInstantenousEffect(serverLevel, this, this.getOwner(), entity, effect.getAmplifier(), 0.5);
+                                    if (((MobEffect)effect.getEffect().value()).isInstantaneous()) {
+                                       ((MobEffect)effect.getEffect().value()).applyInstantaneousEffect(serverLevel, this, this.getOwner(), entity, effect.getAmplifier(), 0.5);
                                     } else {
                                        entity.addEffect(new MobEffectInstance(effect), this);
                                     }

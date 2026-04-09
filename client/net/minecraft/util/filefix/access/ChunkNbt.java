@@ -3,9 +3,9 @@ package net.minecraft.util.filefix.access;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.UnaryOperator;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.ChunkPos;
@@ -22,8 +22,17 @@ public class ChunkNbt implements AutoCloseable {
       this.storage = new SimpleRegionStorage(info, path, DataFixers.getDataFixer(), false, type);
    }
 
-   public void updateChunk(final ChunkPos pos, final CompoundTag dataFixContext, final UnaryOperator<CompoundTag> fixer) {
-      this.storage.read(pos).thenApply((tag) -> tag.map((tag1) -> this.storage.upgradeChunkTag(tag1, -1, dataFixContext, this.targetVersion)).map(fixer)).thenCompose((value) -> (CompletionStage)value.map((tag2) -> this.storage.write(pos, tag2)).orElse(CompletableFuture.completedFuture((Object)null))).join();
+   public CompletableFuture<?> updateChunk(final ChunkPos pos, final CompoundTag dataFixContext, final UnaryOperator<CompoundTag> fixer) {
+      return this.storage.read(pos).thenComposeAsync((maybeTag) -> {
+         if (maybeTag.isEmpty()) {
+            return CompletableFuture.completedFuture((Object)null);
+         } else {
+            CompoundTag tag = (CompoundTag)maybeTag.get();
+            tag = this.storage.upgradeChunkTag(tag, -1, dataFixContext, this.targetVersion);
+            tag = (CompoundTag)fixer.apply(tag);
+            return this.storage.write(pos, tag);
+         }
+      }, Util.backgroundExecutor());
    }
 
    public void close() throws IOException {

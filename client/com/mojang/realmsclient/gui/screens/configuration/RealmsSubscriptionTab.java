@@ -77,7 +77,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       helper.addChild(SpacerElement.height(2));
       helper.addChild(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (button) -> ConfirmLinkScreen.confirmLinkNow(configurationScreen, (String)CommonLinks.extendRealms(serverData.remoteSubscriptionId, minecraft.getUser().getProfileId()))).bounds(0, 0, 200, 20).build());
       helper.addChild(SpacerElement.height(2));
-      this.deleteButton = (Button)helper.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (button) -> minecraft.setScreen(RealmsPopups.warningPopupScreen(configurationScreen, Component.translatable("mco.configure.world.delete.question.line1"), (popup) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
+      this.deleteButton = (Button)helper.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var3) -> minecraft.gui.setScreen(RealmsPopups.warningPopupScreen(configurationScreen, Component.translatable("mco.configure.world.delete.question.line1"), (popup) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
       helper.addChild(SpacerElement.height(2));
       this.subscriptionInfo = (FocusableTextWidget)helper.addChild(FocusableTextWidget.builder(Component.empty(), font).maxWidth(200).build(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.subscriptionInfo.setCentered(false);
@@ -88,8 +88,8 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       RealmsUtil.RealmsIoConsumer var10000 = (client) -> client.deleteRealm(this.serverData.id);
       RealmsConfigureWorldScreen var10001 = this.configurationScreen;
       Objects.requireNonNull(var10001);
-      RealmsUtil.runAsync(var10000, RealmsUtil.openScreenAndLogOnFailure(var10001::createErrorScreen, "Couldn't delete world")).thenRunAsync(() -> this.minecraft.setScreen(this.configurationScreen.getLastScreen()), this.minecraft);
-      this.minecraft.setScreen(this.configurationScreen);
+      RealmsUtil.runAsync(var10000, RealmsUtil.openScreenAndLogOnFailure(var10001::createErrorScreen, "Couldn't delete world")).thenRunAsync(() -> this.minecraft.gui.setScreen(this.configurationScreen.getLastScreen()), this.minecraft);
+      this.minecraft.gui.setScreen(this.configurationScreen);
    }
 
    private void getSubscription(final long realmId) {
@@ -102,7 +102,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
          this.type = subscription.type();
       } catch (RealmsServiceException e) {
          LOGGER.error("Couldn't get subscription", e);
-         this.minecraft.setScreen(this.configurationScreen.createErrorScreen(e));
+         this.minecraft.gui.setScreen(this.configurationScreen.createErrorScreen(e));
       }
 
    }

@@ -25,6 +25,7 @@ public class ClientTelemetryManager implements AutoCloseable {
    private static final Executor EXECUTOR = Executors.newSingleThreadExecutor((r) -> {
       Thread result = new Thread(r);
       result.setName("Telemetry-Sender-#" + THREAD_COUNT.getAndIncrement());
+      result.setDaemon(true);
       return result;
    });
    private final Minecraft minecraft;

@@ -104,6 +104,8 @@ public class Options {
    private final OptionInstance<Double> entityDistanceScaling;
    public static final int UNLIMITED_FRAMERATE_CUTOFF = 260;
    private final OptionInstance<Integer> framerateLimit;
+   private PreferredGraphicsApi preferredGraphicsBackendFromStartup;
+   private final OptionInstance<PreferredGraphicsApi> preferredGraphicsBackend;
    private boolean isApplyingGraphicsPreset;
    private final OptionInstance<GraphicsPreset> graphicsPreset;
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_MINIMIZED = Component.translatable("options.inactivityFpsLimit.minimized.tooltip");
@@ -278,7 +280,6 @@ public class Options {
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
    private final File optionsFile;
-   public boolean hideGui;
    private CameraType cameraType;
    public String lastMpIp;
    public boolean smoothCamera;
@@ -354,6 +355,14 @@ public class Options {
 
    public OptionInstance<Integer> framerateLimit() {
       return this.framerateLimit;
+   }
+
+   public OptionInstance<PreferredGraphicsApi> preferredGraphicsBackend() {
+      return this.preferredGraphicsBackend;
+   }
+
+   public boolean hasPreferredGraphicsBackendChanged() {
+      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup;
    }
 
    public void applyGraphicsPreset(final GraphicsPreset value) {
@@ -505,7 +514,7 @@ public class Options {
    }
 
    public int maxAnisotropyValue() {
-      return Math.min(1 << (Integer)this.maxAnisotropyBit.get(), RenderSystem.getDevice().getMaxSupportedAnisotropy());
+      return Math.min(1 << (Integer)this.maxAnisotropyBit.get(), RenderSystem.getDevice().getDeviceInfo().limits().maxAnisotropy());
    }
 
    public OptionInstance<TextureFilteringMethod> textureFiltering() {
@@ -716,7 +725,7 @@ public class Options {
    private void setGraphicsPresetToCustom() {
       if (!this.isApplyingGraphicsPreset) {
          this.graphicsPreset.set(GraphicsPreset.CUSTOM);
-         Screen var2 = this.minecraft.screen;
+         Screen var2 = this.minecraft.gui.screen();
          if (var2 instanceof OptionsSubScreen) {
             OptionsSubScreen optionsSubScreen = (OptionsSubScreen)var2;
             optionsSubScreen.resetOption(this.graphicsPreset);
@@ -806,6 +815,9 @@ public class Options {
       this.serverRenderDistance = 0;
       this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((value) -> (double)value / 4.0, (value) -> (int)(value * 4.0), true), Codec.doubleRange(0.5, 5.0), 1.0, (value) -> this.setGraphicsPresetToCustom());
       this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (caption, value) -> value == 260 ? genericValueLabel(caption, Component.translatable("options.framerateLimit.max")) : genericValueLabel(caption, Component.translatable("options.framerate", value)), (new OptionInstance.IntRange(1, 26)).xmap((value) -> value * 10, (value) -> value / 10, true), Codec.intRange(10, 260), 120, (value) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(value));
+      this.preferredGraphicsBackendFromStartup = PreferredGraphicsApi.DEFAULT;
+      this.preferredGraphicsBackend = new OptionInstance<PreferredGraphicsApi>("options.graphicsApi", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphicsApi.tooltip")), (caption, value) -> value.caption(), new OptionInstance.Enum(List.of(PreferredGraphicsApi.values()), PreferredGraphicsApi.CODEC), PreferredGraphicsApi.CODEC, PreferredGraphicsApi.DEFAULT, (ignored) -> {
+      });
       this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (caption, value) -> genericValueLabel(caption, Component.translatable(value.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
       this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (value) -> {
          Tooltip var10000;
@@ -865,11 +877,11 @@ public class Options {
          }
 
       });
-      this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (caption, value) -> percentValueLabel(caption, value * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (caption, value) -> percentValueLabel(caption, value * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
       this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (value) -> {
       });
       this.menuBackgroundBlurriness = new OptionInstance<Integer>("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (value) -> this.setGraphicsPresetToCustom());
-      this.textBackgroundOpacity = new OptionInstance<Double>("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
+      this.textBackgroundOpacity = new OptionInstance<Double>("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
       this.panoramaSpeed = new OptionInstance<Double>("options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (v) -> {
       });
       this.highContrast = OptionInstance.createBoolean("options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, (value) -> {
@@ -890,11 +902,11 @@ public class Options {
       this.modelParts = EnumSet.allOf(PlayerModelPart.class);
       this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (value) -> {
       });
-      this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (caption, value) -> (Component)(value == 0.0 ? CommonComponents.optionStatus(caption, false) : percentValueLabel(caption, value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getWidth(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatHeightUnfocused = new OptionInstance<Double>("options.chat.height.unfocused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, ChatComponent.defaultUnfocusedPct(), (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatHeightFocused = new OptionInstance<Double>("options.chat.height.focused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.getChat().rescaleChat());
-      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (caption, value) -> value <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", value)), (new OptionInstance.IntRange(0, 60)).xmap((value) -> (double)value / 10.0, (value) -> (int)(value * 10.0), true), Codec.doubleRange(0.0, 6.0), 0.0, (value) -> Minecraft.getInstance().getChatListener().setMessageDelay(value));
+      this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (caption, value) -> (Component)(value == 0.0 ? CommonComponents.optionStatus(caption, false) : percentValueLabel(caption, value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
+      this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getWidth(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
+      this.chatHeightUnfocused = new OptionInstance<Double>("options.chat.height.unfocused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, ChatComponent.defaultUnfocusedPct(), (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
+      this.chatHeightFocused = new OptionInstance<Double>("options.chat.height.focused", OptionInstance.noTooltip(), (caption, value) -> pixelValueLabel(caption, ChatComponent.getHeight(value)), OptionInstance.UnitDouble.INSTANCE, 1.0, (value) -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
+      this.chatDelay = new OptionInstance<Double>("options.chat.delay_instant", OptionInstance.noTooltip(), (caption, value) -> value <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", value)), (new OptionInstance.IntRange(0, 60)).xmap((value) -> (double)value / 10.0, (value) -> (int)(value * 10.0), true), Codec.doubleRange(0.0, 6.0), 0.0, (value) -> Minecraft.getInstance().gui.chatListener().setMessageDelay(value));
       this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (caption, value) -> genericValueLabel(caption, Component.translatable("options.multiplier", value)), (new OptionInstance.IntRange(5, 100)).xmap((value) -> (double)value / 10.0, (value) -> (int)(value * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (value) -> {
       });
       this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (caption, value) -> (Component)(value == 0 ? CommonComponents.optionStatus(caption, false) : genericValueLabel(caption, value)), new OptionInstance.IntRange(0, 4), 4, (value) -> this.setGraphicsPresetToCustom());
@@ -952,12 +964,7 @@ public class Options {
       this.chatColors = OptionInstance.createBoolean("options.chat.color", true);
       this.chatLinks = OptionInstance.createBoolean("options.chat.links", true);
       this.chatLinksPrompt = OptionInstance.createBoolean("options.chat.links.prompt", true);
-      this.enableVsync = OptionInstance.createBoolean("options.vsync", true, (value) -> {
-         if (Minecraft.getInstance().getWindow() != null) {
-            Minecraft.getInstance().getWindow().updateVsync(value);
-         }
-
-      });
+      this.enableVsync = OptionInstance.createBoolean("options.vsync", true, (value) -> Minecraft.getInstance().invalidateSurfaceConfiguration());
       this.entityShadows = OptionInstance.createBoolean("options.entityShadows", OptionInstance.noTooltip(), true, (value) -> this.setGraphicsPresetToCustom());
       this.forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, (value) -> updateFontOptions());
       this.japaneseGlyphVariants = OptionInstance.createBoolean("options.japaneseGlyphVariants", OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")), japaneseGlyphVariantsDefault(), (value) -> updateFontOptions());
@@ -1149,7 +1156,7 @@ public class Options {
       });
       this.onboardAccessibility = true;
       this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (value) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(value));
-      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (value) -> Tooltip.create(value.tooltip()), (caption, value) -> value.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (value) -> this.minecraft.getToastManager().setMusicToastDisplayState(value));
+      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (value) -> Tooltip.create(value.tooltip()), (caption, value) -> value.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (value) -> this.minecraft.gui.toastManager().setMusicToastDisplayState(value));
       this.startedCleanly = true;
       this.minecraft = minecraft;
       this.optionsFile = new File(workingDirectory, "options.txt");
@@ -1191,6 +1198,7 @@ public class Options {
       access.process("darknessEffectScale", this.darknessEffectScale);
       access.process("glintSpeed", this.glintSpeed);
       access.process("glintStrength", this.glintStrength);
+      access.process("preferredGraphicsBackend", this.preferredGraphicsBackend);
       access.process("graphicsPreset", this.graphicsPreset);
       access.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       access.process("fullscreen", this.fullscreen);
@@ -1447,6 +1455,7 @@ public class Options {
          LOGGER.error("Failed to load options", e);
       }
 
+      this.preferredGraphicsBackendFromStartup = this.preferredGraphicsBackend.get();
    }
 
    private static boolean isTrue(final String value) {

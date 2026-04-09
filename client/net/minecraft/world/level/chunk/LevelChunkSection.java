@@ -11,9 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 public class LevelChunkSection {
-   public static final int SECTION_WIDTH = 16;
-   public static final int SECTION_HEIGHT = 16;
-   public static final int SECTION_SIZE = 4096;
    public static final int BIOME_CONTAINER_BITS = 2;
    private short nonEmptyBlockCount;
    private short fluidCount;

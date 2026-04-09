@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
@@ -184,7 +184,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       protected void setEffect(final Holder<MobEffect> effect) {
          this.effect = effect;
-         this.sprite = Gui.getMobEffectSprite(effect);
+         this.sprite = Hud.getMobEffectSprite(effect);
          this.setTooltip(Tooltip.create(this.createEffectDescription(effect), (Component)null));
       }
 

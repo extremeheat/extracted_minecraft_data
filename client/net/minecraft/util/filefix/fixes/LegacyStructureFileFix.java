@@ -9,12 +9,14 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -161,14 +163,17 @@ public class LegacyStructureFileFix extends FileFix {
    }
 
    private static void storeLegacyStructureDataToChunks(final Long2ObjectMap<LegacyStructureData> structures, final ChunkNbt chunksAccess, final CompoundTag dataFixContext, final UpgradeProgress upgradeProgress) {
-      for(Long2ObjectMap.Entry<LegacyStructureData> entry : structures.long2ObjectEntrySet().stream().sorted(Comparator.comparingLong((entryx) -> ChunkPos.pack(ChunkPos.getRegionX(entryx.getLongKey()), ChunkPos.getRegionZ(entryx.getLongKey())))).toList()) {
+      List<Long2ObjectMap.Entry<LegacyStructureData>> entries = structures.long2ObjectEntrySet().stream().sorted(Comparator.comparingLong((entryx) -> ChunkPos.pack(ChunkPos.getRegionX(entryx.getLongKey()), ChunkPos.getRegionZ(entryx.getLongKey())))).toList();
+      IncrementalFutureSequence futures = new IncrementalFutureSequence(8);
+
+      for(Long2ObjectMap.Entry<LegacyStructureData> entry : entries) {
          if (upgradeProgress.isCanceled()) {
             throw new CanceledFileFixException();
          }
 
          long pos = entry.getLongKey();
          LegacyStructureData legacyData = (LegacyStructureData)entry.getValue();
-         chunksAccess.updateChunk(ChunkPos.unpack(pos), dataFixContext, (tag) -> {
+         int finished = futures.push(chunksAccess.updateChunk(ChunkPos.unpack(pos), dataFixContext, (tag) -> {
             CompoundTag levelTag = tag.getCompoundOrEmpty("Level");
             CompoundTag structureTag = levelTag.getCompoundOrEmpty("Structures");
             CompoundTag startTag = structureTag.getCompoundOrEmpty("Starts");
@@ -180,10 +185,11 @@ public class LegacyStructureFileFix extends FileFix {
             levelTag.put("Structures", structureTag);
             tag.put("Level", levelTag);
             return tag;
-         });
-         upgradeProgress.incrementFinishedOperationsBy(1);
+         }));
+         upgradeProgress.incrementFinishedOperationsBy(finished);
       }
 
+      upgradeProgress.incrementFinishedOperationsBy(futures.waitForAll());
    }
 
    static {
@@ -213,6 +219,41 @@ public class LegacyStructureFileFix extends FileFix {
    private static record DimensionFixEntry(ResourceKey<Level> dimensionKey, List<FileAccess<SavedDataNbt>> structureFileAccess, FileAccess<ChunkNbt> chunkFileAccess, Long2ObjectOpenHashMap<LegacyStructureData> structures) {
       private DimensionFixEntry {
          super();
+      }
+   }
+
+   private static class IncrementalFutureSequence {
+      private final int maxConcurrency;
+      private final List<CompletableFuture<?>> futures;
+
+      public IncrementalFutureSequence(final int maxConcurrency) {
+         super();
+         this.maxConcurrency = maxConcurrency;
+         this.futures = new ArrayList(maxConcurrency);
+      }
+
+      public int push(final CompletableFuture<?> future) {
+         int finished = 0;
+         if (this.futures.size() >= this.maxConcurrency) {
+            finished += this.waitOnAny();
+         }
+
+         this.futures.add(future);
+         return finished;
+      }
+
+      private int waitOnAny() {
+         int oldSize = this.futures.size();
+         CompletableFuture.anyOf((CompletableFuture[])this.futures.toArray((x$0) -> new CompletableFuture[x$0])).join();
+         this.futures.removeIf(CompletableFuture::isDone);
+         return oldSize - this.futures.size();
+      }
+
+      public int waitForAll() {
+         int oldSize = this.futures.size();
+         CompletableFuture.allOf((CompletableFuture[])this.futures.toArray((x$0) -> new CompletableFuture[x$0])).join();
+         this.futures.clear();
+         return oldSize;
       }
    }
 }

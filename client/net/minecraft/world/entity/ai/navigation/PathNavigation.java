@@ -253,7 +253,7 @@ public abstract class PathNavigation {
       double xDistance = Math.abs(this.mob.getX() - ((double)currentNodePos.getX() + 0.5));
       double yDistance = Math.abs(this.mob.getY() - (double)currentNodePos.getY());
       double zDistance = Math.abs(this.mob.getZ() - ((double)currentNodePos.getZ() + 0.5));
-      boolean isCloseEnoughToCurrentNode = xDistance < (double)this.maxDistanceToWaypoint && zDistance < (double)this.maxDistanceToWaypoint && yDistance < 1.0;
+      boolean isCloseEnoughToCurrentNode = xDistance < (double)this.maxDistanceToWaypoint && zDistance < (double)this.maxDistanceToWaypoint && yDistance < (double)this.getMaxVerticalDistanceToWaypoint();
       if (isCloseEnoughToCurrentNode || this.canCutCorner(this.path.getNextNode().type) && this.shouldTargetNextNodeInDirection(mobPos)) {
          this.path.advance();
       }
@@ -413,6 +413,10 @@ public abstract class PathNavigation {
 
    public float getMaxDistanceToWaypoint() {
       return this.maxDistanceToWaypoint;
+   }
+
+   public float getMaxVerticalDistanceToWaypoint() {
+      return 1.0F;
    }
 
    public boolean isStuck() {

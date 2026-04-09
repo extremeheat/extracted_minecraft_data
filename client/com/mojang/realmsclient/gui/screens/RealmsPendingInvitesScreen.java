@@ -80,7 +80,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {

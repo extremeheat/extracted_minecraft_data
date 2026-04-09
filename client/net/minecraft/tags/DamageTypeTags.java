@@ -25,6 +25,7 @@ public interface DamageTypeTags {
    TagKey<DamageType> NO_IMPACT = create("no_impact");
    TagKey<DamageType> ALWAYS_MOST_SIGNIFICANT_FALL = create("always_most_significant_fall");
    TagKey<DamageType> WITHER_IMMUNE_TO = create("wither_immune_to");
+   TagKey<DamageType> SULFUR_CUBE_WITH_BLOCK_IMMUNE_TO = create("sulfur_cube_with_block_immune_to");
    TagKey<DamageType> IGNITES_ARMOR_STANDS = create("ignites_armor_stands");
    TagKey<DamageType> BURNS_ARMOR_STANDS = create("burns_armor_stands");
    TagKey<DamageType> AVOIDS_GUARDIAN_THORNS = create("avoids_guardian_thorns");

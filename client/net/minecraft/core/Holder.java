@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jspecify.annotations.Nullable;
 
-public interface Holder<T> {
+public sealed interface Holder<T> {
    T value();
 
    boolean isBound();
@@ -127,7 +127,7 @@ public interface Holder<T> {
       }
    }
 
-   public static class Reference<T> implements Holder<T> {
+   public static non-sealed class Reference<T> implements Holder<T> {
       private final HolderOwner<T> owner;
       private @Nullable Set<TagKey<T>> tags;
       private @Nullable DataComponentMap components;

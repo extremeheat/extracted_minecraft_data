@@ -10,7 +10,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
@@ -21,39 +20,29 @@ public class SystemToast implements Toast {
    private static final int MAX_LINE_SIZE = 200;
    private static final int LINE_SPACING = 12;
    private static final int MARGIN = 10;
+   private static final int TEXT_X_START = 18;
    private final SystemToastId id;
-   private Component title;
+   private List<FormattedCharSequence> titleLines;
    private List<FormattedCharSequence> messageLines;
    private long lastChanged;
    private boolean changed;
-   private final int width;
+   private int width;
    private boolean forceHide;
    private Toast.Visibility wantedVisibility;
 
    public SystemToast(final SystemToastId id, final Component title, final @Nullable Component message) {
-      this(id, title, nullToEmpty(message), Math.max(160, 30 + Math.max(Minecraft.getInstance().font.width((FormattedText)title), message == null ? 0 : Minecraft.getInstance().font.width((FormattedText)message))));
-   }
-
-   public static SystemToast multiline(final Minecraft minecraft, final SystemToastId id, final Component title, final Component message) {
-      Font font = minecraft.font;
-      List<FormattedCharSequence> lines = font.split(message, 200);
-      Stream var10001 = lines.stream();
-      Objects.requireNonNull(font);
-      int width = Math.max(200, var10001.mapToInt(font::width).max().orElse(200));
-      return new SystemToast(id, title, lines, width + 30);
-   }
-
-   private SystemToast(final SystemToastId id, final Component title, final List<FormattedCharSequence> messageLines, final int width) {
       super();
       this.wantedVisibility = Toast.Visibility.HIDE;
       this.id = id;
-      this.title = title;
-      this.messageLines = messageLines;
-      this.width = width;
+      this.update(title, message);
    }
 
-   private static ImmutableList<FormattedCharSequence> nullToEmpty(final @Nullable Component message) {
-      return message == null ? ImmutableList.of() : ImmutableList.of(message.getVisualOrderText());
+   private static List<FormattedCharSequence> nullToEmpty(final @Nullable Component text) {
+      return (List<FormattedCharSequence>)(text == null ? ImmutableList.of() : splitToLength(text));
+   }
+
+   private static List<FormattedCharSequence> splitToLength(final Component text) {
+      return Minecraft.getInstance().font.split(text, 200);
    }
 
    public int width() {
@@ -61,7 +50,9 @@ public class SystemToast implements Toast {
    }
 
    public int height() {
-      return 20 + Math.max(this.messageLines.size(), 1) * 12;
+      int titleHeight = (this.titleLines.size() - 1) * 12;
+      int messageHeight = Math.max(this.messageLines.size(), 1) * 12;
+      return 20 + titleHeight + messageHeight;
    }
 
    public void forceHide() {
@@ -86,21 +77,38 @@ public class SystemToast implements Toast {
    public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
-         graphics.text(font, (Component)this.title, 18, 12, -256, false);
+         this.extractTextLines(graphics, font, this.titleLines, 12, -256);
       } else {
-         graphics.text(font, (Component)this.title, 18, 7, -256, false);
+         this.extractTextLines(graphics, font, this.titleLines, 7, -256);
+         this.extractTextLines(graphics, font, this.messageLines, 7 + this.titleLines.size() * 12, -1);
+      }
 
-         for(int i = 0; i < this.messageLines.size(); ++i) {
-            graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(i)), 18, 18 + i * 12, -1, false);
-         }
+   }
+
+   private void extractTextLines(final GuiGraphicsExtractor graphics, final Font font, final List<FormattedCharSequence> textLines, final int yStart, final int textColor) {
+      for(int i = 0; i < textLines.size(); ++i) {
+         graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)textLines.get(i)), 18, yStart + i * 12, textColor, false);
       }
 
    }
 
    public void reset(final Component title, final @Nullable Component message) {
-      this.title = title;
-      this.messageLines = nullToEmpty(message);
+      this.update(title, message);
       this.changed = true;
+   }
+
+   private void update(final Component title, final @Nullable Component message) {
+      this.titleLines = splitToLength(title);
+      this.messageLines = nullToEmpty(message);
+      this.recalculateWidth();
+   }
+
+   public void recalculateWidth() {
+      Stream var10001 = Stream.concat(this.titleLines.stream(), this.messageLines.stream());
+      Font var10002 = Minecraft.getInstance().font;
+      Objects.requireNonNull(var10002);
+      int width = Math.max(160, var10001.mapToInt(var10002::width).max().orElse(200));
+      this.width = width + 30;
    }
 
    public SystemToastId getToken() {
@@ -130,31 +138,31 @@ public class SystemToast implements Toast {
    }
 
    public static void onWorldAccessFailure(final Minecraft minecraft, final String levelId) {
-      add(minecraft.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(levelId));
+      add(minecraft.gui.toastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(levelId));
    }
 
    public static void onWorldDeleteFailure(final Minecraft minecraft, final String levelId) {
-      add(minecraft.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(levelId));
+      add(minecraft.gui.toastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(levelId));
    }
 
    public static void onPackCopyFailure(final Minecraft minecraft, final String extraInfo) {
-      add(minecraft.getToastManager(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(extraInfo));
+      add(minecraft.gui.toastManager(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(extraInfo));
    }
 
    public static void onFileDropFailure(final Minecraft minecraft, final int count) {
-      add(minecraft.getToastManager(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", count));
+      add(minecraft.gui.toastManager(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", count));
    }
 
    public static void onLowDiskSpace(final Minecraft minecraft) {
-      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
+      addOrUpdate(minecraft.gui.toastManager(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
    }
 
    public static void onChunkLoadFailure(final Minecraft minecraft, final ChunkPos pos) {
-      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
+      addOrUpdate(minecraft.gui.toastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
    public static void onChunkSaveFailure(final Minecraft minecraft, final ChunkPos pos) {
-      addOrUpdate(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
+      addOrUpdate(minecraft.gui.toastManager(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(pos)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
    public static class SystemToastId {

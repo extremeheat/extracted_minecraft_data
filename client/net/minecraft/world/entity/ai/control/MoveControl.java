@@ -12,11 +12,11 @@ import net.minecraft.world.level.pathfinder.NodeEvaluator;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class MoveControl implements Control {
+public class MoveControl<T extends Mob> implements Control {
    public static final float MIN_SPEED = 5.0E-4F;
    public static final float MIN_SPEED_SQR = 2.5000003E-7F;
    protected static final int MAX_TURN = 90;
-   protected final Mob mob;
+   protected final T mob;
    protected double wantedX;
    protected double wantedY;
    protected double wantedZ;
@@ -25,7 +25,7 @@ public class MoveControl implements Control {
    protected float strafeRight;
    protected Operation operation;
 
-   public MoveControl(final Mob mob) {
+   public MoveControl(final T mob) {
       super();
       this.operation = MoveControl.Operation.WAIT;
       this.mob = mob;

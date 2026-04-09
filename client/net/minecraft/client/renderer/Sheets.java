@@ -41,8 +41,6 @@ public class Sheets {
    public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
    private static final RenderType ARMOR_TRIMS_SHEET_TYPE;
    private static final RenderType ARMOR_TRIMS_DECAL_SHEET_TYPE;
-   private static final RenderType CUTOUT_BLOCK_SHEET;
-   private static final RenderType TRANSLUCENT_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
    private static final RenderType CUTOUT_ITEM_SHEET;
@@ -88,14 +86,6 @@ public class Sheets {
 
    public static RenderType armorTrimsSheet(final boolean decal) {
       return decal ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
-   }
-
-   public static RenderType cutoutBlockSheet() {
-      return CUTOUT_BLOCK_SHEET;
-   }
-
-   public static RenderType translucentBlockSheet() {
-      return TRANSLUCENT_BLOCK_SHEET;
    }
 
    public static RenderType cutoutBlockItemSheet() {
@@ -194,8 +184,6 @@ public class Sheets {
    static {
       ARMOR_TRIMS_SHEET_TYPE = RenderTypes.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
       ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
-      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_BLOCK_SHEET = RenderTypes.entityTranslucentCullItemTarget(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_BLOCK_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_ITEMS);

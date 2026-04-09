@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Set;
@@ -16,8 +15,8 @@ public abstract class DirectStateAccess {
       super();
    }
 
-   public static DirectStateAccess create(final GLCapabilities capabilities, final Set<String> enabledExtensions, final GraphicsWorkarounds workarounds) {
-      if (capabilities.GL_ARB_direct_state_access && GlDevice.USE_GL_ARB_direct_state_access && !workarounds.isGlOnDx12()) {
+   public static DirectStateAccess create(final GLCapabilities capabilities, final Set<String> enabledExtensions, final GlHeuristics heuristics) {
+      if (capabilities.GL_ARB_direct_state_access && GlDevice.USE_GL_ARB_direct_state_access && !heuristics.isGlOnDx12()) {
          enabledExtensions.add("GL_ARB_direct_state_access");
          return new Core();
       } else {

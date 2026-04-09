@@ -47,7 +47,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       }
    }
 
-   public static int getLightBlockInto(final BlockState fromState, final BlockState toState, final Direction direction, final int simpleOpacity) {
+   public static int getLightDampeningInto(final BlockState fromState, final BlockState toState, final Direction direction, final int simpleOpacity) {
       boolean fromEmpty = isEmptyShape(fromState);
       boolean toEmpty = isEmptyShape(toState);
       if (fromEmpty && toEmpty) {

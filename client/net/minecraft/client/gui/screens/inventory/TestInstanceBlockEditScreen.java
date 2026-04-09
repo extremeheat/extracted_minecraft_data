@@ -81,22 +81,22 @@ public class TestInstanceBlockEditScreen extends Screen {
       index = 0;
       this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.RESET);
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
       }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
       this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.save"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.SAVE);
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
       }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
       if (includeExport) {
          this.exportButton = (Button)this.addRenderableWidget(Button.builder(Component.literal("Export Structure"), (button) -> {
             this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.EXPORT);
-            this.minecraft.setScreen((Screen)null);
+            this.minecraft.gui.setScreen((Screen)null);
          }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
       }
 
       this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.run"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.RUN);
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
       }).bounds(this.widgetX(0, 3), 210, widgetSize(3), 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.widgetX(1, 3), 210, widgetSize(3), 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).bounds(this.widgetX(2, 3), 210, widgetSize(3), 20).build());

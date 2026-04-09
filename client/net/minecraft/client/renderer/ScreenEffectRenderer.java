@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.WindowRenderState;
@@ -33,18 +35,16 @@ public class ScreenEffectRenderer {
    private static final Identifier UNDERWATER_LOCATION = Identifier.withDefaultNamespace("textures/misc/underwater.png");
    private final Minecraft minecraft;
    private final SpriteGetter sprites;
-   private final MultiBufferSource bufferSource;
    public static final int ITEM_ACTIVATION_ANIMATION_LENGTH = 40;
    private @Nullable ItemStack itemActivationItem;
    private int itemActivationTicks;
    private float itemActivationOffX;
    private float itemActivationOffY;
 
-   public ScreenEffectRenderer(final Minecraft minecraft, final SpriteGetter sprites, final MultiBufferSource bufferSource) {
+   public ScreenEffectRenderer(final Minecraft minecraft, final SpriteGetter sprites) {
       super();
       this.minecraft = minecraft;
       this.sprites = sprites;
-      this.bufferSource = bufferSource;
    }
 
    public void tick() {
@@ -57,25 +57,25 @@ public class ScreenEffectRenderer {
 
    }
 
-   public void renderScreenEffect(final boolean isFirstPerson, final boolean isSleeping, final float partialTicks, final SubmitNodeCollector submitNodeCollector, final boolean hideGui) {
+   public void submit(final boolean isFirstPerson, final boolean isSleeping, final float partialTicks, final SubmitNodeCollector submitNodeCollector, final boolean hideGui) {
       PoseStack poseStack = new PoseStack();
       Player player = this.minecraft.player;
       if (isFirstPerson && !isSleeping) {
-         if (!player.noPhysics) {
-            BlockState blockState = getViewBlockingState(player);
-            if (blockState != null) {
-               renderTex(this.minecraft.getModelManager().getBlockStateModelSet().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
-            }
+         BlockState blockState = getViewBlockingState(player);
+         if (blockState != null) {
+            BlockStateModelSet blockStateModelSet = this.minecraft.getModelManager().getBlockStateModelSet();
+            TextureAtlasSprite sprite = blockStateModelSet.getParticleMaterial(blockState).sprite();
+            submitBlockSprite(sprite, poseStack, submitNodeCollector, -15132391);
          }
 
          if (!this.minecraft.player.isSpectator()) {
             if (this.minecraft.player.isEyeInFluid(FluidTags.WATER)) {
-               renderWater(this.minecraft, poseStack, this.bufferSource);
+               submitWater(this.minecraft, poseStack, submitNodeCollector);
             }
 
             if (this.minecraft.player.isOnFire()) {
                TextureAtlasSprite fireSprite = this.sprites.get(ModelBakery.FIRE_1);
-               renderFire(poseStack, this.bufferSource, fireSprite);
+               submitFire(poseStack, submitNodeCollector, fireSprite);
             }
          }
       }
@@ -125,86 +125,67 @@ public class ScreenEffectRenderer {
    }
 
    private static @Nullable BlockState getViewBlockingState(final Player player) {
-      BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
+      if (player.noPhysics) {
+         return null;
+      } else {
+         BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
 
-      for(int i = 0; i < 8; ++i) {
-         double xo = player.getX() + (double)(((float)((i >> 0) % 2) - 0.5F) * player.getBbWidth() * 0.8F);
-         double yo = player.getEyeY() + (double)(((float)((i >> 1) % 2) - 0.5F) * 0.1F * player.getScale());
-         double zo = player.getZ() + (double)(((float)((i >> 2) % 2) - 0.5F) * player.getBbWidth() * 0.8F);
-         testPos.set(xo, yo, zo);
-         BlockState blockState = player.level().getBlockState(testPos);
-         if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.isViewBlocking(player.level(), testPos)) {
-            return blockState;
+         for(int i = 0; i < 8; ++i) {
+            testPos.set(player.getX() + (double)(((float)((i >> 0) % 2) - 0.5F) * player.getBbWidth() * 0.8F), player.getEyeY() + (double)(((float)((i >> 1) % 2) - 0.5F) * 0.1F * player.getScale()), player.getZ() + (double)(((float)((i >> 2) % 2) - 0.5F) * player.getBbWidth() * 0.8F));
+            BlockState blockState = player.level().getBlockState(testPos);
+            if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.isViewBlocking(player.level(), testPos)) {
+               return blockState;
+            }
          }
+
+         return null;
       }
-
-      return null;
    }
 
-   private static void renderTex(final TextureAtlasSprite sprite, final PoseStack poseStack, final MultiBufferSource bufferSource) {
-      float br = 0.1F;
-      int color = ARGB.colorFromFloat(1.0F, 0.1F, 0.1F, 0.1F);
-      float x0 = -1.0F;
-      float x1 = 1.0F;
-      float y0 = -1.0F;
-      float y1 = 1.0F;
-      float z0 = -0.5F;
-      float u0 = sprite.getU0();
-      float u1 = sprite.getU1();
-      float v0 = sprite.getV0();
-      float v1 = sprite.getV1();
-      Matrix4f pose = poseStack.last().pose();
-      VertexConsumer builder = bufferSource.getBuffer(RenderTypes.blockScreenEffect(sprite.atlasLocation()));
-      builder.addVertex((Matrix4fc)pose, -1.0F, -1.0F, -0.5F).setUv(u1, v1).setColor(color);
-      builder.addVertex((Matrix4fc)pose, 1.0F, -1.0F, -0.5F).setUv(u0, v1).setColor(color);
-      builder.addVertex((Matrix4fc)pose, 1.0F, 1.0F, -0.5F).setUv(u0, v0).setColor(color);
-      builder.addVertex((Matrix4fc)pose, -1.0F, 1.0F, -0.5F).setUv(u1, v0).setColor(color);
+   private static void submitBlockSprite(final TextureAtlasSprite sprite, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int color) {
+      submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.blockScreenEffect(sprite.atlasLocation()), (pose, builder) -> buildSpriteQuad(builder, pose.pose(), sprite, -1.0F, -1.0F, 1.0F, 1.0F, -0.5F, color));
    }
 
-   private static void renderWater(final Minecraft minecraft, final PoseStack poseStack, final MultiBufferSource bufferSource) {
-      BlockPos pos = BlockPos.containing(minecraft.player.getX(), minecraft.player.getEyeY(), minecraft.player.getZ());
-      float br = Lightmap.getBrightness(minecraft.player.level().dimensionType(), minecraft.player.level().getMaxLocalRawBrightness(pos));
-      int color = ARGB.colorFromFloat(0.1F, br, br, br);
-      float size = 4.0F;
-      float x0 = -1.0F;
-      float x1 = 1.0F;
-      float y0 = -1.0F;
-      float y1 = 1.0F;
-      float z0 = -0.5F;
-      float uo = -minecraft.player.getYRot() / 64.0F;
-      float vo = minecraft.player.getXRot() / 64.0F;
-      Matrix4f pose = poseStack.last().pose();
-      VertexConsumer builder = bufferSource.getBuffer(RenderTypes.blockScreenEffect(UNDERWATER_LOCATION));
-      builder.addVertex((Matrix4fc)pose, -1.0F, -1.0F, -0.5F).setUv(4.0F + uo, 4.0F + vo).setColor(color);
-      builder.addVertex((Matrix4fc)pose, 1.0F, -1.0F, -0.5F).setUv(0.0F + uo, 4.0F + vo).setColor(color);
-      builder.addVertex((Matrix4fc)pose, 1.0F, 1.0F, -0.5F).setUv(0.0F + uo, 0.0F + vo).setColor(color);
-      builder.addVertex((Matrix4fc)pose, -1.0F, 1.0F, -0.5F).setUv(4.0F + uo, 0.0F + vo).setColor(color);
+   private static void submitWater(final Minecraft minecraft, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+      LocalPlayer player = minecraft.player;
+      BlockPos pos = BlockPos.containing(player.getEyePosition());
+      float brightness = Lightmap.getBrightness(player.level().dimensionType(), player.level().getMaxLocalRawBrightness(pos));
+      int color = ARGB.colorFromFloat(0.1F, brightness, brightness, brightness);
+      float u0 = -player.getYRot() / 64.0F;
+      float v0 = player.getXRot() / 64.0F;
+      submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.blockScreenEffect(UNDERWATER_LOCATION), (pose, builder) -> {
+         float uvSize = 4.0F;
+         buildQuad(builder, pose.pose(), -1.0F, -1.0F, 1.0F, 1.0F, -0.5F, u0 + 4.0F, v0 + 4.0F, u0, v0, color);
+      });
    }
 
-   private static void renderFire(final PoseStack poseStack, final MultiBufferSource bufferSource, final TextureAtlasSprite sprite) {
-      VertexConsumer builder = bufferSource.getBuffer(RenderTypes.fireScreenEffect(sprite.atlasLocation()));
-      float u0 = sprite.getU0();
-      float u1 = sprite.getU1();
-      float v0 = sprite.getV0();
-      float v1 = sprite.getV1();
+   private static void submitFire(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final TextureAtlasSprite sprite) {
+      submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.fireScreenEffect(sprite.atlasLocation()), (basePose, builder) -> {
+         Matrix4f pose = new Matrix4f();
+         pose.set(basePose.pose());
+         pose.translate(0.24F, -0.3F, 0.0F);
+         pose.rotateY(-0.17453292F);
+         buildFireQuad(sprite, builder, pose);
+         pose.set(basePose.pose());
+         pose.translate(-0.24F, -0.3F, 0.0F);
+         pose.rotateY(0.17453292F);
+         buildFireQuad(sprite, builder, pose);
+      });
+   }
+
+   private static void buildFireQuad(final TextureAtlasSprite sprite, final VertexConsumer builder, final Matrix4f pose) {
       float size = 1.0F;
+      buildSpriteQuad(builder, pose, sprite, -0.5F, -0.5F, 0.5F, 0.5F, -0.5F, -436207617);
+   }
 
-      for(int i = 0; i < 2; ++i) {
-         poseStack.pushPose();
-         float x0 = -0.5F;
-         float x1 = 0.5F;
-         float y0 = -0.5F;
-         float y1 = 0.5F;
-         float z0 = -0.5F;
-         poseStack.translate((float)(-(i * 2 - 1)) * 0.24F, -0.3F, 0.0F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(i * 2 - 1) * 10.0F));
-         Matrix4f pose = poseStack.last().pose();
-         builder.addVertex((Matrix4fc)pose, -0.5F, -0.5F, -0.5F).setUv(u1, v1).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         builder.addVertex((Matrix4fc)pose, 0.5F, -0.5F, -0.5F).setUv(u0, v1).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         builder.addVertex((Matrix4fc)pose, 0.5F, 0.5F, -0.5F).setUv(u0, v0).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         builder.addVertex((Matrix4fc)pose, -0.5F, 0.5F, -0.5F).setUv(u1, v0).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         poseStack.popPose();
-      }
+   private static void buildSpriteQuad(final VertexConsumer builder, final Matrix4f pose, final TextureAtlasSprite sprite, final float x0, final float y0, final float x1, final float y1, final float z, final int color) {
+      buildQuad(builder, pose, x0, y0, x1, y1, z, sprite.getU1(), sprite.getV1(), sprite.getU0(), sprite.getV0(), color);
+   }
 
+   private static void buildQuad(final VertexConsumer builder, final Matrix4f pose, final float x0, final float y0, final float x1, final float y1, final float z, final float u0, final float v0, final float u1, final float v1, final int color) {
+      builder.addVertex((Matrix4fc)pose, x0, y0, z).setUv(u0, v0).setColor(color);
+      builder.addVertex((Matrix4fc)pose, x1, y0, z).setUv(u1, v0).setColor(color);
+      builder.addVertex((Matrix4fc)pose, x1, y1, z).setUv(u1, v1).setColor(color);
+      builder.addVertex((Matrix4fc)pose, x0, y1, z).setUv(u0, v1).setColor(color);
    }
 }

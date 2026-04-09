@@ -32,17 +32,17 @@ public class GoalSelector {
    }
 
    public void removeAllGoals(final Predicate<Goal> predicate) {
-      this.availableGoals.removeIf((goal) -> predicate.test(goal.getGoal()));
-   }
-
-   public void removeGoal(final Goal toRemove) {
       for(WrappedGoal availableGoal : this.availableGoals) {
-         if (availableGoal.getGoal() == toRemove && availableGoal.isRunning()) {
+         if (predicate.test(availableGoal) && availableGoal.isRunning()) {
             availableGoal.stop();
          }
       }
 
-      this.availableGoals.removeIf((goal) -> goal.getGoal() == toRemove);
+      this.availableGoals.removeIf((goal) -> predicate.test(goal.getGoal()));
+   }
+
+   public void removeGoal(final Goal toRemove) {
+      this.removeAllGoals((goal) -> goal == toRemove);
    }
 
    private static boolean goalContainsAnyFlags(final WrappedGoal goal, final EnumSet<Goal.Flag> disabledFlags) {

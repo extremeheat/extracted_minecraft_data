@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
@@ -9,13 +10,12 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
-import com.mojang.blaze3d.systems.GpuQuery;
+import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
@@ -33,7 +33,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
@@ -43,9 +42,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
    private final int readFbo;
    private final int drawFbo;
    private @Nullable RenderPipeline lastPipeline;
-   private boolean inRenderPass;
    private @Nullable GlProgram lastProgram;
-   private @Nullable GlTimerQuery activeTimerQuery;
 
    protected GlCommandEncoder(final GlDevice device) {
       super();
@@ -54,12 +51,14 @@ class GlCommandEncoder implements CommandEncoderBackend {
       this.drawFbo = device.directStateAccess().createFrameBufferObject();
    }
 
+   public void submit() {
+   }
+
    public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
       return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
    }
 
    public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
-      this.inRenderPass = true;
       this.device.debugLabels().pushDebugGroup(label);
       int fbo = ((GlTextureView)colorTexture).getFbo(this.device.directStateAccess(), depthTexture == null ? null : depthTexture.texture());
       GlStateManager._glBindFramebuffer(36160, fbo);
@@ -85,10 +84,6 @@ class GlCommandEncoder implements CommandEncoderBackend {
       GlStateManager._viewport(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0));
       this.lastPipeline = null;
       return new GlRenderPass(this, this.device, depthTexture != null);
-   }
-
-   public boolean isInRenderPass() {
-      return this.inRenderPass;
    }
 
    public void clearColorTexture(final GpuTexture colorTexture, final int clearColor) {
@@ -411,7 +406,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                      throw new IllegalStateException("Uniform texel buffers do not support a slice of a buffer, must be entire buffer");
                   }
 
-                  if (uniform.textureFormat() == null) {
+                  if (uniform.gpuFormat() == null) {
                      throw new IllegalStateException("Invalid uniform texel buffer " + uniform.name() + " (missing a texture format)");
                   }
                }
@@ -524,8 +519,8 @@ class GlCommandEncoder implements CommandEncoderBackend {
                            throw new MatchException(var29.toString(), var29);
                         }
 
-                        TextureFormat texture = var59;
-                        TextureFormat format = texture;
+                        GpuFormat texture = var59;
+                        GpuFormat format = texture;
                         var54 = bufferView;
 
                         try {
@@ -653,7 +648,8 @@ class GlCommandEncoder implements CommandEncoderBackend {
          if (pipeline.getColorTargetState().blendFunction().isPresent()) {
             GlStateManager._enableBlend();
             BlendFunction blendFunction = (BlendFunction)pipeline.getColorTargetState().blendFunction().get();
-            GlStateManager._blendFuncSeparate(GlConst.toGl(blendFunction.sourceColor()), GlConst.toGl(blendFunction.destColor()), GlConst.toGl(blendFunction.sourceAlpha()), GlConst.toGl(blendFunction.destAlpha()));
+            GlStateManager._blendFuncSeparate(GlConst.toGl(blendFunction.color().sourceFactor()), GlConst.toGl(blendFunction.color().destFactor()), GlConst.toGl(blendFunction.alpha().sourceFactor()), GlConst.toGl(blendFunction.alpha().destFactor()));
+            GlStateManager._blendEquationSeparate(GlConst.toGl(blendFunction.color().op()), GlConst.toGl(blendFunction.alpha().op()));
          } else {
             GlStateManager._disableBlend();
          }
@@ -663,31 +659,12 @@ class GlCommandEncoder implements CommandEncoderBackend {
       }
    }
 
-   public void finishRenderPass() {
-      this.inRenderPass = false;
+   public void submitRenderPass() {
       GlStateManager._glBindFramebuffer(36160, 0);
       this.device.debugLabels().popDebugGroup();
    }
 
-   public GpuQuery timerQueryBegin() {
-      RenderSystem.assertOnRenderThread();
-      if (this.activeTimerQuery != null) {
-         throw new IllegalStateException("A GL_TIME_ELAPSED query is already active");
-      } else {
-         int queryId = GL32C.glGenQueries();
-         GL32C.glBeginQuery(35007, queryId);
-         this.activeTimerQuery = new GlTimerQuery(queryId);
-         return this.activeTimerQuery;
-      }
-   }
-
-   public void timerQueryEnd(final GpuQuery query) {
-      RenderSystem.assertOnRenderThread();
-      if (query != this.activeTimerQuery) {
-         throw new IllegalStateException("Mismatched or duplicate GpuQuery when ending timerQuery");
-      } else {
-         GL32C.glEndQuery(35007);
-         this.activeTimerQuery = null;
-      }
+   public void writeTimestamp(final GpuQueryPool pool, final int index) {
+      ((GlQueryPool)pool).writeTimestamp(index);
    }
 }

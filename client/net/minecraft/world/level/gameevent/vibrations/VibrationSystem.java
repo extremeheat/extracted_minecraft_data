@@ -42,6 +42,7 @@ public interface VibrationSystem {
       map.put(GameEvent.PROJECTILE_LAND.key(), 2);
       map.put(GameEvent.HIT_GROUND.key(), 2);
       map.put(GameEvent.SPLASH.key(), 2);
+      map.put(GameEvent.BOUNCE.key(), 2);
       map.put(GameEvent.ITEM_INTERACT_FINISH.key(), 3);
       map.put(GameEvent.PROJECTILE_SHOOT.key(), 3);
       map.put(GameEvent.INSTRUMENT_PLAY.key(), 3);

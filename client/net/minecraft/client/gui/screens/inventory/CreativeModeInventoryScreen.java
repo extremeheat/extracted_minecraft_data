@@ -148,7 +148,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       if (player != null) {
          this.tryRefreshInvalidatedTabs(player.connection.enabledFeatures(), this.hasPermissions(player), player.level().registryAccess());
          if (!player.hasInfiniteMaterials()) {
-            this.minecraft.setScreen(new InventoryScreen(player));
+            this.minecraft.gui.setScreen(new InventoryScreen(player));
          }
       }
 
@@ -310,7 +310,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
             this.selectTab(CreativeModeTabs.getDefaultTab());
          }
       } else {
-         this.minecraft.setScreen(new InventoryScreen(this.minecraft.player));
+         this.minecraft.gui.setScreen(new InventoryScreen(this.minecraft.player));
       }
 
    }
@@ -805,7 +805,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          Component translatedKeyMessage = minecraft.options.keyHotbarSlots[index].getTranslatedKeyMessage();
          Component activatorKeyMessage = minecraft.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
          Component message = Component.translatable("inventory.hotbarSaved", activatorKeyMessage, translatedKeyMessage);
-         minecraft.gui.setOverlayMessage(message, false);
+         minecraft.gui.hud.setOverlayMessage(message, false);
          minecraft.getNarrator().saySystemNow(message);
          manager.save();
       }

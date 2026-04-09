@@ -33,14 +33,14 @@ public class GlBackend implements GpuBackend {
    public void handleWindowCreationErrors(final GLFWErrorCapture.@Nullable Error error) throws BackendCreationException {
       if (error != null) {
          if (error.error() == 65542) {
-            throw new BackendCreationException("Driver does not support OpenGL");
+            throw new BackendCreationException("Driver does not support OpenGL", BackendCreationException.Reason.OPENGL_MISSING);
          } else if (error.error() == 65543) {
-            throw new BackendCreationException("Driver does not support OpenGL 3.3");
+            throw new BackendCreationException("Driver does not support OpenGL 3.3", BackendCreationException.Reason.OPENGL_MISSING);
          } else {
-            throw new BackendCreationException(error.toString());
+            throw new BackendCreationException(error.toString(), BackendCreationException.Reason.OPENGL_MISSING);
          }
       } else {
-         throw new BackendCreationException("Failed to create window with OpenGL context");
+         throw new BackendCreationException("Failed to create window with OpenGL context", BackendCreationException.Reason.OPENGL_MISSING);
       }
    }
 

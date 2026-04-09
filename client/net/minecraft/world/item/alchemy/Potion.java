@@ -48,7 +48,7 @@ public class Potion implements FeatureElement {
 
    public boolean hasInstantEffects() {
       for(MobEffectInstance effect : this.effects) {
-         if (((MobEffect)effect.getEffect().value()).isInstantenous()) {
+         if (((MobEffect)effect.getEffect().value()).isInstantaneous()) {
             return true;
          }
       }

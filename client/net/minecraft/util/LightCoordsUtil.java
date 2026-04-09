@@ -64,28 +64,22 @@ public class LightCoordsUtil {
 
    public static int smoothBlend(int neighbor1, int neighbor2, int neighbor3, final int center) {
       if (sky(center) > 2 || block(center) > 2) {
-         if (sky(neighbor1) == 0) {
+         if (neighbor1 == 0) {
+            neighbor1 = center;
+         } else if (sky(neighbor1) == 0) {
             neighbor1 |= center & 16711680;
          }
 
-         if (block(neighbor1) == 0) {
-            neighbor1 |= center & 255;
-         }
-
-         if (sky(neighbor2) == 0) {
+         if (neighbor2 == 0) {
+            neighbor2 = center;
+         } else if (sky(neighbor2) == 0) {
             neighbor2 |= center & 16711680;
          }
 
-         if (block(neighbor2) == 0) {
-            neighbor2 |= center & 255;
-         }
-
-         if (sky(neighbor3) == 0) {
+         if (neighbor3 == 0) {
+            neighbor3 = center;
+         } else if (sky(neighbor3) == 0) {
             neighbor3 |= center & 16711680;
-         }
-
-         if (block(neighbor3) == 0) {
-            neighbor3 |= center & 255;
          }
       }
 

@@ -20,7 +20,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -59,6 +58,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class Shulker extends AbstractGolem implements Enemy {
@@ -76,7 +76,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final float PEEK_PER_TICK = 0.05F;
    private static final byte DEFAULT_PEEK = 0;
    private static final Direction DEFAULT_ATTACH_FACE;
-   private static final Vector3f FORWARD;
+   private static final Vector3fc FORWARD;
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
    private float currentPeekAmount;
@@ -536,10 +536,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       DATA_PEEK_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
       DATA_COLOR_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
       DEFAULT_ATTACH_FACE = Direction.DOWN;
-      FORWARD = (Vector3f)Util.make(() -> {
-         Vec3i forwardNormal = Direction.SOUTH.getUnitVec3i();
-         return new Vector3f((float)forwardNormal.getX(), (float)forwardNormal.getY(), (float)forwardNormal.getZ());
-      });
+      FORWARD = Direction.SOUTH.getUnitVec3f();
    }
 
    private class ShulkerLookControl extends LookControl {

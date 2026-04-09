@@ -31,13 +31,13 @@ public abstract class LongRunningTask implements Runnable {
 
    public static void setScreen(final Screen screen) {
       Minecraft minecraft = Minecraft.getInstance();
-      minecraft.execute(() -> minecraft.setScreen(screen));
+      minecraft.execute(() -> minecraft.gui.setScreen(screen));
    }
 
    protected void error(final Component errorMessage) {
       this.abortTask();
       Minecraft minecraft = Minecraft.getInstance();
-      minecraft.execute(() -> minecraft.setScreen(new RealmsGenericErrorScreen(errorMessage, new RealmsMainScreen(new TitleScreen()))));
+      minecraft.execute(() -> minecraft.gui.setScreen(new RealmsGenericErrorScreen(errorMessage, new RealmsMainScreen(new TitleScreen()))));
    }
 
    protected void error(final Exception ex) {

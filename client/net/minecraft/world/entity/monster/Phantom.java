@@ -199,10 +199,10 @@ public class Phantom extends Mob implements Enemy {
       }
    }
 
-   private class PhantomMoveControl extends MoveControl {
+   private class PhantomMoveControl<T extends Mob> extends MoveControl<T> {
       private float speed;
 
-      public PhantomMoveControl(final Mob mob) {
+      public PhantomMoveControl(final T mob) {
          Objects.requireNonNull(Phantom.this);
          super(mob);
          this.speed = 0.1F;

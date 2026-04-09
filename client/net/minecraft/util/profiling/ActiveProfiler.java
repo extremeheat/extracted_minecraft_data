@@ -2,6 +2,7 @@ package net.minecraft.util.profiling;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -19,7 +20,6 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.metrics.MetricCategory;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

@@ -13,11 +13,13 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface CommandEncoderBackend {
+   void submit();
+
    RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor);
 
    RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor, @Nullable GpuTextureView depthTexture, OptionalDouble clearDepth);
 
-   boolean isInRenderPass();
+   void submitRenderPass();
 
    void clearColorTexture(GpuTexture colorTexture, int clearColor);
 
@@ -43,11 +45,7 @@ public interface CommandEncoderBackend {
 
    void copyTextureToTexture(GpuTexture source, GpuTexture destination, int mipLevel, int destX, int destY, int sourceX, int sourceY, int width, int height);
 
-   void presentTexture(GpuTextureView texture);
-
    GpuFence createFence();
 
-   GpuQuery timerQueryBegin();
-
-   void timerQueryEnd(GpuQuery query);
+   void writeTimestamp(GpuQueryPool pool, int index);
 }

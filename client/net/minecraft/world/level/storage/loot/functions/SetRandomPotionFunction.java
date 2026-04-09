@@ -43,7 +43,7 @@ public class SetRandomPotionFunction extends LootItemConditionalFunction {
       return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> fromTagKey(final Optional<HolderSet<Potion>> tagKey) {
-      return simpleBuilder((conditions) -> new SetRandomPotionFunction(conditions, tagKey));
+   public static LootItemConditionalFunction.Builder<?> fromTagKey(final HolderSet<Potion> tagKey) {
+      return simpleBuilder((conditions) -> new SetRandomPotionFunction(conditions, Optional.of(tagKey)));
    }
 }

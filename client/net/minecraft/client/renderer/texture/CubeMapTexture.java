@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.texture;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
@@ -82,7 +82,7 @@ public class CubeMapTexture extends ReloadableTexture {
       this.close();
       Identifier var10002 = this.resourceId();
       Objects.requireNonNull(var10002);
-      this.texture = device.createTexture(var10002::toString, 21, TextureFormat.RGBA8, width, height, 6, 1);
+      this.texture = device.createTexture(var10002::toString, 21, GpuFormat.RGBA8_UNORM, width, height, 6, 1);
       this.textureView = device.createTextureView(this.texture);
 
       for(int i = 0; i < 6; ++i) {

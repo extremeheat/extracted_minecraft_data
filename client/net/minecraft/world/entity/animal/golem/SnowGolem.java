@@ -150,7 +150,7 @@ public class SnowGolem extends AbstractGolem implements RangedAttackMob, Shearab
    }
 
    public boolean readyForShearing() {
-      return this.isAlive() && this.hasPumpkin();
+      return this.hasPumpkin();
    }
 
    public boolean hasPumpkin() {

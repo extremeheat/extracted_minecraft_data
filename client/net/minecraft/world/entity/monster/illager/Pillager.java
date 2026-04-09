@@ -197,7 +197,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    private boolean wantsItem(final ItemStack itemStack) {
-      return this.hasActiveRaid() && itemStack.is(Items.WHITE_BANNER);
+      return this.hasActiveRaid() && itemStack.is(Items.BANNER.white());
    }
 
    public @Nullable SlotAccess getSlot(final int slot) {

@@ -571,27 +571,25 @@ public class Rabbit extends Animal {
       }
    }
 
-   private static class RabbitMoveControl extends MoveControl {
-      private final Rabbit rabbit;
+   private static class RabbitMoveControl<T extends Rabbit> extends MoveControl<T> {
       private double nextJumpSpeed;
 
-      public RabbitMoveControl(final Rabbit rabbit) {
+      public RabbitMoveControl(final T rabbit) {
          super(rabbit);
-         this.rabbit = rabbit;
       }
 
       public void tick() {
-         if (this.rabbit.onGround() && !this.rabbit.jumping && !((RabbitJumpControl)this.rabbit.jumpControl).wantJump()) {
-            this.rabbit.setSpeedModifier(0.0);
+         if (((Rabbit)this.mob).onGround() && !(this.mob).jumping && !((RabbitJumpControl)(this.mob).jumpControl).wantJump()) {
+            ((Rabbit)this.mob).setSpeedModifier(0.0);
          } else if (this.hasWanted() || this.operation == MoveControl.Operation.JUMPING) {
-            this.rabbit.setSpeedModifier(this.nextJumpSpeed);
+            ((Rabbit)this.mob).setSpeedModifier(this.nextJumpSpeed);
          }
 
          super.tick();
       }
 
       public void setWantedPosition(final double x, final double y, final double z, double speedModifier) {
-         if (this.rabbit.isInWater()) {
+         if (((Rabbit)this.mob).isInWater()) {
             speedModifier = 1.5;
          }
 

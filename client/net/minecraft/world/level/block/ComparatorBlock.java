@@ -115,7 +115,10 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
          float pitch = state.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
          level.playSound(player, (BlockPos)pos, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, pitch);
          level.setBlock(pos, state, 2);
-         this.refreshOutputState(level, pos, state);
+         if (level.getBlockState(pos).is(this)) {
+            this.refreshOutputState(level, pos, state);
+         }
+
          return InteractionResult.SUCCESS;
       }
    }

@@ -47,9 +47,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class WeatherEffectRenderer {
    private static final float RAIN_PARTICLES_PER_BLOCK = 0.225F;
@@ -145,7 +142,7 @@ public class WeatherEffectRenderer {
             }
          }
 
-         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
 
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Weather Effect", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
             renderPass.setPipeline(renderPipeline);

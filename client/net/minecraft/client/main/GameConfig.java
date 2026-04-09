@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.DisplayData;
 import java.io.File;
 import java.net.Proxy;
 import java.nio.file.Path;
+import net.minecraft.client.PreferredGraphicsApi;
 import net.minecraft.client.User;
 import net.minecraft.client.resources.IndexedAssetSource;
 import net.minecraft.util.StringUtil;
@@ -33,9 +34,11 @@ public class GameConfig {
       public final boolean disableChat;
       public final boolean captureTracyImages;
       public final boolean renderDebugLabels;
+      public final boolean vulkanValidation;
+      public final @Nullable PreferredGraphicsApi forcedGraphicsApi;
       public final boolean offlineDeveloperMode;
 
-      public GameData(final boolean demo, final String launchVersion, final String versionType, final boolean disableMultiplayer, final boolean disableChat, final boolean captureTracyImages, final boolean renderDebugLabels, final boolean offlineDeveloperMode) {
+      public GameData(final boolean demo, final String launchVersion, final String versionType, final boolean disableMultiplayer, final boolean disableChat, final boolean captureTracyImages, final boolean vulkanValidation, final boolean renderDebugLabels, final @Nullable PreferredGraphicsApi forcedGraphicsApi, final boolean offlineDeveloperMode) {
          super();
          this.demo = demo;
          this.launchVersion = launchVersion;
@@ -43,7 +46,9 @@ public class GameConfig {
          this.disableMultiplayer = disableMultiplayer;
          this.disableChat = disableChat;
          this.captureTracyImages = captureTracyImages;
+         this.vulkanValidation = vulkanValidation;
          this.renderDebugLabels = renderDebugLabels;
+         this.forcedGraphicsApi = forcedGraphicsApi;
          this.offlineDeveloperMode = offlineDeveloperMode;
       }
    }

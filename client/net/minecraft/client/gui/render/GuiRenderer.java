@@ -61,8 +61,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -122,7 +120,7 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   public void render(final GpuBufferSlice fogBuffer) {
+   public void render() {
       ProfilerFiller profiler = Profiler.get();
       if (this.renderState.panoramaRenderState != null) {
          this.cubeMap.render(10.0F, this.renderState.panoramaRenderState.spin());
@@ -131,7 +129,7 @@ public class GuiRenderer implements AutoCloseable {
       profiler.push("prepare");
       this.prepare();
       profiler.popPush("draw");
-      this.draw(fogBuffer);
+      this.draw();
       profiler.popPush("vertexBufferRotate");
 
       for(MappableRingBuffer buffer : this.vertexBuffers.values()) {
@@ -191,7 +189,7 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   private void draw(final GpuBufferSlice fogBuffer) {
+   private void draw() {
       if (!this.draws.isEmpty()) {
          Minecraft minecraft = Minecraft.getInstance();
          WindowRenderState windowState = minecraft.gameRenderer.getGameRenderState().windowRenderState;
@@ -209,23 +207,22 @@ public class GuiRenderer implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          GpuBuffer indexBuffer = autoIndices.getBuffer(maxIndexCount);
          VertexFormat.IndexType indexType = autoIndices.type();
-         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F));
          if (this.firstDrawIndexAfterBlur > 0) {
-            this.executeDrawRange(() -> "GUI before blur", mainRenderTarget, fogBuffer, dynamicTransforms, indexBuffer, indexType, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
+            this.executeDrawRange(() -> "GUI before blur", mainRenderTarget, dynamicTransforms, indexBuffer, indexType, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
          }
 
          if (this.draws.size() > this.firstDrawIndexAfterBlur) {
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 1.0);
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
             minecraft.gameRenderer.processBlurEffect();
-            this.executeDrawRange(() -> "GUI after blur", mainRenderTarget, fogBuffer, dynamicTransforms, indexBuffer, indexType, this.firstDrawIndexAfterBlur, this.draws.size());
+            this.executeDrawRange(() -> "GUI after blur", mainRenderTarget, dynamicTransforms, indexBuffer, indexType, this.firstDrawIndexAfterBlur, this.draws.size());
          }
       }
    }
 
-   private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice fogBuffer, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int startIndex, final int endIndex) {
+   private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int startIndex, final int endIndex) {
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), OptionalInt.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setUniform("Fog", fogBuffer);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
          for(int i = startIndex; i < endIndex; ++i) {
@@ -299,10 +296,10 @@ public class GuiRenderer implements AutoCloseable {
             this.renderState.forEachItem((itemState) -> {
                if (itemState.oversizedItemBounds() != null) {
                   TrackingItemStackRenderState itemStackRenderState = itemState.itemStackRenderState();
-                  OversizedItemRenderer oversizedItemRenderer = (OversizedItemRenderer)this.oversizedItemRenderers.computeIfAbsent(itemStackRenderState.getModelIdentity(), (key) -> new OversizedItemRenderer(this.bufferSource));
+                  OversizedItemRenderer oversizedItemRenderer = (OversizedItemRenderer)this.oversizedItemRenderers.computeIfAbsent(itemStackRenderState.getModelIdentity(), (var0) -> new OversizedItemRenderer());
                   ScreenRectangle actualItemBounds = itemState.oversizedItemBounds();
                   OversizedItemRenderState oversizedItemRenderState = new OversizedItemRenderState(itemState, actualItemBounds.left(), actualItemBounds.top(), actualItemBounds.right(), actualItemBounds.bottom());
-                  oversizedItemRenderer.prepare(oversizedItemRenderState, this.renderState, guiScale);
+                  oversizedItemRenderer.prepare(oversizedItemRenderState, this.renderState, this.featureRenderDispatcher, guiScale);
                }
 
             });
@@ -319,7 +316,7 @@ public class GuiRenderer implements AutoCloseable {
    private <T extends PictureInPictureRenderState> void preparePictureInPictureState(final T picturesInPictureState, final int guiScale) {
       PictureInPictureRenderer<T> renderer = (PictureInPictureRenderer)this.pictureInPictureRenderers.get(picturesInPictureState.getClass());
       if (renderer != null) {
-         renderer.prepare(picturesInPictureState, this.renderState, guiScale);
+         renderer.prepare(picturesInPictureState, this.renderState, this.featureRenderDispatcher, guiScale);
       }
 
    }
@@ -341,7 +338,7 @@ public class GuiRenderer implements AutoCloseable {
                this.itemAtlas.close();
             }
 
-            this.itemAtlas = new GuiItemAtlas(this.submitNodeCollector, this.featureRenderDispatcher, this.bufferSource, newTextureSize, slotTextureSize);
+            this.itemAtlas = new GuiItemAtlas(this.submitNodeCollector, this.featureRenderDispatcher, newTextureSize, slotTextureSize);
             return this.itemAtlas;
          }
       }

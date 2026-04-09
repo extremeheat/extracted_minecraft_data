@@ -23,6 +23,7 @@ public class LevelRenderState {
    public int cloudColor;
    public float cloudHeight;
    public @Nullable ChunkSectionsToRender chunkSectionsToRender;
+   public boolean render3dCrosshair;
 
    public LevelRenderState() {
       super();

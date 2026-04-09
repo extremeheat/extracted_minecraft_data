@@ -93,6 +93,19 @@ public class BreakingItemParticle extends SingleQuadParticle {
       }
    }
 
+   public static class SulfurCubeProvider extends ItemParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public SulfurCubeProvider(final SpriteSet sprites) {
+         super();
+         this.sprites = sprites;
+      }
+
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new BreakingItemParticle(level, x, y, z, this.sprites.first());
+      }
+   }
+
    public static class CobwebProvider extends ItemParticleProvider<SimpleParticleType> {
       public CobwebProvider() {
          super();

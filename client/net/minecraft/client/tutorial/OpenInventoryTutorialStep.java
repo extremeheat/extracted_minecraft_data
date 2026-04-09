@@ -26,7 +26,7 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
          if (this.timeWaiting >= 600 && this.toast == null) {
             Minecraft minecraft = this.tutorial.getMinecraft();
             this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
-            minecraft.getToastManager().addToast(this.toast);
+            minecraft.gui.toastManager().addToast(this.toast);
          }
 
       }

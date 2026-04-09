@@ -74,6 +74,7 @@ import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CreakingHeartBlock;
@@ -101,7 +102,6 @@ import net.minecraft.world.level.block.state.properties.ComparatorMode;
 import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.DripstoneThickness;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.PistonType;
@@ -111,6 +111,7 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
 import net.minecraft.world.level.block.state.properties.SideChainPart;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.SpeleothemThickness;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.block.state.properties.Tilt;
@@ -740,7 +741,7 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiPartGenerator.multiPart(segmentedProperty).with((ConditionBuilder)model1SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), model1).with((ConditionBuilder)model1SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), model1.with(Y_ROT_90)).with((ConditionBuilder)model1SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), model1.with(Y_ROT_180)).with((ConditionBuilder)model1SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), model1.with(Y_ROT_270)).with((ConditionBuilder)model2SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), model2).with((ConditionBuilder)model2SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), model2.with(Y_ROT_90)).with((ConditionBuilder)model2SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), model2.with(Y_ROT_180)).with((ConditionBuilder)model2SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), model2.with(Y_ROT_270)).with((ConditionBuilder)model3SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), model3).with((ConditionBuilder)model3SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), model3.with(Y_ROT_90)).with((ConditionBuilder)model3SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), model3.with(Y_ROT_180)).with((ConditionBuilder)model3SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), model3.with(Y_ROT_270)).with((ConditionBuilder)model4SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), model4).with((ConditionBuilder)model4SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), model4.with(Y_ROT_90)).with((ConditionBuilder)model4SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), model4.with(Y_ROT_180)).with((ConditionBuilder)model4SegmentCondition.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), model4.with(Y_ROT_270)));
    }
 
-   private void createColoredBlockWithRandomRotations(final TexturedModel.Provider modelProvider, final Block... blocks) {
+   private void createColoredBlockWithRandomRotations(final TexturedModel.Provider modelProvider, final List<Block> blocks) {
       for(Block block : blocks) {
          Variant model = plainModel(modelProvider.create(block, this.modelOutput));
          this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, createRotatedVariants(model)));
@@ -748,7 +749,7 @@ public class BlockModelGenerators {
 
    }
 
-   private void createColoredBlockWithStateRotations(final TexturedModel.Provider modelProvider, final Block... blocks) {
+   private void createColoredBlockWithStateRotations(final TexturedModel.Provider modelProvider, final List<Block> blocks) {
       for(Block block : blocks) {
          MultiVariant model = plainVariant(modelProvider.create(block, this.modelOutput));
          this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, model).with(ROTATION_HORIZONTAL_FACING_ALT));
@@ -1037,22 +1038,22 @@ public class BlockModelGenerators {
    }
 
    private void createPointedDripstone() {
-      PropertyDispatch.C2<MultiVariant, Direction, DripstoneThickness> generator = PropertyDispatch.initial(BlockStateProperties.VERTICAL_DIRECTION, BlockStateProperties.DRIPSTONE_THICKNESS);
+      PropertyDispatch.C2<MultiVariant, Direction, SpeleothemThickness> generator = PropertyDispatch.initial(BlockStateProperties.VERTICAL_DIRECTION, BlockStateProperties.SPELEOTHEM_THICKNESS);
 
-      for(DripstoneThickness dripstoneThickness : DripstoneThickness.values()) {
-         generator.select(Direction.UP, dripstoneThickness, this.createPointedDripstoneVariant(Direction.UP, dripstoneThickness));
+      for(SpeleothemThickness speleothemThickness : SpeleothemThickness.values()) {
+         generator.select(Direction.UP, speleothemThickness, this.createPointedDripstoneVariant(Direction.UP, speleothemThickness));
       }
 
-      for(DripstoneThickness dripstoneThickness : DripstoneThickness.values()) {
-         generator.select(Direction.DOWN, dripstoneThickness, this.createPointedDripstoneVariant(Direction.DOWN, dripstoneThickness));
+      for(SpeleothemThickness speleothemThickness : SpeleothemThickness.values()) {
+         generator.select(Direction.DOWN, speleothemThickness, this.createPointedDripstoneVariant(Direction.DOWN, speleothemThickness));
       }
 
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.POINTED_DRIPSTONE).with(generator));
    }
 
-   private MultiVariant createPointedDripstoneVariant(final Direction direction, final DripstoneThickness dripstoneThickness) {
+   private MultiVariant createPointedDripstoneVariant(final Direction direction, final SpeleothemThickness speleothemThickness) {
       String var10000 = direction.getSerializedName();
-      String suffix = "_" + var10000 + "_" + dripstoneThickness.getSerializedName();
+      String suffix = "_" + var10000 + "_" + speleothemThickness.getSerializedName();
       TextureMapping texture = TextureMapping.cross(TextureMapping.getBlockTexture(Blocks.POINTED_DRIPSTONE, suffix));
       return plainVariant(ModelTemplates.POINTED_DRIPSTONE.createWithSuffix(Blocks.POINTED_DRIPSTONE, suffix, texture, this.modelOutput));
    }
@@ -1074,7 +1075,7 @@ public class BlockModelGenerators {
    }
 
    private void createLightningRod(final Block block, final Block waxedBlock) {
-      MultiVariant on = plainVariant(ModelLocationUtils.getModelLocation(Blocks.LIGHTNING_ROD, "_on"));
+      MultiVariant on = plainVariant(ModelLocationUtils.getModelLocation(Blocks.LIGHTNING_ROD.unaffected(), "_on"));
       MultiVariant off = plainVariant(ModelTemplates.LIGHTNING_ROD.create(block, TextureMapping.defaultTexture(block), this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block).with(createBooleanModelDispatch(BlockStateProperties.POWERED, on, off)).with(ROTATIONS_COLUMN_WITH_FACING));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(waxedBlock).with(createBooleanModelDispatch(BlockStateProperties.POWERED, on, off)).with(ROTATIONS_COLUMN_WITH_FACING));
@@ -1843,14 +1844,10 @@ public class BlockModelGenerators {
    }
 
    private void createCopperGolemStatues() {
-      this.createCopperGolemStatue(Blocks.COPPER_GOLEM_STATUE, Blocks.COPPER_BLOCK, WeatheringCopper.WeatherState.UNAFFECTED);
-      this.createCopperGolemStatue(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER, WeatheringCopper.WeatherState.EXPOSED);
-      this.createCopperGolemStatue(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER, WeatheringCopper.WeatherState.WEATHERED);
-      this.createCopperGolemStatue(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER, WeatheringCopper.WeatherState.OXIDIZED);
-      this.copyModel(Blocks.COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE);
-      this.copyModel(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE);
-      this.copyModel(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE);
-      this.copyModel(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
+      WeatheringCopper.WeatherState.forEach((state) -> {
+         this.createCopperGolemStatue(Blocks.COPPER_GOLEM_STATUE.pick(state, false), Blocks.COPPER_BLOCK.pick(state, false), state);
+         this.copyModel(Blocks.COPPER_GOLEM_STATUE.pick(state, false), Blocks.COPPER_GOLEM_STATUE.pick(state, true));
+      });
    }
 
    private void createCopperGolemStatue(final Block block, final Block particle, final WeatheringCopper.WeatherState state) {
@@ -1860,32 +1857,15 @@ public class BlockModelGenerators {
       this.itemModelOutput.accept(block.asItem(), ItemModelUtils.selectBlockItemProperty(new Transformation(new Vector3f(0.5F, 1.5F, 0.5F), (Quaternionfc)null, new Vector3f(1.0F, -1.0F, -1.0F), (Quaternionfc)null), CopperGolemStatueBlock.POSE, ItemModelUtils.specialModel(itemBase, new CopperGolemStatueSpecialRenderer.Unbaked(state, CopperGolemStatueBlock.Pose.STANDING)), Map.of(CopperGolemStatueBlock.Pose.SITTING, ItemModelUtils.specialModel(itemBase, new CopperGolemStatueSpecialRenderer.Unbaked(state, CopperGolemStatueBlock.Pose.SITTING)), CopperGolemStatueBlock.Pose.STAR, ItemModelUtils.specialModel(itemBase, new CopperGolemStatueSpecialRenderer.Unbaked(state, CopperGolemStatueBlock.Pose.STAR)), CopperGolemStatueBlock.Pose.RUNNING, ItemModelUtils.specialModel(itemBase, new CopperGolemStatueSpecialRenderer.Unbaked(state, CopperGolemStatueBlock.Pose.RUNNING)))));
    }
 
-   private void createBanner(final Block standAlone, final Block wall, final DyeColor baseColor) {
+   private void createBanner(final DyeColor baseColor) {
+      Block standAlone = Blocks.BANNER.pick(baseColor);
+      Block wall = Blocks.WALL_BANNER.pick(baseColor);
       MultiVariant blockModel = plainVariant(ModelLocationUtils.decorateBlockModelLocation("banner"));
       Identifier itemModel = ModelLocationUtils.decorateItemModelLocation("template_banner");
       this.blockStateOutput.accept(createSimpleBlock(standAlone, blockModel));
       this.blockStateOutput.accept(createSimpleBlock(wall, blockModel));
       Item item = standAlone.asItem();
       this.itemModelOutput.accept(item, ItemModelUtils.specialModel(itemModel, BannerRenderer.TRANSFORMATIONS.freeTransformations(0), new BannerSpecialRenderer.Unbaked(baseColor, BannerBlock.AttachmentType.GROUND)));
-   }
-
-   private void createBanners() {
-      this.createBanner(Blocks.WHITE_BANNER, Blocks.WHITE_WALL_BANNER, DyeColor.WHITE);
-      this.createBanner(Blocks.ORANGE_BANNER, Blocks.ORANGE_WALL_BANNER, DyeColor.ORANGE);
-      this.createBanner(Blocks.MAGENTA_BANNER, Blocks.MAGENTA_WALL_BANNER, DyeColor.MAGENTA);
-      this.createBanner(Blocks.LIGHT_BLUE_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, DyeColor.LIGHT_BLUE);
-      this.createBanner(Blocks.YELLOW_BANNER, Blocks.YELLOW_WALL_BANNER, DyeColor.YELLOW);
-      this.createBanner(Blocks.LIME_BANNER, Blocks.LIME_WALL_BANNER, DyeColor.LIME);
-      this.createBanner(Blocks.PINK_BANNER, Blocks.PINK_WALL_BANNER, DyeColor.PINK);
-      this.createBanner(Blocks.GRAY_BANNER, Blocks.GRAY_WALL_BANNER, DyeColor.GRAY);
-      this.createBanner(Blocks.LIGHT_GRAY_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, DyeColor.LIGHT_GRAY);
-      this.createBanner(Blocks.CYAN_BANNER, Blocks.CYAN_WALL_BANNER, DyeColor.CYAN);
-      this.createBanner(Blocks.PURPLE_BANNER, Blocks.PURPLE_WALL_BANNER, DyeColor.PURPLE);
-      this.createBanner(Blocks.BLUE_BANNER, Blocks.BLUE_WALL_BANNER, DyeColor.BLUE);
-      this.createBanner(Blocks.BROWN_BANNER, Blocks.BROWN_WALL_BANNER, DyeColor.BROWN);
-      this.createBanner(Blocks.GREEN_BANNER, Blocks.GREEN_WALL_BANNER, DyeColor.GREEN);
-      this.createBanner(Blocks.RED_BANNER, Blocks.RED_WALL_BANNER, DyeColor.RED);
-      this.createBanner(Blocks.BLACK_BANNER, Blocks.BLACK_WALL_BANNER, DyeColor.BLACK);
    }
 
    private void createChest(final Block block, final Block particle, final Identifier texture, final boolean hasGiftVariant) {
@@ -1913,17 +1893,26 @@ public class BlockModelGenerators {
    }
 
    private void createCopperChests() {
-      this.createChest(Blocks.COPPER_CHEST, Blocks.COPPER_BLOCK, ChestSpecialRenderer.COPPER_UNAFFECTED, false);
-      this.createChest(Blocks.EXPOSED_COPPER_CHEST, Blocks.EXPOSED_COPPER, ChestSpecialRenderer.COPPER_EXPOSED, false);
-      this.createChest(Blocks.WEATHERED_COPPER_CHEST, Blocks.WEATHERED_COPPER, ChestSpecialRenderer.COPPER_WEATHERED, false);
-      this.createChest(Blocks.OXIDIZED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, ChestSpecialRenderer.COPPER_OXIDIZED, false);
-      this.copyModel(Blocks.COPPER_CHEST, Blocks.WAXED_COPPER_CHEST);
-      this.copyModel(Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST);
-      this.copyModel(Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST);
-      this.copyModel(Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
+      WeatheringCopper.WeatherState.forEach((state) -> {
+         Block var10001 = Blocks.COPPER_CHEST.pick(state, false);
+         Block var10002 = Blocks.COPPER_BLOCK.pick(state, false);
+         MultiblockChestResources var10003;
+         switch (state) {
+            case UNAFFECTED -> var10003 = ChestSpecialRenderer.COPPER_UNAFFECTED;
+            case EXPOSED -> var10003 = ChestSpecialRenderer.COPPER_EXPOSED;
+            case WEATHERED -> var10003 = ChestSpecialRenderer.COPPER_WEATHERED;
+            case OXIDIZED -> var10003 = ChestSpecialRenderer.COPPER_OXIDIZED;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         this.createChest(var10001, var10002, var10003, false);
+         this.copyModel(Blocks.COPPER_CHEST.pick(state, false), Blocks.COPPER_CHEST.pick(state, true));
+      });
    }
 
-   private void createBed(final Block bed, final Block itemParticle, final DyeColor dyeColor) {
+   private void createBed(final DyeColor dyeColor) {
+      Block bed = Blocks.BED.pick(dyeColor);
+      Block itemParticle = Blocks.WOOL.pick(dyeColor);
       MultiVariant blockModel = plainVariant(ModelLocationUtils.decorateBlockModelLocation("bed"));
       this.blockStateOutput.accept(createSimpleBlock(bed, blockModel));
       Item bedItem = bed.asItem();
@@ -1935,25 +1924,6 @@ public class BlockModelGenerators {
       this.itemModelOutput.accept(bedItem, ItemModelUtils.composite(headPart, footPart));
    }
 
-   private void createBeds() {
-      this.createBed(Blocks.WHITE_BED, Blocks.WHITE_WOOL, DyeColor.WHITE);
-      this.createBed(Blocks.ORANGE_BED, Blocks.ORANGE_WOOL, DyeColor.ORANGE);
-      this.createBed(Blocks.MAGENTA_BED, Blocks.MAGENTA_WOOL, DyeColor.MAGENTA);
-      this.createBed(Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_BLUE_WOOL, DyeColor.LIGHT_BLUE);
-      this.createBed(Blocks.YELLOW_BED, Blocks.YELLOW_WOOL, DyeColor.YELLOW);
-      this.createBed(Blocks.LIME_BED, Blocks.LIME_WOOL, DyeColor.LIME);
-      this.createBed(Blocks.PINK_BED, Blocks.PINK_WOOL, DyeColor.PINK);
-      this.createBed(Blocks.GRAY_BED, Blocks.GRAY_WOOL, DyeColor.GRAY);
-      this.createBed(Blocks.LIGHT_GRAY_BED, Blocks.LIGHT_GRAY_WOOL, DyeColor.LIGHT_GRAY);
-      this.createBed(Blocks.CYAN_BED, Blocks.CYAN_WOOL, DyeColor.CYAN);
-      this.createBed(Blocks.PURPLE_BED, Blocks.PURPLE_WOOL, DyeColor.PURPLE);
-      this.createBed(Blocks.BLUE_BED, Blocks.BLUE_WOOL, DyeColor.BLUE);
-      this.createBed(Blocks.BROWN_BED, Blocks.BROWN_WOOL, DyeColor.BROWN);
-      this.createBed(Blocks.GREEN_BED, Blocks.GREEN_WOOL, DyeColor.GREEN);
-      this.createBed(Blocks.RED_BED, Blocks.RED_WOOL, DyeColor.RED);
-      this.createBed(Blocks.BLACK_BED, Blocks.BLACK_WOOL, DyeColor.BLACK);
-   }
-
    private void generateSimpleSpecialItemModel(final Block block, final Optional<Transformation> transformation, final SpecialModelRenderer.Unbaked<?> specialModel) {
       Item item = block.asItem();
       Identifier harcodedModelBase = ModelLocationUtils.getModelLocation(item);
@@ -1962,18 +1932,11 @@ public class BlockModelGenerators {
 
    public void run() {
       BlockFamilies.getAllFamilies().filter(BlockFamily::shouldGenerateModel).forEach((blockFamily) -> this.family(blockFamily.getBaseBlock()).generateFor(blockFamily));
-      this.family(Blocks.CUT_COPPER).generateFor(BlockFamilies.CUT_COPPER).donateModelTo(Blocks.CUT_COPPER, Blocks.WAXED_CUT_COPPER).donateModelTo(Blocks.CHISELED_COPPER, Blocks.WAXED_CHISELED_COPPER).generateFor(BlockFamilies.WAXED_CUT_COPPER);
-      this.family(Blocks.EXPOSED_CUT_COPPER).generateFor(BlockFamilies.EXPOSED_CUT_COPPER).donateModelTo(Blocks.EXPOSED_CUT_COPPER, Blocks.WAXED_EXPOSED_CUT_COPPER).donateModelTo(Blocks.EXPOSED_CHISELED_COPPER, Blocks.WAXED_EXPOSED_CHISELED_COPPER).generateFor(BlockFamilies.WAXED_EXPOSED_CUT_COPPER);
-      this.family(Blocks.WEATHERED_CUT_COPPER).generateFor(BlockFamilies.WEATHERED_CUT_COPPER).donateModelTo(Blocks.WEATHERED_CUT_COPPER, Blocks.WAXED_WEATHERED_CUT_COPPER).donateModelTo(Blocks.WEATHERED_CHISELED_COPPER, Blocks.WAXED_WEATHERED_CHISELED_COPPER).generateFor(BlockFamilies.WAXED_WEATHERED_CUT_COPPER);
-      this.family(Blocks.OXIDIZED_CUT_COPPER).generateFor(BlockFamilies.OXIDIZED_CUT_COPPER).donateModelTo(Blocks.OXIDIZED_CUT_COPPER, Blocks.WAXED_OXIDIZED_CUT_COPPER).donateModelTo(Blocks.OXIDIZED_CHISELED_COPPER, Blocks.WAXED_OXIDIZED_CHISELED_COPPER).generateFor(BlockFamilies.WAXED_OXIDIZED_CUT_COPPER);
-      this.createCopperBulb(Blocks.COPPER_BULB);
-      this.createCopperBulb(Blocks.EXPOSED_COPPER_BULB);
-      this.createCopperBulb(Blocks.WEATHERED_COPPER_BULB);
-      this.createCopperBulb(Blocks.OXIDIZED_COPPER_BULB);
-      this.copyCopperBulbModel(Blocks.COPPER_BULB, Blocks.WAXED_COPPER_BULB);
-      this.copyCopperBulbModel(Blocks.EXPOSED_COPPER_BULB, Blocks.WAXED_EXPOSED_COPPER_BULB);
-      this.copyCopperBulbModel(Blocks.WEATHERED_COPPER_BULB, Blocks.WAXED_WEATHERED_COPPER_BULB);
-      this.copyCopperBulbModel(Blocks.OXIDIZED_COPPER_BULB, Blocks.WAXED_OXIDIZED_COPPER_BULB);
+      WeatheringCopper.WeatherState.forEach((state) -> this.family(Blocks.CUT_COPPER.pick(state, false)).generateFor(BlockFamilies.CUT_COPPER.pick(state, false)).donateModelTo(Blocks.CUT_COPPER.pick(state, false), Blocks.CUT_COPPER.pick(state, true)).donateModelTo(Blocks.CHISELED_COPPER.pick(state, false), Blocks.CHISELED_COPPER.pick(state, true)).generateFor(BlockFamilies.CUT_COPPER.pick(state, true)));
+      Blocks.COPPER_BULB.waxedMapping().forEach((unwaxed, waxed) -> {
+         this.createCopperBulb(unwaxed);
+         this.copyCopperBulbModel(unwaxed, waxed);
+      });
       this.createNonTemplateModelBlock(Blocks.AIR);
       this.createNonTemplateModelBlock(Blocks.CAVE_AIR, Blocks.AIR);
       this.createNonTemplateModelBlock(Blocks.VOID_AIR, Blocks.AIR);
@@ -1991,22 +1954,7 @@ public class BlockModelGenerators {
       this.createNonTemplateModelBlock(Blocks.SLIME_BLOCK);
       this.registerSimpleFlatItemModel(Items.IRON_CHAIN);
       Items.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChainItem);
-      this.createCandleAndCandleCake(Blocks.WHITE_CANDLE, Blocks.WHITE_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.ORANGE_CANDLE, Blocks.ORANGE_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.MAGENTA_CANDLE, Blocks.MAGENTA_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.LIGHT_BLUE_CANDLE, Blocks.LIGHT_BLUE_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.YELLOW_CANDLE, Blocks.YELLOW_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.LIME_CANDLE, Blocks.LIME_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.PINK_CANDLE, Blocks.PINK_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.GRAY_CANDLE, Blocks.GRAY_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.LIGHT_GRAY_CANDLE, Blocks.LIGHT_GRAY_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.CYAN_CANDLE, Blocks.CYAN_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.PURPLE_CANDLE, Blocks.PURPLE_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.BLUE_CANDLE, Blocks.BLUE_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.BROWN_CANDLE, Blocks.BROWN_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.GREEN_CANDLE, Blocks.GREEN_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.RED_CANDLE, Blocks.RED_CANDLE_CAKE);
-      this.createCandleAndCandleCake(Blocks.BLACK_CANDLE, Blocks.BLACK_CANDLE_CAKE);
+      ColorCollection.zipApply(this::createCandleAndCandleCake, Blocks.DYED_CANDLE, Blocks.DYED_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.CANDLE, Blocks.CANDLE_CAKE);
       this.createNonTemplateModelBlock(Blocks.POTTED_BAMBOO);
       this.createNonTemplateModelBlock(Blocks.POTTED_CACTUS);
@@ -2101,42 +2049,15 @@ public class BlockModelGenerators {
       this.createPetrifiedOakSlab();
       this.createTrivialCube(Blocks.COPPER_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_COPPER_ORE);
-      this.createTrivialCube(Blocks.COPPER_BLOCK);
-      this.createTrivialCube(Blocks.EXPOSED_COPPER);
-      this.createTrivialCube(Blocks.WEATHERED_COPPER);
-      this.createTrivialCube(Blocks.OXIDIZED_COPPER);
-      this.copyModel(Blocks.COPPER_BLOCK, Blocks.WAXED_COPPER_BLOCK);
-      this.copyModel(Blocks.EXPOSED_COPPER, Blocks.WAXED_EXPOSED_COPPER);
-      this.copyModel(Blocks.WEATHERED_COPPER, Blocks.WAXED_WEATHERED_COPPER);
-      this.copyModel(Blocks.OXIDIZED_COPPER, Blocks.WAXED_OXIDIZED_COPPER);
-      this.createDoor(Blocks.COPPER_DOOR);
-      this.createDoor(Blocks.EXPOSED_COPPER_DOOR);
-      this.createDoor(Blocks.WEATHERED_COPPER_DOOR);
-      this.createDoor(Blocks.OXIDIZED_COPPER_DOOR);
-      this.copyDoorModel(Blocks.COPPER_DOOR, Blocks.WAXED_COPPER_DOOR);
-      this.copyDoorModel(Blocks.EXPOSED_COPPER_DOOR, Blocks.WAXED_EXPOSED_COPPER_DOOR);
-      this.copyDoorModel(Blocks.WEATHERED_COPPER_DOOR, Blocks.WAXED_WEATHERED_COPPER_DOOR);
-      this.copyDoorModel(Blocks.OXIDIZED_COPPER_DOOR, Blocks.WAXED_OXIDIZED_COPPER_DOOR);
-      this.createTrapdoor(Blocks.COPPER_TRAPDOOR);
-      this.createTrapdoor(Blocks.EXPOSED_COPPER_TRAPDOOR);
-      this.createTrapdoor(Blocks.WEATHERED_COPPER_TRAPDOOR);
-      this.createTrapdoor(Blocks.OXIDIZED_COPPER_TRAPDOOR);
-      this.copyTrapdoorModel(Blocks.COPPER_TRAPDOOR, Blocks.WAXED_COPPER_TRAPDOOR);
-      this.copyTrapdoorModel(Blocks.EXPOSED_COPPER_TRAPDOOR, Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR);
-      this.copyTrapdoorModel(Blocks.WEATHERED_COPPER_TRAPDOOR, Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR);
-      this.copyTrapdoorModel(Blocks.OXIDIZED_COPPER_TRAPDOOR, Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR);
-      this.createTrivialCube(Blocks.COPPER_GRATE);
-      this.createTrivialCube(Blocks.EXPOSED_COPPER_GRATE);
-      this.createTrivialCube(Blocks.WEATHERED_COPPER_GRATE);
-      this.createTrivialCube(Blocks.OXIDIZED_COPPER_GRATE);
-      this.copyModel(Blocks.COPPER_GRATE, Blocks.WAXED_COPPER_GRATE);
-      this.copyModel(Blocks.EXPOSED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER_GRATE);
-      this.copyModel(Blocks.WEATHERED_COPPER_GRATE, Blocks.WAXED_WEATHERED_COPPER_GRATE);
-      this.copyModel(Blocks.OXIDIZED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER_GRATE);
-      this.createLightningRod(Blocks.LIGHTNING_ROD, Blocks.WAXED_LIGHTNING_ROD);
-      this.createLightningRod(Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WAXED_EXPOSED_LIGHTNING_ROD);
-      this.createLightningRod(Blocks.WEATHERED_LIGHTNING_ROD, Blocks.WAXED_WEATHERED_LIGHTNING_ROD);
-      this.createLightningRod(Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
+      Blocks.COPPER_BLOCK.waxedMapping().forEach((unwaxed, var2) -> this.createTrivialCube(unwaxed));
+      Blocks.COPPER_BLOCK.waxedMapping().forEach(this::copyModel);
+      Blocks.COPPER_DOOR.waxedMapping().forEach((unwaxed, var2) -> this.createDoor(unwaxed));
+      Blocks.COPPER_DOOR.waxedMapping().forEach(this::copyDoorModel);
+      Blocks.COPPER_TRAPDOOR.waxedMapping().forEach((unwaxed, var2) -> this.createTrapdoor(unwaxed));
+      Blocks.COPPER_TRAPDOOR.waxedMapping().forEach(this::copyTrapdoorModel);
+      Blocks.COPPER_GRATE.waxedMapping().forEach((unwaxed, var2) -> this.createTrivialCube(unwaxed));
+      Blocks.COPPER_GRATE.waxedMapping().forEach(this::copyModel);
+      Blocks.LIGHTNING_ROD.waxedMapping().forEach(this::createLightningRod);
       this.createWeightedPressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.GOLD_BLOCK);
       this.createWeightedPressurePlate(Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.IRON_BLOCK);
       this.createShelf(Blocks.ACACIA_SHELF, Blocks.STRIPPED_ACACIA_LOG);
@@ -2264,28 +2185,13 @@ public class BlockModelGenerators {
       this.createCrossBlock(Blocks.TORCHFLOWER_CROP, BlockModelGenerators.PlantType.NOT_TINTED, BlockStateProperties.AGE_1, 0, 1);
       this.createPitcherCrop();
       this.createPitcherPlant();
-      this.createBanners();
-      this.createBeds();
+      DyeColor.VALUES.forEach(this::createBanner);
+      DyeColor.VALUES.forEach(this::createBed);
       this.createHeads();
       this.createChests();
       this.createCopperChests();
       this.createShulkerBox(Blocks.SHULKER_BOX, (DyeColor)null);
-      this.createShulkerBox(Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
-      this.createShulkerBox(Blocks.ORANGE_SHULKER_BOX, DyeColor.ORANGE);
-      this.createShulkerBox(Blocks.MAGENTA_SHULKER_BOX, DyeColor.MAGENTA);
-      this.createShulkerBox(Blocks.LIGHT_BLUE_SHULKER_BOX, DyeColor.LIGHT_BLUE);
-      this.createShulkerBox(Blocks.YELLOW_SHULKER_BOX, DyeColor.YELLOW);
-      this.createShulkerBox(Blocks.LIME_SHULKER_BOX, DyeColor.LIME);
-      this.createShulkerBox(Blocks.PINK_SHULKER_BOX, DyeColor.PINK);
-      this.createShulkerBox(Blocks.GRAY_SHULKER_BOX, DyeColor.GRAY);
-      this.createShulkerBox(Blocks.LIGHT_GRAY_SHULKER_BOX, DyeColor.LIGHT_GRAY);
-      this.createShulkerBox(Blocks.CYAN_SHULKER_BOX, DyeColor.CYAN);
-      this.createShulkerBox(Blocks.PURPLE_SHULKER_BOX, DyeColor.PURPLE);
-      this.createShulkerBox(Blocks.BLUE_SHULKER_BOX, DyeColor.BLUE);
-      this.createShulkerBox(Blocks.BROWN_SHULKER_BOX, DyeColor.BROWN);
-      this.createShulkerBox(Blocks.GREEN_SHULKER_BOX, DyeColor.GREEN);
-      this.createShulkerBox(Blocks.RED_SHULKER_BOX, DyeColor.RED);
-      this.createShulkerBox(Blocks.BLACK_SHULKER_BOX, DyeColor.BLACK);
+      DyeColor.VALUES.forEach((color) -> this.createShulkerBox(Blocks.DYED_SHULKER_BOX.pick(color), color));
       this.createCopperGolemStatues();
       this.createParticleOnlyBlock(Blocks.CONDUIT);
       this.generateSimpleSpecialItemModel(Blocks.CONDUIT, Optional.of(ConduitRenderer.DEFAULT_TRANSFORMATION), new ConduitSpecialRenderer.Unbaked());
@@ -2295,75 +2201,16 @@ public class BlockModelGenerators {
       this.createParticleOnlyBlock(Blocks.END_GATEWAY, Blocks.OBSIDIAN);
       this.createTrivialCube(Blocks.AZALEA_LEAVES);
       this.createTrivialCube(Blocks.FLOWERING_AZALEA_LEAVES);
-      this.createTrivialCube(Blocks.WHITE_CONCRETE);
-      this.createTrivialCube(Blocks.ORANGE_CONCRETE);
-      this.createTrivialCube(Blocks.MAGENTA_CONCRETE);
-      this.createTrivialCube(Blocks.LIGHT_BLUE_CONCRETE);
-      this.createTrivialCube(Blocks.YELLOW_CONCRETE);
-      this.createTrivialCube(Blocks.LIME_CONCRETE);
-      this.createTrivialCube(Blocks.PINK_CONCRETE);
-      this.createTrivialCube(Blocks.GRAY_CONCRETE);
-      this.createTrivialCube(Blocks.LIGHT_GRAY_CONCRETE);
-      this.createTrivialCube(Blocks.CYAN_CONCRETE);
-      this.createTrivialCube(Blocks.PURPLE_CONCRETE);
-      this.createTrivialCube(Blocks.BLUE_CONCRETE);
-      this.createTrivialCube(Blocks.BROWN_CONCRETE);
-      this.createTrivialCube(Blocks.GREEN_CONCRETE);
-      this.createTrivialCube(Blocks.RED_CONCRETE);
-      this.createTrivialCube(Blocks.BLACK_CONCRETE);
-      this.createColoredBlockWithRandomRotations(TexturedModel.CUBE, Blocks.WHITE_CONCRETE_POWDER, Blocks.ORANGE_CONCRETE_POWDER, Blocks.MAGENTA_CONCRETE_POWDER, Blocks.LIGHT_BLUE_CONCRETE_POWDER, Blocks.YELLOW_CONCRETE_POWDER, Blocks.LIME_CONCRETE_POWDER, Blocks.PINK_CONCRETE_POWDER, Blocks.GRAY_CONCRETE_POWDER, Blocks.LIGHT_GRAY_CONCRETE_POWDER, Blocks.CYAN_CONCRETE_POWDER, Blocks.PURPLE_CONCRETE_POWDER, Blocks.BLUE_CONCRETE_POWDER, Blocks.BROWN_CONCRETE_POWDER, Blocks.GREEN_CONCRETE_POWDER, Blocks.RED_CONCRETE_POWDER, Blocks.BLACK_CONCRETE_POWDER);
+      Blocks.CONCRETE.forEach(this::createTrivialCube);
+      this.createColoredBlockWithRandomRotations(TexturedModel.CUBE, Blocks.CONCRETE_POWDER.asList());
+      this.createTrivialCube(Blocks.POTENT_SULFUR);
       this.createTrivialCube(Blocks.TERRACOTTA);
-      this.createTrivialCube(Blocks.WHITE_TERRACOTTA);
-      this.createTrivialCube(Blocks.ORANGE_TERRACOTTA);
-      this.createTrivialCube(Blocks.MAGENTA_TERRACOTTA);
-      this.createTrivialCube(Blocks.LIGHT_BLUE_TERRACOTTA);
-      this.createTrivialCube(Blocks.YELLOW_TERRACOTTA);
-      this.createTrivialCube(Blocks.LIME_TERRACOTTA);
-      this.createTrivialCube(Blocks.PINK_TERRACOTTA);
-      this.createTrivialCube(Blocks.GRAY_TERRACOTTA);
-      this.createTrivialCube(Blocks.LIGHT_GRAY_TERRACOTTA);
-      this.createTrivialCube(Blocks.CYAN_TERRACOTTA);
-      this.createTrivialCube(Blocks.PURPLE_TERRACOTTA);
-      this.createTrivialCube(Blocks.BLUE_TERRACOTTA);
-      this.createTrivialCube(Blocks.BROWN_TERRACOTTA);
-      this.createTrivialCube(Blocks.GREEN_TERRACOTTA);
-      this.createTrivialCube(Blocks.RED_TERRACOTTA);
-      this.createTrivialCube(Blocks.BLACK_TERRACOTTA);
+      Blocks.DYED_TERRACOTTA.forEach(this::createTrivialCube);
       this.createTrivialCube(Blocks.TINTED_GLASS);
       this.createGlassBlocks(Blocks.GLASS, Blocks.GLASS_PANE);
-      this.createGlassBlocks(Blocks.WHITE_STAINED_GLASS, Blocks.WHITE_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.ORANGE_STAINED_GLASS, Blocks.ORANGE_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.MAGENTA_STAINED_GLASS, Blocks.MAGENTA_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.LIGHT_BLUE_STAINED_GLASS, Blocks.LIGHT_BLUE_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.YELLOW_STAINED_GLASS, Blocks.YELLOW_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.LIME_STAINED_GLASS, Blocks.LIME_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.PINK_STAINED_GLASS, Blocks.PINK_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.GRAY_STAINED_GLASS, Blocks.GRAY_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.LIGHT_GRAY_STAINED_GLASS, Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.CYAN_STAINED_GLASS, Blocks.CYAN_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.PURPLE_STAINED_GLASS, Blocks.PURPLE_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.BLUE_STAINED_GLASS, Blocks.BLUE_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.BROWN_STAINED_GLASS, Blocks.BROWN_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.GREEN_STAINED_GLASS, Blocks.GREEN_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.RED_STAINED_GLASS, Blocks.RED_STAINED_GLASS_PANE);
-      this.createGlassBlocks(Blocks.BLACK_STAINED_GLASS, Blocks.BLACK_STAINED_GLASS_PANE);
-      this.createColoredBlockWithStateRotations(TexturedModel.GLAZED_TERRACOTTA, Blocks.WHITE_GLAZED_TERRACOTTA, Blocks.ORANGE_GLAZED_TERRACOTTA, Blocks.MAGENTA_GLAZED_TERRACOTTA, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA, Blocks.YELLOW_GLAZED_TERRACOTTA, Blocks.LIME_GLAZED_TERRACOTTA, Blocks.PINK_GLAZED_TERRACOTTA, Blocks.GRAY_GLAZED_TERRACOTTA, Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA, Blocks.CYAN_GLAZED_TERRACOTTA, Blocks.PURPLE_GLAZED_TERRACOTTA, Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.BROWN_GLAZED_TERRACOTTA, Blocks.GREEN_GLAZED_TERRACOTTA, Blocks.RED_GLAZED_TERRACOTTA, Blocks.BLACK_GLAZED_TERRACOTTA);
-      this.createFullAndCarpetBlocks(Blocks.WHITE_WOOL, Blocks.WHITE_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.ORANGE_WOOL, Blocks.ORANGE_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.MAGENTA_WOOL, Blocks.MAGENTA_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.LIGHT_BLUE_WOOL, Blocks.LIGHT_BLUE_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.YELLOW_WOOL, Blocks.YELLOW_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.LIME_WOOL, Blocks.LIME_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.PINK_WOOL, Blocks.PINK_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.GRAY_WOOL, Blocks.GRAY_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.LIGHT_GRAY_WOOL, Blocks.LIGHT_GRAY_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.CYAN_WOOL, Blocks.CYAN_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.PURPLE_WOOL, Blocks.PURPLE_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.BLUE_WOOL, Blocks.BLUE_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.BROWN_WOOL, Blocks.BROWN_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.GREEN_WOOL, Blocks.GREEN_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.RED_WOOL, Blocks.RED_CARPET);
-      this.createFullAndCarpetBlocks(Blocks.BLACK_WOOL, Blocks.BLACK_CARPET);
+      ColorCollection.zipApply(this::createGlassBlocks, Blocks.STAINED_GLASS, Blocks.STAINED_GLASS_PANE);
+      this.createColoredBlockWithStateRotations(TexturedModel.GLAZED_TERRACOTTA, Blocks.GLAZED_TERRACOTTA.asList());
+      ColorCollection.zipApply(this::createFullAndCarpetBlocks, Blocks.WOOL, Blocks.CARPET);
       this.createTrivialCube(Blocks.MUD);
       this.createTrivialCube(Blocks.PACKED_MUD);
       this.createPlant(Blocks.FERN, Blocks.POTTED_FERN, BlockModelGenerators.PlantType.TINTED);

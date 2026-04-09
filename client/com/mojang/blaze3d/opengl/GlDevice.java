@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.GpuOutOfMemoryException;
-import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
@@ -9,17 +9,17 @@ import com.mojang.blaze3d.shaders.GpuDebugOptions;
 import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.DeviceInfo;
 import com.mojang.blaze3d.systems.GpuDeviceBackend;
+import com.mojang.blaze3d.systems.GpuQueryPool;
+import com.mojang.blaze3d.systems.GpuSurfaceBackend;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,8 +36,10 @@ import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.ARBClipControl;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
@@ -52,67 +54,66 @@ class GlDevice implements GpuDeviceBackend {
    private final CommandEncoderBackend encoder;
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
-   private final int maxSupportedTextureSize;
    private final DirectStateAccess directStateAccess;
    private final ShaderSource defaultShaderSource;
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final VertexArrayCache vertexArrayCache;
    private final BufferStorage bufferStorage;
-   private final Set<String> enabledExtensions = new HashSet();
-   private final int uniformOffsetAlignment;
-   private final int maxSupportedAnisotropy;
-   private final long windowHandle;
+   private final DeviceInfo deviceInfo;
 
    public GlDevice(final long windowHandle, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) {
       super();
       GLFW.glfwMakeContextCurrent(windowHandle);
       GLCapabilities capabilities = GL.createCapabilities();
-      int maxSize = getMaxSupportedTextureSize();
-      GLFW.glfwSetWindowSizeLimits(windowHandle, -1, -1, maxSize, maxSize);
-      GraphicsWorkarounds workarounds = GraphicsWorkarounds.get(new GpuDevice(this));
-      this.windowHandle = windowHandle;
-      this.debugLog = GlDebug.enableDebugCallback(debugOptions.logLevel(), debugOptions.synchronousLogs(), this.enabledExtensions);
-      this.debugLabels = GlDebugLabel.create(capabilities, debugOptions.useLabels(), this.enabledExtensions);
-      this.vertexArrayCache = VertexArrayCache.create(capabilities, this.debugLabels, this.enabledExtensions);
-      this.bufferStorage = BufferStorage.create(capabilities, this.enabledExtensions);
-      this.directStateAccess = DirectStateAccess.create(capabilities, this.enabledExtensions, workarounds);
-      this.maxSupportedTextureSize = maxSize;
-      this.defaultShaderSource = defaultShaderSource;
-      this.encoder = new GlCommandEncoder(this);
-      this.uniformOffsetAlignment = GL11.glGetInteger(35380);
-      GL11.glEnable(34895);
-      GL11.glEnable(34370);
+      Set<String> enabledExtensions = new HashSet();
+      int maxSupportedAnisotropy;
       if (capabilities.GL_EXT_texture_filter_anisotropic) {
-         this.maxSupportedAnisotropy = Mth.floor(GL11.glGetFloat(34047));
-         this.enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
+         maxSupportedAnisotropy = Mth.floor(GL11.glGetFloat(34047));
+         enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
       } else {
-         this.maxSupportedAnisotropy = 1;
+         maxSupportedAnisotropy = 1;
       }
 
+      GlHeuristics heuristics = new GlHeuristics(GlStateManager._getString(7937));
+      this.debugLog = GlDebug.enableDebugCallback(debugOptions.logLevel(), debugOptions.synchronousLogs(), enabledExtensions);
+      this.debugLabels = GlDebugLabel.create(capabilities, debugOptions.useLabels(), enabledExtensions);
+      this.vertexArrayCache = VertexArrayCache.create(capabilities, this.debugLabels, enabledExtensions);
+      this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions);
+      this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
+      this.defaultShaderSource = defaultShaderSource;
+      this.encoder = new GlCommandEncoder(this);
+      GL11.glEnable(34895);
+      GL11.glEnable(34370);
+      if (capabilities.GL_ARB_clip_control) {
+         ARBClipControl.glClipControl(36001, 37727);
+         enabledExtensions.add("GL_ARB_clip_control");
+      }
+
+      this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
    }
 
    public GlDebugLabel debugLabels() {
       return this.debugLabels;
    }
 
-   public CommandEncoderBackend createCommandEncoder() {
-      return this.encoder;
+   public GpuSurfaceBackend createSurface(final long windowHandle) {
+      return new GlSurface(windowHandle);
    }
 
-   public int getMaxSupportedAnisotropy() {
-      return this.maxSupportedAnisotropy;
+   public CommandEncoderBackend createCommandEncoder() {
+      return this.encoder;
    }
 
    public GpuSampler createSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {
       return new GlSampler(addressModeU, addressModeV, minFilter, magFilter, maxAnisotropy, maxLod);
    }
 
-   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       return this.createTexture(this.debugLabels.exists() && label != null ? (String)label.get() : null, usage, format, width, height, depthOrLayers, mipLevels);
    }
 
-   public GpuTexture createTexture(@Nullable String label, final @GpuTexture.Usage int usage, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(@Nullable String label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       GlStateManager.clearGlErrors();
       int id = GlStateManager._genTexture();
       if (label == null) {
@@ -136,27 +137,34 @@ class GlDevice implements GpuDeviceBackend {
          GlStateManager._texParameter(target, 34892, 0);
       }
 
-      if (isCubemap) {
-         for(int cubeTarget : GlConst.CUBEMAP_TARGETS) {
+      int glInternalID = GlConst.toGlInternalId(format);
+      int glExternalID = GlConst.toGlExternalId(format);
+      int glType = GlConst.toGlType(format);
+      if (glInternalID != 0 && glExternalID != 0 && glType != 0) {
+         if (isCubemap) {
+            for(int cubeTarget : GlConst.CUBEMAP_TARGETS) {
+               for(int i = 0; i < mipLevels; ++i) {
+                  GlStateManager._texImage2D(cubeTarget, i, glInternalID, width >> i, height >> i, 0, glExternalID, glType, (ByteBuffer)null);
+               }
+            }
+         } else {
             for(int i = 0; i < mipLevels; ++i) {
-               GlStateManager._texImage2D(cubeTarget, i, GlConst.toGlInternalId(format), width >> i, height >> i, 0, GlConst.toGlExternalId(format), GlConst.toGlType(format), (ByteBuffer)null);
+               GlStateManager._texImage2D(target, i, glInternalID, width >> i, height >> i, 0, glExternalID, glType, (ByteBuffer)null);
             }
          }
-      } else {
-         for(int i = 0; i < mipLevels; ++i) {
-            GlStateManager._texImage2D(target, i, GlConst.toGlInternalId(format), width >> i, height >> i, 0, GlConst.toGlExternalId(format), GlConst.toGlType(format), (ByteBuffer)null);
-         }
-      }
 
-      int error = GlStateManager._getError();
-      if (error == 1285) {
-         throw new GpuOutOfMemoryException("Could not allocate texture of " + width + "x" + height + " for " + label);
-      } else if (error != 0) {
-         throw new IllegalStateException("OpenGL error " + error);
+         int error = GlStateManager._getError();
+         if (error == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate texture of " + width + "x" + height + " for " + label);
+         } else if (error != 0) {
+            throw new IllegalStateException("OpenGL error " + error);
+         } else {
+            GlTexture texture = new GlTexture(usage, label, format, width, height, depthOrLayers, mipLevels, id);
+            this.debugLabels.applyLabel(texture);
+            return texture;
+         }
       } else {
-         GlTexture texture = new GlTexture(usage, label, format, width, height, depthOrLayers, mipLevels, id);
-         this.debugLabels.applyLabel(texture);
-         return texture;
+         throw new IllegalArgumentException(String.valueOf(format) + " format cannot be used to create textures");
       }
    }
 
@@ -197,61 +205,12 @@ class GlDevice implements GpuDeviceBackend {
       }
    }
 
-   public String getImplementationInformation() {
-      if (GLFW.glfwGetCurrentContext() == 0L) {
-         return "NO CONTEXT";
-      } else {
-         String var10000 = GlStateManager._getString(7937);
-         return var10000 + " GL version " + GlStateManager._getString(7938) + ", " + GlStateManager._getString(7936);
-      }
-   }
-
    public List<String> getLastDebugMessages() {
       return this.debugLog == null ? Collections.emptyList() : this.debugLog.getLastOpenGlDebugMessages();
    }
 
    public boolean isDebuggingEnabled() {
       return this.debugLog != null;
-   }
-
-   public String getRenderer() {
-      return GlStateManager._getString(7937);
-   }
-
-   public String getVendor() {
-      return GlStateManager._getString(7936);
-   }
-
-   public String getBackendName() {
-      return "OpenGL";
-   }
-
-   public String getVersion() {
-      return GlStateManager._getString(7938);
-   }
-
-   private static int getMaxSupportedTextureSize() {
-      int maxReported = GlStateManager._getInteger(3379);
-
-      for(int texSize = Math.max(32768, maxReported); texSize >= 1024; texSize >>= 1) {
-         GlStateManager._texImage2D(32868, 0, 6408, texSize, texSize, 0, 6408, 5121, (ByteBuffer)null);
-         int width = GlStateManager._getTexLevelParameter(32868, 0, 4096);
-         if (width != 0) {
-            return texSize;
-         }
-      }
-
-      int maxSupportedTextureSize = Math.max(maxReported, 1024);
-      LOGGER.info("Failed to determine maximum texture size by probing, trying GL_MAX_TEXTURE_SIZE = {}", maxSupportedTextureSize);
-      return maxSupportedTextureSize;
-   }
-
-   public int getMaxTextureSize() {
-      return this.maxSupportedTextureSize;
-   }
-
-   public int getUniformOffsetAlignment() {
-      return this.uniformOffsetAlignment;
    }
 
    public void clearPipelineCache() {
@@ -285,24 +244,8 @@ class GlDevice implements GpuDeviceBackend {
       GlStateManager.glDeleteProgram(program);
    }
 
-   public List<String> getEnabledExtensions() {
-      return new ArrayList(this.enabledExtensions);
-   }
-
    public void close() {
       this.clearPipelineCache();
-   }
-
-   public void setVsync(final boolean enabled) {
-      GLFW.glfwSwapInterval(enabled ? 1 : 0);
-   }
-
-   public void presentFrame() {
-      GLFW.glfwSwapBuffers(this.windowHandle);
-   }
-
-   public boolean isZZeroToOne() {
-      return false;
    }
 
    public DirectStateAccess directStateAccess() {
@@ -377,6 +320,18 @@ class GlDevice implements GpuDeviceBackend {
 
    public BufferStorage getBufferStorage() {
       return this.bufferStorage;
+   }
+
+   public GpuQueryPool createTimestampQueryPool(final int size) {
+      return new GlQueryPool(size);
+   }
+
+   public long getTimestampNow() {
+      return GL33C.glGetInteger64(36392);
+   }
+
+   public DeviceInfo getDeviceInfo() {
+      return this.deviceInfo;
    }
 
    private static record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {

@@ -41,14 +41,14 @@ public class EffectCommands {
       int count = 0;
       int duration;
       if (seconds != null) {
-         if (effect.isInstantenous()) {
+         if (effect.isInstantaneous()) {
             duration = seconds;
          } else if (seconds == -1) {
             duration = -1;
          } else {
             duration = seconds * 20;
          }
-      } else if (effect.isInstantenous()) {
+      } else if (effect.isInstantaneous()) {
          duration = 1;
       } else {
          duration = 600;

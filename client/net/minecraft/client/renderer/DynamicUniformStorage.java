@@ -25,7 +25,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
    public DynamicUniformStorage(final String label, final int uboSize, final int initialCapacity) {
       super();
       GpuDevice device = RenderSystem.getDevice();
-      this.blockSize = Mth.roundToward(uboSize, device.getUniformOffsetAlignment());
+      this.blockSize = Mth.roundToward(uboSize, device.getDeviceInfo().limits().minUniformOffsetAlignment());
       this.capacity = Mth.smallestEncompassingPowerOfTwo(initialCapacity);
       this.nextBlock = 0;
       this.ringBuffer = new MappableRingBuffer(() -> label + " x" + this.blockSize, 130, this.blockSize * this.capacity);

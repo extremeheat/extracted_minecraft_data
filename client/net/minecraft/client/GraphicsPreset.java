@@ -1,6 +1,5 @@
 package net.minecraft.client;
 
-import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
@@ -34,7 +33,7 @@ public enum GraphicsPreset implements StringRepresentable {
    }
 
    public void apply(final Minecraft minecraft) {
-      OptionsSubScreen screen = minecraft.screen instanceof OptionsSubScreen ? (OptionsSubScreen)minecraft.screen : null;
+      OptionsSubScreen screen = minecraft.gui != null && minecraft.gui.screen() instanceof OptionsSubScreen ? (OptionsSubScreen)minecraft.gui.screen() : null;
       GpuDevice device = RenderSystem.getDevice();
       switch (this.ordinal()) {
          case 0:
@@ -95,7 +94,7 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(screen, minecraft.options.improvedTransparency(), Util.getPlatform() != Util.OS.OSX);
             this.set(screen, minecraft.options.weatherRadius(), 10);
             this.set(screen, minecraft.options.maxAnisotropyBit(), 2);
-            if (GraphicsWorkarounds.get(device).isAmd()) {
+            if (device.getDeviceInfo().hintsAndWorkarounds().anisotropyHasKnownIssues()) {
                this.set(screen, minecraft.options.textureFiltering(), TextureFilteringMethod.RGSS);
             } else {
                this.set(screen, minecraft.options.textureFiltering(), TextureFilteringMethod.ANISOTROPIC);

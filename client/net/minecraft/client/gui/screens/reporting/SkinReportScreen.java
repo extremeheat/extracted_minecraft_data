@@ -41,7 +41,7 @@ public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
       contentLayout.defaultCellSetting().alignVerticallyMiddle();
       contentLayout.addChild(new PlayerSkinWidget(85, 120, this.minecraft.getEntityModels(), ((SkinReport)((SkinReport.Builder)this.reportBuilder).report()).getSkinGetter()));
       LinearLayout formLayout = (LinearLayout)contentLayout.addChild(LinearLayout.vertical().spacing(8));
-      this.selectReasonButton = Button.builder(SELECT_REASON, (b) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (reason) -> {
+      this.selectReasonButton = Button.builder(SELECT_REASON, (var1) -> this.minecraft.gui.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (reason) -> {
             ((SkinReport.Builder)this.reportBuilder).setReason(reason);
             this.onReportChanged();
          }))).width(178).build();

@@ -472,7 +472,7 @@ public class MultiPlayerGameMode {
    }
 
    public void handleCreativeModeItemDrop(final ItemStack clicked) {
-      boolean hasOtherInventoryOpen = this.minecraft.screen instanceof AbstractContainerScreen && !(this.minecraft.screen instanceof CreativeModeInventoryScreen);
+      boolean hasOtherInventoryOpen = this.minecraft.gui.screen() instanceof AbstractContainerScreen && !(this.minecraft.gui.screen() instanceof CreativeModeInventoryScreen);
       if (this.minecraft.player.hasInfiniteMaterials() && !hasOtherInventoryOpen && !clicked.isEmpty() && this.connection.isFeatureEnabled(clicked.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(-1, clicked));
          this.minecraft.player.getDropSpamThrottler().increment();

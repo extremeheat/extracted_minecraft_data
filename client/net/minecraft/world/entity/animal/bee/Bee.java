@@ -53,7 +53,6 @@ import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowParentGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -67,7 +66,6 @@ import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -97,7 +95,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class Bee extends Animal implements FlyingAnimal, NeutralMob {
+public class Bee extends Animal implements NeutralMob {
    public static final float FLAP_DEGREES_PER_TICK = 120.32113F;
    public static final int TICKS_PER_FLAP = Mth.ceil(1.4959966F);
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
@@ -156,7 +154,7 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
       this.remainingCooldownBeforeLocatingNewFlower = Mth.nextInt(this.random, 20, 60);
       this.moveControl = new FlyingMoveControl(this, 20, true);
       this.lookControl = new BeeLookControl(this);
-      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
       this.setPathfindingMalus(PathType.COCOA, -1.0F);
@@ -426,11 +424,6 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
       return this.hivePos;
    }
 
-   @VisibleForDebug
-   public GoalSelector getGoalSelector() {
-      return this.goalSelector;
-   }
-
    private int getCropsGrownSincePollination() {
       return this.numCropsGrownSincePollination;
    }
@@ -611,6 +604,10 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
 
    public boolean isFlying() {
       return !this.onGround();
+   }
+
+   protected boolean omnidirectionalAirMover() {
+      return true;
    }
 
    public void dropOffNectar() {

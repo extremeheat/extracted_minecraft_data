@@ -1,12 +1,12 @@
 package net.minecraft.client.gui.font;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
@@ -26,7 +26,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       this.colored = colored;
       this.root = new Node(0, 0, 256, 256);
       GpuDevice device = RenderSystem.getDevice();
-      this.texture = device.createTexture(label, 7, colored ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1, 1);
+      this.texture = device.createTexture(label, 7, colored ? GpuFormat.RGBA8_UNORM : GpuFormat.R8_UNORM, 256, 256, 1, 1);
       this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = device.createTextureView(this.texture);
       this.renderTypes = renderTypes;

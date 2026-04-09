@@ -14,9 +14,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class JigsawReplacementProcessor extends StructureProcessor {
+public class JigsawReplacementProcessor implements StructureProcessor {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<JigsawReplacementProcessor> CODEC = MapCodec.unit(() -> INSTANCE);
+   public static final MapCodec<JigsawReplacementProcessor> MAP_CODEC = MapCodec.unit(() -> INSTANCE);
    public static final JigsawReplacementProcessor INSTANCE = new JigsawReplacementProcessor();
 
    private JigsawReplacementProcessor() {
@@ -48,7 +48,7 @@ public class JigsawReplacementProcessor extends StructureProcessor {
       }
    }
 
-   protected StructureProcessorType<?> getType() {
-      return StructureProcessorType.JIGSAW_REPLACEMENT;
+   public MapCodec<JigsawReplacementProcessor> codec() {
+      return MAP_CODEC;
    }
 }

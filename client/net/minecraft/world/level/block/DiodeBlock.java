@@ -76,17 +76,19 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
-      if (state.canSurvive(level, pos)) {
-         this.checkTickOnNeighbor(level, pos, state);
-      } else {
-         BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
-         dropResources(state, level, pos, blockEntity);
-         level.removeBlock(pos, false);
+      if (level.getBlockState(pos).is(this)) {
+         if (state.canSurvive(level, pos)) {
+            this.checkTickOnNeighbor(level, pos, state);
+         } else {
+            BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+            dropResources(state, level, pos, blockEntity);
+            level.removeBlock(pos, false);
 
-         for(Direction direction : Direction.values()) {
-            level.updateNeighborsAt(pos.relative(direction), this);
+            for(Direction direction : Direction.values()) {
+               level.updateNeighborsAt(pos.relative(direction), this);
+            }
+
          }
-
       }
    }
 

@@ -16,8 +16,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class RenderType {
    private static final int MEGABYTE = 1048576;
@@ -60,7 +58,7 @@ public class RenderType {
          modelViewModifier.accept(modelViewStack);
       }
 
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), this.state.textureTransform.getMatrix());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), this.state.textureTransform.createMatrix());
       Map<String, RenderSetup.TextureAndSampler> textures = this.state.getTextures();
       MeshData var6 = mesh;
 

@@ -648,6 +648,27 @@ public class OverworldBiomes {
       return baseBiome(-0.2F, 0.8F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_GROVE)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
+   public static Biome sulfurCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
+      mobs.addSpawn(MobCategory.AMBIENT, 10, new MobSpawnSettings.SpawnerData(EntityType.BAT, 8, 8));
+      mobs.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.SULFUR_CUBE, 2, 4));
+      mobs.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityType.CREEPER, 2, 2));
+      mobs.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 2, 2));
+      mobs.addSpawn(MobCategory.MONSTER, 25, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1));
+      mobs.addSpawn(MobCategory.MONSTER, 20, new MobSpawnSettings.SpawnerData(EntityType.CAVE_SPIDER, 1, 1));
+      mobs.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE, 2, 2));
+      mobs.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 1, 1));
+      mobs.addSpawn(MobCategory.MONSTER, 1, new MobSpawnSettings.SpawnerData(EntityType.WITCH, 1, 1));
+      mobs.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_VILLAGER, 1, 1));
+      BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
+      globalOverworldGeneration(generation);
+      BiomeDefaultFeatures.addPlainGrass(generation);
+      BiomeDefaultFeatures.addDefaultOres(generation);
+      BiomeDefaultFeatures.addDefaultSoftDisks(generation);
+      BiomeDefaultFeatures.addSulfurCavesVegetationFeatures(generation);
+      return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -15248324).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+   }
+
    public static Biome lushCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.AXOLOTLS, 10, new MobSpawnSettings.SpawnerData(EntityType.AXOLOTL, 4, 6));

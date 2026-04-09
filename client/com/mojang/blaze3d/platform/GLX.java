@@ -21,6 +21,7 @@ import oshi.hardware.CentralProcessor;
 
 public class GLX {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static int glfwPlatformType = 393221;
    private static @Nullable String cpuInfo;
 
    public GLX() {
@@ -42,14 +43,14 @@ public class GLX {
       return Version.getVersion();
    }
 
-   public static LongSupplier _initGlfw(final BackendOptions options) {
+   public static LongSupplier _initGlfw() {
       Window.checkGlfwError((errorx, description) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", errorx, description));
       });
       GLFWErrorCapture collectedErrors = new GLFWErrorCapture();
 
       LongSupplier timeSource;
-      try (GLFWErrorScope var3 = new GLFWErrorScope(collectedErrors)) {
+      try (GLFWErrorScope var2 = new GLFWErrorScope(collectedErrors)) {
          if (GLFW.glfwPlatformSupported(393219) && GLFW.glfwPlatformSupported(393220) && !SharedConstants.DEBUG_PREFER_WAYLAND) {
             GLFW.glfwInitHint(327683, 393220);
          }
@@ -59,8 +60,7 @@ public class GLX {
          }
 
          timeSource = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
-         GLFW.glfwDefaultWindowHints();
-         GLFW.glfwWindowHint(131088, glfwBool(!options.exclusiveFullScreen()));
+         glfwPlatformType = GLFW.glfwGetPlatform();
       }
 
       for(GLFWErrorCapture.Error error : collectedErrors) {
@@ -68,6 +68,10 @@ public class GLX {
       }
 
       return timeSource;
+   }
+
+   public static int getGlfwPlatform() {
+      return glfwPlatformType;
    }
 
    public static void _setGlfwErrorCallback(final GLFWErrorCallbackI onFullscreenError) {

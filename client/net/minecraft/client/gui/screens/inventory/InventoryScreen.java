@@ -33,14 +33,14 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    public void containerTick() {
       super.containerTick();
       if (this.minecraft.player.hasInfiniteMaterials()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
+         this.minecraft.gui.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       }
 
    }
 
    protected void init() {
       if (this.minecraft.player.hasInfiniteMaterials()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
+         this.minecraft.gui.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       } else {
          super.init();
       }

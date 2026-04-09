@@ -2,9 +2,9 @@ package com.mojang.blaze3d.opengl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ public class GlProgram implements AutoCloseable {
                   var10000 = null;
                } else {
                   int samplerIndex = nextSamplerIndex++;
-                  var10000 = new Uniform.Utb(location, samplerIndex, (TextureFormat)Objects.requireNonNull(uniformDescription.textureFormat()));
+                  var10000 = new Uniform.Utb(location, samplerIndex, (GpuFormat)Objects.requireNonNull(uniformDescription.gpuFormat()));
                }
                break;
             default:

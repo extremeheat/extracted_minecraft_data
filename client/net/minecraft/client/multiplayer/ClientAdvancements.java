@@ -59,7 +59,7 @@ public class ClientAdvancements {
 
                Optional<DisplayInfo> display = node.advancement().display();
                if (packet.shouldShowAdvancements() && display.isPresent() && ((DisplayInfo)display.get()).shouldShowToast()) {
-                  this.minecraft.getToastManager().addToast(new AdvancementToast(node.holder()));
+                  this.minecraft.gui.toastManager().addToast(new AdvancementToast(node.holder()));
                }
             }
          } else {

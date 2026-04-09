@@ -50,11 +50,11 @@ public class JigsawBlockEditScreen extends Screen {
 
    private void onDone() {
       this.sendToServer();
-      this.minecraft.setScreen((Screen)null);
+      this.minecraft.gui.setScreen((Screen)null);
    }
 
    private void onCancel() {
-      this.minecraft.setScreen((Screen)null);
+      this.minecraft.gui.setScreen((Screen)null);
    }
 
    private void sendToServer() {

@@ -107,8 +107,8 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    protected void sendReport() {
       this.reportBuilder.build(this.reportingContext).ifLeft((result) -> {
          CompletableFuture<?> sendFuture = this.reportingContext.sender().send(result.id(), result.reportType(), result.report());
-         this.minecraft.setScreen(GenericWaitingScreen.createWaiting(REPORT_SENDING_TITLE, CommonComponents.GUI_CANCEL, () -> {
-            this.minecraft.setScreen(this);
+         this.minecraft.gui.setScreen(GenericWaitingScreen.createWaiting(REPORT_SENDING_TITLE, CommonComponents.GUI_CANCEL, () -> {
+            this.minecraft.gui.setScreen(this);
             sendFuture.cancel(true);
          }));
          sendFuture.handleAsync((ok, throwable) -> {
@@ -129,7 +129,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    private void onReportSendSuccess() {
       this.clearDraft();
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.setScreen((Screen)null)));
+      this.minecraft.gui.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.gui.setScreen((Screen)null)));
    }
 
    private void onReportSendError(final Throwable throwable) {
@@ -147,7 +147,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    private void displayReportSendError(final Component message) {
       Component styledMessage = message.copy().withStyle(ChatFormatting.RED);
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, styledMessage, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
+      this.minecraft.gui.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, styledMessage, CommonComponents.GUI_BACK, () -> this.minecraft.gui.setScreen(this)));
    }
 
    private void saveDraft() {
@@ -163,9 +163,9 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    public void onClose() {
       if (this.reportBuilder.hasContent()) {
-         this.minecraft.setScreen(new DiscardReportWarningScreen());
+         this.minecraft.gui.setScreen(new DiscardReportWarningScreen());
       } else {
-         this.minecraft.setScreen(this.lastScreen);
+         this.minecraft.gui.setScreen(this.lastScreen);
       }
 
    }
@@ -209,17 +209,17 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
          firstFooterRow.addChild(Button.builder(RETURN, (button) -> this.onClose()).build());
          firstFooterRow.addChild(Button.builder(DRAFT, (button) -> {
             AbstractReportScreen.this.saveDraft();
-            this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
+            this.minecraft.gui.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
          footer.addChild(Button.builder(DISCARD, (button) -> {
             AbstractReportScreen.this.clearDraft();
-            this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
+            this.minecraft.gui.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
          return footer;
       }
 
       public void onClose() {
-         this.minecraft.setScreen(AbstractReportScreen.this);
+         this.minecraft.gui.setScreen(AbstractReportScreen.this);
       }
 
       public boolean shouldCloseOnEsc() {

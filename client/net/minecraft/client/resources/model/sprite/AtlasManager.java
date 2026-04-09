@@ -154,7 +154,7 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Sp
       }
 
       public void close() {
-         this.atlas.clearTextureData();
+         this.atlas.close();
       }
 
       private CompletableFuture<SpriteLoader.Preparations> scheduleLoad(final ResourceManager resourceManager, final Executor executor, final int maxMipmapLevels) {

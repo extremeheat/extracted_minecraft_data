@@ -90,6 +90,10 @@ public class Turtle extends Animal {
       this.homePos = pos;
    }
 
+   public BlockPos getHomePos() {
+      return this.homePos;
+   }
+
    public boolean hasEgg() {
       return (Boolean)this.entityData.get(HAS_EGG);
    }
@@ -557,50 +561,47 @@ public class Turtle extends Animal {
       }
    }
 
-   private static class TurtleMoveControl extends MoveControl {
-      private final Turtle turtle;
-
-      TurtleMoveControl(final Turtle turtle) {
+   private static class TurtleMoveControl<T extends Turtle> extends MoveControl<T> {
+      TurtleMoveControl(final T turtle) {
          super(turtle);
-         this.turtle = turtle;
       }
 
       private void updateSpeed() {
-         if (this.turtle.isInWater()) {
-            this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, 0.005, 0.0));
-            if (!this.turtle.homePos.closerToCenterThan(this.turtle.position(), 16.0)) {
-               this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 2.0F, 0.08F));
+         if (((Turtle)this.mob).isInWater()) {
+            ((Turtle)this.mob).setDeltaMovement(((Turtle)this.mob).getDeltaMovement().add(0.0, 0.005, 0.0));
+            if (!((Turtle)this.mob).getHomePos().closerToCenterThan(((Turtle)this.mob).position(), 16.0)) {
+               ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 2.0F, 0.08F));
             }
 
-            if (this.turtle.isBaby()) {
-               this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 3.0F, 0.06F));
+            if (((Turtle)this.mob).isBaby()) {
+               ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 3.0F, 0.06F));
             }
-         } else if (this.turtle.onGround()) {
-            this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 2.0F, 0.06F));
+         } else if (((Turtle)this.mob).onGround()) {
+            ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 2.0F, 0.06F));
          }
 
       }
 
       public void tick() {
          this.updateSpeed();
-         if (this.operation == MoveControl.Operation.MOVE_TO && !this.turtle.getNavigation().isDone()) {
-            double xd = this.wantedX - this.turtle.getX();
-            double yd = this.wantedY - this.turtle.getY();
-            double zd = this.wantedZ - this.turtle.getZ();
+         if (this.operation == MoveControl.Operation.MOVE_TO && !((Turtle)this.mob).getNavigation().isDone()) {
+            double xd = this.wantedX - ((Turtle)this.mob).getX();
+            double yd = this.wantedY - ((Turtle)this.mob).getY();
+            double zd = this.wantedZ - ((Turtle)this.mob).getZ();
             double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
             if (dd < 9.999999747378752E-6) {
-               this.mob.setSpeed(0.0F);
+               ((Turtle)this.mob).setSpeed(0.0F);
             } else {
                yd /= dd;
                float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-               this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), yRotD, 90.0F));
-               this.turtle.yBodyRot = this.turtle.getYRot();
-               float targetSpeed = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
-               this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), targetSpeed));
-               this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * yd * 0.1, 0.0));
+               ((Turtle)this.mob).setYRot(this.rotlerp(((Turtle)this.mob).getYRot(), yRotD, 90.0F));
+               (this.mob).yBodyRot = ((Turtle)this.mob).getYRot();
+               float targetSpeed = (float)(this.speedModifier * ((Turtle)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
+               ((Turtle)this.mob).setSpeed(Mth.lerp(0.125F, ((Turtle)this.mob).getSpeed(), targetSpeed));
+               ((Turtle)this.mob).setDeltaMovement(((Turtle)this.mob).getDeltaMovement().add(0.0, (double)((Turtle)this.mob).getSpeed() * yd * 0.1, 0.0));
             }
          } else {
-            this.turtle.setSpeed(0.0F);
+            ((Turtle)this.mob).setSpeed(0.0F);
          }
       }
    }

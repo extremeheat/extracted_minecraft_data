@@ -40,6 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
@@ -270,7 +271,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    private void turnToStatue(final ServerLevel level) {
       BlockPos pos = this.blockPosition();
-      level.setBlock(pos, (BlockState)((BlockState)Blocks.OXIDIZED_COPPER_GOLEM_STATUE.defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
+      level.setBlock(pos, (BlockState)((BlockState)((Block)Blocks.COPPER_GOLEM_STATUE.oxidized()).defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
       BlockEntity var4 = level.getBlockEntity(pos);
       if (var4 instanceof CopperGolemStatueBlockEntity copperGolemStatueBlockEntity) {
          copperGolemStatueBlockEntity.createStatue(this);
@@ -403,7 +404,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    public boolean readyForShearing() {
-      return this.isAlive() && this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
+      return this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
    }
 
    protected void dropEquipment(final ServerLevel level) {

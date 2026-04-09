@@ -6,8 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
-import org.apache.commons.lang3.tuple.Triple;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
@@ -62,12 +60,15 @@ public final class Transformation {
 
    private void ensureDecomposed() {
       if (!this.decomposed) {
-         float scaleFactor = 1.0F / this.matrix.m33();
-         Triple<Quaternionf, Vector3f, Quaternionf> triple = MatrixUtil.svdDecompose((new Matrix3f(this.matrix)).scale(scaleFactor));
-         this.translation = this.matrix.getTranslation(new Vector3f()).mul(scaleFactor);
-         this.leftRotation = new Quaternionf((Quaternionfc)triple.getLeft());
-         this.scale = new Vector3f((Vector3fc)triple.getMiddle());
-         this.rightRotation = new Quaternionf((Quaternionfc)triple.getRight());
+         Vector3f translation = new Vector3f();
+         Quaternionf leftRotation = new Quaternionf();
+         Vector3f scale = new Vector3f();
+         Quaternionf rightRotation = new Quaternionf();
+         MatrixUtil.svdDecompose(this.matrix, translation, leftRotation, scale, rightRotation);
+         this.translation = translation;
+         this.leftRotation = leftRotation;
+         this.scale = scale;
+         this.rightRotation = rightRotation;
          this.decomposed = true;
       }
 

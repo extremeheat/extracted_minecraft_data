@@ -48,4 +48,8 @@ public class WaterBoundPathNavigation extends PathNavigation {
    public boolean canNavigateGround() {
       return false;
    }
+
+   public float getMaxVerticalDistanceToWaypoint() {
+      return 0.5F;
+   }
 }

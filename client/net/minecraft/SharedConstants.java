@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4789;
+   public static final int WORLD_VERSION = 4884;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,13 +26,13 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 775;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 307;
-   public static final int SNBT_NAG_VERSION = 4763;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 308;
+   public static final int SNBT_NAG_VERSION = 4882;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 84;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 85;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
@@ -41,7 +41,7 @@ public class SharedConstants {
    public static final int DATA_PACK_FORMAT_MAJOR = 101;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 1;
+   public static final int DATA_PACK_FORMAT_MINOR = 2;
    public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "2.0.0";
    /** @deprecated */
    @Deprecated
@@ -104,6 +104,7 @@ public class SharedConstants {
    public static final boolean DEBUG_DEV_COMMANDS = debugFlag("DEV_COMMANDS");
    public static final boolean DEBUG_ACTIVE_TEXT_AREAS = debugFlag("ACTIVE_TEXT_AREAS");
    public static final boolean DEBUG_PREFER_WAYLAND = debugFlag("PREFER_WAYLAND");
+   public static final boolean DEBUG_SIMULATE_LIBRARY_LOAD_FAILURE = debugFlag("SIMULATE_LIBRARY_LOAD_FAILURE");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
    public static final boolean DEBUG_AQUIFERS = debugFlag("AQUIFERS");
@@ -220,7 +221,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742131;
+      return 1073742132;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

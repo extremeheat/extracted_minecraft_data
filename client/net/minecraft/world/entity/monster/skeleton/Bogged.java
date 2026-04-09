@@ -127,7 +127,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    public boolean readyForShearing() {
-      return !this.isSheared() && this.isAlive();
+      return !this.isSheared();
    }
 
    static {

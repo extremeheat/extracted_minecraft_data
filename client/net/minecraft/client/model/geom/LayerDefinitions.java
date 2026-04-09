@@ -111,6 +111,7 @@ import net.minecraft.client.model.monster.skeleton.BoggedModel;
 import net.minecraft.client.model.monster.skeleton.SkeletonModel;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
+import net.minecraft.client.model.monster.slime.SulfurCubeModel;
 import net.minecraft.client.model.monster.spider.SpiderModel;
 import net.minecraft.client.model.monster.strider.AdultStriderModel;
 import net.minecraft.client.model.monster.strider.BabyStriderModel;
@@ -461,6 +462,8 @@ public class LayerDefinitions {
       result.put(ModelLayers.STRIDER, striderLayer);
       result.put(ModelLayers.STRIDER_SADDLE, striderLayer);
       result.put(ModelLayers.STRIDER_BABY, striderBabyLayer);
+      result.put(ModelLayers.SULFUR_CUBE, SulfurCubeModel.createOuterBodyLayer());
+      result.put(ModelLayers.SULFUR_CUBE_INNER, SulfurCubeModel.createInnerBodyLayer());
       result.put(ModelLayers.TADPOLE, TadpoleModel.createBodyLayer());
       result.put(ModelLayers.TNT_MINECART, minecartBodyLayer);
       result.put(ModelLayers.TRADER_LLAMA, llamaBodyLayer);

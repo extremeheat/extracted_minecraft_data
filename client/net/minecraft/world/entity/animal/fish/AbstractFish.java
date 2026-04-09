@@ -11,6 +11,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
-import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -158,38 +158,35 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       }
    }
 
-   private static class FishMoveControl extends MoveControl {
-      private final AbstractFish fish;
-
-      FishMoveControl(final AbstractFish fish) {
+   private static class FishMoveControl<T extends AbstractFish> extends MoveControl<T> {
+      FishMoveControl(final T fish) {
          super(fish);
-         this.fish = fish;
       }
 
       public void tick() {
-         if (this.fish.isEyeInFluid(FluidTags.WATER)) {
-            this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0, 0.005, 0.0));
+         if (((AbstractFish)this.mob).isEyeInFluid(FluidTags.WATER)) {
+            ((AbstractFish)this.mob).setDeltaMovement(((AbstractFish)this.mob).getDeltaMovement().add(0.0, 0.005, 0.0));
          }
 
-         if (this.operation == MoveControl.Operation.MOVE_TO && !this.fish.getNavigation().isDone()) {
-            float targetSpeed = (float)(this.speedModifier * this.fish.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            this.fish.setSpeed(Mth.lerp(0.125F, this.fish.getSpeed(), targetSpeed));
-            double xd = this.wantedX - this.fish.getX();
-            double yd = this.wantedY - this.fish.getY();
-            double zd = this.wantedZ - this.fish.getZ();
+         if (this.operation == MoveControl.Operation.MOVE_TO && !((AbstractFish)this.mob).getNavigation().isDone()) {
+            float targetSpeed = (float)(this.speedModifier * ((AbstractFish)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
+            ((AbstractFish)this.mob).setSpeed(Mth.lerp(0.125F, ((AbstractFish)this.mob).getSpeed(), targetSpeed));
+            double xd = this.wantedX - ((AbstractFish)this.mob).getX();
+            double yd = this.wantedY - ((AbstractFish)this.mob).getY();
+            double zd = this.wantedZ - ((AbstractFish)this.mob).getZ();
             if (yd != 0.0) {
                double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
-               this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0, (double)this.fish.getSpeed() * (yd / dd) * 0.1, 0.0));
+               ((AbstractFish)this.mob).setDeltaMovement(((AbstractFish)this.mob).getDeltaMovement().add(0.0, (double)((AbstractFish)this.mob).getSpeed() * (yd / dd) * 0.1, 0.0));
             }
 
             if (xd != 0.0 || zd != 0.0) {
                float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-               this.fish.setYRot(this.rotlerp(this.fish.getYRot(), yRotD, 90.0F));
-               this.fish.yBodyRot = this.fish.getYRot();
+               ((AbstractFish)this.mob).setYRot(this.rotlerp(((AbstractFish)this.mob).getYRot(), yRotD, 90.0F));
+               (this.mob).yBodyRot = ((AbstractFish)this.mob).getYRot();
             }
 
          } else {
-            this.fish.setSpeed(0.0F);
+            ((AbstractFish)this.mob).setSpeed(0.0F);
          }
       }
    }

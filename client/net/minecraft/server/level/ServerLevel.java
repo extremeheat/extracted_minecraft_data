@@ -1282,16 +1282,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public @Nullable BlockPos findNearestMapStructure(final TagKey<Structure> structureTag, final BlockPos origin, final int maxSearchRadius, final boolean createReference) {
-      if (!this.server.getWorldGenSettings().options().generateStructures()) {
+      Optional<HolderSet.Named<Structure>> tag = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(structureTag);
+      if (tag.isEmpty()) {
          return null;
       } else {
-         Optional<HolderSet.Named<Structure>> tag = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(structureTag);
-         if (tag.isEmpty()) {
-            return null;
-         } else {
-            Pair<BlockPos, Holder<Structure>> result = this.getChunkSource().getGenerator().findNearestMapStructure(this, (HolderSet)tag.get(), origin, maxSearchRadius, createReference);
-            return result != null ? (BlockPos)result.getFirst() : null;
-         }
+         Pair<BlockPos, Holder<Structure>> result = this.getChunkSource().getGenerator().findNearestMapStructure(this, (HolderSet)tag.get(), origin, maxSearchRadius, createReference);
+         return result != null ? (BlockPos)result.getFirst() : null;
       }
    }
 
