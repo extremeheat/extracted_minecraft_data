@@ -37,7 +37,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements ContainerSin
    protected long lootTableSeed;
 
    public DecoratedPotBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.DECORATED_POT, worldPosition, blockState);
+      super(BlockEntityTypes.DECORATED_POT, worldPosition, blockState);
       this.item = ItemStack.EMPTY;
       this.decorations = PotDecorations.EMPTY;
    }

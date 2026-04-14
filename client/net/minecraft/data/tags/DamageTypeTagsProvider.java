@@ -8,7 +8,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 
-public class DamageTypeTagsProvider extends KeyTagProvider<DamageType> {
+public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
    public DamageTypeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.DAMAGE_TYPE, lookupProvider);
    }

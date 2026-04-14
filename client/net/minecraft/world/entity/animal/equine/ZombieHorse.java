@@ -17,6 +17,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Mob;
@@ -103,7 +104,7 @@ public class ZombieHorse extends AbstractHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.ZOMBIE_HORSE.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.ZOMBIE_HORSE.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {
@@ -117,7 +118,7 @@ public class ZombieHorse extends AbstractHorse {
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       if (spawnReason == EntitySpawnReason.NATURAL) {
-         Zombie zombie = EntityType.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
+         Zombie zombie = EntityTypes.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
          if (zombie != null) {
             zombie.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             zombie.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
@@ -183,6 +184,6 @@ public class ZombieHorse extends AbstractHorse {
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.25F, 0.0F)).scale(0.7F);
+      BABY_DIMENSIONS = EntityTypes.ZOMBIE_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityTypes.ZOMBIE_HORSE.getHeight() - 0.25F, 0.0F)).scale(0.7F);
    }
 }

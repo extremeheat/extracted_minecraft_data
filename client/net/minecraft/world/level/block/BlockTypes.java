@@ -225,6 +225,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"structure", StructureBlock.CODEC);
       Registry.register(registry, (String)"structure_void", StructureVoidBlock.CODEC);
       Registry.register(registry, (String)"sugar_cane", SugarCaneBlock.CODEC);
+      Registry.register(registry, (String)"sulfur_spike", SulfurSpikeBlock.CODEC);
       Registry.register(registry, (String)"sweet_berry_bush", SweetBerryBushBlock.CODEC);
       Registry.register(registry, (String)"tall_dry_grass", TallDryGrassBlock.CODEC);
       Registry.register(registry, (String)"tall_flower", TallFlowerBlock.CODEC);

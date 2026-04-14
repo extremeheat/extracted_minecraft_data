@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
@@ -29,10 +30,14 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
@@ -42,6 +47,14 @@ import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
    private static final Map<Direction, Transformation> TRANSFORMATIONS = Util.<Direction, Transformation>makeEnumMap(Direction.class, DecoratedPotRenderer::createModelTransformation);
+   private static final Map<ResourceKey<Item>, SpriteId> DECORATED_POT_SPRITES = (Map)Util.make(() -> {
+      ImmutableMap.Builder<ResourceKey<Item>, SpriteId> builder = ImmutableMap.builder();
+      DecoratedPotPatterns.itemToPatternMappings((itemId, patternId) -> {
+         Holder.Reference<DecoratedPotPattern> pattern = BuiltInRegistries.DECORATED_POT_PATTERN.getOrThrow(patternId);
+         builder.put(itemId, Sheets.DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)pattern.value()).assetId()));
+      });
+      return builder.buildOrThrow();
+   });
    private final SpriteGetter sprites;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
@@ -106,7 +119,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    private static SpriteId getSideSprite(final Optional<Item> item) {
       if (item.isPresent()) {
-         SpriteId result = Sheets.getDecoratedPotSprite(DecoratedPotPatterns.getPatternFromItem((Item)item.get()));
+         SpriteId result = (SpriteId)DECORATED_POT_SPRITES.get(((Item)item.get()).builtInRegistryHolder().key());
          if (result != null) {
             return result;
          }

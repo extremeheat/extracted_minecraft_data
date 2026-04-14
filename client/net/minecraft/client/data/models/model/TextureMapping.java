@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.BedPart;
 
 public class TextureMapping {
    private final Map<TextureSlot, Material> slots = Maps.newHashMap();
@@ -217,6 +218,15 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.TOP, getBlockTexture(block, "_top")).put(TextureSlot.BOTTOM, getBlockTexture(block, "_bottom"));
    }
 
+   public static TextureMapping bed(final Block block, final BedPart part) {
+      TextureMapping mapping = (new TextureMapping()).put(TextureSlot.UP, getBlockTexture(block, "_" + String.valueOf(part) + "_up")).put(TextureSlot.EAST, getBlockTexture(block, "_" + String.valueOf(part) + "_east")).put(TextureSlot.WEST, getBlockTexture(block, "_" + String.valueOf(part) + "_west"));
+      if (part == BedPart.FOOT) {
+         mapping.put(TextureSlot.SOUTH, getBlockTexture(block, "_" + String.valueOf(part) + "_south"));
+      }
+
+      return mapping;
+   }
+
    public static TextureMapping particle(final Block block) {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(block));
    }
@@ -341,6 +351,10 @@ public class TextureMapping {
 
    public static Material getBlockTexture(final Block block, final String suffix) {
       Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+      return getBlockTexture(id, suffix);
+   }
+
+   private static Material getBlockTexture(final Identifier id, final String suffix) {
       return new Material(id.withPath((UnaryOperator)((path) -> "block/" + path + suffix)));
    }
 

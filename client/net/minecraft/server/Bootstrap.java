@@ -19,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.flag.FeatureFlags;
@@ -54,7 +55,7 @@ public class Bootstrap {
          } else {
             FireBlock.bootStrap();
             ComposterBlock.bootStrap();
-            if (EntityType.getKey(EntityType.PLAYER) == null) {
+            if (EntityType.getKey(EntityTypes.PLAYER) == null) {
                throw new IllegalStateException("Failed loading EntityTypes");
             } else {
                EntitySelectorOptions.bootStrap();

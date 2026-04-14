@@ -3,7 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.references.BlockIds;
+import net.minecraft.references.BlockItemIds;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -17,7 +17,7 @@ public class MyceliumBlock extends SpreadingSnowyBlock {
    }
 
    public MyceliumBlock(final BlockBehaviour.Properties properties) {
-      super(properties, BlockIds.DIRT);
+      super(properties, BlockItemIds.DIRT.block());
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

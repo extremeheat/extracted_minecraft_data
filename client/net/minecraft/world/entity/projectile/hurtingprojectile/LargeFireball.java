@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -23,7 +24,7 @@ public class LargeFireball extends Fireball {
    }
 
    public LargeFireball(final Level level, final LivingEntity mob, final Vec3 direction, final int explosionPower) {
-      super(EntityType.FIREBALL, mob, direction, level);
+      super(EntityTypes.FIREBALL, mob, direction, level);
       this.explosionPower = explosionPower;
    }
 

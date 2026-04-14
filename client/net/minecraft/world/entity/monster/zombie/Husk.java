@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -69,7 +70,7 @@ public class Husk extends Zombie {
    }
 
    protected void doUnderWaterConversion(final ServerLevel level) {
-      this.convertToZombieType(level, EntityType.ZOMBIE);
+      this.convertToZombieType(level, EntityTypes.ZOMBIE);
       if (!this.isSilent()) {
          level.levelEvent((Entity)null, 1041, this.blockPosition(), 0);
       }
@@ -92,17 +93,17 @@ public class Husk extends Zombie {
       if (groupData instanceof HuskGroupData huskGroupData) {
          if (!huskGroupData.triedToSpawnCamelHusk) {
             BlockPos pos = this.blockPosition();
-            if (level.noCollision(EntityType.CAMEL_HUSK.getSpawnAABB((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5))) {
+            if (level.noCollision(EntityTypes.CAMEL_HUSK.getSpawnAABB((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5))) {
                huskGroupData.triedToSpawnCamelHusk = true;
                if (random.nextFloat() < 0.1F) {
                   this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
-                  CamelHusk camelHusk = EntityType.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
+                  CamelHusk camelHusk = EntityTypes.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
                   if (camelHusk != null) {
                      camelHusk.setPos(this.getX(), this.getY(), this.getZ());
                      camelHusk.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
                      this.startRiding(camelHusk, true, true);
                      level.addFreshEntity(camelHusk);
-                     Parched parched = EntityType.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
+                     Parched parched = EntityTypes.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
                      if (parched != null) {
                         parched.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                         parched.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);

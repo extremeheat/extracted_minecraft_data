@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.level.CustomSpawner;
@@ -46,12 +46,12 @@ public class PhantomSpawner implements CustomSpawner {
                                  BlockPos spawnPos = playerPos.above(20 + random.nextInt(15)).east(-10 + random.nextInt(21)).south(-10 + random.nextInt(21));
                                  BlockState blockState = level.getBlockState(spawnPos);
                                  FluidState fluidState = level.getFluidState(spawnPos);
-                                 if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityType.PHANTOM)) {
+                                 if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) {
                                     SpawnGroupData groupData = null;
                                     int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);
 
                                     for(int i = 0; i < groupSize; ++i) {
-                                       Phantom phantom = EntityType.PHANTOM.create(level, EntitySpawnReason.NATURAL);
+                                       Phantom phantom = EntityTypes.PHANTOM.create(level, EntitySpawnReason.NATURAL);
                                        if (phantom != null) {
                                           phantom.snapTo(spawnPos, 0.0F, 0.0F);
                                           groupData = phantom.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, groupData);

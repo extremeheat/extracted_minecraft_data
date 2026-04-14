@@ -2,12 +2,13 @@ package net.minecraft.client.renderer.blockentity.state;
 
 import java.util.Objects;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -22,14 +23,14 @@ public class BlockEntityRenderState {
       super();
       this.blockPos = BlockPos.ZERO;
       this.blockState = Blocks.AIR.defaultBlockState();
-      this.blockEntityType = BlockEntityType.TEST_BLOCK;
+      this.blockEntityType = BlockEntityTypes.TEST_BLOCK;
    }
 
    public static void extractBase(final BlockEntity blockEntity, final BlockEntityRenderState state, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       state.blockPos = blockEntity.getBlockPos();
       state.blockState = blockEntity.getBlockState();
       state.blockEntityType = blockEntity.getType();
-      state.lightCoords = blockEntity.getLevel() != null ? LevelRenderer.getLightCoords(blockEntity.getLevel(), blockEntity.getBlockPos()) : 15728880;
+      state.lightCoords = blockEntity.getLevel() != null ? LightCoordsUtil.getLightCoords(blockEntity.getLevel(), blockEntity.getBlockPos()) : 15728880;
       state.breakProgress = breakProgress;
    }
 

@@ -1,16 +1,16 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Optional;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
-public class OutlineBufferSource implements MultiBufferSource {
-   private final MultiBufferSource.BufferSource outlineBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(1536));
+public class OutlineBufferSource implements MultiBufferSource, AutoCloseable {
+   private final MultiBufferSource.BufferSource outlineBufferSource;
    private int outlineColor = -1;
 
-   public OutlineBufferSource() {
+   public OutlineBufferSource(final MultiBufferSource.BufferSource outlineBufferSource) {
       super();
+      this.outlineBufferSource = outlineBufferSource;
    }
 
    public VertexConsumer getBuffer(final RenderType renderType) {
@@ -33,7 +33,15 @@ public class OutlineBufferSource implements MultiBufferSource {
    }
 
    public void endOutlineBatch() {
-      this.outlineBufferSource.endBatch();
+      this.outlineBufferSource.uploadAndDraw();
+   }
+
+   public void endFrame() {
+      this.outlineBufferSource.endFrame();
+   }
+
+   public void close() {
+      this.outlineBufferSource.close();
    }
 
    private static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {

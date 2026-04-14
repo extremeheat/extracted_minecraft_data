@@ -12,6 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -31,11 +32,11 @@ public class WindCharge extends AbstractWindCharge {
    }
 
    public WindCharge(final Player player, final Level level, final double x, final double y, final double z) {
-      super(EntityType.WIND_CHARGE, level, player, x, y, z);
+      super(EntityTypes.WIND_CHARGE, level, player, x, y, z);
    }
 
    public WindCharge(final Level level, final double x, final double y, final double z, final Vec3 direction) {
-      super(EntityType.WIND_CHARGE, x, y, z, direction, level);
+      super(EntityTypes.WIND_CHARGE, x, y, z, direction, level);
    }
 
    public void tick() {

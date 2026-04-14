@@ -2,7 +2,7 @@ package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.List;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -27,7 +27,7 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    }
 
    private boolean wasHurtByPlayer() {
-      return this.mob.getLastHurtByMob() != null && this.mob.getLastHurtByMob().is(EntityType.PLAYER) && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
+      return this.mob.getLastHurtByMob() != null && this.mob.getLastHurtByMob().is(EntityTypes.PLAYER) && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
    }
 
    public void start() {

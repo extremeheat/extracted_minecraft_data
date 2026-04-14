@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -42,9 +43,9 @@ public class TrialSpawnerBlock extends BaseEntityBlock {
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       BlockEntityTicker var10000;
       if (level instanceof ServerLevel serverLevel) {
-         var10000 = createTickerHelper(type, BlockEntityType.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickServer(serverLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
+         var10000 = createTickerHelper(type, BlockEntityTypes.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickServer(serverLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       } else {
-         var10000 = createTickerHelper(type, BlockEntityType.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickClient(innerLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
+         var10000 = createTickerHelper(type, BlockEntityTypes.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickClient(innerLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       }
 
       return var10000;

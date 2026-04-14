@@ -2,7 +2,7 @@ package net.minecraft.data.recipes;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;

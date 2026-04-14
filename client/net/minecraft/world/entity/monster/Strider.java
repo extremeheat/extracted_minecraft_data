@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemBasedSteering;
 import net.minecraft.world.entity.ItemSteerable;
@@ -368,7 +369,7 @@ public class Strider extends Animal implements ItemSteerable {
    }
 
    public @Nullable Strider getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.STRIDER.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.STRIDER.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {
@@ -408,7 +409,7 @@ public class Strider extends Animal implements ItemSteerable {
       } else {
          RandomSource random = level.getRandom();
          if (random.nextInt(30) == 0) {
-            Mob jockey = EntityType.ZOMBIFIED_PIGLIN.create(level.getLevel(), EntitySpawnReason.JOCKEY);
+            Mob jockey = EntityTypes.ZOMBIFIED_PIGLIN.create(level.getLevel(), EntitySpawnReason.JOCKEY);
             if (jockey != null) {
                groupData = this.spawnJockey(level, difficulty, jockey, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(random), false));
                jockey.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
@@ -416,7 +417,7 @@ public class Strider extends Animal implements ItemSteerable {
                this.setGuaranteedDrop(EquipmentSlot.SADDLE);
             }
          } else if (random.nextInt(10) == 0) {
-            AgeableMob jockey = EntityType.STRIDER.create(level.getLevel(), EntitySpawnReason.JOCKEY);
+            AgeableMob jockey = EntityTypes.STRIDER.create(level.getLevel(), EntitySpawnReason.JOCKEY);
             if (jockey != null) {
                jockey.setAge(-24000);
                groupData = this.spawnJockey(level, difficulty, jockey, (SpawnGroupData)null);

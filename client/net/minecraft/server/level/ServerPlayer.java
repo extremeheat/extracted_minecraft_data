@@ -29,7 +29,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -126,6 +126,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -784,7 +785,7 @@ public class ServerPlayer extends Player {
       if (!shoulderEntityTag.isEmpty() && !shoulderEntityTag.getBooleanOr("Silent", false)) {
          if (this.random.nextInt(200) == 0) {
             EntityType<?> entityType = (EntityType)shoulderEntityTag.read("id", EntityType.CODEC).orElse((Object)null);
-            if (entityType == EntityType.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
+            if (entityType == EntityTypes.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
                this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level(), this.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.random));
             }
          }
@@ -1045,14 +1046,14 @@ public class ServerPlayer extends Player {
       BlockState blockState = level.getBlockState(pos);
       Block block = blockState.getBlock();
       if (block instanceof RespawnAnchorBlock && (forced || (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(level, pos)) {
-         Optional<Vec3> standUpPosition = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, level, pos);
+         Optional<Vec3> standUpPosition = RespawnAnchorBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos);
          if (!forced && consumeSpawnBlock && standUpPosition.isPresent()) {
             level.setBlock(pos, (BlockState)blockState.setValue(RespawnAnchorBlock.CHARGE, (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
          }
 
          return standUpPosition.map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
       } else if (block instanceof BedBlock && ((BedRule)level.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos)).canSetSpawn(level)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, level, pos, (Direction)blockState.getValue(BedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
+         return BedBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos, (Direction)blockState.getValue(BedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
       } else if (!forced) {
          return Optional.empty();
       } else {
@@ -1267,7 +1268,7 @@ public class ServerPlayer extends Player {
    public void onExplosionHit(final @Nullable Entity explosionCausedBy) {
       super.onExplosionHit(explosionCausedBy);
       this.currentExplosionCause = explosionCausedBy;
-      this.setIgnoreFallDamageFromCurrentImpulse(explosionCausedBy != null && explosionCausedBy.is(EntityType.WIND_CHARGE), this.position());
+      this.setIgnoreFallDamageFromCurrentImpulse(explosionCausedBy != null && explosionCausedBy.is(EntityTypes.WIND_CHARGE), this.position());
    }
 
    protected void pushEntities() {

@@ -2,7 +2,7 @@ package net.minecraft.world.entity;
 
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -93,6 +93,11 @@ public interface Bucketable {
          if (!level.isClientSide() && player instanceof ServerPlayer) {
             ServerPlayer serverPlayer = (ServerPlayer)player;
             CriteriaTriggers.FILLED_BUCKET.trigger(serverPlayer, bucket);
+         }
+
+         if (pickupEntity instanceof Leashable) {
+            Leashable leashable = (Leashable)pickupEntity;
+            leashable.dropLeash();
          }
 
          pickupEntity.discard();

@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,11 +18,11 @@ public class ThrownLingeringPotion extends AbstractThrownPotion {
    }
 
    public ThrownLingeringPotion(final Level level, final LivingEntity owner, final ItemStack itemStack) {
-      super(EntityType.LINGERING_POTION, level, owner, itemStack);
+      super(EntityTypes.LINGERING_POTION, level, owner, itemStack);
    }
 
    public ThrownLingeringPotion(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      super(EntityType.LINGERING_POTION, level, x, y, z, itemStack);
+      super(EntityTypes.LINGERING_POTION, level, x, y, z, itemStack);
    }
 
    protected Item getDefaultItem() {

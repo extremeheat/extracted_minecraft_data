@@ -81,8 +81,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType);
    }
 
-   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-      this.order(0).submitCustomGeometry(poseStack, renderType, customGeometryRenderer);
+   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final int outlineColor, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+      this.order(0).submitCustomGeometry(poseStack, renderType, outlineColor, customGeometryRenderer);
    }
 
    public void submitParticleGroup(final SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer) {
@@ -162,7 +162,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record CustomGeometrySubmit(PoseStack.Pose pose, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+   public static record CustomGeometrySubmit(PoseStack.Pose pose, RenderType renderType, int outlineColor, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
       public CustomGeometrySubmit {
          super();
       }

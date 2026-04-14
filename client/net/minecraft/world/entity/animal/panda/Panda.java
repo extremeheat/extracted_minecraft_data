@@ -32,6 +32,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -242,7 +243,7 @@ public class Panda extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Panda baby = EntityType.PANDA.create(level, EntitySpawnReason.BREEDING);
+      Panda baby = EntityTypes.PANDA.create(level, EntitySpawnReason.BREEDING);
       if (baby != null) {
          if (partner instanceof Panda) {
             Panda partnerPanda = (Panda)partner;
@@ -688,7 +689,7 @@ public class Panda extends Animal {
       HIDDEN_GENE_ID = SynchedEntityData.<Byte>defineId(Panda.class, EntityDataSerializers.BYTE);
       DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(Panda.class, EntityDataSerializers.BYTE);
       BREED_TARGETING = TargetingConditions.forNonCombat().range(8.0);
-      BABY_DIMENSIONS = EntityType.PANDA.getDimensions().scale(0.5F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.40625F, 0.0F));
+      BABY_DIMENSIONS = EntityTypes.PANDA.getDimensions().scale(0.5F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.40625F, 0.0F));
    }
 
    public static enum Gene implements StringRepresentable {

@@ -12,7 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.level.ChunkPos;
@@ -162,7 +162,7 @@ public class OceanMonumentPieces {
       protected void spawnElder(final WorldGenLevel level, final BoundingBox chunkBB, final int x, final int y, final int z) {
          BlockPos pos = this.getWorldPos(x, y, z);
          if (chunkBB.isInside(pos)) {
-            ElderGuardian elder = EntityType.ELDER_GUARDIAN.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+            ElderGuardian elder = EntityTypes.ELDER_GUARDIAN.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
             if (elder != null) {
                elder.heal(elder.getMaxHealth());
                elder.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);

@@ -447,7 +447,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private StatePredicate isSuffocating;
       private StatePredicate isViewBlocking;
       private PostProcess postProcess;
-      private StatePredicate emissiveRendering;
+      private Predicate<BlockState> emissiveRendering;
       private boolean dynamicShape;
       private FeatureFlagSet requiredFeatures;
       private @Nullable OffsetFunction offsetFunction;
@@ -470,7 +470,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.isSuffocating = (state, level, pos) -> state.blocksMotion() && state.isCollisionShapeFullBlock(level, pos);
          this.isViewBlocking = this.isSuffocating;
          this.postProcess = (state, level, pos) -> null;
-         this.emissiveRendering = (state, level, pos) -> false;
+         this.emissiveRendering = (var0) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
       }
 
@@ -675,7 +675,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties emissiveRendering(final StatePredicate emissiveRendering) {
+      public Properties emissiveRendering(final Predicate<BlockState> emissiveRendering) {
          this.emissiveRendering = emissiveRendering;
          return this;
       }
@@ -781,7 +781,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final StatePredicate isSuffocating;
       private final StatePredicate isViewBlocking;
       private final PostProcess postProcess;
-      private final StatePredicate emissiveRendering;
+      private final Predicate<BlockState> emissiveRendering;
       private final @Nullable OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
@@ -951,8 +951,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getRenderShape(this.asState());
       }
 
-      public boolean emissiveRendering(final BlockGetter level, final BlockPos pos) {
-         return this.emissiveRendering.test(this.asState(), level, pos);
+      public boolean emissiveRendering() {
+         return this.emissiveRendering.test(this.asState());
       }
 
       public float getShadeBrightness(final BlockGetter level, final BlockPos pos) {

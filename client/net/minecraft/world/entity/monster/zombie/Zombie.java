@@ -29,6 +29,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -102,7 +103,7 @@ public class Zombie extends Monster {
    }
 
    public Zombie(final Level level) {
-      this(EntityType.ZOMBIE, level);
+      this(EntityTypes.ZOMBIE, level);
    }
 
    protected void registerGoals() {
@@ -228,7 +229,7 @@ public class Zombie extends Monster {
    }
 
    protected void doUnderWaterConversion(final ServerLevel level) {
-      this.convertToZombieType(level, EntityType.DROWNED);
+      this.convertToZombieType(level, EntityTypes.DROWNED);
       if (!this.isSilent()) {
          level.levelEvent((Entity)null, 1040, this.blockPosition(), 0);
       }
@@ -241,7 +242,7 @@ public class Zombie extends Monster {
 
    @VisibleForTesting
    public boolean convertVillagerToZombieVillager(final ServerLevel level, final Villager villager) {
-      ZombieVillager zombieVillager = (ZombieVillager)villager.convertTo(EntityType.ZOMBIE_VILLAGER, ConversionParams.single(villager, true, true), (zombie) -> {
+      ZombieVillager zombieVillager = (ZombieVillager)villager.convertTo(EntityTypes.ZOMBIE_VILLAGER, ConversionParams.single(villager, true, true), (zombie) -> {
          zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(zombie.blockPosition()), EntitySpawnReason.CONVERSION, new ZombieGroupData(false, true));
          zombie.setVillagerData(villager.getVillagerData());
          zombie.setGossips(villager.getGossips().copy());
@@ -433,7 +434,7 @@ public class Zombie extends Monster {
                      this.startRiding(chicken, false, false);
                   }
                } else if ((double)random.nextFloat() < 0.05) {
-                  Chicken chicken = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
+                  Chicken chicken = EntityTypes.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
                   if (chicken != null) {
                      chicken.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      chicken.finalizeSpawn(level, difficulty, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);

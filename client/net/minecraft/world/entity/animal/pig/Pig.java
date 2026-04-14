@@ -27,6 +27,7 @@ import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemBasedSteering;
 import net.minecraft.world.entity.ItemSteerable;
@@ -188,7 +189,7 @@ public class Pig extends Animal implements ItemSteerable {
 
    public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
       if (level.getDifficulty() != Difficulty.PEACEFUL) {
-         ZombifiedPiglin zombifiedPiglin = (ZombifiedPiglin)this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (zp) -> {
+         ZombifiedPiglin zombifiedPiglin = (ZombifiedPiglin)this.convertTo(EntityTypes.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (zp) -> {
             zp.populateDefaultEquipmentSlots(this.getRandom(), level.getCurrentDifficultyAt(this.blockPosition()));
             zp.setPersistenceRequired();
          });
@@ -221,7 +222,7 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    public @Nullable Pig getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Pig baby = EntityType.PIG.create(level, EntitySpawnReason.BREEDING);
+      Pig baby = EntityTypes.PIG.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Pig partnerPig) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerPig.getVariant());
       }

@@ -7,7 +7,7 @@ import java.util.List;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -47,7 +47,7 @@ public class GoatAi {
    public static final float MAX_JUMP_VELOCITY_MULTIPLIER = 3.5714288F;
    private static final UniformInt TIME_BETWEEN_RAMS = UniformInt.of(600, 6000);
    private static final UniformInt TIME_BETWEEN_RAMS_SCREAMER = UniformInt.of(100, 300);
-   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((target, level) -> !target.is(EntityType.GOAT) && ((Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) || !target.is(EntityType.ARMOR_STAND)) && level.getWorldBorder().isWithinBounds(target.getBoundingBox()));
+   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((target, level) -> !target.is(EntityTypes.GOAT) && ((Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) || !target.is(EntityTypes.ARMOR_STAND)) && level.getWorldBorder().isWithinBounds(target.getBoundingBox()));
    private static final float SPEED_MULTIPLIER_WHEN_RAMMING = 3.0F;
    public static final int RAM_MIN_DISTANCE = 4;
    public static final float ADULT_RAM_KNOCKBACK_FORCE = 2.5F;
@@ -71,7 +71,7 @@ public class GoatAi {
    }
 
    private static ActivityData<Goat> initIdleActivity() {
-      return ActivityData.<Goat>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(0, new AnimalMakeLove(EntityType.GOAT)), Pair.of(1, new FollowTemptation((s) -> 1.25F)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.RAM_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT)));
+      return ActivityData.<Goat>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(0, new AnimalMakeLove(EntityTypes.GOAT)), Pair.of(1, new FollowTemptation((s) -> 1.25F)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.RAM_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT)));
    }
 
    private static ActivityData<Goat> initLongJumpActivity() {

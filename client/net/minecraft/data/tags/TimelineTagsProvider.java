@@ -8,7 +8,7 @@ import net.minecraft.tags.TimelineTags;
 import net.minecraft.world.timeline.Timeline;
 import net.minecraft.world.timeline.Timelines;
 
-public class TimelineTagsProvider extends KeyTagProvider<Timeline> {
+public class TimelineTagsProvider extends TagsProvider<Timeline> {
    public TimelineTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.TIMELINE, lookupProvider);
    }

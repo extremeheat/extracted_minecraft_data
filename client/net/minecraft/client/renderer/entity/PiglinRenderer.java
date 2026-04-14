@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.PiglinRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.CrossbowItem;
 
@@ -33,7 +33,7 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
 
    public void extractRenderState(final AbstractPiglin entity, final PiglinRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
-      state.isBrute = entity.is(EntityType.PIGLIN_BRUTE);
+      state.isBrute = entity.is(EntityTypes.PIGLIN_BRUTE);
       state.armPose = entity.getArmPose();
       state.maxCrossbowChageDuration = (float)CrossbowItem.getChargeDuration(entity.getUseItem(), entity);
       state.isConverting = entity.isConverting();

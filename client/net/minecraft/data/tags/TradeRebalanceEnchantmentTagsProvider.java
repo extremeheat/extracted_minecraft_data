@@ -8,7 +8,7 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-public class TradeRebalanceEnchantmentTagsProvider extends KeyTagProvider<Enchantment> {
+public class TradeRebalanceEnchantmentTagsProvider extends TagsProvider<Enchantment> {
    public TradeRebalanceEnchantmentTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.ENCHANTMENT, lookupProvider);
    }

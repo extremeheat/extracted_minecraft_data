@@ -1,6 +1,8 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -11,28 +13,38 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.apache.commons.lang3.function.TriFunction;
 
 public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T yellow, T lime, T pink, T gray, T lightGray, T cyan, T purple, T blue, T brown, T green, T red, T black) {
+   public static final ColorCollection<DyeColor> VALUES;
+   public static final ColorCollection<String> NAMES;
+
    public ColorCollection {
       super();
    }
 
-   public static <T> ColorCollection<T> make(final Function<DyeColor, T> factory) {
-      return new ColorCollection<T>(factory.apply(DyeColor.WHITE), factory.apply(DyeColor.ORANGE), factory.apply(DyeColor.MAGENTA), factory.apply(DyeColor.LIGHT_BLUE), factory.apply(DyeColor.YELLOW), factory.apply(DyeColor.LIME), factory.apply(DyeColor.PINK), factory.apply(DyeColor.GRAY), factory.apply(DyeColor.LIGHT_GRAY), factory.apply(DyeColor.CYAN), factory.apply(DyeColor.PURPLE), factory.apply(DyeColor.BLUE), factory.apply(DyeColor.BROWN), factory.apply(DyeColor.GREEN), factory.apply(DyeColor.RED), factory.apply(DyeColor.BLACK));
+   public static <T> ColorCollection<T> create(final T value) {
+      return new ColorCollection<T>(value, value, value, value, value, value, value, value, value, value, value, value, value, value, value, value);
    }
 
-   public static <T extends Block> ColorCollection<Block> registerBlocks(final String id, final TriFunction<String, Function<BlockBehaviour.Properties, Block>, BlockBehaviour.Properties, Block> register, final BiFunction<DyeColor, BlockBehaviour.Properties, T> colorBlockFactory, final Function<DyeColor, BlockBehaviour.Properties> propertiesSupplier) {
-      return make((color) -> (Block)register.apply(color.getName() + "_" + id, (Function)(p) -> (Block)colorBlockFactory.apply(color, p), (BlockBehaviour.Properties)propertiesSupplier.apply(color)));
+   public static <B extends Block, Id> ColorCollection<Block> registerBlocks(final ColorCollection<Id> ids, final TriFunction<Id, Function<BlockBehaviour.Properties, Block>, BlockBehaviour.Properties, Block> register, final BiFunction<DyeColor, BlockBehaviour.Properties, B> colorBlockFactory, final Function<DyeColor, BlockBehaviour.Properties> propertiesSupplier) {
+      return zipMap(VALUES, ids, (color, id) -> (Block)register.apply(id, (Function)(p) -> (Block)colorBlockFactory.apply(color, p), (BlockBehaviour.Properties)propertiesSupplier.apply(color)));
    }
 
-   public static ColorCollection<Item> registerItems(final ColorCollection<Block> blocks, final BiFunction<Block, DyeColor, Item> itemFactory) {
-      return make((color) -> (Item)itemFactory.apply(blocks.pick(color), color));
+   public static <Id> ColorCollection<Item> registerBlockItems(final ColorCollection<Id> ids, final ColorCollection<Block> blocks, final TriFunction<Id, Block, DyeColor, Item> itemFactory) {
+      return zipMap(VALUES, ids, (color, id) -> (Item)itemFactory.apply(id, blocks.pick(color), color));
    }
 
-   public static ColorCollection<Item> registerItems(final String id, final BiFunction<String, DyeColor, Item> itemFactory) {
-      return make((color) -> (Item)itemFactory.apply(color.getName() + "_" + id, color));
+   public static <Id> ColorCollection<Item> registerItems(final ColorCollection<Id> ids, final BiFunction<Id, DyeColor, Item> itemFactory) {
+      return zipMap(VALUES, ids, (color, id) -> (Item)itemFactory.apply(id, color));
    }
 
-   public ImmutableList<T> asList() {
-      return ImmutableList.of(this.white, this.orange, this.magenta, this.lightBlue, this.yellow, this.lime, this.pink, this.gray, this.lightGray, this.cyan, this.purple, this.blue, new Object[]{this.brown, this.green, this.red, this.black});
+   public static ColorCollection<String> prefixWithColor(final ColorCollection<String> ids) {
+      return zipMap(NAMES, ids, (color, id) -> color + "_" + id);
+   }
+
+   public List<T> asList() {
+      ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(16);
+      Objects.requireNonNull(builder);
+      this.forEach(builder::add);
+      return builder.build();
    }
 
    public void forEach(final Consumer<T> consumer) {
@@ -79,7 +91,11 @@ public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T ye
       return (T)var10000;
    }
 
-   public static <T, U> void zipApply(final BiConsumer<T, U> consumer, final ColorCollection<T> first, final ColorCollection<U> second) {
+   public <U> ColorCollection<U> map(final Function<T, U> mapper) {
+      return new ColorCollection<U>(mapper.apply(this.white), mapper.apply(this.orange), mapper.apply(this.magenta), mapper.apply(this.lightBlue), mapper.apply(this.yellow), mapper.apply(this.lime), mapper.apply(this.pink), mapper.apply(this.gray), mapper.apply(this.lightGray), mapper.apply(this.cyan), mapper.apply(this.purple), mapper.apply(this.blue), mapper.apply(this.brown), mapper.apply(this.green), mapper.apply(this.red), mapper.apply(this.black));
+   }
+
+   public static <T, U> void zipApply(final ColorCollection<T> first, final ColorCollection<U> second, final BiConsumer<T, U> consumer) {
       consumer.accept(first.white(), second.white());
       consumer.accept(first.orange(), second.orange());
       consumer.accept(first.magenta(), second.magenta());
@@ -96,5 +112,14 @@ public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T ye
       consumer.accept(first.green(), second.green());
       consumer.accept(first.red(), second.red());
       consumer.accept(first.black(), second.black());
+   }
+
+   public static <T, U, R> ColorCollection<R> zipMap(final ColorCollection<T> first, final ColorCollection<U> second, final BiFunction<T, U, R> operation) {
+      return new ColorCollection<R>(operation.apply(first.white(), second.white()), operation.apply(first.orange(), second.orange()), operation.apply(first.magenta(), second.magenta()), operation.apply(first.lightBlue(), second.lightBlue()), operation.apply(first.yellow(), second.yellow()), operation.apply(first.lime(), second.lime()), operation.apply(first.pink(), second.pink()), operation.apply(first.gray(), second.gray()), operation.apply(first.lightGray(), second.lightGray()), operation.apply(first.cyan(), second.cyan()), operation.apply(first.purple(), second.purple()), operation.apply(first.blue(), second.blue()), operation.apply(first.brown(), second.brown()), operation.apply(first.green(), second.green()), operation.apply(first.red(), second.red()), operation.apply(first.black(), second.black()));
+   }
+
+   static {
+      VALUES = new ColorCollection<DyeColor>(DyeColor.WHITE, DyeColor.ORANGE, DyeColor.MAGENTA, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.LIME, DyeColor.PINK, DyeColor.GRAY, DyeColor.LIGHT_GRAY, DyeColor.CYAN, DyeColor.PURPLE, DyeColor.BLUE, DyeColor.BROWN, DyeColor.GREEN, DyeColor.RED, DyeColor.BLACK);
+      NAMES = VALUES.<String>map(DyeColor::getName);
    }
 }

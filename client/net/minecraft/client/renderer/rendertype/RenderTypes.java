@@ -392,9 +392,9 @@ public class RenderTypes {
       GLINT = RenderType.create("glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).createRenderSetup());
       ENTITY_GLINT = RenderType.create("entity_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING).createRenderSetup());
       CRUMBLING = Util.memoize((Function)((texture) -> RenderType.create("crumbling", RenderSetup.builder(RenderPipelines.CRUMBLING).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
-      TEXT = Util.memoize((Function)((texture) -> RenderType.create("text", RenderSetup.builder(RenderPipelines.TEXT).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
+      TEXT = Util.memoize((Function)((texture) -> RenderType.create("text", RenderSetup.builder(RenderPipelines.TEXT).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
       TEXT_BACKGROUND = RenderType.create("text_background", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND).useLightmap().sortOnUpload().createRenderSetup());
-      TEXT_GRAYSCALE = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
+      TEXT_GRAYSCALE = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
       TEXT_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_POLYGON_OFFSET).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       TEXT_GRAYSCALE_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       TEXT_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_see_through", RenderSetup.builder(RenderPipelines.TEXT_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
@@ -410,7 +410,7 @@ public class RenderTypes {
       DEBUG_FILLED_BOX = RenderType.create("debug_filled_box", RenderSetup.builder(RenderPipelines.DEBUG_FILLED_BOX).sortOnUpload().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
       DEBUG_POINT = RenderType.create("debug_point", RenderSetup.builder(RenderPipelines.DEBUG_POINTS).createRenderSetup());
       DEBUG_QUADS = RenderType.create("debug_quads", RenderSetup.builder(RenderPipelines.DEBUG_QUADS).sortOnUpload().createRenderSetup());
-      DEBUG_TRIANGLE_FAN = RenderType.create("debug_triangle_fan", RenderSetup.builder(RenderPipelines.DEBUG_TRIANGLE_FAN).sortOnUpload().createRenderSetup());
+      DEBUG_TRIANGLE_FAN = RenderType.create("debug_triangle_fan", RenderSetup.builder(RenderPipelines.DEBUG_TRIANGLE_FAN).createRenderSetup());
       BLOCK_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("block_screen_effect", RenderSetup.builder(RenderPipelines.BLOCK_SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
       FIRE_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("fire_screen_effect", RenderSetup.builder(RenderPipelines.FIRE_SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
    }

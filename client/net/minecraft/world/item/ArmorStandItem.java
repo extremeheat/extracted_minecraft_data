@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -34,12 +35,12 @@ public class ArmorStandItem extends Item {
          BlockPos blockPos = placeContext.getClickedPos();
          ItemStack itemStack = context.getItemInHand();
          Vec3 pos = Vec3.atBottomCenterOf(blockPos);
-         AABB box = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(pos.x(), pos.y(), pos.z());
+         AABB box = EntityTypes.ARMOR_STAND.getDimensions().makeBoundingBox(pos.x(), pos.y(), pos.z());
          if (level.noCollision((Entity)null, box) && level.getEntities((Entity)null, box).isEmpty()) {
             if (level instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)level;
                Consumer<ArmorStand> entityConfig = EntityType.<ArmorStand>createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
-               ArmorStand entity = EntityType.ARMOR_STAND.create(serverLevel, entityConfig, blockPos, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
+               ArmorStand entity = EntityTypes.ARMOR_STAND.create(serverLevel, entityConfig, blockPos, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
                if (entity == null) {
                   return InteractionResult.FAIL;
                }

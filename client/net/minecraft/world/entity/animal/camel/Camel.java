@@ -29,6 +29,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
@@ -423,7 +424,7 @@ public class Camel extends AbstractHorse {
    }
 
    public @Nullable Camel getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.CAMEL.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.CAMEL.create(level, EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getEatingSound() {
@@ -601,7 +602,7 @@ public class Camel extends AbstractHorse {
       BRAIN_PROVIDER = Brain.<Camel>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS, SensorType.NEAREST_ADULT), (var0) -> CamelAi.getActivities());
       DASH = SynchedEntityData.<Boolean>defineId(Camel.class, EntityDataSerializers.BOOLEAN);
       LAST_POSE_CHANGE_TICK = SynchedEntityData.<Long>defineId(Camel.class, EntityDataSerializers.LONG);
-      SITTING_DIMENSIONS = EntityDimensions.scalable(EntityType.CAMEL.getWidth(), EntityType.CAMEL.getHeight() - 1.43F).withEyeHeight(0.845F);
+      SITTING_DIMENSIONS = EntityDimensions.scalable(EntityTypes.CAMEL.getWidth(), EntityTypes.CAMEL.getHeight() - 1.43F).withEyeHeight(0.845F);
    }
 
    private class CamelBodyRotationControl extends BodyRotationControl {

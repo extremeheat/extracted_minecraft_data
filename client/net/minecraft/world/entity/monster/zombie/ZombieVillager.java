@@ -3,7 +3,7 @@ package net.minecraft.world.entity.monster.zombie;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
@@ -31,6 +31,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
@@ -206,7 +207,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    private void finishConversion(final ServerLevel level) {
-      this.convertTo(EntityType.VILLAGER, ConversionParams.single(this, false, false), (villager) -> {
+      this.convertTo(EntityTypes.VILLAGER, ConversionParams.single(this, false, false), (villager) -> {
          for(EquipmentSlot undroppedSlot : this.dropPreservedEquipment(level, (stack) -> !EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
             SlotAccess offsetSlot = villager.getSlot(undroppedSlot.getIndex() + 300);
             if (offsetSlot != null) {

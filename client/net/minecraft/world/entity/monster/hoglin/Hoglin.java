@@ -26,6 +26,7 @@ import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
@@ -215,7 +216,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    private void finishConversion() {
-      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (zoglin) -> zoglin.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
+      this.convertTo(EntityTypes.ZOGLIN, ConversionParams.single(this, true, false), (zoglin) -> zoglin.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
    }
 
    public boolean isFood(final ItemStack itemStack) {
@@ -266,7 +267,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Hoglin offspring = EntityType.HOGLIN.create(level, EntitySpawnReason.BREEDING);
+      Hoglin offspring = EntityTypes.HOGLIN.create(level, EntitySpawnReason.BREEDING);
       if (offspring != null) {
          offspring.setPersistenceRequired();
       }

@@ -9,6 +9,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.item.Item;
@@ -27,11 +28,11 @@ public class ThrownEgg extends ThrowableItemProjectile {
    }
 
    public ThrownEgg(final Level level, final LivingEntity mob, final ItemStack itemStack) {
-      super(EntityType.EGG, mob, level, itemStack);
+      super(EntityTypes.EGG, mob, level, itemStack);
    }
 
    public ThrownEgg(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      super(EntityType.EGG, x, y, z, level, itemStack);
+      super(EntityTypes.EGG, x, y, z, level, itemStack);
    }
 
    public void handleEntityEvent(final byte id) {
@@ -63,7 +64,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
             }
 
             for(int i = 0; i < count; ++i) {
-               Chicken chicken = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
+               Chicken chicken = EntityTypes.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
                if (chicken != null) {
                   chicken.setAge(-24000);
                   chicken.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);

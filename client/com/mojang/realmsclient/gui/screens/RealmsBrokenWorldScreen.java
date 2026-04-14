@@ -142,7 +142,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
             }
          }
 
-      })).start();
+      }, "Realms open server")).start();
    }
 
    private void downloadWorld(final int slotId) {

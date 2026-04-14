@@ -39,8 +39,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       optionList.add(options.allowServerListing());
       OptionInstance<Unit> difficultyDisplay = (OptionInstance)Optionull.map(minecraft.level, (level) -> {
          Difficulty difficulty = level.getDifficulty();
-         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (caption, value) -> difficulty.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, (value) -> {
-         });
+         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (caption, value) -> difficulty.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, OptionInstance.NO_ACTION);
       });
       if (difficultyDisplay != null) {
          this.difficultyDisplay = difficultyDisplay;

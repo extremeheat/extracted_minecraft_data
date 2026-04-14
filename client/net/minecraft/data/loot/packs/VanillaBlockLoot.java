@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.StatePropertiesPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
+import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -476,6 +476,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       Blocks.CUT_COPPER_STAIRS.forEach((x$0) -> this.dropSelf(x$0));
       Blocks.LIGHTNING_ROD.forEach((x$0) -> this.dropSelf(x$0));
       this.dropSelf(Blocks.POINTED_DRIPSTONE);
+      this.dropSelf(Blocks.SULFUR_SPIKE);
       this.dropSelf(Blocks.DRIPSTONE_BLOCK);
       this.dropSelf(Blocks.SPORE_BLOSSOM);
       this.dropSelf(Blocks.FLOWERING_AZALEA);
@@ -877,7 +878,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.addNetherVinesDropTable(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT);
       this.add(Blocks.CAKE, noDrop());
       this.add(Blocks.CANDLE_CAKE, createCandleCakeDrops(Blocks.CANDLE));
-      ColorCollection.zipApply((cake, candle) -> this.add(cake, createCandleCakeDrops(candle)), Blocks.DYED_CANDLE_CAKE, Blocks.DYED_CANDLE);
+      ColorCollection.zipApply(Blocks.DYED_CANDLE_CAKE, Blocks.DYED_CANDLE, (cake, candle) -> this.add(cake, createCandleCakeDrops(candle)));
       this.add(Blocks.FROSTED_ICE, noDrop());
       this.add(Blocks.SPAWNER, noDrop());
       this.add(Blocks.TRIAL_SPAWNER, noDrop());

@@ -25,7 +25,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    public DispenserBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      this(BlockEntityType.DISPENSER, worldPosition, blockState);
+      this(BlockEntityTypes.DISPENSER, worldPosition, blockState);
    }
 
    public int getContainerSize() {

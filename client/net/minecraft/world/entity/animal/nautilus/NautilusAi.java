@@ -13,7 +13,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -49,7 +49,7 @@ public class NautilusAi {
    private static final int TIME_BETWEEN_ATTACKS = 80;
    private static final double MAX_CHARGE_DISTANCE = 12.0;
    private static final double MAX_TARGET_DETECTION_DISTANCE = 11.0;
-   protected static final TargetingConditions ATTACK_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((target, level) -> ((Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) || !target.is(EntityType.ARMOR_STAND)) && level.getWorldBorder().isWithinBounds(target.getBoundingBox()));
+   protected static final TargetingConditions ATTACK_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((target, level) -> ((Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) || !target.is(EntityTypes.ARMOR_STAND)) && level.getWorldBorder().isWithinBounds(target.getBoundingBox()));
 
    public NautilusAi() {
       super();
@@ -68,7 +68,7 @@ public class NautilusAi {
    }
 
    private static ActivityData<Nautilus> initIdleActivity() {
-      return ActivityData.<Nautilus>create(Activity.IDLE, ImmutableList.of(Pair.of(1, new AnimalMakeLove(EntityType.NAUTILUS, 0.4F, 2)), Pair.of(2, new FollowTemptation((mob) -> 1.3F, (mob) -> mob.isBaby() ? 2.5 : 3.5)), Pair.of(3, StartAttacking.create(NautilusAi::findNearestValidAttackTarget)), Pair.of(4, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 3))))));
+      return ActivityData.<Nautilus>create(Activity.IDLE, ImmutableList.of(Pair.of(1, new AnimalMakeLove(EntityTypes.NAUTILUS, 0.4F, 2)), Pair.of(2, new FollowTemptation((mob) -> 1.3F, (mob) -> mob.isBaby() ? 2.5 : 3.5)), Pair.of(3, StartAttacking.create(NautilusAi::findNearestValidAttackTarget)), Pair.of(4, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 3))))));
    }
 
    private static ActivityData<Nautilus> initFightActivity() {

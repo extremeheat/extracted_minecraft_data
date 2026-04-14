@@ -271,7 +271,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    private void turnToStatue(final ServerLevel level) {
       BlockPos pos = this.blockPosition();
-      level.setBlock(pos, (BlockState)((BlockState)((Block)Blocks.COPPER_GOLEM_STATUE.oxidized()).defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
+      level.setBlock(pos, (BlockState)((BlockState)((Block)Blocks.COPPER_GOLEM_STATUE.weathering().oxidized()).defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
       BlockEntity var4 = level.getBlockEntity(pos);
       if (var4 instanceof CopperGolemStatueBlockEntity copperGolemStatueBlockEntity) {
          copperGolemStatueBlockEntity.createStatue(this);

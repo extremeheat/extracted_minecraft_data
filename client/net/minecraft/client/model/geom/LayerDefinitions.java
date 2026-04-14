@@ -150,7 +150,6 @@ import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.model.player.PlayerCapeModel;
 import net.minecraft.client.model.player.PlayerEarsModel;
 import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.renderer.blockentity.BedRenderer;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
@@ -264,8 +263,6 @@ public class LayerDefinitions {
       result.put(ModelLayers.STANDING_BANNER_FLAG, BannerFlagModel.createFlagLayer(true));
       result.put(ModelLayers.WALL_BANNER_FLAG, BannerFlagModel.createFlagLayer(false));
       result.put(ModelLayers.BAT, BatModel.createBodyLayer());
-      result.put(ModelLayers.BED_FOOT, BedRenderer.createFootLayer());
-      result.put(ModelLayers.BED_HEAD, BedRenderer.createHeadLayer());
       result.put(ModelLayers.BEE, AdultBeeModel.createBodyLayer());
       result.put(ModelLayers.BEE_BABY, BabyBeeModel.createBodyLayer());
       result.put(ModelLayers.BEE_STINGER, BeeStingerModel.createBodyLayer());

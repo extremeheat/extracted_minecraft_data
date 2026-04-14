@@ -280,6 +280,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Leashable;
@@ -486,7 +487,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       int seaLevel = spawnInfo.seaLevel();
       ClientLevel.ClientLevelData levelData = new ClientLevel.ClientLevelData(Difficulty.NORMAL, packet.hardcore(), isFlat);
       this.levelData = levelData;
-      this.level = new ClientLevel(this, levelData, dimension, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, isDebug, spawnInfo.seed(), seaLevel);
+      this.level = new ClientLevel(this, levelData, dimension, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, isDebug, spawnInfo.seed(), seaLevel);
       this.minecraft.setLevel(this.level);
       if (this.minecraft.player == null) {
          this.minecraft.player = this.minecraft.gameMode.createPlayer(this.level, new StatsCounter(), new ClientRecipeBook());
@@ -498,7 +499,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       this.setClientLoaded(false);
       this.debugSubscriber.clear();
-      this.minecraft.levelRenderer.debugRenderer.refreshRendererList();
+      this.minecraft.levelExtractor.debugRenderer.refreshRendererList();
       this.minecraft.player.resetPos();
       this.minecraft.player.setId(packet.playerId());
       this.level.addEntity(this.minecraft.player);
@@ -560,7 +561,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    private @Nullable Entity createEntityFromPacket(final ClientboundAddEntityPacket packet) {
       EntityType<?> type = packet.getType();
-      if (type == EntityType.PLAYER) {
+      if (type == EntityTypes.PLAYER) {
          PlayerInfo playerInfo = this.getPlayerInfo(packet.getUUID());
          if (playerInfo == null) {
             LOGGER.warn("Server attempted to add player prior to sending player info (Player id {})", packet.getUUID());
@@ -807,7 +808,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          LevelChunk chunk = this.level.getChunkSource().getChunk(x, z, false);
          if (chunk != null) {
             this.enableChunkLight(chunk, x, z);
-            this.minecraft.levelRenderer.onChunkReadyToRender(chunk.getPos());
          }
 
       });
@@ -828,7 +828,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          for(int xOffset = -1; xOffset <= 1; ++xOffset) {
             for(int zOffset = -1; zOffset <= 1; ++zOffset) {
                for(int y = this.level.getMinSectionY(); y <= this.level.getMaxSectionY(); ++y) {
-                  this.minecraft.levelRenderer.setSectionDirty(data.pos().x() + xOffset, y, data.pos().z() + zOffset);
+                  this.minecraft.levelExtractor.setSectionDirty(data.pos().x() + xOffset, y, data.pos().z() + zOffset);
                }
             }
          }
@@ -1158,7 +1158,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          int seaLevel = spawnInfo.seaLevel();
          ClientLevel.ClientLevelData levelData = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), isFlat);
          this.levelData = levelData;
-         this.level = new ClientLevel(this, levelData, dimensionKey, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, isDebug, spawnInfo.seed(), seaLevel);
+         this.level = new ClientLevel(this, levelData, dimensionKey, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, isDebug, spawnInfo.seed(), seaLevel);
          this.level.addMapData(mapData);
          this.minecraft.setLevel(this.level);
          this.debugSubscriber.dropLevel();
@@ -1475,7 +1475,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.levelLoadTracker = new LevelLoadTracker();
       }
 
-      this.levelLoadTracker.startClientLoad(player, level, this.minecraft.levelRenderer);
+      this.levelLoadTracker.startClientLoad(player, level);
       Screen var5 = this.minecraft.gui.screen();
       if (var5 instanceof LevelLoadingScreen loadingScreen) {
          loadingScreen.update(this.levelLoadTracker, reason);
@@ -2296,7 +2296,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleGameTestHighlightPos(final ClientboundGameTestHighlightPosPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.levelRenderer.gameTestBlockHighlightRenderer.highlightPos(packet.absolutePos(), packet.relativePos());
+      this.minecraft.levelExtractor.gameTestBlockHighlightRenderer.highlightPos(packet.absolutePos(), packet.relativePos());
    }
 
    public void handleLowDiskSpaceWarning(final ClientboundLowDiskSpaceWarningPacket packet) {
@@ -2543,6 +2543,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.setClientLoaded(true);
       }
 
+   }
+
+   public @Nullable Runnable getPlayerCompiledSectionCallback() {
+      return this.levelLoadTracker != null ? this.levelLoadTracker.getPlayerCompiledSectionCallback() : null;
    }
 
    public void prepareKeyPair() {

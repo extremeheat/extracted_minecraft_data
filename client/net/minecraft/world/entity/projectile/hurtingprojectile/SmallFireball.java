@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -22,11 +23,11 @@ public class SmallFireball extends Fireball {
    }
 
    public SmallFireball(final Level level, final LivingEntity mob, final Vec3 direction) {
-      super(EntityType.SMALL_FIREBALL, mob, direction, level);
+      super(EntityTypes.SMALL_FIREBALL, mob, direction, level);
    }
 
    public SmallFireball(final Level level, final double x, final double y, final double z, final Vec3 direction) {
-      super(EntityType.SMALL_FIREBALL, x, y, z, direction, level);
+      super(EntityTypes.SMALL_FIREBALL, x, y, z, direction, level);
    }
 
    protected void onHitEntity(final EntityHitResult hitResult) {

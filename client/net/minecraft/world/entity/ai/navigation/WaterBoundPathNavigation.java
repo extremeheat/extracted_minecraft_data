@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.navigation;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathFinder;
@@ -16,7 +16,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
    }
 
    protected PathFinder createPathFinder(final int maxVisitedNodes) {
-      this.allowBreaching = this.mob.is(EntityType.DOLPHIN);
+      this.allowBreaching = this.mob.is(EntityTypes.DOLPHIN);
       this.nodeEvaluator = new SwimNodeEvaluator(this.allowBreaching);
       this.nodeEvaluator.setCanPassDoors(false);
       return new PathFinder(this.nodeEvaluator, maxVisitedNodes);

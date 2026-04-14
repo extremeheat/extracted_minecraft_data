@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
-import net.minecraft.references.BlockIds;
+import net.minecraft.references.BlockItemIds;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -27,7 +27,7 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
    }
 
    public GrassBlock(final BlockBehaviour.Properties properties) {
-      super(properties, BlockIds.DIRT);
+      super(properties, BlockItemIds.DIRT.block());
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {

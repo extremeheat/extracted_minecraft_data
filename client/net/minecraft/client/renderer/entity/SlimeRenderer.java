@@ -17,8 +17,8 @@ public class SlimeRenderer extends AbstractCubeMobRenderer<Slime, SlimeRenderSta
    }
 
    protected void scale(final SlimeRenderState state, final PoseStack poseStack) {
-      super.scale(state, poseStack);
       this.downscaleSlightly(poseStack);
+      super.scale(state, poseStack);
    }
 
    public Identifier getTextureLocation(final SlimeRenderState state) {

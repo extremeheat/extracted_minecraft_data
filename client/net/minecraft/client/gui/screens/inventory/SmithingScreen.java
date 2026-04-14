@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.player.Inventory;
@@ -59,7 +59,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       super(menu, inventory, title, Identifier.withDefaultNamespace("textures/gui/container/smithing.png"));
       this.titleLabelX = 44;
       this.titleLabelY = 15;
-      this.armorStandPreview.entityType = EntityType.ARMOR_STAND;
+      this.armorStandPreview.entityType = EntityTypes.ARMOR_STAND;
       this.armorStandPreview.showBasePlate = false;
       this.armorStandPreview.showArms = true;
       this.armorStandPreview.xRot = 25.0F;

@@ -32,9 +32,8 @@ public class ClientShutdownWatchdog {
          }
 
          Minecraft.saveReport(gameConfig.location.gameDirectory, report);
-      });
+      }, "Client shutdown watchdog");
       thread.setDaemon(true);
-      thread.setName("Client shutdown watchdog");
       thread.start();
    }
 }

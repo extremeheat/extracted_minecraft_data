@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -161,7 +162,7 @@ public class Chicken extends Animal {
    }
 
    public @Nullable Chicken getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Chicken baby = EntityType.CHICKEN.create(level, EntitySpawnReason.BREEDING);
+      Chicken baby = EntityTypes.CHICKEN.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Chicken partnerChicken) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerChicken.getVariant());
       }

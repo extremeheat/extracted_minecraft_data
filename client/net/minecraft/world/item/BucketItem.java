@@ -1,6 +1,6 @@
 package net.minecraft.world.item;
 
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -42,7 +42,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
-      BlockHitResult hitResult = getPlayerPOVHitResult(level, player, this.content == Fluids.EMPTY ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
+      BlockHitResult hitResult = getPlayerPOVHitResult(level, player, this.getFluidContext());
       if (hitResult.getType() == HitResult.Type.MISS) {
          return InteractionResult.PASS;
       } else if (hitResult.getType() != HitResult.Type.BLOCK) {
@@ -90,6 +90,10 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             return InteractionResult.FAIL;
          }
       }
+   }
+
+   public ClipContext.Fluid getFluidContext() {
+      return this.content == Fluids.EMPTY ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE;
    }
 
    public static ItemStack getEmptySuccessItem(final ItemStack itemStack, final Player player) {

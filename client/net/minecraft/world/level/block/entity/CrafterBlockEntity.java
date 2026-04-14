@@ -39,7 +39,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    protected final ContainerData containerData;
 
    public CrafterBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CRAFTER, worldPosition, blockState);
+      super(BlockEntityTypes.CRAFTER, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
       this.craftingTicksRemaining = 0;
       this.containerData = new ContainerData() {

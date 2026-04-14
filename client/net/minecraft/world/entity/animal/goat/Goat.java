@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
@@ -121,7 +122,7 @@ public class Goat extends Animal {
    }
 
    public @Nullable Goat getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Goat newGoat = EntityType.GOAT.create(level, EntitySpawnReason.BREEDING);
+      Goat newGoat = EntityTypes.GOAT.create(level, EntitySpawnReason.BREEDING);
       if (newGoat != null) {
          boolean var10000;
          label22: {

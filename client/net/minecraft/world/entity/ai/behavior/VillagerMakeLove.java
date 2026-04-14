@@ -7,7 +7,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -79,11 +79,11 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    private boolean isBreedingPossible(final Villager myBody) {
       Brain<Villager> brain = myBody.getBrain();
-      Optional<AgeableMob> breedTarget = brain.getMemory(MemoryModuleType.BREED_TARGET).filter((entity) -> entity.is(EntityType.VILLAGER));
+      Optional<AgeableMob> breedTarget = brain.getMemory(MemoryModuleType.BREED_TARGET).filter((entity) -> entity.is(EntityTypes.VILLAGER));
       if (breedTarget.isEmpty()) {
          return false;
       } else {
-         return BehaviorUtils.targetIsValid(brain, MemoryModuleType.BREED_TARGET, EntityType.VILLAGER) && myBody.canBreed() && ((AgeableMob)breedTarget.get()).canBreed();
+         return BehaviorUtils.targetIsValid(brain, MemoryModuleType.BREED_TARGET, EntityTypes.VILLAGER) && myBody.canBreed() && ((AgeableMob)breedTarget.get()).canBreed();
       }
    }
 

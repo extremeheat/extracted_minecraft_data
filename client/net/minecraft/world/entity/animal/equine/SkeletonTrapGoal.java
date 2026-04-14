@@ -4,7 +4,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -35,7 +35,7 @@ public class SkeletonTrapGoal extends Goal {
       this.horse.setTrap(false);
       this.horse.setTamed(true);
       this.horse.setAge(0);
-      LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
+      LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
       if (bolt != null) {
          bolt.snapTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          bolt.setVisualOnly(true);
@@ -62,7 +62,7 @@ public class SkeletonTrapGoal extends Goal {
    }
 
    private @Nullable AbstractHorse createHorse(final DifficultyInstance difficulty) {
-      SkeletonHorse horse = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
+      SkeletonHorse horse = EntityTypes.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
       if (horse != null) {
          horse.finalizeSpawn((ServerLevel)this.horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          horse.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
@@ -76,7 +76,7 @@ public class SkeletonTrapGoal extends Goal {
    }
 
    private @Nullable Skeleton createSkeleton(final DifficultyInstance difficulty, final AbstractHorse horse) {
-      Skeleton skeleton = EntityType.SKELETON.create(horse.level(), EntitySpawnReason.TRIGGERED);
+      Skeleton skeleton = EntityTypes.SKELETON.create(horse.level(), EntitySpawnReason.TRIGGERED);
       if (skeleton != null) {
          skeleton.finalizeSpawn((ServerLevel)horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          skeleton.setPos(horse.getX(), horse.getY(), horse.getZ());

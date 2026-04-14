@@ -32,6 +32,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -298,7 +299,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    protected @Nullable Llama makeNewLlama() {
-      return EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      return EntityTypes.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    private void spit(final LivingEntity target) {
@@ -401,7 +402,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    static {
       DATA_STRENGTH_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
       DATA_VARIANT_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
-      BABY_DIMENSIONS = EntityType.LLAMA.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.LLAMA.getHeight() - 0.25F, -0.3F)).scale(0.5F);
+      BABY_DIMENSIONS = EntityTypes.LLAMA.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityTypes.LLAMA.getHeight() - 0.25F, -0.3F)).scale(0.5F);
    }
 
    public static enum Variant implements StringRepresentable {

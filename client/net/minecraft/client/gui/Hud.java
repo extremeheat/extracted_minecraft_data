@@ -209,7 +209,7 @@ public class Hud {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
-      this.minecraft.gameRenderer.getGameRenderState().guiRenderState.isHudHidden = this.isHidden;
+      this.minecraft.gameRenderer.gameRenderState().guiRenderState.isHudHidden = this.isHidden;
       if (!(this.minecraft.gui.screen() instanceof LevelLoadingScreen)) {
          if (!this.isHidden) {
             this.extractCameraOverlays(graphics, deltaTracker);

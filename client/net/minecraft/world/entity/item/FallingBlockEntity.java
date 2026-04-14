@@ -26,6 +26,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
@@ -83,7 +84,7 @@ public class FallingBlockEntity extends Entity {
    }
 
    private FallingBlockEntity(final Level level, final double x, final double y, final double z, final BlockState blockState) {
-      this(EntityType.FALLING_BLOCK, level);
+      this(EntityTypes.FALLING_BLOCK, level);
       this.blockState = blockState;
       this.blocksBuilding = true;
       this.setPos(x, y, z);

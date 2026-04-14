@@ -31,6 +31,7 @@ import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Shearable;
@@ -151,7 +152,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
    public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool) {
       level.playSound((Entity)null, this, SoundEvents.MOOSHROOM_SHEAR, soundSource, 1.0F, 1.0F);
-      this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), (cow) -> {
+      this.convertTo(EntityTypes.COW, ConversionParams.single(this, false, false), (cow) -> {
          level.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
          this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_MOOSHROOM, tool, (l, drop) -> {
             for(int i = 0; i < drop.getCount(); ++i) {
@@ -210,7 +211,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
    }
 
    public @Nullable MushroomCow getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      MushroomCow baby = EntityType.MOOSHROOM.create(level, EntitySpawnReason.BREEDING);
+      MushroomCow baby = EntityTypes.MOOSHROOM.create(level, EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setVariant(this.getOffspringVariant((MushroomCow)partner));
       }

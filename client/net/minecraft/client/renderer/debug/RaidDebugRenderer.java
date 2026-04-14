@@ -44,6 +44,6 @@ public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private Camera getCamera() {
-      return this.minecraft.gameRenderer.getMainCamera();
+      return this.minecraft.gameRenderer.mainCamera();
    }
 }

@@ -40,7 +40,7 @@ public record VulkanBindGroupLayout(long handle, List<Entry> entries) {
 
          bindings.flip();
          VkDescriptorSetLayoutCreateInfo setCreateInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack).sType$Default().flags(1).pBindings(bindings);
-         LongBuffer pointer = stack.mallocLong(1);
+         LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkCreateDescriptorSetLayout(device.vkDevice(), setCreateInfo, (VkAllocationCallbacks)null, pointer), "Can't set layout for " + name);
          layoutHandle = pointer.get(0);
       } catch (Throwable var10) {

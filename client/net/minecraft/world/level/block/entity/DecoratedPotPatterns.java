@@ -1,13 +1,12 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Map;
+import java.util.function.BiConsumer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.references.ItemIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotPatterns {
    public static final ResourceKey<DecoratedPotPattern> BLANK = create("blank");
@@ -34,14 +33,36 @@ public class DecoratedPotPatterns {
    public static final ResourceKey<DecoratedPotPattern> SHELTER = create("shelter");
    public static final ResourceKey<DecoratedPotPattern> SKULL = create("skull");
    public static final ResourceKey<DecoratedPotPattern> SNORT = create("snort");
-   private static final Map<Item, ResourceKey<DecoratedPotPattern>> ITEM_TO_POT_TEXTURE;
 
    public DecoratedPotPatterns() {
       super();
    }
 
-   public static @Nullable ResourceKey<DecoratedPotPattern> getPatternFromItem(final Item item) {
-      return (ResourceKey)ITEM_TO_POT_TEXTURE.get(item);
+   public static void itemToPatternMappings(final BiConsumer<ResourceKey<Item>, ResourceKey<DecoratedPotPattern>> itemToPattern) {
+      itemToPattern.accept(ItemIds.BRICK, BLANK);
+      itemToPattern.accept(ItemIds.ANGLER_POTTERY_SHERD, ANGLER);
+      itemToPattern.accept(ItemIds.ARCHER_POTTERY_SHERD, ARCHER);
+      itemToPattern.accept(ItemIds.ARMS_UP_POTTERY_SHERD, ARMS_UP);
+      itemToPattern.accept(ItemIds.BLADE_POTTERY_SHERD, BLADE);
+      itemToPattern.accept(ItemIds.BREWER_POTTERY_SHERD, BREWER);
+      itemToPattern.accept(ItemIds.BURN_POTTERY_SHERD, BURN);
+      itemToPattern.accept(ItemIds.DANGER_POTTERY_SHERD, DANGER);
+      itemToPattern.accept(ItemIds.EXPLORER_POTTERY_SHERD, EXPLORER);
+      itemToPattern.accept(ItemIds.FLOW_POTTERY_SHERD, FLOW);
+      itemToPattern.accept(ItemIds.FRIEND_POTTERY_SHERD, FRIEND);
+      itemToPattern.accept(ItemIds.GUSTER_POTTERY_SHERD, GUSTER);
+      itemToPattern.accept(ItemIds.HEART_POTTERY_SHERD, HEART);
+      itemToPattern.accept(ItemIds.HEARTBREAK_POTTERY_SHERD, HEARTBREAK);
+      itemToPattern.accept(ItemIds.HOWL_POTTERY_SHERD, HOWL);
+      itemToPattern.accept(ItemIds.MINER_POTTERY_SHERD, MINER);
+      itemToPattern.accept(ItemIds.MOURNER_POTTERY_SHERD, MOURNER);
+      itemToPattern.accept(ItemIds.PLENTY_POTTERY_SHERD, PLENTY);
+      itemToPattern.accept(ItemIds.PRIZE_POTTERY_SHERD, PRIZE);
+      itemToPattern.accept(ItemIds.SCRAPE_POTTERY_SHERD, SCRAPE);
+      itemToPattern.accept(ItemIds.SHEAF_POTTERY_SHERD, SHEAF);
+      itemToPattern.accept(ItemIds.SHELTER_POTTERY_SHERD, SHELTER);
+      itemToPattern.accept(ItemIds.SKULL_POTTERY_SHERD, SKULL);
+      itemToPattern.accept(ItemIds.SNORT_POTTERY_SHERD, SNORT);
    }
 
    private static ResourceKey<DecoratedPotPattern> create(final String id) {
@@ -77,9 +98,5 @@ public class DecoratedPotPatterns {
 
    private static DecoratedPotPattern register(final Registry<DecoratedPotPattern> registry, final ResourceKey<DecoratedPotPattern> id, final String assetId) {
       return (DecoratedPotPattern)Registry.register(registry, (ResourceKey)id, new DecoratedPotPattern(Identifier.withDefaultNamespace(assetId)));
-   }
-
-   static {
-      ITEM_TO_POT_TEXTURE = Map.ofEntries(Map.entry(Items.BRICK, BLANK), Map.entry(Items.ANGLER_POTTERY_SHERD, ANGLER), Map.entry(Items.ARCHER_POTTERY_SHERD, ARCHER), Map.entry(Items.ARMS_UP_POTTERY_SHERD, ARMS_UP), Map.entry(Items.BLADE_POTTERY_SHERD, BLADE), Map.entry(Items.BREWER_POTTERY_SHERD, BREWER), Map.entry(Items.BURN_POTTERY_SHERD, BURN), Map.entry(Items.DANGER_POTTERY_SHERD, DANGER), Map.entry(Items.EXPLORER_POTTERY_SHERD, EXPLORER), Map.entry(Items.FLOW_POTTERY_SHERD, FLOW), Map.entry(Items.FRIEND_POTTERY_SHERD, FRIEND), Map.entry(Items.GUSTER_POTTERY_SHERD, GUSTER), Map.entry(Items.HEART_POTTERY_SHERD, HEART), Map.entry(Items.HEARTBREAK_POTTERY_SHERD, HEARTBREAK), Map.entry(Items.HOWL_POTTERY_SHERD, HOWL), Map.entry(Items.MINER_POTTERY_SHERD, MINER), Map.entry(Items.MOURNER_POTTERY_SHERD, MOURNER), Map.entry(Items.PLENTY_POTTERY_SHERD, PLENTY), Map.entry(Items.PRIZE_POTTERY_SHERD, PRIZE), Map.entry(Items.SCRAPE_POTTERY_SHERD, SCRAPE), Map.entry(Items.SHEAF_POTTERY_SHERD, SHEAF), Map.entry(Items.SHELTER_POTTERY_SHERD, SHELTER), Map.entry(Items.SKULL_POTTERY_SHERD, SKULL), Map.entry(Items.SNORT_POTTERY_SHERD, SNORT));
    }
 }

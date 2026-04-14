@@ -99,6 +99,17 @@ public abstract class TagsProvider<T> implements DataProvider {
       });
    }
 
+   protected TagAppender<T> tag(final TagKey<T> tag) {
+      TagBuilder builder = this.getOrCreateRawBuilder(tag);
+      return TagAppender.<T>forBuilder(builder);
+   }
+
+   protected TagAppender<T> tag(final TagKey<T> tag, final boolean replace) {
+      TagBuilder builder = this.getOrCreateRawBuilder(tag);
+      builder.setReplace(replace);
+      return TagAppender.<T>forBuilder(builder);
+   }
+
    @FunctionalInterface
    public interface TagLookup<T> extends Function<TagKey<T>, Optional<TagBuilder>> {
       static <T> TagLookup<T> empty() {

@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -127,7 +127,7 @@ public class StructureUtils {
       int radius = 250;
       Vec3 start = camera.getEyePosition();
       Vec3 end = start.add(camera.getLookAngle().scale(250.0));
-      Stream var10000 = findTestBlocks(pos, 250, level).map((blockPos) -> level.getBlockEntity(blockPos, BlockEntityType.TEST_INSTANCE_BLOCK)).flatMap(Optional::stream).filter((blockEntity) -> blockEntity.getStructureBounds().clip(start, end).isPresent()).map(BlockEntity::getBlockPos);
+      Stream var10000 = findTestBlocks(pos, 250, level).map((blockPos) -> level.getBlockEntity(blockPos, BlockEntityTypes.TEST_INSTANCE_BLOCK)).flatMap(Optional::stream).filter((blockEntity) -> blockEntity.getStructureBounds().clip(start, end).isPresent()).map(BlockEntity::getBlockPos);
       Objects.requireNonNull(pos);
       return var10000.sorted(Comparator.comparing(pos::distSqr)).limit(1L);
    }

@@ -17,6 +17,7 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.SculkShriekerBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,7 +59,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       if (level instanceof ServerLevel serverLevel) {
          ServerPlayer player = SculkShriekerBlockEntity.tryGetPlayer(entity);
          if (player != null) {
-            serverLevel.getBlockEntity(pos, BlockEntityType.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryShriek(serverLevel, player));
+            serverLevel.getBlockEntity(pos, BlockEntityTypes.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryShriek(serverLevel, player));
          }
       }
 
@@ -68,7 +69,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(SHRIEKING)) {
          level.setBlock(pos, (BlockState)state.setValue(SHRIEKING, false), 3);
-         level.getBlockEntity(pos, BlockEntityType.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryRespond(level));
+         level.getBlockEntity(pos, BlockEntityTypes.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryRespond(level));
       }
 
    }
@@ -114,7 +115,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return !level.isClientSide() ? BaseEntityBlock.createTickerHelper(type, BlockEntityType.SCULK_SHRIEKER, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
+      return !level.isClientSide() ? BaseEntityBlock.createTickerHelper(type, BlockEntityTypes.SCULK_SHRIEKER, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
    }
 
    static {

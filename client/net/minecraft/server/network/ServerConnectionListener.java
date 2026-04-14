@@ -1,6 +1,7 @@
 package net.minecraft.server.network;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -160,7 +161,7 @@ public class ServerConnectionListener {
    }
 
    private static class LatencySimulator extends ChannelInboundHandlerAdapter {
-      private static final Timer TIMER = new HashedWheelTimer();
+      private static final Timer TIMER = new HashedWheelTimer((new ThreadFactoryBuilder()).setNameFormat("Latency Simulator #%d").setDaemon(true).build());
       private final int delay;
       private final int jitter;
       private final List<DelayedMessage> queuedMessages = Lists.newArrayList();

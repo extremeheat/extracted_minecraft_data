@@ -75,7 +75,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public AreaEffectCloud(final Level level, final double x, final double y, final double z) {
-      this(EntityType.AREA_EFFECT_CLOUD, level);
+      this(EntityTypes.AREA_EFFECT_CLOUD, level);
       this.setPos(x, y, z);
    }
 

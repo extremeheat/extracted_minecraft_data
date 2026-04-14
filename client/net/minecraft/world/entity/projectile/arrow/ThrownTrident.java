@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -41,13 +42,13 @@ public class ThrownTrident extends AbstractArrow {
    }
 
    public ThrownTrident(final Level level, final LivingEntity owner, final ItemStack tridentItem) {
-      super(EntityType.TRIDENT, owner, level, tridentItem, (ItemStack)null);
+      super(EntityTypes.TRIDENT, owner, level, tridentItem, (ItemStack)null);
       this.entityData.set(ID_LOYALTY, this.getLoyaltyFromItem(tridentItem));
       this.entityData.set(ID_FOIL, tridentItem.hasFoil());
    }
 
    public ThrownTrident(final Level level, final double x, final double y, final double z, final ItemStack tridentItem) {
-      super(EntityType.TRIDENT, x, y, z, level, tridentItem, tridentItem);
+      super(EntityTypes.TRIDENT, x, y, z, level, tridentItem, tridentItem);
       this.entityData.set(ID_LOYALTY, this.getLoyaltyFromItem(tridentItem));
       this.entityData.set(ID_FOIL, tridentItem.hasFoil());
    }
@@ -132,7 +133,7 @@ public class ThrownTrident extends AbstractArrow {
 
       this.dealtDamage = true;
       if (entity.hurtOrSimulate(damageSource, dmg)) {
-         if (entity.is(EntityType.ENDERMAN)) {
+         if (entity.is(EntityTypes.ENDERMAN)) {
             return;
          }
 

@@ -7,6 +7,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
@@ -51,7 +52,7 @@ public class Donkey extends AbstractChestedHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      EntityType<? extends AbstractHorse> babyType = partner instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
+      EntityType<? extends AbstractHorse> babyType = partner instanceof Horse ? EntityTypes.MULE : EntityTypes.DONKEY;
       AbstractHorse baby = babyType.create(level, EntitySpawnReason.BREEDING);
       if (baby != null) {
          this.setOffspringAttributes(partner, baby);

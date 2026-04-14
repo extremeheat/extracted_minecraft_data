@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -37,6 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -279,7 +280,7 @@ public class EntitySelectorOptions {
                      parser.getReader().setCursor(start);
                      return ERROR_ENTITY_TYPE_INVALID.createWithContext(parser.getReader(), id.toString());
                   });
-                  if (Objects.equals(EntityType.PLAYER, type) && !inverted) {
+                  if (Objects.equals(EntityTypes.PLAYER, type) && !inverted) {
                      parser.setIncludesEntities(false);
                   }
 

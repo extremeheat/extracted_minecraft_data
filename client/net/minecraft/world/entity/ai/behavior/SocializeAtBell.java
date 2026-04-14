@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -21,8 +21,8 @@ public class SocializeAtBell {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.MEETING_POINT), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES), i.absent(MemoryModuleType.INTERACTION_TARGET)).apply(i, (walkTarget, lookTarget, meetingPoint, nearestEntities, interactionTarget) -> (level, body, timestamp) -> {
                GlobalPos memory = (GlobalPos)i.get(meetingPoint);
                NearestVisibleLivingEntities visibleEntities = (NearestVisibleLivingEntities)i.get(nearestEntities);
-               if (level.getRandom().nextInt(100) == 0 && level.dimension() == memory.dimension() && memory.pos().closerToCenterThan(body.position(), 4.0) && visibleEntities.contains((Predicate)((mob) -> mob.is(EntityType.VILLAGER)))) {
-                  visibleEntities.findClosest((mob) -> mob.is(EntityType.VILLAGER) && mob.distanceToSqr(body) <= 32.0).ifPresent((mob) -> {
+               if (level.getRandom().nextInt(100) == 0 && level.dimension() == memory.dimension() && memory.pos().closerToCenterThan(body.position(), 4.0) && visibleEntities.contains((Predicate)((mob) -> mob.is(EntityTypes.VILLAGER)))) {
+                  visibleEntities.findClosest((mob) -> mob.is(EntityTypes.VILLAGER) && mob.distanceToSqr(body) <= 32.0).ifPresent((mob) -> {
                      interactionTarget.set(mob);
                      lookTarget.set(new EntityTracker(mob, true));
                      walkTarget.set(new WalkTarget(new EntityTracker(mob, false), 0.3F, 1));

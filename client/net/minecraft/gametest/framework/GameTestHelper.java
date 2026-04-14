@@ -42,6 +42,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -151,7 +152,7 @@ public class GameTestHelper {
    public void despawnItem(final BlockPos pos, final double distance) {
       BlockPos absolutePos = this.absolutePos(pos);
 
-      for(ItemEntity entity : this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive)) {
+      for(ItemEntity entity : this.getLevel().getEntities(EntityTypes.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive)) {
          entity.remove(Entity.RemovalReason.KILLED);
       }
 
@@ -648,7 +649,7 @@ public class GameTestHelper {
 
    public void assertItemEntityCountIs(final Item itemType, final BlockPos pos, final double distance, final int count) {
       BlockPos absolutePos = this.absolutePos(pos);
-      List<ItemEntity> entities = this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
+      List<ItemEntity> entities = this.getLevel().getEntities(EntityTypes.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
       int num = 0;
 
       for(ItemEntity entity : entities) {
@@ -666,7 +667,7 @@ public class GameTestHelper {
    public void assertItemEntityPresent(final Item itemType, final BlockPos pos, final double distance) {
       BlockPos absolutePos = this.absolutePos(pos);
       Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+      if (!this.getLevel().hasEntities(EntityTypes.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
          throw this.assertionException(pos, "test.error.expected_item", getItemName(itemType));
       }
    }
@@ -674,21 +675,21 @@ public class GameTestHelper {
    public void assertItemEntityNotPresent(final Item itemType, final BlockPos pos, final double distance) {
       BlockPos absolutePos = this.absolutePos(pos);
       Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+      if (this.getLevel().hasEntities(EntityTypes.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
          throw this.assertionException(pos, "test.error.unexpected_item", getItemName(itemType));
       }
    }
 
    public void assertItemEntityPresent(final Item itemType) {
       Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+      if (!this.getLevel().hasEntities(EntityTypes.ITEM, this.getBounds(), isSameItem)) {
          throw this.assertionException("test.error.expected_item", getItemName(itemType));
       }
    }
 
    public void assertItemEntityNotPresent(final Item itemType) {
       Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+      if (this.getLevel().hasEntities(EntityTypes.ITEM, this.getBounds(), isSameItem)) {
          throw this.assertionException("test.error.unexpected_item", getItemName(itemType));
       }
    }

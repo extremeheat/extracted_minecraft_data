@@ -49,7 +49,7 @@ public class ExperienceOrb extends Entity {
    }
 
    public ExperienceOrb(final Level level, final Vec3 pos, final Vec3 roughly, final int value) {
-      this(EntityType.EXPERIENCE_ORB, level);
+      this(EntityTypes.EXPERIENCE_ORB, level);
       this.setPos(pos);
       if (!level.isClientSide()) {
          this.setYRot(this.random.nextFloat() * 360.0F);

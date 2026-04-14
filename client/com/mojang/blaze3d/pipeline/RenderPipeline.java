@@ -1,8 +1,6 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.PolygonMode;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,8 +18,7 @@ public class RenderPipeline {
    private final Identifier vertexShader;
    private final Identifier fragmentShader;
    private final ShaderDefines shaderDefines;
-   private final List<String> samplers;
-   private final List<UniformDescription> uniforms;
+   private final List<BindGroupLayout> bindGroupLayouts;
    private final @Nullable DepthStencilState depthStencilState;
    private final PolygonMode polygonMode;
    private final boolean cull;
@@ -31,14 +28,13 @@ public class RenderPipeline {
    private final int sortKey;
    private static int sortKeySeed;
 
-   protected RenderPipeline(final Identifier location, final Identifier vertexShader, final Identifier fragmentShader, final ShaderDefines shaderDefines, final List<String> samplers, final List<UniformDescription> uniforms, final ColorTargetState colorTargetState, final @Nullable DepthStencilState depthStencilState, final PolygonMode polygonMode, final boolean cull, final VertexFormat vertexFormat, final VertexFormat.Mode vertexFormatMode, final int sortKey) {
+   protected RenderPipeline(final Identifier location, final Identifier vertexShader, final Identifier fragmentShader, final ShaderDefines shaderDefines, final List<BindGroupLayout> bindGroupLayouts, final ColorTargetState colorTargetState, final @Nullable DepthStencilState depthStencilState, final PolygonMode polygonMode, final boolean cull, final VertexFormat vertexFormat, final VertexFormat.Mode vertexFormatMode, final int sortKey) {
       super();
       this.location = location;
       this.vertexShader = vertexShader;
       this.fragmentShader = fragmentShader;
       this.shaderDefines = shaderDefines;
-      this.samplers = samplers;
-      this.uniforms = uniforms;
+      this.bindGroupLayouts = bindGroupLayouts;
       this.depthStencilState = depthStencilState;
       this.polygonMode = polygonMode;
       this.cull = cull;
@@ -100,12 +96,8 @@ public class RenderPipeline {
       return this.shaderDefines;
    }
 
-   public List<String> getSamplers() {
-      return this.samplers;
-   }
-
-   public List<UniformDescription> getUniforms() {
-      return this.uniforms;
+   public List<BindGroupLayout> getBindGroupLayouts() {
+      return this.bindGroupLayouts;
    }
 
    public boolean wantsDepthTexture() {
@@ -128,8 +120,7 @@ public class RenderPipeline {
       private Optional<Identifier> fragmentShader = Optional.empty();
       private Optional<Identifier> vertexShader = Optional.empty();
       private Optional<ShaderDefines.Builder> definesBuilder = Optional.empty();
-      private Optional<List<String>> samplers = Optional.empty();
-      private Optional<List<UniformDescription>> uniforms = Optional.empty();
+      private Optional<List<BindGroupLayout>> bindGroupLayouts = Optional.empty();
       private Optional<DepthStencilState> depthStencilState = Optional.empty();
       private Optional<PolygonMode> polygonMode = Optional.empty();
       private Optional<Boolean> cull = Optional.empty();
@@ -198,39 +189,13 @@ public class RenderPipeline {
          return this;
       }
 
-      public Builder withSampler(final String sampler) {
-         if (this.samplers.isEmpty()) {
-            this.samplers = Optional.of(new ArrayList());
+      public Builder withBindGroupLayout(final BindGroupLayout bindGroupLayout) {
+         if (this.bindGroupLayouts.isEmpty()) {
+            this.bindGroupLayouts = Optional.of(new ArrayList());
          }
 
-         ((List)this.samplers.get()).add(sampler);
+         ((List)this.bindGroupLayouts.get()).add(bindGroupLayout);
          return this;
-      }
-
-      public Builder withUniform(final String name, final UniformType type) {
-         if (this.uniforms.isEmpty()) {
-            this.uniforms = Optional.of(new ArrayList());
-         }
-
-         if (type == UniformType.TEXEL_BUFFER) {
-            throw new IllegalArgumentException("Cannot use texel buffer without specifying texture format");
-         } else {
-            ((List)this.uniforms.get()).add(new UniformDescription(name, type));
-            return this;
-         }
-      }
-
-      public Builder withUniform(final String name, final UniformType type, final GpuFormat format) {
-         if (this.uniforms.isEmpty()) {
-            this.uniforms = Optional.of(new ArrayList());
-         }
-
-         if (type != UniformType.TEXEL_BUFFER) {
-            throw new IllegalArgumentException("Only texel buffer can specify texture format");
-         } else {
-            ((List)this.uniforms.get()).add(new UniformDescription(name, format));
-            return this;
-         }
       }
 
       public Builder withPolygonMode(final PolygonMode polygonMode) {
@@ -289,19 +254,11 @@ public class RenderPipeline {
             }
          }
 
-         snippet.samplers.ifPresent((builderSamplers) -> {
-            if (this.samplers.isPresent()) {
-               ((List)this.samplers.get()).addAll(builderSamplers);
+         snippet.bindGroupLayouts.ifPresent((snippetLayouts) -> {
+            if (this.bindGroupLayouts.isPresent()) {
+               ((List)this.bindGroupLayouts.get()).addAll(snippetLayouts);
             } else {
-               this.samplers = Optional.of(new ArrayList(builderSamplers));
-            }
-
-         });
-         snippet.uniforms.ifPresent((builderUniforms) -> {
-            if (this.uniforms.isPresent()) {
-               ((List)this.uniforms.get()).addAll(builderUniforms);
-            } else {
-               this.uniforms = Optional.of(new ArrayList(builderUniforms));
+               this.bindGroupLayouts = Optional.of(new ArrayList(snippetLayouts));
             }
 
          });
@@ -332,7 +289,7 @@ public class RenderPipeline {
       }
 
       public Snippet buildSnippet() {
-         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.samplers.map(Collections::unmodifiableList), this.uniforms.map(Collections::unmodifiableList), this.colorTargetState, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormat, this.vertexFormatMode);
+         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.bindGroupLayouts.map(Collections::unmodifiableList), this.colorTargetState, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormat, this.vertexFormatMode);
       }
 
       public RenderPipeline build() {
@@ -347,29 +304,12 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), (ColorTargetState)this.colorTargetState.orElse(ColorTargetState.DEFAULT), (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), nextPipelineSortKey++);
+            return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.bindGroupLayouts.orElse(new ArrayList())), (ColorTargetState)this.colorTargetState.orElse(ColorTargetState.DEFAULT), (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), nextPipelineSortKey++);
          }
       }
    }
 
-   public static record UniformDescription(String name, UniformType type, @Nullable GpuFormat gpuFormat) {
-      public UniformDescription(final String name, final UniformType type) {
-         this(name, type, (GpuFormat)null);
-         if (type == UniformType.TEXEL_BUFFER) {
-            throw new IllegalArgumentException("Texel buffer needs a texture format");
-         }
-      }
-
-      public UniformDescription(final String name, final GpuFormat gpuFormat) {
-         this(name, UniformType.TEXEL_BUFFER, gpuFormat);
-      }
-
-      public UniformDescription {
-         super();
-      }
-   }
-
-   public static record Snippet(Optional<Identifier> vertexShader, Optional<Identifier> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<ColorTargetState> colorTargetState, Optional<DepthStencilState> depthStencilState, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
+   public static record Snippet(Optional<Identifier> vertexShader, Optional<Identifier> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<BindGroupLayout>> bindGroupLayouts, Optional<ColorTargetState> colorTargetState, Optional<DepthStencilState> depthStencilState, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
       public Snippet {
          super();
       }

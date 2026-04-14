@@ -21,7 +21,7 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
    }
 
    public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
-      Camera camera = this.minecraft.gameRenderer.getMainCamera();
+      Camera camera = this.minecraft.gameRenderer.mainCamera();
       BlockPos playerPos = BlockPos.containing(camera.position().x, 0.0, camera.position().z);
       debugValues.forEachEntity(DebugSubscriptions.GOAL_SELECTORS, (entity, goalInfo) -> {
          if (playerPos.closerThan(entity.blockPosition(), 160.0)) {

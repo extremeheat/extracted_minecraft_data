@@ -37,7 +37,7 @@ public class BellBlockEntity extends BlockEntity {
    private int resonationTicks;
 
    public BellBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BELL, worldPosition, blockState);
+      super(BlockEntityTypes.BELL, worldPosition, blockState);
    }
 
    public boolean triggerEvent(final int b0, final int b1) {

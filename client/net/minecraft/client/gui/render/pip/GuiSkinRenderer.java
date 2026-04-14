@@ -23,8 +23,8 @@ public class GuiSkinRenderer extends PictureInPictureRenderer<GuiSkinRenderState
    }
 
    protected void renderToTexture(final GuiSkinRenderState skinState, final PoseStack modelStack, final SubmitNodeCollector submitNodeCollector) {
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.PLAYER_SKIN);
-      int guiScale = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.guiScale;
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.PLAYER_SKIN);
+      int guiScale = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale;
       Matrix4fStack viewStack = RenderSystem.getModelViewStack();
       viewStack.pushMatrix();
       float scale = skinState.scale() * (float)guiScale;

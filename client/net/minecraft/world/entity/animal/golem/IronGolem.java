@@ -16,6 +16,7 @@ import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
@@ -119,10 +120,10 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    public boolean canAttack(final LivingEntity target) {
-      if (this.isPlayerCreated() && target.is(EntityType.PLAYER)) {
+      if (this.isPlayerCreated() && target.is(EntityTypes.PLAYER)) {
          return false;
       } else {
-         return target.is(EntityType.CREEPER) ? false : super.canAttack(target);
+         return target.is(EntityTypes.CREEPER) ? false : super.canAttack(target);
       }
    }
 
@@ -293,12 +294,12 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          for(int i = 1; i < 3; ++i) {
             BlockPos abovePos = pos.above(i);
             BlockState above = level.getBlockState(abovePos);
-            if (!NaturalSpawner.isValidEmptySpawnBlock(level, abovePos, above, above.getFluidState(), EntityType.IRON_GOLEM)) {
+            if (!NaturalSpawner.isValidEmptySpawnBlock(level, abovePos, above, above.getFluidState(), EntityTypes.IRON_GOLEM)) {
                return false;
             }
          }
 
-         return NaturalSpawner.isValidEmptySpawnBlock(level, pos, level.getBlockState(pos), Fluids.EMPTY.defaultFluidState(), EntityType.IRON_GOLEM) && level.isUnobstructed(this);
+         return NaturalSpawner.isValidEmptySpawnBlock(level, pos, level.getBlockState(pos), Fluids.EMPTY.defaultFluidState(), EntityTypes.IRON_GOLEM) && level.isUnobstructed(this);
       }
    }
 

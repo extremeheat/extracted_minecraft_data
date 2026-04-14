@@ -42,6 +42,10 @@ public class ItemModelUtils {
       return new CuboidItemModelWrapper.Unbaked(id, Optional.empty(), List.of());
    }
 
+   public static ItemModel.Unbaked plainModel(final Identifier id, final Transformation transformation) {
+      return new CuboidItemModelWrapper.Unbaked(id, Optional.of(transformation), List.of());
+   }
+
    public static ItemModel.Unbaked tintedModel(final Identifier id, final ItemTintSource... tints) {
       return new CuboidItemModelWrapper.Unbaked(id, Optional.empty(), List.of(tints));
    }

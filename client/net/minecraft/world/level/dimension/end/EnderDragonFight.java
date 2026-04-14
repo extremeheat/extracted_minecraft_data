@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -40,7 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
@@ -432,7 +432,7 @@ public class EnderDragonFight extends SavedData {
 
    private @Nullable EnderDragon createNewDragon() {
       this.level.getChunkAt(new BlockPos(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ()));
-      EnderDragon dragon = EntityType.ENDER_DRAGON.create(this.level, EntitySpawnReason.EVENT);
+      EnderDragon dragon = EntityTypes.ENDER_DRAGON.create(this.level, EntitySpawnReason.EVENT);
       if (dragon != null) {
          dragon.setDragonFight(this);
          dragon.setFightOrigin(this.origin);

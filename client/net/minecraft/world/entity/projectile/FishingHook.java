@@ -3,7 +3,7 @@ package net.minecraft.world.entity.projectile;
 import com.mojang.logging.LogUtils;
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.Packet;
@@ -23,6 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MoverType;
@@ -83,7 +84,7 @@ public class FishingHook extends Projectile {
    }
 
    public FishingHook(final Player player, final Level level, final int luck, final int lureSpeed) {
-      this(EntityType.FISHING_BOBBER, level, luck, lureSpeed);
+      this(EntityTypes.FISHING_BOBBER, level, luck, lureSpeed);
       this.setOwner(player);
       float xRot1 = player.getXRot();
       float yRot1 = player.getYRot();

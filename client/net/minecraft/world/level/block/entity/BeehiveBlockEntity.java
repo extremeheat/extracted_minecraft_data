@@ -33,6 +33,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.Bees;
@@ -62,7 +63,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    private @Nullable BlockPos savedFlowerPos;
 
    public BeehiveBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BEEHIVE, worldPosition, blockState);
+      super(BlockEntityTypes.BEEHIVE, worldPosition, blockState);
    }
 
    public void setChanged() {
@@ -356,7 +357,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
 
       public static Occupant create(final int ticksInHive) {
-         return new Occupant(TypedEntityData.of(EntityType.BEE, new CompoundTag()), ticksInHive, 600);
+         return new Occupant(TypedEntityData.of(EntityTypes.BEE, new CompoundTag()), ticksInHive, 600);
       }
 
       public @Nullable Entity createEntity(final Level level, final BlockPos hivePos) {

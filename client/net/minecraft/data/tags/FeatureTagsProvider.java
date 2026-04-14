@@ -8,7 +8,7 @@ import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.tags.FeatureTags;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
-public class FeatureTagsProvider extends KeyTagProvider<ConfiguredFeature<?, ?>> {
+public class FeatureTagsProvider extends TagsProvider<ConfiguredFeature<?, ?>> {
    public FeatureTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.CONFIGURED_FEATURE, lookupProvider);
    }

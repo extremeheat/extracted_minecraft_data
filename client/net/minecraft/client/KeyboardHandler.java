@@ -120,10 +120,10 @@ public class KeyboardHandler {
             return true;
          case 85:
             if (event.hasShiftDown()) {
-               this.minecraft.gameRenderer.getMainCamera().killFrustum();
+               this.minecraft.gameRenderer.mainCamera().killFrustum();
                this.debugFeedback("Killed frustum");
             } else {
-               this.minecraft.gameRenderer.getMainCamera().captureFrustum();
+               this.minecraft.gameRenderer.mainCamera().captureFrustum();
                this.debugFeedback("Captured frustum");
             }
 
@@ -192,7 +192,7 @@ public class KeyboardHandler {
          Options options = this.minecraft.options;
          boolean debugAction = false;
          if (options.keyDebugReloadChunk.matches(event)) {
-            this.minecraft.levelRenderer.allChanged();
+            this.minecraft.levelExtractor.allChanged();
             this.debugFeedbackTranslated("debug.reload_chunks.message");
             debugAction = true;
          }
@@ -466,7 +466,7 @@ public class KeyboardHandler {
                if (event.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
                   this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
                } else {
-                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
+                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.gameRenderer.mainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
                }
 
                return;

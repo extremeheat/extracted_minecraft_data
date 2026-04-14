@@ -65,7 +65,7 @@ public class DebugCrosshairRenderer implements AutoCloseable {
       modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
       RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
       RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;
-      RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+      RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
       GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
       GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
       GpuBuffer indexBuffer = this.crosshairIndicies.getBuffer(36);

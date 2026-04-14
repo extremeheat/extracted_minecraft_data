@@ -10,6 +10,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -89,7 +90,7 @@ public class Skeleton extends AbstractSkeleton {
    }
 
    protected void doFreezeConversion() {
-      this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), (stray) -> {
+      this.convertTo(EntityTypes.STRAY, ConversionParams.single(this, true, true), (stray) -> {
          if (!this.isSilent()) {
             this.level().levelEvent((Entity)null, 1048, this.blockPosition(), 0);
          }

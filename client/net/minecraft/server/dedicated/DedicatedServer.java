@@ -293,9 +293,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          }
 
          if (this.getMaxTickLength() > 0L) {
-            Thread watchdog = new Thread(new ServerWatchdog(this));
+            Thread watchdog = new Thread(new ServerWatchdog(this), "Server Watchdog");
             watchdog.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
-            watchdog.setName("Server Watchdog");
             watchdog.setDaemon(true);
             watchdog.start();
          }

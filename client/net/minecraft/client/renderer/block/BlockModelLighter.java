@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.QuadInstance;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import java.util.Objects;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -292,13 +291,13 @@ public class BlockModelLighter {
          map.defaultReturnValue(0.0F / 0.0F);
          return map;
       });
-      private final LevelRenderer.BrightnessGetter cachedBrightnessGetter = (level, pos) -> {
+      private final LightCoordsUtil.BrightnessGetter cachedBrightnessGetter = (level, pos) -> {
          long key = pos.asLong();
          int cached = this.colorCache.get(key);
          if (cached != 2147483647) {
             return cached;
          } else {
-            int value = LevelRenderer.BrightnessGetter.DEFAULT.packedBrightness(level, pos);
+            int value = LightCoordsUtil.BrightnessGetter.DEFAULT.packedBrightness(level, pos);
             if (this.colorCache.size() == 100) {
                this.colorCache.removeFirstInt();
             }
@@ -323,7 +322,7 @@ public class BlockModelLighter {
       }
 
       public int getLightCoords(final BlockState state, final BlockAndTintGetter level, final BlockPos pos) {
-         return LevelRenderer.getLightCoords(this.enabled ? this.cachedBrightnessGetter : LevelRenderer.BrightnessGetter.DEFAULT, level, state, pos);
+         return LightCoordsUtil.getLightCoords(this.enabled ? this.cachedBrightnessGetter : LightCoordsUtil.BrightnessGetter.DEFAULT, level, state, pos);
       }
 
       public float getShadeBrightness(final BlockState state, final BlockAndTintGetter level, final BlockPos pos) {

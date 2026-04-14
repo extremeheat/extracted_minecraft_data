@@ -191,7 +191,7 @@ public class FileDownload {
                client.close();
             }
 
-         });
+         }, "Realms world download");
          this.currentThread.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
          this.currentThread.start();
       }

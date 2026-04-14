@@ -9,6 +9,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -23,7 +24,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
    }
 
    public DragonFireball(final Level level, final LivingEntity mob, final Vec3 direction) {
-      super(EntityType.DRAGON_FIREBALL, mob, direction, level);
+      super(EntityTypes.DRAGON_FIREBALL, mob, direction, level);
    }
 
    protected void onHit(final HitResult hitResult) {

@@ -12,7 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
@@ -68,11 +68,11 @@ public class HoglinAi {
    }
 
    private static ActivityData<Hoglin> initIdleActivity() {
-      return ActivityData.<Hoglin>create(Activity.IDLE, 10, ImmutableList.of(BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200), new AnimalMakeLove(EntityType.HOGLIN, 0.6F, 2), SetWalkTargetAwayFrom.pos(MemoryModuleType.NEAREST_REPELLENT, 1.0F, 8, true), StartAttacking.create(HoglinAi::findNearestValidAttackTarget), BehaviorBuilder.triggerIf(Hoglin::isAdult, SetWalkTargetAwayFrom.entity(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLIN, 0.4F, 8, false)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 0.6F), createIdleMovementBehaviors()));
+      return ActivityData.<Hoglin>create(Activity.IDLE, 10, ImmutableList.of(BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200), new AnimalMakeLove(EntityTypes.HOGLIN, 0.6F, 2), SetWalkTargetAwayFrom.pos(MemoryModuleType.NEAREST_REPELLENT, 1.0F, 8, true), StartAttacking.create(HoglinAi::findNearestValidAttackTarget), BehaviorBuilder.triggerIf(Hoglin::isAdult, SetWalkTargetAwayFrom.entity(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLIN, 0.4F, 8, false)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 0.6F), createIdleMovementBehaviors()));
    }
 
    private static ActivityData<Hoglin> initFightActivity() {
-      return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200), new AnimalMakeLove(EntityType.HOGLIN, 0.6F, 2), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), BehaviorBuilder.triggerIf(Hoglin::isAdult, MeleeAttack.create(40)), BehaviorBuilder.triggerIf(AgeableMob::isBaby, MeleeAttack.create(15)), StopAttackingIfTargetInvalid.create(), EraseMemoryIf.create(HoglinAi::isBreeding, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
+      return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200), new AnimalMakeLove(EntityTypes.HOGLIN, 0.6F, 2), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), BehaviorBuilder.triggerIf(Hoglin::isAdult, MeleeAttack.create(40)), BehaviorBuilder.triggerIf(AgeableMob::isBaby, MeleeAttack.create(15)), StopAttackingIfTargetInvalid.create(), EraseMemoryIf.create(HoglinAi::isBreeding, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static ActivityData<Hoglin> initRetreatActivity() {
@@ -99,7 +99,7 @@ public class HoglinAi {
 
    protected static void onHitTarget(final Hoglin attackerBody, final LivingEntity target) {
       if (!attackerBody.isBaby()) {
-         if (target.is(EntityType.PIGLIN) && piglinsOutnumberHoglins(attackerBody)) {
+         if (target.is(EntityTypes.PIGLIN) && piglinsOutnumberHoglins(attackerBody)) {
             setAvoidTarget(attackerBody, target);
             broadcastRetreat(attackerBody, target);
          } else {
@@ -160,8 +160,8 @@ public class HoglinAi {
    }
 
    private static void maybeRetaliate(final ServerLevel level, final Hoglin body, final LivingEntity attacker) {
-      if (!body.getBrain().isActive(Activity.AVOID) || !attacker.is(EntityType.PIGLIN)) {
-         if (!attacker.is(EntityType.HOGLIN)) {
+      if (!body.getBrain().isActive(Activity.AVOID) || !attacker.is(EntityTypes.PIGLIN)) {
+         if (!attacker.is(EntityTypes.HOGLIN)) {
             if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(body, attacker, 4.0)) {
                if (Sensor.isEntityAttackable(level, body, attacker)) {
                   setAttackTarget(body, attacker);

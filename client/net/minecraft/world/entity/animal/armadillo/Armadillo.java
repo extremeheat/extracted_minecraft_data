@@ -32,6 +32,7 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -75,7 +76,7 @@ public class Armadillo extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.ARMADILLO.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.ARMADILLO.create(level, EntitySpawnReason.BREEDING);
    }
 
    public static AttributeSupplier.Builder createAttributes() {

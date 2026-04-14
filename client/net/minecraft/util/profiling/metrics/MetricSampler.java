@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 public class MetricSampler {
    private final String name;
+   private final SamplingPhase samplingPhase;
    private final MetricCategory category;
    private final DoubleSupplier sampler;
    private final ByteBuf ticks;
@@ -21,9 +22,10 @@ public class MetricSampler {
    final @Nullable ThresholdTest thresholdTest;
    private double currentValue;
 
-   protected MetricSampler(final String name, final MetricCategory category, final DoubleSupplier sampler, final @Nullable Runnable beforeTick, final @Nullable ThresholdTest thresholdTest) {
+   protected MetricSampler(final String name, final SamplingPhase samplingPhase, final MetricCategory category, final DoubleSupplier sampler, final @Nullable Runnable beforeTick, final @Nullable ThresholdTest thresholdTest) {
       super();
       this.name = name;
+      this.samplingPhase = samplingPhase;
       this.category = category;
       this.beforeTick = beforeTick;
       this.sampler = sampler;
@@ -34,11 +36,11 @@ public class MetricSampler {
    }
 
    public static MetricSampler create(final String name, final MetricCategory category, final DoubleSupplier sampler) {
-      return new MetricSampler(name, category, sampler, (Runnable)null, (ThresholdTest)null);
+      return new MetricSampler(name, MetricSampler.SamplingPhase.END_TICK, category, sampler, (Runnable)null, (ThresholdTest)null);
    }
 
-   public static <T> MetricSampler create(final String metricName, final MetricCategory category, final T context, final ToDoubleFunction<T> sampler) {
-      return builder(metricName, category, sampler, context).build();
+   public static MetricSampler createExtractSampler(final String name, final MetricCategory category, final DoubleSupplier sampler) {
+      return new MetricSampler(name, MetricSampler.SamplingPhase.EXTRACT, category, sampler, (Runnable)null, (ThresholdTest)null);
    }
 
    public static <T> MetricSamplerBuilder<T> builder(final String metricName, final MetricCategory category, final ToDoubleFunction<T> sampler, final T context) {
@@ -86,6 +88,10 @@ public class MetricSampler {
 
    public String getName() {
       return this.name;
+   }
+
+   public SamplingPhase samplingPhase() {
+      return this.samplingPhase;
    }
 
    public MetricCategory getCategory() {
@@ -181,11 +187,13 @@ public class MetricSampler {
       private final MetricCategory category;
       private final DoubleSupplier sampler;
       private final T context;
+      private SamplingPhase samplingPhase;
       private @Nullable Runnable beforeTick;
       private @Nullable ThresholdTest thresholdTest;
 
       public MetricSamplerBuilder(final String name, final MetricCategory category, final ToDoubleFunction<T> sampler, final T context) {
          super();
+         this.samplingPhase = MetricSampler.SamplingPhase.END_TICK;
          this.name = name;
          this.category = category;
          this.sampler = () -> sampler.applyAsDouble(context);
@@ -202,8 +210,26 @@ public class MetricSampler {
          return this;
       }
 
+      public MetricSamplerBuilder<T> withSamplingPhase(final SamplingPhase samplingPhase) {
+         this.samplingPhase = samplingPhase;
+         return this;
+      }
+
       public MetricSampler build() {
-         return new MetricSampler(this.name, this.category, this.sampler, this.beforeTick, this.thresholdTest);
+         return new MetricSampler(this.name, this.samplingPhase, this.category, this.sampler, this.beforeTick, this.thresholdTest);
+      }
+   }
+
+   public static enum SamplingPhase {
+      EXTRACT,
+      END_TICK;
+
+      private SamplingPhase() {
+      }
+
+      // $FF: synthetic method
+      private static SamplingPhase[] $values() {
+         return new SamplingPhase[]{EXTRACT, END_TICK};
       }
    }
 

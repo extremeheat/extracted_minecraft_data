@@ -135,6 +135,12 @@ public class Camera implements TrackedWaypoint.Camera {
    public void extractRenderState(final CameraRenderState cameraState, final float cameraEntityPartialTicks) {
       cameraState.initialized = this.isInitialized();
       cameraState.isPanoramicMode = this.isPanoramicMode;
+      cameraState.isFrustumCaptured = this.capturedFrustum != null;
+      cameraState.smartCull = this.minecraft.smartCull;
+      if (this.minecraft.player.isSpectator() && this.level.getBlockState(this.blockPosition).isSolidRender()) {
+         cameraState.smartCull = false;
+      }
+
       cameraState.pos = this.position();
       cameraState.xRot = this.xRot;
       cameraState.yRot = this.yRot;

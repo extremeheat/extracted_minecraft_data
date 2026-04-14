@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
@@ -19,26 +20,39 @@ public class CustomFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource) {
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
       for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.solidCustomGeometrySubmits.entrySet()) {
          for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
             VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
             customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
+            this.renderOutline(customGeometrySubmit, outlineBufferSource);
          }
       }
 
    }
 
-   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource) {
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
       for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.translucentCustomGeometrySubmits.entrySet()) {
          for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
             VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
             customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
+            this.renderOutline(customGeometrySubmit, outlineBufferSource);
          }
+      }
+
+   }
+
+   public void renderOutline(final SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit, final OutlineBufferSource outlineBufferSource) {
+      RenderType renderType = customGeometrySubmit.renderType();
+      int outlineColor = customGeometrySubmit.outlineColor();
+      if (outlineColor != 0 && (renderType.outline().isPresent() || renderType.isOutline())) {
+         outlineBufferSource.setColor(outlineColor);
+         VertexConsumer outlineBuffer = outlineBufferSource.getBuffer(renderType);
+         customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), outlineBuffer);
       }
 
    }
@@ -53,8 +67,8 @@ public class CustomFeatureRenderer {
          super();
       }
 
-      public void add(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-         SubmitNodeStorage.CustomGeometrySubmit submit = new SubmitNodeStorage.CustomGeometrySubmit(poseStack.last().copy(), customGeometryRenderer);
+      public void add(final PoseStack poseStack, final RenderType renderType, final int outlineColor, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+         SubmitNodeStorage.CustomGeometrySubmit submit = new SubmitNodeStorage.CustomGeometrySubmit(poseStack.last().copy(), renderType, outlineColor, customGeometryRenderer);
          if (!renderType.hasBlending()) {
             ((List)this.solidCustomGeometrySubmits.computeIfAbsent(renderType, (rt) -> new ArrayList())).add(submit);
          } else {

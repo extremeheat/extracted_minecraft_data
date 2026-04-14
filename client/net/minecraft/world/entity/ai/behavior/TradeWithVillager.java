@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -24,7 +24,7 @@ public class TradeWithVillager extends Behavior<Villager> {
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
-      return BehaviorUtils.targetIsValid(body.getBrain(), MemoryModuleType.INTERACTION_TARGET, EntityType.VILLAGER);
+      return BehaviorUtils.targetIsValid(body.getBrain(), MemoryModuleType.INTERACTION_TARGET, EntityTypes.VILLAGER);
    }
 
    protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {

@@ -19,6 +19,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -93,7 +94,7 @@ public abstract class Raider extends PatrollingMonster {
                   }
                } else {
                   LivingEntity target = this.getTarget();
-                  if (target != null && (target.is(EntityType.PLAYER) || target.is(EntityType.IRON_GOLEM))) {
+                  if (target != null && (target.is(EntityTypes.PLAYER) || target.is(EntityTypes.IRON_GOLEM))) {
                      this.noActionTime = 0;
                   }
                }
@@ -118,7 +119,7 @@ public abstract class Raider extends PatrollingMonster {
                raidWhenKilled.removeLeader(this.getWave());
             }
 
-            if (killer != null && killer.is(EntityType.PLAYER)) {
+            if (killer != null && killer.is(EntityTypes.PLAYER)) {
                raidWhenKilled.addHeroOfTheVillage(killer);
             }
 
@@ -259,7 +260,7 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
-      this.setCanJoinRaid(!this.is(EntityType.WITCH) || spawnReason != EntitySpawnReason.NATURAL);
+      this.setCanJoinRaid(!this.is(EntityTypes.WITCH) || spawnReason != EntitySpawnReason.NATURAL);
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
@@ -410,7 +411,7 @@ public abstract class Raider extends PatrollingMonster {
 
       public boolean canUse() {
          LivingEntity lastHurtByMob = this.mob.getLastHurtByMob();
-         return this.mob.getCurrentRaid() == null && this.mob.isPatrolling() && this.mob.getTarget() != null && !this.mob.isAggressive() && (lastHurtByMob == null || !lastHurtByMob.is(EntityType.PLAYER));
+         return this.mob.getCurrentRaid() == null && this.mob.isPatrolling() && this.mob.getTarget() != null && !this.mob.isAggressive() && (lastHurtByMob == null || !lastHurtByMob.is(EntityTypes.PLAYER));
       }
 
       public void start() {

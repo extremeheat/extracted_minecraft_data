@@ -41,7 +41,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    private Direction facing;
 
    public HopperBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.HOPPER, worldPosition, blockState);
+      super(BlockEntityTypes.HOPPER, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
       this.cooldownTime = -1;
       this.facing = (Direction)blockState.getValue(HopperBlock.FACING);

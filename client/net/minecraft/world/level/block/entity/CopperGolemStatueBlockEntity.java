@@ -7,7 +7,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 
 public class CopperGolemStatueBlockEntity extends BlockEntity {
    public CopperGolemStatueBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.COPPER_GOLEM_STATUE, worldPosition, blockState);
+      super(BlockEntityTypes.COPPER_GOLEM_STATUE, worldPosition, blockState);
    }
 
    public void createStatue(final CopperGolem copperGolem) {
@@ -26,7 +26,7 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
    }
 
    public @Nullable CopperGolem removeStatue(final BlockState state) {
-      CopperGolem copperGolem = EntityType.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
+      CopperGolem copperGolem = EntityTypes.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
       if (copperGolem != null) {
          copperGolem.setCustomName((Component)this.components().get(DataComponents.CUSTOM_NAME));
          return this.initCopperGolem(state, copperGolem);

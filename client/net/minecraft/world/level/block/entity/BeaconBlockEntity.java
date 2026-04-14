@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -78,7 +78,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public BeaconBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BEACON, worldPosition, blockState);
+      super(BlockEntityTypes.BEACON, worldPosition, blockState);
       this.lockKey = LockCode.NO_LOCK;
       this.dataAccess = new ContainerData() {
          {

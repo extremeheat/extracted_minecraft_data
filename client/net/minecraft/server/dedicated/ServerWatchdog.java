@@ -2,9 +2,7 @@ package net.minecraft.server.dedicated;
 
 import com.google.common.collect.Streams;
 import com.mojang.logging.LogUtils;
-import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -73,8 +71,7 @@ public class ServerWatchdog implements Runnable {
    }
 
    public static CrashReport createWatchdogCrashReport(final String message, final long mainThreadId) {
-      ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-      ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(true, true);
+      ThreadInfo[] threadInfos = Util.dumpThreadInfo();
       Arrays.sort(threadInfos, THREAD_INFO_COMPARATOR);
       StringBuilder builder = new StringBuilder();
       Error exception = new Error("Watchdog (" + message + ")");
@@ -84,8 +81,8 @@ public class ServerWatchdog implements Runnable {
             exception.setStackTrace(threadInfo.getStackTrace());
          }
 
-         builder.append(threadInfo);
          builder.append("\n");
+         builder.append(threadInfo);
       }
 
       CrashReport report = new CrashReport(message, exception);

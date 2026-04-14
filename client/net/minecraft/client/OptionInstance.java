@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -37,42 +36,41 @@ public final class OptionInstance<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Enum<Boolean> BOOLEAN_VALUES;
    public static final CaptionBasedToString<Boolean> BOOLEAN_TO_STRING;
+   public static final ValueUpdateListener<Object> NO_ACTION;
    private final TooltipSupplier<T> tooltip;
    private final Function<T, Component> toString;
    private final ValueSet<T> values;
    private final Codec<T> codec;
    private final T initialValue;
-   private final Consumer<T> onValueUpdate;
+   private final ValueUpdateListener<? super T> onValueUpdate;
    private final Component caption;
    private T value;
 
-   public static OptionInstance<Boolean> createBoolean(final String captionId, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final boolean initialValue, final ValueUpdateListener<? super Boolean> onValueUpdate) {
       return createBoolean(captionId, noTooltip(), initialValue, onValueUpdate);
    }
 
    public static OptionInstance<Boolean> createBoolean(final String captionId, final boolean initialValue) {
-      return createBoolean(captionId, noTooltip(), initialValue, (value) -> {
-      });
+      return createBoolean(captionId, noTooltip(), initialValue, NO_ACTION);
    }
 
    public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final boolean initialValue) {
-      return createBoolean(captionId, tooltip, initialValue, (value) -> {
-      });
+      return createBoolean(captionId, tooltip, initialValue, NO_ACTION);
    }
 
-   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final boolean initialValue, final ValueUpdateListener<? super Boolean> onValueUpdate) {
       return createBoolean(captionId, tooltip, BOOLEAN_TO_STRING, initialValue, onValueUpdate);
    }
 
-   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final CaptionBasedToString<Boolean> toString, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final CaptionBasedToString<Boolean> toString, final boolean initialValue, final ValueUpdateListener<? super Boolean> onValueUpdate) {
       return new OptionInstance<Boolean>(captionId, tooltip, toString, BOOLEAN_VALUES, initialValue, onValueUpdate);
    }
 
-   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final T initialValue, final Consumer<T> onValueUpdate) {
+   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final T initialValue, final ValueUpdateListener<? super T> onValueUpdate) {
       this(captionId, tooltip, toString, values, values.codec(), initialValue, onValueUpdate);
    }
 
-   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final Codec<T> codec, final T initialValue, final Consumer<T> onValueUpdate) {
+   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final Codec<T> codec, final T initialValue, final ValueUpdateListener<? super T> onValueUpdate) {
       super();
       this.caption = Component.translatable(captionId);
       this.tooltip = tooltip;
@@ -85,11 +83,11 @@ public final class OptionInstance<T> {
    }
 
    public static <T> TooltipSupplier<T> noTooltip() {
-      return (value) -> null;
+      return (var0) -> null;
    }
 
    public static <T> TooltipSupplier<T> cachedConstantTooltip(final Component tooltipComponent) {
-      return (value) -> Tooltip.create(tooltipComponent);
+      return (var1) -> Tooltip.create(tooltipComponent);
    }
 
    public AbstractWidget createButton(final Options options) {
@@ -97,11 +95,10 @@ public final class OptionInstance<T> {
    }
 
    public AbstractWidget createButton(final Options options, final int x, final int y, final int width) {
-      return this.createButton(options, x, y, width, (value) -> {
-      });
+      return this.createButton(options, x, y, width, NO_ACTION);
    }
 
-   public AbstractWidget createButton(final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+   public AbstractWidget createButton(final Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged) {
       return (AbstractWidget)this.values.createButton(this.tooltip, options, x, y, width, onValueChanged).apply(this);
    }
 
@@ -127,7 +124,7 @@ public final class OptionInstance<T> {
       } else {
          if (!Objects.equals(this.value, newValue)) {
             this.value = newValue;
-            this.onValueUpdate.accept(this.value);
+            this.onValueUpdate.valueChanged(newValue);
          }
 
       }
@@ -139,10 +136,12 @@ public final class OptionInstance<T> {
 
    static {
       BOOLEAN_VALUES = new Enum<Boolean>(ImmutableList.of(Boolean.TRUE, Boolean.FALSE), Codec.BOOL);
-      BOOLEAN_TO_STRING = (caption, b) -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
+      BOOLEAN_TO_STRING = (var0, b) -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
+      NO_ACTION = (var0) -> {
+      };
    }
 
-   interface SliderableValueSet<T> extends ValueSet<T> {
+   public interface SliderableValueSet<T> extends ValueSet<T> {
       double toSliderValue(final T value);
 
       default Optional<T> next(final T current) {
@@ -159,7 +158,7 @@ public final class OptionInstance<T> {
          return true;
       }
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged) {
          return (instance) -> new OptionInstanceSliderButton(options, x, y, width, 20, instance, this, tooltip, onValueChanged, this.applyValueImmediately());
       }
    }
@@ -171,14 +170,14 @@ public final class OptionInstance<T> {
          return OptionInstance::set;
       }
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged) {
          return (instance) -> {
             Function var10000 = instance.toString;
             Objects.requireNonNull(instance);
-            return CycleButton.builder(var10000, instance::get).withValues(this.valueListSupplier()).withTooltip(tooltip).create(x, y, width, 20, instance.caption, (button, value) -> {
+            return CycleButton.builder(var10000, instance::get).withValues(this.valueListSupplier()).withTooltip(tooltip).create(x, y, width, 20, instance.caption, (var4, value) -> {
                this.valueSetter().set(instance, value);
                options.save();
-               onValueChanged.accept(value);
+               onValueChanged.valueChanged(value);
             });
          };
       }
@@ -191,7 +190,7 @@ public final class OptionInstance<T> {
    interface SliderableOrCyclableValueSet<T> extends SliderableValueSet<T>, CycleableValueSet<T> {
       boolean createCycleButton();
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged) {
          return this.createCycleButton() ? OptionInstance.CycleableValueSet.super.createButton(tooltip, options, x, y, width, onValueChanged) : OptionInstance.SliderableValueSet.super.createButton(tooltip, options, x, y, width, onValueChanged);
       }
    }
@@ -242,11 +241,11 @@ public final class OptionInstance<T> {
       private final OptionInstance<N> instance;
       private final SliderableValueSet<N> values;
       private final TooltipSupplier<N> tooltipSupplier;
-      private final Consumer<N> onValueChanged;
+      private final ValueUpdateListener<? super N> onValueChanged;
       private @Nullable Long delayedApplyAt;
       private final boolean applyValueImmediately;
 
-      private OptionInstanceSliderButton(final Options options, final int x, final int y, final int width, final int height, final OptionInstance<N> instance, final SliderableValueSet<N> values, final TooltipSupplier<N> tooltipSupplier, final Consumer<N> onValueChanged, final boolean applyValueImmediately) {
+      private OptionInstanceSliderButton(final Options options, final int x, final int y, final int width, final int height, final OptionInstance<N> instance, final SliderableValueSet<N> values, final TooltipSupplier<N> tooltipSupplier, final ValueUpdateListener<? super N> onValueChanged, final boolean applyValueImmediately) {
          super(options, x, y, width, height, values.toSliderValue(instance.get()));
          this.instance = instance;
          this.values = values;
@@ -274,7 +273,7 @@ public final class OptionInstance<T> {
          N sliderValue = this.values.fromSliderValue(this.value);
          if (!Objects.equals(sliderValue, this.instance.get())) {
             this.instance.set(sliderValue);
-            this.onValueChanged.accept(this.instance.get());
+            this.onValueChanged.valueChanged(this.instance.get());
          }
 
       }
@@ -571,8 +570,9 @@ public final class OptionInstance<T> {
       }
    }
 
+   @FunctionalInterface
    public interface CaptionBasedToString<T> {
-      Component toString(final Component caption, final T value);
+      Component toString(Component caption, T value);
    }
 
    @FunctionalInterface
@@ -580,11 +580,16 @@ public final class OptionInstance<T> {
       @Nullable Tooltip apply(T value);
    }
 
-   interface ValueSet<T> {
-      Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged);
+   public interface ValueSet<T> {
+      Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged);
 
       Optional<T> validateValue(final T value);
 
       Codec<T> codec();
+   }
+
+   @FunctionalInterface
+   public interface ValueUpdateListener<T> {
+      void valueChanged(T newValue);
    }
 }

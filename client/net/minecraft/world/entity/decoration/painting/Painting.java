@@ -24,6 +24,7 @@ import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.variant.VariantUtils;
@@ -120,7 +121,7 @@ public class Painting extends HangingEntity {
    }
 
    private Painting(final Level level, final BlockPos blockPos) {
-      super(EntityType.PAINTING, level, blockPos);
+      super(EntityTypes.PAINTING, level, blockPos);
    }
 
    public Painting(final Level level, final BlockPos blockPos, final Direction direction, final Holder<PaintingVariant> variant) {

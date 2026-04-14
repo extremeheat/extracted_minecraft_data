@@ -23,7 +23,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements TrialSpawner
    private final TrialSpawner trialSpawner = this.createDefaultSpawner();
 
    public TrialSpawnerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.TRIAL_SPAWNER, worldPosition, blockState);
+      super(BlockEntityTypes.TRIAL_SPAWNER, worldPosition, blockState);
    }
 
    private TrialSpawner createDefaultSpawner() {

@@ -43,8 +43,8 @@ public class ParticleFeatureRenderer implements AutoCloseable {
          GpuDevice device = RenderSystem.getDevice();
          Minecraft minecraft = Minecraft.getInstance();
          TextureManager textureManager = minecraft.getTextureManager();
-         RenderTarget mainTarget = minecraft.getMainRenderTarget();
-         RenderTarget particleTarget = minecraft.levelRenderer.getParticlesTarget();
+         RenderTarget mainTarget = minecraft.gameRenderer.mainRenderTarget();
+         RenderTarget particleTarget = minecraft.levelRenderer.particlesTarget();
 
          for(SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer : nodeCollection.getParticleGroupRenderers()) {
             if (!particleGroupRenderer.isEmpty()) {

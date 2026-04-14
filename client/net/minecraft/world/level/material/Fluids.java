@@ -3,23 +3,30 @@ package net.minecraft.world.level.material;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 
 public class Fluids {
-   public static final Fluid EMPTY = register("empty", new EmptyFluid());
-   public static final FlowingFluid FLOWING_WATER = (FlowingFluid)register("flowing_water", new WaterFluid.Flowing());
-   public static final FlowingFluid WATER = (FlowingFluid)register("water", new WaterFluid.Source());
-   public static final FlowingFluid FLOWING_LAVA = (FlowingFluid)register("flowing_lava", new LavaFluid.Flowing());
-   public static final FlowingFluid LAVA = (FlowingFluid)register("lava", new LavaFluid.Source());
+   public static final Fluid EMPTY;
+   public static final FlowingFluid FLOWING_WATER;
+   public static final FlowingFluid WATER;
+   public static final FlowingFluid FLOWING_LAVA;
+   public static final FlowingFluid LAVA;
 
    public Fluids() {
       super();
    }
 
-   private static <T extends Fluid> T register(final String name, final T fluid) {
-      return (T)(Registry.register(BuiltInRegistries.FLUID, (String)name, fluid));
+   private static <T extends Fluid> T register(final ResourceKey<Fluid> id, final T fluid) {
+      return (T)(Registry.register(BuiltInRegistries.FLUID, (ResourceKey)id, fluid));
    }
 
    static {
+      EMPTY = register(FluidIds.EMPTY, new EmptyFluid());
+      FLOWING_WATER = (FlowingFluid)register(FluidIds.FLOWING_WATER, new WaterFluid.Flowing());
+      WATER = (FlowingFluid)register(FluidIds.WATER, new WaterFluid.Source());
+      FLOWING_LAVA = (FlowingFluid)register(FluidIds.FLOWING_LAVA, new LavaFluid.Flowing());
+      LAVA = (FlowingFluid)register(FluidIds.LAVA, new LavaFluid.Source());
+
       for(Fluid fluid : BuiltInRegistries.FLUID) {
          UnmodifiableIterator var2 = fluid.getStateDefinition().getPossibleStates().iterator();
 

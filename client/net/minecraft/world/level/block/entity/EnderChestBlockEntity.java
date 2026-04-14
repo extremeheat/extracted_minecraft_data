@@ -37,7 +37,7 @@ public class EnderChestBlockEntity extends BlockEntity implements LidBlockEntity
    };
 
    public EnderChestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.ENDER_CHEST, worldPosition, blockState);
+      super(BlockEntityTypes.ENDER_CHEST, worldPosition, blockState);
    }
 
    public static void lidAnimateTick(final Level level, final BlockPos pos, final BlockState state, final EnderChestBlockEntity entity) {

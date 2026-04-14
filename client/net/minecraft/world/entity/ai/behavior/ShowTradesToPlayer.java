@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -34,7 +34,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
          return false;
       } else {
          LivingEntity target = (LivingEntity)brain.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-         return target.is(EntityType.PLAYER) && body.isAlive() && target.isAlive() && !body.isBaby() && body.distanceToSqr(target) <= 17.0;
+         return target.is(EntityTypes.PLAYER) && body.isAlive() && target.isAlive() && !body.isBaby() && body.distanceToSqr(target) <= 17.0;
       }
    }
 

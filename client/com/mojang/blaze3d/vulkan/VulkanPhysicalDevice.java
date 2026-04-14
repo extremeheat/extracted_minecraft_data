@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.vulkan;
 
+import com.mojang.blaze3d.systems.DeviceType;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMaps;
@@ -39,7 +40,7 @@ public class VulkanPhysicalDevice implements AutoCloseable {
 
       try {
          this.vkPhysicalDevice = vkPhysicalDevice;
-         IntBuffer intBuffer = stack.mallocInt(1);
+         IntBuffer intBuffer = stack.callocInt(1);
          this.vkPhysicalDeviceProperties = VkPhysicalDeviceProperties2.calloc().sType$Default();
          this.vkPhysicalDeviceDriverProperties = VkPhysicalDeviceDriverProperties.calloc().sType$Default();
          this.vkPhysicalDeviceProperties.pNext(this.vkPhysicalDeviceDriverProperties);
@@ -216,5 +217,18 @@ public class VulkanPhysicalDevice implements AutoCloseable {
       int apiVersion = this.vkPhysicalDeviceProperties.properties().apiVersion();
       String versionString = getStandardEncodingVersion(apiVersion);
       return String.format(Locale.ROOT, "%s %s %s", versionString, this.vkPhysicalDeviceDriverProperties.driverNameString(), this.vkPhysicalDeviceDriverProperties.driverInfoString());
+   }
+
+   public DeviceType deviceType() {
+      DeviceType var10000;
+      switch (this.vkPhysicalDeviceProperties.properties().deviceType()) {
+         case 1 -> var10000 = DeviceType.INTEGRATED;
+         case 2 -> var10000 = DeviceType.DISCRETE;
+         case 3 -> var10000 = DeviceType.VIRTUAL;
+         case 4 -> var10000 = DeviceType.CPU;
+         default -> var10000 = DeviceType.OTHER;
+      }
+
+      return var10000;
    }
 }

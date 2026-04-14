@@ -10,7 +10,7 @@ public class TheEndPortalBlockEntity extends BlockEntity {
    }
 
    public TheEndPortalBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      this(BlockEntityType.END_PORTAL, worldPosition, blockState);
+      this(BlockEntityTypes.END_PORTAL, worldPosition, blockState);
    }
 
    public boolean shouldRenderFace(final Direction direction) {

@@ -1,14 +1,15 @@
 package net.minecraft.client.renderer.state.level;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import org.jspecify.annotations.Nullable;
 
 public class LevelRenderState {
    public CameraRenderState cameraRenderState = new CameraRenderState();
+   public final List<SectionUpdateRenderState> sectionUpdateRenderStates = new ArrayList();
    public final List<EntityRenderState> entityRenderStates = new ArrayList();
    public final List<BlockEntityRenderState> blockEntityRenderStates = new ArrayList();
    public boolean haveGlowingEntities;
@@ -22,14 +23,20 @@ public class LevelRenderState {
    public int lastEntityRenderStateCount;
    public int cloudColor;
    public float cloudHeight;
-   public @Nullable ChunkSectionsToRender chunkSectionsToRender;
    public boolean render3dCrosshair;
+   public @Nullable Runnable playerCompiledSectionCallback;
+   public LongOpenHashSet addedEmptySections = new LongOpenHashSet();
+   public LongOpenHashSet removedEmptySections = new LongOpenHashSet();
+   public boolean shouldResetChunkLayerSampler;
+   public boolean shouldShowEntityOutlines;
+   public boolean shouldResetSkyRenderer;
 
    public LevelRenderState() {
       super();
    }
 
    public void reset() {
+      this.sectionUpdateRenderStates.clear();
       this.entityRenderStates.clear();
       this.blockEntityRenderStates.clear();
       this.blockBreakingRenderStates.clear();

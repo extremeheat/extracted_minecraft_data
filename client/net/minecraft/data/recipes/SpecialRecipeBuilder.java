@@ -2,7 +2,7 @@ package net.minecraft.data.recipes;
 
 import java.util.function.Supplier;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;

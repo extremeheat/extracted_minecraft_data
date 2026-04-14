@@ -7,6 +7,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
@@ -44,6 +45,6 @@ public class Mule extends AbstractChestedHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.MULE.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
    }
 }

@@ -6,13 +6,12 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,9 +33,10 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class HoneycombItem extends Item implements SignApplicator {
    public static final Supplier<BiMap<Block, Block>> WAXABLES = Suppliers.memoize(() -> {
       ImmutableBiMap.Builder<Block, Block> builder = ImmutableBiMap.builder();
-      Stream var10000 = Stream.of(Blocks.COPPER_BLOCK, Blocks.CUT_COPPER, Blocks.CUT_COPPER_SLAB, Blocks.CUT_COPPER_STAIRS, Blocks.CHISELED_COPPER, Blocks.COPPER_DOOR, Blocks.COPPER_TRAPDOOR, Blocks.COPPER_BARS, Blocks.COPPER_GRATE, Blocks.COPPER_BULB, Blocks.COPPER_CHEST, Blocks.COPPER_GOLEM_STATUE, Blocks.LIGHTNING_ROD, Blocks.COPPER_LANTERN, Blocks.COPPER_CHAIN).map(WeatheringCopperCollection::waxedMapping);
-      Objects.requireNonNull(builder);
-      var10000.forEach(builder::putAll);
+      Stream.of(Blocks.COPPER_BLOCK, Blocks.CUT_COPPER, Blocks.CUT_COPPER_SLAB, Blocks.CUT_COPPER_STAIRS, Blocks.CHISELED_COPPER, Blocks.COPPER_DOOR, Blocks.COPPER_TRAPDOOR, Blocks.COPPER_BARS, Blocks.COPPER_GRATE, Blocks.COPPER_BULB, Blocks.COPPER_CHEST, Blocks.COPPER_GOLEM_STATUE, Blocks.LIGHTNING_ROD, Blocks.COPPER_LANTERN, Blocks.COPPER_CHAIN).forEach((collection) -> {
+         Objects.requireNonNull(builder);
+         collection.zipUnwaxedWaxed(builder::put);
+      });
       return builder.build();
    });
    public static final Supplier<BiMap<Block, Block>> WAX_OFF_BY_BLOCK = Suppliers.memoize(() -> ((BiMap)WAXABLES.get()).inverse());
@@ -92,7 +92,7 @@ public class HoneycombItem extends Item implements SignApplicator {
       ImmutableMap.Builder<Block, Pair<RecipeCategory, String>> builder = ImmutableMap.builder();
 
       for(WaxedRecipeGroup data : List.of(new WaxedRecipeGroup(Blocks.COPPER_BULB, (block) -> Pair.of(RecipeCategory.REDSTONE, block.builtInRegistryHolder().key().identifier().getPath())), new WaxedRecipeGroup(Blocks.COPPER_DOOR, (var0) -> Pair.of(RecipeCategory.REDSTONE, "waxed_copper_door")), new WaxedRecipeGroup(Blocks.COPPER_TRAPDOOR, (var0) -> Pair.of(RecipeCategory.REDSTONE, "waxed_copper_trapdoor")), new WaxedRecipeGroup(Blocks.COPPER_GOLEM_STATUE, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_golem_statue")), new WaxedRecipeGroup(Blocks.COPPER_CHEST, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_chest")), new WaxedRecipeGroup(Blocks.LIGHTNING_ROD, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_lightning_rod")), new WaxedRecipeGroup(Blocks.COPPER_BARS, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_bar")), new WaxedRecipeGroup(Blocks.COPPER_CHAIN, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_chain")), new WaxedRecipeGroup(Blocks.COPPER_LANTERN, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_lantern")), new WaxedRecipeGroup(Blocks.COPPER_BLOCK, (var0) -> Pair.of(RecipeCategory.BUILDING_BLOCKS, "waxed_copper_block")))) {
-         builder.putAll((Map)data.block.select((var0, waxed) -> waxed).stream().collect(ImmutableMap.toImmutableMap((block) -> block, data.recipeIdProvider)));
+         data.block.waxed().forEach((block) -> builder.put(block, (Pair)data.recipeIdProvider.apply(block)));
       }
 
       WAXED_RECIPES = builder.build();

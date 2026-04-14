@@ -32,7 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -50,7 +50,7 @@ public class VaultBlockEntity extends BlockEntity {
    private VaultConfig config;
 
    public VaultBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.VAULT, worldPosition, blockState);
+      super(BlockEntityTypes.VAULT, worldPosition, blockState);
       this.config = VaultConfig.DEFAULT;
    }
 

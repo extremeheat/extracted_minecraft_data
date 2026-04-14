@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
-import net.minecraft.advancements.criterion.MinMaxBounds;
-import net.minecraft.advancements.criterion.PlayerTrigger;
+import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
+import net.minecraft.advancements.triggers.InventoryChangeTrigger;
+import net.minecraft.advancements.triggers.PlayerTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -128,20 +128,20 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.colorItemWithDye(dyes, Items.BED.asList(), "bed_dye", RecipeCategory.DECORATIONS);
       this.colorItemWithDye(dyes, Items.CARPET.asList(), "carpet_dye", RecipeCategory.DECORATIONS);
       this.colorItemWithDye(dyes, Items.HARNESS.asList(), "harness_dye", RecipeCategory.COMBAT);
-      ColorCollection.zipApply((x$0, x$1) -> this.carpet(x$0, x$1), Blocks.CARPET, Blocks.WOOL);
-      ColorCollection.zipApply((x$0, x$1) -> this.bedFromPlanksAndWool(x$0, x$1), Items.BED, Blocks.WOOL);
-      ColorCollection.zipApply((x$0, x$1) -> this.banner(x$0, x$1), Items.BANNER, Blocks.WOOL);
+      ColorCollection.zipApply(Blocks.CARPET, Blocks.WOOL, (x$0, x$1) -> this.carpet(x$0, x$1));
+      ColorCollection.zipApply(Items.BED, Blocks.WOOL, (x$0, x$1) -> this.bedFromPlanksAndWool(x$0, x$1));
+      ColorCollection.zipApply(Items.BANNER, Blocks.WOOL, (x$0, x$1) -> this.banner(x$0, x$1));
       this.carpet(Blocks.MOSS_CARPET, Blocks.MOSS_BLOCK);
       this.carpet(Blocks.PALE_MOSS_CARPET, Blocks.PALE_MOSS_BLOCK);
-      ColorCollection.zipApply((x$0, x$1) -> this.harness(x$0, x$1), Items.HARNESS, Blocks.WOOL);
-      ColorCollection.zipApply((x$0, x$1) -> this.stainedGlassFromGlassAndDye(x$0, x$1), Blocks.STAINED_GLASS, Items.DYE);
-      ColorCollection.zipApply((x$0, x$1) -> this.stainedGlassPaneFromStainedGlass(x$0, x$1), Blocks.STAINED_GLASS_PANE, Blocks.STAINED_GLASS);
-      ColorCollection.zipApply((x$0, x$1) -> this.stainedGlassPaneFromGlassPaneAndDye(x$0, x$1), Blocks.STAINED_GLASS_PANE, Items.DYE);
-      ColorCollection.zipApply((x$0, x$1) -> this.coloredTerracottaFromTerracottaAndDye(x$0, x$1), Blocks.DYED_TERRACOTTA, Items.DYE);
-      ColorCollection.zipApply((x$0, x$1) -> this.concretePowder(x$0, x$1), Blocks.CONCRETE_POWDER, Items.DYE);
+      ColorCollection.zipApply(Items.HARNESS, Blocks.WOOL, (x$0, x$1) -> this.harness(x$0, x$1));
+      ColorCollection.zipApply(Blocks.STAINED_GLASS, Items.DYE, (x$0, x$1) -> this.stainedGlassFromGlassAndDye(x$0, x$1));
+      ColorCollection.zipApply(Blocks.STAINED_GLASS_PANE, Blocks.STAINED_GLASS, (x$0, x$1) -> this.stainedGlassPaneFromStainedGlass(x$0, x$1));
+      ColorCollection.zipApply(Blocks.STAINED_GLASS_PANE, Items.DYE, (x$0, x$1) -> this.stainedGlassPaneFromGlassPaneAndDye(x$0, x$1));
+      ColorCollection.zipApply(Blocks.DYED_TERRACOTTA, Items.DYE, (x$0, x$1) -> this.coloredTerracottaFromTerracottaAndDye(x$0, x$1));
+      ColorCollection.zipApply(Blocks.CONCRETE_POWDER, Items.DYE, (x$0, x$1) -> this.concretePowder(x$0, x$1));
       this.dryGhast(Blocks.DRIED_GHAST);
       this.shaped(RecipeCategory.DECORATIONS, Items.CANDLE).define('S', Items.STRING).define('H', Items.HONEYCOMB).pattern("S").pattern("H").unlockedBy("has_string", this.has(Items.STRING)).unlockedBy("has_honeycomb", this.has(Items.HONEYCOMB)).save(this.output);
-      ColorCollection.zipApply((x$0, x$1) -> this.candle(x$0, x$1), Blocks.DYED_CANDLE, Items.DYE);
+      ColorCollection.zipApply(Blocks.DYED_CANDLE, Items.DYE, (x$0, x$1) -> this.candle(x$0, x$1));
       this.shapeless(RecipeCategory.BUILDING_BLOCKS, Blocks.PACKED_MUD, 1).requires(Blocks.MUD).requires(Items.WHEAT).unlockedBy("has_mud", this.has(Blocks.MUD)).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.MUD_BRICKS, 4).define('#', Blocks.PACKED_MUD).pattern("##").pattern("##").unlockedBy("has_packed_mud", this.has(Blocks.PACKED_MUD)).save(this.output);
       this.shapeless(RecipeCategory.BUILDING_BLOCKS, Blocks.MUDDY_MANGROVE_ROOTS, 1).requires(Blocks.MUD).requires(Items.MANGROVE_ROOTS).unlockedBy("has_mangrove_roots", this.has(Blocks.MANGROVE_ROOTS)).save(this.output);
@@ -178,7 +178,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.BREWING, Blocks.CAULDRON).define('#', Items.IRON_INGOT).pattern("# #").pattern("# #").pattern("###").unlockedBy("has_water_bucket", this.has(Items.WATER_BUCKET)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.COMPOSTER).define('#', ItemTags.WOODEN_SLABS).pattern("# #").pattern("# #").pattern("###").unlockedBy("has_wood_slab", this.has(ItemTags.WOODEN_SLABS)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.CHEST).define('#', ItemTags.PLANKS).pattern("###").pattern("# #").pattern("###").unlockedBy("has_lots_of_items", CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new InventoryChangeTrigger.TriggerInstance(Optional.empty(), new InventoryChangeTrigger.TriggerInstance.Slots(MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY), List.of()))).save(this.output);
-      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_CHEST.unaffected()).define('#', Items.COPPER_INGOT).define('X', Items.CHEST).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_copper_chest", this.has(Items.COPPER_CHEST.unaffected())).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_CHEST.weathering().unaffected()).define('#', Items.COPPER_INGOT).define('X', Items.CHEST).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_copper_chest", this.has(Items.COPPER_CHEST.weathering().unaffected())).save(this.output);
       this.shapeless(RecipeCategory.TRANSPORTATION, Items.CHEST_MINECART).requires(Blocks.CHEST).requires(Items.MINECART).unlockedBy("has_minecart", this.has(Items.MINECART)).save(this.output);
       this.chestBoat(Items.ACACIA_CHEST_BOAT, Items.ACACIA_BOAT);
       this.chestBoat(Items.BIRCH_CHEST_BOAT, Items.BIRCH_BOAT);
@@ -202,8 +202,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.DECORATIONS, Blocks.LOOM).define('#', ItemTags.PLANKS).define('@', Items.STRING).pattern("@@").pattern("##").unlockedBy("has_string", this.has(Items.STRING)).save(this.output);
       this.chiseledBuilder(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_RED_SANDSTONE, Ingredient.of((ItemLike)Blocks.RED_SANDSTONE_SLAB)).unlockedBy("has_red_sandstone", this.has(Blocks.RED_SANDSTONE)).unlockedBy("has_chiseled_red_sandstone", this.has(Blocks.CHISELED_RED_SANDSTONE)).unlockedBy("has_cut_red_sandstone", this.has(Blocks.CUT_RED_SANDSTONE)).save(this.output);
       this.chiseled(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_SANDSTONE, Blocks.SANDSTONE_SLAB);
-      this.nineBlockStorageRecipesRecipesWithCustomUnpacking(RecipeCategory.MISC, Items.COPPER_INGOT, RecipeCategory.BUILDING_BLOCKS, Items.COPPER_BLOCK.unaffected(), getSimpleRecipeName(Items.COPPER_INGOT), getItemName(Items.COPPER_INGOT));
-      this.shapeless(RecipeCategory.MISC, Items.COPPER_INGOT, 9).requires(Blocks.COPPER_BLOCK.waxed()).group(getItemName(Items.COPPER_INGOT)).unlockedBy(getHasName(Blocks.COPPER_BLOCK.waxed()), this.has(Blocks.COPPER_BLOCK.waxed())).save(this.output, getConversionRecipeName(Items.COPPER_INGOT, Blocks.COPPER_BLOCK.waxed()));
+      this.nineBlockStorageRecipesRecipesWithCustomUnpacking(RecipeCategory.MISC, Items.COPPER_INGOT, RecipeCategory.BUILDING_BLOCKS, Items.COPPER_BLOCK.weathering().unaffected(), getSimpleRecipeName(Items.COPPER_INGOT), getItemName(Items.COPPER_INGOT));
+      this.shapeless(RecipeCategory.MISC, Items.COPPER_INGOT, 9).requires(Blocks.COPPER_BLOCK.waxed().unaffected()).group(getItemName(Items.COPPER_INGOT)).unlockedBy(getHasName(Blocks.COPPER_BLOCK.waxed().unaffected()), this.has(Blocks.COPPER_BLOCK.waxed().unaffected())).save(this.output, getConversionRecipeName(Items.COPPER_INGOT, Blocks.COPPER_BLOCK.waxed().unaffected()));
       this.waxRecipes(FeatureFlagSet.of(FeatureFlags.VANILLA));
       this.shapeless(RecipeCategory.MISC, Items.DYE.cyan(), 2).requires(Items.DYE.blue()).requires(Items.DYE.green()).group("cyan_dye").unlockedBy("has_green_dye", this.has(Items.DYE.green())).unlockedBy("has_blue_dye", this.has(Items.DYE.blue())).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.DARK_PRISMARINE).define('S', Items.PRISMARINE_SHARD).define('I', Items.DYE.black()).pattern("SSS").pattern("SIS").pattern("SSS").unlockedBy("has_prismarine_shard", this.has(Items.PRISMARINE_SHARD)).save(this.output);
@@ -223,6 +223,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.DIORITE, 2).define('Q', Items.QUARTZ).define('C', Blocks.COBBLESTONE).pattern("CQ").pattern("QC").unlockedBy("has_quartz", this.has(Items.QUARTZ)).save(this.output);
       this.shaped(RecipeCategory.REDSTONE, Blocks.DISPENSER).define('R', Items.REDSTONE).define('#', Blocks.COBBLESTONE).define('X', Items.BOW).pattern("###").pattern("#X#").pattern("#R#").unlockedBy("has_bow", this.has(Items.BOW)).save(this.output);
       this.twoByTwoPacker(RecipeCategory.BUILDING_BLOCKS, Blocks.DRIPSTONE_BLOCK, Items.POINTED_DRIPSTONE);
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.SULFUR, 1).define('#', Blocks.SULFUR_SPIKE).pattern("##").pattern("##").unlockedBy(getHasName(Blocks.SULFUR_SPIKE), this.has(Blocks.SULFUR_SPIKE)).save(this.output, "sulfur_from_sulfur_spikes");
       this.shaped(RecipeCategory.REDSTONE, Blocks.DROPPER).define('R', Items.REDSTONE).define('#', Blocks.COBBLESTONE).pattern("###").pattern("# #").pattern("#R#").unlockedBy("has_redstone", this.has(Items.REDSTONE)).save(this.output);
       this.nineBlockStorageRecipes(RecipeCategory.MISC, Items.EMERALD, RecipeCategory.BUILDING_BLOCKS, Items.EMERALD_BLOCK);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.ENCHANTING_TABLE).define('B', Items.BOOK).define('#', Blocks.OBSIDIAN).define('D', Items.DIAMOND).pattern(" B ").pattern("D#D").pattern("###").unlockedBy("has_obsidian", this.has(Blocks.OBSIDIAN)).save(this.output);
@@ -268,7 +269,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shapeless(RecipeCategory.TRANSPORTATION, Items.HOPPER_MINECART).requires(Blocks.HOPPER).requires(Items.MINECART).unlockedBy("has_minecart", this.has(Items.MINECART)).save(this.output);
       this.shaped(RecipeCategory.TOOLS, Items.IRON_AXE).define('#', Items.STICK).define('X', ItemTags.IRON_TOOL_MATERIALS).pattern("XX").pattern("X#").pattern(" #").unlockedBy("has_iron_ingot", this.has(ItemTags.IRON_TOOL_MATERIALS)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.IRON_BARS, 16).define('#', Items.IRON_INGOT).pattern("###").pattern("###").unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
-      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_BARS.unaffected(), 16).define('#', Items.COPPER_INGOT).pattern("###").pattern("###").unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_BARS.weathering().unaffected(), 16).define('#', Items.COPPER_INGOT).pattern("###").pattern("###").unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.IRON_BOOTS).define('X', Items.IRON_INGOT).pattern("X X").pattern("X X").unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.IRON_CHESTPLATE).define('X', Items.IRON_INGOT).pattern("X X").pattern("XXX").pattern("XXX").unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
       this.doorBuilder(Blocks.IRON_DOOR, Ingredient.of((ItemLike)Items.IRON_INGOT)).unlockedBy(getHasName(Items.IRON_INGOT), this.has(Items.IRON_INGOT)).save(this.output);
@@ -316,7 +317,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.oneToOneConversionRecipe(Items.DYE.lightGray(), Blocks.OXEYE_DAISY, "light_gray_dye");
       this.oneToOneConversionRecipe(Items.DYE.lightGray(), Blocks.WHITE_TULIP, "light_gray_dye");
       this.pressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT);
-      this.shaped(RecipeCategory.REDSTONE, Blocks.LIGHTNING_ROD.unaffected()).define('#', Items.COPPER_INGOT).pattern("#").pattern("#").pattern("#").unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
+      this.shaped(RecipeCategory.REDSTONE, Blocks.LIGHTNING_ROD.weathering().unaffected()).define('#', Items.COPPER_INGOT).pattern("#").pattern("#").pattern("#").unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
       this.shapeless(RecipeCategory.MISC, Items.DYE.lime(), 2).requires(Items.DYE.green()).requires(Items.DYE.white()).unlockedBy("has_green_dye", this.has(Items.DYE.green())).unlockedBy("has_white_dye", this.has(Items.DYE.white())).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.JACK_O_LANTERN).define('A', Blocks.CARVED_PUMPKIN).define('B', Blocks.TORCH).pattern("A").pattern("B").unlockedBy("has_carved_pumpkin", this.has(Blocks.CARVED_PUMPKIN)).save(this.output);
       this.oneToOneConversionRecipe(Items.DYE.magenta(), Blocks.ALLIUM, "magenta_dye");
@@ -367,7 +368,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shapeless(RecipeCategory.MISC, Items.PUMPKIN_SEEDS, 4).requires(Blocks.PUMPKIN).unlockedBy("has_pumpkin", this.has(Blocks.PUMPKIN)).save(this.output);
       this.shapeless(RecipeCategory.MISC, Items.DYE.purple(), 2).requires(Items.DYE.blue()).requires(Items.DYE.red()).unlockedBy("has_blue_dye", this.has(Items.DYE.blue())).unlockedBy("has_red_dye", this.has(Items.DYE.red())).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.SHULKER_BOX).define('#', Blocks.CHEST).define('-', Items.SHULKER_SHELL).pattern("-").pattern("#").pattern("-").unlockedBy("has_shulker_shell", this.has(Items.SHULKER_SHELL)).save(this.output);
-      this.shulkerBoxRecipes();
+      ColorCollection.zipApply(Items.DYE, Items.DYED_SHULKER_BOX, (x$0, x$1) -> this.dyedShulkerBoxRecipe(x$0, x$1));
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.PURPUR_BLOCK, 4).define('F', Items.POPPED_CHORUS_FRUIT).pattern("FF").pattern("FF").unlockedBy("has_chorus_fruit_popped", this.has(Items.POPPED_CHORUS_FRUIT)).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.PURPUR_PILLAR).define('#', Blocks.PURPUR_SLAB).pattern("#").pattern("#").unlockedBy("has_purpur_block", this.has(Blocks.PURPUR_BLOCK)).save(this.output);
       this.slabBuilder(RecipeCategory.BUILDING_BLOCKS, Blocks.PURPUR_SLAB, Ingredient.of(Blocks.PURPUR_BLOCK, Blocks.PURPUR_PILLAR)).unlockedBy("has_purpur_block", this.has(Blocks.PURPUR_BLOCK)).save(this.output);
@@ -431,7 +432,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_TORCH, 4).define('X', Ingredient.of(Items.COAL, Items.CHARCOAL)).define('#', Items.STICK).define('C', Items.COPPER_NUGGET).pattern("C").pattern("X").pattern("#").unlockedBy("has_copper_nugget", this.has(Items.COPPER_NUGGET)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.LANTERN).define('#', Items.TORCH).define('X', Items.IRON_NUGGET).pattern("XXX").pattern("X#X").pattern("XXX").unlockedBy("has_iron_nugget", this.has(Items.IRON_NUGGET)).unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.SOUL_LANTERN).define('#', Items.SOUL_TORCH).define('X', Items.IRON_NUGGET).pattern("XXX").pattern("X#X").pattern("XXX").unlockedBy("has_soul_torch", this.has(Items.SOUL_TORCH)).save(this.output);
-      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_LANTERN.unaffected()).define('#', Items.COPPER_TORCH).define('X', Items.COPPER_NUGGET).pattern("XXX").pattern("X#X").pattern("XXX").unlockedBy("has_copper_torch", this.has(Items.COPPER_TORCH)).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_LANTERN.weathering().unaffected()).define('#', Items.COPPER_TORCH).define('X', Items.COPPER_NUGGET).pattern("XXX").pattern("X#X").pattern("XXX").unlockedBy("has_copper_torch", this.has(Items.COPPER_TORCH)).save(this.output);
       this.shapeless(RecipeCategory.REDSTONE, Blocks.TRAPPED_CHEST).requires(Blocks.CHEST).requires(Blocks.TRIPWIRE_HOOK).unlockedBy("has_tripwire_hook", this.has(Blocks.TRIPWIRE_HOOK)).save(this.output);
       this.shaped(RecipeCategory.REDSTONE, Blocks.TRIPWIRE_HOOK, 2).define('#', ItemTags.PLANKS).define('S', Items.STICK).define('I', Items.IRON_INGOT).pattern("I").pattern("S").pattern("#").unlockedBy("has_string", this.has(Items.STRING)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.TURTLE_HELMET).define('X', Items.TURTLE_SCUTE).pattern("XXX").pattern("X X").unlockedBy("has_turtle_scute", this.has(Items.TURTLE_SCUTE)).save(this.output);
@@ -474,7 +475,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shapeless(RecipeCategory.MISC, Items.NETHERITE_INGOT).requires((ItemLike)Items.NETHERITE_SCRAP, 4).requires((ItemLike)Items.GOLD_INGOT, 4).group("netherite_ingot").unlockedBy("has_netherite_scrap", this.has(Items.NETHERITE_SCRAP)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.RESPAWN_ANCHOR).define('O', Blocks.CRYING_OBSIDIAN).define('G', Blocks.GLOWSTONE).pattern("OOO").pattern("GGG").pattern("OOO").unlockedBy("has_obsidian", this.has(Blocks.CRYING_OBSIDIAN)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.IRON_CHAIN).define('I', Items.IRON_INGOT).define('N', Items.IRON_NUGGET).pattern("N").pattern("I").pattern("N").unlockedBy("has_iron_nugget", this.has(Items.IRON_NUGGET)).unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
-      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_CHAIN.unaffected()).define('I', Items.COPPER_INGOT).define('N', Items.COPPER_NUGGET).pattern("N").pattern("I").pattern("N").unlockedBy("has_copper_nugget", this.has(Items.COPPER_NUGGET)).unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, Blocks.COPPER_CHAIN.weathering().unaffected()).define('I', Items.COPPER_INGOT).define('N', Items.COPPER_NUGGET).pattern("N").pattern("I").pattern("N").unlockedBy("has_copper_nugget", this.has(Items.COPPER_NUGGET)).unlockedBy("has_copper_ingot", this.has(Items.COPPER_INGOT)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.GOLDEN_DANDELION).define('I', Items.DANDELION).define('#', Items.GOLD_NUGGET).pattern("###").pattern("#I#").pattern("###").unlockedBy("has_gold_nugget", this.has(Items.GOLD_NUGGET)).unlockedBy("has_dandelion", this.has(Items.DANDELION)).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.TINTED_GLASS, 2).define('G', Blocks.GLASS).define('S', Items.AMETHYST_SHARD).pattern(" S ").pattern("SGS").pattern(" S ").unlockedBy("has_amethyst_shard", this.has(Items.AMETHYST_SHARD)).save(this.output);
       this.twoByTwoPacker(RecipeCategory.BUILDING_BLOCKS, Blocks.AMETHYST_BLOCK, Items.AMETHYST_SHARD);
@@ -560,11 +561,9 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.PURPUR_PILLAR, Blocks.PURPUR_BLOCK);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.POLISHED_BASALT, Blocks.BASALT);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.SMOOTH_STONE_SLAB, Blocks.SMOOTH_STONE, 2);
-      WeatheringCopperCollection.zipApply((cutBlock, cutStairs, cutSlab, block) -> {
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutBlock, block, 4);
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutStairs, block, 4);
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutSlab, block, 8);
-      }, Blocks.CUT_COPPER, Blocks.CUT_COPPER_STAIRS, Blocks.CUT_COPPER_SLAB, Blocks.COPPER_BLOCK);
+      WeatheringCopperCollection.zipApply(Blocks.CUT_COPPER, Blocks.COPPER_BLOCK, (cutBlock, material) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutBlock, material, 4));
+      WeatheringCopperCollection.zipApply(Blocks.CUT_COPPER_STAIRS, Blocks.COPPER_BLOCK, (cutStairs, material) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutStairs, material, 4));
+      WeatheringCopperCollection.zipApply(Blocks.CUT_COPPER_SLAB, Blocks.COPPER_BLOCK, (cutSlab, material) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutSlab, material, 8));
       smithingTrims().forEach((trim) -> this.trimSmithing(trim.template(), trim.patternId(), trim.recipeId()));
       this.netheriteSmithing(Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
       this.netheriteSmithing(Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
@@ -596,7 +595,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.copySmithingTemplate(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       this.copySmithingTemplate(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       this.copySmithingTemplate(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BREEZE_ROD);
-      this.copySmithingTemplate(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Ingredient.of(Items.COPPER_BLOCK.unaffected(), Items.COPPER_BLOCK.waxed()));
+      this.copySmithingTemplate(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Ingredient.of(Items.COPPER_BLOCK.weathering().unaffected(), Items.COPPER_BLOCK.waxed().unaffected()));
       this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.BAMBOO_BLOCK, Items.BAMBOO);
       this.planksFromLogs(Blocks.BAMBOO_PLANKS, ItemTags.BAMBOO_BLOCKS, 2);
       this.mosaicBuilder(RecipeCategory.DECORATIONS, Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_SLAB);
@@ -628,22 +627,21 @@ public class VanillaRecipeProvider extends RecipeProvider {
       SpecialRecipeBuilder.special(() -> new DecoratedPotRecipe(this.tag(ItemTags.DECORATED_POT_INGREDIENTS), new ItemStackTemplate(Items.DECORATED_POT))).save(this.output, "decorated_pot");
       this.shaped(RecipeCategory.REDSTONE, Blocks.CRAFTER).define('#', Items.IRON_INGOT).define('C', Items.CRAFTING_TABLE).define('R', Items.REDSTONE).define('D', Items.DROPPER).pattern("###").pattern("#C#").pattern("RDR").unlockedBy("has_dropper", this.has(Items.DROPPER)).save(this.output);
       WeatheringCopper.WeatherState.forEach((state) -> {
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.pick(state, false), Blocks.COPPER_BLOCK.pick(state, false), 4);
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.pick(state, true), Blocks.COPPER_BLOCK.pick(state, true), 4);
-         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.pick(state, true), Blocks.CUT_COPPER.pick(state, true), 1);
+         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.weathering().pick(state), Blocks.COPPER_BLOCK.weathering().pick(state), 4);
+         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.waxed().pick(state), Blocks.COPPER_BLOCK.waxed().pick(state), 4);
+         this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_COPPER.waxed().pick(state), Blocks.CUT_COPPER.waxed().pick(state), 1);
       });
-      WeatheringCopperCollection.zipApply((x$0, x$1) -> this.grate(x$0, x$1), Blocks.COPPER_GRATE, Blocks.COPPER_BLOCK);
-      WeatheringCopperCollection.zipApply((x$0, x$1) -> this.copperBulb(x$0, x$1), Blocks.COPPER_BULB, Blocks.COPPER_BLOCK);
-      WeatheringCopper.WeatherState.forEach((state) -> this.waxedChiseled(Blocks.CHISELED_COPPER.pick(state, true), Blocks.CUT_COPPER_SLAB.pick(state, true)));
-      WeatheringCopperCollection.zipApply((grate, block) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, grate, block, 4), Blocks.COPPER_GRATE, Blocks.COPPER_BLOCK);
+      WeatheringCopperCollection.zipApply(Blocks.COPPER_GRATE, Blocks.COPPER_BLOCK, (x$0, x$1) -> this.grate(x$0, x$1));
+      WeatheringCopperCollection.zipApply(Blocks.COPPER_BULB, Blocks.COPPER_BLOCK, (x$0, x$1) -> this.copperBulb(x$0, x$1));
+      WeatheringCopper.WeatherState.forEach((state) -> this.waxedChiseled(Blocks.CHISELED_COPPER.waxed().pick(state), Blocks.CUT_COPPER_SLAB.waxed().pick(state)));
+      WeatheringCopperCollection.zipApply(Blocks.COPPER_GRATE, Blocks.COPPER_BLOCK, (grate, block) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, grate, block, 4));
       this.shapeless(RecipeCategory.MISC, Items.WIND_CHARGE, 4).requires(Items.BREEZE_ROD).unlockedBy("has_breeze_rod", this.has(Items.BREEZE_ROD)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.MACE, 1).define('I', Items.BREEZE_ROD).define('#', Blocks.HEAVY_CORE).pattern(" # ").pattern(" I ").unlockedBy("has_breeze_rod", this.has(Items.BREEZE_ROD)).unlockedBy("has_heavy_core", this.has(Blocks.HEAVY_CORE)).save(this.output);
-      this.doorBuilder(Blocks.COPPER_DOOR.unaffected(), Ingredient.of((ItemLike)Items.COPPER_INGOT)).unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT)).save(this.output);
-      this.twoByTwoPacker(RecipeCategory.REDSTONE, Blocks.COPPER_TRAPDOOR.unaffected(), Items.COPPER_INGOT);
+      this.doorBuilder(Blocks.COPPER_DOOR.weathering().unaffected(), Ingredient.of((ItemLike)Items.COPPER_INGOT)).unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT)).save(this.output);
+      this.twoByTwoPacker(RecipeCategory.REDSTONE, Blocks.COPPER_TRAPDOOR.weathering().unaffected(), Items.COPPER_INGOT);
       this.shaped(RecipeCategory.TOOLS, Items.BUNDLE).define('-', Items.STRING).define('#', Items.LEATHER).pattern("-").pattern("#").unlockedBy("has_string", this.has(Items.STRING)).save(this.output);
-      this.shapeless(RecipeCategory.BUILDING_BLOCKS, Items.SULFUR, 4).requires(Items.POTENT_SULFUR).group(getSimpleRecipeName(Items.POTENT_SULFUR)).unlockedBy(getHasName(Items.POTENT_SULFUR), this.has(Items.POTENT_SULFUR)).save(this.output, ResourceKey.create(Registries.RECIPE, Identifier.parse(getSimpleRecipeName(Items.SULFUR))));
-      this.shaped(RecipeCategory.BUILDING_BLOCKS, Items.POTENT_SULFUR).define('#', Items.SULFUR).pattern("###").pattern("###").pattern("###").group(getSimpleRecipeName(Items.POTENT_SULFUR)).unlockedBy(getHasName(Items.SULFUR), this.has(Items.POTENT_SULFUR)).save(this.output, ResourceKey.create(Registries.RECIPE, Identifier.parse(getSimpleRecipeName(Items.POTENT_SULFUR))));
-      ColorCollection.zipApply((x$0, x$1) -> this.dyedBundleRecipe(x$0, x$1), Items.DYE, Items.DYED_BUNDLE);
+      this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.POTENT_SULFUR, Items.SULFUR);
+      ColorCollection.zipApply(Items.DYE, Items.DYED_BUNDLE, (x$0, x$1) -> this.dyedBundleRecipe(x$0, x$1));
    }
 
    public static Stream<TrimTemplate> smithingTrims() {
@@ -653,10 +651,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
          ResourceKey<Recipe<?>> recipeId = ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(getItemName(item) + "_smithing_trim"));
          return new TrimTemplate(item, patternId, recipeId);
       });
-   }
-
-   private void shulkerBoxRecipes() {
-      DyeColor.VALUES.forEach((color) -> this.dyedShulkerBoxRecipe(Items.DYE.pick(color), Items.DYED_SHULKER_BOX.pick(color)));
    }
 
    static {

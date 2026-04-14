@@ -22,7 +22,7 @@ public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelR
    }
 
    protected void renderToTexture(final GuiBookModelRenderState bookModelState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
       poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(25.0F));
       float open = bookModelState.open();

@@ -5,96 +5,104 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.references.BlockItemId;
+import net.minecraft.references.BlockItemIds;
+import net.minecraft.references.ItemIds;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ColorCollection;
+import net.minecraft.world.level.block.WeatheringCopperCollection;
 
-public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
+public class VanillaItemTagsProvider extends TagsProvider<Item> {
    public VanillaItemTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
-      super(output, Registries.ITEM, lookupProvider, (e) -> e.builtInRegistryHolder().key());
+      super(output, Registries.ITEM, lookupProvider);
    }
 
-   protected void addTags(final HolderLookup.Provider registries) {
-      (new BlockItemTagsProvider() {
+   protected BlockItemTagAppender<Item> tag(final TagKey<Item> tag) {
+      return new BlockItemTagAppender<Item>(super.tag(tag)) {
          {
             Objects.requireNonNull(VanillaItemTagsProvider.this);
          }
 
-         protected TagAppender<Block, Block> tag(final TagKey<Block> blockTag, final TagKey<Item> itemTag) {
-            return new BlockToItemConverter(VanillaItemTagsProvider.this.tag(itemTag));
+         protected ResourceKey<Item> convertElement(final BlockItemId element) {
+            return element.item();
          }
-      }).run();
-      this.tag(ItemTags.BANNERS).addAll(Items.BANNER.asList());
-      this.tag(ItemTags.BOATS).add(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.PALE_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT).addTag(ItemTags.CHEST_BOATS);
-      this.tag(ItemTags.BUNDLES).add(Items.BUNDLE).addAll(Items.DYED_BUNDLE.asList());
-      this.tag(ItemTags.CHEST_BOATS).add(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.PALE_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT);
-      this.tag(ItemTags.EGGS).add(Items.EGG, Items.BLUE_EGG, Items.BROWN_EGG);
-      this.tag(ItemTags.FISHES).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.PUFFERFISH, Items.TROPICAL_FISH);
-      this.tag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add(Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_BLOCKS, Items.MUSIC_DISC_CHIRP, Items.MUSIC_DISC_FAR, Items.MUSIC_DISC_MALL, Items.MUSIC_DISC_MELLOHI, Items.MUSIC_DISC_STAL, Items.MUSIC_DISC_STRAD, Items.MUSIC_DISC_WARD, Items.MUSIC_DISC_11, Items.MUSIC_DISC_WAIT);
-      this.tag(ItemTags.COALS).add(Items.COAL, Items.CHARCOAL);
-      this.tag(ItemTags.ARROWS).add(Items.ARROW, Items.TIPPED_ARROW, Items.SPECTRAL_ARROW);
-      this.tag(ItemTags.LECTERN_BOOKS).add(Items.WRITTEN_BOOK, Items.WRITABLE_BOOK);
-      this.tag(ItemTags.BEACON_PAYMENT_ITEMS).add(Items.NETHERITE_INGOT, Items.EMERALD, Items.DIAMOND, Items.GOLD_INGOT, Items.IRON_INGOT);
-      this.tag(ItemTags.PIGLIN_REPELLENTS).add(Items.SOUL_TORCH).add(Items.SOUL_LANTERN).add(Items.SOUL_CAMPFIRE);
-      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_NAUTILUS_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_SPEAR, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK, Items.GOLDEN_DANDELION);
-      this.tag(ItemTags.IGNORED_BY_PIGLIN_BABIES).add(Items.LEATHER);
-      this.tag(ItemTags.PIGLIN_FOOD).add(Items.PORKCHOP, Items.COOKED_PORKCHOP);
-      this.tag(ItemTags.PIGLIN_SAFE_ARMOR).add(Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
-      this.tag(ItemTags.FOX_FOOD).add(Items.SWEET_BERRIES, Items.GLOW_BERRIES);
-      this.tag(ItemTags.DUPLICATES_ALLAYS).add(Items.AMETHYST_SHARD);
-      this.tag(ItemTags.BREWING_FUEL).add(Items.BLAZE_POWDER);
-      this.tag(ItemTags.NON_FLAMMABLE_WOOD).add(Items.WARPED_STEM, Items.STRIPPED_WARPED_STEM, Items.WARPED_HYPHAE, Items.STRIPPED_WARPED_HYPHAE, Items.CRIMSON_STEM, Items.STRIPPED_CRIMSON_STEM, Items.CRIMSON_HYPHAE, Items.STRIPPED_CRIMSON_HYPHAE, Items.CRIMSON_PLANKS, Items.WARPED_PLANKS, Items.CRIMSON_SLAB, Items.WARPED_SLAB, Items.CRIMSON_PRESSURE_PLATE, Items.WARPED_PRESSURE_PLATE, Items.CRIMSON_FENCE, Items.WARPED_FENCE, Items.CRIMSON_TRAPDOOR, Items.WARPED_TRAPDOOR, Items.CRIMSON_FENCE_GATE, Items.WARPED_FENCE_GATE, Items.CRIMSON_STAIRS, Items.WARPED_STAIRS, Items.CRIMSON_BUTTON, Items.WARPED_BUTTON, Items.CRIMSON_DOOR, Items.WARPED_DOOR, Items.CRIMSON_SIGN, Items.WARPED_SIGN, Items.WARPED_HANGING_SIGN, Items.CRIMSON_HANGING_SIGN, Items.WARPED_SHELF, Items.CRIMSON_SHELF);
+      };
+   }
+
+   protected void addTags(final HolderLookup.Provider registries) {
+      (new VanillaBlockItemTagsProvider((tagId) -> BlockItemTagsProvider.wrapForItems(this.tag(tagId.item())))).run();
+      this.tag(ItemTags.BANNERS).addAll(toIds(BlockItemIds.BANNER));
+      this.tag(ItemTags.BOATS).add(ItemIds.OAK_BOAT, ItemIds.SPRUCE_BOAT, ItemIds.BIRCH_BOAT, ItemIds.JUNGLE_BOAT, ItemIds.ACACIA_BOAT, ItemIds.DARK_OAK_BOAT, ItemIds.PALE_OAK_BOAT, ItemIds.MANGROVE_BOAT, ItemIds.BAMBOO_RAFT, ItemIds.CHERRY_BOAT).addTag(ItemTags.CHEST_BOATS);
+      this.tag(ItemTags.BUNDLES).add(ItemIds.BUNDLE).addAll(ItemIds.DYED_BUNDLE);
+      this.tag(ItemTags.CHEST_BOATS).add(ItemIds.OAK_CHEST_BOAT, ItemIds.SPRUCE_CHEST_BOAT, ItemIds.BIRCH_CHEST_BOAT, ItemIds.JUNGLE_CHEST_BOAT, ItemIds.ACACIA_CHEST_BOAT, ItemIds.DARK_OAK_CHEST_BOAT, ItemIds.PALE_OAK_CHEST_BOAT, ItemIds.MANGROVE_CHEST_BOAT, ItemIds.BAMBOO_CHEST_RAFT, ItemIds.CHERRY_CHEST_BOAT);
+      this.tag(ItemTags.EGGS).add(ItemIds.EGG, ItemIds.BLUE_EGG, ItemIds.BROWN_EGG);
+      this.tag(ItemTags.FISHES).add(ItemIds.COD, ItemIds.COOKED_COD, ItemIds.SALMON, ItemIds.COOKED_SALMON, ItemIds.PUFFERFISH, ItemIds.TROPICAL_FISH);
+      this.tag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add(ItemIds.MUSIC_DISC_13, ItemIds.MUSIC_DISC_CAT, ItemIds.MUSIC_DISC_BLOCKS, ItemIds.MUSIC_DISC_CHIRP, ItemIds.MUSIC_DISC_FAR, ItemIds.MUSIC_DISC_MALL, ItemIds.MUSIC_DISC_MELLOHI, ItemIds.MUSIC_DISC_STAL, ItemIds.MUSIC_DISC_STRAD, ItemIds.MUSIC_DISC_WARD, ItemIds.MUSIC_DISC_11, ItemIds.MUSIC_DISC_WAIT);
+      this.tag(ItemTags.COALS).add(ItemIds.COAL, ItemIds.CHARCOAL);
+      this.tag(ItemTags.ARROWS).add(ItemIds.ARROW, ItemIds.TIPPED_ARROW, ItemIds.SPECTRAL_ARROW);
+      this.tag(ItemTags.LECTERN_BOOKS).add(ItemIds.WRITTEN_BOOK, ItemIds.WRITABLE_BOOK);
+      this.tag(ItemTags.BEACON_PAYMENT_ITEMS).add(ItemIds.NETHERITE_INGOT, ItemIds.EMERALD, ItemIds.DIAMOND, ItemIds.GOLD_INGOT, ItemIds.IRON_INGOT);
+      this.tag(ItemTags.PIGLIN_REPELLENTS).add(BlockItemIds.SOUL_TORCH).add(BlockItemIds.SOUL_LANTERN).add(BlockItemIds.SOUL_CAMPFIRE);
+      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(BlockItemIds.GOLD_BLOCK, BlockItemIds.GILDED_BLACKSTONE, BlockItemIds.LIGHT_WEIGHTED_PRESSURE_PLATE).add(ItemIds.GOLD_INGOT).add(BlockItemIds.BELL).add(ItemIds.CLOCK, ItemIds.GOLDEN_CARROT, ItemIds.GLISTERING_MELON_SLICE, ItemIds.GOLDEN_APPLE, ItemIds.ENCHANTED_GOLDEN_APPLE, ItemIds.GOLDEN_HELMET, ItemIds.GOLDEN_CHESTPLATE, ItemIds.GOLDEN_LEGGINGS, ItemIds.GOLDEN_BOOTS, ItemIds.GOLDEN_HORSE_ARMOR, ItemIds.GOLDEN_NAUTILUS_ARMOR, ItemIds.GOLDEN_SWORD, ItemIds.GOLDEN_SPEAR, ItemIds.GOLDEN_PICKAXE, ItemIds.GOLDEN_SHOVEL, ItemIds.GOLDEN_AXE, ItemIds.GOLDEN_HOE, ItemIds.RAW_GOLD).add(BlockItemIds.RAW_GOLD_BLOCK, BlockItemIds.GOLDEN_DANDELION);
+      this.tag(ItemTags.IGNORED_BY_PIGLIN_BABIES).add(ItemIds.LEATHER);
+      this.tag(ItemTags.PIGLIN_FOOD).add(ItemIds.PORKCHOP, ItemIds.COOKED_PORKCHOP);
+      this.tag(ItemTags.PIGLIN_SAFE_ARMOR).add(ItemIds.GOLDEN_HELMET, ItemIds.GOLDEN_CHESTPLATE, ItemIds.GOLDEN_LEGGINGS, ItemIds.GOLDEN_BOOTS);
+      this.tag(ItemTags.FOX_FOOD).add(BlockItemIds.SWEET_BERRY_CROP, BlockItemIds.GLOW_BERRY_CROP);
+      this.tag(ItemTags.DUPLICATES_ALLAYS).add(ItemIds.AMETHYST_SHARD);
+      this.tag(ItemTags.BREWING_FUEL).add(ItemIds.BLAZE_POWDER);
+      this.tag(ItemTags.NON_FLAMMABLE_WOOD).add(BlockItemIds.WARPED_STEM, BlockItemIds.STRIPPED_WARPED_STEM, BlockItemIds.WARPED_HYPHAE, BlockItemIds.STRIPPED_WARPED_HYPHAE, BlockItemIds.CRIMSON_STEM, BlockItemIds.STRIPPED_CRIMSON_STEM, BlockItemIds.CRIMSON_HYPHAE, BlockItemIds.STRIPPED_CRIMSON_HYPHAE, BlockItemIds.CRIMSON_PLANKS, BlockItemIds.WARPED_PLANKS, BlockItemIds.CRIMSON_SLAB, BlockItemIds.WARPED_SLAB, BlockItemIds.CRIMSON_PRESSURE_PLATE, BlockItemIds.WARPED_PRESSURE_PLATE, BlockItemIds.CRIMSON_FENCE, BlockItemIds.WARPED_FENCE, BlockItemIds.CRIMSON_TRAPDOOR, BlockItemIds.WARPED_TRAPDOOR, BlockItemIds.CRIMSON_FENCE_GATE, BlockItemIds.WARPED_FENCE_GATE, BlockItemIds.CRIMSON_STAIRS, BlockItemIds.WARPED_STAIRS, BlockItemIds.CRIMSON_BUTTON, BlockItemIds.WARPED_BUTTON, BlockItemIds.CRIMSON_DOOR, BlockItemIds.WARPED_DOOR, BlockItemIds.CRIMSON_SIGN, BlockItemIds.WARPED_SIGN, BlockItemIds.WARPED_HANGING_SIGN, BlockItemIds.CRIMSON_HANGING_SIGN, BlockItemIds.WARPED_SHELF, BlockItemIds.CRIMSON_SHELF);
       this.tag(ItemTags.WOODEN_TOOL_MATERIALS).addTag(ItemTags.PLANKS);
-      this.tag(ItemTags.STONE_TOOL_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE);
-      this.tag(ItemTags.COPPER_TOOL_MATERIALS).add(Items.COPPER_INGOT);
-      this.tag(ItemTags.IRON_TOOL_MATERIALS).add(Items.IRON_INGOT);
-      this.tag(ItemTags.GOLD_TOOL_MATERIALS).add(Items.GOLD_INGOT);
-      this.tag(ItemTags.DIAMOND_TOOL_MATERIALS).add(Items.DIAMOND);
-      this.tag(ItemTags.NETHERITE_TOOL_MATERIALS).add(Items.NETHERITE_INGOT);
-      this.tag(ItemTags.REPAIRS_LEATHER_ARMOR).add(Items.LEATHER);
-      this.tag(ItemTags.REPAIRS_COPPER_ARMOR).add(Items.COPPER_INGOT);
-      this.tag(ItemTags.REPAIRS_CHAIN_ARMOR).add(Items.IRON_INGOT);
-      this.tag(ItemTags.REPAIRS_IRON_ARMOR).add(Items.IRON_INGOT);
-      this.tag(ItemTags.REPAIRS_GOLD_ARMOR).add(Items.GOLD_INGOT);
-      this.tag(ItemTags.REPAIRS_DIAMOND_ARMOR).add(Items.DIAMOND);
-      this.tag(ItemTags.REPAIRS_NETHERITE_ARMOR).add(Items.NETHERITE_INGOT);
-      this.tag(ItemTags.REPAIRS_TURTLE_HELMET).add(Items.TURTLE_SCUTE);
-      this.tag(ItemTags.REPAIRS_WOLF_ARMOR).add(Items.ARMADILLO_SCUTE);
-      this.tag(ItemTags.STONE_CRAFTING_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE);
-      this.tag(ItemTags.FREEZE_IMMUNE_WEARABLES).add(Items.LEATHER_BOOTS, Items.LEATHER_LEGGINGS, Items.LEATHER_CHESTPLATE, Items.LEATHER_HELMET, Items.LEATHER_HORSE_ARMOR);
-      this.tag(ItemTags.AXOLOTL_FOOD).add(Items.TROPICAL_FISH_BUCKET);
-      this.tag(ItemTags.CLUSTER_MAX_HARVESTABLES).add(Items.DIAMOND_PICKAXE, Items.GOLDEN_PICKAXE, Items.IRON_PICKAXE, Items.NETHERITE_PICKAXE, Items.STONE_PICKAXE, Items.WOODEN_PICKAXE, Items.COPPER_PICKAXE);
-      this.tag(ItemTags.COMPASSES).add(Items.COMPASS).add(Items.RECOVERY_COMPASS);
-      this.tag(ItemTags.CREEPER_IGNITERS).add(Items.FLINT_AND_STEEL).add(Items.FIRE_CHARGE);
-      this.tag(ItemTags.SWORDS).add(Items.DIAMOND_SWORD).add(Items.STONE_SWORD).add(Items.GOLDEN_SWORD).add(Items.NETHERITE_SWORD).add(Items.WOODEN_SWORD).add(Items.IRON_SWORD).add(Items.COPPER_SWORD);
-      this.tag(ItemTags.AXES).add(Items.DIAMOND_AXE).add(Items.STONE_AXE).add(Items.GOLDEN_AXE).add(Items.NETHERITE_AXE).add(Items.WOODEN_AXE).add(Items.IRON_AXE).add(Items.COPPER_AXE);
-      this.tag(ItemTags.PICKAXES).add(Items.DIAMOND_PICKAXE).add(Items.STONE_PICKAXE).add(Items.GOLDEN_PICKAXE).add(Items.NETHERITE_PICKAXE).add(Items.WOODEN_PICKAXE).add(Items.IRON_PICKAXE).add(Items.COPPER_PICKAXE);
-      this.tag(ItemTags.SHOVELS).add(Items.DIAMOND_SHOVEL).add(Items.STONE_SHOVEL).add(Items.GOLDEN_SHOVEL).add(Items.NETHERITE_SHOVEL).add(Items.WOODEN_SHOVEL).add(Items.IRON_SHOVEL).add(Items.COPPER_SHOVEL);
-      this.tag(ItemTags.HOES).add(Items.DIAMOND_HOE).add(Items.STONE_HOE).add(Items.GOLDEN_HOE).add(Items.NETHERITE_HOE).add(Items.WOODEN_HOE).add(Items.IRON_HOE).add(Items.COPPER_HOE);
-      this.tag(ItemTags.SPEARS).add(Items.DIAMOND_SPEAR, Items.STONE_SPEAR, Items.GOLDEN_SPEAR, Items.NETHERITE_SPEAR, Items.WOODEN_SPEAR, Items.IRON_SPEAR, Items.COPPER_SPEAR);
-      this.tag(ItemTags.BREAKS_DECORATED_POTS).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.TRIDENT).add(Items.MACE);
-      this.tag(ItemTags.SKELETON_PREFERRED_WEAPONS).add(Items.BOW);
-      this.tag(ItemTags.DROWNED_PREFERRED_WEAPONS).add(Items.TRIDENT);
-      this.tag(ItemTags.PIGLIN_PREFERRED_WEAPONS).add(Items.CROSSBOW, Items.GOLDEN_SPEAR);
-      this.tag(ItemTags.PILLAGER_PREFERRED_WEAPONS).add(Items.CROSSBOW);
-      this.tag(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS).add(Items.BOW).add(Items.CROSSBOW);
-      this.tag(ItemTags.DECORATED_POT_SHERDS).add(Items.ANGLER_POTTERY_SHERD, Items.ARCHER_POTTERY_SHERD, Items.ARMS_UP_POTTERY_SHERD, Items.BLADE_POTTERY_SHERD, Items.BREWER_POTTERY_SHERD, Items.BURN_POTTERY_SHERD, Items.DANGER_POTTERY_SHERD, Items.EXPLORER_POTTERY_SHERD, Items.FRIEND_POTTERY_SHERD, Items.HEART_POTTERY_SHERD, Items.HEARTBREAK_POTTERY_SHERD, Items.HOWL_POTTERY_SHERD, Items.MINER_POTTERY_SHERD, Items.MOURNER_POTTERY_SHERD, Items.PLENTY_POTTERY_SHERD, Items.PRIZE_POTTERY_SHERD, Items.SHEAF_POTTERY_SHERD, Items.SHELTER_POTTERY_SHERD, Items.SKULL_POTTERY_SHERD, Items.SNORT_POTTERY_SHERD, Items.FLOW_POTTERY_SHERD, Items.GUSTER_POTTERY_SHERD, Items.SCRAPE_POTTERY_SHERD);
-      this.tag(ItemTags.DECORATED_POT_INGREDIENTS).add(Items.BRICK).addTag(ItemTags.DECORATED_POT_SHERDS);
-      this.tag(ItemTags.FOOT_ARMOR).add(Items.LEATHER_BOOTS, Items.COPPER_BOOTS, Items.CHAINMAIL_BOOTS, Items.GOLDEN_BOOTS, Items.IRON_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
-      this.tag(ItemTags.LEG_ARMOR).add(Items.LEATHER_LEGGINGS, Items.COPPER_LEGGINGS, Items.CHAINMAIL_LEGGINGS, Items.GOLDEN_LEGGINGS, Items.IRON_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
-      this.tag(ItemTags.CHEST_ARMOR).add(Items.LEATHER_CHESTPLATE, Items.COPPER_CHESTPLATE, Items.CHAINMAIL_CHESTPLATE, Items.GOLDEN_CHESTPLATE, Items.IRON_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
-      this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.COPPER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
-      this.tag(ItemTags.SKULLS).add(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD);
+      this.tag(ItemTags.STONE_TOOL_MATERIALS).add(BlockItemIds.COBBLESTONE, BlockItemIds.BLACKSTONE, BlockItemIds.COBBLED_DEEPSLATE);
+      this.tag(ItemTags.COPPER_TOOL_MATERIALS).add(ItemIds.COPPER_INGOT);
+      this.tag(ItemTags.IRON_TOOL_MATERIALS).add(ItemIds.IRON_INGOT);
+      this.tag(ItemTags.GOLD_TOOL_MATERIALS).add(ItemIds.GOLD_INGOT);
+      this.tag(ItemTags.DIAMOND_TOOL_MATERIALS).add(ItemIds.DIAMOND);
+      this.tag(ItemTags.NETHERITE_TOOL_MATERIALS).add(ItemIds.NETHERITE_INGOT);
+      this.tag(ItemTags.REPAIRS_LEATHER_ARMOR).add(ItemIds.LEATHER);
+      this.tag(ItemTags.REPAIRS_COPPER_ARMOR).add(ItemIds.COPPER_INGOT);
+      this.tag(ItemTags.REPAIRS_CHAIN_ARMOR).add(ItemIds.IRON_INGOT);
+      this.tag(ItemTags.REPAIRS_IRON_ARMOR).add(ItemIds.IRON_INGOT);
+      this.tag(ItemTags.REPAIRS_GOLD_ARMOR).add(ItemIds.GOLD_INGOT);
+      this.tag(ItemTags.REPAIRS_DIAMOND_ARMOR).add(ItemIds.DIAMOND);
+      this.tag(ItemTags.REPAIRS_NETHERITE_ARMOR).add(ItemIds.NETHERITE_INGOT);
+      this.tag(ItemTags.REPAIRS_TURTLE_HELMET).add(ItemIds.TURTLE_SCUTE);
+      this.tag(ItemTags.REPAIRS_WOLF_ARMOR).add(ItemIds.ARMADILLO_SCUTE);
+      this.tag(ItemTags.STONE_CRAFTING_MATERIALS).add(BlockItemIds.COBBLESTONE, BlockItemIds.BLACKSTONE, BlockItemIds.COBBLED_DEEPSLATE);
+      this.tag(ItemTags.FREEZE_IMMUNE_WEARABLES).add(ItemIds.LEATHER_BOOTS, ItemIds.LEATHER_LEGGINGS, ItemIds.LEATHER_CHESTPLATE, ItemIds.LEATHER_HELMET, ItemIds.LEATHER_HORSE_ARMOR);
+      this.tag(ItemTags.AXOLOTL_FOOD).add(ItemIds.TROPICAL_FISH_BUCKET);
+      this.tag(ItemTags.CLUSTER_MAX_HARVESTABLES).add(ItemIds.DIAMOND_PICKAXE, ItemIds.GOLDEN_PICKAXE, ItemIds.IRON_PICKAXE, ItemIds.NETHERITE_PICKAXE, ItemIds.STONE_PICKAXE, ItemIds.WOODEN_PICKAXE, ItemIds.COPPER_PICKAXE);
+      this.tag(ItemTags.COMPASSES).add(ItemIds.COMPASS).add(ItemIds.RECOVERY_COMPASS);
+      this.tag(ItemTags.CREEPER_IGNITERS).add(ItemIds.FLINT_AND_STEEL).add(ItemIds.FIRE_CHARGE);
+      this.tag(ItemTags.SWORDS).add(ItemIds.DIAMOND_SWORD).add(ItemIds.STONE_SWORD).add(ItemIds.GOLDEN_SWORD).add(ItemIds.NETHERITE_SWORD).add(ItemIds.WOODEN_SWORD).add(ItemIds.IRON_SWORD).add(ItemIds.COPPER_SWORD);
+      this.tag(ItemTags.AXES).add(ItemIds.DIAMOND_AXE).add(ItemIds.STONE_AXE).add(ItemIds.GOLDEN_AXE).add(ItemIds.NETHERITE_AXE).add(ItemIds.WOODEN_AXE).add(ItemIds.IRON_AXE).add(ItemIds.COPPER_AXE);
+      this.tag(ItemTags.PICKAXES).add(ItemIds.DIAMOND_PICKAXE).add(ItemIds.STONE_PICKAXE).add(ItemIds.GOLDEN_PICKAXE).add(ItemIds.NETHERITE_PICKAXE).add(ItemIds.WOODEN_PICKAXE).add(ItemIds.IRON_PICKAXE).add(ItemIds.COPPER_PICKAXE);
+      this.tag(ItemTags.SHOVELS).add(ItemIds.DIAMOND_SHOVEL).add(ItemIds.STONE_SHOVEL).add(ItemIds.GOLDEN_SHOVEL).add(ItemIds.NETHERITE_SHOVEL).add(ItemIds.WOODEN_SHOVEL).add(ItemIds.IRON_SHOVEL).add(ItemIds.COPPER_SHOVEL);
+      this.tag(ItemTags.HOES).add(ItemIds.DIAMOND_HOE).add(ItemIds.STONE_HOE).add(ItemIds.GOLDEN_HOE).add(ItemIds.NETHERITE_HOE).add(ItemIds.WOODEN_HOE).add(ItemIds.IRON_HOE).add(ItemIds.COPPER_HOE);
+      this.tag(ItemTags.SPEARS).add(ItemIds.DIAMOND_SPEAR, ItemIds.STONE_SPEAR, ItemIds.GOLDEN_SPEAR, ItemIds.NETHERITE_SPEAR, ItemIds.WOODEN_SPEAR, ItemIds.IRON_SPEAR, ItemIds.COPPER_SPEAR);
+      this.tag(ItemTags.BREAKS_DECORATED_POTS).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(ItemIds.TRIDENT).add(ItemIds.MACE);
+      this.tag(ItemTags.SKELETON_PREFERRED_WEAPONS).add(ItemIds.BOW);
+      this.tag(ItemTags.DROWNED_PREFERRED_WEAPONS).add(ItemIds.TRIDENT);
+      this.tag(ItemTags.PIGLIN_PREFERRED_WEAPONS).add(ItemIds.CROSSBOW, ItemIds.GOLDEN_SPEAR);
+      this.tag(ItemTags.PILLAGER_PREFERRED_WEAPONS).add(ItemIds.CROSSBOW);
+      this.tag(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS).add(ItemIds.BOW).add(ItemIds.CROSSBOW);
+      this.tag(ItemTags.DECORATED_POT_SHERDS).add(ItemIds.ANGLER_POTTERY_SHERD, ItemIds.ARCHER_POTTERY_SHERD, ItemIds.ARMS_UP_POTTERY_SHERD, ItemIds.BLADE_POTTERY_SHERD, ItemIds.BREWER_POTTERY_SHERD, ItemIds.BURN_POTTERY_SHERD, ItemIds.DANGER_POTTERY_SHERD, ItemIds.EXPLORER_POTTERY_SHERD, ItemIds.FRIEND_POTTERY_SHERD, ItemIds.HEART_POTTERY_SHERD, ItemIds.HEARTBREAK_POTTERY_SHERD, ItemIds.HOWL_POTTERY_SHERD, ItemIds.MINER_POTTERY_SHERD, ItemIds.MOURNER_POTTERY_SHERD, ItemIds.PLENTY_POTTERY_SHERD, ItemIds.PRIZE_POTTERY_SHERD, ItemIds.SHEAF_POTTERY_SHERD, ItemIds.SHELTER_POTTERY_SHERD, ItemIds.SKULL_POTTERY_SHERD, ItemIds.SNORT_POTTERY_SHERD, ItemIds.FLOW_POTTERY_SHERD, ItemIds.GUSTER_POTTERY_SHERD, ItemIds.SCRAPE_POTTERY_SHERD);
+      this.tag(ItemTags.DECORATED_POT_INGREDIENTS).add(ItemIds.BRICK).addTag(ItemTags.DECORATED_POT_SHERDS);
+      this.tag(ItemTags.FOOT_ARMOR).add(ItemIds.LEATHER_BOOTS, ItemIds.COPPER_BOOTS, ItemIds.CHAINMAIL_BOOTS, ItemIds.GOLDEN_BOOTS, ItemIds.IRON_BOOTS, ItemIds.DIAMOND_BOOTS, ItemIds.NETHERITE_BOOTS);
+      this.tag(ItemTags.LEG_ARMOR).add(ItemIds.LEATHER_LEGGINGS, ItemIds.COPPER_LEGGINGS, ItemIds.CHAINMAIL_LEGGINGS, ItemIds.GOLDEN_LEGGINGS, ItemIds.IRON_LEGGINGS, ItemIds.DIAMOND_LEGGINGS, ItemIds.NETHERITE_LEGGINGS);
+      this.tag(ItemTags.CHEST_ARMOR).add(ItemIds.LEATHER_CHESTPLATE, ItemIds.COPPER_CHESTPLATE, ItemIds.CHAINMAIL_CHESTPLATE, ItemIds.GOLDEN_CHESTPLATE, ItemIds.IRON_CHESTPLATE, ItemIds.DIAMOND_CHESTPLATE, ItemIds.NETHERITE_CHESTPLATE);
+      this.tag(ItemTags.HEAD_ARMOR).add(ItemIds.LEATHER_HELMET, ItemIds.COPPER_HELMET, ItemIds.CHAINMAIL_HELMET, ItemIds.GOLDEN_HELMET, ItemIds.IRON_HELMET, ItemIds.DIAMOND_HELMET, ItemIds.NETHERITE_HELMET, ItemIds.TURTLE_HELMET);
+      this.tag(ItemTags.SKULLS).add(BlockItemIds.PLAYER_HEAD, BlockItemIds.CREEPER_HEAD, BlockItemIds.ZOMBIE_HEAD, BlockItemIds.SKELETON_SKULL, BlockItemIds.WITHER_SKELETON_SKULL, BlockItemIds.DRAGON_HEAD, BlockItemIds.PIGLIN_HEAD);
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      this.tag(ItemTags.TRIM_MATERIALS).add(Items.AMETHYST_SHARD, Items.COPPER_INGOT, Items.DIAMOND, Items.EMERALD, Items.GOLD_INGOT, Items.IRON_INGOT, Items.LAPIS_LAZULI, Items.NETHERITE_INGOT, Items.QUARTZ, Items.REDSTONE, Items.RESIN_BRICK);
-      this.tag(ItemTags.BOOKSHELF_BOOKS).add(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK);
-      this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD);
-      this.tag(ItemTags.SNIFFER_FOOD).add(Items.TORCHFLOWER_SEEDS);
-      this.tag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(Items.WHEAT_SEEDS, Items.POTATO, Items.CARROT, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
-      this.tag(ItemTags.VILLAGER_PICKS_UP).addTag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(Items.BREAD, Items.WHEAT, Items.BEETROOT);
-      this.tag(ItemTags.BOOK_CLONING_TARGET).add(Items.WRITABLE_BOOK);
+      this.tag(ItemTags.TRIM_MATERIALS).add(ItemIds.AMETHYST_SHARD, ItemIds.COPPER_INGOT, ItemIds.DIAMOND, ItemIds.EMERALD, ItemIds.GOLD_INGOT, ItemIds.IRON_INGOT, ItemIds.LAPIS_LAZULI, ItemIds.NETHERITE_INGOT, ItemIds.QUARTZ).add(BlockItemIds.REDSTONE_DUST).add(ItemIds.RESIN_BRICK);
+      this.tag(ItemTags.BOOKSHELF_BOOKS).add(ItemIds.BOOK, ItemIds.WRITTEN_BOOK, ItemIds.ENCHANTED_BOOK, ItemIds.WRITABLE_BOOK, ItemIds.KNOWLEDGE_BOOK);
+      this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(BlockItemIds.ZOMBIE_HEAD, BlockItemIds.SKELETON_SKULL, BlockItemIds.CREEPER_HEAD, BlockItemIds.DRAGON_HEAD, BlockItemIds.WITHER_SKELETON_SKULL, BlockItemIds.PIGLIN_HEAD, BlockItemIds.PLAYER_HEAD);
+      this.tag(ItemTags.SNIFFER_FOOD).add(BlockItemIds.TORCHFLOWER_CROP);
+      this.tag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(BlockItemIds.WHEAT_CROP, BlockItemIds.POTATO_CROP, BlockItemIds.CARROT_CROP, BlockItemIds.BEETROOT_CROP, BlockItemIds.TORCHFLOWER_CROP, BlockItemIds.PITCHER_CROP);
+      this.tag(ItemTags.VILLAGER_PICKS_UP).addTag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(ItemIds.BREAD, ItemIds.WHEAT, ItemIds.BEETROOT);
+      this.tag(ItemTags.BOOK_CLONING_TARGET).add(ItemIds.WRITABLE_BOOK);
       this.tag(ItemTags.FOOT_ARMOR_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR);
       this.tag(ItemTags.LEG_ARMOR_ENCHANTABLE).addTag(ItemTags.LEG_ARMOR);
       this.tag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR);
@@ -102,107 +110,82 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.ARMOR_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR_ENCHANTABLE).addTag(ItemTags.LEG_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.HEAD_ARMOR_ENCHANTABLE);
       this.tag(ItemTags.SWEEPING_ENCHANTABLE).addTag(ItemTags.SWORDS);
       this.tag(ItemTags.MELEE_WEAPON_ENCHANTABLE).addTag(ItemTags.SWORDS).addTag(ItemTags.SPEARS);
-      this.tag(ItemTags.FIRE_ASPECT_ENCHANTABLE).addTag(ItemTags.MELEE_WEAPON_ENCHANTABLE).add(Items.MACE);
+      this.tag(ItemTags.FIRE_ASPECT_ENCHANTABLE).addTag(ItemTags.MELEE_WEAPON_ENCHANTABLE).add(ItemIds.MACE);
       this.tag(ItemTags.SHARP_WEAPON_ENCHANTABLE).addTag(ItemTags.MELEE_WEAPON_ENCHANTABLE).addTag(ItemTags.AXES);
-      this.tag(ItemTags.WEAPON_ENCHANTABLE).addTag(ItemTags.SHARP_WEAPON_ENCHANTABLE).add(Items.MACE);
-      this.tag(ItemTags.MACE_ENCHANTABLE).add(Items.MACE);
-      this.tag(ItemTags.MINING_ENCHANTABLE).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.SHEARS);
+      this.tag(ItemTags.WEAPON_ENCHANTABLE).addTag(ItemTags.SHARP_WEAPON_ENCHANTABLE).add(ItemIds.MACE);
+      this.tag(ItemTags.MACE_ENCHANTABLE).add(ItemIds.MACE);
+      this.tag(ItemTags.MINING_ENCHANTABLE).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(ItemIds.SHEARS);
       this.tag(ItemTags.MINING_LOOT_ENCHANTABLE).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES);
-      this.tag(ItemTags.FISHING_ENCHANTABLE).add(Items.FISHING_ROD);
-      this.tag(ItemTags.TRIDENT_ENCHANTABLE).add(Items.TRIDENT);
+      this.tag(ItemTags.FISHING_ENCHANTABLE).add(ItemIds.FISHING_ROD);
+      this.tag(ItemTags.TRIDENT_ENCHANTABLE).add(ItemIds.TRIDENT);
       this.tag(ItemTags.LUNGE_ENCHANTABLE).addTag(ItemTags.SPEARS);
-      this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).add(Items.SHIELD).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.BOW).add(Items.CROSSBOW).add(Items.TRIDENT).add(Items.FLINT_AND_STEEL).add(Items.SHEARS).add(Items.BRUSH).add(Items.FISHING_ROD).add(Items.CARROT_ON_A_STICK, Items.WARPED_FUNGUS_ON_A_STICK).add(Items.MACE).addTag(ItemTags.SPEARS);
-      this.tag(ItemTags.BOW_ENCHANTABLE).add(Items.BOW);
-      this.tag(ItemTags.EQUIPPABLE_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).addTag(ItemTags.SKULLS).add(Items.CARVED_PUMPKIN);
-      this.tag(ItemTags.CROSSBOW_ENCHANTABLE).add(Items.CROSSBOW);
-      this.tag(ItemTags.VANISHING_ENCHANTABLE).addTag(ItemTags.DURABILITY_ENCHANTABLE).add(Items.COMPASS).add(Items.CARVED_PUMPKIN).addTag(ItemTags.SKULLS);
-      this.tag(ItemTags.DYES).addAll(Items.DYE.asList());
-      this.tag(ItemTags.CAULDRON_CAN_REMOVE_DYE).add(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS, Items.LEATHER_HORSE_ARMOR, Items.WOLF_ARMOR);
-      this.tag(ItemTags.FURNACE_MINECART_FUEL).add(Items.COAL, Items.CHARCOAL);
-      this.tag(ItemTags.MEAT).add(Items.BEEF, Items.CHICKEN, Items.COOKED_BEEF, Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_PORKCHOP, Items.COOKED_RABBIT, Items.MUTTON, Items.PORKCHOP, Items.RABBIT, Items.ROTTEN_FLESH);
-      this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.RABBIT_STEW);
-      this.tag(ItemTags.OCELOT_FOOD).add(Items.COD, Items.SALMON);
-      this.tag(ItemTags.CAT_FOOD).add(Items.COD, Items.SALMON);
-      this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.CARROT, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
-      this.tag(ItemTags.ZOMBIE_HORSE_FOOD).add(Items.RED_MUSHROOM);
-      this.tag(ItemTags.HORSE_TEMPT_ITEMS).add(Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
-      this.tag(ItemTags.HARNESSES).addAll(Items.HARNESS.asList());
-      this.tag(ItemTags.HAPPY_GHAST_FOOD).add(Items.SNOWBALL);
+      this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(ItemIds.ELYTRA).add(ItemIds.SHIELD).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(ItemIds.BOW).add(ItemIds.CROSSBOW).add(ItemIds.TRIDENT).add(ItemIds.FLINT_AND_STEEL).add(ItemIds.SHEARS).add(ItemIds.BRUSH).add(ItemIds.FISHING_ROD).add(ItemIds.CARROT_ON_A_STICK, ItemIds.WARPED_FUNGUS_ON_A_STICK).add(ItemIds.MACE).addTag(ItemTags.SPEARS);
+      this.tag(ItemTags.BOW_ENCHANTABLE).add(ItemIds.BOW);
+      this.tag(ItemTags.EQUIPPABLE_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(ItemIds.ELYTRA).addTag(ItemTags.SKULLS).add(BlockItemIds.CARVED_PUMPKIN);
+      this.tag(ItemTags.CROSSBOW_ENCHANTABLE).add(ItemIds.CROSSBOW);
+      this.tag(ItemTags.VANISHING_ENCHANTABLE).addTag(ItemTags.DURABILITY_ENCHANTABLE).add(ItemIds.COMPASS).add(BlockItemIds.CARVED_PUMPKIN).addTag(ItemTags.SKULLS);
+      this.tag(ItemTags.DYES).addAll(ItemIds.DYE);
+      this.tag(ItemTags.CAULDRON_CAN_REMOVE_DYE).add(ItemIds.LEATHER_HELMET, ItemIds.LEATHER_CHESTPLATE, ItemIds.LEATHER_LEGGINGS, ItemIds.LEATHER_BOOTS, ItemIds.LEATHER_HORSE_ARMOR, ItemIds.WOLF_ARMOR);
+      this.tag(ItemTags.FURNACE_MINECART_FUEL).add(ItemIds.COAL, ItemIds.CHARCOAL);
+      this.tag(ItemTags.MEAT).add(ItemIds.BEEF, ItemIds.CHICKEN, ItemIds.COOKED_BEEF, ItemIds.COOKED_CHICKEN, ItemIds.COOKED_MUTTON, ItemIds.COOKED_PORKCHOP, ItemIds.COOKED_RABBIT, ItemIds.MUTTON, ItemIds.PORKCHOP, ItemIds.RABBIT, ItemIds.ROTTEN_FLESH);
+      this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add(ItemIds.COD, ItemIds.COOKED_COD, ItemIds.SALMON, ItemIds.COOKED_SALMON, ItemIds.TROPICAL_FISH, ItemIds.PUFFERFISH, ItemIds.RABBIT_STEW);
+      this.tag(ItemTags.OCELOT_FOOD).add(ItemIds.COD, ItemIds.SALMON);
+      this.tag(ItemTags.CAT_FOOD).add(ItemIds.COD, ItemIds.SALMON);
+      this.tag(ItemTags.HORSE_FOOD).add(ItemIds.WHEAT, ItemIds.SUGAR).add(BlockItemIds.HAY_BLOCK).add(ItemIds.APPLE).add(BlockItemIds.CARROT_CROP).add(ItemIds.GOLDEN_CARROT, ItemIds.GOLDEN_APPLE, ItemIds.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.ZOMBIE_HORSE_FOOD).add(BlockItemIds.RED_MUSHROOM);
+      this.tag(ItemTags.HORSE_TEMPT_ITEMS).add(ItemIds.GOLDEN_CARROT, ItemIds.GOLDEN_APPLE, ItemIds.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.HARNESSES).addAll(ItemIds.HARNESS);
+      this.tag(ItemTags.HAPPY_GHAST_FOOD).add(ItemIds.SNOWBALL);
       this.tag(ItemTags.HAPPY_GHAST_TEMPT_ITEMS).addTag(ItemTags.HAPPY_GHAST_FOOD).addTag(ItemTags.HARNESSES);
-      this.tag(ItemTags.CAMEL_FOOD).add(Items.CACTUS);
-      this.tag(ItemTags.CAMEL_HUSK_FOOD).add(Items.RABBIT_FOOT);
-      this.tag(ItemTags.ARMADILLO_FOOD).add(Items.SPIDER_EYE);
-      this.tag(ItemTags.CHICKEN_FOOD).add(Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
-      this.tag(ItemTags.FROG_FOOD).add(Items.SLIME_BALL);
-      this.tag(ItemTags.HOGLIN_FOOD).add(Items.CRIMSON_FUNGUS);
-      this.tag(ItemTags.LLAMA_FOOD).add(Items.WHEAT, Items.HAY_BLOCK);
-      this.tag(ItemTags.LLAMA_TEMPT_ITEMS).add(Items.HAY_BLOCK);
-      this.tag(ItemTags.NAUTILUS_TAMING_ITEMS).add(Items.PUFFERFISH_BUCKET, Items.PUFFERFISH);
-      this.tag(ItemTags.NAUTILUS_BUCKET_FOOD).add(Items.PUFFERFISH_BUCKET, Items.COD_BUCKET, Items.SALMON_BUCKET, Items.TROPICAL_FISH_BUCKET);
+      this.tag(ItemTags.CAMEL_FOOD).add(BlockItemIds.CACTUS);
+      this.tag(ItemTags.CAMEL_HUSK_FOOD).add(ItemIds.RABBIT_FOOT);
+      this.tag(ItemTags.ARMADILLO_FOOD).add(ItemIds.SPIDER_EYE);
+      this.tag(ItemTags.CHICKEN_FOOD).add(BlockItemIds.WHEAT_CROP, BlockItemIds.MELON_CROP, BlockItemIds.PUMPKIN_CROP, BlockItemIds.BEETROOT_CROP, BlockItemIds.TORCHFLOWER_CROP, BlockItemIds.PITCHER_CROP);
+      this.tag(ItemTags.FROG_FOOD).add(ItemIds.SLIME_BALL);
+      this.tag(ItemTags.HOGLIN_FOOD).add(BlockItemIds.CRIMSON_FUNGUS);
+      this.tag(ItemTags.LLAMA_FOOD).add(ItemIds.WHEAT).add(BlockItemIds.HAY_BLOCK);
+      this.tag(ItemTags.LLAMA_TEMPT_ITEMS).add(BlockItemIds.HAY_BLOCK);
+      this.tag(ItemTags.NAUTILUS_TAMING_ITEMS).add(ItemIds.PUFFERFISH_BUCKET, ItemIds.PUFFERFISH);
+      this.tag(ItemTags.NAUTILUS_BUCKET_FOOD).add(ItemIds.PUFFERFISH_BUCKET, ItemIds.COD_BUCKET, ItemIds.SALMON_BUCKET, ItemIds.TROPICAL_FISH_BUCKET);
       this.tag(ItemTags.NAUTILUS_FOOD).addTag(ItemTags.FISHES).addTag(ItemTags.NAUTILUS_BUCKET_FOOD);
-      this.tag(ItemTags.PANDA_FOOD).add(Items.BAMBOO);
-      this.tag(ItemTags.PANDA_EATS_FROM_GROUND).addTag(ItemTags.PANDA_FOOD).add(Items.CAKE);
-      this.tag(ItemTags.PIG_FOOD).add(Items.CARROT, Items.POTATO, Items.BEETROOT);
-      this.tag(ItemTags.RABBIT_FOOD).add(Items.CARROT, Items.GOLDEN_CARROT, Items.DANDELION);
-      this.tag(ItemTags.STRIDER_FOOD).add(Items.WARPED_FUNGUS);
-      this.tag(ItemTags.STRIDER_TEMPT_ITEMS).addTag(ItemTags.STRIDER_FOOD).add(Items.WARPED_FUNGUS_ON_A_STICK);
-      this.tag(ItemTags.TURTLE_FOOD).add(Items.SEAGRASS);
-      this.tag(ItemTags.PARROT_FOOD).add(Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
-      this.tag(ItemTags.PARROT_POISONOUS_FOOD).add(Items.COOKIE);
-      this.tag(ItemTags.COW_FOOD).add(Items.WHEAT);
-      this.tag(ItemTags.SHEEP_FOOD).add(Items.WHEAT);
-      this.tag(ItemTags.SULFUR_CUBE_FOOD).add(Items.SLIME_BALL);
-      this.tag(ItemTags.GOAT_FOOD).add(Items.WHEAT);
-      this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add(Items.CARVED_PUMPKIN);
-      this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add(Items.CARVED_PUMPKIN);
-      this.tag(ItemTags.SHEARABLE_FROM_COPPER_GOLEM).add(Items.POPPY);
-      this.tag(ItemTags.METAL_NUGGETS).add(Items.COPPER_NUGGET, Items.IRON_NUGGET, Items.GOLD_NUGGET);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY).addTag(ItemTags.PLANKS).add(Items.BAMBOO_MOSAIC).addTag(ItemTags.LOGS).addTag(ItemTags.BAMBOO_BLOCKS);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR).add(Items.DEEPSLATE, Items.CHISELED_DEEPSLATE, Items.POLISHED_DEEPSLATE, Items.COBBLED_DEEPSLATE, Items.CRACKED_DEEPSLATE_BRICKS, Items.CRACKED_DEEPSLATE_TILES, Items.DEEPSLATE_BRICKS, Items.DEEPSLATE_TILES).add(Items.NETHER_BRICKS, Items.RED_NETHER_BRICKS, Items.CHISELED_NETHER_BRICKS, Items.CRACKED_NETHER_BRICKS).add(Items.BLACKSTONE, Items.GILDED_BLACKSTONE, Items.POLISHED_BLACKSTONE, Items.CHISELED_POLISHED_BLACKSTONE, Items.CRACKED_POLISHED_BLACKSTONE_BRICKS, Items.POLISHED_BLACKSTONE_BRICKS).add(Items.QUARTZ_BLOCK, Items.SMOOTH_QUARTZ, Items.CHISELED_QUARTZ_BLOCK, Items.QUARTZ_BRICKS, Items.QUARTZ_PILLAR).add(Items.SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_RED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_RED_SANDSTONE, Items.SMOOTH_SANDSTONE).add(Items.STONE, Items.COBBLESTONE, Items.SMOOTH_STONE, Items.MOSSY_COBBLESTONE, Items.MOSSY_STONE_BRICKS, Items.CRACKED_STONE_BRICKS, Items.STONE_BRICKS, Items.CHISELED_STONE_BRICKS).add(Items.TUFF, Items.TUFF_BRICKS, Items.CHISELED_TUFF, Items.CHISELED_TUFF_BRICKS, Items.POLISHED_TUFF).add(Items.CINNABAR, Items.CHISELED_CINNABAR, Items.POLISHED_CINNABAR, Items.CINNABAR_BRICKS).add(Items.SULFUR, Items.POLISHED_SULFUR, Items.CHISELED_SULFUR, Items.SULFUR_BRICKS).add(Items.BASALT, Items.POLISHED_BASALT, Items.SMOOTH_BASALT).add(Items.DIORITE, Items.POLISHED_DIORITE, Items.GRANITE, Items.POLISHED_GRANITE, Items.ANDESITE, Items.POLISHED_ANDESITE, Items.CALCITE, Items.DRIPSTONE_BLOCK).add(Items.MUD, Items.MUDDY_MANGROVE_ROOTS, Items.MUD_BRICKS, Items.PACKED_MUD).addTag(ItemTags.TERRACOTTA).addTag(ItemTags.GLAZED_TERRACOTTA).addTag(ItemTags.CONCRETE).addTag(ItemTags.CONCRETE_POWDERS).addTag(ItemTags.COAL_ORES).addTag(ItemTags.LAPIS_ORES).addTag(ItemTags.REDSTONE_ORES).addTag(ItemTags.DIAMOND_ORES).addTag(ItemTags.EMERALD_ORES).add(Items.COAL_BLOCK, Items.LAPIS_BLOCK, Items.REDSTONE_BLOCK, Items.DIAMOND_BLOCK, Items.EMERALD_BLOCK).add(Items.NETHERRACK, Items.NETHER_QUARTZ_ORE, Items.CRIMSON_NYLIUM, Items.WARPED_NYLIUM, Items.GLOWSTONE).add(Items.PRISMARINE, Items.PRISMARINE_BRICKS, Items.DARK_PRISMARINE, Items.SEA_LANTERN).add(Items.END_STONE, Items.END_STONE_BRICKS, Items.PURPUR_BLOCK, Items.PURPUR_PILLAR).add(Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT, Items.PODZOL, Items.GRASS_BLOCK, Items.CLAY).add(Items.GRAVEL, Items.SAND, Items.RED_SAND).add(Items.OBSIDIAN, Items.CRYING_OBSIDIAN, Items.BONE_BLOCK, Items.AMETHYST_BLOCK, Items.BRICKS, Items.MAGMA_BLOCK);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT).add(Items.IRON_BLOCK, Items.GOLD_BLOCK, Items.RAW_COPPER_BLOCK, Items.RAW_GOLD_BLOCK, Items.RAW_IRON_BLOCK).addTag(ItemTags.GOLD_ORES).addTag(ItemTags.IRON_ORES).addTag(ItemTags.COPPER_ORES).add(Items.NETHERITE_BLOCK, Items.ANCIENT_DEBRIS).addAll(Items.COPPER_BLOCK.asList()).addAll(Items.COPPER_BULB.asList()).addAll(Items.CUT_COPPER.asList()).addAll(Items.CHISELED_COPPER.asList());
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT).add(Items.TUBE_CORAL_BLOCK, Items.BRAIN_CORAL_BLOCK, Items.BUBBLE_CORAL_BLOCK, Items.FIRE_CORAL_BLOCK, Items.HORN_CORAL_BLOCK).add(Items.DEAD_TUBE_CORAL_BLOCK, Items.DEAD_BRAIN_CORAL_BLOCK, Items.DEAD_BUBBLE_CORAL_BLOCK, Items.DEAD_FIRE_CORAL_BLOCK, Items.DEAD_HORN_CORAL_BLOCK).add(Items.SPONGE, Items.WET_SPONGE, Items.DRIED_KELP_BLOCK).addTag(ItemTags.MOSS_BLOCKS).add(Items.RESIN_BLOCK, Items.RESIN_BRICKS, Items.CHISELED_RESIN_BRICKS).add(Items.PUMPKIN, Items.MELON, Items.HAY_BLOCK, Items.PUMPKIN, Items.CARVED_PUMPKIN, Items.JACK_O_LANTERN).add(Items.OCHRE_FROGLIGHT, Items.PEARLESCENT_FROGLIGHT, Items.VERDANT_FROGLIGHT);
+      this.tag(ItemTags.PANDA_FOOD).add(BlockItemIds.BAMBOO);
+      this.tag(ItemTags.PANDA_EATS_FROM_GROUND).addTag(ItemTags.PANDA_FOOD).add(BlockItemIds.CAKE);
+      this.tag(ItemTags.PIG_FOOD).add(BlockItemIds.CARROT_CROP, BlockItemIds.POTATO_CROP).add(ItemIds.BEETROOT);
+      this.tag(ItemTags.RABBIT_FOOD).add(BlockItemIds.CARROT_CROP).add(ItemIds.GOLDEN_CARROT).add(BlockItemIds.DANDELION);
+      this.tag(ItemTags.STRIDER_FOOD).add(BlockItemIds.WARPED_FUNGUS);
+      this.tag(ItemTags.STRIDER_TEMPT_ITEMS).addTag(ItemTags.STRIDER_FOOD).add(ItemIds.WARPED_FUNGUS_ON_A_STICK);
+      this.tag(ItemTags.TURTLE_FOOD).add(BlockItemIds.SEAGRASS);
+      this.tag(ItemTags.PARROT_FOOD).add(BlockItemIds.WHEAT_CROP).add(BlockItemIds.MELON_CROP, BlockItemIds.PUMPKIN_CROP, BlockItemIds.BEETROOT_CROP, BlockItemIds.TORCHFLOWER_CROP, BlockItemIds.PITCHER_CROP);
+      this.tag(ItemTags.PARROT_POISONOUS_FOOD).add(ItemIds.COOKIE);
+      this.tag(ItemTags.COW_FOOD).add(ItemIds.WHEAT);
+      this.tag(ItemTags.SHEEP_FOOD).add(ItemIds.WHEAT);
+      this.tag(ItemTags.SULFUR_CUBE_FOOD).add(ItemIds.SLIME_BALL);
+      this.tag(ItemTags.GOAT_FOOD).add(ItemIds.WHEAT);
+      this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add(BlockItemIds.CARVED_PUMPKIN);
+      this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add(BlockItemIds.CARVED_PUMPKIN);
+      this.tag(ItemTags.SHEARABLE_FROM_COPPER_GOLEM).add(BlockItemIds.POPPY);
+      this.tag(ItemTags.METAL_NUGGETS).add(ItemIds.COPPER_NUGGET, ItemIds.IRON_NUGGET, ItemIds.GOLD_NUGGET);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY).addTag(ItemTags.PLANKS).add(BlockItemIds.BAMBOO_MOSAIC).addTag(ItemTags.LOGS).addTag(ItemTags.BAMBOO_BLOCKS);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR).add(BlockItemIds.DEEPSLATE, BlockItemIds.CHISELED_DEEPSLATE, BlockItemIds.POLISHED_DEEPSLATE, BlockItemIds.COBBLED_DEEPSLATE, BlockItemIds.CRACKED_DEEPSLATE_BRICKS, BlockItemIds.CRACKED_DEEPSLATE_TILES, BlockItemIds.DEEPSLATE_BRICKS, BlockItemIds.DEEPSLATE_TILES).add(BlockItemIds.NETHER_BRICKS, BlockItemIds.RED_NETHER_BRICKS, BlockItemIds.CHISELED_NETHER_BRICKS, BlockItemIds.CRACKED_NETHER_BRICKS).add(BlockItemIds.BLACKSTONE, BlockItemIds.GILDED_BLACKSTONE, BlockItemIds.POLISHED_BLACKSTONE, BlockItemIds.CHISELED_POLISHED_BLACKSTONE, BlockItemIds.CRACKED_POLISHED_BLACKSTONE_BRICKS, BlockItemIds.POLISHED_BLACKSTONE_BRICKS).add(BlockItemIds.QUARTZ_BLOCK, BlockItemIds.SMOOTH_QUARTZ, BlockItemIds.CHISELED_QUARTZ_BLOCK, BlockItemIds.QUARTZ_BRICKS, BlockItemIds.QUARTZ_PILLAR).add(BlockItemIds.SANDSTONE, BlockItemIds.RED_SANDSTONE, BlockItemIds.CHISELED_RED_SANDSTONE, BlockItemIds.CHISELED_SANDSTONE, BlockItemIds.CUT_RED_SANDSTONE, BlockItemIds.CUT_SANDSTONE, BlockItemIds.SMOOTH_RED_SANDSTONE, BlockItemIds.SMOOTH_SANDSTONE).add(BlockItemIds.STONE, BlockItemIds.COBBLESTONE, BlockItemIds.SMOOTH_STONE, BlockItemIds.MOSSY_COBBLESTONE, BlockItemIds.MOSSY_STONE_BRICKS, BlockItemIds.CRACKED_STONE_BRICKS, BlockItemIds.STONE_BRICKS, BlockItemIds.CHISELED_STONE_BRICKS).add(BlockItemIds.TUFF, BlockItemIds.TUFF_BRICKS, BlockItemIds.CHISELED_TUFF, BlockItemIds.CHISELED_TUFF_BRICKS, BlockItemIds.POLISHED_TUFF).add(BlockItemIds.CINNABAR, BlockItemIds.CHISELED_CINNABAR, BlockItemIds.POLISHED_CINNABAR, BlockItemIds.CINNABAR_BRICKS).add(BlockItemIds.SULFUR, BlockItemIds.POLISHED_SULFUR, BlockItemIds.CHISELED_SULFUR, BlockItemIds.SULFUR_BRICKS).add(BlockItemIds.BASALT, BlockItemIds.POLISHED_BASALT, BlockItemIds.SMOOTH_BASALT).add(BlockItemIds.DIORITE, BlockItemIds.POLISHED_DIORITE, BlockItemIds.GRANITE, BlockItemIds.POLISHED_GRANITE, BlockItemIds.ANDESITE, BlockItemIds.POLISHED_ANDESITE, BlockItemIds.CALCITE, BlockItemIds.DRIPSTONE_BLOCK).add(BlockItemIds.MUD, BlockItemIds.MUDDY_MANGROVE_ROOTS, BlockItemIds.MUD_BRICKS, BlockItemIds.PACKED_MUD).addTag(ItemTags.TERRACOTTA).addTag(ItemTags.GLAZED_TERRACOTTA).addTag(ItemTags.CONCRETE).addTag(ItemTags.CONCRETE_POWDERS).addTag(ItemTags.COAL_ORES).addTag(ItemTags.LAPIS_ORES).addTag(ItemTags.REDSTONE_ORES).addTag(ItemTags.DIAMOND_ORES).addTag(ItemTags.EMERALD_ORES).add(BlockItemIds.COAL_BLOCK, BlockItemIds.LAPIS_BLOCK, BlockItemIds.REDSTONE_BLOCK, BlockItemIds.DIAMOND_BLOCK, BlockItemIds.EMERALD_BLOCK).add(BlockItemIds.NETHERRACK, BlockItemIds.NETHER_QUARTZ_ORE, BlockItemIds.CRIMSON_NYLIUM, BlockItemIds.WARPED_NYLIUM, BlockItemIds.GLOWSTONE).add(BlockItemIds.PRISMARINE, BlockItemIds.PRISMARINE_BRICKS, BlockItemIds.DARK_PRISMARINE, BlockItemIds.SEA_LANTERN).add(BlockItemIds.END_STONE, BlockItemIds.END_STONE_BRICKS, BlockItemIds.PURPUR_BLOCK, BlockItemIds.PURPUR_PILLAR).add(BlockItemIds.DIRT, BlockItemIds.COARSE_DIRT, BlockItemIds.ROOTED_DIRT, BlockItemIds.PODZOL, BlockItemIds.GRASS_BLOCK, BlockItemIds.CLAY).add(BlockItemIds.GRAVEL, BlockItemIds.SAND, BlockItemIds.RED_SAND).add(BlockItemIds.OBSIDIAN, BlockItemIds.CRYING_OBSIDIAN, BlockItemIds.BONE_BLOCK, BlockItemIds.AMETHYST_BLOCK, BlockItemIds.BRICKS, BlockItemIds.MAGMA_BLOCK);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT).add(BlockItemIds.IRON_BLOCK, BlockItemIds.GOLD_BLOCK, BlockItemIds.RAW_COPPER_BLOCK, BlockItemIds.RAW_GOLD_BLOCK, BlockItemIds.RAW_IRON_BLOCK).addTag(ItemTags.GOLD_ORES).addTag(ItemTags.IRON_ORES).addTag(ItemTags.COPPER_ORES).add(BlockItemIds.NETHERITE_BLOCK, BlockItemIds.ANCIENT_DEBRIS).addAll(toIds(BlockItemIds.COPPER_BLOCK)).addAll(toIds(BlockItemIds.COPPER_BULB)).addAll(toIds(BlockItemIds.CUT_COPPER)).addAll(toIds(BlockItemIds.CHISELED_COPPER));
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT).add(BlockItemIds.TUBE_CORAL_BLOCK, BlockItemIds.BRAIN_CORAL_BLOCK, BlockItemIds.BUBBLE_CORAL_BLOCK, BlockItemIds.FIRE_CORAL_BLOCK, BlockItemIds.HORN_CORAL_BLOCK).add(BlockItemIds.DEAD_TUBE_CORAL_BLOCK, BlockItemIds.DEAD_BRAIN_CORAL_BLOCK, BlockItemIds.DEAD_BUBBLE_CORAL_BLOCK, BlockItemIds.DEAD_FIRE_CORAL_BLOCK, BlockItemIds.DEAD_HORN_CORAL_BLOCK).add(BlockItemIds.SPONGE, BlockItemIds.WET_SPONGE, BlockItemIds.DRIED_KELP_BLOCK).addTag(ItemTags.MOSS_BLOCKS).add(BlockItemIds.RESIN_BLOCK, BlockItemIds.RESIN_BRICKS, BlockItemIds.CHISELED_RESIN_BRICKS).add(BlockItemIds.MELON, BlockItemIds.HAY_BLOCK, BlockItemIds.PUMPKIN, BlockItemIds.CARVED_PUMPKIN, BlockItemIds.JACK_O_LANTERN).add(BlockItemIds.OCHRE_FROGLIGHT, BlockItemIds.PEARLESCENT_FROGLIGHT, BlockItemIds.VERDANT_FROGLIGHT);
       this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_LIGHT).addTag(ItemTags.WOOL);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_SLIDING).add(Items.BLUE_ICE, Items.PACKED_ICE, Items.SNOW_BLOCK);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING).add(Items.BROWN_MUSHROOM_BLOCK, Items.RED_MUSHROOM_BLOCK, Items.MUSHROOM_STEM, Items.MYCELIUM).addTag(ItemTags.WART_BLOCKS).add(Items.SHROOMLIGHT);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY).add(Items.HONEYCOMB_BLOCK);
-      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE).add(Items.SOUL_SAND, Items.SOUL_SOIL);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_SLIDING).add(BlockItemIds.BLUE_ICE, BlockItemIds.PACKED_ICE, BlockItemIds.SNOW_BLOCK);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING).add(BlockItemIds.BROWN_MUSHROOM_BLOCK, BlockItemIds.RED_MUSHROOM_BLOCK, BlockItemIds.MUSHROOM_STEM, BlockItemIds.MYCELIUM).addTag(ItemTags.WART_BLOCKS).add(BlockItemIds.SHROOMLIGHT);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY).add(BlockItemIds.HONEYCOMB_BLOCK);
+      this.tag(ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE).add(BlockItemIds.SOUL_SAND, BlockItemIds.SOUL_SOIL);
       this.tag(ItemTags.SULFUR_CUBE_SWALLOWABLE).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_LIGHT).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_SLIDING).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY).addTag(ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE);
       this.tag(ItemTags.LOOM_DYES).addTag(ItemTags.DYES);
-      this.tag(ItemTags.LOOM_PATTERNS).add(Items.FLOWER_BANNER_PATTERN, Items.CREEPER_BANNER_PATTERN, Items.SKULL_BANNER_PATTERN, Items.MOJANG_BANNER_PATTERN, Items.GLOBE_BANNER_PATTERN, Items.PIGLIN_BANNER_PATTERN, Items.FLOW_BANNER_PATTERN, Items.GUSTER_BANNER_PATTERN, Items.FIELD_MASONED_BANNER_PATTERN, Items.BORDURE_INDENTED_BANNER_PATTERN);
+      this.tag(ItemTags.LOOM_PATTERNS).add(ItemIds.FLOWER_BANNER_PATTERN, ItemIds.CREEPER_BANNER_PATTERN, ItemIds.SKULL_BANNER_PATTERN, ItemIds.MOJANG_BANNER_PATTERN, ItemIds.GLOBE_BANNER_PATTERN, ItemIds.PIGLIN_BANNER_PATTERN, ItemIds.FLOW_BANNER_PATTERN, ItemIds.GUSTER_BANNER_PATTERN, ItemIds.FIELD_MASONED_BANNER_PATTERN, ItemIds.BORDURE_INDENTED_BANNER_PATTERN);
       this.tag(ItemTags.CAT_COLLAR_DYES).addTag(ItemTags.DYES);
       this.tag(ItemTags.WOLF_COLLAR_DYES).addTag(ItemTags.DYES);
    }
 
-   private static class BlockToItemConverter implements TagAppender<Block, Block> {
-      private final TagAppender<Item, Item> itemAppender;
+   private static ColorCollection<ResourceKey<Item>> toIds(final ColorCollection<BlockItemId> ids) {
+      return ids.<ResourceKey<Item>>map(BlockItemId::item);
+   }
 
-      public BlockToItemConverter(final TagAppender<Item, Item> itemAppender) {
-         super();
-         this.itemAppender = itemAppender;
-      }
-
-      public TagAppender<Block, Block> add(final Block element) {
-         this.itemAppender.add((Item)Objects.requireNonNull(element.asItem()));
-         return this;
-      }
-
-      public TagAppender<Block, Block> addOptional(final Block element) {
-         this.itemAppender.addOptional((Item)Objects.requireNonNull(element.asItem()));
-         return this;
-      }
-
-      private static TagKey<Item> blockTagToItemTag(final TagKey<Block> blockTag) {
-         return TagKey.<Item>create(Registries.ITEM, blockTag.location());
-      }
-
-      public TagAppender<Block, Block> addTag(final TagKey<Block> tag) {
-         this.itemAppender.addTag(blockTagToItemTag(tag));
-         return this;
-      }
-
-      public TagAppender<Block, Block> addOptionalTag(final TagKey<Block> tag) {
-         this.itemAppender.addOptionalTag(blockTagToItemTag(tag));
-         return this;
-      }
+   private static WeatheringCopperCollection<ResourceKey<Item>> toIds(final WeatheringCopperCollection<BlockItemId> ids) {
+      return ids.<ResourceKey<Item>>map(BlockItemId::item);
    }
 }

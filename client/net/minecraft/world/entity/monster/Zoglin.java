@@ -19,6 +19,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -94,7 +95,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    private static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final Mob mob) {
-      return ((NearestVisibleLivingEntities)mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((target) -> !target.is(EntityType.ZOGLIN) && !target.is(EntityType.CREEPER) && Sensor.isEntityAttackable(level, mob, target));
+      return ((NearestVisibleLivingEntities)mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((target) -> !target.is(EntityTypes.ZOGLIN) && !target.is(EntityTypes.CREEPER) && Sensor.isEntityAttackable(level, mob, target));
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {

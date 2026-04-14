@@ -2,7 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -24,7 +24,7 @@ public class StartCelebratingIfTargetDead {
                   }
 
                   celebrateAt.setWithExpiry(target.blockPosition(), (long)celebrateDuration);
-                  if (!target.is(EntityType.PLAYER) || (Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
+                  if (!target.is(EntityTypes.PLAYER) || (Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
                      attackTarget.erase();
                      angryAt.erase();
                   }

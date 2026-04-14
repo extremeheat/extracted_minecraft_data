@@ -11,6 +11,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -34,7 +35,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
    }
 
    public WitherSkull(final Level level, final LivingEntity mob, final Vec3 direction) {
-      super(EntityType.WITHER_SKULL, mob, direction, level);
+      super(EntityTypes.WITHER_SKULL, mob, direction, level);
    }
 
    protected float getInertia() {

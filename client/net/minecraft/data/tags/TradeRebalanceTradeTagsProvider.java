@@ -9,7 +9,7 @@ import net.minecraft.world.item.trading.TradeRebalanceVillagerTrades;
 import net.minecraft.world.item.trading.VillagerTrade;
 import net.minecraft.world.item.trading.VillagerTrades;
 
-public class TradeRebalanceTradeTagsProvider extends KeyTagProvider<VillagerTrade> {
+public class TradeRebalanceTradeTagsProvider extends TagsProvider<VillagerTrade> {
    public TradeRebalanceTradeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.VILLAGER_TRADE, lookupProvider);
    }

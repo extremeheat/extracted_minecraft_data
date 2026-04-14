@@ -2,18 +2,11 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 import net.minecraft.util.Mth;
-import org.jspecify.annotations.Nullable;
 
 public class VertexFormat {
    public static final int UNKNOWN_ELEMENT = -1;
@@ -23,8 +16,6 @@ public class VertexFormat {
    private final int vertexSize;
    private final int elementsMask;
    private final int[] offsetsByElement = new int[32];
-   private @Nullable GpuBuffer immediateDrawVertexBuffer;
-   private @Nullable GpuBuffer immediateDrawIndexBuffer;
 
    private VertexFormat(final List<VertexFormatElement> elements, final List<String> names, final IntList offsets, final int vertexSize) {
       super();
@@ -108,41 +99,6 @@ public class VertexFormat {
       return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
-   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer target, final ByteBuffer buffer, final @GpuBuffer.Usage int usage, final Supplier<String> label) {
-      GpuDevice device = RenderSystem.getDevice();
-      if (device.getDeviceInfo().hintsAndWorkarounds().alwaysCreateFreshImmediateBuffer()) {
-         if (target != null) {
-            target.close();
-         }
-
-         return device.createBuffer(label, usage, buffer);
-      } else {
-         if (target == null) {
-            target = device.createBuffer(label, usage, buffer);
-         } else {
-            CommandEncoder encoder = device.createCommandEncoder();
-            if (target.size() < (long)buffer.remaining()) {
-               target.close();
-               target = device.createBuffer(label, usage, buffer);
-            } else {
-               encoder.writeToBuffer(target.slice(), buffer);
-            }
-         }
-
-         return target;
-      }
-   }
-
-   public GpuBuffer uploadImmediateVertexBuffer(final ByteBuffer buffer) {
-      this.immediateDrawVertexBuffer = uploadToBuffer(this.immediateDrawVertexBuffer, buffer, 40, () -> "Immediate vertex buffer for " + String.valueOf(this));
-      return this.immediateDrawVertexBuffer;
-   }
-
-   public GpuBuffer uploadImmediateIndexBuffer(final ByteBuffer buffer) {
-      this.immediateDrawIndexBuffer = uploadToBuffer(this.immediateDrawIndexBuffer, buffer, 72, () -> "Immediate index buffer for " + String.valueOf(this));
-      return this.immediateDrawIndexBuffer;
-   }
-
    public static class Builder {
       private final ImmutableMap.Builder<String, VertexFormatElement> elements = ImmutableMap.builder();
       private final IntList offsets = new IntArrayList();
@@ -153,10 +109,14 @@ public class VertexFormat {
       }
 
       public Builder add(final String name, final VertexFormatElement element) {
-         this.elements.put(name, element);
-         this.offsets.add(this.offset);
-         this.offset += element.byteSize();
-         return this;
+         if (!Mth.isMultipleOf(this.offset, element.format().byteAlignment())) {
+            throw new IllegalArgumentException(name + " is not aligned to " + element.format().byteAlignment() + " as required by " + String.valueOf(element.format()));
+         } else {
+            this.elements.put(name, element);
+            this.offsets.add(this.offset);
+            this.offset += element.byteSize();
+            return this;
+         }
       }
 
       public Builder padding(final int bytes) {

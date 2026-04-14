@@ -8,7 +8,7 @@ import net.minecraft.tags.VillagerTradeTags;
 import net.minecraft.world.item.trading.VillagerTrade;
 import net.minecraft.world.item.trading.VillagerTrades;
 
-public class VillagerTradesTagsProvider extends KeyTagProvider<VillagerTrade> {
+public class VillagerTradesTagsProvider extends TagsProvider<VillagerTrade> {
    public VillagerTradesTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.VILLAGER_TRADE, lookupProvider);
    }

@@ -8,7 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -1315,7 +1315,7 @@ public class StrongholdPieces {
                BlockEntity blockEntity = level.getBlockEntity(pos);
                if (blockEntity instanceof SpawnerBlockEntity) {
                   SpawnerBlockEntity spawner = (SpawnerBlockEntity)blockEntity;
-                  spawner.setEntityId(EntityType.SILVERFISH, random);
+                  spawner.setEntityId(EntityTypes.SILVERFISH, random);
                }
             }
          }

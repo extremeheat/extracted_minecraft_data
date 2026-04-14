@@ -37,6 +37,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -331,7 +332,7 @@ public class Rabbit extends Animal {
    }
 
    public @Nullable Rabbit getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Rabbit offspring = EntityType.RABBIT.create(level, EntitySpawnReason.BREEDING);
+      Rabbit offspring = EntityTypes.RABBIT.create(level, EntitySpawnReason.BREEDING);
       if (offspring != null) {
          Variant variant = getRandomRabbitVariant(level, this.blockPosition());
          if (this.random.nextInt(20) != 0) {

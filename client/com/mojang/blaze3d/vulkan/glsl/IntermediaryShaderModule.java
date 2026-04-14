@@ -36,8 +36,8 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         PointerBuffer pointer = stack.mallocPointer(1);
-         IntBuffer intReturnBuffer = stack.mallocInt(1);
+         PointerBuffer pointer = stack.callocPointer(1);
+         IntBuffer intReturnBuffer = stack.callocInt(1);
          throwIfError(Spvc.spvc_context_create(pointer), "Couldn't create spvc context");
          long context = pointer.get(0);
 
@@ -48,7 +48,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
             long compiler = pointer.get(0);
             throwIfError(Spvc.spvc_compiler_create_shader_resources(compiler, pointer), "Couldn't create resource list");
             long spvcResources = pointer.get(0);
-            PointerBuffer countPointer = stack.mallocPointer(1);
+            PointerBuffer countPointer = stack.callocPointer(1);
             throwIfError(Spvc.spvc_resources_get_resource_list_for_type(spvcResources, 1, pointer, countPointer), "Couldn't list uniform buffers");
             long spvcList = pointer.get(0);
             long spvcCount = countPointer.get(0);
@@ -208,7 +208,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       long var5;
       try {
          VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(this.spirv);
-         LongBuffer pointer = stack.mallocLong(1);
+         LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer), "Can't compile " + this.name);
          device.instance().debug().setObjectName(device.vkDevice(), 15, pointer.get(0), (Supplier)(() -> this.name));
          var5 = pointer.get(0);

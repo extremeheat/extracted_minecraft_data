@@ -17,7 +17,7 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -293,13 +293,13 @@ public class ServerExplosion implements Explosion {
       if (this.blockInteraction != Explosion.BlockInteraction.TRIGGER_BLOCK) {
          return false;
       } else {
-         return this.source != null && this.source.is(EntityType.BREEZE_WIND_CHARGE) ? (Boolean)this.level.getGameRules().get(GameRules.MOB_GRIEFING) : true;
+         return this.source != null && this.source.is(EntityTypes.BREEZE_WIND_CHARGE) ? (Boolean)this.level.getGameRules().get(GameRules.MOB_GRIEFING) : true;
       }
    }
 
    public boolean shouldAffectBlocklikeEntities() {
       boolean mobGriefingEnabled = (Boolean)this.level.getGameRules().get(GameRules.MOB_GRIEFING);
-      boolean isNotWindCharge = this.source == null || !this.source.is(EntityType.BREEZE_WIND_CHARGE) && !this.source.is(EntityType.WIND_CHARGE);
+      boolean isNotWindCharge = this.source == null || !this.source.is(EntityTypes.BREEZE_WIND_CHARGE) && !this.source.is(EntityTypes.WIND_CHARGE);
       if (mobGriefingEnabled) {
          return isNotWindCharge;
       } else {

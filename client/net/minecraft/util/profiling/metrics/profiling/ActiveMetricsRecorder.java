@@ -87,26 +87,36 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       ++this.currentTick;
    }
 
+   public void sampleDuringExtract() {
+      this.sample(MetricSampler.SamplingPhase.EXTRACT);
+   }
+
    public void endTick() {
+      this.sample(MetricSampler.SamplingPhase.END_TICK);
+      if (!this.killSwitch && this.wallTimeSource.getAsLong() <= this.deadlineNano) {
+         this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
+      } else {
+         this.killSwitch = false;
+         ProfileResults results = this.taskProfiler.getResults();
+         this.singleTickProfiler = InactiveProfiler.INSTANCE;
+         this.onProfilingEnd.accept(results);
+         this.scheduleSaveResults(results);
+      }
+   }
+
+   private void sample(final MetricSampler.SamplingPhase samplingPhase) {
       this.verifyStarted();
       if (this.currentTick != 0) {
          for(MetricSampler sampler : this.thisTickSamplers) {
-            sampler.onEndTick(this.currentTick);
-            if (sampler.triggersThreshold()) {
-               RecordedDeviation recordedDeviation = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
-               ((List)this.deviationsBySampler.computeIfAbsent(sampler, (ignored) -> Lists.newArrayList())).add(recordedDeviation);
+            if (sampler.samplingPhase() == samplingPhase) {
+               sampler.onEndTick(this.currentTick);
+               if (sampler.triggersThreshold()) {
+                  RecordedDeviation recordedDeviation = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
+                  ((List)this.deviationsBySampler.computeIfAbsent(sampler, (ignored) -> Lists.newArrayList())).add(recordedDeviation);
+               }
             }
          }
 
-         if (!this.killSwitch && this.wallTimeSource.getAsLong() <= this.deadlineNano) {
-            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
-         } else {
-            this.killSwitch = false;
-            ProfileResults results = this.taskProfiler.getResults();
-            this.singleTickProfiler = InactiveProfiler.INSTANCE;
-            this.onProfilingEnd.accept(results);
-            this.scheduleSaveResults(results);
-         }
       }
    }
 

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -58,5 +59,9 @@ public class MobBucketItem extends BucketItem {
 
    public boolean emptyContents(final @Nullable LivingEntity user, final Level level, final BlockPos pos, final @Nullable BlockHitResult hitResult) {
       return this.content == Fluids.EMPTY ? true : super.emptyContents(user, level, pos, hitResult);
+   }
+
+   public ClipContext.Fluid getFluidContext() {
+      return ClipContext.Fluid.NONE;
    }
 }

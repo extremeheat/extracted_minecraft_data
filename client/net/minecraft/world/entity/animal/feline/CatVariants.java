@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.animal.feline;
 
 import java.util.List;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;

@@ -499,7 +499,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                return PathType.STICKY_HONEY;
             } else if (blockState.is(Blocks.COCOA)) {
                return PathType.COCOA;
-            } else if (!blockState.is(Blocks.WITHER_ROSE) && !blockState.is(Blocks.POINTED_DRIPSTONE)) {
+            } else if (!blockState.is(Blocks.WITHER_ROSE) && !blockState.is(BlockTags.SPELEOTHEMS)) {
                FluidState fluidState = blockState.getFluidState();
                if (fluidState.is(FluidTags.LAVA)) {
                   return PathType.LAVA;

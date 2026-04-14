@@ -53,7 +53,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          this.leashFeatureRenderer.renderSolid(collection, this.bufferSource);
          this.itemFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.renderSolid(collection, this.bufferSource, this.modelManager.getBlockStateModelSet(), this.outlineBufferSource, this.gameRenderState.optionsRenderState);
-         this.customFeatureRenderer.renderSolid(collection, this.bufferSource);
+         this.customFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource);
          this.particleFeatureRenderer.renderSolid(collection);
       }
 
@@ -70,7 +70,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          this.textFeatureRenderer.renderTranslucent(collection, this.bufferSource);
          this.itemFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.modelManager.getBlockStateModelSet(), this.outlineBufferSource, this.crumblingBufferSource, this.gameRenderState.optionsRenderState);
-         this.customFeatureRenderer.renderTranslucent(collection, this.bufferSource);
+         this.customFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource);
          this.shapeOutlineFeatureRenderer.renderTranslucent(collection, this.bufferSource, false);
       }
 
@@ -96,7 +96,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
       this.renderTranslucentFeatures();
       this.renderTranslucentAfterTerrain();
       this.clearSubmitNodes();
-      this.bufferSource.endBatch();
+      this.bufferSource.uploadAndDraw();
    }
 
    public void endFrame() {

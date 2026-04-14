@@ -9,6 +9,8 @@ public interface MetricsRecorder {
 
    void startTick();
 
+   void sampleDuringExtract();
+
    boolean isRecording();
 
    ProfilerFiller getProfiler();

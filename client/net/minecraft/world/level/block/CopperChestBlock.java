@@ -1,6 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
@@ -19,14 +21,21 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class CopperChestBlock extends ChestBlock {
    public static final MapCodec<CopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, CopperChestBlock::new));
-   private static final Map<Block, Supplier<Block>> COPPER_TO_COPPER_CHEST_MAPPING;
+   private static final Supplier<Map<Block, Block>> COPPER_TO_COPPER_CHEST_MAPPING = Suppliers.memoize(() -> {
+      ImmutableMap.Builder<Block, Block> result = ImmutableMap.builder();
+      WeatheringCopperCollection var10000 = Blocks.COPPER_BLOCK;
+      WeatheringCopperCollection var10001 = Blocks.COPPER_CHEST;
+      Objects.requireNonNull(result);
+      WeatheringCopperCollection.zipApply(var10000, var10001, result::put);
+      return result.buildOrThrow();
+   });
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<? extends CopperChestBlock> codec() {
@@ -34,7 +43,7 @@ public class CopperChestBlock extends ChestBlock {
    }
 
    public CopperChestBlock(final WeatheringCopper.WeatherState weatherState, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
-      super(() -> BlockEntityType.CHEST, openSound, closeSound, properties);
+      super(() -> BlockEntityTypes.CHEST, openSound, closeSound, properties);
       this.weatherState = weatherState;
    }
 
@@ -104,10 +113,7 @@ public class CopperChestBlock extends ChestBlock {
    }
 
    public static BlockState getFromCopperBlock(final Block copperBlock, final Direction facing, final Level level, final BlockPos pos) {
-      Map var10000 = COPPER_TO_COPPER_CHEST_MAPPING;
-      Block var10002 = Blocks.COPPER_CHEST.unaffected();
-      Objects.requireNonNull(var10002);
-      CopperChestBlock block = (CopperChestBlock)((Supplier)var10000.getOrDefault(copperBlock, var10002::asBlock)).get();
+      CopperChestBlock block = (CopperChestBlock)((Map)COPPER_TO_COPPER_CHEST_MAPPING.get()).getOrDefault(copperBlock, Blocks.COPPER_CHEST.weathering().unaffected());
       ChestType chestType = block.getChestType(level, pos, facing);
       BlockState state = (BlockState)((BlockState)block.defaultBlockState().setValue(FACING, facing)).setValue(TYPE, chestType);
       return getLeastOxidizedChestOfConnectedBlocks(state, level, pos);
@@ -119,9 +125,5 @@ public class CopperChestBlock extends ChestBlock {
 
    public boolean shouldChangedStateKeepBlockEntity(final BlockState oldState) {
       return oldState.is(BlockTags.COPPER_CHESTS);
-   }
-
-   static {
-      COPPER_TO_COPPER_CHEST_MAPPING = Map.of(Blocks.COPPER_BLOCK.unaffected(), (Supplier)() -> Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_BLOCK.exposed(), (Supplier)() -> Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_BLOCK.weathered(), (Supplier)() -> Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_BLOCK.oxidized(), (Supplier)() -> Blocks.COPPER_CHEST.oxidized(), Blocks.COPPER_BLOCK.waxed(), (Supplier)() -> Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_BLOCK.waxedExposed(), (Supplier)() -> Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_BLOCK.waxedWeathered(), (Supplier)() -> Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_BLOCK.waxedOxidized(), (Supplier)() -> Blocks.COPPER_CHEST.oxidized());
    }
 }

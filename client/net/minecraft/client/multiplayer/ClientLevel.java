@@ -4,16 +4,23 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.function.BooleanSupplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -34,9 +41,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.EndFlashState;
 import net.minecraft.client.renderer.LevelEventHandler;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -44,6 +51,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
@@ -54,11 +62,13 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -97,6 +107,8 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
@@ -109,6 +121,7 @@ import net.minecraft.world.level.entity.LevelCallback;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.saveddata.maps.MapId;
@@ -130,10 +143,12 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
    private static final int LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD = 1000;
+   private static final float RAIN_PARTICLES_PER_BLOCK = 0.225F;
+   private static final int RAIN_RADIUS = 10;
    private final EntityTickList tickingEntities = new EntityTickList();
    private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<Entity>(Entity.class, new EntityCallbacks());
    private final ClientPacketListener connection;
-   private final LevelRenderer levelRenderer;
+   private final LevelExtractor levelExtractor;
    private final LevelEventHandler levelEventHandler;
    private final ClientLevelData clientLevelData;
    private final TickRateManager tickRateManager;
@@ -143,6 +158,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private final List<EnderDragonPart> dragonParts = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
    private int skyFlashTime;
+   private int rainSoundTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (cache) -> {
       cache.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.GRASS_COLOR_RESOLVER)));
       cache.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
@@ -157,6 +173,8 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private final ClientExplosionTracker explosionTracker = new ClientExplosionTracker();
    private final WorldBorder worldBorder = new WorldBorder();
    private final EnvironmentAttributeSystem environmentAttributes;
+   private final Int2ObjectMap<BlockDestructionProgress> destroyingBlocks = new Int2ObjectOpenHashMap();
+   private final Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress = new Long2ObjectOpenHashMap();
    private final int seaLevel;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
@@ -217,13 +235,13 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       }
    }
 
-   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelRenderer levelRenderer, final boolean isDebug, final long biomeZoomSeed, final int seaLevel) {
+   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelExtractor levelExtractor, final boolean isDebug, final long biomeZoomSeed, final int seaLevel) {
       super(levelData, dimension, connection.registryAccess(), dimensionType, true, isDebug, biomeZoomSeed, 1000000);
       this.connection = connection;
       this.chunkSource = new ClientChunkCache(this, serverChunkRadius);
       this.tickRateManager = new TickRateManager();
       this.clientLevelData = levelData;
-      this.levelRenderer = levelRenderer;
+      this.levelExtractor = levelExtractor;
       this.seaLevel = seaLevel;
       this.levelEventHandler = new LevelEventHandler(this.minecraft, this);
       this.endFlashState = ((DimensionType)dimensionType.value()).hasEndFlashes() ? new EndFlashState() : null;
@@ -269,6 +287,8 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       if (this.tickRateManager().runsNormally()) {
          this.getWorldBorder().tick();
          this.tickTime();
+         this.tickWeatherEffects();
+         this.removeBlockBreakingProgress();
       }
 
       if (this.skyFlashTime > 0) {
@@ -278,7 +298,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       if (this.endFlashState != null) {
          this.endFlashState.tick(this.getDefaultClockTime());
          if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.gui.screen() instanceof WinScreen)) {
-            this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
+            this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.mainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
          }
       }
 
@@ -290,6 +310,93 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
       JvmProfiler.INSTANCE.onClientTick(this.minecraft.getFps());
       this.environmentAttributes().invalidateTickCache();
+   }
+
+   public void tickWeatherEffects() {
+      ParticleStatus particleStatus = (ParticleStatus)this.minecraft.options.particles().get();
+      int weatherRadius = (Integer)this.minecraft.options.weatherRadius().get();
+      float rainLevel = this.getRainLevel(1.0F);
+      if (!(rainLevel <= 0.0F)) {
+         RandomSource random = RandomSource.createThreadLocalInstance(this.getGameTime() * 312987231L);
+         BlockPos cameraPosition = BlockPos.containing(this.minecraft.gameRenderer.mainCamera().position());
+         BlockPos rainParticlePosition = null;
+         int weatherDiameter = 2 * weatherRadius + 1;
+         int weatherArea = weatherDiameter * weatherDiameter;
+         int rainParticles = (int)(0.225F * (float)weatherArea * rainLevel * rainLevel) / (particleStatus == ParticleStatus.DECREASED ? 2 : 1);
+
+         for(int ii = 0; ii < rainParticles; ++ii) {
+            int x = random.nextInt(weatherDiameter) - weatherRadius;
+            int z = random.nextInt(weatherDiameter) - weatherRadius;
+            BlockPos heightmapPosition = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, cameraPosition.offset(x, 0, z));
+            if (heightmapPosition.getY() > this.getMinY() && heightmapPosition.getY() <= cameraPosition.getY() + 10 && heightmapPosition.getY() >= cameraPosition.getY() - 10 && this.getPrecipitationAt(heightmapPosition) == Biome.Precipitation.RAIN) {
+               rainParticlePosition = heightmapPosition.below();
+               if (particleStatus == ParticleStatus.MINIMAL) {
+                  break;
+               }
+
+               double blockX = random.nextDouble();
+               double blockZ = random.nextDouble();
+               BlockState block = this.getBlockState(rainParticlePosition);
+               FluidState fluid = this.getFluidState(rainParticlePosition);
+               VoxelShape blockShape = block.getCollisionShape(this, rainParticlePosition);
+               double blockTop = blockShape.max(Direction.Axis.Y, blockX, blockZ);
+               double fluidTop = (double)fluid.getHeight(this, rainParticlePosition);
+               double particleY = Math.max(blockTop, fluidTop);
+               ParticleOptions particleType = !fluid.is(FluidTags.LAVA) && !block.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(block) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
+               this.addParticle(particleType, (double)rainParticlePosition.getX() + blockX, (double)rainParticlePosition.getY() + particleY, (double)rainParticlePosition.getZ() + blockZ, 0.0, 0.0, 0.0);
+            }
+         }
+
+         if (rainParticlePosition != null && random.nextInt(3) < this.rainSoundTime++) {
+            this.rainSoundTime = 0;
+            if (rainParticlePosition.getY() > cameraPosition.getY() + 1 && this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, cameraPosition).getY() > Mth.floor((float)cameraPosition.getY())) {
+               this.playLocalSound(rainParticlePosition, SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.WEATHER, 0.1F, 0.5F, false);
+            } else {
+               this.playLocalSound(rainParticlePosition, SoundEvents.WEATHER_RAIN, SoundSource.WEATHER, 0.2F, 1.0F, false);
+            }
+         }
+
+      }
+   }
+
+   public Biome.Precipitation getPrecipitationAt(final BlockPos pos) {
+      if (!this.chunkSource.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()))) {
+         return Biome.Precipitation.NONE;
+      } else {
+         Biome biome = (Biome)this.getBiome(pos).value();
+         return biome.getPrecipitationAt(pos, this.getSeaLevel());
+      }
+   }
+
+   private void removeBlockBreakingProgress() {
+      long gameTime = this.getGameTime();
+      if (gameTime % 20L == 0L) {
+         Iterator<BlockDestructionProgress> iterator = this.destroyingBlocks.values().iterator();
+
+         while(iterator.hasNext()) {
+            BlockDestructionProgress block = (BlockDestructionProgress)iterator.next();
+            long updatedRenderTick = block.getUpdatedRenderTick();
+            if (gameTime - updatedRenderTick > 400L) {
+               iterator.remove();
+               this.removeProgress(block);
+            }
+         }
+
+      }
+   }
+
+   private void removeProgress(final BlockDestructionProgress block) {
+      long pos = block.getPos().asLong();
+      Set<BlockDestructionProgress> progresses = (Set)this.destructionProgress.get(pos);
+      progresses.remove(block);
+      if (progresses.isEmpty()) {
+         this.destructionProgress.remove(pos);
+      }
+
+   }
+
+   public Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress() {
+      return this.destructionProgress;
    }
 
    private void tickTime() {
@@ -373,10 +480,6 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    public void onChunkLoaded(final ChunkPos pos) {
       this.tintCaches.forEach((resolver, cache) -> cache.invalidateForChunk(pos.x(), pos.z()));
       this.entityStorage.startTicking(pos);
-   }
-
-   public void onSectionBecomingNonEmpty(final long sectionNode) {
-      this.levelRenderer.onSectionBecomingNonEmpty(sectionNode);
    }
 
    public void clearTintCaches() {
@@ -549,7 +652,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    private void playSound(final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay, final long seed) {
-      double distanceToSqr = this.minecraft.gameRenderer.getMainCamera().position().distanceToSqr(x, y, z);
+      double distanceToSqr = this.minecraft.gameRenderer.mainCamera().position().distanceToSqr(x, y, z);
       SimpleSoundInstance instance = new SimpleSoundInstance(sound, source, volume, pitch, RandomSource.create(seed), x, y, z);
       if (distanceDelay && distanceToSqr > 100.0) {
          double delayInSeconds = Math.sqrt(distanceToSqr) / 40.0;
@@ -620,23 +723,43 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    public void sendBlockUpdated(final BlockPos pos, final BlockState old, final BlockState current, final @Block.UpdateFlags int updateFlags) {
-      this.levelRenderer.blockChanged(this, pos, old, current, updateFlags);
+      this.levelExtractor.blockChanged(pos, updateFlags);
    }
 
    public void setBlocksDirty(final BlockPos pos, final BlockState oldState, final BlockState newState) {
-      this.levelRenderer.setBlockDirty(pos, oldState, newState);
+      this.levelExtractor.setBlockDirty(pos, oldState, newState);
    }
 
    public void setSectionDirtyWithNeighbors(final int chunkX, final int chunkY, final int chunkZ) {
-      this.levelRenderer.setSectionDirtyWithNeighbors(chunkX, chunkY, chunkZ);
+      this.levelExtractor.setSectionDirtyWithNeighbors(chunkX, chunkY, chunkZ);
    }
 
    public void setSectionRangeDirty(final int minSectionX, final int minSectionY, final int minSectionZ, final int maxSectionX, final int maxSectionY, final int maxSectionZ) {
-      this.levelRenderer.setSectionRangeDirty(minSectionX, minSectionY, minSectionZ, maxSectionX, maxSectionY, maxSectionZ);
+      this.levelExtractor.setSectionRangeDirty(minSectionX, minSectionY, minSectionZ, maxSectionX, maxSectionY, maxSectionZ);
    }
 
-   public void destroyBlockProgress(final int id, final BlockPos blockPos, final int progress) {
-      this.levelRenderer.destroyBlockProgress(id, blockPos, progress);
+   public void destroyBlockProgress(final int id, final BlockPos pos, final int progress) {
+      if (progress >= 0 && progress < 10) {
+         BlockDestructionProgress entry = (BlockDestructionProgress)this.destroyingBlocks.get(id);
+         if (entry != null) {
+            this.removeProgress(entry);
+         }
+
+         if (entry == null || entry.getPos().getX() != pos.getX() || entry.getPos().getY() != pos.getY() || entry.getPos().getZ() != pos.getZ()) {
+            entry = new BlockDestructionProgress(id, pos);
+            this.destroyingBlocks.put(id, entry);
+         }
+
+         entry.setProgress(progress);
+         entry.updateTick(this.getGameTime());
+         ((SortedSet)this.destructionProgress.computeIfAbsent(entry.getPos().asLong(), (k) -> Sets.newTreeSet())).add(entry);
+      } else {
+         BlockDestructionProgress removed = (BlockDestructionProgress)this.destroyingBlocks.remove(id);
+         if (removed != null) {
+            this.removeProgress(removed);
+         }
+      }
+
    }
 
    public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
@@ -675,7 +798,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    private void doAddParticle(final ParticleOptions particle, final boolean overrideLimiter, final boolean alwaysShowParticles, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
       try {
-         Camera camera = this.minecraft.gameRenderer.getMainCamera();
+         Camera camera = this.minecraft.gameRenderer.mainCamera();
          ParticleStatus particleLevel = this.calculateParticleLevel(alwaysShowParticles);
          if (overrideLimiter) {
             this.minecraft.particleEngine.createParticle(particle, x, y, z, xd, yd, zd);

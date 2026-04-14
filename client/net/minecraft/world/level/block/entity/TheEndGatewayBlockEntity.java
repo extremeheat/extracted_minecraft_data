@@ -42,7 +42,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    private boolean exactTeleport = false;
 
    public TheEndGatewayBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.END_GATEWAY, worldPosition, blockState);
+      super(BlockEntityTypes.END_GATEWAY, worldPosition, blockState);
    }
 
    protected void saveAdditional(final ValueOutput output) {

@@ -8,7 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.phys.Vec3;
@@ -36,7 +36,7 @@ class InfestedMobEffect extends MobEffect {
    }
 
    private void spawnSilverfish(final ServerLevel level, final LivingEntity mob, final double x, final double y, final double z) {
-      Silverfish silverfish = EntityType.SILVERFISH.create(level, EntitySpawnReason.TRIGGERED);
+      Silverfish silverfish = EntityTypes.SILVERFISH.create(level, EntitySpawnReason.TRIGGERED);
       if (silverfish != null) {
          RandomSource random = mob.getRandom();
          float angle = 1.5707964F;

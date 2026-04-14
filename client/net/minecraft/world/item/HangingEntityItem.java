@@ -10,6 +10,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
@@ -41,17 +42,17 @@ public class HangingEntityItem extends Item {
       } else {
          Level level = context.getLevel();
          HangingEntity entity;
-         if (this.type == EntityType.PAINTING) {
+         if (this.type == EntityTypes.PAINTING) {
             Optional<Painting> painting = Painting.create(level, blockPos, clickedFace);
             if (painting.isEmpty()) {
                return InteractionResult.CONSUME;
             }
 
             entity = (HangingEntity)painting.get();
-         } else if (this.type == EntityType.ITEM_FRAME) {
+         } else if (this.type == EntityTypes.ITEM_FRAME) {
             entity = new ItemFrame(level, blockPos, clickedFace);
          } else {
-            if (this.type != EntityType.GLOW_ITEM_FRAME) {
+            if (this.type != EntityTypes.GLOW_ITEM_FRAME) {
                return InteractionResult.SUCCESS;
             }
 
@@ -79,7 +80,7 @@ public class HangingEntityItem extends Item {
    }
 
    public void appendHoverText(final ItemStack itemStack, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> builder, final TooltipFlag tooltipFlag) {
-      if (this.type == EntityType.PAINTING && display.shows(DataComponents.PAINTING_VARIANT)) {
+      if (this.type == EntityTypes.PAINTING && display.shows(DataComponents.PAINTING_VARIANT)) {
          Holder<PaintingVariant> variant = (Holder)itemStack.get(DataComponents.PAINTING_VARIANT);
          if (variant != null) {
             ((PaintingVariant)variant.value()).title().ifPresent(builder);

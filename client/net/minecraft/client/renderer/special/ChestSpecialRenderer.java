@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import org.joml.Vector3fc;
 
@@ -22,10 +23,7 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    public static final MultiblockChestResources<Identifier> REGULAR = createDefaultTextures("normal");
    public static final MultiblockChestResources<Identifier> TRAPPED = createDefaultTextures("trapped");
    public static final MultiblockChestResources<Identifier> CHRISTMAS = createDefaultTextures("christmas");
-   public static final MultiblockChestResources<Identifier> COPPER_UNAFFECTED = createDefaultTextures("copper");
-   public static final MultiblockChestResources<Identifier> COPPER_EXPOSED = createDefaultTextures("copper_exposed");
-   public static final MultiblockChestResources<Identifier> COPPER_WEATHERED = createDefaultTextures("copper_weathered");
-   public static final MultiblockChestResources<Identifier> COPPER_OXIDIZED = createDefaultTextures("copper_oxidized");
+   public static final WeatheringCopperCollection.ByState<MultiblockChestResources<Identifier>> COPPER = new WeatheringCopperCollection.ByState<MultiblockChestResources<Identifier>>(createDefaultTextures("copper"), createDefaultTextures("copper_exposed"), createDefaultTextures("copper_weathered"), createDefaultTextures("copper_oxidized"));
    private final SpriteGetter sprites;
    private final ChestModel model;
    private final SpriteId sprite;

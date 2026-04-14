@@ -336,8 +336,8 @@ public class NativeLibrariesBootstrap {
 
    private static void loadVma() {
       try {
-         Vma.class.getFields();
-      } catch (Exception var1) {
+         Vma.vmaDestroyAllocator(0L);
+      } catch (NullPointerException var1) {
       }
 
    }

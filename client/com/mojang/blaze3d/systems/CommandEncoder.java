@@ -143,7 +143,21 @@ public class CommandEncoder {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
-         this.backend.writeToBuffer(destination, data);
+         GpuBuffer buffer = destination.buffer();
+         if (buffer.isClosed()) {
+            throw new IllegalStateException("Buffer already closed");
+         } else if ((buffer.usage() & 8) == 0) {
+            throw new IllegalStateException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
+         } else {
+            int length = data.remaining();
+            if ((long)length > destination.length()) {
+               throw new IllegalArgumentException("Cannot write more data than the slice allows (attempting to write " + length + " bytes into a slice of length " + destination.length() + ")");
+            } else if (destination.length() + destination.offset() > buffer.size()) {
+               throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + length + " bytes at offset " + destination.offset() + " to " + buffer.size() + " size buffer)");
+            } else {
+               this.backend.writeToBuffer(destination, data);
+            }
+         }
       }
    }
 

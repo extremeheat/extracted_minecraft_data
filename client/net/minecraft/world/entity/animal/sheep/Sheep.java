@@ -22,6 +22,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -244,7 +245,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public @Nullable Sheep getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Sheep sheep = EntityType.SHEEP.create(level, EntitySpawnReason.BREEDING);
+      Sheep sheep = EntityTypes.SHEEP.create(level, EntitySpawnReason.BREEDING);
       if (sheep != null) {
          DyeColor parent1DyeColor = this.getColor();
          DyeColor parent2DyeColor = ((Sheep)partner).getColor();

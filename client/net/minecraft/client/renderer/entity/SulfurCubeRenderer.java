@@ -7,10 +7,13 @@ import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.layers.SulfurCubeInnerLayer;
 import net.minecraft.client.renderer.entity.state.SulfurCubeRenderState;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, SulfurCubeRenderState, SulfurCubeModel> {
    private static final Identifier SULFUR_CUBE_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_outer.png");
@@ -24,8 +27,8 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
    }
 
    protected void scale(final SulfurCubeRenderState state, final PoseStack poseStack) {
-      super.scale(state, poseStack);
       this.downscaleSlightly(poseStack);
+      super.scale(state, poseStack);
       poseStack.scale(0.5F, 0.5F, 0.5F);
       poseStack.translate(-0.0F, 0.98F, -0.0F);
    }
@@ -42,7 +45,9 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
       super.extractRenderState(entity, state, partialTicks);
       ItemStack containedBlock = entity.getBodyArmorItem();
       if (!containedBlock.isEmpty()) {
-         this.blockModelResolver.update(state.containedBlock, Block.byItem(containedBlock.getItem()).defaultBlockState(), BLOCK_DISPLAY_CONTEXT);
+         BlockItemStateProperties blockItemState = (BlockItemStateProperties)containedBlock.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+         BlockState blockState = blockItemState.apply(Block.byItem(containedBlock.getItem()).defaultBlockState());
+         this.blockModelResolver.update(state.containedBlock, blockState, BLOCK_DISPLAY_CONTEXT);
       }
 
    }

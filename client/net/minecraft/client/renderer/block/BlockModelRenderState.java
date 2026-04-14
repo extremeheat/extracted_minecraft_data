@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
@@ -25,6 +26,7 @@ public class BlockModelRenderState {
    private @Nullable SpecialModelRenderer<?> specialRenderer;
    private @Nullable Matrix4fc specialRendererTransformation;
    private @Nullable IntList tintLayers;
+   public int blockLightCoords;
    private @Nullable RandomSource randomSource;
 
    public BlockModelRenderState() {
@@ -37,6 +39,7 @@ public class BlockModelRenderState {
       this.renderType = null;
       this.specialRenderer = null;
       this.specialRendererTransformation = null;
+      this.blockLightCoords = 0;
       if (this.tintLayers != null) {
          this.tintLayers.clear();
       }
@@ -68,9 +71,10 @@ public class BlockModelRenderState {
       return this.modelParts;
    }
 
-   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
-      this.submitModel(this.renderType, poseStack, submitNodeCollector, lightCoords, overlayCoords, outlineColor);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int externalLightCoords, final int overlayCoords, final int outlineColor) {
+      this.submitModel(this.renderType, poseStack, submitNodeCollector, externalLightCoords, overlayCoords, outlineColor);
       if (this.specialRenderer != null) {
+         int lightCoords = LightCoordsUtil.max(externalLightCoords, this.blockLightCoords);
          if (this.specialRendererTransformation != null) {
             poseStack.pushPose();
             poseStack.mulPose(this.specialRendererTransformation);
@@ -87,10 +91,11 @@ public class BlockModelRenderState {
       return MatrixUtil.checkPropertyRaw(transformation, 4) ? null : transformation;
    }
 
-   private void submitModel(final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
+   private void submitModel(final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int externalLightCoords, final int overlayCoords, final int outlineColor) {
       if (this.modelParts != null && !this.modelParts.isEmpty()) {
          List<BlockStateModelPart> modelPartsCopy = new ObjectArrayList(this.modelParts);
          int[] tints = this.tintLayers != null ? this.tintLayers.toArray(EMPTY_TINTS) : EMPTY_TINTS;
+         int lightCoords = LightCoordsUtil.max(externalLightCoords, this.blockLightCoords);
          if (this.transformation != null) {
             poseStack.pushPose();
             poseStack.mulPose(this.transformation);

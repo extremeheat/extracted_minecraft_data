@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -15,7 +16,7 @@ public class GlowItemFrame extends ItemFrame {
    }
 
    public GlowItemFrame(final Level level, final BlockPos pos, final Direction direction) {
-      super(EntityType.GLOW_ITEM_FRAME, level, pos, direction);
+      super(EntityTypes.GLOW_ITEM_FRAME, level, pos, direction);
    }
 
    public SoundEvent getRemoveItemSound() {

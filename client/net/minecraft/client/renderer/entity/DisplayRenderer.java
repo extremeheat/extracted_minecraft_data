@@ -229,7 +229,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          byte textOpacity = (byte)renderState.textOpacity().get(interpolationProgress);
          int backgroundColor;
          if (useDefaultBackground) {
-            float backgroundAlpha = Minecraft.getInstance().gameRenderer.getGameRenderState().optionsRenderState.getBackgroundOpacity(0.25F);
+            float backgroundAlpha = Minecraft.getInstance().gameRenderer.gameRenderState().optionsRenderState.getBackgroundOpacity(0.25F);
             backgroundColor = (int)(backgroundAlpha * 255.0F) << 24;
          } else {
             backgroundColor = renderState.backgroundColor().get(interpolationProgress);

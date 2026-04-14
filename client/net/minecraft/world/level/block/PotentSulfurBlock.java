@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.PotentSulfurEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,6 +49,6 @@ public class PotentSulfurBlock extends BaseEntityBlock {
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return createTickerHelper(type, BlockEntityType.POTENT_SULFUR, level.isClientSide() ? PotentSulfurEntity::clientTick : PotentSulfurEntity::serverTick);
+      return createTickerHelper(type, BlockEntityTypes.POTENT_SULFUR, level.isClientSide() ? PotentSulfurEntity::clientTick : PotentSulfurEntity::serverTick);
    }
 }

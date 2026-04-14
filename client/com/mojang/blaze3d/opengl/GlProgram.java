@@ -3,7 +3,7 @@ package com.mojang.blaze3d.opengl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
@@ -61,11 +61,14 @@ public class GlProgram implements AutoCloseable {
       }
    }
 
-   public void setupUniforms(final List<RenderPipeline.UniformDescription> uniforms, final List<String> samplers) {
+   public void setupBindGroupLayouts(final List<BindGroupLayout> bindGroupLayouts) {
+      BindGroupLayout.ensureCompatible(bindGroupLayouts);
+      List<BindGroupLayout.UniformDescription> uniforms = BindGroupLayout.flattenUniforms(bindGroupLayouts);
+      List<String> samplers = BindGroupLayout.flattenSamplers(bindGroupLayouts);
       int nextUboBinding = 0;
       int nextSamplerIndex = 0;
 
-      for(RenderPipeline.UniformDescription uniformDescription : uniforms) {
+      for(BindGroupLayout.UniformDescription uniformDescription : uniforms) {
          String uniformName = uniformDescription.name();
          Object var10000;
          switch (uniformDescription.type()) {

@@ -47,7 +47,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       float xa = (float)state.lineOriginOffset.x;
       float ya = (float)state.lineOriginOffset.y;
       float za = (float)state.lineOriginOffset.z;
-      float width = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth;
+      float width = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
       submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buffer) -> {
          int steps = 16;
 

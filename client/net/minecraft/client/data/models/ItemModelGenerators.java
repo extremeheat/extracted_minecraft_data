@@ -760,6 +760,7 @@ public class ItemModelGenerators {
       this.declareCustomModelItem(Items.BIG_DRIPLEAF);
       this.declareCustomModelItem(Items.HANGING_ROOTS);
       this.declareCustomModelItem(Items.POINTED_DRIPSTONE);
+      this.declareCustomModelItem(Items.SULFUR_SPIKE);
       this.declareCustomModelItem(Items.BONE);
       this.declareCustomModelItem(Items.COD);
       this.declareCustomModelItem(Items.FEATHER);

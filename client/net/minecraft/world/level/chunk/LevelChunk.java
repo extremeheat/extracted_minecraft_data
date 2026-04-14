@@ -305,6 +305,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
             } else {
                if (!this.level.isClientSide() && (flags & 512) == 0) {
                   state.onPlace(this.level, pos, oldState, movedByPiston);
+                  if (!section.getBlockState(localX, localY, localZ).is(newBlock)) {
+                     return null;
+                  }
                }
 
                if (state.hasBlockEntity()) {

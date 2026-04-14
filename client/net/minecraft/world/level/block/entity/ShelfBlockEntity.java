@@ -37,7 +37,7 @@ public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer
    private boolean alignItemsToBottom;
 
    public ShelfBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SHELF, worldPosition, blockState);
+      super(BlockEntityTypes.SHELF, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
    }
 

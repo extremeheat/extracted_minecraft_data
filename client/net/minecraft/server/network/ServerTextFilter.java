@@ -39,11 +39,7 @@ import org.slf4j.Logger;
 public abstract class ServerTextFilter implements AutoCloseable {
    protected static final Logger LOGGER = LogUtils.getLogger();
    private static final AtomicInteger WORKER_COUNT = new AtomicInteger(1);
-   private static final ThreadFactory THREAD_FACTORY = (runnable) -> {
-      Thread thread = new Thread(runnable);
-      thread.setName("Chat-Filter-Worker-" + WORKER_COUNT.getAndIncrement());
-      return thread;
-   };
+   private static final ThreadFactory THREAD_FACTORY = (runnable) -> new Thread(runnable, "Chat-Filter-Worker-" + WORKER_COUNT.getAndIncrement());
    private final URL chatEndpoint;
    private final MessageEncoder chatEncoder;
    private final IgnoreStrategy chatIgnoreStrategy;

@@ -390,6 +390,7 @@ import net.minecraft.util.datafix.schemas.V4648;
 import net.minecraft.util.datafix.schemas.V4656;
 import net.minecraft.util.datafix.schemas.V4771;
 import net.minecraft.util.datafix.schemas.V4881;
+import net.minecraft.util.datafix.schemas.V4885;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -528,7 +529,7 @@ public class DataFixers {
       fixerUpper.addFixer(new BlockNameFlatteningFix(v1451_4, true));
       fixerUpper.addFixer(new ItemStackTheFlatteningFix(v1451_4, false));
       Schema v1451_5 = fixerUpper.addSchema(1451, 5, V1451_5::new);
-      fixerUpper.addFixer(new RemoveBlockEntityTagFix(v1451_5, Set.of("minecraft:noteblock", "minecraft:flower_pot")));
+      fixerUpper.addFixer(new RemoveBlockEntityTagFix(v1451_5, true, Set.of("minecraft:noteblock", "minecraft:flower_pot")));
       fixerUpper.addFixer(new ItemStackSpawnEggFix(v1451_5, false, "minecraft:spawn_egg"));
       fixerUpper.addFixer(new EntityWolfColorFix(v1451_5, false));
       fixerUpper.addFixer(new BlockEntityBannerColorFix(v1451_5, false));
@@ -898,9 +899,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var306 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var306);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var306::contains));
+      Set var307 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var307);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var307::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1195,6 +1196,8 @@ public class DataFixers {
       fixerUpper.addFixer(new AddNewChoices(v4881, "Added Potent Sulfur", References.BLOCK_ENTITY));
       Schema blendingSchema = fixerUpper.addSchema(4882, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
+      Schema v4885 = fixerUpper.addSchema(4885, V4885::new);
+      fixerUpper.addFixer(new RemoveBlockEntityTagFix(v4885, Set.of("minecraft:bed")));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vulkan.glsl;
 
 import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.ShaderType;
@@ -44,7 +45,7 @@ public class GlslCompiler implements AutoCloseable {
          }
 
          ByteBuffer spirv = Shaderc.shaderc_result_get_bytes(result);
-         ByteBuffer copy = MemoryUtil.memAlloc(spirv.remaining());
+         ByteBuffer copy = MemoryUtil.memCalloc(spirv.remaining());
          MemoryUtil.memCopy(spirv, copy);
          var10 = IntermediaryShaderModule.createFromSpirv(filename, copy);
       } finally {
@@ -81,7 +82,7 @@ public class GlslCompiler implements AutoCloseable {
    private static void addToBindGroup(final List<VulkanBindGroupLayout.Entry> entries, final IntermediaryShaderModule shader, final RenderPipeline pipeline) throws ShaderCompileException {
       for(SpvUniformBuffer buffer : shader.uniformBuffers()) {
          String name = buffer.name();
-         Optional<RenderPipeline.UniformDescription> uniformDescription = pipeline.getUniforms().stream().filter((d) -> d.name().equals(name)).findFirst();
+         Optional<BindGroupLayout.UniformDescription> uniformDescription = BindGroupLayout.flattenUniforms(pipeline.getBindGroupLayouts()).stream().filter((d) -> d.name().equals(name)).findFirst();
          if (uniformDescription.isEmpty()) {
             throw new ShaderCompileException("Unable to find shader defined uniform (" + name + ")");
          }
@@ -93,17 +94,17 @@ public class GlslCompiler implements AutoCloseable {
 
       for(SpvSampler sampler : shader.samplers()) {
          String name = sampler.name();
-         Optional<RenderPipeline.UniformDescription> uniformDescription = pipeline.getUniforms().stream().filter((d) -> d.name().equals(name)).findFirst();
+         Optional<BindGroupLayout.UniformDescription> uniformDescription = BindGroupLayout.flattenUniforms(pipeline.getBindGroupLayouts()).stream().filter((d) -> d.name().equals(name)).findFirst();
          if (uniformDescription.isPresent()) {
             if (sampler.dimensions() != 5) {
                throw new ShaderCompileException("UTB (" + name + ") must have type of SpvDimBuffer");
             }
 
             if (entries.stream().noneMatch((e) -> e.type() == VulkanBindGroupLayout.VulkanBindGroupEntryType.TEXEL_BUFFER && e.name().equals(name))) {
-               entries.add(new VulkanBindGroupLayout.Entry(VulkanBindGroupLayout.VulkanBindGroupEntryType.TEXEL_BUFFER, name, ((RenderPipeline.UniformDescription)uniformDescription.get()).gpuFormat()));
+               entries.add(new VulkanBindGroupLayout.Entry(VulkanBindGroupLayout.VulkanBindGroupEntryType.TEXEL_BUFFER, name, ((BindGroupLayout.UniformDescription)uniformDescription.get()).gpuFormat()));
             }
          } else {
-            Stream var10000 = pipeline.getSamplers().stream();
+            Stream var10000 = BindGroupLayout.flattenSamplers(pipeline.getBindGroupLayouts()).stream();
             Objects.requireNonNull(name);
             if (var10000.noneMatch(name::equals)) {
                throw new ShaderCompileException("Unable to find shader defined uniform (" + name + ")");

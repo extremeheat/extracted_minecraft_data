@@ -26,7 +26,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    private final JukeboxSongPlayer jukeboxSongPlayer;
 
    public JukeboxBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.JUKEBOX, worldPosition, blockState);
+      super(BlockEntityTypes.JUKEBOX, worldPosition, blockState);
       this.item = ItemStack.EMPTY;
       this.jukeboxSongPlayer = new JukeboxSongPlayer(this::onSongChanged, this.getBlockPos());
    }

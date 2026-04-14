@@ -12,7 +12,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 
 public class RideCommand {
    private static final DynamicCommandExceptionType ERROR_NOT_RIDING = new DynamicCommandExceptionType((entity) -> Component.translatableEscape("commands.ride.not_riding", entity));
@@ -34,7 +34,7 @@ public class RideCommand {
       Entity currentVehicle = target.getVehicle();
       if (currentVehicle != null) {
          throw ERROR_ALREADY_RIDING.create(target.getDisplayName(), currentVehicle.getDisplayName());
-      } else if (vehicle.is(EntityType.PLAYER)) {
+      } else if (vehicle.is(EntityTypes.PLAYER)) {
          throw ERROR_MOUNTING_PLAYER.create();
       } else if (target.getSelfAndPassengers().anyMatch((e) -> e == vehicle)) {
          throw ERROR_MOUNTING_LOOP.create();

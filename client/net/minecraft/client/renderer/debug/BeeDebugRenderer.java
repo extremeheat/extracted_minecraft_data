@@ -193,7 +193,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private Camera getCamera() {
-      return this.minecraft.gameRenderer.getMainCamera();
+      return this.minecraft.gameRenderer.mainCamera();
    }
 
    private String getPosDescription(final Entity entity, final BlockPos pos) {

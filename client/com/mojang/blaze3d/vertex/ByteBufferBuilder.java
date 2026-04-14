@@ -149,15 +149,15 @@ public class ByteBufferBuilder implements AutoCloseable {
 
    public class Result implements AutoCloseable {
       private final long offset;
-      private final int capacity;
+      private final int size;
       private final int generation;
       private boolean closed;
 
-      private Result(final long offset, final int capacity, final int generation) {
+      private Result(final long offset, final int size, final int generation) {
          Objects.requireNonNull(ByteBufferBuilder.this);
          super();
          this.offset = offset;
-         this.capacity = capacity;
+         this.size = size;
          this.generation = generation;
       }
 
@@ -165,8 +165,12 @@ public class ByteBufferBuilder implements AutoCloseable {
          if (!ByteBufferBuilder.this.isValid(this.generation)) {
             throw new IllegalStateException("Buffer is no longer valid");
          } else {
-            return MemoryUtil.memByteBuffer(ByteBufferBuilder.this.pointer + this.offset, this.capacity);
+            return MemoryUtil.memByteBuffer(ByteBufferBuilder.this.pointer + this.offset, this.size);
          }
+      }
+
+      public int size() {
+         return this.size;
       }
 
       public void close() {

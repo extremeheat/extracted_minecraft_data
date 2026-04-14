@@ -18,6 +18,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
@@ -62,14 +63,14 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public ItemEntity(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      this(EntityType.ITEM, level);
+      this(EntityTypes.ITEM, level);
       this.setPos(x, y, z);
       this.setItem(itemStack);
       this.setDeltaMovement(this.random.nextDouble() * 0.2 - 0.1, 0.2, this.random.nextDouble() * 0.2 - 0.1);
    }
 
    public ItemEntity(final Level level, final double x, final double y, final double z, final ItemStack itemStack, final double deltaX, final double deltaY, final double deltaZ) {
-      this(EntityType.ITEM, level);
+      this(EntityTypes.ITEM, level);
       this.setPos(x, y, z);
       this.setItem(itemStack);
       this.setDeltaMovement(deltaX, deltaY, deltaZ);

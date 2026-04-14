@@ -29,7 +29,7 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
       poseStack.pushPose();
       poseStack.scale(2.0F, 2.0F, 2.0F);
       poseStack.mulPose((Quaternionfc)camera.orientation);
-      submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> {
+      submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, state.outlineColor, (pose, buffer) -> {
          vertex(buffer, pose, state.lightCoords, 0.0F, 0, 0, 1);
          vertex(buffer, pose, state.lightCoords, 1.0F, 0, 1, 1);
          vertex(buffer, pose, state.lightCoords, 1.0F, 1, 1, 0);

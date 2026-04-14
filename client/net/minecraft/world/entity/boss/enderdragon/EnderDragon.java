@@ -21,6 +21,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -87,7 +88,7 @@ public class EnderDragon extends Mob implements Enemy {
    private final BinaryHeap openSet;
 
    public EnderDragon(final EntityType<? extends EnderDragon> type, final Level level) {
-      super(EntityType.ENDER_DRAGON, level);
+      super(EntityTypes.ENDER_DRAGON, level);
       this.fightOrigin = BlockPos.ZERO;
       this.growlTime = 100;
       this.nodes = new Node[24];

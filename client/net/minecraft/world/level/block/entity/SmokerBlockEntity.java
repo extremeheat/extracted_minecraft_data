@@ -13,7 +13,7 @@ public class SmokerBlockEntity extends AbstractFurnaceBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.smoker");
 
    public SmokerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SMOKER, worldPosition, blockState, RecipeType.SMOKING);
+      super(BlockEntityTypes.SMOKER, worldPosition, blockState, RecipeType.SMOKING);
    }
 
    protected Component getDefaultName() {

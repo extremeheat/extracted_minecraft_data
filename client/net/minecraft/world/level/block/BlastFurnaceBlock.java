@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -35,7 +36,7 @@ public class BlastFurnaceBlock extends AbstractFurnaceBlock {
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return createFurnaceTicker(level, type, BlockEntityType.BLAST_FURNACE);
+      return createFurnaceTicker(level, type, BlockEntityTypes.BLAST_FURNACE);
    }
 
    protected void openContainer(final Level level, final BlockPos pos, final Player player) {

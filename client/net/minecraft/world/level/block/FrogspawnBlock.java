@@ -13,7 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.animal.frog.Tadpole;
 import net.minecraft.world.level.BlockGetter;
@@ -74,7 +74,7 @@ public class FrogspawnBlock extends Block {
    }
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
-      if (entity.is(EntityType.FALLING_BLOCK)) {
+      if (entity.is(EntityTypes.FALLING_BLOCK)) {
          this.destroyBlock(level, pos);
       }
 
@@ -100,7 +100,7 @@ public class FrogspawnBlock extends Block {
       int tadpoleAmount = random.nextInt(2, 6);
 
       for(int i = 1; i <= tadpoleAmount; ++i) {
-         Tadpole tadpole = EntityType.TADPOLE.create(level, EntitySpawnReason.BREEDING);
+         Tadpole tadpole = EntityTypes.TADPOLE.create(level, EntitySpawnReason.BREEDING);
          if (tadpole != null) {
             double xPos = (double)pos.getX() + this.getRandomTadpolePositionOffset(random);
             double zPos = (double)pos.getZ() + this.getRandomTadpolePositionOffset(random);

@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -424,7 +424,7 @@ public class MineshaftPieces {
          if (chunkBB.isInside(pos) && level.getBlockState(pos).isAir() && !level.getBlockState(pos.below()).isAir()) {
             BlockState state = (BlockState)Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, random.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);
             this.placeBlock(level, state, x, y, z, chunkBB);
-            MinecartChest chest = EntityType.CHEST_MINECART.create(level.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
+            MinecartChest chest = EntityTypes.CHEST_MINECART.create(level.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
             if (chest != null) {
                chest.setInitialPos((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5);
                chest.setLootTable(lootTable, random.nextLong());
@@ -480,7 +480,7 @@ public class MineshaftPieces {
                      BlockEntity blockEntity = level.getBlockEntity(pos);
                      if (blockEntity instanceof SpawnerBlockEntity) {
                         SpawnerBlockEntity spawner = (SpawnerBlockEntity)blockEntity;
-                        spawner.setEntityId(EntityType.CAVE_SPIDER, random);
+                        spawner.setEntityId(EntityTypes.CAVE_SPIDER, random);
                      }
                   }
                }

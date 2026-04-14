@@ -39,6 +39,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -347,7 +348,7 @@ public class Warden extends Monster implements VibrationSystem {
    public boolean canTargetEntity(final @Nullable Entity entity) {
       boolean var10000;
       if (entity instanceof LivingEntity livingEntity) {
-         if (this.level() == entity.level() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity) && !this.isAlliedTo(entity) && !livingEntity.is(EntityType.ARMOR_STAND) && !livingEntity.is(EntityType.WARDEN) && !livingEntity.isInvulnerable() && !livingEntity.isDeadOrDying() && this.level().getWorldBorder().isWithinBounds(livingEntity.getBoundingBox())) {
+         if (this.level() == entity.level() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity) && !this.isAlliedTo(entity) && !livingEntity.is(EntityTypes.ARMOR_STAND) && !livingEntity.is(EntityTypes.WARDEN) && !livingEntity.isInvulnerable() && !livingEntity.isDeadOrDying() && this.level().getWorldBorder().isWithinBounds(livingEntity.getBoundingBox())) {
             var10000 = true;
             return var10000;
          }

@@ -48,7 +48,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       if (this.data != null) {
          Map<ChunkPos, String> serverData = (Map)this.data.serverData.getNow((Object)null);
-         double y = this.minecraft.gameRenderer.getMainCamera().position().y * 0.85;
+         double y = this.minecraft.gameRenderer.mainCamera().position().y * 0.85;
 
          for(Map.Entry<ChunkPos, String> entry : this.data.clientData.entrySet()) {
             ChunkPos pos = (ChunkPos)entry.getKey();

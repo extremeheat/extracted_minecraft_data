@@ -11,7 +11,7 @@ public class DebugEntryEntityRenderStats implements DebugScreenEntry {
    }
 
    public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
-      String stats = Minecraft.getInstance().levelRenderer.getEntityStatistics();
+      String stats = Minecraft.getInstance().levelExtractor.entityStatistics();
       if (stats != null) {
          displayer.addLine(stats);
       }

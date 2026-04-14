@@ -36,6 +36,7 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -239,12 +240,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       if (level instanceof ServerLevel serverLevel) {
          if ((Boolean)blockState.getValue(LIT)) {
             RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> quickCheck = RecipeManager.<SingleRecipeInput, CampfireCookingRecipe>createCheck(RecipeType.CAMPFIRE_COOKING);
-            return createTickerHelper(type, BlockEntityType.CAMPFIRE, (innerLevel, pos, state, entity) -> CampfireBlockEntity.cookTick(serverLevel, pos, state, entity, quickCheck));
+            return createTickerHelper(type, BlockEntityTypes.CAMPFIRE, (innerLevel, pos, state, entity) -> CampfireBlockEntity.cookTick(serverLevel, pos, state, entity, quickCheck));
          } else {
-            return createTickerHelper(type, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+            return createTickerHelper(type, BlockEntityTypes.CAMPFIRE, CampfireBlockEntity::cooldownTick);
          }
       } else {
-         return (Boolean)blockState.getValue(LIT) ? createTickerHelper(type, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
+         return (Boolean)blockState.getValue(LIT) ? createTickerHelper(type, BlockEntityTypes.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
       }
    }
 

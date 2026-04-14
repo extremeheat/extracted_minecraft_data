@@ -21,6 +21,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -206,7 +207,7 @@ public class Ocelot extends Animal {
    }
 
    public @Nullable Ocelot getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.OCELOT.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.OCELOT.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {

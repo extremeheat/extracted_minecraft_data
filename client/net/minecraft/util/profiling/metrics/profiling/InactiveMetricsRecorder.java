@@ -19,6 +19,9 @@ public class InactiveMetricsRecorder implements MetricsRecorder {
    public void startTick() {
    }
 
+   public void sampleDuringExtract() {
+   }
+
    public boolean isRecording() {
       return false;
    }

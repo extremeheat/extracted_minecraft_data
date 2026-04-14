@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -253,10 +252,10 @@ public class FluidRenderer {
       this.vertex(builder, x2, y2, z2, color, u2, v2, lightCoords);
       this.vertex(builder, x3, y3, z3, color, u3, v3, lightCoords);
       if (addBackFace) {
+         this.vertex(builder, x0, y0, z0, color, u0, v0, lightCoords);
          this.vertex(builder, x3, y3, z3, color, u3, v3, lightCoords);
          this.vertex(builder, x2, y2, z2, color, u2, v2, lightCoords);
          this.vertex(builder, x1, y1, z1, color, u1, v1, lightCoords);
-         this.vertex(builder, x0, y0, z0, color, u0, v0, lightCoords);
       }
 
    }
@@ -312,7 +311,7 @@ public class FluidRenderer {
    }
 
    private int getLightCoords(final BlockAndTintGetter level, final BlockPos pos) {
-      return LightCoordsUtil.max(LevelRenderer.getLightCoords(level, pos), LevelRenderer.getLightCoords(level, pos.above()));
+      return LightCoordsUtil.max(LightCoordsUtil.getLightCoords(level, pos), LightCoordsUtil.getLightCoords(level, pos.above()));
    }
 
    @FunctionalInterface

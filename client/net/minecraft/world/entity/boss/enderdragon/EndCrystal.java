@@ -10,6 +10,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -33,7 +34,7 @@ public class EndCrystal extends Entity {
    }
 
    public EndCrystal(final Level level, final double x, final double y, final double z) {
-      this(EntityType.END_CRYSTAL, level);
+      this(EntityTypes.END_CRYSTAL, level);
       this.setPos(x, y, z);
    }
 

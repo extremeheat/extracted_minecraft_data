@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.SectionPos;
@@ -46,6 +46,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -513,15 +514,15 @@ public class Raid {
             }
 
             this.joinRaid(level, groupNumber, raider, pos, false);
-            if (raiderType.entityType == EntityType.RAVAGER) {
+            if (raiderType.entityType == EntityTypes.RAVAGER) {
                Raider ridingRaider = null;
                if (groupNumber == this.getNumGroups(Difficulty.NORMAL)) {
-                  ridingRaider = EntityType.PILLAGER.create(level, EntitySpawnReason.EVENT);
+                  ridingRaider = EntityTypes.PILLAGER.create(level, EntitySpawnReason.EVENT);
                } else if (groupNumber >= this.getNumGroups(Difficulty.HARD)) {
                   if (ravagersSpawned == 0) {
-                     ridingRaider = EntityType.EVOKER.create(level, EntitySpawnReason.EVENT);
+                     ridingRaider = EntityTypes.EVOKER.create(level, EntitySpawnReason.EVENT);
                   } else {
-                     ridingRaider = EntityType.VINDICATOR.create(level, EntitySpawnReason.EVENT);
+                     ridingRaider = EntityTypes.VINDICATOR.create(level, EntitySpawnReason.EVENT);
                   }
                }
 
@@ -641,7 +642,7 @@ public class Raid {
             spawnPos.set(spawnX, spawnY, spawnZ);
             if (!level.isVillage((BlockPos)spawnPos) || secondsRemaining <= 7) {
                int delta = 10;
-               if (level.hasChunksAt(spawnPos.getX() - 10, spawnPos.getZ() - 10, spawnPos.getX() + 10, spawnPos.getZ() + 10) && level.isPositionEntityTicking(spawnPos) && (RAVAGER_SPAWN_PLACEMENT_TYPE.isSpawnPositionOk(level, spawnPos, EntityType.RAVAGER) || level.getBlockState(spawnPos.below()).is(Blocks.SNOW) && level.getBlockState(spawnPos).isAir())) {
+               if (level.hasChunksAt(spawnPos.getX() - 10, spawnPos.getZ() - 10, spawnPos.getX() + 10, spawnPos.getZ() + 10) && level.isPositionEntityTicking(spawnPos) && (RAVAGER_SPAWN_PLACEMENT_TYPE.isSpawnPositionOk(level, spawnPos, EntityTypes.RAVAGER) || level.getBlockState(spawnPos.below()).is(Blocks.SNOW) && level.getBlockState(spawnPos).isAir())) {
                   return spawnPos;
                }
             }
@@ -772,7 +773,7 @@ public class Raid {
    }
 
    static {
-      RAVAGER_SPAWN_PLACEMENT_TYPE = SpawnPlacements.getPlacementType(EntityType.RAVAGER);
+      RAVAGER_SPAWN_PLACEMENT_TYPE = SpawnPlacements.getPlacementType(EntityTypes.RAVAGER);
       MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("started").forGetter((r) -> r.started), Codec.BOOL.fieldOf("active").forGetter((r) -> r.active), Codec.LONG.fieldOf("ticks_active").forGetter((r) -> r.ticksActive), Codec.INT.fieldOf("raid_omen_level").forGetter((r) -> r.raidOmenLevel), Codec.INT.fieldOf("groups_spawned").forGetter((r) -> r.groupsSpawned), Codec.INT.fieldOf("cooldown_ticks").forGetter((r) -> r.raidCooldownTicks), Codec.INT.fieldOf("post_raid_ticks").forGetter((r) -> r.postRaidTicks), Codec.FLOAT.fieldOf("total_health").forGetter((r) -> r.totalHealth), Codec.INT.fieldOf("group_count").forGetter((r) -> r.numGroups), Raid.RaidStatus.CODEC.fieldOf("status").forGetter((r) -> r.status), BlockPos.CODEC.fieldOf("center").forGetter((r) -> r.center), UUIDUtil.CODEC_SET.fieldOf("heroes_of_the_village").forGetter((r) -> r.heroesOfTheVillage)).apply(i, Raid::new));
       OMINOUS_BANNER_PATTERN_NAME = Component.translatable("block.minecraft.ominous_banner");
       RAID_NAME_COMPONENT = Component.translatable("event.minecraft.raid");
@@ -804,11 +805,11 @@ public class Raid {
    }
 
    private static enum RaiderType {
-      VINDICATOR(EntityType.VINDICATOR, new int[]{0, 0, 2, 0, 1, 4, 2, 5}),
-      EVOKER(EntityType.EVOKER, new int[]{0, 0, 0, 0, 0, 1, 1, 2}),
-      PILLAGER(EntityType.PILLAGER, new int[]{0, 4, 3, 3, 4, 4, 4, 2}),
-      WITCH(EntityType.WITCH, new int[]{0, 0, 0, 0, 3, 0, 0, 1}),
-      RAVAGER(EntityType.RAVAGER, new int[]{0, 0, 0, 1, 0, 1, 0, 2});
+      VINDICATOR(EntityTypes.VINDICATOR, new int[]{0, 0, 2, 0, 1, 4, 2, 5}),
+      EVOKER(EntityTypes.EVOKER, new int[]{0, 0, 0, 0, 0, 1, 1, 2}),
+      PILLAGER(EntityTypes.PILLAGER, new int[]{0, 4, 3, 3, 4, 4, 4, 2}),
+      WITCH(EntityTypes.WITCH, new int[]{0, 0, 0, 0, 3, 0, 0, 1}),
+      RAVAGER(EntityTypes.RAVAGER, new int[]{0, 0, 0, 1, 0, 1, 0, 2});
 
       private static final RaiderType[] VALUES = values();
       private final EntityType<? extends Raider> entityType;

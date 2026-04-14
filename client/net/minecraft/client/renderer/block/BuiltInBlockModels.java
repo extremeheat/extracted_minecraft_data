@@ -21,7 +21,6 @@ import net.minecraft.client.renderer.block.model.SpecialBlockModelWrapper;
 import net.minecraft.client.renderer.block.model.properties.conditional.IsXmas;
 import net.minecraft.client.renderer.block.model.properties.select.DisplayContext;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.blockentity.BedRenderer;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.blockentity.CopperGolemStatueBlockRenderer;
@@ -34,7 +33,6 @@ import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
 import net.minecraft.client.renderer.blockentity.state.SignRenderState;
 import net.minecraft.client.renderer.entity.CopperGolemRenderer;
 import net.minecraft.client.renderer.special.BannerSpecialRenderer;
-import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.BellSpecialRenderer;
 import net.minecraft.client.renderer.special.BookSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
@@ -52,11 +50,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BannerBlock;
-import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.DecoratedPotBlock;
 import net.minecraft.world.level.block.HangingSignBlock;
@@ -96,10 +94,10 @@ public class BuiltInBlockModels {
       createMobHeads(builder, SkullBlock.Types.WITHER_SKELETON, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL);
       builder.put((ModelFactory)createPlayerHead(), Blocks.PLAYER_HEAD);
       builder.put((ModelFactory)createPlayerWallHead(), Blocks.PLAYER_WALL_HEAD);
-      DyeColor.VALUES.forEach((color) -> createBanners(builder, color));
-      DyeColor.VALUES.forEach((color) -> builder.put((ModelFactory)createBed(color), Blocks.BED.pick(color)));
+      ColorCollection.zipApply(ColorCollection.VALUES, Blocks.BANNER, (color, banner) -> builder.put((ModelFactory)createBanner(color), banner));
+      ColorCollection.zipApply(ColorCollection.VALUES, Blocks.WALL_BANNER, (color, wallBanner) -> builder.put((ModelFactory)createWallBanner(color), wallBanner));
       builder.put((ModelFactory)createShulkerBox(), Blocks.SHULKER_BOX);
-      DyeColor.VALUES.forEach((color) -> builder.put((ModelFactory)createDyedShulkerBox(color), Blocks.DYED_SHULKER_BOX.pick(color)));
+      ColorCollection.zipApply(ColorCollection.VALUES, Blocks.DYED_SHULKER_BOX, (color, box) -> builder.put((ModelFactory)createDyedShulkerBox(color), box));
       createSigns(builder, WoodType.OAK, Blocks.OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN);
       createSigns(builder, WoodType.SPRUCE, Blocks.SPRUCE_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN);
       createSigns(builder, WoodType.BIRCH, Blocks.BIRCH_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN);
@@ -115,11 +113,10 @@ public class BuiltInBlockModels {
       builder.put((ModelFactory)createSingletonChest(ChestSpecialRenderer.ENDER_CHEST), Blocks.ENDER_CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.REGULAR), Blocks.CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.TRAPPED), Blocks.TRAPPED_CHEST);
-      builder.put(createChest(ChestSpecialRenderer.COPPER_UNAFFECTED), Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_CHEST.waxed());
-      builder.put(createChest(ChestSpecialRenderer.COPPER_EXPOSED), Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_CHEST.waxedExposed());
-      builder.put(createChest(ChestSpecialRenderer.COPPER_WEATHERED), Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_CHEST.waxedWeathered());
-      builder.put(createChest(ChestSpecialRenderer.COPPER_OXIDIZED), Blocks.COPPER_CHEST.oxidized(), Blocks.COPPER_CHEST.waxedOxidized());
-      WeatheringCopper.WeatherState.forEach((state) -> builder.put(createCopperGolem(state), Blocks.COPPER_GOLEM_STATUE.pick(state, false), Blocks.COPPER_GOLEM_STATUE.pick(state, true)));
+      WeatheringCopper.WeatherState.forEach((state) -> {
+         builder.put(createChest(ChestSpecialRenderer.COPPER.pick(state)), Blocks.COPPER_CHEST.weathering().pick(state), Blocks.COPPER_CHEST.waxed().pick(state));
+         builder.put(createCopperGolem(state), Blocks.COPPER_GOLEM_STATUE.weathering().pick(state), Blocks.COPPER_GOLEM_STATUE.waxed().pick(state));
+      });
       builder.put(special(new BellSpecialRenderer.Unbaked()), Blocks.BELL);
       builder.put(special(new ConduitSpecialRenderer.Unbaked(), ConduitRenderer.DEFAULT_TRANSFORMATION), Blocks.CONDUIT);
       builder.put((ModelFactory)createDecoratedPot(), Blocks.DECORATED_POT);
@@ -168,15 +165,6 @@ public class BuiltInBlockModels {
 
    private static SpecialModelFactory createWallBanner(final DyeColor color) {
       return specialModelWithPropertyDispatch(WallBannerBlock.FACING, (facing) -> special(new BannerSpecialRenderer.Unbaked(color, BannerBlock.AttachmentType.WALL), BannerRenderer.TRANSFORMATIONS.wallTransformation(facing)));
-   }
-
-   private static void createBanners(final Builder builder, final DyeColor dye) {
-      builder.put((ModelFactory)createBanner(dye), Blocks.BANNER.pick(dye));
-      builder.put((ModelFactory)createWallBanner(dye), Blocks.WALL_BANNER.pick(dye));
-   }
-
-   private static SpecialModelFactory createBed(final DyeColor color) {
-      return specialModelWithPropertyDispatch(BedBlock.FACING, BedBlock.PART, (facing, part) -> special(new BedSpecialRenderer.Unbaked(color, part), BedRenderer.modelTransform(facing)));
    }
 
    private static SpecialModelFactory createShulkerBox() {

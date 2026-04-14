@@ -47,7 +47,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    private final int[] cookingTime;
 
    public CampfireBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CAMPFIRE, worldPosition, blockState);
+      super(BlockEntityTypes.CAMPFIRE, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
       this.cookingProgress = new int[4];
       this.cookingTime = new int[4];

@@ -11,7 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.item.ItemStack;
@@ -104,7 +104,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
 
    private void spawnGhastling(final ServerLevel level, final BlockPos position, final BlockState state) {
       level.removeBlock(position, false);
-      HappyGhast ghastling = EntityType.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
+      HappyGhast ghastling = EntityTypes.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
       if (ghastling != null) {
          Vec3 spawnAt = position.getBottomCenter();
          ghastling.setBaby(true);

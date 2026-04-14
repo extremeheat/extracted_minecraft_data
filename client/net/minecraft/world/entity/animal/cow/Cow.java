@@ -17,6 +17,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
@@ -58,7 +59,7 @@ public class Cow extends AbstractCow {
    }
 
    public @Nullable Cow getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Cow baby = EntityType.COW.create(level, EntitySpawnReason.BREEDING);
+      Cow baby = EntityTypes.COW.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Cow partnerCow) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerCow.getVariant());
       }

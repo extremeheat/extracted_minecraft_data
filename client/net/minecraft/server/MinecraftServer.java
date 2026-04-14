@@ -15,9 +15,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.net.Proxy;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -1930,8 +1928,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void dumpThreads(final Path path) throws IOException {
-      ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-      ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(true, true);
+      ThreadInfo[] threadInfos = Util.dumpThreadInfo();
       Arrays.sort(threadInfos, Comparator.comparing(ThreadInfo::getThreadName));
       Writer output = Files.newBufferedWriter(path);
 
@@ -1940,16 +1937,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             output.write(threadInfo.toString());
             output.write(10);
          }
-      } catch (Throwable var10) {
+      } catch (Throwable var9) {
          if (output != null) {
             try {
                output.close();
-            } catch (Throwable var9) {
-               var10.addSuppressed(var9);
+            } catch (Throwable var8) {
+               var9.addSuppressed(var8);
             }
          }
 
-         throw var10;
+         throw var9;
       }
 
       if (output != null) {

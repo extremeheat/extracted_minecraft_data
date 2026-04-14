@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,7 +38,7 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
       if (level.isClientSide()) {
          boolean isAnimated = blockState.is(Blocks.DRAGON_HEAD) || blockState.is(Blocks.DRAGON_WALL_HEAD) || blockState.is(Blocks.PIGLIN_HEAD) || blockState.is(Blocks.PIGLIN_WALL_HEAD);
          if (isAnimated) {
-            return createTickerHelper(type, BlockEntityType.SKULL, SkullBlockEntity::animation);
+            return createTickerHelper(type, BlockEntityTypes.SKULL, SkullBlockEntity::animation);
          }
       }
 

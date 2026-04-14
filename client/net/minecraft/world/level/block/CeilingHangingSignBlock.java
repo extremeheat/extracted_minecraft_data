@@ -22,6 +22,7 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -134,7 +135,7 @@ public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlo
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return createTickerHelper(type, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
+      return createTickerHelper(type, BlockEntityTypes.HANGING_SIGN, SignBlockEntity::tick);
    }
 
    public HangingSignBlock.Attachment attachmentPoint(final BlockState state) {

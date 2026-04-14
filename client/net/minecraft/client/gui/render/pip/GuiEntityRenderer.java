@@ -24,7 +24,7 @@ public class GuiEntityRenderer extends PictureInPictureRenderer<GuiEntityRenderS
    }
 
    protected void renderToTexture(final GuiEntityRenderState entityState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
       Vector3fc translation = entityState.translation();
       poseStack.translate(translation.x(), translation.y(), translation.z());
       poseStack.mulPose(entityState.rotation());

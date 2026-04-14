@@ -212,7 +212,7 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             IntBuffer imageCountPtr = stack.callocInt(1);
             throwIfFailure(KHRSwapchain.vkGetSwapchainImagesKHR(this.device.vkDevice(), this.swapchain, imageCountPtr, (LongBuffer)null), "Failed to get swapchain image count");
             int swapchainImageCount = imageCountPtr.get(0);
-            LongBuffer swapchainImagesPtr = stack.mallocLong(swapchainImageCount);
+            LongBuffer swapchainImagesPtr = stack.callocLong(swapchainImageCount);
             throwIfFailure(KHRSwapchain.vkGetSwapchainImagesKHR(this.device.vkDevice(), this.swapchain, imageCountPtr, swapchainImagesPtr), "Failed to get swapchain images");
             this.swapchainImages.clear();
 
@@ -271,7 +271,7 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            IntBuffer frameIndexPtr = stack.mallocInt(1);
+            IntBuffer frameIndexPtr = stack.callocInt(1);
             frameIndexPtr.put(0, -1);
             ++this.currentAcquireSemaphore;
             this.currentAcquireSemaphore %= this.acquireSemaphores.length;

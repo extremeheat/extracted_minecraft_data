@@ -20,7 +20,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
@@ -60,7 +60,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    private final VibrationSystem.Listener vibrationListener = new VibrationSystem.Listener(this);
 
    public SculkShriekerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SCULK_SHRIEKER, worldPosition, blockState);
+      super(BlockEntityTypes.SCULK_SHRIEKER, worldPosition, blockState);
    }
 
    public VibrationSystem.Data getVibrationData() {
@@ -180,7 +180,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    }
 
    private boolean trySummonWarden(final ServerLevel level) {
-      return this.warningLevel < 4 ? false : SpawnUtil.trySpawnMob(EntityType.WARDEN, EntitySpawnReason.TRIGGERED, level, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER, false).isPresent();
+      return this.warningLevel < 4 ? false : SpawnUtil.trySpawnMob(EntityTypes.WARDEN, EntitySpawnReason.TRIGGERED, level, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER, false).isPresent();
    }
 
    public VibrationSystem.Listener getListener() {

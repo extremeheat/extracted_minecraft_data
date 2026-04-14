@@ -10,7 +10,7 @@ public class ComparatorBlockEntity extends BlockEntity {
    private int output = 0;
 
    public ComparatorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.COMPARATOR, worldPosition, blockState);
+      super(BlockEntityTypes.COMPARATOR, worldPosition, blockState);
    }
 
    protected void saveAdditional(final ValueOutput output) {

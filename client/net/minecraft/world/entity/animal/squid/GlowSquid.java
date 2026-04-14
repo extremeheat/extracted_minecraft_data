@@ -14,6 +14,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -40,7 +41,7 @@ public class GlowSquid extends Squid {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.GLOW_SQUID.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.GLOW_SQUID.create(level, EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getSquirtSound() {

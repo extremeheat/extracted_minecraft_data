@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -35,7 +35,7 @@ public class Containers {
    }
 
    public static void dropItemStack(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      double size = (double)EntityType.ITEM.getWidth();
+      double size = (double)EntityTypes.ITEM.getWidth();
       double centerRange = 1.0 - size;
       double halfSize = size / 2.0;
       RandomSource random = level.getRandom();

@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -137,7 +137,7 @@ class ReportGameListener implements GameTestListener {
    private static Optional<TestInstanceBlockEntity> getTestInstanceBlockEntity(final GameTestInfo testInfo) {
       ServerLevel level = testInfo.getLevel();
       Optional<BlockPos> testPos = Optional.ofNullable(testInfo.getTestBlockPos());
-      Optional<TestInstanceBlockEntity> test = testPos.flatMap((pos) -> level.getBlockEntity(pos, BlockEntityType.TEST_INSTANCE_BLOCK));
+      Optional<TestInstanceBlockEntity> test = testPos.flatMap((pos) -> level.getBlockEntity(pos, BlockEntityTypes.TEST_INSTANCE_BLOCK));
       return test;
    }
 

@@ -29,7 +29,7 @@ public class PotentSulfurEntity extends BlockEntity {
    public static final int PARTICLE_FREQUENCY_TICKS = 20;
 
    public PotentSulfurEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.POTENT_SULFUR, worldPosition, blockState);
+      super(BlockEntityTypes.POTENT_SULFUR, worldPosition, blockState);
    }
 
    public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final PotentSulfurEntity potentSulfur) {

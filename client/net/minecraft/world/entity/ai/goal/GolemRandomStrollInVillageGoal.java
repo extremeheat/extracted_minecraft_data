@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -54,7 +54,7 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
 
    private @Nullable Vec3 getPositionTowardsVillagerWhoWantsGolem() {
       ServerLevel level = (ServerLevel)this.mob.level();
-      List<Villager> villagers = level.getEntities(EntityType.VILLAGER, this.mob.getBoundingBox().inflate(32.0), this::doesVillagerWantGolem);
+      List<Villager> villagers = level.getEntities(EntityTypes.VILLAGER, this.mob.getBoundingBox().inflate(32.0), this::doesVillagerWantGolem);
       if (villagers.isEmpty()) {
          return null;
       } else {

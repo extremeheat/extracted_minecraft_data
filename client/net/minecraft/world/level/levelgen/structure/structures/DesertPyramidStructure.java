@@ -13,7 +13,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.SinglePieceStructure;
@@ -61,7 +61,7 @@ public class DesertPyramidStructure extends SinglePieceStructure {
    private static void placeSuspiciousSand(final BoundingBox chunkBB, final WorldGenLevel level, final BlockPos blockPos) {
       if (chunkBB.isInside(blockPos)) {
          level.setBlock(blockPos, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
-         level.getBlockEntity(blockPos, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((entity) -> entity.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, blockPos.asLong()));
+         level.getBlockEntity(blockPos, BlockEntityTypes.BRUSHABLE_BLOCK).ifPresent((entity) -> entity.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, blockPos.asLong()));
       }
 
    }

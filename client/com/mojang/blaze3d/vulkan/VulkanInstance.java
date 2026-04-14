@@ -42,7 +42,7 @@ public class VulkanInstance {
          PointerBuffer requiredLayers = null;
          if (validation) {
             if (validationLayers.contains("VK_LAYER_KHRONOS_validation")) {
-               requiredLayers = stack.mallocPointer(1);
+               requiredLayers = stack.callocPointer(1);
                requiredLayers.put(0, stack.ASCII("VK_LAYER_KHRONOS_validation"));
                LOGGER.warn("Enabling Vulkan validation layers");
                wantsDebugLabels = true;
@@ -67,7 +67,7 @@ public class VulkanInstance {
             this.enabledExtensions.add("VK_KHR_portability_enumeration");
          }
 
-         PointerBuffer enabledExtensionsBuffer = stack.mallocPointer(this.enabledExtensions.size());
+         PointerBuffer enabledExtensionsBuffer = stack.callocPointer(this.enabledExtensions.size());
 
          for(String name : this.enabledExtensions) {
             enabledExtensionsBuffer.put(stack.UTF8(name));
@@ -80,7 +80,7 @@ public class VulkanInstance {
          }
 
          this.debug.chainCreateInfo(instanceInfo, stack);
-         PointerBuffer pInstance = stack.mallocPointer(1);
+         PointerBuffer pInstance = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(VK12.vkCreateInstance(instanceInfo, (VkAllocationCallbacks)null, pInstance), "Error creating instance", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
          this.vkInstance = new VkInstance(pInstance.get(0), instanceInfo);
          this.debug.setup(this.vkInstance);
@@ -106,16 +106,16 @@ public class VulkanInstance {
       return this.vkInstance;
    }
 
-   private Set<String> getSupportedInstanceExtensions() {
+   private Set<String> getSupportedInstanceExtensions() throws BackendCreationException {
       Set<String> instanceExtensions = new HashSet();
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
          IntBuffer numExtensionsBuf = stack.callocInt(1);
-         VK12.vkEnumerateInstanceExtensionProperties((String)null, numExtensionsBuf, (VkExtensionProperties.Buffer)null);
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateInstanceExtensionProperties((String)null, numExtensionsBuf, (VkExtensionProperties.Buffer)null), "Error enumerating instance extensions", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
          int numExtensions = numExtensionsBuf.get(0);
          VkExtensionProperties.Buffer instanceExtensionsProps = VkExtensionProperties.calloc(numExtensions, stack);
-         VK12.vkEnumerateInstanceExtensionProperties((String)null, numExtensionsBuf, instanceExtensionsProps);
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateInstanceExtensionProperties((String)null, numExtensionsBuf, instanceExtensionsProps), "Error enumerating instance extensions", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
 
          for(int i = 0; i < numExtensions; ++i) {
             VkExtensionProperties props = (VkExtensionProperties)instanceExtensionsProps.get(i);
@@ -141,16 +141,16 @@ public class VulkanInstance {
       return instanceExtensions;
    }
 
-   private List<String> getSupportedValidationLayers() {
+   private List<String> getSupportedValidationLayers() throws BackendCreationException {
       MemoryStack stack = MemoryStack.stackPush();
 
       Object var11;
       try {
          IntBuffer numLayersArr = stack.callocInt(1);
-         VK12.vkEnumerateInstanceLayerProperties(numLayersArr, (VkLayerProperties.Buffer)null);
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateInstanceLayerProperties(numLayersArr, (VkLayerProperties.Buffer)null), "Error enumerating validation layers", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
          int numLayers = numLayersArr.get(0);
          VkLayerProperties.Buffer propsBuf = VkLayerProperties.calloc(numLayers, stack);
-         VK12.vkEnumerateInstanceLayerProperties(numLayersArr, propsBuf);
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateInstanceLayerProperties(numLayersArr, propsBuf), "Error enumerating validation layers", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
          List<String> supportedLayers = new ArrayList();
 
          for(int i = 0; i < numLayers; ++i) {

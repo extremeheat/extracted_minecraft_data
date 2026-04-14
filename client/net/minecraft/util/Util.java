@@ -28,6 +28,9 @@ import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.CopyOption;
@@ -221,10 +224,9 @@ public class Util {
    private static TracingExecutor makeIoExecutor(final String prefix, final boolean daemon) {
       AtomicInteger workerCount = new AtomicInteger(1);
       return new TracingExecutor(Executors.newCachedThreadPool((runnable) -> {
-         Thread thread = new Thread(runnable);
          String name = prefix + workerCount.getAndIncrement();
+         Thread thread = new Thread(runnable, name);
          TracyClient.setThreadName(name, prefix.hashCode());
-         thread.setName(name);
          thread.setDaemon(daemon);
          thread.setUncaughtExceptionHandler(Util::onThreadException);
          return thread;
@@ -493,6 +495,11 @@ public class Util {
    )
    public static DateTimeFormatter localizedDateFormatter(final FormatStyle formatStyle) {
       return DateTimeFormatter.ofLocalizedDateTime(formatStyle);
+   }
+
+   public static ThreadInfo[] dumpThreadInfo() {
+      ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+      return threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(), threadMXBean.isSynchronizerUsageSupported());
    }
 
    public static OS getPlatform() {
@@ -1114,6 +1121,13 @@ public class Util {
 
    public static <T> List<T> copyAndAdd(final T element, final List<T> list) {
       return ImmutableList.builderWithExpectedSize(list.size() + 1).add(element).addAll(list).build();
+   }
+
+   public static <T> List<T> join(final List<T> first, final List<T> second) {
+      ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(first.size() + second.size());
+      builder.addAll(first);
+      builder.addAll(second);
+      return builder.build();
    }
 
    public static <T> List<T> join(final List<T>... lists) {

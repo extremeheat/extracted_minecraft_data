@@ -21,7 +21,7 @@ public class OctreeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
-      Octree octree = this.minecraft.levelRenderer.getSectionOcclusionGraph().getOctree();
+      Octree octree = this.minecraft.levelRenderer.sectionOcclusionGraph().getOctree();
       MutableInt count = new MutableInt(0);
       octree.visitNodes((node, fullyVisible, depth, isClose) -> this.renderNode(node, depth, fullyVisible, count, isClose), frustum, 32);
    }

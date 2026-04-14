@@ -30,7 +30,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBac
    private int lastInteractedSlot;
 
    public ChiseledBookShelfBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CHISELED_BOOKSHELF, worldPosition, blockState);
+      super(BlockEntityTypes.CHISELED_BOOKSHELF, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(6, ItemStack.EMPTY);
       this.lastInteractedSlot = -1;
    }

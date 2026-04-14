@@ -119,7 +119,7 @@ public class VulkanBackend implements GpuBackend {
       try {
          VmaVulkanFunctions vmaVulkanFunctions = VmaVulkanFunctions.calloc(stack).set(vkDevice.getPhysicalDevice().getInstance(), vkDevice);
          VmaAllocatorCreateInfo createInfo = VmaAllocatorCreateInfo.calloc(stack).instance(vkDevice.getPhysicalDevice().getInstance()).vulkanApiVersion(VK12.VK_API_VERSION_1_2).device(vkDevice).physicalDevice(vkDevice.getPhysicalDevice()).pVulkanFunctions(vmaVulkanFunctions);
-         PointerBuffer pointer = stack.mallocPointer(1);
+         PointerBuffer pointer = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(Vma.vmaCreateAllocator(createInfo, pointer), "Failed to create VMA allocator", BackendCreationException.Reason.OTHER);
          var6 = pointer.get(0);
       } catch (Throwable var9) {
@@ -149,24 +149,32 @@ public class VulkanBackend implements GpuBackend {
       try {
          IntBuffer intBuffer = stack.callocInt(1);
          VulkanUtils.throwIfFailure(VK12.vkEnumeratePhysicalDevices(instance.vkInstance(), intBuffer, (PointerBuffer)null), "Failed to get number of physical devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
+         if (intBuffer.get(0) == 0) {
+            throw new BackendCreationException("No Vulkan capable devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
+         }
+
+         PointerBuffer pPhysicalDevices = stack.callocPointer(intBuffer.get(0));
+         VulkanUtils.throwIfFailure(VK12.vkEnumeratePhysicalDevices(instance.vkInstance(), intBuffer, pPhysicalDevices), "Failed to get physical devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          int numDevices = intBuffer.get(0);
          if (numDevices == 0) {
             throw new BackendCreationException("No Vulkan capable devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          }
 
-         PointerBuffer pPhysicalDevices = stack.mallocPointer(numDevices);
-         VulkanUtils.throwIfFailure(VK12.vkEnumeratePhysicalDevices(instance.vkInstance(), intBuffer, pPhysicalDevices), "Failed to get physical devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
-         firstDevice = new VkPhysicalDevice(pPhysicalDevices.get(0), instance.vkInstance());
-
          for(int i = 0; i < numDevices; ++i) {
-            VkPhysicalDevice currentDevice = new VkPhysicalDevice(pPhysicalDevices.get(i), instance.vkInstance());
-            if (this.isDeviceSuitable(currentDevice)) {
-               if (selectedDevice == null) {
-                  selectedDevice = currentDevice;
-               } else if (this.isDeviceDiscrete(currentDevice) && !this.isDeviceDiscrete(selectedDevice)) {
-                  LOGGER.info("Preferring discrete GPU: {}", this.getDeviceName(currentDevice));
-                  selectedDevice = currentDevice;
-                  break;
+            if (pPhysicalDevices.get(i) != 0L) {
+               VkPhysicalDevice currentDevice = new VkPhysicalDevice(pPhysicalDevices.get(i), instance.vkInstance());
+               if (firstDevice == null) {
+                  firstDevice = currentDevice;
+               }
+
+               if (this.isDeviceSuitable(currentDevice)) {
+                  if (selectedDevice == null) {
+                     selectedDevice = currentDevice;
+                  } else if (this.isDeviceDiscrete(currentDevice) && !this.isDeviceDiscrete(selectedDevice)) {
+                     LOGGER.info("Preferring discrete GPU: {}", this.getDeviceName(currentDevice));
+                     selectedDevice = currentDevice;
+                     break;
+                  }
                }
             }
          }
@@ -186,13 +194,17 @@ public class VulkanBackend implements GpuBackend {
          stack.close();
       }
 
-      if (selectedDevice == null) {
-         this.throwForMissingRequrements(firstDevice);
+      if (firstDevice == null) {
+         throw new BackendCreationException("No Vulkan capable devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
+      } else {
+         if (selectedDevice == null) {
+            this.throwForMissingRequrements(firstDevice);
 
-         assert false;
+            assert false;
+         }
+
+         return new VulkanPhysicalDevice(selectedDevice);
       }
-
-      return new VulkanPhysicalDevice(selectedDevice);
    }
 
    private boolean isDeviceSuitable(final VkPhysicalDevice vkPhysicalDevice) {
@@ -394,7 +406,7 @@ public class VulkanBackend implements GpuBackend {
          }
 
          queueCreationInfo.position(0);
-         PointerBuffer enabledExtensionsBuffer = stack.mallocPointer(deviceExtensions.size());
+         PointerBuffer enabledExtensionsBuffer = stack.callocPointer(deviceExtensions.size());
 
          for(String name : deviceExtensions) {
             enabledExtensionsBuffer.put(stack.UTF8(name));
@@ -406,7 +418,7 @@ public class VulkanBackend implements GpuBackend {
          deviceCreateInfo.pQueueCreateInfos(queueCreationInfo);
          deviceCreateInfo.ppEnabledExtensionNames(enabledExtensionsBuffer);
          deviceCreateInfo.pEnabledFeatures(deviceFeatures.features());
-         PointerBuffer pointer = stack.mallocPointer(1);
+         PointerBuffer pointer = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(VK12.vkCreateDevice(physicalDevice.vkPhysicalDevice(), deviceCreateInfo, (VkAllocationCallbacks)null, pointer), "Failed to create device", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          var10 = new VkDevice(pointer.get(0), physicalDevice.vkPhysicalDevice(), deviceCreateInfo);
       } catch (Throwable var12) {

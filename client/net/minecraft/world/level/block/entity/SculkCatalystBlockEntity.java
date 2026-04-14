@@ -2,7 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.Optionull;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -31,7 +31,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
    private final CatalystListener catalystListener;
 
    public SculkCatalystBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SCULK_CATALYST, worldPosition, blockState);
+      super(BlockEntityTypes.SCULK_CATALYST, worldPosition, blockState);
       this.catalystListener = new CatalystListener(blockState, new BlockPositionSource(worldPosition));
    }
 

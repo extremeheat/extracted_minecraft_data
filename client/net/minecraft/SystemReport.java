@@ -25,6 +25,8 @@ import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.PhysicalMemory;
 import oshi.hardware.VirtualMemory;
+import oshi.software.os.OSProcess;
+import oshi.software.os.OperatingSystem;
 
 public class SystemReport {
    public static final long BYTES_PER_MEBIBYTE = 1048576L;
@@ -37,8 +39,8 @@ public class SystemReport {
 
    public SystemReport() {
       super();
-      this.setDetail("Minecraft Version", SharedConstants.getCurrentVersion().name());
-      this.setDetail("Minecraft Version ID", SharedConstants.getCurrentVersion().id());
+      this.setDetail("Minecraft Version", (CrashReportDetail)(() -> SharedConstants.getCurrentVersion().name()));
+      this.setDetail("Minecraft Version ID", (CrashReportDetail)(() -> SharedConstants.getCurrentVersion().id()));
       this.setDetail("Operating System", OPERATING_SYSTEM);
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);
@@ -56,6 +58,7 @@ public class SystemReport {
       this.setDetail("Memory (non-head)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
       this.setDetail("CPUs", (CrashReportDetail)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
+      this.ignoreErrors("software", () -> this.putSoftware(new SystemInfo()));
       this.setDetail("JVM Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
       this.setDetail("Debug Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
    }
@@ -90,6 +93,15 @@ public class SystemReport {
       this.ignoreErrors("graphics", () -> this.putGraphics(hardware.getGraphicsCards()));
       this.ignoreErrors("memory", () -> this.putMemory(hardware.getMemory()));
       this.ignoreErrors("storage", this::putStorage);
+   }
+
+   private void putSoftware(final SystemInfo systemInfo) {
+      OperatingSystem os = systemInfo.getOperatingSystem();
+      Objects.requireNonNull(os);
+      this.setDetail("Operating System Version", os::toString);
+      Objects.requireNonNull(os);
+      this.setDetail("Process Elevated", os::isElevated);
+      this.ignoreErrors("process", () -> this.putProcessDetails(os.getCurrentProcess()));
    }
 
    private void ignoreErrors(final String group, final Runnable action) {
@@ -178,6 +190,18 @@ public class SystemReport {
       this.putSpaceForPath("workdir", () -> "");
    }
 
+   private void putProcessDetails(final OSProcess process) {
+      this.setDetail("Process Loads", (CrashReportDetail)(() -> {
+         double userTimeSeconds = (double)process.getUserTime() / 1000.0;
+         double kernelTimeSeconds = (double)process.getKernelTime() / 1000.0;
+         double upTimeSeconds = (double)process.getUpTime() / 1000.0;
+         double totalTimeSeconds = kernelTimeSeconds + userTimeSeconds;
+         return String.format(Locale.ROOT, "Uptime: %.0fs, user: %.0fs (%.2f%%), kernel: %.0fs (%.2f%%), total: %.0fs (%.2f%%)", upTimeSeconds, userTimeSeconds, userTimeSeconds / upTimeSeconds * 100.0, kernelTimeSeconds, kernelTimeSeconds / upTimeSeconds * 100.0, totalTimeSeconds, totalTimeSeconds / upTimeSeconds * 100.0);
+      }));
+      this.setDetail("Process Virtual Size (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(process.getVirtualSize()))));
+      this.setDetail("Process Resident Size (MiB)", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(process.getResidentSetSize()))));
+   }
+
    private void putSpaceForProperty(final String env) {
       this.putSpaceForPath(env, () -> System.getProperty(env));
    }
@@ -193,7 +217,7 @@ public class SystemReport {
          }
 
          FileStore store = Files.getFileStore(Path.of(path));
-         this.setDetail(key, String.format(Locale.ROOT, "available: %.2f, total: %.2f", sizeInMiB(store.getUsableSpace()), sizeInMiB(store.getTotalSpace())));
+         this.setDetail(key, (CrashReportDetail)(() -> String.format(Locale.ROOT, "available: %.2f, total: %.2f", sizeInMiB(store.getUsableSpace()), sizeInMiB(store.getTotalSpace()))));
       } catch (InvalidPathException e) {
          LOGGER.warn("{} is not a path", id, e);
          this.setDetail(key, "<invalid path>");

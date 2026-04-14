@@ -49,6 +49,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
@@ -687,13 +688,13 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          type = ((Villager)partner).getVillagerData().type();
       }
 
-      return new Villager(EntityType.VILLAGER, level, type);
+      return new Villager(EntityTypes.VILLAGER, level, type);
    }
 
    public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
       if (level.getDifficulty() != Difficulty.PEACEFUL) {
          LOGGER.info("Villager {} was struck by lightning {}.", this, lightningBolt);
-         Witch witch = (Witch)this.convertTo(EntityType.WITCH, ConversionParams.single(this, false, false), (w) -> {
+         Witch witch = (Witch)this.convertTo(EntityTypes.WITCH, ConversionParams.single(this, false, false), (w) -> {
             w.finalizeSpawn(level, level.getCurrentDifficultyAt(w.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
             w.setPersistenceRequired();
             this.releaseAllPois();
@@ -771,7 +772,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          List<Villager> nearbyVillagers = level.getEntitiesOfClass(Villager.class, villagerSearchBox);
          List<Villager> nearbyVillagersThatWantAGolem = nearbyVillagers.stream().filter((villager) -> villager.wantsToSpawnGolem(timestamp)).limit(5L).toList();
          if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
-            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, level, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
+            if (!SpawnUtil.trySpawnMob(EntityTypes.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, level, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
                nearbyVillagers.forEach(GolemSensor::golemDetected);
             }
          }

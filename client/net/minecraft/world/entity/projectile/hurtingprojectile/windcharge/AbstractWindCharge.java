@@ -10,6 +10,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
@@ -60,7 +61,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       if (entity instanceof AbstractWindCharge) {
          return false;
       } else {
-         return entity.is(EntityType.END_CRYSTAL) ? false : super.canHitEntity(entity);
+         return entity.is(EntityTypes.END_CRYSTAL) ? false : super.canHitEntity(entity);
       }
    }
 

@@ -8,6 +8,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
@@ -24,11 +25,11 @@ public class ThrownSplashPotion extends AbstractThrownPotion {
    }
 
    public ThrownSplashPotion(final Level level, final LivingEntity owner, final ItemStack itemStack) {
-      super(EntityType.SPLASH_POTION, level, owner, itemStack);
+      super(EntityTypes.SPLASH_POTION, level, owner, itemStack);
    }
 
    public ThrownSplashPotion(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      super(EntityType.SPLASH_POTION, level, x, y, z, itemStack);
+      super(EntityTypes.SPLASH_POTION, level, x, y, z, itemStack);
    }
 
    protected Item getDefaultItem() {

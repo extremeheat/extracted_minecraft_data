@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -12,7 +11,7 @@ public class BrightnessCombiner<S extends BlockEntity> implements DoubleBlockCom
    }
 
    public Int2IntFunction acceptDouble(final S first, final S second) {
-      return (i) -> LightCoordsUtil.max(LevelRenderer.getLightCoords(first.getLevel(), first.getBlockPos()), LevelRenderer.getLightCoords(second.getLevel(), second.getBlockPos()));
+      return (i) -> LightCoordsUtil.max(LightCoordsUtil.getLightCoords(first.getLevel(), first.getBlockPos()), LightCoordsUtil.getLightCoords(second.getLevel(), second.getBlockPos()));
    }
 
    public Int2IntFunction acceptSingle(final S single) {

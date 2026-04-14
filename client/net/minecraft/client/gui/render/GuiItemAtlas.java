@@ -105,7 +105,7 @@ public class GuiItemAtlas implements AutoCloseable {
       RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
       RenderSystem.enableScissorForRenderTypeDraws(left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       Lighting.Entry lighting = item.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(lighting);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(lighting);
       item.submit(this.poseStack, this.submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
       this.featureRenderDispatcher.renderAllFeatures();
       RenderSystem.disableScissorForRenderTypeDraws();

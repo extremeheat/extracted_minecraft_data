@@ -67,6 +67,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -171,7 +172,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    protected float hurtDir;
 
    public Player(final Level level, final GameProfile gameProfile) {
-      super(EntityType.PLAYER, level);
+      super(EntityTypes.PLAYER, level);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
@@ -440,7 +441,7 @@ public abstract class Player extends Avatar implements ContainerUser {
          List<Entity> orbs = Lists.newArrayList();
 
          for(Entity entity : entities) {
-            if (entity.is(EntityType.EXPERIENCE_ORB)) {
+            if (entity.is(EntityTypes.EXPERIENCE_ORB)) {
                orbs.add(entity);
             } else if (!entity.isRemoved()) {
                this.touch(entity);
@@ -1661,7 +1662,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    protected static Optional<Parrot.Variant> extractParrotVariant(final CompoundTag tag) {
       if (!tag.isEmpty()) {
          EntityType<?> entityType = (EntityType)tag.read("id", EntityType.CODEC).orElse((Object)null);
-         if (entityType == EntityType.PARROT) {
+         if (entityType == EntityTypes.PARROT) {
             return tag.read("Variant", Parrot.Variant.LEGACY_CODEC);
          }
       }

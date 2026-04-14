@@ -47,7 +47,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    protected final ContainerData dataAccess;
 
    public BrewingStandBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BREWING_STAND, worldPosition, blockState);
+      super(BlockEntityTypes.BREWING_STAND, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
       this.dataAccess = new ContainerData() {
          {

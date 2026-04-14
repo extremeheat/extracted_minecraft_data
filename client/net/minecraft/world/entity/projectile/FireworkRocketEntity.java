@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -51,7 +52,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    }
 
    public FireworkRocketEntity(final Level level, final double x, final double y, final double z, final ItemStack sourceItemStack) {
-      super(EntityType.FIREWORK_ROCKET, level);
+      super(EntityTypes.FIREWORK_ROCKET, level);
       this.life = 0;
       this.lifetime = 0;
       this.life = 0;

@@ -31,7 +31,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
    private final ContainerOpenersCounter openersCounter;
 
    public BarrelBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BARREL, worldPosition, blockState);
+      super(BlockEntityTypes.BARREL, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
          {

@@ -11,7 +11,7 @@ import net.minecraft.world.level.redstone.Orientation;
 
 public class TrappedChestBlockEntity extends ChestBlockEntity {
    public TrappedChestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.TRAPPED_CHEST, worldPosition, blockState);
+      super(BlockEntityTypes.TRAPPED_CHEST, worldPosition, blockState);
    }
 
    protected void signalOpenCount(final Level level, final BlockPos pos, final BlockState blockState, final int previous, final int current) {

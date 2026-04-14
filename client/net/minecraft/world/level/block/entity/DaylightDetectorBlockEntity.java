@@ -5,6 +5,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class DaylightDetectorBlockEntity extends BlockEntity {
    public DaylightDetectorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.DAYLIGHT_DETECTOR, worldPosition, blockState);
+      super(BlockEntityTypes.DAYLIGHT_DETECTOR, worldPosition, blockState);
    }
 }

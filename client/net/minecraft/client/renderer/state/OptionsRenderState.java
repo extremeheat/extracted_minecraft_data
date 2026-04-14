@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.state;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
+import net.minecraft.client.PrioritizeChunkUpdates;
 import net.minecraft.client.TextureFilteringMethod;
 
 public class OptionsRenderState {
@@ -23,6 +24,9 @@ public class OptionsRenderState {
    public CloudStatus cloudStatus;
    public CameraType cameraType;
    public int renderDistance;
+   public double chunkSectionFadeInTime;
+   public PrioritizeChunkUpdates prioritizeChunkUpdates;
+   public int fov;
 
    public OptionsRenderState() {
       super();

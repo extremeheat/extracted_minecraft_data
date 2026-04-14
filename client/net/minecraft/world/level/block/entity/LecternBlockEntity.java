@@ -126,7 +126,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    private int pageCount;
 
    public LecternBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.LECTERN, worldPosition, blockState);
+      super(BlockEntityTypes.LECTERN, worldPosition, blockState);
       this.book = ItemStack.EMPTY;
    }
 

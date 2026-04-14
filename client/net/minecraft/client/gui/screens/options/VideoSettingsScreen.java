@@ -181,7 +181,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
             this.minecraft.gui.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, warningMessage, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (btn) -> {
                this.options.improvedTransparency().set(true);
-               Minecraft.getInstance().levelRenderer.allChanged();
+               Minecraft.getInstance().levelExtractor.allChanged();
                this.gpuWarnlistManager.dismissWarning();
                this.minecraft.gui.setScreen(this);
             }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, (btn) -> {

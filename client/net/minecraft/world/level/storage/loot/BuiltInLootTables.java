@@ -216,7 +216,7 @@ public class BuiltInLootTables {
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
       EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
       EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
-      SHEEP = ColorCollection.<ResourceKey<LootTable>>make((color) -> register("entities/sheep/" + color.getName()));
+      SHEEP = ColorCollection.NAMES.<ResourceKey<LootTable>>map((color) -> register("entities/sheep/" + color));
       FISHING = register("gameplay/fishing");
       FISHING_JUNK = register("gameplay/fishing/junk");
       FISHING_TREASURE = register("gameplay/fishing/treasure");
@@ -259,7 +259,7 @@ public class BuiltInLootTables {
       SHEAR_BROWN_MOOSHROOM = register("shearing/mooshroom/brown");
       SHEAR_SNOW_GOLEM = register("shearing/snow_golem");
       SHEAR_SHEEP = register("shearing/sheep");
-      SHEAR_DYED_SHEEP = ColorCollection.<ResourceKey<LootTable>>make((color) -> register("shearing/sheep/" + color.getName()));
+      SHEAR_DYED_SHEEP = ColorCollection.NAMES.<ResourceKey<LootTable>>map((color) -> register("shearing/sheep/" + color));
       CHARGED_CREEPER = register("charged_creeper/root");
       CHARGED_CREEPER_PIGLIN = register("charged_creeper/piglin");
       CHARGED_CREEPER_CREEPER = register("charged_creeper/creeper");

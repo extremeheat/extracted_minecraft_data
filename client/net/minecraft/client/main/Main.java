@@ -61,6 +61,14 @@ public class Main {
    }
 
    public static void main(final String[] args) {
+      try {
+         SharedConstants.tryDetectVersion();
+      } catch (Throwable t) {
+         logEarlyException(t);
+         System.exit(-7);
+         return;
+      }
+
       OptionParser parser;
       try {
          parser = new OptionParser();
@@ -149,7 +157,6 @@ public class Main {
          Stopwatch preWindowPreClassLoadTimer = Stopwatch.createStarted(Ticker.systemTicker());
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS, totalTimePreClassLoadTimer);
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, preWindowPreClassLoadTimer);
-         SharedConstants.tryDetectVersion();
          TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().name());
          CompletableFuture<?> dataFixerOptimization = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
          CrashReport.preload();

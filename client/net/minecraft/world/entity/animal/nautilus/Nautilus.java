@@ -10,6 +10,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
@@ -33,7 +34,7 @@ public class Nautilus extends AbstractNautilus {
    }
 
    public @Nullable Nautilus getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Nautilus baby = EntityType.NAUTILUS.create(level, EntitySpawnReason.BREEDING);
+      Nautilus baby = EntityTypes.NAUTILUS.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && this.isTame()) {
          baby.setOwnerReference(this.getOwnerReference());
          baby.setTame(true, true);

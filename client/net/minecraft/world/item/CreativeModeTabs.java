@@ -1,13 +1,13 @@
 package net.minecraft.world.item;
 
 import com.mojang.datafixers.util.Pair;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -42,7 +42,6 @@ import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
 import net.minecraft.world.level.block.TestBlock;
-import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import org.jspecify.annotations.Nullable;
@@ -451,47 +450,37 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.SMOOTH_QUARTZ_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SMOOTH_QUARTZ_SLAB);
          buildingBlocks.accept((ItemLike)Items.AMETHYST_BLOCK);
-         boolean waxed = false;
-
-         for(boolean end = false; !end; waxed = true) {
-            for(WeatheringCopper.WeatherState weatherState : WeatheringCopper.WeatherState.values()) {
-               buildingBlocks.accept(Items.COPPER_BLOCK.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.CHISELED_COPPER.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_GRATE.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.CUT_COPPER.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.CUT_COPPER_STAIRS.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.CUT_COPPER_SLAB.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_BARS.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_DOOR.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_TRAPDOOR.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_BULB.pick(weatherState, waxed));
-               buildingBlocks.accept(Items.COPPER_CHAIN.pick(weatherState, waxed));
-            }
-
-            end = waxed;
-         }
-
+         copperBlockFamilies((family) -> {
+            WeatheringCopperCollection.ByState var10000 = family.weathering();
+            Objects.requireNonNull(buildingBlocks);
+            var10000.forEach(buildingBlocks::accept);
+         });
+         copperBlockFamilies((family) -> {
+            WeatheringCopperCollection.ByState var10000 = family.waxed();
+            Objects.requireNonNull(buildingBlocks);
+            var10000.forEach(buildingBlocks::accept);
+         });
       }).build());
       List<DyeColor> gameplayColorOrder = List.of(DyeColor.WHITE, DyeColor.LIGHT_GRAY, DyeColor.GRAY, DyeColor.BLACK, DyeColor.BROWN, DyeColor.RED, DyeColor.ORANGE, DyeColor.YELLOW, DyeColor.LIME, DyeColor.GREEN, DyeColor.CYAN, DyeColor.LIGHT_BLUE, DyeColor.BLUE, DyeColor.PURPLE, DyeColor.MAGENTA, DyeColor.PINK);
       Registry.register(registry, (ResourceKey)COLORED_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 1).title(Component.translatable("itemGroup.coloredBlocks")).icon(() -> new ItemStack(Blocks.WOOL.cyan())).displayItems((parameters, coloredBlocks) -> {
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.WOOL.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.CARPET.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.WOOL);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.CARPET);
          coloredBlocks.accept((ItemLike)Items.TERRACOTTA);
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.DYED_TERRACOTTA.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.CONCRETE.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.CONCRETE_POWDER.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.GLAZED_TERRACOTTA.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.DYED_TERRACOTTA);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.CONCRETE);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.CONCRETE_POWDER);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.GLAZED_TERRACOTTA);
          coloredBlocks.accept((ItemLike)Items.GLASS);
          coloredBlocks.accept((ItemLike)Items.TINTED_GLASS);
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.STAINED_GLASS.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.STAINED_GLASS);
          coloredBlocks.accept((ItemLike)Items.GLASS_PANE);
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.STAINED_GLASS_PANE.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.STAINED_GLASS_PANE);
          coloredBlocks.accept((ItemLike)Items.SHULKER_BOX);
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.DYED_SHULKER_BOX.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.BED.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.DYED_SHULKER_BOX);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.BED);
          coloredBlocks.accept((ItemLike)Items.CANDLE);
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.DYED_CANDLE.pick(color)));
-         gameplayColorOrder.forEach((color) -> coloredBlocks.accept(Items.BANNER.pick(color)));
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.DYED_CANDLE);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.BANNER);
       }).build());
       Registry.register(registry, (ResourceKey)NATURAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2).title(Component.translatable("itemGroup.natural")).icon(() -> new ItemStack(Blocks.GRASS_BLOCK)).displayItems((parameters, naturalBlocks) -> {
          naturalBlocks.accept((ItemLike)Items.GRASS_BLOCK);
@@ -528,6 +517,7 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.TUFF);
          naturalBlocks.accept((ItemLike)Items.DRIPSTONE_BLOCK);
          naturalBlocks.accept((ItemLike)Items.POINTED_DRIPSTONE);
+         naturalBlocks.accept((ItemLike)Items.SULFUR_SPIKE);
          naturalBlocks.accept((ItemLike)Items.PRISMARINE);
          naturalBlocks.accept((ItemLike)Items.CINNABAR);
          naturalBlocks.accept((ItemLike)Items.SULFUR);
@@ -902,7 +892,7 @@ public class CreativeModeTabs {
          redstoneBlocks.accept((ItemLike)Items.REPEATER);
          redstoneBlocks.accept((ItemLike)Items.COMPARATOR);
          redstoneBlocks.accept((ItemLike)Items.TARGET);
-         Collection var10000 = Items.COPPER_BULB.select((var0, waxed) -> waxed);
+         WeatheringCopperCollection.ByState var10000 = Items.COPPER_BULB.waxed();
          Objects.requireNonNull(redstoneBlocks);
          var10000.forEach(redstoneBlocks::accept);
          redstoneBlocks.accept((ItemLike)Items.LEVER);
@@ -921,7 +911,7 @@ public class CreativeModeTabs {
          redstoneBlocks.accept((ItemLike)Items.STRING);
          redstoneBlocks.accept((ItemLike)Items.LECTERN);
          redstoneBlocks.accept((ItemLike)Items.DAYLIGHT_DETECTOR);
-         redstoneBlocks.accept(Items.LIGHTNING_ROD.waxed());
+         redstoneBlocks.accept(Items.LIGHTNING_ROD.waxed().unaffected());
          redstoneBlocks.accept((ItemLike)Items.PISTON);
          redstoneBlocks.accept((ItemLike)Items.STICKY_PISTON);
          redstoneBlocks.accept((ItemLike)Items.SLIME_BLOCK);
@@ -931,7 +921,7 @@ public class CreativeModeTabs {
          redstoneBlocks.accept((ItemLike)Items.CRAFTER);
          redstoneBlocks.accept((ItemLike)Items.HOPPER);
          redstoneBlocks.accept((ItemLike)Items.CHEST);
-         redstoneBlocks.accept(Items.COPPER_CHEST.waxed());
+         redstoneBlocks.accept(Items.COPPER_CHEST.waxed().unaffected());
          redstoneBlocks.accept((ItemLike)Items.BARREL);
          redstoneBlocks.accept((ItemLike)Items.CHISELED_BOOKSHELF);
          redstoneBlocks.accept((ItemLike)Items.OAK_SHELF);
@@ -1493,6 +1483,10 @@ public class CreativeModeTabs {
       return (CreativeModeTab)Registry.register(registry, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> new ItemStack(Blocks.CHEST)).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
    }
 
+   private static void registerColoredItems(final CreativeModeTab.Output coloredBlocks, final List<DyeColor> gameplayColorOrder, final ColorCollection<Item> items) {
+      gameplayColorOrder.forEach((color) -> coloredBlocks.accept(items.pick(color)));
+   }
+
    public static void validate() {
       Map<Pair<CreativeModeTab.Row, Integer>, String> positions = new HashMap();
 
@@ -1565,6 +1559,20 @@ public class CreativeModeTabs {
          stack.set(DataComponents.PAINTING_VARIANT, painting);
          output.accept(stack, tabVisibility);
       });
+   }
+
+   private static void copperBlockFamilies(final Consumer<WeatheringCopperCollection<Item>> output) {
+      output.accept(Items.COPPER_BLOCK);
+      output.accept(Items.CHISELED_COPPER);
+      output.accept(Items.COPPER_GRATE);
+      output.accept(Items.CUT_COPPER);
+      output.accept(Items.CUT_COPPER_STAIRS);
+      output.accept(Items.CUT_COPPER_SLAB);
+      output.accept(Items.COPPER_BARS);
+      output.accept(Items.COPPER_DOOR);
+      output.accept(Items.COPPER_TRAPDOOR);
+      output.accept(Items.COPPER_BULB);
+      output.accept(Items.COPPER_CHAIN);
    }
 
    public static List<CreativeModeTab> tabs() {

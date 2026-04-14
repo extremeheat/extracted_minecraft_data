@@ -23,8 +23,7 @@ import org.jspecify.annotations.Nullable;
 public class ClientTelemetryManager implements AutoCloseable {
    private static final AtomicInteger THREAD_COUNT = new AtomicInteger(1);
    private static final Executor EXECUTOR = Executors.newSingleThreadExecutor((r) -> {
-      Thread result = new Thread(r);
-      result.setName("Telemetry-Sender-#" + THREAD_COUNT.getAndIncrement());
+      Thread result = new Thread(r, "Telemetry-Sender-#" + THREAD_COUNT.getAndIncrement());
       result.setDaemon(true);
       return result;
    });

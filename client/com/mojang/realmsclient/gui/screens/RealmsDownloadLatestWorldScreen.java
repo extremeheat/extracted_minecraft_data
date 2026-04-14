@@ -257,7 +257,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
             this.finished = true;
          }
 
-      })).start();
+      }, "Realms world download monitor")).start();
    }
 
    private void downloadCancelled() {

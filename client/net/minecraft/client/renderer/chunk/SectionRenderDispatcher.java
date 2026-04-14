@@ -17,11 +17,11 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import net.minecraft.CrashReport;
 import net.minecraft.TracingExecutor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.RotatingSectionStorage;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.SectionBufferBuilderPool;
@@ -32,32 +32,29 @@ import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class SectionRenderDispatcher {
-   private final CompileTaskDynamicQueue compileQueue = new CompileTaskDynamicQueue();
+   public static final int NEARBY_SECTION_DISTANCE_IN_BLOCKS = 32;
+   private final SectionTaskDynamicQueue queue = new SectionTaskDynamicQueue();
    private final SectionBufferBuilderPack fixedBuffers;
    private final SectionBufferBuilderPool bufferPool;
    private volatile boolean closed;
    private final TracingExecutor executor;
-   private ClientLevel level;
-   private final LevelRenderer renderer;
+   private final Consumer<RenderSection> onSectionMeshUpdate;
    private final AtomicReference<Vec3> cameraPosition;
-   private SectionCompiler sectionCompiler;
+   private volatile SectionCompiler sectionCompiler;
    private final StagingBuffer stagingBuffer;
    private final Map<ChunkSectionLayer, SectionUberBuffers> chunkUberBuffers;
    private final ReentrantLock copyLock;
 
-   public SectionRenderDispatcher(final ClientLevel level, final LevelRenderer renderer, final TracingExecutor executor, final RenderBuffers renderBuffers, final SectionCompiler sectionCompiler) {
+   public SectionRenderDispatcher(final TracingExecutor executor, final RenderBuffers renderBuffers, final SectionCompiler sectionCompiler, final Consumer<RenderSection> onSectionMeshUpdate) {
       super();
       this.cameraPosition = new AtomicReference(Vec3.ZERO);
       this.copyLock = new ReentrantLock();
-      this.level = level;
-      this.renderer = renderer;
+      this.onSectionMeshUpdate = onSectionMeshUpdate;
       this.fixedBuffers = renderBuffers.fixedBufferPack();
       this.bufferPool = renderBuffers.sectionBufferPool();
       this.executor = executor;
@@ -75,20 +72,19 @@ public class SectionRenderDispatcher {
       });
    }
 
-   public void setLevel(final ClientLevel level, final SectionCompiler sectionCompiler) {
-      this.level = level;
+   public void setCompiler(final SectionCompiler sectionCompiler) {
       this.sectionCompiler = sectionCompiler;
    }
 
    private void runTask() {
       if (!this.closed) {
-         RenderSection.CompileTask task = this.compileQueue.poll((Vec3)this.cameraPosition.get());
+         RenderSection.SectionTask task = this.queue.poll((Vec3)this.cameraPosition.get());
          if (task != null && !task.isCompleted.get() && !task.isCancelled.get()) {
             try {
                SectionBufferBuilderPack buffer = (SectionBufferBuilderPack)Objects.requireNonNull(this.bufferPool.acquire());
-               RenderSection.CompileTask.SectionTaskResult result = task.doTask(buffer);
+               RenderSection.SectionTask.SectionTaskResult result = task.doTask(buffer);
                task.isCompleted.set(true);
-               if (result == SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.SUCCESSFUL) {
+               if (result == SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.SUCCESSFUL) {
                   buffer.clearAll();
                } else {
                   buffer.discardAll();
@@ -96,7 +92,7 @@ public class SectionRenderDispatcher {
 
                this.bufferPool.release(buffer);
             } catch (NullPointerException var4) {
-               this.compileQueue.add(task);
+               this.queue.add(task);
             } catch (Exception e) {
                Minecraft.getInstance().delayCrash(CrashReport.forThrowable(e, "Batching sections"));
             }
@@ -136,7 +132,7 @@ public class SectionRenderDispatcher {
       this.copyLock.unlock();
    }
 
-   public void uploadGlobalGeomBuffersToGPU() {
+   public void uploadTerrainBuffersToGpu() {
       GpuDevice device = RenderSystem.getDevice();
 
       try (StagingBuffer.Uploader uploader = this.stagingBuffer.startUploading(device.createCommandEncoder())) {
@@ -151,23 +147,19 @@ public class SectionRenderDispatcher {
 
    }
 
-   public void rebuildSectionSync(final RenderSection section, final RenderRegionCache cache) {
-      section.compileSync(cache);
-   }
-
-   public void schedule(final RenderSection.CompileTask task) {
+   private void schedule(final RenderSection.SectionTask task) {
       if (!this.closed) {
-         this.compileQueue.add(task);
+         this.queue.add(task);
          this.executor.execute(this::runTask);
       }
    }
 
    public void clearCompileQueue() {
-      this.compileQueue.clear();
+      this.queue.clear();
    }
 
    public boolean isQueueEmpty() {
-      return this.compileQueue.size() == 0;
+      return this.queue.size() == 0;
    }
 
    public void dispose() {
@@ -190,12 +182,12 @@ public class SectionRenderDispatcher {
 
    @VisibleForDebug
    public String getStats() {
-      return String.format(Locale.ROOT, "pC: %03d, aB: %02d", this.compileQueue.size(), this.bufferPool.getFreeBufferCount());
+      return String.format(Locale.ROOT, "pC: %03d, aB: %02d", this.queue.size(), this.bufferPool.getFreeBufferCount());
    }
 
    @VisibleForDebug
    public int getCompileQueueSize() {
-      return this.compileQueue.size();
+      return this.queue.size();
    }
 
    @VisibleForDebug
@@ -209,17 +201,14 @@ public class SectionRenderDispatcher {
       }
    }
 
-   public class RenderSection {
-      public static final int SIZE = 16;
+   public class RenderSection implements RotatingSectionStorage.Value {
       public final int index;
       public final AtomicReference<SectionMesh> sectionMesh;
-      private RebuildTask lastRebuildTask;
+      private @Nullable CompileTask lastCompileTask;
       private ResortTransparencyTask lastResortTransparencyTask;
       private AABB bb;
-      private boolean dirty;
       private volatile long sectionNode;
       private final BlockPos.MutableBlockPos renderOrigin;
-      private boolean playerChanged;
       private long uploadedTime;
       private long fadeDuration;
       private boolean wasPreviouslyEmpty;
@@ -228,7 +217,6 @@ public class SectionRenderDispatcher {
          Objects.requireNonNull(SectionRenderDispatcher.this);
          super();
          this.sectionMesh = new AtomicReference(CompiledSectionMesh.UNCOMPILED);
-         this.dirty = true;
          this.sectionNode = SectionPos.asLong(-1, -1, -1);
          this.renderOrigin = new BlockPos.MutableBlockPos(-1, -1, -1);
          this.index = index;
@@ -250,15 +238,6 @@ public class SectionRenderDispatcher {
 
       public boolean wasPreviouslyEmpty() {
          return this.wasPreviouslyEmpty;
-      }
-
-      private boolean doesChunkExistAt(final long sectionNode) {
-         ChunkAccess chunk = SectionRenderDispatcher.this.level.getChunk(SectionPos.x(sectionNode), SectionPos.z(sectionNode), ChunkStatus.FULL, false);
-         return chunk != null && SectionRenderDispatcher.this.level.getLightEngine().lightOnInColumn(SectionPos.getZeroNode(sectionNode));
-      }
-
-      public boolean hasAllNeighbors() {
-         return this.doesChunkExistAt(SectionPos.offset(this.sectionNode, Direction.WEST)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, Direction.NORTH)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, Direction.EAST)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, Direction.SOUTH)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, -1, 0, -1)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, -1, 0, 1)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, 1, 0, -1)) && this.doesChunkExistAt(SectionPos.offset(this.sectionNode, 1, 0, 1));
       }
 
       public AABB getBoundingBox() {
@@ -290,7 +269,6 @@ public class SectionRenderDispatcher {
             SectionRenderDispatcher.this.copyLock.unlock();
          }
 
-         this.dirty = true;
          this.uploadedTime = 0L;
          this.wasPreviouslyEmpty = false;
       }
@@ -303,34 +281,15 @@ public class SectionRenderDispatcher {
          return this.sectionNode;
       }
 
-      public void setDirty(final boolean fromPlayer) {
-         boolean wasDirty = this.dirty;
-         this.dirty = true;
-         this.playerChanged = fromPlayer | (wasDirty && this.playerChanged);
-      }
-
-      public void setNotDirty() {
-         this.dirty = false;
-         this.playerChanged = false;
-      }
-
-      public boolean isDirty() {
-         return this.dirty;
-      }
-
-      public boolean isDirtyFromPlayer() {
-         return this.dirty && this.playerChanged;
-      }
-
       public long getNeighborSectionNode(final Direction direction) {
          return SectionPos.offset(this.sectionNode, direction);
       }
 
-      public void resortTransparency(final SectionRenderDispatcher dispatcher) {
-         SectionMesh var3 = this.getSectionMesh();
-         if (var3 instanceof CompiledSectionMesh mesh) {
+      public void resortTransparency() {
+         SectionMesh var2 = this.getSectionMesh();
+         if (var2 instanceof CompiledSectionMesh mesh) {
             this.lastResortTransparencyTask = new ResortTransparencyTask(mesh);
-            dispatcher.schedule(this.lastResortTransparencyTask);
+            SectionRenderDispatcher.this.schedule(this.lastResortTransparencyTask);
          }
 
       }
@@ -343,10 +302,10 @@ public class SectionRenderDispatcher {
          return this.lastResortTransparencyTask != null && !this.lastResortTransparencyTask.isCompleted.get();
       }
 
-      protected void cancelTasks() {
-         if (this.lastRebuildTask != null) {
-            this.lastRebuildTask.cancel();
-            this.lastRebuildTask = null;
+      private void cancelTasks() {
+         if (this.lastCompileTask != null) {
+            this.lastCompileTask.cancel();
+            this.lastCompileTask = null;
          }
 
          if (this.lastResortTransparencyTask != null) {
@@ -356,27 +315,26 @@ public class SectionRenderDispatcher {
 
       }
 
-      public CompileTask createCompileTask(final RenderRegionCache cache) {
+      private SectionTask createCompileTask(final RenderSectionRegion region) {
          this.cancelTasks();
-         RenderSectionRegion region = cache.createRegion(SectionRenderDispatcher.this.level, this.sectionNode);
          boolean isRecompile = this.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED;
-         this.lastRebuildTask = new RebuildTask(region, isRecompile);
-         return this.lastRebuildTask;
+         this.lastCompileTask = new CompileTask(region, isRecompile);
+         return this.lastCompileTask;
       }
 
-      public void rebuildSectionAsync(final RenderRegionCache cache) {
-         CompileTask task = this.createCompileTask(cache);
+      public void compileAsync(final RenderSectionRegion region) {
+         SectionTask task = this.createCompileTask(region);
          SectionRenderDispatcher.this.schedule(task);
       }
 
-      public void compileSync(final RenderRegionCache cache) {
-         CompileTask task = this.createCompileTask(cache);
+      public void compileSync(final RenderSectionRegion region) {
+         SectionTask task = this.createCompileTask(region);
          task.doTask(SectionRenderDispatcher.this.fixedBuffers);
       }
 
       private SectionMesh setSectionMesh(final SectionMesh sectionMesh) {
          SectionMesh oldMesh = (SectionMesh)this.sectionMesh.getAndSet(sectionMesh);
-         SectionRenderDispatcher.this.renderer.addRecentlyCompiledSection(this);
+         SectionRenderDispatcher.this.onSectionMeshUpdate.accept(this);
          if (this.uploadedTime == 0L) {
             this.uploadedTime = Util.getMillis();
          }
@@ -416,12 +374,12 @@ public class SectionRenderDispatcher {
 
       }
 
-      void vertexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer) {
+      private void vertexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer) {
          sectionMesh.setVertexBufferUploaded(layer);
          this.checkSectionMesh(sectionMesh);
       }
 
-      void indexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer, final boolean sortedIndexBuffer) {
+      private void indexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer, final boolean sortedIndexBuffer) {
          sectionMesh.setIndexBufferUploaded(layer);
          if (!sortedIndexBuffer) {
             this.checkSectionMesh(sectionMesh);
@@ -455,7 +413,7 @@ public class SectionRenderDispatcher {
             }
 
             if (!success && RenderSystem.isOnRenderThread()) {
-               SectionRenderDispatcher.this.uploadGlobalGeomBuffersToGPU();
+               SectionRenderDispatcher.this.uploadTerrainBuffersToGpu();
             }
          } finally {
             SectionRenderDispatcher.this.copyLock.unlock();
@@ -464,27 +422,23 @@ public class SectionRenderDispatcher {
          return success;
       }
 
-      private class RebuildTask extends CompileTask {
-         protected final RenderSectionRegion region;
+      private class CompileTask extends SectionTask {
+         private final RenderSectionRegion region;
 
-         public RebuildTask(final RenderSectionRegion region, final boolean isRecompile) {
+         public CompileTask(final RenderSectionRegion region, final boolean isRecompile) {
             Objects.requireNonNull(RenderSection.this);
             super(isRecompile);
             this.region = region;
          }
 
-         protected String name() {
-            return "rend_chk_rebuild";
-         }
-
-         public CompileTask.SectionTaskResult doTask(final SectionBufferBuilderPack buffers) {
+         public SectionTask.SectionTaskResult doTask(final SectionBufferBuilderPack buffers) {
             if (this.isCancelled.get()) {
-               return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+               return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
             } else {
                long sectionNode = RenderSection.this.sectionNode;
                SectionPos sectionPos = SectionPos.of(sectionNode);
                if (this.isCancelled.get()) {
-                  return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                  return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                } else {
                   Vec3 cameraPos = (Vec3)SectionRenderDispatcher.this.cameraPosition.get();
 
@@ -505,7 +459,7 @@ public class SectionRenderDispatcher {
                         SectionRenderDispatcher.this.copyLock.unlock();
                      }
 
-                     return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.SUCCESSFUL;
+                     return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.SUCCESSFUL;
                   } else {
                      for(Map.Entry<ChunkSectionLayer, MeshData> entry : results.renderedLayers.entrySet()) {
                         MeshData meshData = (MeshData)entry.getValue();
@@ -522,7 +476,7 @@ public class SectionRenderDispatcher {
                                  SectionRenderDispatcher.this.copyLock.unlock();
                               }
 
-                              return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                              return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                            }
 
                            success = RenderSection.this.addSectionBuffersToUberBuffer((ChunkSectionLayer)entry.getKey(), compiledSectionMesh, meshData.vertexBuffer(), meshData.indexBuffer());
@@ -534,21 +488,18 @@ public class SectionRenderDispatcher {
                         meshData.close();
                      }
 
-                     return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.SUCCESSFUL;
+                     return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.SUCCESSFUL;
                   }
                }
             }
          }
 
          public void cancel() {
-            if (this.isCancelled.compareAndSet(false, true)) {
-               RenderSection.this.setDirty(false);
-            }
-
+            this.isCancelled.compareAndSet(false, true);
          }
       }
 
-      private class ResortTransparencyTask extends CompileTask {
+      private class ResortTransparencyTask extends SectionTask {
          private final CompiledSectionMesh compiledSectionMesh;
 
          public ResortTransparencyTask(final CompiledSectionMesh compiledSectionMesh) {
@@ -557,13 +508,9 @@ public class SectionRenderDispatcher {
             this.compiledSectionMesh = compiledSectionMesh;
          }
 
-         protected String name() {
-            return "rend_chk_sort";
-         }
-
-         public CompileTask.SectionTaskResult doTask(final SectionBufferBuilderPack buffers) {
+         public SectionTask.SectionTaskResult doTask(final SectionBufferBuilderPack buffers) {
             if (this.isCancelled.get()) {
-               return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+               return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
             } else {
                MeshData.SortState state = this.compiledSectionMesh.getTransparencyState();
                if (state != null && !this.compiledSectionMesh.isEmpty(ChunkSectionLayer.TRANSLUCENT)) {
@@ -572,18 +519,18 @@ public class SectionRenderDispatcher {
                   VertexSorting vertexSorting = RenderSection.this.createVertexSorting(SectionPos.of(sectionNode), cameraPos);
                   TranslucencyPointOfView translucencyPointOfView = TranslucencyPointOfView.of(cameraPos, sectionNode);
                   if (!this.compiledSectionMesh.isDifferentPointOfView(translucencyPointOfView) && !translucencyPointOfView.isAxisAligned()) {
-                     return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                     return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                   } else {
                      ByteBufferBuilder.Result indexBuffer = state.buildSortedIndexBuffer(buffers.buffer(ChunkSectionLayer.TRANSLUCENT), vertexSorting);
                      if (indexBuffer == null) {
-                        return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                        return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                      } else {
                         boolean success = false;
 
                         while(!success) {
                            if (this.isCancelled.get()) {
                               indexBuffer.close();
-                              return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                              return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                            }
 
                            success = RenderSection.this.addSectionBuffersToUberBuffer(ChunkSectionLayer.TRANSLUCENT, this.compiledSectionMesh, (ByteBuffer)null, indexBuffer.byteBuffer());
@@ -594,11 +541,11 @@ public class SectionRenderDispatcher {
 
                         indexBuffer.close();
                         this.compiledSectionMesh.setTranslucencyPointOfView(translucencyPointOfView);
-                        return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.SUCCESSFUL;
+                        return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.SUCCESSFUL;
                      }
                   }
                } else {
-                  return SectionRenderDispatcher.RenderSection.CompileTask.SectionTaskResult.CANCELLED;
+                  return SectionRenderDispatcher.RenderSection.SectionTask.SectionTaskResult.CANCELLED;
                }
             }
          }
@@ -608,12 +555,12 @@ public class SectionRenderDispatcher {
          }
       }
 
-      public abstract class CompileTask {
+      public abstract class SectionTask {
          protected final AtomicBoolean isCancelled;
          protected final AtomicBoolean isCompleted;
-         protected final boolean isRecompile;
+         private final boolean isRecompile;
 
-         public CompileTask(final boolean isRecompile) {
+         public SectionTask(final boolean isRecompile) {
             Objects.requireNonNull(RenderSection.this);
             super();
             this.isCancelled = new AtomicBoolean(false);
@@ -624,8 +571,6 @@ public class SectionRenderDispatcher {
          public abstract SectionTaskResult doTask(final SectionBufferBuilderPack buffers);
 
          public abstract void cancel();
-
-         protected abstract String name();
 
          public boolean isRecompile() {
             return this.isRecompile;

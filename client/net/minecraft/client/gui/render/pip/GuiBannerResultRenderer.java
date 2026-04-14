@@ -24,7 +24,7 @@ public class GuiBannerResultRenderer extends PictureInPictureRenderer<GuiBannerR
    }
 
    protected void renderToTexture(final GuiBannerResultRenderState renderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       poseStack.translate(0.0F, 0.25F, 0.0F);
       submitNodeCollector.submitModel(renderState.flag(), 0.0F, poseStack, 15728880, OverlayTexture.NO_OVERLAY, -1, Sheets.BANNER_BASE, this.sprites, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
       BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, true, renderState.baseColor(), renderState.resultBannerPatterns(), (ModelFeatureRenderer.CrumblingOverlay)null);

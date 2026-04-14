@@ -6,6 +6,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -36,7 +37,7 @@ public class TraderLlama extends Llama {
    }
 
    protected @Nullable Llama makeNewLlama() {
-      TraderLlama baby = EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      TraderLlama baby = EntityTypes.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setPersistenceRequired();
       }
@@ -58,7 +59,7 @@ public class TraderLlama extends Llama {
       super.registerGoals();
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.targetSelector.addGoal(1, new TraderLlamaDefendWanderingTraderGoal(this));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Zombie.class, true, (target, level) -> !target.is(EntityType.ZOMBIFIED_PIGLIN)));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Zombie.class, true, (target, level) -> !target.is(EntityTypes.ZOMBIFIED_PIGLIN)));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, AbstractIllager.class, true));
    }
 

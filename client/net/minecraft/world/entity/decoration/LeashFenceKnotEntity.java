@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +35,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public LeashFenceKnotEntity(final Level level, final BlockPos pos) {
-      super(EntityType.LEASH_KNOT, level, pos);
+      super(EntityTypes.LEASH_KNOT, level, pos);
       this.setPos((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
    }
 

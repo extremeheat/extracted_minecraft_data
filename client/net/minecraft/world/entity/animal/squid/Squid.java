@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -93,7 +94,7 @@ public class Squid extends AgeableWaterCreature {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.SQUID.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.SQUID.create(level, EntitySpawnReason.BREEDING);
    }
 
    protected double getDefaultGravity() {

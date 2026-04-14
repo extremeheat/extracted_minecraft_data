@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.phys.Vec3;
@@ -23,7 +23,7 @@ public class LlamaFollowCaravanGoal extends Goal {
 
    public boolean canUse() {
       if (!this.llama.isLeashed() && !this.llama.inCaravan()) {
-         List<Entity> llamas = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (e) -> e.is(EntityType.LLAMA) || e.is(EntityType.TRADER_LLAMA));
+         List<Entity> llamas = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (e) -> e.is(EntityTypes.LLAMA) || e.is(EntityTypes.TRADER_LLAMA));
          Llama closest = null;
          double closestDistSquare = 1.7976931348623157E308;
 

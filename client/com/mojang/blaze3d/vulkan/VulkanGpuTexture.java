@@ -42,8 +42,8 @@ public class VulkanGpuTexture extends GpuTexture implements Destroyable {
          imageCreateInfo.flags(VulkanUtils.hasAnyBit(usage, 16) ? 16 : 0);
          VmaAllocationCreateInfo allocationCreateInfo = VmaAllocationCreateInfo.calloc(stack);
          allocationCreateInfo.usage(8);
-         LongBuffer imageHandlePtr = stack.mallocLong(1);
-         PointerBuffer allocationHandlePtr = stack.mallocPointer(1);
+         LongBuffer imageHandlePtr = stack.callocLong(1);
+         PointerBuffer allocationHandlePtr = stack.callocPointer(1);
          VulkanUtils.crashIfFailure(Vma.vmaCreateImage(device.vma(), imageCreateInfo, allocationCreateInfo, imageHandlePtr, allocationHandlePtr, (VmaAllocationInfo)null), "Failed to create image");
          this.vkImage = imageHandlePtr.get(0);
          this.vmaAllocation = allocationHandlePtr.get(0);

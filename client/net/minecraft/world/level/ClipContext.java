@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,7 +64,7 @@ public class ClipContext {
          } else {
             if (collisionContext instanceof EntityCollisionContext) {
                EntityCollisionContext entityCollisionContext = (EntityCollisionContext)collisionContext;
-               if (entityCollisionContext.getEntity() != null && entityCollisionContext.getEntity().is(EntityType.PLAYER)) {
+               if (entityCollisionContext.getEntity() != null && entityCollisionContext.getEntity().is(EntityTypes.PLAYER)) {
                   if (state.is(Blocks.END_GATEWAY) || state.is(Blocks.END_PORTAL)) {
                      return Shapes.block();
                   }

@@ -30,7 +30,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -86,7 +86,7 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected void dispenseFrom(final ServerLevel level, final BlockState state, final BlockPos pos) {
-      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, BlockEntityType.DISPENSER).orElse((Object)null);
+      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, BlockEntityTypes.DISPENSER).orElse((Object)null);
       if (blockEntity == null) {
          LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", pos);
       } else {

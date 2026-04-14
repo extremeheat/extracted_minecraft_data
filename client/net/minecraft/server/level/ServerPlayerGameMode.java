@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.SharedConstants;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;

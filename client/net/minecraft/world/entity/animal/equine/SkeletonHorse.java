@@ -16,6 +16,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -157,7 +158,7 @@ public class SkeletonHorse extends AbstractHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.SKELETON_HORSE.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.SKELETON_HORSE.create(level, EntitySpawnReason.BREEDING);
    }
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
@@ -173,6 +174,6 @@ public class SkeletonHorse extends AbstractHorse {
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.SKELETON_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.SKELETON_HORSE.getHeight() - 0.25F, 0.0F)).scale(0.7F);
+      BABY_DIMENSIONS = EntityTypes.SKELETON_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityTypes.SKELETON_HORSE.getHeight() - 0.25F, 0.0F)).scale(0.7F);
    }
 }

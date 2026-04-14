@@ -293,7 +293,7 @@ public abstract class PlayerList {
       }
 
       level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
-      player.getAdvancements().stopListening();
+      player.getAdvancements().clearTriggers();
       this.players.remove(player);
       this.server.getCustomBossEvents().onPlayerDisconnect(player);
       UUID uuid = player.getUUID();

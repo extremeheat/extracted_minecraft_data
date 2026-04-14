@@ -118,7 +118,7 @@ public class FireworkParticles {
 
       private boolean isFarAwayFromCamera() {
          Minecraft instance = Minecraft.getInstance();
-         return instance.gameRenderer.getMainCamera().position().distanceToSqr(this.x, this.y, this.z) >= 256.0;
+         return instance.gameRenderer.mainCamera().position().distanceToSqr(this.x, this.y, this.z) >= 256.0;
       }
 
       private void createParticle(final double x, final double y, final double z, final double xa, final double ya, final double za, final IntList rgbColors, final IntList fadeColors, final boolean trail, final boolean twinkle) {

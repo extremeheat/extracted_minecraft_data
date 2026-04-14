@@ -13,7 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -23,6 +23,7 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -86,7 +87,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    public void stepOn(final Level level, final BlockPos pos, final BlockState onState, final Entity entity) {
-      if (!level.isClientSide() && canActivate(onState) && !entity.is(EntityType.WARDEN)) {
+      if (!level.isClientSide() && canActivate(onState) && !entity.is(EntityTypes.WARDEN)) {
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (blockEntity instanceof SculkSensorBlockEntity) {
             SculkSensorBlockEntity sculkSensor = (SculkSensorBlockEntity)blockEntity;
@@ -137,7 +138,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return !level.isClientSide() ? createTickerHelper(type, BlockEntityType.SCULK_SENSOR, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
+      return !level.isClientSide() ? createTickerHelper(type, BlockEntityTypes.SCULK_SENSOR, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {

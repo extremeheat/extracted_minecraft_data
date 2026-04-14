@@ -30,8 +30,6 @@ public class ModelLayers {
    public static final ModelLayerLocation WALL_BANNER = register("wall_banner");
    public static final ModelLayerLocation WALL_BANNER_FLAG = register("wall_banner", "flag");
    public static final ModelLayerLocation BAT = register("bat");
-   public static final ModelLayerLocation BED_FOOT = register("bed_foot");
-   public static final ModelLayerLocation BED_HEAD = register("bed_head");
    public static final ModelLayerLocation BEE = register("bee");
    public static final ModelLayerLocation BEE_BABY = register("bee_baby");
    public static final ModelLayerLocation BEE_STINGER = register("bee_stinger");

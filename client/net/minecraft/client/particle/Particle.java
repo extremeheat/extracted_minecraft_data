@@ -3,9 +3,9 @@ package net.minecraft.client.particle;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -194,7 +194,7 @@ public abstract class Particle {
 
    protected int getLightCoords(final float a) {
       BlockPos pos = BlockPos.containing(this.x, this.y, this.z);
-      return this.level.hasChunkAt(pos) ? LevelRenderer.getLightCoords(this.level, pos) : 15728640;
+      return this.level.hasChunkAt(pos) ? LightCoordsUtil.getLightCoords(this.level, pos) : 15728640;
    }
 
    public boolean isAlive() {

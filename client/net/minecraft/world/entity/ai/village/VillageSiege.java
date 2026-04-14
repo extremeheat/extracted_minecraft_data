@@ -11,7 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -124,7 +124,7 @@ public class VillageSiege implements CustomSpawner {
          int z = pos.getZ() + random.nextInt(16) - 8;
          int y = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
          BlockPos offset = new BlockPos(x, y, z);
-         if (level.isVillage(offset) && Monster.checkMonsterSpawnRules(EntityType.ZOMBIE, level, EntitySpawnReason.EVENT, offset, random)) {
+         if (level.isVillage(offset) && Monster.checkMonsterSpawnRules(EntityTypes.ZOMBIE, level, EntitySpawnReason.EVENT, offset, random)) {
             return Vec3.atBottomCenterOf(offset);
          }
       }

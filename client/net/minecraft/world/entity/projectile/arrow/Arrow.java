@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,12 +28,12 @@ public class Arrow extends AbstractArrow {
    }
 
    public Arrow(final Level level, final double x, final double y, final double z, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
-      super(EntityType.ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
+      super(EntityTypes.ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
       this.updateColor();
    }
 
    public Arrow(final Level level, final LivingEntity owner, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
-      super(EntityType.ARROW, owner, level, pickupItemStack, firedFromWeapon);
+      super(EntityTypes.ARROW, owner, level, pickupItemStack, firedFromWeapon);
       this.updateColor();
    }
 

@@ -300,9 +300,12 @@ class GlDevice implements GpuDeviceBackend {
       } else {
          try {
             GlProgram compiled = GlProgram.link(vertexShader, fragmentShader, pipeline.getVertexFormat(), pipeline.getLocation().toString());
-            compiled.setupUniforms(pipeline.getUniforms(), pipeline.getSamplers());
+            compiled.setupBindGroupLayouts(pipeline.getBindGroupLayouts());
             this.debugLabels.applyLabel(compiled);
             return compiled;
+         } catch (IllegalArgumentException e) {
+            LOGGER.error("Couldn't compile program for pipeline {}: {}", pipeline.getLocation(), e.getMessage());
+            return GlProgram.INVALID_PROGRAM;
          } catch (ShaderManager.CompilationException e) {
             LOGGER.error("Couldn't compile program for pipeline {}: {}", pipeline.getLocation(), e);
             return GlProgram.INVALID_PROGRAM;

@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,7 +34,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public EyeOfEnder(final Level level, final double x, final double y, final double z) {
-      this(EntityType.EYE_OF_ENDER, level);
+      this(EntityTypes.EYE_OF_ENDER, level);
       this.setPos(x, y, z);
    }
 

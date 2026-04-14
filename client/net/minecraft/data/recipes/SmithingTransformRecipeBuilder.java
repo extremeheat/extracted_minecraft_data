@@ -1,7 +1,7 @@
 package net.minecraft.data.recipes;
 
 import java.util.Optional;
-import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;

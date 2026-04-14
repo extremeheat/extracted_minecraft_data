@@ -50,9 +50,9 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
       TrackingItemStackRenderState itemStackRenderState = guiItemRenderState.itemStackRenderState();
       boolean flat = !itemStackRenderState.usesBlockLight();
       if (flat) {
-         Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
+         Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       } else {
-         Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+         Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
       }
 
       itemStackRenderState.submit(poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);

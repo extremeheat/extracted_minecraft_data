@@ -1,5 +1,10 @@
 package net.minecraft.util;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndLightGetter;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
+
 public class LightCoordsUtil {
    public static final int FULL_BRIGHT = 15728880;
    public static final int FULL_SKY = 15728640;
@@ -90,5 +95,31 @@ public class LightCoordsUtil {
       int sky = (int)((float)smoothSky(coords1) * weight1 + (float)smoothSky(coords2) * weight2 + (float)smoothSky(coords3) * weight3 + (float)smoothSky(coords4) * weight4);
       int block = (int)((float)smoothBlock(coords1) * weight1 + (float)smoothBlock(coords2) * weight2 + (float)smoothBlock(coords3) * weight3 + (float)smoothBlock(coords4) * weight4);
       return smoothPack(block, sky);
+   }
+
+   public static int getLightCoords(final BlockAndLightGetter level, final BlockPos pos) {
+      return getLightCoords(LightCoordsUtil.BrightnessGetter.DEFAULT, level, level.getBlockState(pos), pos);
+   }
+
+   public static int getLightCoords(final BrightnessGetter brightnessGetter, final BlockAndLightGetter level, final BlockState state, final BlockPos pos) {
+      if (state.emissiveRendering()) {
+         return 15728880;
+      } else {
+         int packedBrightness = brightnessGetter.packedBrightness(level, pos);
+         int block = block(packedBrightness);
+         int blockSelfEmission = state.getLightEmission();
+         return block < blockSelfEmission ? withBlock(packedBrightness, blockSelfEmission) : packedBrightness;
+      }
+   }
+
+   @FunctionalInterface
+   public interface BrightnessGetter {
+      BrightnessGetter DEFAULT = (level, pos) -> {
+         int sky = level.getBrightness(LightLayer.SKY, pos);
+         int block = level.getBrightness(LightLayer.BLOCK, pos);
+         return LightCoordsUtil.pack(block, sky);
+      };
+
+      int packedBrightness(BlockAndLightGetter level, BlockPos pos);
    }
 }

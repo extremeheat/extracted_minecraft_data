@@ -338,7 +338,7 @@ public class ItemInHandRenderer {
          this.renderArmWithItem(player, frameInterp, xRot, InteractionHand.OFF_HAND, offHandAttack, this.offHandItem, offhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
       }
 
-      this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
+      this.minecraft.gameRenderer.featureRenderDispatcher().renderAllFeatures();
    }
 
    @VisibleForTesting

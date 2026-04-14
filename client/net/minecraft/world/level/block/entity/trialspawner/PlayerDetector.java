@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -26,7 +26,7 @@ public interface PlayerDetector {
    PlayerDetector INCLUDING_CREATIVE_PLAYERS = (level, selector, pos, requiredPlayerRange, requireLineOfSight) -> selector.getPlayers(level, (p) -> p.blockPosition().closerThan(pos, requiredPlayerRange) && !p.isSpectator()).stream().filter((player) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), player.getEyePosition())).map(Entity::getUUID).toList();
    PlayerDetector SHEEP = (level, selector, pos, requiredPlayerRange, requireLineOfSight) -> {
       AABB area = (new AABB(pos)).inflate(requiredPlayerRange);
-      return selector.getEntities(level, EntityType.SHEEP, area, LivingEntity::isAlive).stream().filter((entity) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), entity.getEyePosition())).map(Entity::getUUID).toList();
+      return selector.getEntities(level, EntityTypes.SHEEP, area, LivingEntity::isAlive).stream().filter((entity) -> !requireLineOfSight || inLineOfSight(level, pos.getCenter(), entity.getEyePosition())).map(Entity::getUUID).toList();
    };
 
    List<UUID> detect(final ServerLevel level, final EntitySelector selector, final BlockPos spawnerPos, final double requiredPlayerRange, final boolean requireLineOfSight);

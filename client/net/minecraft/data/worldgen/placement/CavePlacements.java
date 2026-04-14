@@ -31,8 +31,10 @@ public class CavePlacements {
    public static final ResourceKey<PlacedFeature> FOSSIL_UPPER = PlacementUtils.createKey("fossil_upper");
    public static final ResourceKey<PlacedFeature> FOSSIL_LOWER = PlacementUtils.createKey("fossil_lower");
    public static final ResourceKey<PlacedFeature> DRIPSTONE_CLUSTER = PlacementUtils.createKey("dripstone_cluster");
+   public static final ResourceKey<PlacedFeature> SULFUR_SPIKE_CLUSTER = PlacementUtils.createKey("sulfur_spike_cluster");
    public static final ResourceKey<PlacedFeature> LARGE_DRIPSTONE = PlacementUtils.createKey("large_dripstone");
    public static final ResourceKey<PlacedFeature> POINTED_DRIPSTONE = PlacementUtils.createKey("pointed_dripstone");
+   public static final ResourceKey<PlacedFeature> SULFUR_SPIKE = PlacementUtils.createKey("sulfur_spike");
    public static final ResourceKey<PlacedFeature> UNDERWATER_MAGMA = PlacementUtils.createKey("underwater_magma");
    public static final ResourceKey<PlacedFeature> GLOW_LICHEN = PlacementUtils.createKey("glow_lichen");
    public static final ResourceKey<PlacedFeature> ROOTED_AZALEA_TREE = PlacementUtils.createKey("rooted_azalea_tree");
@@ -58,8 +60,10 @@ public class CavePlacements {
       Holder<ConfiguredFeature<?, ?>> fossilCoal = configuredFeatures.getOrThrow(CaveFeatures.FOSSIL_COAL);
       Holder<ConfiguredFeature<?, ?>> fossilDiamonds = configuredFeatures.getOrThrow(CaveFeatures.FOSSIL_DIAMONDS);
       Holder<ConfiguredFeature<?, ?>> dripstoneCluster = configuredFeatures.getOrThrow(CaveFeatures.DRIPSTONE_CLUSTER);
+      Holder<ConfiguredFeature<?, ?>> sulfurSpikeCluster = configuredFeatures.getOrThrow(CaveFeatures.SULFUR_SPIKE_CLUSTER);
       Holder<ConfiguredFeature<?, ?>> largeDripstone = configuredFeatures.getOrThrow(CaveFeatures.LARGE_DRIPSTONE);
       Holder<ConfiguredFeature<?, ?>> pointedDripstone = configuredFeatures.getOrThrow(CaveFeatures.POINTED_DRIPSTONE);
+      Holder<ConfiguredFeature<?, ?>> sulfurSpike = configuredFeatures.getOrThrow(CaveFeatures.SULFUR_SPIKE);
       Holder<ConfiguredFeature<?, ?>> underwaterMagma = configuredFeatures.getOrThrow(CaveFeatures.UNDERWATER_MAGMA);
       Holder<ConfiguredFeature<?, ?>> glowLichen = configuredFeatures.getOrThrow(CaveFeatures.GLOW_LICHEN);
       Holder<ConfiguredFeature<?, ?>> rootedAzaleaTree = configuredFeatures.getOrThrow(CaveFeatures.ROOTED_AZALEA_TREE);
@@ -79,8 +83,10 @@ public class CavePlacements {
       PlacementUtils.register(context, FOSSIL_UPPER, fossilCoal, RarityFilter.onAverageOnceEvery(64), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.top()), BiomeFilter.biome());
       PlacementUtils.register(context, FOSSIL_LOWER, fossilDiamonds, RarityFilter.onAverageOnceEvery(64), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(-8)), BiomeFilter.biome());
       PlacementUtils.register(context, DRIPSTONE_CLUSTER, dripstoneCluster, CountPlacement.of(UniformInt.of(48, 96)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
+      PlacementUtils.register(context, SULFUR_SPIKE_CLUSTER, sulfurSpikeCluster, CountPlacement.of(UniformInt.of(48, 96)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, LARGE_DRIPSTONE, largeDripstone, CountPlacement.of(UniformInt.of(10, 48)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, POINTED_DRIPSTONE, pointedDripstone, CountPlacement.of(UniformInt.of(192, 256)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(UniformInt.of(1, 5)), RandomOffsetPlacement.of(ClampedNormalInt.of(0.0F, 3.0F, -10, 10), ClampedNormalInt.of(0.0F, 0.6F, -2, 2)), BiomeFilter.biome());
+      PlacementUtils.register(context, SULFUR_SPIKE, sulfurSpike, CountPlacement.of(UniformInt.of(192, 256)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(UniformInt.of(1, 5)), RandomOffsetPlacement.of(ClampedNormalInt.of(0.0F, 3.0F, -10, 10), ClampedNormalInt.of(0.0F, 0.6F, -2, 2)), BiomeFilter.biome());
       PlacementUtils.register(context, UNDERWATER_MAGMA, underwaterMagma, CountPlacement.of(UniformInt.of(44, 52)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, SurfaceRelativeThresholdFilter.of(Heightmap.Types.OCEAN_FLOOR_WG, -2147483648, -2), BiomeFilter.biome());
       PlacementUtils.register(context, GLOW_LICHEN, glowLichen, CountPlacement.of(UniformInt.of(104, 157)), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, InSquarePlacement.spread(), SurfaceRelativeThresholdFilter.of(Heightmap.Types.OCEAN_FLOOR_WG, -2147483648, -13), BiomeFilter.biome());
       PlacementUtils.register(context, ROOTED_AZALEA_TREE, rootedAzaleaTree, CountPlacement.of(UniformInt.of(1, 2)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.UP, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(-1)), BiomeFilter.biome());

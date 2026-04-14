@@ -5,6 +5,7 @@ import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,11 +23,11 @@ public class SpectralArrow extends AbstractArrow {
    }
 
    public SpectralArrow(final Level level, final LivingEntity owner, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
-      super(EntityType.SPECTRAL_ARROW, owner, level, pickupItemStack, firedFromWeapon);
+      super(EntityTypes.SPECTRAL_ARROW, owner, level, pickupItemStack, firedFromWeapon);
    }
 
    public SpectralArrow(final Level level, final double x, final double y, final double z, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
-      super(EntityType.SPECTRAL_ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
+      super(EntityTypes.SPECTRAL_ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
    }
 
    public void tick() {

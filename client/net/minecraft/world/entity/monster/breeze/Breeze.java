@@ -18,6 +18,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
@@ -175,7 +176,7 @@ public class Breeze extends Monster {
    }
 
    public ProjectileDeflection deflection(final Projectile projectile) {
-      if (!projectile.is(EntityType.BREEZE_WIND_CHARGE) && !projectile.is(EntityType.WIND_CHARGE)) {
+      if (!projectile.is(EntityTypes.BREEZE_WIND_CHARGE) && !projectile.is(EntityTypes.WIND_CHARGE)) {
          return this.is(EntityTypeTags.DEFLECTS_PROJECTILES) ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
       } else {
          return ProjectileDeflection.NONE;
@@ -214,7 +215,7 @@ public class Breeze extends Monster {
    }
 
    public boolean canAttack(final LivingEntity target) {
-      return (target.is(EntityType.PLAYER) || target.is(EntityType.IRON_GOLEM)) && super.canAttack(target);
+      return (target.is(EntityTypes.PLAYER) || target.is(EntityTypes.IRON_GOLEM)) && super.canAttack(target);
    }
 
    public int getMaxHeadYRot() {

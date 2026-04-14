@@ -2,7 +2,7 @@ package net.minecraft.world.item.slot;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
 
 public class FilteredSlotSource extends TransformedSlotSource {
    public static final MapCodec<FilteredSlotSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(ItemPredicate.CODEC.fieldOf("item_filter").forGetter((t) -> t.filter)).apply(i, FilteredSlotSource::new));

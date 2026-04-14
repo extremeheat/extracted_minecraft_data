@@ -7,7 +7,7 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -91,7 +91,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
                return false;
             }
 
-            WanderingTrader trader = EntityType.WANDERING_TRADER.spawn(level, spawnPosition, EntitySpawnReason.EVENT);
+            WanderingTrader trader = EntityTypes.WANDERING_TRADER.spawn(level, spawnPosition, EntitySpawnReason.EVENT);
             if (trader != null) {
                for(int i = 0; i < 2; ++i) {
                   this.tryToSpawnLlamaFor(level, trader, 4);
@@ -111,7 +111,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
    private void tryToSpawnLlamaFor(final ServerLevel level, final WanderingTrader trader, final int radius) {
       BlockPos spawnPosition = this.findSpawnPositionNear(level, trader.blockPosition(), radius);
       if (spawnPosition != null) {
-         TraderLlama llama = EntityType.TRADER_LLAMA.spawn(level, spawnPosition, EntitySpawnReason.EVENT);
+         TraderLlama llama = EntityTypes.TRADER_LLAMA.spawn(level, spawnPosition, EntitySpawnReason.EVENT);
          if (llama != null) {
             llama.setLeashedTo(trader, true);
          }
@@ -120,14 +120,14 @@ public class WanderingTraderSpawner implements CustomSpawner {
 
    private @Nullable BlockPos findSpawnPositionNear(final LevelReader level, final BlockPos referencePosition, final int radius) {
       BlockPos spawnPosition = null;
-      SpawnPlacementType wanderingTraderSpawnType = SpawnPlacements.getPlacementType(EntityType.WANDERING_TRADER);
+      SpawnPlacementType wanderingTraderSpawnType = SpawnPlacements.getPlacementType(EntityTypes.WANDERING_TRADER);
 
       for(int i = 0; i < 10; ++i) {
          int xPosition = referencePosition.getX() + this.random.nextInt(radius * 2) - radius;
          int zPosition = referencePosition.getZ() + this.random.nextInt(radius * 2) - radius;
-         int yPosition = level.getHeight(SpawnPlacements.getHeightmapType(EntityType.WANDERING_TRADER), xPosition, zPosition);
+         int yPosition = level.getHeight(SpawnPlacements.getHeightmapType(EntityTypes.WANDERING_TRADER), xPosition, zPosition);
          BlockPos spawnPos = new BlockPos(xPosition, yPosition, zPosition);
-         if (wanderingTraderSpawnType.isSpawnPositionOk(level, spawnPos, EntityType.WANDERING_TRADER)) {
+         if (wanderingTraderSpawnType.isSpawnPositionOk(level, spawnPos, EntityTypes.WANDERING_TRADER)) {
             spawnPosition = spawnPos;
             break;
          }

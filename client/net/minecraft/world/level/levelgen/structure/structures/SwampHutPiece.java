@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.monster.Witch;
@@ -89,7 +89,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             BlockPos pos = this.getWorldPos(2, 2, 5);
             if (chunkBB.isInside(pos)) {
                this.spawnedWitch = true;
-               Witch witch = EntityType.WITCH.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+               Witch witch = EntityTypes.WITCH.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
                if (witch != null) {
                   witch.setPersistenceRequired();
                   witch.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
@@ -108,7 +108,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          BlockPos pos = this.getWorldPos(2, 2, 5);
          if (chunkBB.isInside(pos)) {
             this.spawnedCat = true;
-            Cat cat = EntityType.CAT.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+            Cat cat = EntityTypes.CAT.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
             if (cat != null) {
                cat.setPersistenceRequired();
                cat.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);

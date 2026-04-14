@@ -45,7 +45,7 @@ public class LocatorBar implements ContextualBar {
          PartialTickSupplier partialTickSupplier = (entity) -> deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
          this.minecraft.player.connection.getWaypointManager().forEachWaypoint(cameraEntity, (waypoint) -> {
             if (!(Boolean)waypoint.id().left().map((uuid) -> uuid.equals(cameraEntity.getUUID())).orElse(false)) {
-               double angle = waypoint.yawAngleToCamera(level, this.minecraft.gameRenderer.getMainCamera(), partialTickSupplier);
+               double angle = waypoint.yawAngleToCamera(level, this.minecraft.gameRenderer.mainCamera(), partialTickSupplier);
                if (!(angle <= -60.0) && !(angle > 60.0)) {
                   int screenMiddle = Mth.ceil((float)(graphics.guiWidth() - 9) / 2.0F);
                   Waypoint.Icon icon = waypoint.icon();

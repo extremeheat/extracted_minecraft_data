@@ -16,7 +16,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.GameType;
@@ -196,6 +196,6 @@ public class PlayerSpawnFinder {
    }
 
    static {
-      PLAYER_DIMENSIONS = EntityType.PLAYER.getDimensions();
+      PLAYER_DIMENSIONS = EntityTypes.PLAYER.getDimensions();
    }
 }

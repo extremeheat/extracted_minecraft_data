@@ -4,6 +4,7 @@ import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -135,20 +136,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
 
    public void writeToBuffer(final GpuBufferSlice slice, final ByteBuffer data) {
       GlBuffer buffer = (GlBuffer)slice.buffer();
-      if (buffer.closed) {
-         throw new IllegalStateException("Buffer already closed");
-      } else if ((buffer.usage() & 8) == 0) {
-         throw new IllegalStateException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
-      } else {
-         int length = data.remaining();
-         if ((long)length > slice.length()) {
-            throw new IllegalArgumentException("Cannot write more data than the slice allows (attempting to write " + length + " bytes into a slice of length " + slice.length() + ")");
-         } else if (slice.length() + slice.offset() > buffer.size()) {
-            throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + length + " bytes at offset " + slice.offset() + " to " + buffer.size() + " size buffer)");
-         } else {
-            this.device.directStateAccess().bufferSubData(buffer.handle, slice.offset(), data, buffer.usage());
-         }
-      }
+      this.device.directStateAccess().bufferSubData(buffer.handle, slice.offset(), data, buffer.usage());
    }
 
    public GpuBuffer.MappedView mapBuffer(final GpuBufferSlice slice, final boolean read, final boolean write) {
@@ -383,7 +371,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
             throw new IllegalStateException("Pipeline contains invalid shader program");
          }
 
-         for(RenderPipeline.UniformDescription uniform : renderPass.pipeline.info().getUniforms()) {
+         for(BindGroupLayout.UniformDescription uniform : BindGroupLayout.flattenUniforms(renderPass.pipeline.info().getBindGroupLayouts())) {
             GpuBufferSlice value = (GpuBufferSlice)renderPass.uniforms.get(uniform.name());
             if (!dynamicUniforms.contains(uniform.name())) {
                if (value == null) {
@@ -404,6 +392,10 @@ class GlCommandEncoder implements CommandEncoderBackend {
                if (uniform.type() == UniformType.TEXEL_BUFFER) {
                   if (value.offset() != 0L || value.length() != value.buffer().size()) {
                      throw new IllegalStateException("Uniform texel buffers do not support a slice of a buffer, must be entire buffer");
+                  }
+
+                  if ((value.buffer().usage() & 256) == 0) {
+                     throw new IllegalStateException("Uniform texel buffer " + uniform.name() + " must have GpuBuffer.USAGE_UNIFORM_TEXEL_BUFFER");
                   }
 
                   if (uniform.gpuFormat() == null) {
@@ -450,7 +442,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
          this.lastProgram = glProgram;
       }
 
-      label203:
+      label207:
       for(Map.Entry<String, Uniform> entry : glProgram.getUniforms().entrySet()) {
          String name = (String)entry.getKey();
          boolean isDirty = renderPass.dirtyUniforms.contains(name);
@@ -482,7 +474,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                         GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
                         GL32.glBindBufferRange(35345, blockBinding, ((GlBuffer)bufferView.buffer()).handle, bufferView.offset(), bufferView.length());
                      }
-                     continue label203;
+                     continue label207;
                   }
 
                   var11 = 1;
@@ -541,7 +533,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                               GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
                               GL31.glTexBuffer(35882, GlConst.toGlInternalId(format), ((GlBuffer)bufferView.buffer()).handle);
                            }
-                           continue label203;
+                           continue label207;
                         }
                      }
                   }
@@ -574,7 +566,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                         int samplerIndex = var22;
                         GlRenderPass.TextureViewAndSampler viewAndSampler = (GlRenderPass.TextureViewAndSampler)renderPass.samplers.get(name);
                         if (viewAndSampler == null) {
-                           continue label203;
+                           continue label207;
                         }
 
                         GlTextureView textureView = viewAndSampler.view();
@@ -596,7 +588,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                         GL33C.glBindSampler(samplerIndex, viewAndSampler.sampler().getId());
                         GlStateManager._texParameter(target, 33084, textureView.baseMipLevel());
                         GlStateManager._texParameter(target, 33085, textureView.baseMipLevel() + textureView.mipLevels() - 1);
-                        continue label203;
+                        continue label207;
                      }
                   }
 

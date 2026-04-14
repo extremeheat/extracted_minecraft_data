@@ -33,7 +33,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
    }
 
    public SculkSensorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      this(BlockEntityType.SCULK_SENSOR, worldPosition, blockState);
+      this(BlockEntityTypes.SCULK_SENSOR, worldPosition, blockState);
    }
 
    public VibrationSystem.User createVibrationUser() {

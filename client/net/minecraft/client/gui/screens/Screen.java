@@ -480,7 +480,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void extractPanorama(final GuiGraphicsExtractor graphics, final float a) {
-      this.minecraft.gameRenderer.getPanorama().extractRenderState(graphics, this.width, this.height, this.panoramaShouldSpin());
+      this.minecraft.gameRenderer.panorama().extractRenderState(graphics, this.width, this.height, this.panoramaShouldSpin());
    }
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {

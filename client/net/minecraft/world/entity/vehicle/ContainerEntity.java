@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
 import java.util.Objects;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;

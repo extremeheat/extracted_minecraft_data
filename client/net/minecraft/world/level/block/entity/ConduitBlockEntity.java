@@ -49,7 +49,7 @@ public class ConduitBlockEntity extends BlockEntity {
    private long nextAmbientSoundActivation;
 
    public ConduitBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CONDUIT, worldPosition, blockState);
+      super(BlockEntityTypes.CONDUIT, worldPosition, blockState);
    }
 
    protected void loadAdditional(final ValueInput input) {

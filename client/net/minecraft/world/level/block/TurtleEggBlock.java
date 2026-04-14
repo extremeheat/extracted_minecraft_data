@@ -10,7 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.turtle.Turtle;
@@ -103,7 +103,7 @@ public class TurtleEggBlock extends Block {
 
             for(int i = 0; i < (Integer)state.getValue(EGGS); ++i) {
                level.levelEvent(2001, pos, Block.getId(state));
-               Turtle turtle = EntityType.TURTLE.create(level, EntitySpawnReason.BREEDING);
+               Turtle turtle = EntityTypes.TURTLE.create(level, EntitySpawnReason.BREEDING);
                if (turtle != null) {
                   turtle.setAge(-24000);
                   turtle.setHomePos(pos);

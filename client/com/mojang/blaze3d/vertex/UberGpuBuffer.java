@@ -64,7 +64,7 @@ public class UberGpuBuffer<T> implements AutoCloseable {
 
       boolean newHeapCreatedOrDestroyed = false;
 
-      try (Zone iterator = Profiler.get().zone("Upload staged allocations")) {
+      try (Zone iterator = Profiler.get().zone("uploadStagedAllocations")) {
          ObjectIterator var5 = this.stagedAllocations.entrySet().iterator();
 
          while(var5.hasNext()) {
@@ -83,7 +83,7 @@ public class UberGpuBuffer<T> implements AutoCloseable {
                   }
 
                   if (allocation == null) {
-                     try (Zone var25 = Profiler.get().zone("Create new heap")) {
+                     try (Zone var25 = Profiler.get().zone("createNewHeap")) {
                         assert allocationSize <= (long)this.heapSize;
 
                         String heapName = String.format(Locale.ROOT, "%s %d", this.name, this.nodes.size());

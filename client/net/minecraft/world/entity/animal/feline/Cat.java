@@ -29,6 +29,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -343,7 +344,7 @@ public class Cat extends TamableAnimal {
    }
 
    public @Nullable Cat getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Cat baby = EntityType.CAT.create(level, EntitySpawnReason.BREEDING);
+      Cat baby = EntityTypes.CAT.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Cat partnerCat) {
          if (this.random.nextBoolean()) {
             baby.setVariant(this.getVariant());

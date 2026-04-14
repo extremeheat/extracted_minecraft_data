@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
@@ -52,6 +52,6 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
    }
 
    private boolean useBabyOffset(final S state) {
-      return state.isBaby && state.entityType != EntityType.ARMOR_STAND;
+      return state.isBaby && state.entityType != EntityTypes.ARMOR_STAND;
    }
 }

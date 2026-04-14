@@ -32,6 +32,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -410,7 +411,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void duplicateAllay() {
-      Allay allay = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
+      Allay allay = EntityTypes.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
       if (allay != null) {
          allay.snapTo(this.position());
          allay.setPersistenceRequired();

@@ -25,7 +25,7 @@ public class GuiSignRenderer extends PictureInPictureRenderer<GuiSignRenderState
    }
 
    protected void renderToTexture(final GuiSignRenderState renderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       poseStack.translate(0.0F, -0.75F, 0.0F);
       SpriteId sprite = Sheets.getSignSprite(renderState.woodType());
       submitNodeCollector.submitModel(renderState.signModel(), Unit.INSTANCE, poseStack, 15728880, OverlayTexture.NO_OVERLAY, -1, sprite, this.sprites, 0, (ModelFeatureRenderer.CrumblingOverlay)null);

@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.PistonType;
@@ -48,7 +48,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private int deathTicks;
 
    public PistonMovingBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.PISTON, worldPosition, blockState);
+      super(BlockEntityTypes.PISTON, worldPosition, blockState);
       this.movedState = DEFAULT_BLOCK_STATE;
       this.extending = false;
       this.isSourcePiston = false;

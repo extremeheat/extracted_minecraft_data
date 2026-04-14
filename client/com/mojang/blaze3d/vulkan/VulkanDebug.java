@@ -80,7 +80,7 @@ public interface VulkanDebug {
 
          label43: {
             try {
-               LongBuffer pointer = stack.mallocLong(1);
+               LongBuffer pointer = stack.callocLong(1);
                VkDebugUtilsMessengerCreateInfoEXT createInfo = VkDebugUtilsMessengerCreateInfoEXT.calloc(stack).sType$Default().messageSeverity(this.severityBitmask).messageType(7).pfnUserCallback(this::onDebugMessage);
                int result = EXTDebugUtils.vkCreateDebugUtilsMessengerEXT(vkInstance, createInfo, (VkAllocationCallbacks)null, pointer);
                if (result != 0) {

@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -25,7 +25,7 @@ public class StopBeingAngryIfTargetDead {
                   }
 
                   return var10000;
-               }).filter(LivingEntity::isDeadOrDying).filter((angerTarget) -> !angerTarget.is(EntityType.PLAYER) || (Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)).ifPresent((angerTarget) -> angryAt.erase());
+               }).filter(LivingEntity::isDeadOrDying).filter((angerTarget) -> !angerTarget.is(EntityTypes.PLAYER) || (Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)).ifPresent((angerTarget) -> angryAt.erase());
                return true;
             })));
    }

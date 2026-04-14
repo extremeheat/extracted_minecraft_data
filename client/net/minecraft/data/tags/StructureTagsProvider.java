@@ -8,7 +8,7 @@ import net.minecraft.tags.StructureTags;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
-public class StructureTagsProvider extends KeyTagProvider<Structure> {
+public class StructureTagsProvider extends TagsProvider<Structure> {
    public StructureTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.STRUCTURE, lookupProvider);
    }

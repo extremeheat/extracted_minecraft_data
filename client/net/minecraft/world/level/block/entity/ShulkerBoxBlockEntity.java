@@ -50,14 +50,14 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    private final @Nullable DyeColor color;
 
    public ShulkerBoxBlockEntity(final @Nullable DyeColor color, final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SHULKER_BOX, worldPosition, blockState);
+      super(BlockEntityTypes.SHULKER_BOX, worldPosition, blockState);
       this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
       this.color = color;
    }
 
    public ShulkerBoxBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SHULKER_BOX, worldPosition, blockState);
+      super(BlockEntityTypes.SHULKER_BOX, worldPosition, blockState);
       this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
       Block var4 = blockState.getBlock();

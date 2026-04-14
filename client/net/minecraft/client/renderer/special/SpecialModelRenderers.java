@@ -14,7 +14,6 @@ public class SpecialModelRenderers {
    }
 
    public static void bootstrap() {
-      ID_MAPPER.put(Identifier.withDefaultNamespace("bed"), BedSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("bell"), BellSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("banner"), BannerSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("book"), BookSpecialRenderer.Unbaked.MAP_CODEC);

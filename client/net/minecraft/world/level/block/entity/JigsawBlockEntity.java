@@ -45,7 +45,7 @@ public class JigsawBlockEntity extends BlockEntity {
    private int selectionPriority;
 
    public JigsawBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.JIGSAW, worldPosition, blockState);
+      super(BlockEntityTypes.JIGSAW, worldPosition, blockState);
       this.name = EMPTY_ID;
       this.target = EMPTY_ID;
       this.pool = Pools.EMPTY;

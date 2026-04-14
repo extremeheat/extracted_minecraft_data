@@ -8,7 +8,7 @@ import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import net.minecraft.world.entity.decoration.painting.PaintingVariants;
 
-public class PaintingVariantTagsProvider extends KeyTagProvider<PaintingVariant> {
+public class PaintingVariantTagsProvider extends TagsProvider<PaintingVariant> {
    public PaintingVariantTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.PAINTING_VARIANT, lookupProvider);
    }

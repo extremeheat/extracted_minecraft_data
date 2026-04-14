@@ -6,7 +6,7 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
    private final int id;
    private final BlockPos pos;
    private int progress;
-   private int updatedRenderTick;
+   private long updatedRenderTick;
 
    public BlockDestructionProgress(final int id, final BlockPos pos) {
       super();
@@ -34,11 +34,11 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
       return this.progress;
    }
 
-   public void updateTick(final int tick) {
+   public void updateTick(final long tick) {
       this.updatedRenderTick = tick;
    }
 
-   public int getUpdatedRenderTick() {
+   public long getUpdatedRenderTick() {
       return this.updatedRenderTick;
    }
 

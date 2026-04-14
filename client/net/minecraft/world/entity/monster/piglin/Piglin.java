@@ -27,6 +27,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -362,7 +363,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    public boolean startRiding(Entity entityToRide, final boolean force, final boolean sendEventAndTriggers) {
-      if (this.isBaby() && entityToRide.is(EntityType.HOGLIN)) {
+      if (this.isBaby() && entityToRide.is(EntityTypes.HOGLIN)) {
          entityToRide = this.getTopPassenger(entityToRide, 3);
       }
 

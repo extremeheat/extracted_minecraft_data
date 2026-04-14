@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -388,7 +389,7 @@ public class Shulker extends AbstractGolem implements Enemy {
             this.teleportSomewhere();
          } else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
             Entity directEntity = source.getDirectEntity();
-            if (directEntity != null && directEntity.is(EntityType.SHULKER_BULLET)) {
+            if (directEntity != null && directEntity.is(EntityTypes.SHULKER_BULLET)) {
                this.hitByShulkerBullet();
             }
          }
@@ -405,10 +406,10 @@ public class Shulker extends AbstractGolem implements Enemy {
       Vec3 oldPosition = this.position();
       AABB oldAabb = this.getBoundingBox();
       if (!this.isClosed() && this.teleportSomewhere()) {
-         int shulkerCount = this.level().getEntities((EntityTypeTest)EntityType.SHULKER, oldAabb.inflate(8.0), Entity::isAlive).size();
+         int shulkerCount = this.level().getEntities((EntityTypeTest)EntityTypes.SHULKER, oldAabb.inflate(8.0), Entity::isAlive).size();
          float failureChance = (float)(shulkerCount - 1) / 5.0F;
          if (!(this.level().getRandom().nextFloat() < failureChance)) {
-            Shulker baby = EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
+            Shulker baby = EntityTypes.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
             if (baby != null) {
                baby.setVariant(this.getVariant());
                baby.snapTo(oldPosition);

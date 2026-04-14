@@ -142,7 +142,7 @@ public class MinecraftServerGui extends JComponent {
             this.print(chatArea, scrollPane, line);
          }
 
-      });
+      }, "Server log monitor");
       this.logAppenderThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       this.logAppenderThread.setDaemon(true);
       return panel;

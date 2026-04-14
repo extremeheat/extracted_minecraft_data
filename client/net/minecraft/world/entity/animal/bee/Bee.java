@@ -41,6 +41,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
@@ -83,7 +84,7 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -464,7 +465,7 @@ public class Bee extends Animal implements NeutralMob {
       if (this.hivePos == null) {
          return null;
       } else {
-         return this.isTooFarAway(this.hivePos) ? null : (BeehiveBlockEntity)this.level().getBlockEntity(this.hivePos, BlockEntityType.BEEHIVE).orElse((Object)null);
+         return this.isTooFarAway(this.hivePos) ? null : (BeehiveBlockEntity)this.level().getBlockEntity(this.hivePos, BlockEntityTypes.BEEHIVE).orElse((Object)null);
       }
    }
 
@@ -592,7 +593,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    public @Nullable Bee getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.BEE.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.BEE.create(level, EntitySpawnReason.BREEDING);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {

@@ -105,9 +105,9 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType));
    }
 
-   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final int outlineColor, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
       this.wasUsed = true;
-      this.customGeometrySubmits.add(poseStack, renderType, customGeometryRenderer);
+      this.customGeometrySubmits.add(poseStack, renderType, outlineColor, customGeometryRenderer);
    }
 
    public void submitParticleGroup(final SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer) {

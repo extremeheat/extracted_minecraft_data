@@ -92,7 +92,7 @@ import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -501,7 +501,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
             DifficultyInstance difficulty = this.getCurrentDifficultyAt(pos);
             boolean isTrap = (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && this.random.nextDouble() < (double)difficulty.getEffectiveDifficulty() * 0.01 && !this.getBlockState(pos.below()).is(BlockTags.LIGHTNING_RODS);
             if (isTrap) {
-               SkeletonHorse horse = EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
+               SkeletonHorse horse = EntityTypes.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
                if (horse != null) {
                   horse.setTrap(true);
                   horse.setAge(0);
@@ -510,7 +510,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                }
             }
 
-            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
+            LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
             if (bolt != null) {
                bolt.snapTo(Vec3.atBottomCenterOf(pos));
                bolt.setVisualOnly(isTrap);
@@ -890,7 +890,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public List<? extends EnderDragon> getDragons() {
-      return this.<EnderDragon>getEntities(EntityType.ENDER_DRAGON, LivingEntity::isAlive);
+      return this.<EnderDragon>getEntities(EntityTypes.ENDER_DRAGON, LivingEntity::isAlive);
    }
 
    public List<ServerPlayer> getPlayers(final Predicate<? super ServerPlayer> selector) {

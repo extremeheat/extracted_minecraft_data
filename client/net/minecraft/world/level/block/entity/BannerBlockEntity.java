@@ -31,7 +31,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    public BannerBlockEntity(final BlockPos worldPosition, final BlockState blockState, final DyeColor color) {
-      super(BlockEntityType.BANNER, worldPosition, blockState);
+      super(BlockEntityTypes.BANNER, worldPosition, blockState);
       this.patterns = BannerPatternLayers.EMPTY;
       this.baseColor = color;
    }

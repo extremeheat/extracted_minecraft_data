@@ -18,6 +18,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,11 +29,10 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementTree;
-import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.CriterionTrigger;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.resources.Identifier;
@@ -60,6 +60,7 @@ public class PlayerAdvancements {
    private @Nullable AdvancementHolder lastSelectedTab;
    private boolean isFirstPacket = true;
    private final Codec<Data> codec;
+   private final Map<CriterionTrigger<?>, Map<TriggerInstanceKey, ? extends CriterionTriggerInstance>> activeTriggers = new IdentityHashMap();
 
    public PlayerAdvancements(final DataFixer dataFixer, final PlayerList playerList, final ServerAdvancementManager manager, final Path playerSavePath, final ServerPlayer player) {
       super();
@@ -76,15 +77,12 @@ public class PlayerAdvancements {
       this.player = player;
    }
 
-   public void stopListening() {
-      for(CriterionTrigger<?> trigger : BuiltInRegistries.TRIGGER_TYPES) {
-         trigger.removePlayerListeners(this);
-      }
-
+   public void clearTriggers() {
+      this.activeTriggers.clear();
    }
 
    public void reload(final ServerAdvancementManager manager) {
-      this.stopListening();
+      this.clearTriggers();
       this.progress.clear();
       this.visible.clear();
       this.rootsToUpdate.clear();
@@ -259,15 +257,11 @@ public class PlayerAdvancements {
          for(Map.Entry<String, Criterion<?>> entry : holder.value().criteria().entrySet()) {
             CriterionProgress criterionProgress = advancementProgress.getCriterion((String)entry.getKey());
             if (criterionProgress != null && !criterionProgress.isDone()) {
-               this.registerListener(holder, (String)entry.getKey(), (Criterion)entry.getValue());
+               this.addListener((Criterion)entry.getValue(), new TriggerInstanceKey(holder, (String)entry.getKey()));
             }
          }
 
       }
-   }
-
-   private <T extends CriterionTriggerInstance> void registerListener(final AdvancementHolder holder, final String key, final Criterion<T> criterion) {
-      criterion.trigger().addPlayerListener(this, new CriterionTrigger.Listener(criterion.triggerInstance(), holder, key));
    }
 
    private void unregisterListeners(final AdvancementHolder holder) {
@@ -276,14 +270,10 @@ public class PlayerAdvancements {
       for(Map.Entry<String, Criterion<?>> entry : holder.value().criteria().entrySet()) {
          CriterionProgress criterionProgress = advancementProgress.getCriterion((String)entry.getKey());
          if (criterionProgress != null && (criterionProgress.isDone() || advancementProgress.isDone())) {
-            this.removeListener(holder, (String)entry.getKey(), (Criterion)entry.getValue());
+            this.removeListener(((Criterion)entry.getValue()).trigger(), new TriggerInstanceKey(holder, (String)entry.getKey()));
          }
       }
 
-   }
-
-   private <T extends CriterionTriggerInstance> void removeListener(final AdvancementHolder holder, final String key, final Criterion<T> criterion) {
-      criterion.trigger().removePlayerListener(this, new CriterionTrigger.Listener(criterion.triggerInstance(), holder, key));
    }
 
    public void flushDirty(final ServerPlayer player, final boolean showAdvancements) {
@@ -357,6 +347,35 @@ public class PlayerAdvancements {
          }
 
       });
+   }
+
+   private <T extends CriterionTriggerInstance> Map<TriggerInstanceKey, T> getOrCreateTriggerMapForType(final CriterionTrigger<T> type) {
+      return (Map)this.activeTriggers.computeIfAbsent(type, (var0) -> new HashMap());
+   }
+
+   private <T extends CriterionTriggerInstance> void addListener(final Criterion<T> typeAndInstance, final TriggerInstanceKey criterion) {
+      this.getOrCreateTriggerMapForType(typeAndInstance.trigger()).put(criterion, typeAndInstance.triggerInstance());
+   }
+
+   public <T extends CriterionTriggerInstance> @Nullable Map<TriggerInstanceKey, T> getTriggerMapForType(final CriterionTrigger<T> type) {
+      return (Map)this.activeTriggers.get(type);
+   }
+
+   private <T extends CriterionTriggerInstance> void removeListener(final CriterionTrigger<T> type, final TriggerInstanceKey criterion) {
+      Map<TriggerInstanceKey, T> map = this.getTriggerMapForType(type);
+      if (map != null) {
+         map.remove(criterion);
+         if (map.isEmpty()) {
+            this.activeTriggers.remove(type);
+         }
+      }
+
+   }
+
+   public static record TriggerInstanceKey(AdvancementHolder advancement, String criterion) {
+      public TriggerInstanceKey {
+         super();
+      }
    }
 
    private static record Data(Map<Identifier, AdvancementProgress> map) {

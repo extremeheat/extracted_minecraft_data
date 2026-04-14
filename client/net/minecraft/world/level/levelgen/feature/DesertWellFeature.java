@@ -8,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -108,7 +108,7 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
 
    private static void placeSusSand(final WorldGenLevel level, final BlockPos pos) {
       level.setBlock(pos, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 3);
-      level.getBlockEntity(pos, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((e) -> e.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, pos.asLong()));
+      level.getBlockEntity(pos, BlockEntityTypes.BRUSHABLE_BLOCK).ifPresent((e) -> e.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, pos.asLong()));
    }
 
    static {

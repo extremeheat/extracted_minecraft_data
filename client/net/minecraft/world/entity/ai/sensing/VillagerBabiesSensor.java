@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -28,7 +28,7 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
    }
 
    private boolean isVillagerBaby(final LivingEntity entity) {
-      return entity.is(EntityType.VILLAGER) && entity.isBaby();
+      return entity.is(EntityTypes.VILLAGER) && entity.isBaby();
    }
 
    private NearestVisibleLivingEntities getVisibleEntities(final LivingEntity myBody) {

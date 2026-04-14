@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -53,7 +54,7 @@ public class Mannequin extends Avatar {
    }
 
    protected Mannequin(final Level level) {
-      this(EntityType.MANNEQUIN, level);
+      this(EntityTypes.MANNEQUIN, level);
    }
 
    public static @Nullable Mannequin create(final EntityType<Mannequin> type, final Level level) {

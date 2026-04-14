@@ -12,6 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.monster.Endermite;
@@ -36,7 +37,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    public ThrownEnderpearl(final Level level, final LivingEntity mob, final ItemStack itemStack) {
-      super(EntityType.ENDER_PEARL, mob, level, itemStack);
+      super(EntityTypes.ENDER_PEARL, mob, level, itemStack);
    }
 
    protected Item getDefaultItem() {
@@ -104,7 +105,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                   ServerPlayer player = (ServerPlayer)owner;
                   if (player.connection.isAcceptingMessages()) {
                      if (this.random.nextFloat() < 0.05F && level.isSpawningMonsters()) {
-                        Endermite endermite = EntityType.ENDERMITE.create(level, EntitySpawnReason.TRIGGERED);
+                        Endermite endermite = EntityTypes.ENDERMITE.create(level, EntitySpawnReason.TRIGGERED);
                         if (endermite != null) {
                            endermite.snapTo(owner.getX(), owner.getY(), owner.getZ(), owner.getYRot(), owner.getXRot());
                            level.addFreshEntity(endermite);

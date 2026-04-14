@@ -45,7 +45,7 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
       long pipelineLayout;
       try {
          VkPipelineLayoutCreateInfo createInfo = VkPipelineLayoutCreateInfo.calloc(stack).sType$Default().pSetLayouts(stack.longs(layout.handle()));
-         LongBuffer pointer = stack.mallocLong(1);
+         LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkCreatePipelineLayout(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create pipeline for " + String.valueOf(pipeline.getLocation()));
          pipelineLayout = pointer.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 17, pipelineLayout, (Supplier)(() -> "Pipeline layout for " + String.valueOf(pipeline.getLocation())));
@@ -118,7 +118,7 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
          renderingInfo.pColorAttachmentFormats(stack.ints(37));
          renderingInfo.depthAttachmentFormat(126);
          VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(depthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).pNext(renderingInfo);
-         LongBuffer pointer = stack.mallocLong(1);
+         LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + String.valueOf(pipeline.getLocation()));
          long withDepthPipeline = pointer.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 19, withDepthPipeline, (Supplier)(() -> "Pipeline " + String.valueOf(pipeline.getLocation())));

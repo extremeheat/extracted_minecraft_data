@@ -18,11 +18,11 @@ public class Panorama {
       Minecraft minecraft = Minecraft.getInstance();
       if (shouldSpin) {
          float a = minecraft.getDeltaTracker().getRealtimeDeltaTicks();
-         float delta = (float)((double)a * minecraft.gameRenderer.getGameRenderState().optionsRenderState.panoramaSpeed);
+         float delta = (float)((double)a * minecraft.gameRenderer.gameRenderState().optionsRenderState.panoramaSpeed);
          this.spin = Mth.wrapDegrees(this.spin + delta * 0.1F);
       }
 
-      minecraft.gameRenderer.getGameRenderState().guiRenderState.panoramaRenderState = new PanoramaRenderState(-this.spin);
+      minecraft.gameRenderer.gameRenderState().guiRenderState.panoramaRenderState = new PanoramaRenderState(-this.spin);
       graphics.blit(RenderPipelines.GUI_TEXTURED, PANORAMA_OVERLAY, 0, 0, 0.0F, 0.0F, width, height, 16, 128, 16, 128);
    }
 }

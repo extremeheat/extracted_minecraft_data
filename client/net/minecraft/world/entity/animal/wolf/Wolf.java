@@ -35,6 +35,7 @@ import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
@@ -537,7 +538,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    public @Nullable Wolf getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Wolf baby = EntityType.WOLF.create(level, EntitySpawnReason.BREEDING);
+      Wolf baby = EntityTypes.WOLF.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Wolf partnerWolf) {
          if (this.random.nextBoolean()) {
             baby.setVariant(this.getVariant());
@@ -644,7 +645,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       DATA_ANGER_END_TIME = SynchedEntityData.<Long>defineId(Wolf.class, EntityDataSerializers.LONG);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<WolfSoundVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_SOUND_VARIANT);
-      PREY_SELECTOR = (target, level) -> target.is(EntityType.SHEEP) || target.is(EntityType.RABBIT) || target.is(EntityType.FOX);
+      PREY_SELECTOR = (target, level) -> target.is(EntityTypes.SHEEP) || target.is(EntityTypes.RABBIT) || target.is(EntityTypes.FOX);
       DEFAULT_COLLAR_COLOR = DyeColor.RED;
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }

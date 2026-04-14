@@ -8,7 +8,7 @@ public class DropperBlockEntity extends DispenserBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.dropper");
 
    public DropperBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.DROPPER, worldPosition, blockState);
+      super(BlockEntityTypes.DROPPER, worldPosition, blockState);
    }
 
    protected Component getDefaultName() {

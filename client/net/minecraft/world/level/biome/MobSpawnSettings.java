@@ -15,6 +15,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class MobSpawnSettings {
 
       public SpawnerData(EntityType<?> type, int minCount, int maxCount) {
          super();
-         type = type.getCategory() == MobCategory.MISC ? EntityType.PIG : type;
+         type = type.getCategory() == MobCategory.MISC ? EntityTypes.PIG : type;
          this.type = type;
          this.minCount = minCount;
          this.maxCount = maxCount;

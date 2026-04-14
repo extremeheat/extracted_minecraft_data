@@ -3,7 +3,7 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Objects;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -15,7 +15,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemInstance;
@@ -53,7 +53,7 @@ public class BrushableBlockEntity extends BlockEntity {
    private long lootTableSeed;
 
    public BrushableBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BRUSHABLE_BLOCK, worldPosition, blockState);
+      super(BlockEntityTypes.BRUSHABLE_BLOCK, worldPosition, blockState);
       this.item = ItemStack.EMPTY;
    }
 
@@ -133,13 +133,13 @@ public class BrushableBlockEntity extends BlockEntity {
    private void dropContent(final ServerLevel level, final LivingEntity user, final ItemStack brush) {
       this.unpackLootTable(level, user, brush);
       if (!this.item.isEmpty()) {
-         double size = (double)EntityType.ITEM.getWidth();
+         double size = (double)EntityTypes.ITEM.getWidth();
          double centerRange = 1.0 - size;
          double halfSize = size / 2.0;
          Direction dropDirection = (Direction)Objects.requireNonNullElse(this.hitDirection, Direction.UP);
          BlockPos dropPos = this.worldPosition.relative((Direction)dropDirection, 1);
          double xo = (double)dropPos.getX() + 0.5 * centerRange + halfSize;
-         double yo = (double)dropPos.getY() + 0.5 + (double)(EntityType.ITEM.getHeight() / 2.0F);
+         double yo = (double)dropPos.getY() + 0.5 + (double)(EntityTypes.ITEM.getHeight() / 2.0F);
          double zo = (double)dropPos.getZ() + 0.5 * centerRange + halfSize;
          ItemEntity entity = new ItemEntity(level, xo, yo, zo, this.item.split(level.getRandom().nextInt(21) + 10));
          entity.setDeltaMovement(Vec3.ZERO);

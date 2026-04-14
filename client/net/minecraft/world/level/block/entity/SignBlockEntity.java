@@ -45,7 +45,7 @@ public class SignBlockEntity extends BlockEntity {
    private boolean isWaxed;
 
    public SignBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      this(BlockEntityType.SIGN, worldPosition, blockState);
+      this(BlockEntityTypes.SIGN, worldPosition, blockState);
    }
 
    public SignBlockEntity(final BlockEntityType<? extends SignBlockEntity> type, final BlockPos worldPosition, final BlockState blockState) {

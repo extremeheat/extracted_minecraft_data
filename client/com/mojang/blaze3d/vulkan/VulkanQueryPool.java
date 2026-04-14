@@ -23,7 +23,7 @@ public class VulkanQueryPool implements GpuQueryPool, Destroyable {
          VkQueryPoolCreateInfo createInfo = VkQueryPoolCreateInfo.calloc(stack).sType$Default();
          createInfo.queryType(2);
          createInfo.queryCount(size);
-         LongBuffer pointer = stack.mallocLong(1);
+         LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkCreateQueryPool(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Cannot create query pool");
          this.vkQueryPool = pointer.get(0);
          VK12.vkResetQueryPool(device.vkDevice(), this.vkQueryPool, 0, size);
@@ -61,7 +61,7 @@ public class VulkanQueryPool implements GpuQueryPool, Destroyable {
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            LongBuffer values = stack.mallocLong(2 * count);
+            LongBuffer values = stack.callocLong(2 * count);
             VulkanUtils.crashIfFailure(VK12.vkGetQueryPoolResults(this.device.vkDevice(), this.vkQueryPool, index, count, values, 16L, 5), "Cannot fetch query results");
 
             for(int i = 0; i < count; ++i) {

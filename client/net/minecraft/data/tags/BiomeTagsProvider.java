@@ -11,7 +11,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 
-public class BiomeTagsProvider extends KeyTagProvider<Biome> {
+public class BiomeTagsProvider extends TagsProvider<Biome> {
    public BiomeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.BIOME, lookupProvider);
    }

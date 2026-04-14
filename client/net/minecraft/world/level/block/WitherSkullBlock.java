@@ -1,14 +1,14 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.item.ItemStack;
@@ -56,7 +56,7 @@ public class WitherSkullBlock extends SkullBlock {
          if (correctBlock && pos.getY() >= level.getMinY() && level.getDifficulty() != Difficulty.PEACEFUL) {
             BlockPattern.BlockPatternMatch match = getOrCreateWitherFull().find(level, pos);
             if (match != null) {
-               WitherBoss witherBoss = EntityType.WITHER.create(level, EntitySpawnReason.TRIGGERED);
+               WitherBoss witherBoss = EntityTypes.WITHER.create(level, EntitySpawnReason.TRIGGERED);
                if (witherBoss != null) {
                   CarvedPumpkinBlock.clearPatternBlocks(level, match);
                   BlockPos spawnPos = match.getBlock(1, 2, 0).getPos();

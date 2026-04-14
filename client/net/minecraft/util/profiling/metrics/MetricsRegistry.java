@@ -36,7 +36,7 @@ public class MetricsRegistry {
       private final List<MetricSampler> delegates;
 
       private AggregatedMetricSampler(final String name, final List<MetricSampler> delegates) {
-         super(name, ((MetricSampler)delegates.get(0)).getCategory(), () -> averageValueFromDelegates(delegates), () -> beforeTick(delegates), thresholdTest(delegates));
+         super(name, MetricSampler.SamplingPhase.END_TICK, ((MetricSampler)delegates.get(0)).getCategory(), () -> averageValueFromDelegates(delegates), () -> beforeTick(delegates), thresholdTest(delegates));
          this.delegates = delegates;
       }
 

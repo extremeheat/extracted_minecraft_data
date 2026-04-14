@@ -8,7 +8,7 @@ import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 
-public class PoiTypeTagsProvider extends KeyTagProvider<PoiType> {
+public class PoiTypeTagsProvider extends TagsProvider<PoiType> {
    public PoiTypeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
       super(output, Registries.POINT_OF_INTEREST_TYPE, lookupProvider);
    }

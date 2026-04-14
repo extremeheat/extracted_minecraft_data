@@ -67,6 +67,8 @@ public class ModelTemplates {
    public static final ModelTemplate TRAPDOOR_TOP;
    public static final ModelTemplate TRAPDOOR_BOTTOM;
    public static final ModelTemplate TRAPDOOR_OPEN;
+   public static final ModelTemplate BED_HEAD;
+   public static final ModelTemplate BED_FOOT;
    public static final ModelTemplate ORIENTABLE_TRAPDOOR_TOP;
    public static final ModelTemplate ORIENTABLE_TRAPDOOR_BOTTOM;
    public static final ModelTemplate ORIENTABLE_TRAPDOOR_OPEN;
@@ -165,7 +167,6 @@ public class ModelTemplates {
    public static final ModelTemplate TWO_LAYERED_ITEM;
    public static final ModelTemplate THREE_LAYERED_ITEM;
    public static final ModelTemplate SHULKER_BOX_INVENTORY;
-   public static final ModelTemplate BED_INVENTORY;
    public static final ModelTemplate CHEST_INVENTORY;
    public static final ModelTemplate BUNDLE_OPEN_FRONT_INVENTORY;
    public static final ModelTemplate BUNDLE_OPEN_BACK_INVENTORY;
@@ -269,6 +270,8 @@ public class ModelTemplates {
       TRAPDOOR_TOP = create("template_trapdoor_top", "_top", TextureSlot.TEXTURE);
       TRAPDOOR_BOTTOM = create("template_trapdoor_bottom", "_bottom", TextureSlot.TEXTURE);
       TRAPDOOR_OPEN = create("template_trapdoor_open", "_open", TextureSlot.TEXTURE);
+      BED_HEAD = create("bed_head", TextureSlot.UP, TextureSlot.EAST, TextureSlot.WEST);
+      BED_FOOT = create("bed_foot", TextureSlot.UP, TextureSlot.EAST, TextureSlot.WEST, TextureSlot.SOUTH);
       ORIENTABLE_TRAPDOOR_TOP = create("template_orientable_trapdoor_top", "_top", TextureSlot.TEXTURE);
       ORIENTABLE_TRAPDOOR_BOTTOM = create("template_orientable_trapdoor_bottom", "_bottom", TextureSlot.TEXTURE);
       ORIENTABLE_TRAPDOOR_OPEN = create("template_orientable_trapdoor_open", "_open", TextureSlot.TEXTURE);
@@ -367,7 +370,6 @@ public class ModelTemplates {
       TWO_LAYERED_ITEM = createItem("generated", TextureSlot.LAYER0, TextureSlot.LAYER1);
       THREE_LAYERED_ITEM = createItem("generated", TextureSlot.LAYER0, TextureSlot.LAYER1, TextureSlot.LAYER2);
       SHULKER_BOX_INVENTORY = createItem("template_shulker_box", TextureSlot.PARTICLE);
-      BED_INVENTORY = createItem("template_bed", TextureSlot.PARTICLE);
       CHEST_INVENTORY = createItem("template_chest", TextureSlot.PARTICLE);
       BUNDLE_OPEN_FRONT_INVENTORY = createItem("template_bundle_open_front", "_open_front", TextureSlot.LAYER0);
       BUNDLE_OPEN_BACK_INVENTORY = createItem("template_bundle_open_back", "_open_back", TextureSlot.LAYER0);

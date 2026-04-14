@@ -19,7 +19,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.raid.Raid;
@@ -68,7 +68,7 @@ public class RaidCommand {
 
    private static int spawnLeader(final CommandSourceStack source) {
       source.sendSuccess(() -> Component.literal("Spawned a raid captain"), false);
-      Raider raider = EntityType.PILLAGER.create(source.getLevel(), EntitySpawnReason.COMMAND);
+      Raider raider = EntityTypes.PILLAGER.create(source.getLevel(), EntitySpawnReason.COMMAND);
       if (raider == null) {
          source.sendFailure(Component.literal("Pillager failed to spawn"));
          return 0;

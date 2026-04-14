@@ -28,12 +28,12 @@ public enum ChunkSectionLayerGroup {
       Minecraft minecraft = Minecraft.getInstance();
       RenderTarget var10000;
       switch (this.ordinal()) {
-         case 1 -> var10000 = minecraft.levelRenderer.getTranslucentTarget();
-         default -> var10000 = minecraft.getMainRenderTarget();
+         case 1 -> var10000 = minecraft.levelRenderer.translucentTarget();
+         default -> var10000 = minecraft.gameRenderer.mainRenderTarget();
       }
 
       RenderTarget renderTarget = var10000;
-      return renderTarget != null ? renderTarget : minecraft.getMainRenderTarget();
+      return renderTarget != null ? renderTarget : minecraft.gameRenderer.mainRenderTarget();
    }
 
    // $FF: synthetic method

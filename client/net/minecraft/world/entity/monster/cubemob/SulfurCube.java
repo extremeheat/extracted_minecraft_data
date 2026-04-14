@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
@@ -40,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
@@ -61,6 +62,7 @@ import net.minecraft.world.item.component.SulfurCubeContent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -351,6 +353,13 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return SoundEvents.SULFUR_CUBE_EJECT;
    }
 
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      if (!this.hasBodyItem()) {
+         super.playStepSound(pos, blockState);
+      }
+
+   }
+
    protected @Nullable ParticleOptions getParticleType() {
       return ParticleTypes.SULFUR_CUBE_GOO;
    }
@@ -415,7 +424,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public @Nullable AbstractCubeMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      SulfurCube sulfurCube = EntityType.SULFUR_CUBE.create(level, EntitySpawnReason.BREEDING);
+      SulfurCube sulfurCube = EntityTypes.SULFUR_CUBE.create(level, EntitySpawnReason.BREEDING);
       if (sulfurCube != null) {
          sulfurCube.setSize(1, true);
       }
@@ -515,7 +524,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    private void setSulfurCubeContent(final SulfurCubeContent sulfurCubeContent) {
-      this.setItemSlot(EquipmentSlot.BODY, sulfurCubeContent.absorbedBlockItemStack().create());
+      this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, sulfurCubeContent.absorbedBlockItemStack().create());
    }
 
    public Vec3 getLeashOffset() {

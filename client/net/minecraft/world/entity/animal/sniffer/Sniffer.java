@@ -38,6 +38,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
@@ -385,7 +386,7 @@ public class Sniffer extends Animal {
    }
 
    public AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.SNIFFER.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.SNIFFER.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean canMate(final Animal partner) {
@@ -421,7 +422,7 @@ public class Sniffer extends Animal {
 
    static {
       BRAIN_PROVIDER = Brain.<Sniffer>provider(List.of(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS), List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.FOOD_TEMPTATIONS), (var0) -> SnifferAi.getActivities());
-      DIGGING_DIMENSIONS = EntityDimensions.scalable(EntityType.SNIFFER.getWidth(), EntityType.SNIFFER.getHeight() - 0.4F).withEyeHeight(0.81F);
+      DIGGING_DIMENSIONS = EntityDimensions.scalable(EntityTypes.SNIFFER.getWidth(), EntityTypes.SNIFFER.getHeight() - 0.4F).withEyeHeight(0.81F);
       DATA_STATE = SynchedEntityData.<State>defineId(Sniffer.class, EntityDataSerializers.SNIFFER_STATE);
       DATA_DROP_SEED_AT_TICK = SynchedEntityData.<Integer>defineId(Sniffer.class, EntityDataSerializers.INT);
    }

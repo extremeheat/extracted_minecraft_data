@@ -55,7 +55,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
@@ -99,7 +99,7 @@ public class TestCommand {
       stopTests();
       CommandSourceStack source = finder.source();
       ServerLevel level = source.getLevel();
-      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((pos) -> level.getBlockEntity(pos, BlockEntityType.TEST_INSTANCE_BLOCK).stream()).toList();
+      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((pos) -> level.getBlockEntity(pos, BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).toList();
 
       for(TestInstanceBlockEntity testInstanceBlockEntity : tests) {
          StructureUtils.clearSpaceForStructure(testInstanceBlockEntity.getTestBoundingBox(), level);

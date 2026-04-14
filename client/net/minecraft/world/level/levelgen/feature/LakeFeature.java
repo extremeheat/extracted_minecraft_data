@@ -3,13 +3,13 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
@@ -64,12 +64,17 @@ public class LakeFeature extends Feature<Configuration> {
                for(int yy = 0; yy < 8; ++yy) {
                   boolean check = !grid[(xx * 16 + zz) * 8 + yy] && (xx < 15 && grid[((xx + 1) * 16 + zz) * 8 + yy] || xx > 0 && grid[((xx - 1) * 16 + zz) * 8 + yy] || zz < 15 && grid[(xx * 16 + zz + 1) * 8 + yy] || zz > 0 && grid[(xx * 16 + (zz - 1)) * 8 + yy] || yy < 7 && grid[(xx * 16 + zz) * 8 + yy + 1] || yy > 0 && grid[(xx * 16 + zz) * 8 + (yy - 1)]);
                   if (check) {
-                     BlockState blockState = level.getBlockState(origin.offset(xx, yy, zz));
+                     BlockPos offsetPos = origin.offset(xx, yy, zz);
+                     BlockState blockState = level.getBlockState(offsetPos);
                      if (yy >= 4 && blockState.liquid()) {
                         return false;
                      }
 
-                     if (yy < 4 && !blockState.isSolid() && level.getBlockState(origin.offset(xx, yy, zz)) != fluid) {
+                     if (yy < 4 && !blockState.isSolid() && blockState != fluid) {
+                        return false;
+                     }
+
+                     if (!config.canPlaceFeature.test(level, offsetPos)) {
                         return false;
                      }
                   }
@@ -82,7 +87,7 @@ public class LakeFeature extends Feature<Configuration> {
                for(int yy = 0; yy < 8; ++yy) {
                   if (grid[(xx * 16 + zz) * 8 + yy]) {
                      BlockPos placePos = origin.offset(xx, yy, zz);
-                     if (this.canReplaceBlock(level.getBlockState(placePos))) {
+                     if (config.canReplaceWithAirOrFluid.test(level, placePos)) {
                         boolean placeAir = yy >= 4;
                         level.setBlock(placePos, placeAir ? AIR : fluid, 2);
                         if (placeAir) {
@@ -102,8 +107,9 @@ public class LakeFeature extends Feature<Configuration> {
                   for(int yy = 0; yy < 8; ++yy) {
                      boolean check = !grid[(xx * 16 + zz) * 8 + yy] && (xx < 15 && grid[((xx + 1) * 16 + zz) * 8 + yy] || xx > 0 && grid[((xx - 1) * 16 + zz) * 8 + yy] || zz < 15 && grid[(xx * 16 + zz + 1) * 8 + yy] || zz > 0 && grid[(xx * 16 + (zz - 1)) * 8 + yy] || yy < 7 && grid[(xx * 16 + zz) * 8 + yy + 1] || yy > 0 && grid[(xx * 16 + zz) * 8 + (yy - 1)]);
                      if (check && (yy < 4 || random.nextInt(2) != 0)) {
-                        BlockState blockState = level.getBlockState(origin.offset(xx, yy, zz));
-                        if (blockState.isSolid() && !blockState.is(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE)) {
+                        BlockPos offset = origin.offset(xx, yy, zz);
+                        BlockState blockState = level.getBlockState(offset);
+                        if (blockState.isSolid() && config.canReplaceWithBarrier.test(level, offset)) {
                            BlockPos barrierPos = origin.offset(xx, yy, zz);
                            level.setBlock(barrierPos, barrier, 2);
                            this.markAboveForPostProcessing(level, barrierPos);
@@ -119,7 +125,7 @@ public class LakeFeature extends Feature<Configuration> {
                for(int zz = 0; zz < 16; ++zz) {
                   int yy = 4;
                   BlockPos offset = origin.offset(xx, 4, zz);
-                  if (((Biome)level.getBiome(offset).value()).shouldFreeze(level, offset, false) && this.canReplaceBlock(level.getBlockState(offset))) {
+                  if (((Biome)level.getBiome(offset).value()).shouldFreeze(level, offset, false) && config.canReplaceWithAirOrFluid.test(level, offset)) {
                      level.setBlock(offset, Blocks.ICE.defaultBlockState(), 2);
                   }
                }
@@ -130,16 +136,12 @@ public class LakeFeature extends Feature<Configuration> {
       }
    }
 
-   private boolean canReplaceBlock(final BlockState state) {
-      return !state.is(BlockTags.FEATURES_CANNOT_REPLACE);
-   }
-
    static {
       AIR = Blocks.CAVE_AIR.defaultBlockState();
    }
 
-   public static record Configuration(BlockStateProvider fluid, BlockStateProvider barrier) implements FeatureConfiguration {
-      public static final Codec<Configuration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(Configuration::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(Configuration::barrier)).apply(i, Configuration::new));
+   public static record Configuration(BlockStateProvider fluid, BlockStateProvider barrier, BlockPredicate canPlaceFeature, BlockPredicate canReplaceWithAirOrFluid, BlockPredicate canReplaceWithBarrier) implements FeatureConfiguration {
+      public static final Codec<Configuration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(Configuration::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(Configuration::barrier), BlockPredicate.CODEC.fieldOf("can_place_feature").forGetter(Configuration::canPlaceFeature), BlockPredicate.CODEC.fieldOf("can_replace_with_air_or_fluid").forGetter(Configuration::canReplaceWithAirOrFluid), BlockPredicate.CODEC.fieldOf("can_replace_with_barrier").forGetter(Configuration::canReplaceWithBarrier)).apply(i, Configuration::new));
 
       public Configuration {
          super();

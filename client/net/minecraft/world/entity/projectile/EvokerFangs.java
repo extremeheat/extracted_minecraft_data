@@ -8,6 +8,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -34,7 +35,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    }
 
    public EvokerFangs(final Level level, final double x, final double y, final double z, final float rotaionRadians, final int warmupDelayTicks, final LivingEntity owner) {
-      this(EntityType.EVOKER_FANGS, level);
+      this(EntityTypes.EVOKER_FANGS, level);
       this.warmupDelayTicks = warmupDelayTicks;
       this.setOwner(owner);
       this.setYRot(rotaionRadians * 57.295776F);

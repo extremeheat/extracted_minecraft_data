@@ -8,6 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -24,7 +25,7 @@ public class LlamaSpit extends Projectile {
    }
 
    public LlamaSpit(final Level level, final Llama owner) {
-      this(EntityType.LLAMA_SPIT, level);
+      this(EntityTypes.LLAMA_SPIT, level);
       this.setOwner(owner);
       this.setPos(owner.getX() - (double)(owner.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(owner.yBodyRot * 0.017453292F)), owner.getEyeY() - 0.10000000149011612, owner.getZ() + (double)(owner.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(owner.yBodyRot * 0.017453292F)));
    }

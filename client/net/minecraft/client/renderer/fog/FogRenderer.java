@@ -148,7 +148,7 @@ public class FogRenderer implements AutoCloseable {
                if (entity instanceof LivingEntity) {
                   LivingEntity livingEntity = (LivingEntity)entity;
                   if (livingEntity.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity.hasEffect(MobEffects.DARKNESS)) {
-                     brightenFactor = GameRenderer.getNightVisionScale(livingEntity, partialTicks);
+                     brightenFactor = GameRenderer.nightVisionScale(livingEntity, partialTicks);
                      break label57;
                   }
                }

@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -882,7 +882,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       if (targetingEntity != null) {
          ItemStack itemStack = this.getItemBySlot(EquipmentSlot.HEAD);
-         if (targetingEntity.is(EntityType.SKELETON) && itemStack.is(Items.SKELETON_SKULL) || targetingEntity.is(EntityType.ZOMBIE) && itemStack.is(Items.ZOMBIE_HEAD) || targetingEntity.is(EntityType.PIGLIN) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityType.PIGLIN_BRUTE) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityType.CREEPER) && itemStack.is(Items.CREEPER_HEAD)) {
+         if (targetingEntity.is(EntityTypes.SKELETON) && itemStack.is(Items.SKELETON_SKULL) || targetingEntity.is(EntityTypes.ZOMBIE) && itemStack.is(Items.ZOMBIE_HEAD) || targetingEntity.is(EntityTypes.PIGLIN) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityTypes.PIGLIN_BRUTE) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityTypes.CREEPER) && itemStack.is(Items.CREEPER_HEAD)) {
             visibilityPercent *= 0.5;
          }
       }
@@ -2610,7 +2610,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private float getFrictionInfluencedSpeed(final float blockFriction) {
-      return this.onGround() ? this.getSpeed() * (0.21600002F / (blockFriction * blockFriction * blockFriction)) : this.getFlyingSpeed();
+      if (this.onGround()) {
+         return (double)blockFriction > 0.6 ? this.getSpeed() * (0.21600002F / (blockFriction * blockFriction * blockFriction)) : this.getSpeed();
+      } else {
+         return this.getFlyingSpeed();
+      }
    }
 
    protected float getFlyingSpeed() {
@@ -2939,7 +2943,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       double dx = movement.x;
       double dy = movement.y;
       double dz = movement.z;
-      if (this.is(EntityType.PLAYER)) {
+      if (this.is(EntityTypes.PLAYER)) {
          if (movement.horizontalDistanceSqr() < 9.0E-6) {
             dx = 0.0;
             dz = 0.0;

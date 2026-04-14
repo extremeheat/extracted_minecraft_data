@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleOptions;
@@ -159,11 +159,8 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
-      if (!this.level().isClientSide()) {
-         MerchantOffers offers = this.getOffers();
-         if (!offers.isEmpty()) {
-            output.store("Offers", MerchantOffers.CODEC, offers);
-         }
+      if (!this.level().isClientSide() && this.offers != null) {
+         output.store("Offers", MerchantOffers.CODEC, this.offers);
       }
 
       this.writeInventoryToTag(output);

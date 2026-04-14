@@ -162,7 +162,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          }
       }
 
-      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+      Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
    }
 
    private boolean isScrollBarActive() {

@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -45,7 +46,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Ravager extends Raider {
    private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (entity) -> !(entity instanceof Ravager) && entity.isAlive();
-   private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (entity) -> ROAR_TARGET_WITH_GRIEFING.test(entity) && !entity.is(EntityType.ARMOR_STAND);
+   private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (entity) -> ROAR_TARGET_WITH_GRIEFING.test(entity) && !entity.is(EntityTypes.ARMOR_STAND);
    private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (e) -> !(e instanceof Ravager) && e.isAlive() && e.isLocalInstanceAuthoritative();
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;

@@ -55,7 +55,7 @@ public class CommandBlockEntity extends BlockEntity {
    };
 
    public CommandBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.COMMAND_BLOCK, worldPosition, blockState);
+      super(BlockEntityTypes.COMMAND_BLOCK, worldPosition, blockState);
    }
 
    protected void saveAdditional(final ValueOutput output) {

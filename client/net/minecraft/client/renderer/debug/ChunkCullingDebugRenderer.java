@@ -31,8 +31,8 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
       boolean sectionPath = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_PATHS);
       boolean sectionVisibility = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
       if (sectionPath || sectionVisibility) {
-         SectionOcclusionGraph sectionOcclusionGraph = levelRenderer.getSectionOcclusionGraph();
-         ObjectListIterator var14 = levelRenderer.getVisibleSections().iterator();
+         SectionOcclusionGraph sectionOcclusionGraph = levelRenderer.sectionOcclusionGraph();
+         ObjectListIterator var14 = levelRenderer.visibleSections().iterator();
 
          while(var14.hasNext()) {
             SectionRenderDispatcher.RenderSection section = (SectionRenderDispatcher.RenderSection)var14.next();
@@ -73,7 +73,7 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
          }
       }
 
-      Frustum capturedFrustum = this.minecraft.gameRenderer.getMainCamera().getCapturedFrustum();
+      Frustum capturedFrustum = this.minecraft.gameRenderer.mainCamera().getCapturedFrustum();
       if (capturedFrustum != null) {
          Vec3 offset = new Vec3(capturedFrustum.getCamX(), capturedFrustum.getCamY(), capturedFrustum.getCamZ());
          Vector4f[] frustumPoints = capturedFrustum.getFrustumPoints();

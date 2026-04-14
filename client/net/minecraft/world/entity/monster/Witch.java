@@ -16,6 +16,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -58,7 +59,7 @@ public class Witch extends Raider implements RangedAttackMob {
 
    protected void registerGoals() {
       super.registerGoals();
-      this.healRaidersGoal = new NearestHealableRaiderTargetGoal<Raider>(this, Raider.class, true, (target, level) -> this.hasActiveRaid() && !target.is(EntityType.WITCH));
+      this.healRaidersGoal = new NearestHealableRaiderTargetGoal<Raider>(this, Raider.class, true, (target, level) -> this.hasActiveRaid() && !target.is(EntityTypes.WITCH));
       this.attackPlayersGoal = new NearestAttackableWitchTargetGoal<Player>(this, Player.class, 10, true, false, (TargetingConditions.Selector)null);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));

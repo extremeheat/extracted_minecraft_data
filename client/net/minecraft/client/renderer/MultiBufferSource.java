@@ -1,107 +1,107 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SequencedMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SequencedSet;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 
 public interface MultiBufferSource {
-   static BufferSource immediate(final ByteBufferBuilder buffer) {
-      return immediateWithBuffers(Object2ObjectSortedMaps.emptyMap(), buffer);
-   }
-
-   static BufferSource immediateWithBuffers(final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers, final ByteBufferBuilder sharedBuffer) {
-      return new BufferSource(sharedBuffer, fixedBuffers);
+   static BufferSource create(final int initialBufferSize, final SequencedSet<RenderType> fixedTypes) {
+      return new BufferSource(initialBufferSize, fixedTypes);
    }
 
    VertexConsumer getBuffer(final RenderType renderType);
 
-   public static class BufferSource implements MultiBufferSource {
-      protected final ByteBufferBuilder sharedBuffer;
-      protected final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
-      protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap();
-      protected @Nullable RenderType lastSharedType;
+   public static class BufferSource implements MultiBufferSource, AutoCloseable {
+      private static final int NO_FIXED_DRAW = -1;
+      private final StagedVertexBuffer stagedBuffer;
+      private final SequencedSet<RenderType> fixedTypes;
+      private final List<StagedVertexBuffer.Draw> draws = new ArrayList();
+      private final List<RenderType> drawTypes = new ArrayList();
+      private final Reference2IntMap<RenderType> fixedDraws = new Reference2IntOpenHashMap();
 
-      protected BufferSource(final ByteBufferBuilder sharedBuffer, final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+      protected BufferSource(final int initialBufferSize, final SequencedSet<RenderType> fixedTypes) {
          super();
-         this.sharedBuffer = sharedBuffer;
-         this.fixedBuffers = fixedBuffers;
+         this.stagedBuffer = new StagedVertexBuffer(() -> "MultiBufferSource", initialBufferSize);
+         this.fixedTypes = fixedTypes;
       }
 
       public VertexConsumer getBuffer(final RenderType renderType) {
-         BufferBuilder builder = (BufferBuilder)this.startedBuilders.get(renderType);
-         if (builder != null && !renderType.canConsolidateConsecutiveGeometry()) {
-            this.endBatch(renderType, builder);
-            builder = null;
-         }
-
-         if (builder != null) {
-            return builder;
+         if (!this.drawTypes.isEmpty() && this.drawTypes.getLast() == renderType && renderType.canConsolidateConsecutiveGeometry()) {
+            return this.stagedBuffer.getVertexBuilder((StagedVertexBuffer.Draw)this.draws.getLast());
          } else {
-            ByteBufferBuilder fixedBuffer = (ByteBufferBuilder)this.fixedBuffers.get(renderType);
-            if (fixedBuffer != null) {
-               builder = new BufferBuilder(fixedBuffer, renderType.mode(), renderType.format());
+            int fixedDrawIndex = this.fixedDraws.getOrDefault(renderType, -1);
+            StagedVertexBuffer.Draw draw;
+            if (fixedDrawIndex != -1) {
+               draw = (StagedVertexBuffer.Draw)this.draws.get(fixedDrawIndex);
             } else {
-               if (this.lastSharedType != null) {
-                  this.endBatch(this.lastSharedType);
+               draw = this.appendDraw(renderType);
+            }
+
+            return this.stagedBuffer.getVertexBuilder(draw);
+         }
+      }
+
+      private StagedVertexBuffer.Draw appendDraw(final RenderType renderType) {
+         StagedVertexBuffer.Draw draw = this.stagedBuffer.appendDraw(renderType.format(), renderType.mode(), renderType.sortOnUpload() ? RenderSystem.getProjectionType().vertexSorting() : null);
+         this.draws.add(draw);
+         this.drawTypes.add(renderType);
+         if (this.fixedTypes.contains(renderType)) {
+            this.fixedDraws.put(renderType, this.draws.size() - 1);
+         }
+
+         return draw;
+      }
+
+      public void uploadAndDraw() {
+         if (!this.draws.isEmpty()) {
+            ProfilerFiller profiler = Profiler.get();
+            profiler.push("uploadMultiBufferSource");
+            this.stagedBuffer.upload();
+            profiler.popPush("drawMultiBufferSource");
+
+            for(int i = 0; i < this.draws.size(); ++i) {
+               StagedVertexBuffer.Draw draw = (StagedVertexBuffer.Draw)this.draws.get(i);
+               RenderType type = (RenderType)this.drawTypes.get(i);
+               if (!this.fixedDraws.containsKey(type)) {
+                  StagedVertexBuffer.ExecuteInfo info = this.stagedBuffer.getExecuteInfo(draw);
+                  if (info != null) {
+                     type.drawFromBuffer(info);
+                  }
                }
-
-               builder = new BufferBuilder(this.sharedBuffer, renderType.mode(), renderType.format());
-               this.lastSharedType = renderType;
             }
 
-            this.startedBuilders.put(renderType, builder);
-            return builder;
-         }
-      }
-
-      public void endLastBatch() {
-         if (this.lastSharedType != null) {
-            this.endBatch(this.lastSharedType);
-            this.lastSharedType = null;
-         }
-
-      }
-
-      public void endBatch() {
-         this.endLastBatch();
-
-         for(RenderType renderType : this.fixedBuffers.keySet()) {
-            this.endBatch(renderType);
-         }
-
-      }
-
-      public void endBatch(final RenderType type) {
-         BufferBuilder builder = (BufferBuilder)this.startedBuilders.remove(type);
-         if (builder != null) {
-            this.endBatch(type, builder);
-         }
-
-      }
-
-      private void endBatch(final RenderType type, final BufferBuilder builder) {
-         MeshData mesh = builder.build();
-         if (mesh != null) {
-            if (type.sortOnUpload()) {
-               ByteBufferBuilder buffer = (ByteBufferBuilder)this.fixedBuffers.getOrDefault(type, this.sharedBuffer);
-               mesh.sortQuads(buffer, RenderSystem.getProjectionType().vertexSorting());
+            for(RenderType fixedType : this.fixedTypes) {
+               int index = this.fixedDraws.getOrDefault(fixedType, -1);
+               if (index != -1) {
+                  StagedVertexBuffer.Draw draw = (StagedVertexBuffer.Draw)this.draws.get(index);
+                  StagedVertexBuffer.ExecuteInfo info = this.stagedBuffer.getExecuteInfo(draw);
+                  if (info != null) {
+                     fixedType.drawFromBuffer(info);
+                  }
+               }
             }
 
-            type.draw(mesh);
+            this.stagedBuffer.endDraw();
+            profiler.pop();
+            this.draws.clear();
+            this.drawTypes.clear();
+            this.fixedDraws.clear();
          }
+      }
 
-         if (type.equals(this.lastSharedType)) {
-            this.lastSharedType = null;
-         }
+      public void endFrame() {
+         this.stagedBuffer.endFrame();
+      }
 
+      public void close() {
+         this.stagedBuffer.close();
       }
    }
 }

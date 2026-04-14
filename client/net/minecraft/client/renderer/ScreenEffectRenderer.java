@@ -94,7 +94,7 @@ public class ScreenEffectRenderer {
          float tc = scale * ts;
          float smoothScale = 10.25F * tc * ts - 24.95F * ts * ts + 25.5F * tc - 13.8F * ts + 4.0F * scale;
          float piScale = smoothScale * 3.1415927F;
-         WindowRenderState windowState = this.minecraft.gameRenderer.getGameRenderState().windowRenderState;
+         WindowRenderState windowState = this.minecraft.gameRenderer.gameRenderState().windowRenderState;
          float aspectRatio = (float)windowState.width / (float)windowState.height;
          float offX = this.itemActivationOffX * 0.3F * aspectRatio;
          float offY = this.itemActivationOffY * 0.3F;
@@ -105,7 +105,7 @@ public class ScreenEffectRenderer {
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin((double)piScale))));
          poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos((double)(scale * 8.0F))));
          poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos((double)(scale * 8.0F))));
-         this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+         this.minecraft.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
          ItemStackRenderState itemState = new ItemStackRenderState();
          this.minecraft.getItemModelResolver().updateForTopItem(itemState, this.itemActivationItem, ItemDisplayContext.FIXED, this.minecraft.level, (ItemOwner)null, 0);
          itemState.submit(poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);

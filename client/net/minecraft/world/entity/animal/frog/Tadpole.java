@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -217,7 +218,7 @@ public class Tadpole extends AbstractFish {
    private void ageUp() {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel serverLevel) {
-         this.convertTo(EntityType.FROG, ConversionParams.single(this, false, false), (frog) -> {
+         this.convertTo(EntityTypes.FROG, ConversionParams.single(this, false, false), (frog) -> {
             frog.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(frog.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
             frog.setPersistenceRequired();
             frog.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));

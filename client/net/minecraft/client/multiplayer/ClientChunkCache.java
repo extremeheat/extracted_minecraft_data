@@ -165,11 +165,21 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    public void onLightUpdate(final LightLayer layer, final SectionPos pos) {
-      Minecraft.getInstance().levelRenderer.setSectionDirty(pos.x(), pos.y(), pos.z());
+      Minecraft.getInstance().levelExtractor.setSectionDirty(pos.x(), pos.y(), pos.z());
    }
 
-   public LongOpenHashSet getLoadedEmptySections() {
-      return this.storage.loadedEmptySections;
+   public LongOpenHashSet addedEmptySections() {
+      return this.storage.addedEmptySections[this.storage.updatingEmptySectionsIndex];
+   }
+
+   public LongOpenHashSet removedEmptySections() {
+      return this.storage.removedEmptySections[this.storage.updatingEmptySectionsIndex];
+   }
+
+   public void flipEmptySectionUpdates() {
+      this.storage.updatingEmptySectionsIndex = (this.storage.updatingEmptySectionsIndex + 1) % 2;
+      this.storage.addedEmptySections[this.storage.updatingEmptySectionsIndex].clear();
+      this.storage.removedEmptySections[this.storage.updatingEmptySectionsIndex].clear();
    }
 
    public void onSectionEmptinessChanged(final int sectionX, final int sectionY, final int sectionZ, final boolean empty) {
@@ -177,8 +187,11 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    private final class Storage {
+      private static final int EMPTY_SECTION_UPDATE_BUFFERS = 2;
       private final AtomicReferenceArray<@Nullable LevelChunk> chunks;
-      private final LongOpenHashSet loadedEmptySections;
+      private final LongOpenHashSet[] addedEmptySections;
+      private final LongOpenHashSet[] removedEmptySections;
+      private int updatingEmptySectionsIndex;
       private final int chunkRadius;
       private final int viewRange;
       private volatile int viewCenterX;
@@ -188,10 +201,17 @@ public class ClientChunkCache extends ChunkSource {
       private Storage(final int chunkRadius) {
          Objects.requireNonNull(ClientChunkCache.this);
          super();
-         this.loadedEmptySections = new LongOpenHashSet();
+         this.addedEmptySections = new LongOpenHashSet[2];
+         this.removedEmptySections = new LongOpenHashSet[2];
          this.chunkRadius = chunkRadius;
          this.viewRange = chunkRadius * 2 + 1;
          this.chunks = new AtomicReferenceArray(this.viewRange * this.viewRange);
+
+         for(int i = 0; i < 2; ++i) {
+            this.addedEmptySections[i] = new LongOpenHashSet();
+            this.removedEmptySections[i] = new LongOpenHashSet();
+         }
+
       }
 
       private int getIndex(final int chunkX, final int chunkZ) {
@@ -226,9 +246,9 @@ public class ClientChunkCache extends ChunkSource {
          if (this.inRange(sectionX, sectionZ)) {
             long sectionNode = SectionPos.asLong(sectionX, sectionY, sectionZ);
             if (empty) {
-               this.loadedEmptySections.add(sectionNode);
-            } else if (this.loadedEmptySections.remove(sectionNode)) {
-               ClientChunkCache.this.level.onSectionBecomingNonEmpty(sectionNode);
+               this.addedEmptySections[this.updatingEmptySectionsIndex].add(sectionNode);
+            } else {
+               this.removedEmptySections[this.updatingEmptySectionsIndex].add(sectionNode);
             }
 
          }
@@ -239,7 +259,7 @@ public class ClientChunkCache extends ChunkSource {
 
          for(int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
             ChunkPos chunkPos = chunk.getPos();
-            this.loadedEmptySections.remove(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+            this.removedEmptySections[this.updatingEmptySectionsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
          }
 
       }
@@ -251,7 +271,7 @@ public class ClientChunkCache extends ChunkSource {
             LevelChunkSection section = sections[sectionIndex];
             if (section.hasOnlyAir()) {
                ChunkPos chunkPos = chunk.getPos();
-               this.loadedEmptySections.add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+               this.addedEmptySections[this.updatingEmptySectionsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
             }
          }
 
@@ -265,9 +285,9 @@ public class ClientChunkCache extends ChunkSource {
             LevelChunkSection section = sections[sectionIndex];
             long sectionNode = SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z());
             if (section.hasOnlyAir()) {
-               this.loadedEmptySections.add(sectionNode);
-            } else if (this.loadedEmptySections.remove(sectionNode)) {
-               ClientChunkCache.this.level.onSectionBecomingNonEmpty(sectionNode);
+               this.addedEmptySections[this.updatingEmptySectionsIndex].add(sectionNode);
+            } else {
+               this.removedEmptySections[this.updatingEmptySectionsIndex].add(sectionNode);
             }
          }
 

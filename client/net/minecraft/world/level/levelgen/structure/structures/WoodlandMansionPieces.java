@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -90,16 +90,16 @@ public class WoodlandMansionPieces {
             List<Mob> mobs = new ArrayList();
             switch (markerId) {
                case "Mage":
-                  mobs.add(EntityType.EVOKER.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                  mobs.add(EntityTypes.EVOKER.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Warrior":
-                  mobs.add(EntityType.VINDICATOR.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                  mobs.add(EntityTypes.VINDICATOR.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Group of Allays":
                   int numberOfAllays = level.getRandom().nextInt(3) + 1;
 
                   for(int i = 0; i < numberOfAllays; ++i) {
-                     mobs.add(EntityType.ALLAY.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                     mobs.add(EntityTypes.ALLAY.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
                   }
                   break;
                default:

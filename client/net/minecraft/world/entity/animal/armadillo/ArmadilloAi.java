@@ -12,7 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -77,7 +77,7 @@ public class ArmadilloAi {
    }
 
    private static ActivityData<Armadillo> initIdleActivity() {
-      return ActivityData.<Armadillo>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.ARMADILLO, 1.0F, 1)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((armadillo) -> 1.25F, (armadillo) -> armadillo.isBaby() ? 1.0 : 2.0), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new DoNothing(30, 60), 1))))));
+      return ActivityData.<Armadillo>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityTypes.ARMADILLO, 1.0F, 1)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((armadillo) -> 1.25F, (armadillo) -> armadillo.isBaby() ? 1.0 : 2.0), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new DoNothing(30, 60), 1))))));
    }
 
    private static ActivityData<Armadillo> initScaredActivity() {

@@ -24,6 +24,7 @@ import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.CreakingHeartBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,7 +58,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       if (level.isClientSide()) {
          return null;
       } else {
-         return blockState.getValue(STATE) != CreakingHeartState.UPROOTED ? createTickerHelper(type, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
+         return blockState.getValue(STATE) != CreakingHeartState.UPROOTED ? createTickerHelper(type, BlockEntityTypes.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
       }
    }
 

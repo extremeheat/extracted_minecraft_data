@@ -132,8 +132,8 @@ public class WorldBorderRenderer implements AutoCloseable {
          TextureManager textureManager = Minecraft.getInstance().getTextureManager();
          AbstractTexture abstractTexture = textureManager.getTexture(FORCEFIELD_LOCATION);
          RenderPipeline renderPipeline = RenderPipelines.WORLD_BORDER;
-         RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-         RenderTarget weatherTarget = Minecraft.getInstance().levelRenderer.getWeatherTarget();
+         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+         RenderTarget weatherTarget = Minecraft.getInstance().levelRenderer.weatherTarget();
          GpuTextureView colorTexture;
          GpuTextureView depthTexture;
          if (weatherTarget != null) {

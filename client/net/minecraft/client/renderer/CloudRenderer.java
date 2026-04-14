@@ -205,8 +205,8 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
             }
 
             GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
-            RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-            RenderTarget cloudTarget = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+            RenderTarget cloudTarget = Minecraft.getInstance().levelRenderer.cloudsTarget();
             RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             GpuBuffer indexBuffer = indices.getBuffer(6 * this.quadCount);
             GpuTextureView colorTexture;

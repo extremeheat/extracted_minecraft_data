@@ -21,7 +21,7 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -64,7 +64,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    private int outputSignal;
 
    public CreakingHeartBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CREAKING_HEART, worldPosition, blockState);
+      super(BlockEntityTypes.CREAKING_HEART, worldPosition, blockState);
    }
 
    public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final CreakingHeartBlockEntity entity) {
@@ -202,7 +202,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
    private static @Nullable Creaking spawnProtector(final ServerLevel level, final CreakingHeartBlockEntity entity) {
       BlockPos pos = entity.getBlockPos();
-      Optional<Creaking> spawnedMob = SpawnUtil.<Creaking>trySpawnMob(EntityType.CREAKING, EntitySpawnReason.SPAWNER, level, pos, 5, 16, 8, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER_NO_LEAVES, true);
+      Optional<Creaking> spawnedMob = SpawnUtil.<Creaking>trySpawnMob(EntityTypes.CREAKING, EntitySpawnReason.SPAWNER, level, pos, 5, 16, 8, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER_NO_LEAVES, true);
       if (spawnedMob.isEmpty()) {
          return null;
       } else {

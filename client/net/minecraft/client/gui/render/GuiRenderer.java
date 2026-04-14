@@ -2,24 +2,14 @@ package net.minecraft.client.gui.render;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -38,11 +28,11 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.CubeMap;
-import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
@@ -62,7 +52,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class GuiRenderer implements AutoCloseable {
@@ -80,9 +69,7 @@ public class GuiRenderer implements AutoCloseable {
    private final Map<Object, OversizedItemRenderer> oversizedItemRenderers = new Object2ObjectOpenHashMap();
    private final GuiRenderState renderState;
    private final List<Draw> draws = new ArrayList();
-   private final List<MeshToDraw> meshesToDraw = new ArrayList();
-   private final ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(786432);
-   private final Map<VertexFormat, MappableRingBuffer> vertexBuffers = new Object2ObjectOpenHashMap();
+   private final StagedVertexBuffer vertexBuffer = new StagedVertexBuffer(() -> "GUI Vertex Buffer", 786432);
    private int firstDrawIndexAfterBlur = 2147483647;
    private final Projection guiProjection = new Projection();
    private final ProjectionMatrixBuffer guiProjectionMatrixBuffer = new ProjectionMatrixBuffer("gui");
@@ -96,7 +83,7 @@ public class GuiRenderer implements AutoCloseable {
    private @Nullable ScreenRectangle previousScissorArea = null;
    private @Nullable RenderPipeline previousPipeline = null;
    private @Nullable TextureSetup previousTextureSetup = null;
-   private @Nullable BufferBuilder bufferBuilder = null;
+   private StagedVertexBuffer.@Nullable Draw previousDraw;
 
    public GuiRenderer(final GuiRenderState renderState, final MultiBufferSource.BufferSource bufferSource, final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final List<PictureInPictureRenderer<?>> pictureInPictureRenderers) {
       super();
@@ -128,17 +115,14 @@ public class GuiRenderer implements AutoCloseable {
 
       profiler.push("prepare");
       this.prepare();
+      profiler.popPush("upload");
+      this.vertexBuffer.upload();
       profiler.popPush("draw");
       this.draw();
-      profiler.popPush("vertexBufferRotate");
-
-      for(MappableRingBuffer buffer : this.vertexBuffers.values()) {
-         buffer.rotate();
-      }
-
-      profiler.pop();
+      profiler.popPush("endFrame");
+      this.vertexBuffer.endDraw();
+      this.vertexBuffer.endFrame();
       this.draws.clear();
-      this.meshesToDraw.clear();
       this.renderState.reset();
       this.firstDrawIndexAfterBlur = 2147483647;
       this.clearUnusedOversizedItemRenderers();
@@ -147,6 +131,7 @@ public class GuiRenderer implements AutoCloseable {
          TextureSetup.updateSortKeySeed();
       }
 
+      profiler.pop();
    }
 
    private void clearUnusedOversizedItemRenderers() {
@@ -166,68 +151,52 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void prepare() {
-      this.bufferSource.endBatch();
+      this.bufferSource.uploadAndDraw();
       this.preparePictureInPicture();
       this.prepareItemElements();
       this.prepareText();
       this.renderState.sortElements(ELEMENT_SORT_COMPARATOR);
       this.addElementsToMeshes(GuiRenderState.TraverseRange.BEFORE_BLUR);
-      this.firstDrawIndexAfterBlur = this.meshesToDraw.size();
+      this.firstDrawIndexAfterBlur = this.draws.size();
       this.addElementsToMeshes(GuiRenderState.TraverseRange.AFTER_BLUR);
-      this.recordDraws();
    }
 
    private void addElementsToMeshes(final GuiRenderState.TraverseRange range) {
       this.previousScissorArea = null;
       this.previousPipeline = null;
       this.previousTextureSetup = null;
-      this.bufferBuilder = null;
+      this.previousDraw = null;
       this.renderState.forEachElement(this::addElementToMesh, range);
-      if (this.bufferBuilder != null) {
-         this.recordMesh(this.bufferBuilder, this.previousPipeline, this.previousTextureSetup, this.previousScissorArea);
-      }
-
    }
 
    private void draw() {
       if (!this.draws.isEmpty()) {
          Minecraft minecraft = Minecraft.getInstance();
-         WindowRenderState windowState = minecraft.gameRenderer.getGameRenderState().windowRenderState;
+         WindowRenderState windowState = minecraft.gameRenderer.gameRenderState().windowRenderState;
          this.guiProjection.setupOrtho(1000.0F, 11000.0F, (float)windowState.width / (float)windowState.guiScale, (float)windowState.height / (float)windowState.guiScale, true);
          RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer(this.guiProjection), ProjectionType.ORTHOGRAPHIC);
-         RenderTarget mainRenderTarget = minecraft.getMainRenderTarget();
-         int maxIndexCount = 0;
-
-         for(Draw draw : this.draws) {
-            if (draw.indexCount > maxIndexCount) {
-               maxIndexCount = draw.indexCount;
-            }
-         }
-
-         RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-         GpuBuffer indexBuffer = autoIndices.getBuffer(maxIndexCount);
-         VertexFormat.IndexType indexType = autoIndices.type();
+         RenderTarget mainRenderTarget = minecraft.gameRenderer.mainRenderTarget();
          GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F));
          if (this.firstDrawIndexAfterBlur > 0) {
-            this.executeDrawRange(() -> "GUI before blur", mainRenderTarget, dynamicTransforms, indexBuffer, indexType, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
+            this.executeDrawRange(() -> "GUI before blur", mainRenderTarget, dynamicTransforms, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
          }
 
          if (this.draws.size() > this.firstDrawIndexAfterBlur) {
             RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
             minecraft.gameRenderer.processBlurEffect();
-            this.executeDrawRange(() -> "GUI after blur", mainRenderTarget, dynamicTransforms, indexBuffer, indexType, this.firstDrawIndexAfterBlur, this.draws.size());
+            this.executeDrawRange(() -> "GUI after blur", mainRenderTarget, dynamicTransforms, this.firstDrawIndexAfterBlur, this.draws.size());
          }
       }
    }
 
-   private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int startIndex, final int endIndex) {
+   private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final int startIndex, final int endIndex) {
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), OptionalInt.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
          for(int i = startIndex; i < endIndex; ++i) {
             Draw draw = (Draw)this.draws.get(i);
-            this.executeDraw(draw, renderPass, indexBuffer, indexType);
+            this.executeDraw(draw, renderPass);
          }
       }
 
@@ -237,18 +206,15 @@ public class GuiRenderer implements AutoCloseable {
       RenderPipeline pipeline = elementState.pipeline();
       TextureSetup textureSetup = elementState.textureSetup();
       ScreenRectangle scissorArea = elementState.scissorArea();
-      if (pipeline != this.previousPipeline || this.scissorChanged(scissorArea, this.previousScissorArea) || !textureSetup.equals(this.previousTextureSetup)) {
-         if (this.bufferBuilder != null) {
-            this.recordMesh(this.bufferBuilder, this.previousPipeline, this.previousTextureSetup, this.previousScissorArea);
-         }
-
-         this.bufferBuilder = this.getBufferBuilder(pipeline);
+      if (this.previousDraw == null || pipeline != this.previousPipeline || this.scissorChanged(scissorArea, this.previousScissorArea) || !textureSetup.equals(this.previousTextureSetup)) {
          this.previousPipeline = pipeline;
          this.previousTextureSetup = textureSetup;
          this.previousScissorArea = scissorArea;
+         this.previousDraw = this.vertexBuffer.appendDraw(pipeline.getVertexFormat(), pipeline.getVertexFormatMode());
+         this.draws.add(new Draw(this.previousDraw, pipeline, textureSetup, scissorArea));
       }
 
-      elementState.buildVertices(this.bufferBuilder);
+      elementState.buildVertices(this.vertexBuffer.getVertexBuilder((StagedVertexBuffer.Draw)Objects.requireNonNull(this.previousDraw)));
    }
 
    private void prepareText() {
@@ -309,7 +275,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void preparePictureInPicture() {
-      int guiScale = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.guiScale;
+      int guiScale = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale;
       this.renderState.forEachPictureInPicture((pictureInPictureState) -> this.preparePictureInPictureState(pictureInPictureState, guiScale));
    }
 
@@ -345,7 +311,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private int getGuiScaleInvalidatingItemAtlasIfChanged() {
-      int guiScale = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.guiScale;
+      int guiScale = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale;
       if (guiScale != this.cachedGuiScale) {
          this.invalidateItemAtlas();
 
@@ -367,108 +333,34 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   private void recordMesh(final BufferBuilder bufferBuilder, final RenderPipeline pipeline, final TextureSetup textureSetup, final @Nullable ScreenRectangle scissorArea) {
-      MeshData mesh = bufferBuilder.build();
-      if (mesh != null) {
-         this.meshesToDraw.add(new MeshToDraw(mesh, pipeline, textureSetup, scissorArea));
-      }
-
-   }
-
-   private void recordDraws() {
-      this.ensureVertexBufferSizes();
-      CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-      Object2IntMap<VertexFormat> offsets = new Object2IntOpenHashMap();
-
-      for(MeshToDraw meshToDraw : this.meshesToDraw) {
-         MeshData mesh = meshToDraw.mesh;
-         MeshData.DrawState drawState = mesh.drawState();
-         VertexFormat format = drawState.format();
-         MappableRingBuffer vertexBuffer = (MappableRingBuffer)this.vertexBuffers.get(format);
-         if (!offsets.containsKey(format)) {
-            offsets.put(format, 0);
+   private void executeDraw(final Draw draw, final RenderPass renderPass) {
+      StagedVertexBuffer.ExecuteInfo executeInfo = this.vertexBuffer.getExecuteInfo(draw.draw);
+      if (executeInfo != null) {
+         RenderPipeline pipeline = draw.pipeline();
+         renderPass.setPipeline(pipeline);
+         renderPass.setVertexBuffer(0, executeInfo.vertexBuffer());
+         ScreenRectangle scissorArea = draw.scissorArea();
+         if (scissorArea != null) {
+            this.enableScissor(scissorArea, renderPass);
+         } else {
+            renderPass.disableScissor();
          }
 
-         ByteBuffer meshVertexBuffer = mesh.vertexBuffer();
-         int meshBufferSize = meshVertexBuffer.remaining();
-         int offset = offsets.getInt(format);
-
-         try (GpuBuffer.MappedView mappedView = commandEncoder.mapBuffer(vertexBuffer.currentBuffer().slice((long)offset, (long)meshBufferSize), false, true)) {
-            MemoryUtil.memCopy(meshVertexBuffer, mappedView.data());
+         if (draw.textureSetup.texure0() != null) {
+            renderPass.bindTexture("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
          }
 
-         offsets.put(format, offset + meshBufferSize);
-         this.draws.add(new Draw(vertexBuffer.currentBuffer(), offset / format.getVertexSize(), drawState.mode(), drawState.indexCount(), meshToDraw.pipeline, meshToDraw.textureSetup, meshToDraw.scissorArea));
-         meshToDraw.close();
-      }
-
-   }
-
-   private void ensureVertexBufferSizes() {
-      Object2IntMap<VertexFormat> requiredSizes = this.calculatedRequiredVertexBufferSizes();
-      ObjectIterator var2 = requiredSizes.object2IntEntrySet().iterator();
-
-      while(var2.hasNext()) {
-         Object2IntMap.Entry<VertexFormat> entry = (Object2IntMap.Entry)var2.next();
-         VertexFormat vertexFormat = (VertexFormat)entry.getKey();
-         int requiredSize = entry.getIntValue();
-         MappableRingBuffer vertexBuffer = (MappableRingBuffer)this.vertexBuffers.get(vertexFormat);
-         if (vertexBuffer == null || vertexBuffer.size() < requiredSize) {
-            if (vertexBuffer != null) {
-               vertexBuffer.close();
-            }
-
-            this.vertexBuffers.put(vertexFormat, new MappableRingBuffer(() -> "GUI vertex buffer for " + String.valueOf(vertexFormat), 34, requiredSize));
-         }
-      }
-
-   }
-
-   private Object2IntMap<VertexFormat> calculatedRequiredVertexBufferSizes() {
-      Object2IntMap<VertexFormat> requiredVertexBufferSizes = new Object2IntOpenHashMap();
-
-      for(MeshToDraw meshToDraw : this.meshesToDraw) {
-         MeshData.DrawState drawState = meshToDraw.mesh.drawState();
-         VertexFormat format = drawState.format();
-         if (!requiredVertexBufferSizes.containsKey(format)) {
-            requiredVertexBufferSizes.put(format, 0);
+         if (draw.textureSetup.texure1() != null) {
+            renderPass.bindTexture("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
          }
 
-         requiredVertexBufferSizes.put(format, requiredVertexBufferSizes.getInt(format) + drawState.vertexCount() * format.getVertexSize());
+         if (draw.textureSetup.texure2() != null) {
+            renderPass.bindTexture("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
+         }
+
+         renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
+         renderPass.drawIndexed(executeInfo.baseVertex(), executeInfo.firstIndex(), executeInfo.indexCount(), 1);
       }
-
-      return requiredVertexBufferSizes;
-   }
-
-   private void executeDraw(final Draw draw, final RenderPass renderPass, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType) {
-      RenderPipeline pipeline = draw.pipeline();
-      renderPass.setPipeline(pipeline);
-      renderPass.setVertexBuffer(0, draw.vertexBuffer);
-      ScreenRectangle scissorArea = draw.scissorArea();
-      if (scissorArea != null) {
-         this.enableScissor(scissorArea, renderPass);
-      } else {
-         renderPass.disableScissor();
-      }
-
-      if (draw.textureSetup.texure0() != null) {
-         renderPass.bindTexture("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
-      }
-
-      if (draw.textureSetup.texure1() != null) {
-         renderPass.bindTexture("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
-      }
-
-      if (draw.textureSetup.texure2() != null) {
-         renderPass.bindTexture("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
-      }
-
-      renderPass.setIndexBuffer(indexBuffer, indexType);
-      renderPass.drawIndexed(draw.baseVertex, 0, draw.indexCount, 1);
-   }
-
-   private BufferBuilder getBufferBuilder(final RenderPipeline pipeline) {
-      return new BufferBuilder(this.byteBufferBuilder, pipeline.getVertexFormatMode(), pipeline.getVertexFormat());
    }
 
    private boolean scissorChanged(final @Nullable ScreenRectangle newScissor, final @Nullable ScreenRectangle oldScissor) {
@@ -482,7 +374,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void enableScissor(final ScreenRectangle rectangle, final RenderPass renderPass) {
-      WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
+      WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
       int windowHeight = windowState.height;
       int guiScale = windowState.guiScale;
       double left = (double)(rectangle.left() * guiScale);
@@ -497,7 +389,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    public void close() {
-      this.byteBufferBuilder.close();
+      this.vertexBuffer.close();
       if (this.itemAtlas != null) {
          this.itemAtlas.close();
          this.itemAtlas = null;
@@ -505,11 +397,6 @@ public class GuiRenderer implements AutoCloseable {
 
       this.pictureInPictureRenderers.values().forEach(PictureInPictureRenderer::close);
       this.guiProjectionMatrixBuffer.close();
-
-      for(MappableRingBuffer buffer : this.vertexBuffers.values()) {
-         buffer.close();
-      }
-
       this.oversizedItemRenderers.values().forEach(PictureInPictureRenderer::close);
       this.cubeMap.close();
    }
@@ -518,19 +405,9 @@ public class GuiRenderer implements AutoCloseable {
       ELEMENT_SORT_COMPARATOR = Comparator.comparing(GuiElementRenderState::scissorArea, SCISSOR_COMPARATOR).thenComparing(GuiElementRenderState::pipeline, Comparator.comparing(RenderPipeline::getSortKey)).thenComparing(GuiElementRenderState::textureSetup, TEXTURE_COMPARATOR);
    }
 
-   private static record Draw(GpuBuffer vertexBuffer, int baseVertex, VertexFormat.Mode mode, int indexCount, RenderPipeline pipeline, TextureSetup textureSetup, @Nullable ScreenRectangle scissorArea) {
+   private static record Draw(StagedVertexBuffer.Draw draw, RenderPipeline pipeline, TextureSetup textureSetup, @Nullable ScreenRectangle scissorArea) {
       private Draw {
          super();
-      }
-   }
-
-   private static record MeshToDraw(MeshData mesh, RenderPipeline pipeline, TextureSetup textureSetup, @Nullable ScreenRectangle scissorArea) implements AutoCloseable {
-      private MeshToDraw {
-         super();
-      }
-
-      public void close() {
-         this.mesh.close();
       }
    }
 }

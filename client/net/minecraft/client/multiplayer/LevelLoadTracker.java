@@ -2,8 +2,8 @@ package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.progress.ChunkLoadStatusView;
@@ -39,8 +39,8 @@ public class LevelLoadTracker implements LevelLoadListener {
       this.serverChunkStatusView = serverChunkStatusView;
    }
 
-   public void startClientLoad(final LocalPlayer player, final ClientLevel level, final LevelRenderer levelRenderer) {
-      this.clientState = new WaitingForServer(player, level, levelRenderer, Util.getMillis() + CLIENT_WAIT_TIMEOUT_MS);
+   public void startClientLoad(final LocalPlayer player, final ClientLevel level) {
+      this.clientState = new WaitingForServer(player, level, Util.getMillis() + CLIENT_WAIT_TIMEOUT_MS);
    }
 
    public void tickClientLoad() {
@@ -112,6 +112,15 @@ public class LevelLoadTracker implements LevelLoadListener {
       return this.serverStage != null;
    }
 
+   public @Nullable Runnable getPlayerCompiledSectionCallback() {
+      ClientState var2 = this.clientState;
+      if (var2 instanceof WaitingForPlayerChunk waitingForPlayerChunk) {
+         return () -> waitingForPlayerChunk.playerSectionReady().set(true);
+      } else {
+         return null;
+      }
+   }
+
    static {
       CLIENT_WAIT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(30L);
    }
@@ -126,17 +135,17 @@ public class LevelLoadTracker implements LevelLoadListener {
       }
    }
 
-   private static record WaitingForServer(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
+   private static record WaitingForServer(LocalPlayer player, ClientLevel level, long timeoutAfter) implements ClientState {
       private WaitingForServer {
          super();
       }
 
       public ClientState loadingPacketsReceived() {
-         return new WaitingForPlayerChunk(this.player, this.level, this.levelRenderer, this.timeoutAfter);
+         return new WaitingForPlayerChunk(this.player, this.level, new AtomicBoolean(), this.timeoutAfter);
       }
    }
 
-   private static record WaitingForPlayerChunk(LocalPlayer player, ClientLevel level, LevelRenderer levelRenderer, long timeoutAfter) implements ClientState {
+   private static record WaitingForPlayerChunk(LocalPlayer player, ClientLevel level, AtomicBoolean playerSectionReady, long timeoutAfter) implements ClientState {
       private WaitingForPlayerChunk {
          super();
       }
@@ -151,7 +160,7 @@ public class LevelLoadTracker implements LevelLoadListener {
             return true;
          } else {
             BlockPos playerPos = this.player.blockPosition();
-            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.levelRenderer.isSectionCompiledAndVisible(playerPos) : true;
+            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.playerSectionReady.get() : true;
          }
       }
    }

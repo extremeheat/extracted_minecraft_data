@@ -59,12 +59,14 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.cameraPos = cameraPos;
    }
 
-   public <E extends BlockEntity, S extends BlockEntityRenderState> @Nullable S tryExtractRenderState(final E blockEntity, final float partialTicks, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+   public <E extends BlockEntity, S extends BlockEntityRenderState> @Nullable S tryExtractRenderState(final E blockEntity, final float partialTicks, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final boolean isGloballyRendered) {
       BlockEntityRenderer<E, S> renderer = this.getRenderer(blockEntity);
       if (renderer == null) {
          return null;
       } else if (blockEntity.hasLevel() && blockEntity.getType().isValid(blockEntity.getBlockState())) {
-         if (!renderer.shouldRender(blockEntity, this.cameraPos)) {
+         if (isGloballyRendered != renderer.shouldRenderOffScreen()) {
+            return null;
+         } else if (!renderer.shouldRender(blockEntity, this.cameraPos)) {
             return null;
          } else {
             Vec3 cameraPosition = this.cameraPos;

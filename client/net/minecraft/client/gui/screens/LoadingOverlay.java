@@ -94,7 +94,7 @@ public class LoadingOverlay extends Overlay {
          graphics.fill(0, 0, width, height, replaceAlpha(BRAND_BACKGROUND.getAsInt(), alpha));
          logoAlpha = Mth.clamp(fadeInAnim, 0.0F, 1.0F);
       } else {
-         this.minecraft.gameRenderer.getGameRenderState().guiRenderState.clearColorOverride = BRAND_BACKGROUND.getAsInt();
+         this.minecraft.gameRenderer.gameRenderState().guiRenderState.clearColorOverride = BRAND_BACKGROUND.getAsInt();
          logoAlpha = 1.0F;
       }
 

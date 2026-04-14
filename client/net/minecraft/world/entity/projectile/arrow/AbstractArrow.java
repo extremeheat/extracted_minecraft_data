@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -27,6 +27,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -433,7 +434,7 @@ public abstract class AbstractArrow extends Projectile {
          livingOwner.setLastHurtMob(entity);
       }
 
-      boolean isEnderman = entity.is(EntityType.ENDERMAN);
+      boolean isEnderman = entity.is(EntityTypes.ENDERMAN);
       int remainingFireTicks = entity.getRemainingFireTicks();
       if (this.isOnFire() && !isEnderman) {
          entity.igniteForSeconds(5.0F);

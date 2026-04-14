@@ -29,7 +29,7 @@ public class SkullBlockEntity extends BlockEntity {
    private @Nullable Component customName;
 
    public SkullBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.SKULL, worldPosition, blockState);
+      super(BlockEntityTypes.SKULL, worldPosition, blockState);
    }
 
    protected void saveAdditional(final ValueOutput output) {

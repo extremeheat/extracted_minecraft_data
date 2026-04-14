@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +39,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    }
 
    protected int getBlockLightLevel(final T entity, final BlockPos blockPos) {
-      return entity.is(EntityType.GLOW_ITEM_FRAME) ? Math.max(5, super.getBlockLightLevel(entity, blockPos)) : super.getBlockLightLevel(entity, blockPos);
+      return entity.is(EntityTypes.GLOW_ITEM_FRAME) ? Math.max(5, super.getBlockLightLevel(entity, blockPos)) : super.getBlockLightLevel(entity, blockPos);
    }
 
    public void submit(final ItemFrameRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
@@ -121,7 +121,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
       ItemStack itemStack = entity.getItem();
       this.itemModelResolver.updateForNonLiving(state.item, itemStack, ItemDisplayContext.FIXED, entity);
       state.rotation = entity.getRotation();
-      state.isGlowFrame = entity.is(EntityType.GLOW_ITEM_FRAME);
+      state.isGlowFrame = entity.is(EntityTypes.GLOW_ITEM_FRAME);
       state.mapId = null;
       if (!itemStack.isEmpty()) {
          MapId framedMapId = entity.getFramedMapId(itemStack);

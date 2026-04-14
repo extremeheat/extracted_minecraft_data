@@ -17,6 +17,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -136,7 +137,7 @@ public class Spider extends Monster {
       groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       RandomSource random = level.getRandom();
       if (random.nextInt(100) == 0) {
-         Skeleton skeleton = EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
+         Skeleton skeleton = EntityTypes.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
          if (skeleton != null) {
             skeleton.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             skeleton.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);

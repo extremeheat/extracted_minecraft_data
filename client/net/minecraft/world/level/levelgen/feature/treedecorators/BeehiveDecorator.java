@@ -14,7 +14,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BeehiveDecorator extends TreeDecorator {
@@ -49,7 +49,7 @@ public class BeehiveDecorator extends TreeDecorator {
                Optional<BlockPos> hivePos = hivePlacements.stream().filter((pos) -> context.isAir(pos) && context.isAir(pos.relative(WORLDGEN_FACING))).findFirst();
                if (!hivePos.isEmpty()) {
                   context.setBlock((BlockPos)hivePos.get(), (BlockState)Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.FACING, WORLDGEN_FACING));
-                  context.level().getBlockEntity((BlockPos)hivePos.get(), BlockEntityType.BEEHIVE).ifPresent((beehive) -> {
+                  context.level().getBlockEntity((BlockPos)hivePos.get(), BlockEntityTypes.BEEHIVE).ifPresent((beehive) -> {
                      int numBees = 2 + random.nextInt(2);
 
                      for(int count = 0; count < numBees; ++count) {

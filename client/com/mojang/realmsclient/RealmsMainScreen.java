@@ -456,7 +456,7 @@ public class RealmsMainScreen extends RealmsScreen {
             LOGGER.warn("Could not send ping result to Realms: ", t);
          }
 
-      })).start();
+      }, "Realms ping")).start();
    }
 
    private List<Long> getOwnedNonExpiredRealmIds() {

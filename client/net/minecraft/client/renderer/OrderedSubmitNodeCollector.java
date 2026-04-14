@@ -75,7 +75,11 @@ public interface OrderedSubmitNodeCollector {
 
    void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType);
 
-   void submitCustomGeometry(PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer);
+   void submitCustomGeometry(PoseStack poseStack, RenderType renderType, int outlineColor, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer);
+
+   default void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+      this.submitCustomGeometry(poseStack, renderType, 0, customGeometryRenderer);
+   }
 
    void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer);
 }

@@ -2,7 +2,7 @@ package com.mojang.blaze3d.vertex;
 
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.util.Objects;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -18,33 +18,30 @@ public class MeshData implements AutoCloseable {
       this.drawState = drawState;
    }
 
-   private static CompactVectorArray unpackQuadCentroids(final ByteBuffer vertexBuffer, final int vertices, final VertexFormat format) {
-      int positionOffset = format.getOffset(VertexFormatElement.POSITION);
+   public static void decodeQuadCentroids(final ByteBuffer vertexBuffer, final int vertexCount, final VertexFormat format, final CompactVectorArray output, final int outputIndex) {
+      int positionOffset = vertexBuffer.position() + format.getOffset(VertexFormatElement.POSITION);
       if (positionOffset == -1) {
          throw new IllegalArgumentException("Cannot identify quad centers with no position element");
       } else {
-         FloatBuffer floatBuffer = vertexBuffer.asFloatBuffer();
-         int vertexStride = format.getVertexSize() / 4;
+         int vertexStride = format.getVertexSize();
          int quadStride = vertexStride * 4;
-         int quads = vertices / 4;
-         CompactVectorArray sortingPoints = new CompactVectorArray(quads);
+         int quadCount = vertexCount / 4;
 
-         for(int i = 0; i < quads; ++i) {
+         for(int i = 0; i < quadCount; ++i) {
             int firstPosOffset = i * quadStride + positionOffset;
             int secondPosOffset = firstPosOffset + vertexStride * 2;
-            float x0 = floatBuffer.get(firstPosOffset + 0);
-            float y0 = floatBuffer.get(firstPosOffset + 1);
-            float z0 = floatBuffer.get(firstPosOffset + 2);
-            float x1 = floatBuffer.get(secondPosOffset + 0);
-            float y1 = floatBuffer.get(secondPosOffset + 1);
-            float z1 = floatBuffer.get(secondPosOffset + 2);
+            float x0 = vertexBuffer.getFloat(firstPosOffset + 0);
+            float y0 = vertexBuffer.getFloat(firstPosOffset + 4);
+            float z0 = vertexBuffer.getFloat(firstPosOffset + 8);
+            float x1 = vertexBuffer.getFloat(secondPosOffset + 0);
+            float y1 = vertexBuffer.getFloat(secondPosOffset + 4);
+            float z1 = vertexBuffer.getFloat(secondPosOffset + 8);
             float xMid = (x0 + x1) / 2.0F;
             float yMid = (y0 + y1) / 2.0F;
             float zMid = (z0 + z1) / 2.0F;
-            sortingPoints.set(i, xMid, yMid, zMid);
+            output.set(outputIndex + i, xMid, yMid, zMid);
          }
 
-         return sortingPoints;
       }
    }
 
@@ -56,6 +53,10 @@ public class MeshData implements AutoCloseable {
       return this.indexBuffer != null ? this.indexBuffer.byteBuffer() : null;
    }
 
+   public ByteBufferBuilder.Result vertexBufferSlice() {
+      return this.vertexBuffer;
+   }
+
    public DrawState drawState() {
       return this.drawState;
    }
@@ -64,7 +65,8 @@ public class MeshData implements AutoCloseable {
       if (this.drawState.mode() != VertexFormat.Mode.QUADS) {
          return null;
       } else {
-         CompactVectorArray centroids = unpackQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format());
+         CompactVectorArray centroids = new CompactVectorArray(this.drawState.vertexCount() / 4);
+         decodeQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format(), centroids, 0);
          SortState sortState = new SortState(centroids, this.drawState.indexType());
          this.indexBuffer = sortState.buildSortedIndexBuffer(indexBufferTarget, sorting);
          return sortState;
@@ -93,18 +95,38 @@ public class MeshData implements AutoCloseable {
       public ByteBufferBuilder.Result buildSortedIndexBuffer(final ByteBufferBuilder target, final VertexSorting sorting) {
          int[] startIndices = sorting.sort(this.centroids);
          long pointer = target.reserve(startIndices.length * 6 * this.indexType.bytes);
-         IntConsumer indexWriter = this.indexWriter(pointer, this.indexType);
+         writeIndices(startIndices, this.indexWriter(pointer, this.indexType));
+         return target.build();
+      }
 
-         for(int startIndex : startIndices) {
-            indexWriter.accept(startIndex * 4 + 0);
-            indexWriter.accept(startIndex * 4 + 1);
-            indexWriter.accept(startIndex * 4 + 2);
-            indexWriter.accept(startIndex * 4 + 2);
-            indexWriter.accept(startIndex * 4 + 3);
-            indexWriter.accept(startIndex * 4 + 0);
+      public void writeSortedIndexBuffer(final ByteBuffer target, final VertexSorting sorting) {
+         IntConsumer var10000;
+         switch (this.indexType) {
+            case SHORT:
+               var10000 = (value) -> target.putShort((short)value);
+               break;
+            case INT:
+               Objects.requireNonNull(target);
+               var10000 = target::putInt;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
          }
 
-         return target.build();
+         IntConsumer output = var10000;
+         writeIndices(sorting.sort(this.centroids), output);
+      }
+
+      private static void writeIndices(final int[] startIndices, final IntConsumer output) {
+         for(int startIndex : startIndices) {
+            output.accept(startIndex * 4 + 0);
+            output.accept(startIndex * 4 + 1);
+            output.accept(startIndex * 4 + 2);
+            output.accept(startIndex * 4 + 2);
+            output.accept(startIndex * 4 + 3);
+            output.accept(startIndex * 4 + 0);
+         }
+
       }
 
       private IntConsumer indexWriter(final long pointer, final VertexFormat.IndexType indexType) {

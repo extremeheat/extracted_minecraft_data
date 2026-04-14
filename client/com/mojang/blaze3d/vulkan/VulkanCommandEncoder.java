@@ -890,7 +890,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
             submit.executeCommands(commandBuffer);
          }
 
-         LongBuffer timestampPtr = stack.mallocLong(1);
+         LongBuffer timestampPtr = stack.callocLong(1);
          VulkanUtils.crashIfFailure(VK12.vkGetQueryPoolResults(this.device.vkDevice(), queryPool.vkQueryPool(), 0, 1, timestampPtr, 0L, 3), "Cannot fetch current timestamp");
          return timestampPtr.get(0);
       } catch (Throwable var13) {

@@ -69,7 +69,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
    private final List<ErrorMarker> errorMarkers = new ArrayList();
 
    public TestInstanceBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.TEST_INSTANCE_BLOCK, worldPosition, blockState);
+      super(BlockEntityTypes.TEST_INSTANCE_BLOCK, worldPosition, blockState);
       this.data = new Data(Optional.empty(), Vec3i.ZERO, Rotation.NONE, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty());
    }
 

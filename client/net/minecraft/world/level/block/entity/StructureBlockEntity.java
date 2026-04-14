@@ -72,7 +72,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    private long seed;
 
    public StructureBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.STRUCTURE_BLOCK, worldPosition, blockState);
+      super(BlockEntityTypes.STRUCTURE_BLOCK, worldPosition, blockState);
       this.structurePos = DEFAULT_POS;
       this.structureSize = DEFAULT_SIZE;
       this.mirror = Mirror.NONE;

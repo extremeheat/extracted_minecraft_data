@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.warden.Warden;
@@ -26,7 +26,7 @@ public class WardenEntitySensor extends NearestLivingEntitySensor<Warden> {
 
    protected void doTick(final ServerLevel level, final Warden body) {
       super.doTick(level, body);
-      getClosest(body, (e) -> e.is(EntityType.PLAYER)).or(() -> getClosest(body, (e) -> !e.is(EntityType.PLAYER))).ifPresentOrElse((entity) -> body.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, entity), () -> body.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
+      getClosest(body, (e) -> e.is(EntityTypes.PLAYER)).or(() -> getClosest(body, (e) -> !e.is(EntityTypes.PLAYER))).ifPresentOrElse((entity) -> body.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, entity), () -> body.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
    }
 
    private static Optional<LivingEntity> getClosest(final Warden body, final Predicate<LivingEntity> test) {

@@ -32,7 +32,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    private @Nullable Component name;
 
    public EnchantingTableBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.ENCHANTING_TABLE, worldPosition, blockState);
+      super(BlockEntityTypes.ENCHANTING_TABLE, worldPosition, blockState);
    }
 
    protected void saveAdditional(final ValueOutput output) {

@@ -20,6 +20,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -48,7 +49,7 @@ public class ShulkerBullet extends Projectile {
    }
 
    public ShulkerBullet(final Level level, final LivingEntity owner, final Entity target, final Direction.Axis invalidStartAxis) {
-      this(EntityType.SHULKER_BULLET, level);
+      this(EntityTypes.SHULKER_BULLET, level);
       this.setOwner(owner);
       Vec3 position = owner.getBoundingBox().getCenter();
       this.snapTo(position.x, position.y, position.z, this.getYRot(), this.getXRot());

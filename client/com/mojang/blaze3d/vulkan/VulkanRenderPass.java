@@ -2,6 +2,7 @@ package com.mojang.blaze3d.vulkan;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.GpuQueryPool;
@@ -264,7 +265,7 @@ public class VulkanRenderPass implements RenderPassBackend {
    private void pushDescriptors() {
       if (this.anyDescriptorDirty) {
          if (VALIDATION) {
-            for(RenderPipeline.UniformDescription uniform : this.pipeline.info().getUniforms()) {
+            for(BindGroupLayout.UniformDescription uniform : BindGroupLayout.flattenUniforms(this.pipeline.info().getBindGroupLayouts())) {
                GpuBufferSlice value = (GpuBufferSlice)this.uniforms.get(uniform.name());
                if (value == null) {
                   String var10002 = uniform.name();
@@ -284,6 +285,10 @@ public class VulkanRenderPass implements RenderPassBackend {
                if (uniform.type() == UniformType.TEXEL_BUFFER) {
                   if (value.offset() != 0L || value.length() != value.buffer().size()) {
                      throw new IllegalStateException("Uniform texel buffers do not support a slice of a buffer, must be entire buffer");
+                  }
+
+                  if ((value.buffer().usage() & 256) == 0) {
+                     throw new IllegalStateException("Uniform texel buffer " + uniform.name() + " must have GpuBuffer.USAGE_UNIFORM_TEXEL_BUFFER");
                   }
 
                   if (uniform.gpuFormat() == null) {
@@ -339,7 +344,7 @@ public class VulkanRenderPass implements RenderPassBackend {
                      throw new IllegalStateException("Missing uniform " + var25 + " (should be " + String.valueOf(entry.type()) + ")");
                   }
 
-                  LongBuffer bufferViewPtr = stack.mallocLong(1);
+                  LongBuffer bufferViewPtr = stack.callocLong(1);
                   MemoryStack var9 = stack.push();
 
                   try {

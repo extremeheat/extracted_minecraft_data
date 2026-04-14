@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.ActivityData;
@@ -77,7 +78,7 @@ public class SnifferAi {
    }
 
    private static ActivityData<Sniffer> initIdleActivity() {
-      return ActivityData.<Sniffer>create(Activity.IDLE, ImmutableList.of(Pair.of(0, new AnimalMakeLove(EntityType.SNIFFER) {
+      return ActivityData.<Sniffer>create(Activity.IDLE, ImmutableList.of(Pair.of(0, new AnimalMakeLove(EntityTypes.SNIFFER) {
          protected void start(final ServerLevel level, final Animal body, final long timestamp) {
             SnifferAi.resetSniffing((Sniffer)body);
             super.start(level, body, timestamp);
@@ -87,7 +88,7 @@ public class SnifferAi {
             SnifferAi.resetSniffing((Sniffer)body);
             super.start(level, body, timestamp);
          }
-      }), Pair.of(2, new LookAtTargetSink(45, 90)), Pair.of(3, new FeelingHappy(40, 100)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new Scenting(40, 80), 1), Pair.of(new Sniffing(40, 80), 1), Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 6.0F), 1), Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(new DoNothing(5, 20), 2))))), Set.of(Pair.of(MemoryModuleType.SNIFFER_DIGGING, MemoryStatus.VALUE_ABSENT)));
+      }), Pair.of(2, new LookAtTargetSink(45, 90)), Pair.of(3, new FeelingHappy(40, 100)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new Scenting(40, 80), 1), Pair.of(new Sniffing(40, 80), 1), Pair.of(SetEntityLookTarget.create(EntityTypes.PLAYER, 6.0F), 1), Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(new DoNothing(5, 20), 2))))), Set.of(Pair.of(MemoryModuleType.SNIFFER_DIGGING, MemoryStatus.VALUE_ABSENT)));
    }
 
    static void updateActivity(final Sniffer body) {

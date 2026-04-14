@@ -31,8 +31,6 @@ import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.entity.BedBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -50,7 +48,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.Nullable;
 
-public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class BedBlock extends HorizontalDirectionalBlock {
    public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(i, BedBlock::new));
    public static final EnumProperty<BedPart> PART;
    public static final BooleanProperty OCCUPIED;
@@ -240,10 +238,6 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
       builder.add(FACING, PART, OCCUPIED);
-   }
-
-   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      return new BedBlockEntity(worldPosition, blockState, this.color);
    }
 
    public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {

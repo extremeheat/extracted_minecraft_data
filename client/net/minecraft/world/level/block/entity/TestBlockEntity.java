@@ -25,7 +25,7 @@ public class TestBlockEntity extends BlockEntity {
    private boolean triggered;
 
    public TestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.TEST_BLOCK, worldPosition, blockState);
+      super(BlockEntityTypes.TEST_BLOCK, worldPosition, blockState);
       this.mode = (TestBlockMode)blockState.getValue(TestBlock.MODE);
    }
 

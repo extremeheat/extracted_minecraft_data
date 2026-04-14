@@ -2,7 +2,7 @@ package net.minecraft.core.component.predicates;
 
 import com.mojang.serialization.Codec;
 import java.util.Optional;
-import net.minecraft.advancements.criterion.SingleComponentItemPredicate;
+import net.minecraft.advancements.predicates.SingleComponentItemPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;

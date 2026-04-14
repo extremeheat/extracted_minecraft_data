@@ -8,13 +8,13 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import org.joml.Matrix4fStack;
 
 public class RenderType {
@@ -50,7 +50,11 @@ public class RenderType {
       return this.state.outputTarget;
    }
 
-   public void draw(final MeshData mesh) {
+   public void drawFromBuffer(final StagedVertexBuffer.ExecuteInfo info) {
+      this.drawFromBuffer(info.vertexBuffer(), info.indexBuffer(), info.indexType(), info.baseVertex(), info.firstIndex(), info.indexCount());
+   }
+
+   public void drawFromBuffer(final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int baseVertex, final int firstIndex, final int indexCount) {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       Consumer<Matrix4fStack> modelViewModifier = this.state.layeringTransform.getModifier();
       if (modelViewModifier != null) {
@@ -60,67 +64,33 @@ public class RenderType {
 
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), this.state.textureTransform.createMatrix());
       Map<String, RenderSetup.TextureAndSampler> textures = this.state.getTextures();
-      MeshData var6 = mesh;
+      RenderTarget renderTarget = this.state.outputTarget.getRenderTarget();
+      GpuTextureView colorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : renderTarget.getColorTextureView();
+      GpuTextureView depthTexture = renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null;
 
-      try {
-         GpuBuffer vertices = this.state.pipeline.getVertexFormat().uploadImmediateVertexBuffer(mesh.vertexBuffer());
-         GpuBuffer indices;
-         VertexFormat.IndexType indexType;
-         if (mesh.indexBuffer() == null) {
-            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(mesh.drawState().mode());
-            indices = autoIndices.getBuffer(mesh.drawState().indexCount());
-            indexType = autoIndices.type();
-         } else {
-            indices = this.state.pipeline.getVertexFormat().uploadImmediateIndexBuffer(mesh.indexBuffer());
-            indexType = mesh.drawState().indexType();
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.name, colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+         renderPass.setPipeline(this.state.pipeline);
+         ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
+         if (scissorState.enabled()) {
+            renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
          }
 
-         RenderTarget renderTarget = this.state.outputTarget.getRenderTarget();
-         GpuTextureView colorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : renderTarget.getColorTextureView();
-         GpuTextureView depthTexture = renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null;
+         RenderSystem.bindDefaultUniforms(renderPass);
+         renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+         renderPass.setVertexBuffer(0, vertexBuffer);
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.name, colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
-            renderPass.setPipeline(this.state.pipeline);
-            ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
-            if (scissorState.enabled()) {
-               renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
-            }
-
-            RenderSystem.bindDefaultUniforms(renderPass);
-            renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-            renderPass.setVertexBuffer(0, vertices);
-
-            for(Map.Entry<String, RenderSetup.TextureAndSampler> entry : textures.entrySet()) {
-               renderPass.bindTexture((String)entry.getKey(), ((RenderSetup.TextureAndSampler)entry.getValue()).textureView(), ((RenderSetup.TextureAndSampler)entry.getValue()).sampler());
-            }
-
-            renderPass.setIndexBuffer(indices, indexType);
-            renderPass.drawIndexed(0, 0, mesh.drawState().indexCount(), 1);
-         }
-      } catch (Throwable var20) {
-         if (mesh != null) {
-            try {
-               var6.close();
-            } catch (Throwable var17) {
-               var20.addSuppressed(var17);
-            }
+         for(Map.Entry<String, RenderSetup.TextureAndSampler> entry : textures.entrySet()) {
+            renderPass.bindTexture((String)entry.getKey(), ((RenderSetup.TextureAndSampler)entry.getValue()).textureView(), ((RenderSetup.TextureAndSampler)entry.getValue()).sampler());
          }
 
-         throw var20;
-      }
-
-      if (mesh != null) {
-         mesh.close();
+         renderPass.setIndexBuffer(indexBuffer, indexType);
+         renderPass.drawIndexed(baseVertex, firstIndex, indexCount, 1);
       }
 
       if (modelViewModifier != null) {
          modelViewStack.popMatrix();
       }
 
-   }
-
-   public int bufferSize() {
-      return this.state.bufferSize;
    }
 
    public VertexFormat format() {

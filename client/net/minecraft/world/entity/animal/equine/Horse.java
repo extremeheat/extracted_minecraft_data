@@ -22,6 +22,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -177,7 +178,7 @@ public class Horse extends AbstractHorse {
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       if (partner instanceof Donkey) {
-         Mule baby = EntityType.MULE.create(level, EntitySpawnReason.BREEDING);
+         Mule baby = EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
          if (baby != null) {
             this.setOffspringAttributes(partner, baby);
          }
@@ -185,7 +186,7 @@ public class Horse extends AbstractHorse {
          return baby;
       } else {
          Horse horsePartner = (Horse)partner;
-         Horse baby = EntityType.HORSE.create(level, EntitySpawnReason.BREEDING);
+         Horse baby = EntityTypes.HORSE.create(level, EntitySpawnReason.BREEDING);
          if (baby != null) {
             int selectSkin = this.random.nextInt(9);
             Variant variant;
@@ -243,7 +244,7 @@ public class Horse extends AbstractHorse {
 
    static {
       DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(Horse.class, EntityDataSerializers.INT);
-      BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() - 0.125F, 0.0F)).scale(0.7F);
+      BABY_DIMENSIONS = EntityTypes.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityTypes.HORSE.getHeight() - 0.125F, 0.0F)).scale(0.7F);
    }
 
    public static class HorseGroupData extends AgeableMob.AgeableMobGroupData {

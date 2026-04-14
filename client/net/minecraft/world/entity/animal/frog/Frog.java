@@ -35,6 +35,7 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -50,7 +51,7 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.cubemob.Slime;
+import net.minecraft.world.entity.monster.cubemob.AbstractCubeMob;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
@@ -221,7 +222,7 @@ public class Frog extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Frog frog = EntityType.FROG.create(level, EntitySpawnReason.BREEDING);
+      Frog frog = EntityTypes.FROG.create(level, EntitySpawnReason.BREEDING);
       if (frog != null) {
          FrogAi.initMemories(frog, level.getRandom());
       }
@@ -279,8 +280,8 @@ public class Frog extends Animal {
    }
 
    public static boolean canEat(final LivingEntity entity) {
-      if (entity instanceof Slime slime) {
-         if (slime.getSize() != 1) {
+      if (entity instanceof AbstractCubeMob cubeMob) {
+         if (cubeMob.getSize() != 1) {
             return false;
          }
       }

@@ -4,14 +4,14 @@ import com.google.common.collect.BiMap;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.Predicate;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
@@ -62,7 +62,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    private void trySpawnGolem(final Level level, final BlockPos topPos) {
       BlockPattern.BlockPatternMatch snowGolemMatch = this.getOrCreateSnowGolemFull().find(level, topPos);
       if (snowGolemMatch != null) {
-         SnowGolem snowGolem = EntityType.SNOW_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         SnowGolem snowGolem = EntityTypes.SNOW_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (snowGolem != null) {
             spawnGolemInWorld(level, snowGolemMatch, snowGolem, snowGolemMatch.getBlock(0, 2, 0).getPos());
             return;
@@ -71,7 +71,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
       BlockPattern.BlockPatternMatch ironGolemMatch = this.getOrCreateIronGolemFull().find(level, topPos);
       if (ironGolemMatch != null) {
-         IronGolem ironGolem = EntityType.IRON_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         IronGolem ironGolem = EntityTypes.IRON_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (ironGolem != null) {
             ironGolem.setPlayerCreated(true);
             spawnGolemInWorld(level, ironGolemMatch, ironGolem, ironGolemMatch.getBlock(1, 2, 0).getPos());
@@ -81,7 +81,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
       BlockPattern.BlockPatternMatch copperGolemMatch = this.getOrCreateCopperGolemFull().find(level, topPos);
       if (copperGolemMatch != null) {
-         CopperGolem copperGolem = EntityType.COPPER_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         CopperGolem copperGolem = EntityTypes.COPPER_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (copperGolem != null) {
             spawnGolemInWorld(level, copperGolemMatch, copperGolem, copperGolemMatch.getBlock(0, 0, 0).getPos());
             this.replaceCopperBlockWithChest(level, copperGolemMatch);
@@ -97,7 +97,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       if (block instanceof WeatheringCopper copper) {
          return (WeatheringCopper.WeatherState)copper.getAge();
       } else {
-         return (WeatheringCopper.WeatherState)((WeatheringCopper)Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(state.getBlock())).filter((weatheringCopper) -> weatheringCopper instanceof WeatheringCopper).map((weatheringCopper) -> (WeatheringCopper)weatheringCopper).orElse((WeatheringCopper)Blocks.COPPER_BLOCK.unaffected())).getAge();
+         return (WeatheringCopper.WeatherState)((WeatheringCopper)Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(state.getBlock())).filter((weatheringCopper) -> weatheringCopper instanceof WeatheringCopper).map((weatheringCopper) -> (WeatheringCopper)weatheringCopper).orElse((WeatheringCopper)Blocks.COPPER_BLOCK.weathering().unaffected())).getAge();
       }
    }
 

@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.level.Level;
@@ -45,7 +45,7 @@ class OozingMobEffect extends MobEffect {
    }
 
    private void spawnSlimeOffspring(final Level level, final double x, final double y, final double z) {
-      Slime slime = EntityType.SLIME.create(level, EntitySpawnReason.TRIGGERED);
+      Slime slime = EntityTypes.SLIME.create(level, EntitySpawnReason.TRIGGERED);
       if (slime != null) {
          slime.setSize(2, true);
          slime.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
@@ -60,7 +60,7 @@ class OozingMobEffect extends MobEffect {
       private static NearbySlimes closeTo(final LivingEntity mob) {
          return (maxResults) -> {
             List<Slime> slimesNearby = new ArrayList();
-            mob.level().getEntities(EntityType.SLIME, mob.getBoundingBox().inflate(2.0), (slime) -> slime != mob, slimesNearby, maxResults);
+            mob.level().getEntities(EntityTypes.SLIME, mob.getBoundingBox().inflate(2.0), (slime) -> slime != mob, slimesNearby, maxResults);
             return slimesNearby.size();
          };
       }

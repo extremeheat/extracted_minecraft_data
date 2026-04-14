@@ -26,10 +26,9 @@ public final class RenderSetup {
    final boolean useOverlay;
    final boolean affectsCrumbling;
    final boolean sortOnUpload;
-   final int bufferSize;
    final LayeringTransform layeringTransform;
 
-   private RenderSetup(final RenderPipeline pipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final OutputTarget outputTarget, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final int bufferSize) {
+   private RenderSetup(final RenderPipeline pipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final OutputTarget outputTarget, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload) {
       super();
       this.pipeline = pipeline;
       this.textures = textures;
@@ -41,7 +40,6 @@ public final class RenderSetup {
       this.layeringTransform = layeringTransform;
       this.affectsCrumbling = affectsCrumbling;
       this.sortOnUpload = sortOnUpload;
-      this.bufferSize = bufferSize;
    }
 
    public String toString() {
@@ -108,7 +106,6 @@ public final class RenderSetup {
       private TextureTransform textureTransform;
       private boolean affectsCrumbling;
       private boolean sortOnUpload;
-      private int bufferSize;
       private OutlineProperty outlineProperty;
       private final Map<String, TextureBinding> textures;
 
@@ -119,7 +116,6 @@ public final class RenderSetup {
          this.textureTransform = TextureTransform.DEFAULT_TEXTURING;
          this.affectsCrumbling = false;
          this.sortOnUpload = false;
-         this.bufferSize = 1536;
          this.outlineProperty = RenderSetup.OutlineProperty.NONE;
          this.textures = new HashMap();
          this.pipeline = pipeline;
@@ -155,11 +151,6 @@ public final class RenderSetup {
          return this;
       }
 
-      public RenderSetupBuilder bufferSize(final int bufferSize) {
-         this.bufferSize = bufferSize;
-         return this;
-      }
-
       public RenderSetupBuilder setLayeringTransform(final LayeringTransform layeringTransform) {
          this.layeringTransform = layeringTransform;
          return this;
@@ -181,7 +172,7 @@ public final class RenderSetup {
       }
 
       public RenderSetup createRenderSetup() {
-         return new RenderSetup(this.pipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.outputTarget, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.bufferSize);
+         return new RenderSetup(this.pipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.outputTarget, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload);
       }
    }
 

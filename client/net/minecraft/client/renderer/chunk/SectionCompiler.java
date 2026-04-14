@@ -20,8 +20,6 @@ import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.FluidStateModelSet;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,16 +34,14 @@ public class SectionCompiler {
    private final BlockStateModelSet blockModelSet;
    private final FluidStateModelSet fluidModelSet;
    private final BlockColors blockColors;
-   private final BlockEntityRenderDispatcher blockEntityRenderer;
 
-   public SectionCompiler(final boolean ambientOcclusion, final boolean cutoutLeaves, final BlockStateModelSet blockModelSet, final FluidStateModelSet fluidModelSet, final BlockColors blockColors, final BlockEntityRenderDispatcher blockEntityRenderer) {
+   public SectionCompiler(final boolean ambientOcclusion, final boolean cutoutLeaves, final BlockStateModelSet blockModelSet, final FluidStateModelSet fluidModelSet, final BlockColors blockColors) {
       super();
       this.ambientOcclusion = ambientOcclusion;
       this.cutoutLeaves = cutoutLeaves;
       this.blockModelSet = blockModelSet;
       this.fluidModelSet = fluidModelSet;
       this.blockColors = blockColors;
-      this.blockEntityRenderer = blockEntityRenderer;
    }
 
    public Results compile(final SectionPos sectionPos, final RenderSectionRegion region, final VertexSorting vertexSorting, final SectionBufferBuilderPack builders) {
@@ -128,11 +124,7 @@ public class SectionCompiler {
    }
 
    private <E extends BlockEntity> void handleBlockEntity(final Results results, final E blockEntity) {
-      BlockEntityRenderer<E, ?> renderer = this.blockEntityRenderer.getRenderer(blockEntity);
-      if (renderer != null && !renderer.shouldRenderOffScreen()) {
-         results.blockEntities.add(blockEntity);
-      }
-
+      results.blockEntities.add(blockEntity);
    }
 
    public static final class Results {

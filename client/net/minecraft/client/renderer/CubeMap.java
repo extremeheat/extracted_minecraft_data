@@ -44,11 +44,11 @@ public class CubeMap implements AutoCloseable {
 
    public void render(final float rotXInDegrees, final float rotYInDegrees) {
       Minecraft minecraft = Minecraft.getInstance();
-      WindowRenderState windowState = minecraft.gameRenderer.getGameRenderState().windowRenderState;
+      WindowRenderState windowState = minecraft.gameRenderer.gameRenderState().windowRenderState;
       this.projection.setupPerspective(0.05F, 10.0F, 85.0F, (float)windowState.width, (float)windowState.height);
       RenderSystem.setProjectionMatrix(this.projectionMatrixUbo.getBuffer(this.projection), ProjectionType.PERSPECTIVE);
       RenderPipeline renderPipeline = RenderPipelines.PANORAMA;
-      RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+      RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
       GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
       GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
       RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);

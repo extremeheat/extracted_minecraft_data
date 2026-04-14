@@ -2,7 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.Optional;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;

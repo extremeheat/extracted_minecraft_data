@@ -14,9 +14,8 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
    }
 
    private Thread createThread() {
-      Thread thread = new Thread(this::run);
+      Thread thread = new Thread(this::run, "Sound engine");
       thread.setDaemon(true);
-      thread.setName("Sound engine");
       thread.setUncaughtExceptionHandler((t, e) -> Minecraft.getInstance().delayCrash(CrashReport.forThrowable(e, "Uncaught exception on thread: " + t.getName())));
       thread.start();
       return thread;

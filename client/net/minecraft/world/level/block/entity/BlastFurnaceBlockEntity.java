@@ -13,7 +13,7 @@ public class BlastFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.blast_furnace");
 
    public BlastFurnaceBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.BLAST_FURNACE, worldPosition, blockState, RecipeType.BLASTING);
+      super(BlockEntityTypes.BLAST_FURNACE, worldPosition, blockState, RecipeType.BLASTING);
    }
 
    protected Component getDefaultName() {

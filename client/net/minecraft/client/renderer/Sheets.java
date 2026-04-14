@@ -16,15 +16,12 @@ import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.entity.BannerPattern;
-import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import org.jspecify.annotations.Nullable;
 
 public class Sheets {
    public static final Identifier SHULKER_SHEET = Identifier.withDefaultNamespace("textures/atlas/shulker_boxes.png");
@@ -67,7 +64,6 @@ public class Sheets {
    public static final SpriteId SHIELD_PATTERN_BASE;
    private static final Map<Identifier, SpriteId> BANNER_SPRITES;
    private static final Map<Identifier, SpriteId> SHIELD_SPRITES;
-   public static final Map<ResourceKey<DecoratedPotPattern>, SpriteId> DECORATED_POT_SPRITES;
    public static final SpriteId DECORATED_POT_BASE;
    public static final SpriteId DECORATED_POT_SIDE;
    private static final SpriteId[] BED_TEXTURES;
@@ -75,10 +71,7 @@ public class Sheets {
    public static final MultiblockChestResources<SpriteId> CHEST_REGULAR;
    public static final MultiblockChestResources<SpriteId> CHEST_TRAPPED;
    public static final MultiblockChestResources<SpriteId> CHEST_CHRISTMAS;
-   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_UNAFFECTED;
-   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_EXPOSED;
-   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_WEATHERED;
-   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_OXIDIZED;
+   public static final WeatheringCopperCollection.ByState<MultiblockChestResources<SpriteId>> CHEST_COPPER;
 
    public Sheets() {
       super();
@@ -160,10 +153,6 @@ public class Sheets {
       return (SpriteId)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   public static @Nullable SpriteId getDecoratedPotSprite(final @Nullable ResourceKey<DecoratedPotPattern> pattern) {
-      return pattern == null ? null : (SpriteId)DECORATED_POT_SPRITES.get(pattern);
-   }
-
    public static SpriteId chooseSprite(final ChestRenderState.ChestMaterialType materialType, final ChestType type) {
       SpriteId var10000;
       switch (materialType) {
@@ -171,10 +160,10 @@ public class Sheets {
          case REGULAR -> var10000 = CHEST_REGULAR.select(type);
          case CHRISTMAS -> var10000 = CHEST_CHRISTMAS.select(type);
          case TRAPPED -> var10000 = CHEST_TRAPPED.select(type);
-         case COPPER_UNAFFECTED -> var10000 = CHEST_COPPER_UNAFFECTED.select(type);
-         case COPPER_EXPOSED -> var10000 = CHEST_COPPER_EXPOSED.select(type);
-         case COPPER_WEATHERED -> var10000 = CHEST_COPPER_WEATHERED.select(type);
-         case COPPER_OXIDIZED -> var10000 = CHEST_COPPER_OXIDIZED.select(type);
+         case COPPER_UNAFFECTED -> var10000 = (SpriteId)((MultiblockChestResources)CHEST_COPPER.unaffected()).select(type);
+         case COPPER_EXPOSED -> var10000 = (SpriteId)((MultiblockChestResources)CHEST_COPPER.exposed()).select(type);
+         case COPPER_WEATHERED -> var10000 = (SpriteId)((MultiblockChestResources)CHEST_COPPER.weathered()).select(type);
+         case COPPER_OXIDIZED -> var10000 = (SpriteId)((MultiblockChestResources)CHEST_COPPER.oxidized()).select(type);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -210,7 +199,6 @@ public class Sheets {
       SHIELD_PATTERN_BASE = SHIELD_MAPPER.defaultNamespaceApply("base");
       BANNER_SPRITES = new HashMap();
       SHIELD_SPRITES = new HashMap();
-      DECORATED_POT_SPRITES = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (holder) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)holder.value()).assetId())));
       DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
       DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
       BED_TEXTURES = (SpriteId[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedSprite).toArray((x$0) -> new SpriteId[x$0]);
@@ -227,21 +215,10 @@ public class Sheets {
       var10001 = CHEST_MAPPER;
       Objects.requireNonNull(var10001);
       CHEST_CHRISTMAS = var10000.<SpriteId>map(var10001::apply);
-      var10000 = ChestSpecialRenderer.COPPER_UNAFFECTED;
-      var10001 = CHEST_MAPPER;
-      Objects.requireNonNull(var10001);
-      CHEST_COPPER_UNAFFECTED = var10000.<SpriteId>map(var10001::apply);
-      var10000 = ChestSpecialRenderer.COPPER_EXPOSED;
-      var10001 = CHEST_MAPPER;
-      Objects.requireNonNull(var10001);
-      CHEST_COPPER_EXPOSED = var10000.<SpriteId>map(var10001::apply);
-      var10000 = ChestSpecialRenderer.COPPER_WEATHERED;
-      var10001 = CHEST_MAPPER;
-      Objects.requireNonNull(var10001);
-      CHEST_COPPER_WEATHERED = var10000.<SpriteId>map(var10001::apply);
-      var10000 = ChestSpecialRenderer.COPPER_OXIDIZED;
-      var10001 = CHEST_MAPPER;
-      Objects.requireNonNull(var10001);
-      CHEST_COPPER_OXIDIZED = var10000.<SpriteId>map(var10001::apply);
+      CHEST_COPPER = ChestSpecialRenderer.COPPER.<MultiblockChestResources<SpriteId>>map((r) -> {
+         SpriteMapper var10001 = CHEST_MAPPER;
+         Objects.requireNonNull(var10001);
+         return r.map(var10001::apply);
+      });
    }
 }

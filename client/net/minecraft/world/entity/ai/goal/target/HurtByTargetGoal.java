@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -33,7 +33,7 @@ public class HurtByTargetGoal extends TargetGoal {
       int timestamp = this.mob.getLastHurtByMobTimestamp();
       LivingEntity lastHurtByMob = this.mob.getLastHurtByMob();
       if (timestamp != this.timestamp && lastHurtByMob != null) {
-         if (lastHurtByMob.is(EntityType.PLAYER) && (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
+         if (lastHurtByMob.is(EntityTypes.PLAYER) && (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             return false;
          } else {
             for(Class<?> ignoreClass : this.toIgnoreDamage) {

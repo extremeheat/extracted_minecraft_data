@@ -38,7 +38,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -348,7 +348,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static void popResource(final Level level, final BlockPos pos, final ItemStack itemStack) {
-      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
+      double halfHeight = (double)EntityTypes.ITEM.getHeight() / 2.0;
       RandomSource random = level.getRandom();
       double x = (double)pos.getX() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
       double y = (double)pos.getY() + 0.5 + Mth.nextDouble(random, -0.25, 0.25) - halfHeight;
@@ -360,8 +360,8 @@ public class Block extends BlockBehaviour implements ItemLike {
       int stepX = face.getStepX();
       int stepY = face.getStepY();
       int stepZ = face.getStepZ();
-      double halfWidth = (double)EntityType.ITEM.getWidth() / 2.0;
-      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
+      double halfWidth = (double)EntityTypes.ITEM.getWidth() / 2.0;
+      double halfHeight = (double)EntityTypes.ITEM.getHeight() / 2.0;
       RandomSource random = level.getRandom();
       double x = (double)pos.getX() + 0.5 + (stepX == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepX * (0.5 + halfWidth));
       double y = (double)pos.getY() + 0.5 + (stepY == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepY * (0.5 + halfHeight)) - halfHeight;

@@ -75,7 +75,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
    }
 
    public ChestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      this(BlockEntityType.CHEST, worldPosition, blockState);
+      this(BlockEntityTypes.CHEST, worldPosition, blockState);
    }
 
    public int getContainerSize() {

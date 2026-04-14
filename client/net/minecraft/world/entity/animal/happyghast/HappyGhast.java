@@ -22,6 +22,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
@@ -205,7 +206,7 @@ public class HappyGhast extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityType.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
+      return EntityTypes.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {

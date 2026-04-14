@@ -64,7 +64,7 @@ public class LevelEventHandler {
          case 1023:
          case 1028:
          case 1038:
-            Camera camera = this.minecraft.gameRenderer.getMainCamera();
+            Camera camera = this.minecraft.gameRenderer.mainCamera();
             if (camera.isInitialized()) {
                Vec3 directionToEvent = Vec3.atCenterOf(pos).subtract(camera.position()).normalize();
                Vec3 soundPos = camera.position().add(directionToEvent.scale(2.0));

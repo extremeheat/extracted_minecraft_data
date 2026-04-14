@@ -39,7 +39,7 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
    };
 
    public SpawnerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.MOB_SPAWNER, worldPosition, blockState);
+      super(BlockEntityTypes.MOB_SPAWNER, worldPosition, blockState);
    }
 
    protected void loadAdditional(final ValueInput input) {

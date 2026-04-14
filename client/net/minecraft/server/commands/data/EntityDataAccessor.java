@@ -8,7 +8,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
-import net.minecraft.advancements.criterion.NbtPredicate;
+import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;

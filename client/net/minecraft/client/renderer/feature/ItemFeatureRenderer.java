@@ -110,7 +110,7 @@ public class ItemFeatureRenderer {
    }
 
    private static boolean useTransparentGlint(final RenderType renderType) {
-      return Minecraft.useShaderTransparency() && renderType.outputTarget() == OutputTarget.ITEM_ENTITY_TARGET;
+      return Minecraft.getInstance().gameRenderer.gameRenderState().useShaderTransparency() && renderType.outputTarget() == OutputTarget.ITEM_ENTITY_TARGET;
    }
 
    private static int getLayerColorSafe(final int[] layers, final int layer) {

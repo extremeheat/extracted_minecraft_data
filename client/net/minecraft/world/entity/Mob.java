@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -287,7 +287,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    }
 
    public boolean canAttack(final LivingEntity target) {
-      return !target.is(EntityType.GHAST) && super.canAttack(target);
+      return !target.is(EntityTypes.GHAST) && super.canAttack(target);
    }
 
    public boolean canUseNonMeleeWeapon(final ItemStack item) {

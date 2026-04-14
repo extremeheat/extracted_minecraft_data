@@ -12,6 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.TraceableEntity;
@@ -49,7 +50,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    public PrimedTnt(final Level level, final double x, final double y, final double z, final @Nullable LivingEntity owner) {
-      this(EntityType.TNT, level);
+      this(EntityTypes.TNT, level);
       this.setPos(x, y, z);
       double rot = level.getRandom().nextDouble() * 6.2831854820251465;
       this.setDeltaMovement(-Math.sin(rot) * 0.02, 0.20000000298023224, -Math.cos(rot) * 0.02);

@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -44,6 +44,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
@@ -278,7 +279,7 @@ public class Fox extends Animal {
    }
 
    public @Nullable Fox getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Fox baby = EntityType.FOX.create(level, EntitySpawnReason.BREEDING);
+      Fox baby = EntityTypes.FOX.create(level, EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : ((Fox)partner).getVariant());
       }
@@ -689,7 +690,7 @@ public class Fox extends Animal {
       };
       STALKABLE_PREY = (entity) -> entity instanceof Chicken || entity instanceof Rabbit;
       AVOID_PLAYERS = (entity) -> !entity.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity);
-      BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.6F).withEyeHeight(0.2975F);
+      BABY_DIMENSIONS = EntityTypes.FOX.getDimensions().scale(0.6F).withEyeHeight(0.2975F);
       TRUSTED_LIST_CODEC = EntityReference.codec().listOf();
    }
 

@@ -5,6 +5,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.item.Item;
@@ -21,11 +22,11 @@ public class Snowball extends ThrowableItemProjectile {
    }
 
    public Snowball(final Level level, final LivingEntity mob, final ItemStack itemStack) {
-      super(EntityType.SNOWBALL, mob, level, itemStack);
+      super(EntityTypes.SNOWBALL, mob, level, itemStack);
    }
 
    public Snowball(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-      super(EntityType.SNOWBALL, x, y, z, level, itemStack);
+      super(EntityTypes.SNOWBALL, x, y, z, level, itemStack);
    }
 
    protected Item getDefaultItem() {

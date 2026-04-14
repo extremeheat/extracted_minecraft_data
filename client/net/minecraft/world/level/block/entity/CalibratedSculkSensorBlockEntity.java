@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
    public CalibratedSculkSensorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
-      super(BlockEntityType.CALIBRATED_SCULK_SENSOR, worldPosition, blockState);
+      super(BlockEntityTypes.CALIBRATED_SCULK_SENSOR, worldPosition, blockState);
    }
 
    public VibrationSystem.User createVibrationUser() {

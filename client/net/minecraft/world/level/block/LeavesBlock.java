@@ -34,7 +34,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
    public static final BooleanProperty WATERLOGGED;
    protected final float leafParticleChance;
    private static final int TICK_DELAY = 1;
-   private static boolean cutoutLeaves;
+   private static volatile boolean cutoutLeaves;
 
    public abstract MapCodec<? extends LeavesBlock> codec();
 
