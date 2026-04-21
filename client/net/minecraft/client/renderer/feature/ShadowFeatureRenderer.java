@@ -1,9 +1,8 @@
 package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import java.util.List;
 import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -21,10 +20,10 @@ public class ShadowFeatureRenderer {
       super();
    }
 
-   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource) {
-      VertexConsumer buffer = bufferSource.getBuffer(SHADOW_RENDER_TYPE);
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
+      VertexConsumer buffer = context.bufferSource().getBuffer(SHADOW_RENDER_TYPE);
 
-      for(SubmitNodeStorage.ShadowSubmit submit : nodeCollection.getShadowSubmits()) {
+      for(Submit submit : nodeCollection.getShadowSubmits()) {
          for(EntityRenderState.ShadowPiece piece : submit.pieces()) {
             AABB aabb = piece.shapeBelow().bounds();
             float x01 = piece.relativeX() + (float)aabb.minX;
@@ -50,5 +49,11 @@ public class ShadowFeatureRenderer {
    private static void shadowVertex(final Matrix4fc pose, final VertexConsumer buffer, final int color, final float x, final float y, final float z, final float u, final float v) {
       Vector3f position = pose.transformPosition(x, y, z, new Vector3f());
       buffer.addVertex(position.x(), position.y(), position.z(), color, u, v, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
+   }
+
+   public static record Submit(Matrix4fc pose, float radius, List<EntityRenderState.ShadowPiece> pieces) {
+      public Submit {
+         super();
+      }
    }
 }

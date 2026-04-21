@@ -1,6 +1,7 @@
 package net.minecraft.util.profiling.jfr.stats;
 
 import com.google.common.base.MoreObjects;
+import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -9,8 +10,10 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordedThread;
+import org.slf4j.Logger;
 
 public record ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
+   public static final Logger LOGGER = LogUtils.getLogger();
    private static final String UNKNOWN_THREAD = "unknown";
 
    public ThreadAllocationStat {
@@ -28,11 +31,15 @@ public record ThreadAllocationStat(Instant timestamp, String threadName, long to
       Map<String, List<ThreadAllocationStat>> byThread = (Map)stats.stream().collect(Collectors.groupingBy((it) -> it.threadName));
       byThread.forEach((thread, threadStats) -> {
          if (threadStats.size() >= 2) {
-            ThreadAllocationStat first = (ThreadAllocationStat)threadStats.get(0);
-            ThreadAllocationStat last = (ThreadAllocationStat)threadStats.get(threadStats.size() - 1);
+            ThreadAllocationStat first = (ThreadAllocationStat)threadStats.getFirst();
+            ThreadAllocationStat last = (ThreadAllocationStat)threadStats.getLast();
             long duration = Duration.between(first.timestamp, last.timestamp).getSeconds();
-            long diff = last.totalBytes - first.totalBytes;
-            allocationsPerSecondByThread.put(thread, (double)diff / (double)duration);
+            if (duration <= 0L) {
+               LOGGER.warn("Thread allocation stat timestamps are not in chronological order for thread {}, skipping it", thread);
+            } else {
+               long diff = last.totalBytes - first.totalBytes;
+               allocationsPerSecondByThread.put(thread, (double)diff / (double)duration);
+            }
          }
       });
       return new Summary(allocationsPerSecondByThread);

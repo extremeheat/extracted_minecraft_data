@@ -318,6 +318,7 @@ public class ItemInHandRenderer {
    }
 
    public void renderHandsWithItems(final float frameInterp, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LocalPlayer player, final int lightCoords) {
+      this.synchronizeVisibleHandItems(player.getMainHandItem(), player.getOffhandItem());
       float attackValue = player.getAttackAnim(frameInterp);
       InteractionHand attackHand = (InteractionHand)MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND);
       float xRot = player.getXRot(frameInterp);
@@ -544,12 +545,7 @@ public class ItemInHandRenderer {
       }
    }
 
-   public void tick() {
-      this.oMainHandHeight = this.mainHandHeight;
-      this.oOffHandHeight = this.offHandHeight;
-      LocalPlayer player = this.minecraft.player;
-      ItemStack nextMainHand = player.getMainHandItem();
-      ItemStack nextOffHand = player.getOffhandItem();
+   private void synchronizeVisibleHandItems(final ItemStack nextMainHand, final ItemStack nextOffHand) {
       if (this.shouldInstantlyReplaceVisibleItem(this.mainHandItem, nextMainHand)) {
          this.mainHandItem = nextMainHand;
       }
@@ -558,6 +554,15 @@ public class ItemInHandRenderer {
          this.offHandItem = nextOffHand;
       }
 
+   }
+
+   public void tick() {
+      this.oMainHandHeight = this.mainHandHeight;
+      this.oOffHandHeight = this.offHandHeight;
+      LocalPlayer player = this.minecraft.player;
+      ItemStack nextMainHand = player.getMainHandItem();
+      ItemStack nextOffHand = player.getOffhandItem();
+      this.synchronizeVisibleHandItems(nextMainHand, nextOffHand);
       if (player.isHandsBusy()) {
          this.mainHandHeight = Mth.clamp(this.mainHandHeight - 0.4F, 0.0F, 1.0F);
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);

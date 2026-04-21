@@ -147,7 +147,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
       AtlasManager atlasManager = minecraft.getAtlasManager();
       this.submitNodeStorage = new SubmitNodeStorage();
-      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, modelManager, bufferSource, atlasManager, this.renderBuffers.outlineBufferSource(), this.renderBuffers.crumblingBufferSource(), minecraft.font, this.gameRenderState);
+      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, modelManager, bufferSource, atlasManager, this.renderBuffers.outlineBufferSource(), minecraft.font, this.gameRenderState);
       this.guiRenderer = new GuiRenderer(this.gameRenderState.guiRenderState, bufferSource, this.submitNodeStorage, this.featureRenderDispatcher, List.of(new GuiEntityRenderer(minecraft.getEntityRenderDispatcher()), new GuiSkinRenderer(), new GuiBookModelRenderer(), new GuiBannerResultRenderer(atlasManager), new GuiSignRenderer(atlasManager), new GuiProfilerChartRenderer()));
       this.screenEffectRenderer = new ScreenEffectRenderer(minecraft, atlasManager);
       this.debugCrosshairRenderer = new DebugCrosshairRenderer();

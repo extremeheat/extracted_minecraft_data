@@ -49,6 +49,10 @@ public class CommandEncoder {
    }
 
    public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+      return this.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth, new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0)));
+   }
+
+   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
@@ -77,12 +81,17 @@ public class CommandEncoder {
                }
             }
 
-            this.isInRenderPass = true;
-            if (this.profiler != null) {
-               this.profiler.pushZone(this, (String)label.get());
-            }
+            if (renderArea.x() >= 0 && renderArea.y() >= 0 && renderArea.x() + renderArea.width() <= colorTexture.getWidth(0) && renderArea.y() + renderArea.height() <= colorTexture.getHeight(0)) {
+               this.isInRenderPass = true;
+               if (this.profiler != null) {
+                  this.profiler.pushZone(this, (String)label.get());
+               }
 
-            return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth), this.device, this::submitRenderPass);
+               return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth, renderArea), this.device, this::submitRenderPass, renderArea);
+            } else {
+               String var10002 = String.valueOf(renderArea);
+               throw new IllegalArgumentException("RenderPass render area " + var10002 + " is out of bounds for color texture of " + colorTexture.getWidth(0) + "x" + colorTexture.getHeight(0));
+            }
          }
       }
    }

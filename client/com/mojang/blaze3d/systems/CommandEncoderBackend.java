@@ -15,9 +15,7 @@ import org.jspecify.annotations.Nullable;
 public interface CommandEncoderBackend {
    void submit();
 
-   RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor);
-
-   RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor, @Nullable GpuTextureView depthTexture, OptionalDouble clearDepth);
+   RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor, @Nullable GpuTextureView depthTexture, OptionalDouble clearDepth, RenderPass.RenderArea renderArea);
 
    void submitRenderPass();
 

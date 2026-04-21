@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vulkan;
 
 import com.mojang.blaze3d.GLFWErrorCapture;
+import com.mojang.blaze3d.platform.NativeLibrariesBootstrap;
 import com.mojang.blaze3d.shaders.GpuDebugOptions;
 import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.systems.BackendCreationException;
@@ -16,6 +17,7 @@ import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
@@ -34,6 +36,7 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceDynamicRenderingFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
+import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
 import org.lwjgl.vulkan.VkPhysicalDeviceSynchronization2Features;
 import org.lwjgl.vulkan.VkPhysicalDeviceVulkan12Features;
@@ -62,14 +65,16 @@ public class VulkanBackend implements GpuBackend {
 
    public void handleWindowCreationErrors(final GLFWErrorCapture.@Nullable Error error) throws BackendCreationException {
       if (error != null) {
-         throw new BackendCreationException(error.toString(), BackendCreationException.Reason.GLFW_ERROR);
+         throw new BackendCreationException(String.format(Locale.ROOT, "GLFW_ERROR: 0x%X", error.error()), BackendCreationException.Reason.GLFW_ERROR);
       } else {
          throw new BackendCreationException("Failed to create window for Vulkan", BackendCreationException.Reason.GLFW_ERROR);
       }
    }
 
    public GpuDevice createDevice(final long window, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) throws BackendCreationException {
-      if (!GLFWVulkan.glfwVulkanSupported()) {
+      if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
+         throw new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
+      } else if (!GLFWVulkan.glfwVulkanSupported()) {
          throw new BackendCreationException("Vulkan is not supported", BackendCreationException.Reason.GLFW_ERROR);
       } else {
          Set<String> deviceExtensions = new HashSet(REQUIRED_DEVICE_EXTENSIONS);
@@ -81,13 +86,13 @@ public class VulkanBackend implements GpuBackend {
          try {
             boolean renderdocAttached = "1".equals(System.getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE"));
             instance = new VulkanInstance(debugOptions.logLevel(), debugOptions.useLabels() || renderdocAttached, debugOptions.useValidationLayers());
-            physicalDevice = this.findPhysicalDevice(instance);
+            physicalDevice = findPhysicalDevice(instance);
             if (physicalDevice.hasDeviceExtension("VK_KHR_portability_subset")) {
                deviceExtensions.add("VK_KHR_portability_subset");
             }
 
-            device = this.createDevice(deviceExtensions, physicalDevice);
-            vma = this.createVma(device);
+            device = createDevice(deviceExtensions, physicalDevice);
+            vma = createVma(device);
          } catch (BackendCreationException e) {
             if (vma != 0L) {
                Vma.vmaDestroyAllocator(vma);
@@ -112,36 +117,36 @@ public class VulkanBackend implements GpuBackend {
       }
    }
 
-   private long createVma(final VkDevice vkDevice) throws BackendCreationException {
+   private static long createVma(final VkDevice vkDevice) throws BackendCreationException {
       MemoryStack stack = MemoryStack.stackPush();
 
-      long var6;
+      long var5;
       try {
          VmaVulkanFunctions vmaVulkanFunctions = VmaVulkanFunctions.calloc(stack).set(vkDevice.getPhysicalDevice().getInstance(), vkDevice);
          VmaAllocatorCreateInfo createInfo = VmaAllocatorCreateInfo.calloc(stack).instance(vkDevice.getPhysicalDevice().getInstance()).vulkanApiVersion(VK12.VK_API_VERSION_1_2).device(vkDevice).physicalDevice(vkDevice.getPhysicalDevice()).pVulkanFunctions(vmaVulkanFunctions);
          PointerBuffer pointer = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(Vma.vmaCreateAllocator(createInfo, pointer), "Failed to create VMA allocator", BackendCreationException.Reason.OTHER);
-         var6 = pointer.get(0);
-      } catch (Throwable var9) {
+         var5 = pointer.get(0);
+      } catch (Throwable var8) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var8) {
-               var9.addSuppressed(var8);
+            } catch (Throwable var7) {
+               var8.addSuppressed(var7);
             }
          }
 
-         throw var9;
+         throw var8;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var6;
+      return var5;
    }
 
-   private VulkanPhysicalDevice findPhysicalDevice(final VulkanInstance instance) throws BackendCreationException {
+   private static VulkanPhysicalDevice findPhysicalDevice(final VulkanInstance instance) throws BackendCreationException {
       VkPhysicalDevice firstDevice = null;
       VkPhysicalDevice selectedDevice = null;
       MemoryStack stack = MemoryStack.stackPush();
@@ -167,27 +172,27 @@ public class VulkanBackend implements GpuBackend {
                   firstDevice = currentDevice;
                }
 
-               if (this.isDeviceSuitable(currentDevice)) {
+               if (deviceMeetsFeatureQueryRequirements(currentDevice) && isDeviceSuitable(currentDevice)) {
                   if (selectedDevice == null) {
                      selectedDevice = currentDevice;
-                  } else if (this.isDeviceDiscrete(currentDevice) && !this.isDeviceDiscrete(selectedDevice)) {
-                     LOGGER.info("Preferring discrete GPU: {}", this.getDeviceName(currentDevice));
+                  } else if (isDeviceDiscrete(currentDevice) && !isDeviceDiscrete(selectedDevice)) {
+                     LOGGER.info("Preferring discrete GPU: {}", getDeviceName(currentDevice));
                      selectedDevice = currentDevice;
                      break;
                   }
                }
             }
          }
-      } catch (Throwable var11) {
+      } catch (Throwable var10) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var10) {
-               var11.addSuppressed(var10);
+            } catch (Throwable var9) {
+               var10.addSuppressed(var9);
             }
          }
 
-         throw var11;
+         throw var10;
       }
 
       if (stack != null) {
@@ -198,7 +203,7 @@ public class VulkanBackend implements GpuBackend {
          throw new BackendCreationException("No Vulkan capable devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
       } else {
          if (selectedDevice == null) {
-            this.throwForMissingRequrements(firstDevice);
+            throwForMissingRequrements(firstDevice);
 
             assert false;
          }
@@ -207,8 +212,35 @@ public class VulkanBackend implements GpuBackend {
       }
    }
 
-   private boolean isDeviceSuitable(final VkPhysicalDevice vkPhysicalDevice) {
-      boolean var16;
+   private static boolean deviceMeetsFeatureQueryRequirements(final VkPhysicalDevice vkPhysicalDevice) {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      boolean var3;
+      try {
+         VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.calloc(stack);
+         VK12.vkGetPhysicalDeviceProperties(vkPhysicalDevice, properties);
+         var3 = properties.apiVersion() >= VK12.VK_API_VERSION_1_1;
+      } catch (Throwable var5) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return var3;
+   }
+
+   private static boolean isDeviceSuitable(final VkPhysicalDevice vkPhysicalDevice) {
+      boolean var15;
       try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
          MemoryStack stack = MemoryStack.stackPush();
 
@@ -249,119 +281,7 @@ public class VulkanBackend implements GpuBackend {
                LOGGER.debug("Device [{}] is suitable", deviceName);
             }
 
-            var16 = isSuitableDevice;
-         } catch (Throwable var12) {
-            if (stack != null) {
-               try {
-                  stack.close();
-               } catch (Throwable var11) {
-                  var12.addSuppressed(var11);
-               }
-            }
-
-            throw var12;
-         }
-
-         if (stack != null) {
-            stack.close();
-         }
-      }
-
-      return var16;
-   }
-
-   private boolean isDeviceDiscrete(final VkPhysicalDevice vkPhysicalDevice) {
-      MemoryStack stack = MemoryStack.stackPush();
-
-      boolean var4;
-      try {
-         VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
-         VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
-         var4 = deviceProperties.properties().deviceType() == 2;
-      } catch (Throwable var6) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var5) {
-               var6.addSuppressed(var5);
-            }
-         }
-
-         throw var6;
-      }
-
-      if (stack != null) {
-         stack.close();
-      }
-
-      return var4;
-   }
-
-   private String getDeviceName(final VkPhysicalDevice vkPhysicalDevice) {
-      MemoryStack stack = MemoryStack.stackPush();
-
-      String var4;
-      try {
-         VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
-         VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
-         var4 = deviceProperties.properties().deviceNameString();
-      } catch (Throwable var6) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var5) {
-               var6.addSuppressed(var5);
-            }
-         }
-
-         throw var6;
-      }
-
-      if (stack != null) {
-         stack.close();
-      }
-
-      return var4;
-   }
-
-   private void throwForMissingRequrements(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
-      List<String> missingCapabilities = new ReferenceArrayList();
-      BackendCreationException.Reason mostProminentReason = BackendCreationException.Reason.OTHER;
-
-      try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
-         MemoryStack stack = MemoryStack.stackPush();
-
-         try {
-            VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
-
-            for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
-               requiredDeviceFeature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
-            }
-
-            VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
-
-            for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
-               if (!requiredDeviceFeature.get(deviceFeatures)) {
-                  mostProminentReason = BackendCreationException.Reason.VULKAN_MISSING_FEATURE;
-                  missingCapabilities.add(requiredDeviceFeature.name());
-               }
-            }
-
-            Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
-            if (!missingExtensions.isEmpty()) {
-               mostProminentReason = BackendCreationException.Reason.VULKAN_MISSING_EXTENSION;
-               missingCapabilities.addAll(missingExtensions);
-            }
-
-            if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
-               mostProminentReason = BackendCreationException.Reason.VULKAN_NO_GRAPHICS_QUEUE;
-               missingCapabilities.add("COMBINED_GRAPHICS_COMPUTE_PRESENT_QUEUE");
-            }
-
-            if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK12.VK_API_VERSION_1_2) {
-               mostProminentReason = BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW;
-               missingCapabilities.add("VULKAN_CORE_1_2");
-            }
+            var15 = isSuitableDevice;
          } catch (Throwable var11) {
             if (stack != null) {
                try {
@@ -379,13 +299,128 @@ public class VulkanBackend implements GpuBackend {
          }
       }
 
-      throw new BackendCreationException("Device missing capabilities", mostProminentReason, missingCapabilities);
+      return var15;
    }
 
-   private VkDevice createDevice(final Collection<String> deviceExtensions, final VulkanPhysicalDevice physicalDevice) throws BackendCreationException {
+   private static boolean isDeviceDiscrete(final VkPhysicalDevice vkPhysicalDevice) {
       MemoryStack stack = MemoryStack.stackPush();
 
-      VkDevice var10;
+      boolean var3;
+      try {
+         VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
+         VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
+         var3 = deviceProperties.properties().deviceType() == 2;
+      } catch (Throwable var5) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return var3;
+   }
+
+   private static String getDeviceName(final VkPhysicalDevice vkPhysicalDevice) {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      String var3;
+      try {
+         VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
+         VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
+         var3 = deviceProperties.properties().deviceNameString();
+      } catch (Throwable var5) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return var3;
+   }
+
+   private static void throwForMissingRequrements(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
+      List<String> missingCapabilities = new ReferenceArrayList();
+      BackendCreationException.Reason mostProminentReason = BackendCreationException.Reason.OTHER;
+      if (!deviceMeetsFeatureQueryRequirements(vkPhysicalDevice)) {
+         throw new BackendCreationException("Device missing capabilities", BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW, List.of("VULKAN_CORE_1_1"));
+      } else {
+         try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
+            MemoryStack stack = MemoryStack.stackPush();
+
+            try {
+               VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
+
+               for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
+                  requiredDeviceFeature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
+               }
+
+               VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
+
+               for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
+                  if (!requiredDeviceFeature.get(deviceFeatures)) {
+                     mostProminentReason = BackendCreationException.Reason.VULKAN_MISSING_FEATURE;
+                     missingCapabilities.add(requiredDeviceFeature.name());
+                  }
+               }
+
+               Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
+               if (!missingExtensions.isEmpty()) {
+                  mostProminentReason = BackendCreationException.Reason.VULKAN_MISSING_EXTENSION;
+                  missingCapabilities.addAll(missingExtensions);
+               }
+
+               if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
+                  mostProminentReason = BackendCreationException.Reason.VULKAN_NO_GRAPHICS_QUEUE;
+                  missingCapabilities.add("COMBINED_GRAPHICS_COMPUTE_PRESENT_QUEUE");
+               }
+
+               if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK12.VK_API_VERSION_1_2) {
+                  mostProminentReason = BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW;
+                  missingCapabilities.add("VULKAN_CORE_1_2");
+               }
+            } catch (Throwable var10) {
+               if (stack != null) {
+                  try {
+                     stack.close();
+                  } catch (Throwable var9) {
+                     var10.addSuppressed(var9);
+                  }
+               }
+
+               throw var10;
+            }
+
+            if (stack != null) {
+               stack.close();
+            }
+         }
+
+         throw new BackendCreationException("Device missing capabilities", mostProminentReason, missingCapabilities);
+      }
+   }
+
+   private static VkDevice createDevice(final Collection<String> deviceExtensions, final VulkanPhysicalDevice physicalDevice) throws BackendCreationException {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      VkDevice var9;
       try {
          VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
 
@@ -395,10 +430,10 @@ public class VulkanBackend implements GpuBackend {
 
          Int2IntMap queuesToCreate = physicalDevice.queueFamilyCreateInfoMap();
          VkDeviceQueueCreateInfo.Buffer queueCreationInfo = VkDeviceQueueCreateInfo.calloc(queuesToCreate.size(), stack);
-         ObjectIterator var7 = queuesToCreate.int2IntEntrySet().iterator();
+         ObjectIterator var6 = queuesToCreate.int2IntEntrySet().iterator();
 
-         while(var7.hasNext()) {
-            Int2IntMap.Entry familyCount = (Int2IntMap.Entry)var7.next();
+         while(var6.hasNext()) {
+            Int2IntMap.Entry familyCount = (Int2IntMap.Entry)var6.next();
             queueCreationInfo.sType$Default();
             queueCreationInfo.queueFamilyIndex(familyCount.getIntKey());
             queueCreationInfo.pQueuePriorities(stack.callocFloat(familyCount.getIntValue()));
@@ -420,24 +455,24 @@ public class VulkanBackend implements GpuBackend {
          deviceCreateInfo.pEnabledFeatures(deviceFeatures.features());
          PointerBuffer pointer = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(VK12.vkCreateDevice(physicalDevice.vkPhysicalDevice(), deviceCreateInfo, (VkAllocationCallbacks)null, pointer), "Failed to create device", BackendCreationException.Reason.VULKAN_NO_DEVICE);
-         var10 = new VkDevice(pointer.get(0), physicalDevice.vkPhysicalDevice(), deviceCreateInfo);
-      } catch (Throwable var12) {
+         var9 = new VkDevice(pointer.get(0), physicalDevice.vkPhysicalDevice(), deviceCreateInfo);
+      } catch (Throwable var11) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var11) {
-               var12.addSuppressed(var11);
+            } catch (Throwable var10) {
+               var11.addSuppressed(var10);
             }
          }
 
-         throw var12;
+         throw var11;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var10;
+      return var9;
    }
 
    static {

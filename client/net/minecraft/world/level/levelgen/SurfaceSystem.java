@@ -3,11 +3,10 @@ package net.minecraft.world.level.levelgen;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import org.jspecify.annotations.Nullable;
 
 public class SurfaceSystem {
    private static final BlockState WHITE_TERRACOTTA;
@@ -66,7 +66,7 @@ public class SurfaceSystem {
       this.icebergSurfaceNoise = randomState.getOrCreateNoise(Noises.ICEBERG_SURFACE);
    }
 
-   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final Registry<Biome> biomes, final boolean useLegacyRandom, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final SurfaceRules.RuleSource ruleSource) {
+   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final boolean useLegacyRandom, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final SurfaceRules.RuleSource ruleSource, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       final BlockPos.MutableBlockPos columnPos = new BlockPos.MutableBlockPos();
       final ChunkPos chunkPos = protoChunk.getPos();
       int minBlockX = chunkPos.getMinBlockX();
@@ -96,7 +96,7 @@ public class SurfaceSystem {
          }
       };
       Objects.requireNonNull(biomeManager);
-      SurfaceRules.Context context = new SurfaceRules.Context(this, randomState, protoChunk, noiseChunk, biomeManager::getBiome, biomes, generationContext);
+      SurfaceRules.Context context = new SurfaceRules.Context(this, randomState, protoChunk, noiseChunk, biomeManager::getBiome, generationContext, possibleBiomes);
       SurfaceRules.SurfaceRule rule = (SurfaceRules.SurfaceRule)ruleSource.apply(context);
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
@@ -142,7 +142,7 @@ public class SurfaceSystem {
 
                   ++stoneAboveDepth;
                   int stoneBelowDepth = y - nextCeilingStoneY + 1;
-                  context.updateY(stoneAboveDepth, stoneBelowDepth, waterHeight, blockX, y, blockZ);
+                  context.updateY(stoneAboveDepth, stoneBelowDepth, waterHeight, y);
                   if (old == this.defaultBlock) {
                      BlockState state = rule.tryApply(blockX, y, blockZ);
                      if (state != null) {
@@ -180,13 +180,13 @@ public class SurfaceSystem {
    /** @deprecated */
    @Deprecated
    public Optional<BlockState> topMaterial(final SurfaceRules.RuleSource ruleSource, final CarvingContext carvingContext, final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final NoiseChunk noiseChunk, final BlockPos pos, final boolean underFluid) {
-      SurfaceRules.Context context = new SurfaceRules.Context(this, carvingContext.randomState(), chunk, noiseChunk, biomeGetter, carvingContext.registryAccess().lookupOrThrow(Registries.BIOME), carvingContext);
+      SurfaceRules.Context context = new SurfaceRules.Context(this, carvingContext.randomState(), chunk, noiseChunk, biomeGetter, carvingContext, (Set)null);
       SurfaceRules.SurfaceRule rule = (SurfaceRules.SurfaceRule)ruleSource.apply(context);
       int blockX = pos.getX();
       int blockY = pos.getY();
       int blockZ = pos.getZ();
       context.updateXZ(blockX, blockZ);
-      context.updateY(1, 1, underFluid ? blockY + 1 : -2147483648, blockX, blockY, blockZ);
+      context.updateY(1, 1, underFluid ? blockY + 1 : -2147483648, blockY);
       BlockState state = rule.tryApply(blockX, blockY, blockZ);
       return Optional.ofNullable(state);
    }

@@ -6,13 +6,14 @@ import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.network.chat.Component;
@@ -20,10 +21,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeStorage implements SubmitNodeCollector {
@@ -41,8 +39,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitShadow(poseStack, radius, pieces);
    }
 
-   public void submitNameTag(final PoseStack poseStack, final @Nullable Vec3 nameTagAttachment, final int offset, final Component name, final boolean seeThrough, final int lightCoords, final double distanceToCameraSq, final CameraRenderState camera) {
-      this.order(0).submitNameTag(poseStack, nameTagAttachment, offset, name, seeThrough, lightCoords, distanceToCameraSq, camera);
+   public void submitNameTag(final PoseStack poseStack, final @Nullable Vec3 nameTagAttachment, final int offset, final Component name, final boolean seeThrough, final int lightCoords, final CameraRenderState camera) {
+      this.order(0).submitNameTag(poseStack, nameTagAttachment, offset, name, seeThrough, lightCoords, camera);
    }
 
    public void submitText(final PoseStack poseStack, final float x, final float y, final FormattedCharSequence string, final boolean dropShadow, final Font.DisplayMode displayMode, final int lightCoords, final int color, final int backgroundColor, final int outlineColor) {
@@ -69,8 +67,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitBlockModel(poseStack, renderType, modelParts, tintLayers, lightCoords, overlayCoords, outlineColor);
    }
 
-   public void submitBreakingBlockModel(final PoseStack poseStack, final BlockStateModel model, final long seed, final int progress) {
-      this.order(0).submitBreakingBlockModel(poseStack, model, seed, progress);
+   public void submitBreakingBlockModel(final PoseStack poseStack, final List<BlockStateModelPart> parts, final int progress) {
+      this.order(0).submitBreakingBlockModel(poseStack, parts, progress);
    }
 
    public void submitShapeOutline(final PoseStack poseStack, final VoxelShape shape, final RenderType renderType, final int color, final float width, final boolean afterTerrain) {
@@ -85,8 +83,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitCustomGeometry(poseStack, renderType, outlineColor, customGeometryRenderer);
    }
 
-   public void submitParticleGroup(final SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer) {
-      this.order(0).submitParticleGroup(particleGroupRenderer);
+   public void submitQuadParticleGroup(final QuadParticleRenderState particles) {
+      this.order(0).submitQuadParticleGroup(particles);
+   }
+
+   public void submitGizmoPrimitives(final DrawableGizmoPrimitives.Group group, final CameraRenderState camera, final boolean onTop) {
+      this.order(0).submitGizmoPrimitives(group, camera, onTop);
    }
 
    public void clear() {
@@ -100,83 +102,5 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public Int2ObjectAVLTreeMap<SubmitNodeCollection> getSubmitsPerOrder() {
       return this.submitsPerOrder;
-   }
-
-   public static record ShadowSubmit(Matrix4fc pose, float radius, List<EntityRenderState.ShadowPiece> pieces) {
-      public ShadowSubmit {
-         super();
-      }
-   }
-
-   public static record FlameSubmit(PoseStack.Pose pose, EntityRenderState entityRenderState, Quaternionf rotation) {
-      public FlameSubmit {
-         super();
-      }
-   }
-
-   public static record NameTagSubmit(Matrix4fc pose, float x, float y, Component text, int lightCoords, int color, int backgroundColor, double distanceToCameraSq) {
-      public NameTagSubmit {
-         super();
-      }
-   }
-
-   public static record TextSubmit(Matrix4fc pose, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
-      public TextSubmit {
-         super();
-      }
-   }
-
-   public static record LeashSubmit(Matrix4f pose, EntityRenderState.LeashState leashState) {
-      public LeashSubmit {
-         super();
-      }
-   }
-
-   public static record ModelSubmit<S>(PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      public ModelSubmit {
-         super();
-      }
-   }
-
-   public static record TranslucentModelSubmit<S>(ModelSubmit<S> modelSubmit, RenderType renderType, Vector3f position) {
-      public TranslucentModelSubmit {
-         super();
-      }
-   }
-
-   public static record MovingBlockSubmit(Matrix4fc pose, MovingBlockRenderState movingBlockRenderState) {
-      public MovingBlockSubmit {
-         super();
-      }
-   }
-
-   public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, List<BlockStateModelPart> modelParts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
-      public BlockModelSubmit {
-         super();
-      }
-   }
-
-   public static record ItemSubmit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) {
-      public ItemSubmit {
-         super();
-      }
-   }
-
-   public static record CustomGeometrySubmit(PoseStack.Pose pose, RenderType renderType, int outlineColor, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-      public CustomGeometrySubmit {
-         super();
-      }
-   }
-
-   public static record BreakingBlockModelSubmit(PoseStack.Pose pose, BlockStateModel model, long seed, int progress) {
-      public BreakingBlockModelSubmit {
-         super();
-      }
-   }
-
-   public static record ShapeOutlineSubmit(PoseStack.Pose pose, VoxelShape shape, RenderType renderType, int color, float width, boolean afterTerrain) {
-      public ShapeOutlineSubmit {
-         super();
-      }
    }
 }

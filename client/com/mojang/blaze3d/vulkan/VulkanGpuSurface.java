@@ -194,8 +194,8 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR.calloc(stack).sType$Default();
             swapchainCreateInfo.surface(this.surface);
             int currentPresentMode = VulkanConst.toVk(config.presentMode());
-            int requestedImageCount = currentPresentMode == 1 ? 3 : 2;
-            swapchainCreateInfo.minImageCount(Math.max(requestedImageCount, surfaceCapabilities.minImageCount()));
+            int requestedImageCount = 3;
+            swapchainCreateInfo.minImageCount(Math.max(3, surfaceCapabilities.minImageCount()));
             swapchainCreateInfo.imageFormat(this.swapchainImageFormat);
             swapchainCreateInfo.imageColorSpace(0);
             swapchainCreateInfo.imageExtent(VkExtent2D.calloc(stack).set(config.width(), config.height()));

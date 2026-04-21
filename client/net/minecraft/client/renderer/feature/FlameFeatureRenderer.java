@@ -2,15 +2,12 @@ package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.util.LightCoordsUtil;
 import org.joml.Quaternionf;
 
@@ -19,27 +16,30 @@ public class FlameFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager) {
-      for(SubmitNodeStorage.FlameSubmit flameSubmit : nodeCollection.getFlameSubmits()) {
-         this.renderFlame(flameSubmit.pose(), bufferSource, flameSubmit.entityRenderState(), flameSubmit.rotation(), atlasManager);
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
+      VertexConsumer buffer = context.bufferSource().getBuffer(RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS));
+      TextureAtlasSprite fire1 = context.atlasManager().get(ModelBakery.FIRE_0);
+      TextureAtlasSprite fire2 = context.atlasManager().get(ModelBakery.FIRE_1);
+
+      for(Submit submit : nodeCollection.getFlameSubmits()) {
+         this.renderFlame(submit, buffer, fire1, fire2);
       }
 
    }
 
-   private void renderFlame(final PoseStack.Pose pose, final MultiBufferSource bufferSource, final EntityRenderState state, final Quaternionf rotation, final AtlasManager atlasManager) {
-      TextureAtlasSprite fire1 = atlasManager.get(ModelBakery.FIRE_0);
-      TextureAtlasSprite fire2 = atlasManager.get(ModelBakery.FIRE_1);
+   private void renderFlame(final Submit submit, final VertexConsumer buffer, final TextureAtlasSprite fire1, final TextureAtlasSprite fire2) {
+      PoseStack.Pose pose = submit.pose();
+      EntityRenderState state = submit.entityRenderState();
       float s = state.boundingBoxWidth * 1.4F;
       pose.scale(s, s, s);
       float r = 0.5F;
       float xo = 0.0F;
       float h = state.boundingBoxHeight / s;
       float yo = 0.0F;
-      pose.rotate(rotation);
+      pose.rotate(submit.rotation());
       pose.translate(0.0F, 0.0F, 0.3F - (float)((int)h) * 0.02F);
       float zo = 0.0F;
       int ss = 0;
-      VertexConsumer buffer = bufferSource.getBuffer(RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS));
 
       for(int lightCoords = LightCoordsUtil.withBlock(state.lightCoords, 15); h > 0.0F; ++ss) {
          TextureAtlasSprite tex = ss % 2 == 0 ? fire1 : fire2;
@@ -67,5 +67,11 @@ public class FlameFeatureRenderer {
 
    private static void fireVertex(final PoseStack.Pose pose, final VertexConsumer buffer, final float x, final float y, final float z, final float u, final float v, final int lightCoords) {
       buffer.addVertex(pose, x, y, z).setColor(-1).setUv(u, v).setUv1(0, 10).setLight(lightCoords).setNormal(pose, 0.0F, 1.0F, 0.0F);
+   }
+
+   public static record Submit(PoseStack.Pose pose, EntityRenderState entityRenderState, Quaternionf rotation) {
+      public Submit {
+         super();
+      }
    }
 }

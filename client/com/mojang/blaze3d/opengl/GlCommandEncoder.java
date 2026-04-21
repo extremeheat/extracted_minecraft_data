@@ -15,6 +15,7 @@ import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -55,11 +56,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
    public void submit() {
    }
 
-   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
-      return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
-   }
-
-   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
       this.device.debugLabels().pushDebugGroup(label);
       int fbo = ((GlTextureView)colorTexture).getFbo(this.device.directStateAccess(), depthTexture == null ? null : depthTexture.texture());
       GlStateManager._glBindFramebuffer(36160, fbo);
@@ -75,8 +72,15 @@ class GlCommandEncoder implements CommandEncoderBackend {
          clearMask |= 256;
       }
 
+      boolean needsScissor = !renderArea.fillsTexture(colorTexture);
       if (clearMask != 0) {
-         GlStateManager._disableScissorTest();
+         if (needsScissor) {
+            GlStateManager._enableScissorTest();
+            GlStateManager._scissorBox(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
+         } else {
+            GlStateManager._disableScissorTest();
+         }
+
          GlStateManager._depthMask(true);
          GlStateManager._colorMask(15);
          GlStateManager._clear(clearMask);
@@ -84,7 +88,12 @@ class GlCommandEncoder implements CommandEncoderBackend {
 
       GlStateManager._viewport(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0));
       this.lastPipeline = null;
-      return new GlRenderPass(this, this.device, depthTexture != null);
+      ScissorState scissorState = new ScissorState();
+      if (needsScissor) {
+         scissorState.enable(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
+      }
+
+      return new GlRenderPass(this, this.device, depthTexture != null, scissorState);
    }
 
    public void clearColorTexture(final GpuTexture colorTexture, final int clearColor) {

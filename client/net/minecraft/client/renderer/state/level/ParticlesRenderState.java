@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.state.level;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 
 public class ParticlesRenderState {
    public final List<ParticleGroupRenderState> particles = new ArrayList();
@@ -20,9 +20,9 @@ public class ParticlesRenderState {
       this.particles.add(state);
    }
 
-   public void submit(final SubmitNodeStorage submitNodeStorage, final CameraRenderState camera) {
+   public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       for(ParticleGroupRenderState particle : this.particles) {
-         particle.submit(submitNodeStorage, camera);
+         particle.submit(submitNodeCollector, camera);
       }
 
    }

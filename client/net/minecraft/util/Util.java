@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.escape.Escaper;
+import com.google.common.escape.Escapers;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
@@ -46,6 +48,7 @@ import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -111,6 +114,7 @@ public class Util {
    public static final Ticker TICKER;
    public static final UUID NIL_UUID;
    public static final FileSystemProvider ZIP_FILE_SYSTEM_PROVIDER;
+   public static final Escaper CONTROL_CHARACTER_ESCAPER;
    private static Consumer<String> thePauser;
 
    public Util() {
@@ -1161,6 +1165,30 @@ public class Util {
       };
       NIL_UUID = new UUID(0L, 0L);
       ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((p) -> p.getScheme().equalsIgnoreCase("jar")).findFirst().orElseThrow(() -> new IllegalStateException("No jar file system provider found"));
+      CONTROL_CHARACTER_ESCAPER = ((Escapers.Builder)make(Escapers.builder(), (escaper) -> {
+         HexFormat hexFormat = HexFormat.of().withUpperCase();
+
+         for(char c = 0; c <= 255; ++c) {
+            if (Character.isISOControl(c)) {
+               String var10000;
+               switch (c) {
+                  case '\u0007' -> var10000 = "\\a";
+                  case '\b' -> var10000 = "\\b";
+                  case '\t' -> var10000 = "\\t";
+                  case '\n' -> var10000 = "\\n";
+                  case '\u000b' -> var10000 = "\\v";
+                  case '\f' -> var10000 = "\\f";
+                  case '\r' -> var10000 = "\\r";
+                  default -> var10000 = "\\x" + hexFormat.toHexDigits((long)c, 2);
+               }
+
+               String replacement = var10000;
+               escaper.addEscape(c, replacement);
+            }
+         }
+
+         escaper.addEscape('\\', "\\\\");
+      })).build();
       thePauser = (msg) -> {
       };
    }

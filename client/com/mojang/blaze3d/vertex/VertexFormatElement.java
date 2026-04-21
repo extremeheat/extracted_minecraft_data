@@ -69,7 +69,7 @@ public record VertexFormatElement(int id, int index, GpuFormat format) {
       UV = UV0;
       UV1 = register(3, 1, GpuFormat.RG16_SINT);
       UV2 = register(4, 2, GpuFormat.RG16_SINT);
-      NORMAL = register(5, 0, GpuFormat.RGB8_SNORM);
+      NORMAL = register(5, 0, GpuFormat.RGBA8_SNORM);
       LINE_WIDTH = register(6, 0, GpuFormat.R32_FLOAT);
    }
 }

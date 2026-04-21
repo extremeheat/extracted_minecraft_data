@@ -37,6 +37,7 @@ import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -72,6 +73,7 @@ import net.minecraft.gizmos.SimpleGizmoCollector;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -142,10 +144,12 @@ public class LevelRenderer implements AutoCloseable {
       final ProfilerFiller profiler = Profiler.get();
       profiler.push("repositionCamera");
       this.repositionCamera(cameraState);
-      profiler.popPush("setupFrameGraph");
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
       modelViewStack.mul(modelViewMatrix);
+      profiler.popPush("submitFeatures");
+      this.submitFeatures(this.levelRenderState, this.submitNodeStorage, renderOutline);
+      profiler.popPush("setupFrameGraph");
       FrameGraphBuilder frame = new FrameGraphBuilder();
       this.targets.main = frame.<RenderTarget>importExternal("main", this.gameRenderer.mainRenderTarget());
       int screenWidth = this.gameRenderer.mainRenderTarget().width;
@@ -172,7 +176,7 @@ public class LevelRenderer implements AutoCloseable {
       }
 
       ChunkSectionsToRender chunkSectionsToRender = this.prepareChunkRenders(this.levelRenderState.cameraRenderState.viewRotationMatrix);
-      this.addMainPass(frame, modelViewMatrix, terrainFog, renderOutline, this.levelRenderState, profiler, chunkSectionsToRender);
+      this.addMainPass(frame, terrainFog, this.levelRenderState, profiler, chunkSectionsToRender);
       PostChain entityOutlineChain = this.shaderManager.getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
       if (this.levelRenderState.haveGlowingEntities && entityOutlineChain != null) {
          entityOutlineChain.addToFrame(frame, screenWidth, screenHeight, this.targets);
@@ -188,7 +192,7 @@ public class LevelRenderer implements AutoCloseable {
          transparencyChain.addToFrame(frame, screenWidth, screenHeight, this.targets);
       }
 
-      this.addLateDebugPass(frame, this.levelRenderState.cameraRenderState, terrainFog, modelViewMatrix);
+      this.addAlwaysOnTopPass(frame, terrainFog);
       profiler.popPush("executeFrameGraph");
       frame.execute(resourceAllocator, new FrameGraphBuilder.Inspector() {
          {
@@ -206,6 +210,7 @@ public class LevelRenderer implements AutoCloseable {
       profiler.pop();
       this.targets.clear();
       modelViewStack.popMatrix();
+      this.featureRenderDispatcher.clearSubmitNodes();
       profiler.push("compileSections");
       this.compileSections(cameraState);
       profiler.pop();
@@ -230,6 +235,25 @@ public class LevelRenderer implements AutoCloseable {
          playerCompiledSectionCallback.run();
       }
 
+   }
+
+   private void submitFeatures(final LevelRenderState levelRenderState, final SubmitNodeCollector submitNodeCollector, final boolean renderOutline) {
+      PoseStack poseStack = new PoseStack();
+      this.submitEntities(poseStack, levelRenderState, submitNodeCollector);
+      levelRenderState.entityRenderStates.clear();
+      this.submitBlockEntities(poseStack, levelRenderState, submitNodeCollector);
+      levelRenderState.blockEntityRenderStates.clear();
+      this.submitBlockDestroyAnimation(poseStack, submitNodeCollector, levelRenderState);
+      levelRenderState.blockBreakingRenderStates.clear();
+      levelRenderState.particlesRenderState.submit(submitNodeCollector, levelRenderState.cameraRenderState);
+      if (renderOutline) {
+         this.submitBlockOutline(poseStack, this.submitNodeStorage, levelRenderState);
+      }
+
+      this.finalizeGizmoCollection();
+      this.finalizedGizmos.standardPrimitives().submit(submitNodeCollector, levelRenderState.cameraRenderState, false);
+      this.finalizedGizmos.alwaysOnTopPrimitives().submit(submitNodeCollector, levelRenderState.cameraRenderState, true);
+      this.checkPoseStack(poseStack);
    }
 
    private void repositionCamera(final CameraRenderState camera) {
@@ -281,7 +305,7 @@ public class LevelRenderer implements AutoCloseable {
       }
    }
 
-   private void addMainPass(final FrameGraphBuilder frame, final Matrix4fc modelViewMatrix, final GpuBufferSlice terrainFog, final boolean renderOutline, final LevelRenderState levelRenderState, final ProfilerFiller profiler, final ChunkSectionsToRender chunkSectionsToRender) {
+   private void addMainPass(final FrameGraphBuilder frame, final GpuBufferSlice terrainFog, final LevelRenderState levelRenderState, final ProfilerFiller profiler, final ChunkSectionsToRender chunkSectionsToRender) {
       FramePass pass = frame.addPass("main");
       this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
       if (this.targets.translucent != null) {
@@ -328,23 +352,11 @@ public class LevelRenderer implements AutoCloseable {
             RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), 0, outlineTarget.getDepthTexture(), 0.0);
          }
 
-         PoseStack poseStack = new PoseStack();
          MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
-         MultiBufferSource.BufferSource crumblingBufferSource = this.renderBuffers.crumblingBufferSource();
-         profiler.popPush("submitFeatures");
-         this.submitEntities(poseStack, levelRenderState, this.submitNodeStorage);
-         this.submitBlockEntities(poseStack, levelRenderState, this.submitNodeStorage);
-         levelRenderState.particlesRenderState.submit(this.submitNodeStorage, levelRenderState.cameraRenderState);
-         this.submitBlockDestroyAnimation(poseStack, this.submitNodeStorage, levelRenderState);
-         if (renderOutline) {
-            this.submitBlockOutline(poseStack, this.submitNodeStorage, levelRenderState);
-         }
-
          profiler.popPush("renderSolidFeatures");
          this.featureRenderDispatcher.renderSolidFeatures();
          bufferSource.uploadAndDraw();
          profiler.pop();
-         this.checkPoseStack(poseStack);
          if (translucentTarget != null) {
             ((RenderTarget)translucentTarget.get()).copyDepthFrom(mainTarget.get());
          }
@@ -360,20 +372,13 @@ public class LevelRenderer implements AutoCloseable {
          profiler.push("renderTranslucentFeatures");
          this.featureRenderDispatcher.renderTranslucentFeatures();
          bufferSource.uploadAndDraw();
-         crumblingBufferSource.uploadAndDraw();
          profiler.pop();
          this.renderBuffers.outlineBufferSource().endOutlineBatch();
-         this.finalizeGizmoCollection();
-         this.finalizedGizmos.standardPrimitives().render(poseStack, bufferSource, levelRenderState.cameraRenderState, modelViewMatrix);
-         bufferSource.uploadAndDraw();
-         this.checkPoseStack(poseStack);
          profiler.push("translucentTerrain");
          chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
          profiler.pop();
          this.featureRenderDispatcher.renderTranslucentAfterTerrain();
          bufferSource.uploadAndDraw();
-         this.featureRenderDispatcher.clearSubmitNodes();
-         levelRenderState.particlesRenderState.reset();
       });
    }
 
@@ -405,31 +410,30 @@ public class LevelRenderer implements AutoCloseable {
       });
    }
 
-   private void addLateDebugPass(final FrameGraphBuilder frame, final CameraRenderState camera, final GpuBufferSlice fog, final Matrix4fc modelViewMatrix) {
-      FramePass pass = frame.addPass("late_debug");
-      this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
-      if (this.targets.itemEntity != null) {
-         this.targets.itemEntity = pass.<RenderTarget>readsAndWrites(this.targets.itemEntity);
-      }
-
-      ResourceHandle<RenderTarget> mainTarget = this.targets.main;
-      pass.executes(() -> {
-         RenderSystem.setShaderFog(fog);
-         PoseStack poseStack = new PoseStack();
-         MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
-         RenderTarget mainRenderTarget = mainTarget.get();
-         RenderSystem.outputColorTextureOverride = mainRenderTarget.getColorTextureView();
-         RenderSystem.outputDepthTextureOverride = mainRenderTarget.getDepthTextureView();
-         if (!this.finalizedGizmos.alwaysOnTopPrimitives().isEmpty()) {
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
-            this.finalizedGizmos.alwaysOnTopPrimitives().render(poseStack, bufferSource, camera, modelViewMatrix);
-            bufferSource.uploadAndDraw();
+   private void addAlwaysOnTopPass(final FrameGraphBuilder frame, final GpuBufferSlice fog) {
+      if (this.featureRenderDispatcher.hasAnyAlwaysOnTop()) {
+         FramePass pass = frame.addPass("always_on_top");
+         this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
+         if (this.targets.itemEntity != null) {
+            this.targets.itemEntity = pass.<RenderTarget>readsAndWrites(this.targets.itemEntity);
          }
 
-         RenderSystem.outputColorTextureOverride = null;
-         RenderSystem.outputDepthTextureOverride = null;
-         this.checkPoseStack(poseStack);
-      });
+         ResourceHandle<RenderTarget> mainTarget = this.targets.main;
+         pass.executes(() -> {
+            RenderSystem.setShaderFog(fog);
+            PoseStack poseStack = new PoseStack();
+            MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
+            RenderTarget mainRenderTarget = mainTarget.get();
+            RenderSystem.outputColorTextureOverride = mainRenderTarget.getColorTextureView();
+            RenderSystem.outputDepthTextureOverride = mainRenderTarget.getDepthTextureView();
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
+            this.featureRenderDispatcher.renderAlwaysOnTop();
+            bufferSource.uploadAndDraw();
+            RenderSystem.outputColorTextureOverride = null;
+            RenderSystem.outputDepthTextureOverride = null;
+            this.checkPoseStack(poseStack);
+         });
+      }
    }
 
    public ChunkSectionsToRender prepareChunkRenders(final Matrix4fc modelViewMatrix) {
@@ -569,7 +573,7 @@ public class LevelRenderer implements AutoCloseable {
 
    }
 
-   private void submitBlockEntities(final PoseStack poseStack, final LevelRenderState levelRenderState, final SubmitNodeStorage submitNodeStorage) {
+   private void submitBlockEntities(final PoseStack poseStack, final LevelRenderState levelRenderState, final SubmitNodeCollector submitNodeCollector) {
       Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
       double camX = cameraPos.x();
       double camY = cameraPos.y();
@@ -579,30 +583,37 @@ public class LevelRenderer implements AutoCloseable {
          BlockPos blockPos = renderState.blockPos;
          poseStack.pushPose();
          poseStack.translate((double)blockPos.getX() - camX, (double)blockPos.getY() - camY, (double)blockPos.getZ() - camZ);
-         this.blockEntityRenderDispatcher.submit(renderState, poseStack, submitNodeStorage, levelRenderState.cameraRenderState);
+         this.blockEntityRenderDispatcher.submit(renderState, poseStack, submitNodeCollector, levelRenderState.cameraRenderState);
          poseStack.popPose();
       }
 
    }
 
    private void submitBlockDestroyAnimation(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState) {
-      Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-      double camX = cameraPos.x();
-      double camY = cameraPos.y();
-      double camZ = cameraPos.z();
+      if (!levelRenderState.blockBreakingRenderStates.isEmpty()) {
+         Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+         double camX = cameraPos.x();
+         double camY = cameraPos.y();
+         double camZ = cameraPos.z();
+         List<BlockStateModelPart> parts = new ArrayList();
+         RandomSource random = RandomSource.createThreadLocalInstance();
 
-      for(BlockBreakingRenderState state : levelRenderState.blockBreakingRenderStates) {
-         if (state.blockState().getRenderShape() == RenderShape.MODEL) {
-            BlockPos pos = state.blockPos();
-            poseStack.pushPose();
-            poseStack.translate((double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ);
-            poseStack.translate(state.blockState().getOffset(pos));
-            BlockStateModel model = this.modelManager.getBlockStateModelSet().get(state.blockState());
-            submitNodeCollector.submitBreakingBlockModel(poseStack, model, state.blockState().getSeed(pos), state.progress());
-            poseStack.popPose();
+         for(BlockBreakingRenderState state : levelRenderState.blockBreakingRenderStates) {
+            if (state.blockState().getRenderShape() == RenderShape.MODEL) {
+               BlockPos pos = state.blockPos();
+               poseStack.pushPose();
+               poseStack.translate((double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ);
+               poseStack.translate(state.blockState().getOffset(pos));
+               BlockStateModel model = this.modelManager.getBlockStateModelSet().get(state.blockState());
+               random.setSeed(state.blockState().getSeed(pos));
+               model.collectParts(random, parts);
+               submitNodeCollector.submitBreakingBlockModel(poseStack, List.copyOf(parts), state.progress());
+               parts.clear();
+               poseStack.popPose();
+            }
          }
-      }
 
+      }
    }
 
    private void submitBlockOutline(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState) {
@@ -668,7 +679,7 @@ public class LevelRenderer implements AutoCloseable {
 
    public void doEntityOutline() {
       if (this.levelRenderState.shouldShowEntityOutlines) {
-         this.entityOutlineTarget.blitAndBlendToTexture(this.gameRenderer.mainRenderTarget().getColorTextureView());
+         this.entityOutlineTarget.blitAndBlendToTexture(this.gameRenderer.mainRenderTarget().getColorTextureView(), this.gameRenderer.mainRenderTarget().getDepthTextureView());
       }
 
    }

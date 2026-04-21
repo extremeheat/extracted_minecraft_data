@@ -432,7 +432,7 @@ public class DataFixers {
       if (typesToOptimize.isEmpty()) {
          return CompletableFuture.completedFuture((Object)null);
       } else {
-         Executor executor = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build());
+         Executor executor = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("Datafixer Bootstrap #%d").setDaemon(true).setPriority(1).build());
          return DATA_FIXER.optimize(typesToOptimize, executor);
       }
    }

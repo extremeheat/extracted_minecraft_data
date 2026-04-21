@@ -288,8 +288,9 @@ public abstract class AbstractCubeMob extends AgeableMob {
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       this.setSpawnSize(level, difficulty);
-      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+      return data;
    }
 
    protected void setSpawnSize(final ServerLevelAccessor level, final DifficultyInstance difficulty) {

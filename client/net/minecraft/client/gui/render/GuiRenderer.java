@@ -226,16 +226,8 @@ public class GuiRenderer implements AutoCloseable {
                Objects.requireNonNull(GuiRenderer.this);
             }
 
-            public void acceptGlyph(final TextRenderable.Styled glyph) {
-               this.accept(glyph);
-            }
-
-            public void acceptEffect(final TextRenderable effect) {
-               this.accept(effect);
-            }
-
-            private void accept(final TextRenderable glyph) {
-               GuiRenderer.this.renderState.addGlyphToCurrentLayer(new GlyphRenderState(pose, glyph, scissor));
+            public void acceptRenderable(final TextRenderable renderable) {
+               GuiRenderer.this.renderState.addGlyphToCurrentLayer(new GlyphRenderState(pose, renderable, scissor));
             }
          });
       });
@@ -374,14 +366,13 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void enableScissor(final ScreenRectangle rectangle, final RenderPass renderPass) {
-      WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
-      int windowHeight = windowState.height;
-      int guiScale = windowState.guiScale;
+      WindowRenderState window = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
+      int guiScale = window.guiScale;
       double left = (double)(rectangle.left() * guiScale);
-      double bottom = (double)(windowHeight - rectangle.bottom() * guiScale);
-      double width = (double)(rectangle.width() * guiScale);
-      double height = (double)(rectangle.height() * guiScale);
-      renderPass.enableScissor((int)left, (int)bottom, Math.max(0, (int)width), Math.max(0, (int)height));
+      double top = (double)(rectangle.top() * guiScale);
+      double right = (double)Math.min(rectangle.right() * guiScale, window.width);
+      double bottom = (double)Math.min(rectangle.bottom() * guiScale, window.height);
+      renderPass.enableScissor((int)left, window.height - (int)bottom, Math.max(0, (int)(right - left)), Math.max(0, (int)(bottom - top)));
    }
 
    public void registerPanoramaTextures(final TextureManager textureManager) {

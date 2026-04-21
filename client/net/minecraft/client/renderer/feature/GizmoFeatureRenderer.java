@@ -1,0 +1,186 @@
+package net.minecraft.client.renderer.feature;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
+import java.util.Objects;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.font.TextRenderable;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.gizmos.TextGizmo;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Quaternionfc;
+import org.joml.Vector4f;
+
+public class GizmoFeatureRenderer {
+   private final PoseStack poseStack = new PoseStack();
+
+   public GizmoFeatureRenderer() {
+      super();
+   }
+
+   public void render(final SubmitNodeCollection collection, final FeatureFrameContext context, final boolean onTop) {
+      Matrix4f modelViewMatrix = RenderSystem.getModelViewMatrixCopy();
+      MultiBufferSource bufferSource = context.bufferSource();
+
+      for(Submit submit : collection.getGizmoSubmits()) {
+         if (submit.onTop() == onTop) {
+            CameraRenderState camera = submit.camera();
+            DrawableGizmoPrimitives.Group group = submit.group();
+            this.buildQuads(group.quads(), camera, bufferSource);
+            this.buildTriangleFans(group.triangleFans(), camera, bufferSource);
+            this.buildLines(group.lines(), camera, modelViewMatrix, group.opaque(), bufferSource);
+            this.buildTexts(group.texts(), camera, context.font(), bufferSource);
+            this.buildPoints(group.points(), camera, bufferSource);
+         }
+      }
+
+   }
+
+   private void buildTexts(final List<DrawableGizmoPrimitives.Text> texts, final CameraRenderState camera, final Font font, final MultiBufferSource bufferSource) {
+      if (!texts.isEmpty() && camera.initialized) {
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
+
+         for(DrawableGizmoPrimitives.Text text : texts) {
+            TextGizmo.Style style = text.style();
+            this.poseStack.pushPose();
+            this.poseStack.translate((float)(text.pos().x() - camX), (float)(text.pos().y() - camY), (float)(text.pos().z() - camZ));
+            this.poseStack.mulPose((Quaternionfc)camera.orientation);
+            this.poseStack.scale(style.scale() / 16.0F, -style.scale() / 16.0F, style.scale() / 16.0F);
+            float fontX;
+            if (style.adjustLeft().isEmpty()) {
+               fontX = (float)(-font.width(text.text())) / 2.0F;
+            } else {
+               fontX = (float)(-style.adjustLeft().getAsDouble()) / style.scale();
+            }
+
+            final Matrix4f pose = this.poseStack.last().pose();
+            Font.PreparedText preparedText = font.prepareText(text.text(), fontX, 0.0F, style.color(), false, 0);
+            preparedText.visit(new Font.GlyphVisitor() {
+               {
+                  Objects.requireNonNull(GizmoFeatureRenderer.this);
+               }
+
+               public void acceptRenderable(final TextRenderable renderable) {
+                  VertexConsumer buffer = bufferSource.getBuffer(renderable.renderType(Font.DisplayMode.NORMAL));
+                  renderable.render(pose, buffer, 15728880, false);
+               }
+            });
+            this.poseStack.popPose();
+         }
+
+      }
+   }
+
+   private void buildLines(final List<DrawableGizmoPrimitives.Line> lines, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final boolean opaque, final MultiBufferSource bufferSource) {
+      if (!lines.isEmpty()) {
+         VertexConsumer builder = bufferSource.getBuffer(opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
+         PoseStack.Pose pose = this.poseStack.last();
+         Vector4f start = new Vector4f();
+         Vector4f end = new Vector4f();
+         Vector4f startViewSpace = new Vector4f();
+         Vector4f endViewSpace = new Vector4f();
+         Vector4f intersectionInWorld = new Vector4f();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
+
+         for(DrawableGizmoPrimitives.Line line : lines) {
+            start.set(line.start().x() - camX, line.start().y() - camY, line.start().z() - camZ, 1.0);
+            end.set(line.end().x() - camX, line.end().y() - camY, line.end().z() - camZ, 1.0);
+            start.mul(modelViewMatrix, startViewSpace);
+            end.mul(modelViewMatrix, endViewSpace);
+            boolean startIsBehindCamera = startViewSpace.z > -0.05F;
+            boolean endIsBehindCamera = endViewSpace.z > -0.05F;
+            if (!startIsBehindCamera || !endIsBehindCamera) {
+               if (startIsBehindCamera || endIsBehindCamera) {
+                  float denom = endViewSpace.z - startViewSpace.z;
+                  if (Math.abs(denom) < 1.0E-9F) {
+                     continue;
+                  }
+
+                  float intersection = Mth.clamp((-0.05F - startViewSpace.z) / denom, 0.0F, 1.0F);
+                  start.lerp(end, intersection, intersectionInWorld);
+                  if (startIsBehindCamera) {
+                     start.set(intersectionInWorld);
+                  } else {
+                     end.set(intersectionInWorld);
+                  }
+               }
+
+               builder.addVertex(pose, start.x, start.y, start.z).setNormal(pose, end.x - start.x, end.y - start.y, end.z - start.z).setColor(line.color()).setLineWidth(line.width());
+               builder.addVertex(pose, end.x, end.y, end.z).setNormal(pose, end.x - start.x, end.y - start.y, end.z - start.z).setColor(line.color()).setLineWidth(line.width());
+            }
+         }
+
+      }
+   }
+
+   private void buildTriangleFans(final List<DrawableGizmoPrimitives.TriangleFan> triangleFans, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+      if (!triangleFans.isEmpty()) {
+         PoseStack.Pose pose = this.poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
+
+         for(DrawableGizmoPrimitives.TriangleFan triangleFan : triangleFans) {
+            VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugTriangleFan());
+
+            for(Vec3 point : triangleFan.points()) {
+               builder.addVertex(pose, (float)(point.x() - camX), (float)(point.y() - camY), (float)(point.z() - camZ)).setColor(triangleFan.color());
+            }
+         }
+
+      }
+   }
+
+   private void buildQuads(final List<DrawableGizmoPrimitives.Quad> quads, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+      if (!quads.isEmpty()) {
+         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugFilledBox());
+         PoseStack.Pose pose = this.poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
+
+         for(DrawableGizmoPrimitives.Quad quad : quads) {
+            builder.addVertex(pose, (float)(quad.a().x() - camX), (float)(quad.a().y() - camY), (float)(quad.a().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.b().x() - camX), (float)(quad.b().y() - camY), (float)(quad.b().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.c().x() - camX), (float)(quad.c().y() - camY), (float)(quad.c().z() - camZ)).setColor(quad.color());
+            builder.addVertex(pose, (float)(quad.d().x() - camX), (float)(quad.d().y() - camY), (float)(quad.d().z() - camZ)).setColor(quad.color());
+         }
+
+      }
+   }
+
+   private void buildPoints(final List<DrawableGizmoPrimitives.Point> points, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+      if (!points.isEmpty()) {
+         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugPoint());
+         PoseStack.Pose pose = this.poseStack.last();
+         double camX = camera.pos.x();
+         double camY = camera.pos.y();
+         double camZ = camera.pos.z();
+
+         for(DrawableGizmoPrimitives.Point point : points) {
+            Vec3 pos = point.pos();
+            builder.addVertex(pose, (float)(pos.x() - camX), (float)(pos.y() - camY), (float)(pos.z() - camZ)).setColor(point.color()).setLineWidth(point.size());
+         }
+
+      }
+   }
+
+   public static record Submit(DrawableGizmoPrimitives.Group group, CameraRenderState camera, boolean onTop) {
+      public Submit {
+         super();
+      }
+   }
+}

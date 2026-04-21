@@ -4,7 +4,6 @@ import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.ArabicShapingException;
 import com.ibm.icu.text.Bidi;
 import com.mojang.blaze3d.font.GlyphInfo;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,9 +13,7 @@ import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
@@ -27,7 +24,6 @@ import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringDecomposer;
-import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class Font {
@@ -60,22 +56,7 @@ public class Font {
       }
    }
 
-   public void drawInBatch(final String str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
-      PreparedText preparedText = this.prepareText(str, x, y, color, dropShadow, backgroundColor);
-      preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
-   }
-
-   public void drawInBatch(final Component str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
-      PreparedText preparedText = this.prepareText(str.getVisualOrderText(), x, y, color, dropShadow, false, backgroundColor);
-      preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
-   }
-
-   public void drawInBatch(final FormattedCharSequence str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
-      PreparedText preparedText = this.prepareText(str, x, y, color, dropShadow, false, backgroundColor);
-      preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
-   }
-
-   public void drawInBatch8xOutline(final FormattedCharSequence str, final float x, final float y, final int color, final int outlineColor, final Matrix4fc pose, final MultiBufferSource bufferSource, final int packedLightCoords) {
+   public PreparedText prepare8xTextOutline(final FormattedCharSequence str, final float x, final float y, final int outlineColor) {
       PreparedTextBuilder outlineOutput = new PreparedTextBuilder(0.0F, 0.0F, outlineColor, false, false);
 
       for(int xo = -1; xo <= 1; ++xo) {
@@ -94,15 +75,8 @@ public class Font {
          }
       }
 
-      GlyphVisitor outlineGlyphVisitor = Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, Font.DisplayMode.NORMAL, packedLightCoords);
-
-      for(TextRenderable.Styled glyphInstance : outlineOutput.glyphs) {
-         outlineGlyphVisitor.acceptGlyph(glyphInstance);
-      }
-
-      PreparedTextBuilder primaryOutput = new PreparedTextBuilder(x, y, color, false, true);
-      str.accept(primaryOutput);
-      primaryOutput.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, Font.DisplayMode.POLYGON_OFFSET, packedLightCoords));
+      outlineOutput.discardEffects();
+      return outlineOutput;
    }
 
    private BakedGlyph getGlyph(final int codepoint, final Style style) {
@@ -331,6 +305,10 @@ public class Font {
 
       }
 
+      public void discardEffects() {
+         this.effects = null;
+      }
+
       private int getTextColor(final @Nullable TextColor textColor) {
          if (textColor != null) {
             int alpha = ARGB.alpha(this.color);
@@ -366,27 +344,15 @@ public class Font {
    }
 
    public interface GlyphVisitor {
-      static GlyphVisitor forMultiBufferSource(final MultiBufferSource bufferSource, final Matrix4fc pose, final DisplayMode displayMode, final int lightCoords) {
-         return new GlyphVisitor() {
-            public void acceptGlyph(final TextRenderable.Styled glyph) {
-               this.render(glyph);
-            }
-
-            public void acceptEffect(final TextRenderable effect) {
-               this.render(effect);
-            }
-
-            private void render(final TextRenderable glyph) {
-               VertexConsumer buffer = bufferSource.getBuffer(glyph.renderType(displayMode));
-               glyph.render(pose, buffer, lightCoords, false);
-            }
-         };
-      }
-
       default void acceptGlyph(final TextRenderable.Styled glyph) {
+         this.acceptRenderable(glyph);
       }
 
       default void acceptEffect(final TextRenderable effect) {
+         this.acceptRenderable(effect);
+      }
+
+      default void acceptRenderable(final TextRenderable renderable) {
       }
 
       default void acceptEmptyArea(final EmptyArea empty) {

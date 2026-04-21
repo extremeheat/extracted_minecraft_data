@@ -31,7 +31,7 @@ public class EntitySubPredicates {
       Registry.register(registry, (String)"type_specific/lightning", LightningBoltPredicate.CODEC);
       Registry.register(registry, (String)"type_specific/fishing_hook", FishingHookPredicate.CODEC);
       Registry.register(registry, (String)"type_specific/player", PlayerPredicate.CODEC);
-      Registry.register(registry, (String)"type_specific/slime", CubeMobPredicate.CODEC);
+      Registry.register(registry, (String)"type_specific/cube_mob", CubeMobPredicate.CODEC);
       Registry.register(registry, (String)"type_specific/raider", RaiderPredicate.CODEC);
       return (Codec)Registry.register(registry, (String)"type_specific/sheep", SheepPredicate.CODEC);
    }

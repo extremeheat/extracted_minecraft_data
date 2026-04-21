@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget {
@@ -229,7 +230,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    protected void enableScissor(final GuiGraphicsExtractor graphics) {
-      graphics.enableScissor(this.getX(), this.getY(), this.getRight(), this.getBottom());
+      graphics.enableScissor(Mth.clamp(this.getX(), 0, graphics.guiWidth()), Mth.clamp(this.getY(), 0, graphics.guiHeight()), Mth.clamp(this.getRight(), 0, graphics.guiWidth()), Mth.clamp(this.getBottom(), 0, graphics.guiHeight()));
    }
 
    protected void scrollToEntry(final E entry) {

@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
@@ -19,8 +20,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.Mth;
@@ -207,15 +206,29 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public void buildSurface(final WorldGenRegion region, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
       if (!SharedConstants.debugVoidTerrain(protoChunk.getPos()) && !SharedConstants.DEBUG_DISABLE_SURFACE) {
          WorldGenerationContext context = new WorldGenerationContext(this, region);
-         this.buildSurface(protoChunk, context, randomState, structureManager, region.getBiomeManager(), region.registryAccess().lookupOrThrow(Registries.BIOME), Blender.of(region));
+         Set<Holder<Biome>> possibleBiomes = collectPossibleBiomes(region, 1);
+         this.buildSurface(protoChunk, context, randomState, structureManager, region.getBiomeManager(), Blender.of(region), possibleBiomes);
       }
    }
 
+   private static Set<Holder<Biome>> collectPossibleBiomes(final WorldGenRegion region, final int chunkRadius) {
+      Set<Holder<Biome>> chunkBiomes = new ReferenceOpenHashSet();
+      ChunkPos center = region.getCenter();
+
+      for(int z = center.z() - chunkRadius; z <= center.z() + chunkRadius; ++z) {
+         for(int x = center.x() - chunkRadius; x <= center.x() + chunkRadius; ++x) {
+            region.getChunk(x, z).collectBiomesInPalette(chunkBiomes);
+         }
+      }
+
+      return chunkBiomes;
+   }
+
    @VisibleForTesting
-   public void buildSurface(final ChunkAccess protoChunk, final WorldGenerationContext context, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final Registry<Biome> biomeRegistry, final Blender blender) {
+   public void buildSurface(final ChunkAccess protoChunk, final WorldGenerationContext context, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final Blender blender, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
       NoiseGeneratorSettings settings = this.settings.value();
-      randomState.surfaceSystem().buildSurface(randomState, biomeManager, biomeRegistry, settings.useLegacyRandomSource(), context, protoChunk, noiseChunk, settings.surfaceRule());
+      randomState.surfaceSystem().buildSurface(randomState, biomeManager, settings.useLegacyRandomSource(), context, protoChunk, noiseChunk, settings.surfaceRule(), possibleBiomes);
    }
 
    public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {

@@ -19,6 +19,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +58,7 @@ import org.slf4j.Logger;
 public class NativeLibrariesBootstrap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
+   private static boolean vulkanLoaderAvailable;
 
    public NativeLibrariesBootstrap() {
       super();
@@ -71,6 +73,8 @@ public class NativeLibrariesBootstrap {
       Boolean originalDebugLoader = (Boolean)Configuration.DEBUG_LOADER.get();
       Configuration.DEBUG_LOADER.set(true);
       Supplier<String> stopCapturing = setupLWJGLCapture();
+      int libraryIndex = -1;
+      List<LibraryLoadEntry> entries = new ArrayList();
 
       try {
          if (SharedConstants.DEBUG_SIMULATE_LIBRARY_LOAD_FAILURE) {
@@ -78,23 +82,38 @@ public class NativeLibrariesBootstrap {
          }
 
          loadLibrary(stopCapturing, "LWJGL system", NativeLibrariesBootstrap::loadLWJGLSystem);
-         loadLibrary(stopCapturing, "GLFW", NativeLibrariesBootstrap::loadGlfw);
-         loadLibrary(stopCapturing, "OpenGL", NativeLibrariesBootstrap::loadOpenGL);
-         loadLibrary(stopCapturing, "OpenAL", NativeLibrariesBootstrap::loadOpenAL);
-         loadLibrary(stopCapturing, "STB", NativeLibrariesBootstrap::loadSTB);
-         loadLibrary(stopCapturing, "tinyfd", NativeLibrariesBootstrap::loadTinyFD);
-         loadLibrary(stopCapturing, "freetype", NativeLibrariesBootstrap::loadFreeType);
-         loadLibrary(stopCapturing, "Vulkan", NativeLibrariesBootstrap::loadVulkan);
-         loadLibrary(stopCapturing, "shaderc", NativeLibrariesBootstrap::loadShaderc);
-         loadLibrary(stopCapturing, "spvc", NativeLibrariesBootstrap::loadSpvc);
-         loadLibrary(stopCapturing, "vma", NativeLibrariesBootstrap::loadVma);
+         vulkanLoaderAvailable = tryLoadingVulkan();
+         entries.add(new LibraryLoadEntry("GLFW", NativeLibrariesBootstrap::loadGlfw));
+         entries.add(new LibraryLoadEntry("OpenGL", NativeLibrariesBootstrap::loadOpenGL));
+         entries.add(new LibraryLoadEntry("OpenAL", NativeLibrariesBootstrap::loadOpenAL));
+         entries.add(new LibraryLoadEntry("STB", NativeLibrariesBootstrap::loadSTB));
+         entries.add(new LibraryLoadEntry("tinyfd", NativeLibrariesBootstrap::loadTinyFD));
+         entries.add(new LibraryLoadEntry("freetype", NativeLibrariesBootstrap::loadFreeType));
+         if (vulkanLoaderAvailable) {
+            entries.add(new LibraryLoadEntry("shaderc", NativeLibrariesBootstrap::loadShaderc));
+            entries.add(new LibraryLoadEntry("spvc", NativeLibrariesBootstrap::loadSpvc));
+            entries.add(new LibraryLoadEntry("vma", NativeLibrariesBootstrap::loadVma));
+         }
+
+         Collections.shuffle(entries);
+
+         for(int var13 = 0; var13 < entries.size(); ++var13) {
+            LibraryLoadEntry e = (LibraryLoadEntry)entries.get(var13);
+            loadLibrary(stopCapturing, e.name(), e.loader());
+         }
+      } catch (Throwable t) {
+         CrashReport crashReport = CrashReport.forThrowable(t, "Loading libraries");
+         CrashReportCategory librariesLoaded = crashReport.addCategory("Libraries loaded");
+         librariesLoaded.setDetail("Loading order", (CrashReportDetail)(() -> (String)entries.stream().map(LibraryLoadEntry::name).collect(Collectors.joining(","))));
+         librariesLoaded.setDetail("Loading index", Integer.toString(libraryIndex));
+         throw new ReportedException(crashReport);
       } finally {
          stopCapturing.get();
          Configuration.DEBUG_LOADER.set(originalDebugLoader);
       }
 
-      long elapsed = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
-      LOGGER.debug("Library load time: {} ms", elapsed);
+      long t = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
+      LOGGER.debug("Library load time: {} ms", t);
    }
 
    private static void createAndCheckDirectory(final String libraryDir) throws IOException {
@@ -211,7 +230,7 @@ public class NativeLibrariesBootstrap {
          CrashReport crashReport = CrashReport.forThrowable(t, "Loading library " + name);
          CrashReportCategory libraryInfoCategory = crashReport.addCategory("Library directory contents");
          String systemPropertyDir = System.getProperty("java.library.path", "");
-         String lwjglPropertyDir = (String)Objects.requireNonNull((String)Configuration.LIBRARY_PATH.get(), "");
+         String lwjglPropertyDir = (String)Configuration.LIBRARY_PATH.get("");
          if (systemPropertyDir.equals(lwjglPropertyDir)) {
             libraryInfoCategory.setDetail("Contents of shared library directory", (CrashReportDetail)(() -> listLibrariesDirectory(systemPropertyDir)));
          } else {
@@ -219,6 +238,8 @@ public class NativeLibrariesBootstrap {
             libraryInfoCategory.setDetail("Contents of org.lwjgl.librarypath", (CrashReportDetail)(() -> listLibrariesDirectory(lwjglPropertyDir)));
          }
 
+         libraryInfoCategory.setDetail("LWJGL platform", (CrashReportDetail)(() -> Platform.get().toString()));
+         libraryInfoCategory.setDetail("LWJGL architecture", (CrashReportDetail)(() -> Platform.getArchitecture().toString()));
          CrashReportCategory lwjglDebugLog = crashReport.addCategory("LWJGL debug log");
 
          try {
@@ -322,8 +343,22 @@ public class NativeLibrariesBootstrap {
       }
    }
 
-   private static void loadVulkan() {
-      Objects.requireNonNull(VK.getFunctionProvider());
+   private static boolean tryLoadingVulkan() {
+      if (Configuration.VULKAN_EXPLICIT_INIT.get() == null) {
+         Configuration.VULKAN_EXPLICIT_INIT.set(true);
+      }
+
+      try {
+         VK.create();
+         return true;
+      } catch (Throwable t) {
+         LOGGER.warn("Failed to load Vulkan loader", t);
+         return false;
+      }
+   }
+
+   public static boolean isVulkanLoaderAvailable() {
+      return vulkanLoaderAvailable;
    }
 
    private static void loadShaderc() {
@@ -389,6 +424,12 @@ public class NativeLibrariesBootstrap {
          ByteArrayOutputStream buffer = this.collector.buffer;
          this.collector.buffer = null;
          return buffer != null ? buffer.toString(StandardCharsets.UTF_8) : "";
+      }
+   }
+
+   private static record LibraryLoadEntry(String name, Runnable loader) {
+      private LibraryLoadEntry {
+         super();
       }
    }
 }

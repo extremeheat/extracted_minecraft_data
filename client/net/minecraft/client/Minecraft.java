@@ -156,6 +156,7 @@ import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.telemetry.ClientTelemetryManager;
+import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.client.telemetry.events.GameLoadTimesEvent;
 import net.minecraft.client.tutorial.Tutorial;
@@ -656,6 +657,19 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          this.packetProcessor = new PacketProcessor(this.gameThread);
+         this.telemetryManager.getOutsideSessionSender().send(TelemetryEventType.GRAPHICS_CAPABILITIES, (properties) -> {
+            properties.putIfNotNull(TelemetryProperty.BACKEND_NAME, RenderSystem.getDevice().getDeviceInfo().backendName());
+            if (this.backendCreationException != null) {
+               properties.put(TelemetryProperty.BACKEND_FAILURE_MESSAGE, this.backendCreationException.getMessage());
+               properties.put(TelemetryProperty.BACKEND_FAILURE_REASON, this.backendCreationException.getReason().displayName());
+               properties.put(TelemetryProperty.BACKEND_FAILURE_MISSING_CAPABILITIES, String.join(",", this.backendCreationException.getMissingCapabilities()));
+            } else {
+               properties.put(TelemetryProperty.BACKEND_FAILURE_MESSAGE, "");
+               properties.put(TelemetryProperty.BACKEND_FAILURE_REASON, "");
+               properties.put(TelemetryProperty.BACKEND_FAILURE_MISSING_CAPABILITIES, "");
+            }
+
+         });
       }
    }
 

@@ -305,12 +305,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
             } else {
                if (!this.level.isClientSide() && (flags & 512) == 0) {
                   state.onPlace(this.level, pos, oldState, movedByPiston);
-                  if (!section.getBlockState(localX, localY, localZ).is(newBlock)) {
-                     return null;
-                  }
                }
 
-               if (state.hasBlockEntity()) {
+               if (state.hasBlockEntity() && section.getBlockState(localX, localY, localZ).is(newBlock)) {
                   BlockEntity blockEntity = this.getBlockEntity(pos, LevelChunk.EntityCreationType.CHECK);
                   if (blockEntity != null && !blockEntity.isValidBlockState(state)) {
                      LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{pos, blockEntity.typeHolder().getRegisteredName(), state});

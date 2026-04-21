@@ -317,7 +317,7 @@ public class Camera implements TrackedWaypoint.Camera {
       } else if (this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isSleeping()) {
          Direction bedOrientation = ((LivingEntity)this.entity).getBedOrientation();
          this.setRotation(bedOrientation != null ? bedOrientation.toYRot() - 180.0F : 0.0F, 0.0F);
-         this.move(0.0F, 0.3F, 0.0F);
+         this.move(0.0F, 0.15F, 0.0F);
       }
 
    }

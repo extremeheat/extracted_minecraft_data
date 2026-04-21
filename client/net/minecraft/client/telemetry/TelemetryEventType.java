@@ -18,6 +18,7 @@ public class TelemetryEventType {
    public static final Codec<TelemetryEventType> CODEC;
    private static final List<TelemetryProperty<?>> GLOBAL_PROPERTIES;
    private static final List<TelemetryProperty<?>> WORLD_SESSION_PROPERTIES;
+   public static final TelemetryEventType GRAPHICS_CAPABILITIES;
    public static final TelemetryEventType WORLD_LOADED;
    public static final TelemetryEventType PERFORMANCE_METRICS;
    public static final TelemetryEventType WORLD_LOAD_TIMES;
@@ -100,6 +101,7 @@ public class TelemetryEventType {
       }, TelemetryEventType::id);
       GLOBAL_PROPERTIES = List.of(TelemetryProperty.USER_ID, TelemetryProperty.CLIENT_ID, TelemetryProperty.MINECRAFT_SESSION_ID, TelemetryProperty.GAME_VERSION, TelemetryProperty.OPERATING_SYSTEM, TelemetryProperty.PLATFORM, TelemetryProperty.CLIENT_MODDED, TelemetryProperty.LAUNCHER_NAME, TelemetryProperty.EVENT_TIMESTAMP_UTC, TelemetryProperty.OPT_IN);
       WORLD_SESSION_PROPERTIES = Stream.concat(GLOBAL_PROPERTIES.stream(), Stream.of(TelemetryProperty.WORLD_SESSION_ID, TelemetryProperty.SERVER_MODDED, TelemetryProperty.SERVER_TYPE)).toList();
+      GRAPHICS_CAPABILITIES = builder("graphics_capabilities", "GraphicsCapabilities").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.BACKEND_NAME).define(TelemetryProperty.BACKEND_FAILURE_MESSAGE).define(TelemetryProperty.BACKEND_FAILURE_REASON).define(TelemetryProperty.BACKEND_FAILURE_MISSING_CAPABILITIES).register();
       WORLD_LOADED = builder("world_loaded", "WorldLoaded").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.GAME_MODE).define(TelemetryProperty.REALMS_MAP_CONTENT).register();
       PERFORMANCE_METRICS = builder("performance_metrics", "PerformanceMetrics").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.FRAME_RATE_SAMPLES).define(TelemetryProperty.RENDER_TIME_SAMPLES).define(TelemetryProperty.USED_MEMORY_SAMPLES).define(TelemetryProperty.NUMBER_OF_SAMPLES).define(TelemetryProperty.RENDER_DISTANCE).define(TelemetryProperty.DEDICATED_MEMORY_KB).optIn().register();
       WORLD_LOAD_TIMES = builder("world_load_times", "WorldLoadTimes").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.WORLD_LOAD_TIME_MS).define(TelemetryProperty.NEW_WORLD).optIn().register();

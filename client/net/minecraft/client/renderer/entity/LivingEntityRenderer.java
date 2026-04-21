@@ -28,6 +28,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -325,6 +326,12 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       state.deathTime = entity.deathTime > 0 ? (float)entity.deathTime + partialTicks : 0.0F;
       Minecraft minecraft = Minecraft.getInstance();
       state.isInvisibleToPlayer = state.isInvisible && entity.isInvisibleTo(minecraft.player);
+   }
+
+   protected void extractNameplates(final T entity, final S state, final float partialTicks) {
+      double nameplateDistance = entity.getAttribute(Attributes.NAMEPLATE_DISTANCE).getValue();
+      double belowNameDistance = entity.getAttribute(Attributes.BELOW_NAME_DISTANCE).getValue();
+      super.extractNameplates(entity, state, partialTicks, nameplateDistance, belowNameDistance);
    }
 
    private static float solveBodyRot(final LivingEntity entity, final float headRot, final float partialTicks) {

@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -339,6 +340,15 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
    public abstract TickContainerAccess<Block> getBlockTicks();
 
    public abstract TickContainerAccess<Fluid> getFluidTicks();
+
+   public void collectBiomesInPalette(final Set<Holder<Biome>> output) {
+      for(LevelChunkSection section : this.sections) {
+         PalettedContainerRO var10000 = section.getBiomes();
+         Objects.requireNonNull(output);
+         var10000.forEachInPalette(output::add);
+      }
+
+   }
 
    public boolean canBeSerialized() {
       return true;

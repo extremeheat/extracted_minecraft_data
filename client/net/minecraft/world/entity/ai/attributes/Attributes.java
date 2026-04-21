@@ -6,6 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 
 public class Attributes {
+   private static final double MAX_NAMEPLATE_DISTANCE = 512.0;
    public static final double DEFAULT_ATTACK_SPEED = 4.0;
    public static final Holder<Attribute> AIR_DRAG_MODIFIER = register("air_drag_modifier", (new RangedAttribute("attribute.name.air_drag_modifier", 1.0, 0.0, 2048.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR = register("armor", (new RangedAttribute("attribute.name.armor", 0.0, 0.0, 30.0)).setSyncable(true));
@@ -13,6 +14,7 @@ public class Attributes {
    public static final Holder<Attribute> ATTACK_DAMAGE = register("attack_damage", new RangedAttribute("attribute.name.attack_damage", 2.0, 0.0, 2048.0));
    public static final Holder<Attribute> ATTACK_KNOCKBACK = register("attack_knockback", new RangedAttribute("attribute.name.attack_knockback", 0.0, 0.0, 5.0));
    public static final Holder<Attribute> ATTACK_SPEED = register("attack_speed", (new RangedAttribute("attribute.name.attack_speed", 4.0, 0.0, 1024.0)).setSyncable(true));
+   public static final Holder<Attribute> BELOW_NAME_DISTANCE = register("below_name_distance", (new RangedAttribute("attribute.name.below_name_distance", 10.0, 0.0, 512.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_BREAK_SPEED = register("block_break_speed", (new RangedAttribute("attribute.name.block_break_speed", 1.0, 0.0, 1024.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_INTERACTION_RANGE = register("block_interaction_range", (new RangedAttribute("attribute.name.block_interaction_range", 4.5, 0.0, 64.0)).setSyncable(true));
    public static final Holder<Attribute> BOUNCINESS = register("bounciness", (new RangedAttribute("attribute.name.bounciness", 0.0, 0.0, 1.0)).setSyncable(true));
@@ -33,6 +35,7 @@ public class Attributes {
    public static final Holder<Attribute> MINING_EFFICIENCY;
    public static final Holder<Attribute> MOVEMENT_EFFICIENCY;
    public static final Holder<Attribute> MOVEMENT_SPEED;
+   public static final Holder<Attribute> NAMEPLATE_DISTANCE;
    public static final Holder<Attribute> OXYGEN_BONUS;
    public static final Holder<Attribute> SAFE_FALL_DISTANCE;
    public static final Holder<Attribute> SCALE;
@@ -76,6 +79,7 @@ public class Attributes {
       MINING_EFFICIENCY = register("mining_efficiency", (new RangedAttribute("attribute.name.mining_efficiency", 0.0, 0.0, 1024.0)).setSyncable(true));
       MOVEMENT_EFFICIENCY = register("movement_efficiency", (new RangedAttribute("attribute.name.movement_efficiency", 0.0, 0.0, 1.0)).setSyncable(true));
       MOVEMENT_SPEED = register("movement_speed", (new RangedAttribute("attribute.name.movement_speed", 0.7, 0.0, 1024.0)).setSyncable(true));
+      NAMEPLATE_DISTANCE = register("nameplate_distance", (new RangedAttribute("attribute.name.nameplate_distance", 64.0, 0.0, 512.0)).setSyncable(true));
       OXYGEN_BONUS = register("oxygen_bonus", (new RangedAttribute("attribute.name.oxygen_bonus", 0.0, 0.0, 1024.0)).setSyncable(true));
       SAFE_FALL_DISTANCE = register("safe_fall_distance", (new RangedAttribute("attribute.name.safe_fall_distance", 3.0, -1024.0, 1024.0)).setSyncable(true));
       SCALE = register("scale", (new RangedAttribute("attribute.name.scale", 1.0, 0.0625, 16.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEUTRAL));

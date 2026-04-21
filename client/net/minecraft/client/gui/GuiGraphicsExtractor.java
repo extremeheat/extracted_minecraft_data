@@ -103,7 +103,6 @@ public class GuiGraphicsExtractor {
 
    private GuiGraphicsExtractor(final Minecraft minecraft, final Matrix3x2fStack pose, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
       super();
-      this.scissorStack = new ScissorStack();
       this.pendingCursor = CursorType.DEFAULT;
       this.minecraft = minecraft;
       this.pose = pose;
@@ -113,6 +112,7 @@ public class GuiGraphicsExtractor {
       this.sprites = atlasManager;
       this.guiSprites = atlasManager.getAtlasOrThrow(AtlasIds.GUI);
       this.guiRenderState = guiRenderState;
+      this.scissorStack = new ScissorStack(new ScreenRectangle(0, 0, this.guiWidth(), this.guiHeight()));
    }
 
    public GuiGraphicsExtractor(final Minecraft minecraft, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
@@ -808,30 +808,25 @@ public class GuiGraphicsExtractor {
    }
 
    private static class ScissorStack {
+      private final ScreenRectangle screenSize;
       private final Deque<ScreenRectangle> stack = new ArrayDeque();
 
-      private ScissorStack() {
+      private ScissorStack(final ScreenRectangle screenSize) {
          super();
+         this.screenSize = screenSize;
       }
 
-      public ScreenRectangle push(final ScreenRectangle rectangle) {
-         ScreenRectangle lastRectangle = (ScreenRectangle)this.stack.peekLast();
-         if (lastRectangle != null) {
-            ScreenRectangle intersection = (ScreenRectangle)Objects.requireNonNullElse(rectangle.intersection(lastRectangle), ScreenRectangle.empty());
-            this.stack.addLast(intersection);
-            return intersection;
-         } else {
-            this.stack.addLast(rectangle);
-            return rectangle;
-         }
+      public void push(final ScreenRectangle rectangle) {
+         ScreenRectangle lastRectangle = (ScreenRectangle)Objects.requireNonNullElse((ScreenRectangle)this.stack.peekLast(), this.screenSize);
+         ScreenRectangle intersection = (ScreenRectangle)Objects.requireNonNullElse(rectangle.intersection(lastRectangle), ScreenRectangle.empty());
+         this.stack.addLast(intersection);
       }
 
-      public @Nullable ScreenRectangle pop() {
+      public void pop() {
          if (this.stack.isEmpty()) {
             throw new IllegalStateException("Scissor stack underflow");
          } else {
             this.stack.removeLast();
-            return (ScreenRectangle)this.stack.peekLast();
          }
       }
 

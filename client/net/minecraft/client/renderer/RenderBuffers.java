@@ -12,7 +12,6 @@ public class RenderBuffers implements AutoCloseable {
    private final SectionBufferBuilderPack fixedBufferPack = new SectionBufferBuilderPack();
    private final SectionBufferBuilderPool sectionBufferPool;
    private final MultiBufferSource.BufferSource bufferSource;
-   private final MultiBufferSource.BufferSource crumblingBufferSource;
    private final OutlineBufferSource outlineBufferSource;
 
    public RenderBuffers(final int maxSectionBuilders) {
@@ -26,10 +25,10 @@ public class RenderBuffers implements AutoCloseable {
          types.add(RenderTypes.glint());
          types.add(RenderTypes.glintTranslucent());
          types.add(RenderTypes.waterMask());
+         types.addAll(ModelBakery.DESTROY_TYPES);
       });
       this.bufferSource = MultiBufferSource.create(786432, fixedTypes);
       this.outlineBufferSource = new OutlineBufferSource(MultiBufferSource.create(1536, ObjectSortedSets.emptySet()));
-      this.crumblingBufferSource = MultiBufferSource.create(1536, new ObjectLinkedOpenHashSet(ModelBakery.DESTROY_TYPES));
    }
 
    public SectionBufferBuilderPack fixedBufferPack() {
@@ -44,10 +43,6 @@ public class RenderBuffers implements AutoCloseable {
       return this.bufferSource;
    }
 
-   public MultiBufferSource.BufferSource crumblingBufferSource() {
-      return this.crumblingBufferSource;
-   }
-
    public OutlineBufferSource outlineBufferSource() {
       return this.outlineBufferSource;
    }
@@ -55,12 +50,10 @@ public class RenderBuffers implements AutoCloseable {
    public void endFrame() {
       this.bufferSource.endFrame();
       this.outlineBufferSource.endFrame();
-      this.crumblingBufferSource.endFrame();
    }
 
    public void close() {
       this.bufferSource.close();
       this.outlineBufferSource.close();
-      this.crumblingBufferSource.close();
    }
 }

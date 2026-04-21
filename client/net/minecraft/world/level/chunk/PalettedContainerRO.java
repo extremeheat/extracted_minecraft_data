@@ -23,6 +23,8 @@ public interface PalettedContainerRO<T> {
 
    boolean maybeHas(Predicate<T> predicate);
 
+   void forEachInPalette(Consumer<T> consumer);
+
    void count(PalettedContainer.CountConsumer<T> output);
 
    PalettedContainer<T> copy();

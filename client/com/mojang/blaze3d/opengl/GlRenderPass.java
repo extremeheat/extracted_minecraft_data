@@ -24,7 +24,7 @@ class GlRenderPass implements RenderPassBackend {
    private final GlCommandEncoder encoder;
    private final GlDevice device;
    private final boolean hasDepthTexture;
-   private boolean closed;
+   private final ScissorState defaultScissorState;
    protected @Nullable GlRenderPipeline pipeline;
    protected final @Nullable GpuBuffer[] vertexBuffers = new GpuBuffer[1];
    protected @Nullable GpuBuffer indexBuffer;
@@ -34,7 +34,7 @@ class GlRenderPass implements RenderPassBackend {
    protected final HashMap<String, TextureViewAndSampler> samplers;
    protected final Set<String> dirtyUniforms;
 
-   public GlRenderPass(final GlCommandEncoder encoder, final GlDevice device, final boolean hasDepthTexture) {
+   public GlRenderPass(final GlCommandEncoder encoder, final GlDevice device, final boolean hasDepthTexture, final ScissorState defaultScissorState) {
       super();
       this.indexType = VertexFormat.IndexType.INT;
       this.scissorState = new ScissorState();
@@ -44,6 +44,8 @@ class GlRenderPass implements RenderPassBackend {
       this.encoder = encoder;
       this.device = device;
       this.hasDepthTexture = hasDepthTexture;
+      this.defaultScissorState = defaultScissorState;
+      this.scissorState.setFrom(defaultScissorState);
    }
 
    public boolean hasDepthTexture() {
@@ -92,7 +94,7 @@ class GlRenderPass implements RenderPassBackend {
    }
 
    public void disableScissor() {
-      this.scissorState.disable();
+      this.scissorState.setFrom(this.defaultScissorState);
    }
 
    public boolean isScissorEnabled() {

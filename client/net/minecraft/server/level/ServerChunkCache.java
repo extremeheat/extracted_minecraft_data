@@ -342,7 +342,7 @@ public class ServerChunkCache extends ChunkSource {
       List<MobCategory> spawningCategories;
       if (doMobSpawning) {
          boolean spawnPersistent = this.level.getGameTime() % 400L == 0L;
-         spawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnCookie, true, this.spawnEnemies, spawnPersistent);
+         spawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnCookie, spawnPersistent);
       } else {
          spawningCategories = List.of();
       }

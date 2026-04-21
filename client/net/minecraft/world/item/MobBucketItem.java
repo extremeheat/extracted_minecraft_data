@@ -58,7 +58,12 @@ public class MobBucketItem extends BucketItem {
    }
 
    public boolean emptyContents(final @Nullable LivingEntity user, final Level level, final BlockPos pos, final @Nullable BlockHitResult hitResult) {
-      return this.content == Fluids.EMPTY ? true : super.emptyContents(user, level, pos, hitResult);
+      if (this.content == Fluids.EMPTY) {
+         this.playEmptySound(user, level, pos);
+         return true;
+      } else {
+         return super.emptyContents(user, level, pos, hitResult);
+      }
    }
 
    public ClipContext.Fluid getFluidContext() {

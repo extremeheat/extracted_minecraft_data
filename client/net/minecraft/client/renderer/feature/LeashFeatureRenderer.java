@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.feature;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.LightCoordsUtil;
@@ -19,9 +18,9 @@ public class LeashFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource) {
-      for(SubmitNodeStorage.LeashSubmit leashSubmit : nodeCollection.getLeashSubmits()) {
-         renderLeash(leashSubmit.pose(), bufferSource, leashSubmit.leashState());
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
+      for(Submit submit : nodeCollection.getLeashSubmits()) {
+         renderLeash(submit.pose(), context.bufferSource(), submit.leashState());
       }
 
    }
@@ -66,5 +65,11 @@ public class LeashFeatureRenderer {
       float z = dz * progress;
       builder.addVertex(pose, x - dxOff, y + fudge, z + dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
       builder.addVertex(pose, x + dxOff, y + 0.05F - fudge, z - dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
+   }
+
+   public static record Submit(Matrix4f pose, EntityRenderState.LeashState leashState) {
+      public Submit {
+         super();
+      }
    }
 }

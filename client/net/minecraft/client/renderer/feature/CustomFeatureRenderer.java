@@ -8,11 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class CustomFeatureRenderer {
@@ -20,46 +18,46 @@ public class CustomFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
+   public void renderSolid(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
-      for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.solidCustomGeometrySubmits.entrySet()) {
-         for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
-            VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
-            customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
-            this.renderOutline(customGeometrySubmit, outlineBufferSource);
+      for(Map.Entry<RenderType, List<Submit>> entry : storage.solidCustomGeometrySubmits.entrySet()) {
+         for(Submit submit : (List)entry.getValue()) {
+            VertexConsumer buffer = context.bufferSource().getBuffer((RenderType)entry.getKey());
+            submit.customGeometryRenderer().render(submit.pose(), buffer);
+            this.renderOutline(submit, context.outlineBufferSource());
          }
       }
 
    }
 
-   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource, final OutlineBufferSource outlineBufferSource) {
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
       Storage storage = nodeCollection.getCustomGeometrySubmits();
 
-      for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : storage.translucentCustomGeometrySubmits.entrySet()) {
-         for(SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit : (List)entry.getValue()) {
-            VertexConsumer buffer = bufferSource.getBuffer((RenderType)entry.getKey());
-            customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), buffer);
-            this.renderOutline(customGeometrySubmit, outlineBufferSource);
+      for(Map.Entry<RenderType, List<Submit>> entry : storage.translucentCustomGeometrySubmits.entrySet()) {
+         for(Submit submit : (List)entry.getValue()) {
+            VertexConsumer buffer = context.bufferSource().getBuffer((RenderType)entry.getKey());
+            submit.customGeometryRenderer().render(submit.pose(), buffer);
+            this.renderOutline(submit, context.outlineBufferSource());
          }
       }
 
    }
 
-   public void renderOutline(final SubmitNodeStorage.CustomGeometrySubmit customGeometrySubmit, final OutlineBufferSource outlineBufferSource) {
-      RenderType renderType = customGeometrySubmit.renderType();
-      int outlineColor = customGeometrySubmit.outlineColor();
+   public void renderOutline(final Submit submit, final OutlineBufferSource outlineBufferSource) {
+      RenderType renderType = submit.renderType();
+      int outlineColor = submit.outlineColor();
       if (outlineColor != 0 && (renderType.outline().isPresent() || renderType.isOutline())) {
          outlineBufferSource.setColor(outlineColor);
          VertexConsumer outlineBuffer = outlineBufferSource.getBuffer(renderType);
-         customGeometrySubmit.customGeometryRenderer().render(customGeometrySubmit.pose(), outlineBuffer);
+         submit.customGeometryRenderer().render(submit.pose(), outlineBuffer);
       }
 
    }
 
    public static class Storage {
-      private final Map<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> solidCustomGeometrySubmits = new HashMap();
-      private final Map<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> translucentCustomGeometrySubmits = new HashMap();
+      private final Map<RenderType, List<Submit>> solidCustomGeometrySubmits = new HashMap();
+      private final Map<RenderType, List<Submit>> translucentCustomGeometrySubmits = new HashMap();
       private final Set<RenderType> solidCustomGeometrySubmitsUsage = new ObjectOpenHashSet();
       private final Set<RenderType> translucentCustomGeometrySubmitsUsage = new ObjectOpenHashSet();
 
@@ -68,7 +66,7 @@ public class CustomFeatureRenderer {
       }
 
       public void add(final PoseStack poseStack, final RenderType renderType, final int outlineColor, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-         SubmitNodeStorage.CustomGeometrySubmit submit = new SubmitNodeStorage.CustomGeometrySubmit(poseStack.last().copy(), renderType, outlineColor, customGeometryRenderer);
+         Submit submit = new Submit(poseStack.last().copy(), renderType, outlineColor, customGeometryRenderer);
          if (!renderType.hasBlending()) {
             ((List)this.solidCustomGeometrySubmits.computeIfAbsent(renderType, (rt) -> new ArrayList())).add(submit);
          } else {
@@ -78,14 +76,14 @@ public class CustomFeatureRenderer {
       }
 
       public void clear() {
-         for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : this.solidCustomGeometrySubmits.entrySet()) {
+         for(Map.Entry<RenderType, List<Submit>> entry : this.solidCustomGeometrySubmits.entrySet()) {
             if (!((List)entry.getValue()).isEmpty()) {
                this.solidCustomGeometrySubmitsUsage.add((RenderType)entry.getKey());
                ((List)entry.getValue()).clear();
             }
          }
 
-         for(Map.Entry<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> entry : this.translucentCustomGeometrySubmits.entrySet()) {
+         for(Map.Entry<RenderType, List<Submit>> entry : this.translucentCustomGeometrySubmits.entrySet()) {
             if (!((List)entry.getValue()).isEmpty()) {
                this.translucentCustomGeometrySubmitsUsage.add((RenderType)entry.getKey());
                ((List)entry.getValue()).clear();
@@ -99,6 +97,12 @@ public class CustomFeatureRenderer {
          this.solidCustomGeometrySubmitsUsage.clear();
          this.translucentCustomGeometrySubmits.keySet().removeIf((renderType) -> !this.translucentCustomGeometrySubmitsUsage.contains(renderType));
          this.translucentCustomGeometrySubmitsUsage.clear();
+      }
+   }
+
+   public static record Submit(PoseStack.Pose pose, RenderType renderType, int outlineColor, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+      public Submit {
+         super();
       }
    }
 }

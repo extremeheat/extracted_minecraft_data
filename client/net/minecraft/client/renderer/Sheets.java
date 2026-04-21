@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class Sheets {
    public static final Identifier SHULKER_SHEET = Identifier.withDefaultNamespace("textures/atlas/shulker_boxes.png");
-   public static final Identifier BED_SHEET = Identifier.withDefaultNamespace("textures/atlas/beds.png");
    public static final Identifier BANNER_SHEET = Identifier.withDefaultNamespace("textures/atlas/banner_patterns.png");
    public static final Identifier SHIELD_SHEET = Identifier.withDefaultNamespace("textures/atlas/shield_patterns.png");
    public static final Identifier SIGN_SHEET = Identifier.withDefaultNamespace("textures/atlas/signs.png");
@@ -49,7 +48,6 @@ public class Sheets {
    public static final SpriteMapper SHIELD_MAPPER;
    public static final SpriteMapper CHEST_MAPPER;
    public static final SpriteMapper DECORATED_POT_MAPPER;
-   public static final SpriteMapper BED_MAPPER;
    public static final SpriteMapper SHULKER_MAPPER;
    public static final SpriteMapper SIGN_MAPPER;
    public static final SpriteMapper HANGING_SIGN_MAPPER;
@@ -66,7 +64,6 @@ public class Sheets {
    private static final Map<Identifier, SpriteId> SHIELD_SPRITES;
    public static final SpriteId DECORATED_POT_BASE;
    public static final SpriteId DECORATED_POT_SIDE;
-   private static final SpriteId[] BED_TEXTURES;
    public static final SpriteId ENDER_CHEST_LOCATION;
    public static final MultiblockChestResources<SpriteId> CHEST_REGULAR;
    public static final MultiblockChestResources<SpriteId> CHEST_TRAPPED;
@@ -95,18 +92,6 @@ public class Sheets {
 
    public static RenderType translucentBlockItemSheet() {
       return TRANSLUCENT_BLOCK_ITEM_SHEET;
-   }
-
-   public static SpriteId getBedSprite(final DyeColor color) {
-      return BED_TEXTURES[color.getId()];
-   }
-
-   public static Identifier colorToResourceSprite(final DyeColor color) {
-      return Identifier.withDefaultNamespace(color.getName());
-   }
-
-   public static SpriteId createBedSprite(final DyeColor color) {
-      return BED_MAPPER.apply(colorToResourceSprite(color));
    }
 
    public static SpriteId getShulkerBoxSprite(final DyeColor color) {
@@ -184,7 +169,6 @@ public class Sheets {
       SHIELD_MAPPER = new SpriteMapper(SHIELD_SHEET, "entity/shield");
       CHEST_MAPPER = new SpriteMapper(CHEST_SHEET, "entity/chest");
       DECORATED_POT_MAPPER = new SpriteMapper(DECORATED_POT_SHEET, "entity/decorated_pot");
-      BED_MAPPER = new SpriteMapper(BED_SHEET, "entity/bed");
       SHULKER_MAPPER = new SpriteMapper(SHULKER_SHEET, "entity/shulker");
       SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs");
       HANGING_SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs/hanging");
@@ -201,7 +185,6 @@ public class Sheets {
       SHIELD_SPRITES = new HashMap();
       DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
       DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
-      BED_TEXTURES = (SpriteId[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedSprite).toArray((x$0) -> new SpriteId[x$0]);
       ENDER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("ender");
       MultiblockChestResources var10000 = ChestSpecialRenderer.REGULAR;
       SpriteMapper var10001 = CHEST_MAPPER;

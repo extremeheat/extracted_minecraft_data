@@ -249,12 +249,14 @@ public class SoundEvents {
    public static final SoundEvent BUCKET_EMPTY_FISH = register("item.bucket.empty_fish");
    public static final SoundEvent BUCKET_EMPTY_LAVA = register("item.bucket.empty_lava");
    public static final SoundEvent BUCKET_EMPTY_POWDER_SNOW = register("item.bucket.empty_powder_snow");
+   public static final SoundEvent BUCKET_EMPTY_SULFUR_CUBE = register("item.bucket.empty_sulfur_cube");
    public static final SoundEvent BUCKET_EMPTY_TADPOLE = register("item.bucket.empty_tadpole");
    public static final SoundEvent BUCKET_FILL = register("item.bucket.fill");
    public static final SoundEvent BUCKET_FILL_AXOLOTL = register("item.bucket.fill_axolotl");
    public static final SoundEvent BUCKET_FILL_FISH = register("item.bucket.fill_fish");
    public static final SoundEvent BUCKET_FILL_LAVA = register("item.bucket.fill_lava");
    public static final SoundEvent BUCKET_FILL_POWDER_SNOW = register("item.bucket.fill_powder_snow");
+   public static final SoundEvent BUCKET_FILL_SULFUR_CUBE = register("item.bucket.fill_sulfur_cube");
    public static final SoundEvent BUCKET_FILL_TADPOLE = register("item.bucket.fill_tadpole");
    public static final SoundEvent BUNDLE_DROP_CONTENTS = register("item.bundle.drop_contents");
    public static final SoundEvent BUNDLE_INSERT = register("item.bundle.insert");

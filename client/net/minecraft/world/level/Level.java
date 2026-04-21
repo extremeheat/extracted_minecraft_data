@@ -99,6 +99,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final ResourceKey<Level> NETHER;
    public static final ResourceKey<Level> END;
    public static final int MAX_LEVEL_SIZE = 30000000;
+   public static final int ACROSS_THE_WHOLE_WORLD = 60000000;
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
    public static final int MAX_BRIGHTNESS = 15;

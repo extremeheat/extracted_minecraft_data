@@ -187,6 +187,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public static final int TOTAL_AIR_SUPPLY = 300;
    public static final int MAX_ENTITY_TAG_COUNT = 1024;
    private static final Codec<List<String>> TAG_LIST_CODEC;
+   public static final double DEFAULT_NAMEPLATE_DISTANCE = 64.0;
+   public static final double DEFAULT_BELOW_NAME_DISTANCE = 10.0;
    public static final float DELTA_AFFECTED_BY_BLOCKS_BELOW_0_2 = 0.2F;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_0_5 = 0.500001;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_1_0 = 0.999999;

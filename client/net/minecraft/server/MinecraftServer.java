@@ -217,6 +217,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public static final LevelSettings DEMO_SETTINGS;
    public static final Supplier<GameRules> DEFAULT_GAME_RULES;
    public static final NameAndId ANONYMOUS_PLAYER_PROFILE;
+   public static final String SERVER_THREAD_NAME = "Server thread";
    protected final LevelStorageSource.LevelStorageAccess storageSource;
    protected final PlayerDataStorage playerDataStorage;
    private final SavedDataStorage savedDataStorage;

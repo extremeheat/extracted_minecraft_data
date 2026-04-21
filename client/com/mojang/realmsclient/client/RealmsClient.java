@@ -49,6 +49,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
+import net.minecraft.WorldVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Util;
@@ -474,8 +475,9 @@ public class RealmsClient {
    private String execute(final Request<?> request) throws RealmsServiceException {
       request.cookie("sid", this.sessionId);
       request.cookie("user", this.username);
-      request.cookie("version", SharedConstants.getCurrentVersion().name());
-      request.addSnapshotHeader(RealmsMainScreen.isSnapshot());
+      WorldVersion version = SharedConstants.getCurrentVersion();
+      request.cookie("version", version.name());
+      request.addVersionHeaders(version.protocolVersion(), RealmsMainScreen.isSnapshot());
 
       try {
          int responseCode = request.responseCode();

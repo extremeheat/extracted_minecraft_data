@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setDaemon(true).build();
+   private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("World Upgrader #%d").setDaemon(true).build();
    private final UpgradeStatusTranslator statusTranslator = new UpgradeStatusTranslator();
    private final Registry<LevelStem> dimensions;
    private final Set<ResourceKey<Level>> levels;

@@ -275,6 +275,13 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return this.data.palette.maybeHas(predicate);
    }
 
+   public void forEachInPalette(final Consumer<T> consumer) {
+      for(int i = 0; i < this.data.palette.getSize(); ++i) {
+         consumer.accept(this.data.palette.valueFor(i));
+      }
+
+   }
+
    public PalettedContainer<T> copy() {
       return new PalettedContainer<T>(this);
    }

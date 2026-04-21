@@ -126,13 +126,13 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    protected final <S extends EntityRenderState> void submitNameDisplay(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera, final int offset) {
       poseStack.pushPose();
       if (state.scoreText != null) {
-         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.scoreText, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
+         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.scoreText, !state.isDiscrete, state.lightCoords, camera);
          Objects.requireNonNull(this.getFont());
          poseStack.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
       }
 
       if (state.nameTag != null) {
-         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.nameTag, !state.isDiscrete, state.lightCoords, state.distanceToCameraSq, camera);
+         submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, offset, state.nameTag, !state.isDiscrete, state.lightCoords, camera);
       }
 
       poseStack.popPose();
@@ -160,7 +160,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {
-      label91: {
+      label70: {
          state.entityType = ((Entity)entity).getType();
          state.x = Mth.lerp((double)partialTicks, entity.xOld, entity.getX());
          state.y = Mth.lerp((double)partialTicks, entity.yOld, entity.getY());
@@ -174,15 +174,15 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
             Entity var6 = entity.getVehicle();
             if (var6 instanceof AbstractMinecart) {
                AbstractMinecart minecart = (AbstractMinecart)var6;
-               MinecartBehavior var27 = minecart.getBehavior();
-               if (var27 instanceof NewMinecartBehavior) {
-                  NewMinecartBehavior behavior = (NewMinecartBehavior)var27;
+               MinecartBehavior var26 = minecart.getBehavior();
+               if (var26 instanceof NewMinecartBehavior) {
+                  NewMinecartBehavior behavior = (NewMinecartBehavior)var26;
                   if (behavior.cartHasPosRotLerp()) {
                      double cartLerpX = Mth.lerp((double)partialTicks, minecart.xOld, minecart.getX());
                      double cartLerpY = Mth.lerp((double)partialTicks, minecart.yOld, minecart.getY());
                      double cartLerpZ = Mth.lerp((double)partialTicks, minecart.zOld, minecart.getZ());
                      state.passengerOffset = behavior.getCartLerpPosition(partialTicks).subtract(new Vec3(cartLerpX, cartLerpY, cartLerpZ));
-                     break label91;
+                     break label70;
                   }
                }
             }
@@ -191,24 +191,8 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          state.passengerOffset = null;
       }
 
-      if (this.entityRenderDispatcher.camera != null) {
-         state.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(entity);
-         boolean shouldShowName = state.distanceToCameraSq < 4096.0 && this.shouldShowName(entity, state.distanceToCameraSq);
-         if (shouldShowName) {
-            state.nameTag = this.getNameTag(entity);
-            state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTicks));
-         } else {
-            state.nameTag = null;
-         }
-
-         if (state.distanceToCameraSq < 100.0) {
-            state.scoreText = entity.belowNameDisplay();
-         } else {
-            state.scoreText = null;
-         }
-      }
-
-      label77: {
+      label63: {
+         this.extractNameplates(entity, state, partialTicks);
          state.isDiscrete = entity.isDiscrete();
          Level level = entity.level();
          if (entity instanceof Leashable leashable) {
@@ -241,7 +225,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
                   while(true) {
                      if (i >= leashCount) {
-                        break label77;
+                        break label63;
                      }
 
                      EntityRenderState.LeashState leashState = (EntityRenderState.LeashState)state.leashStates.get(i);
@@ -265,7 +249,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                   leashState.endBlockLight = endBlockLight;
                   leashState.startSkyLight = startSkyLight;
                   leashState.endSkyLight = endSkyLight;
-                  break label77;
+                  break label63;
                }
             }
          }
@@ -278,6 +262,30 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       boolean appearsGlowing = minecraft.shouldEntityAppearGlowing(entity);
       state.outlineColor = appearsGlowing ? ARGB.opaque(entity.getTeamColor()) : 0;
       state.lightCoords = this.getPackedLightCoords(entity, partialTicks);
+   }
+
+   protected void extractNameplates(final T entity, final S state, final float partialTicks) {
+      this.extractNameplates(entity, state, partialTicks, 64.0, 10.0);
+   }
+
+   protected final void extractNameplates(final T entity, final S state, final float partialTicks, final double nameplateDistance, final double belowNameDistance) {
+      if (this.entityRenderDispatcher.camera != null) {
+         state.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(entity);
+         boolean shouldShowName = state.distanceToCameraSq < Mth.square(nameplateDistance) && this.shouldShowName(entity, state.distanceToCameraSq);
+         if (shouldShowName) {
+            state.nameTag = this.getNameTag(entity);
+            state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTicks));
+         } else {
+            state.nameTag = null;
+         }
+
+         if (state.distanceToCameraSq < Mth.square(belowNameDistance)) {
+            state.scoreText = entity.belowNameDisplay();
+         } else {
+            state.scoreText = null;
+         }
+      }
+
    }
 
    protected void finalizeRenderState(final T entity, final S state) {

@@ -38,6 +38,7 @@ public class VulkanRenderPass implements RenderPassBackend {
    private final Consumer<Destroyable> garbageQueue;
    private final VkCommandBuffer primaryCommandBuffer;
    final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier;
+   private final RenderPass.RenderArea renderArea;
    private final int outputWidth;
    private final int outputHeight;
    private final boolean hasDepth;
@@ -48,12 +49,13 @@ public class VulkanRenderPass implements RenderPassBackend {
    protected final HashMap<String, GpuBufferSlice> uniforms = new HashMap();
    protected final HashMap<String, TextureViewAndSampler> textures = new HashMap();
 
-   public VulkanRenderPass(final VulkanDevice device, final Consumer<Destroyable> garbageQueue, final VkCommandBuffer primaryCommandBuffer, final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier, final int outputWidth, final int outputHeight, final boolean hasDepth) {
+   public VulkanRenderPass(final VulkanDevice device, final Consumer<Destroyable> garbageQueue, final VkCommandBuffer primaryCommandBuffer, final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier, final RenderPass.RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth) {
       super();
       this.device = device;
       this.garbageQueue = garbageQueue;
       this.primaryCommandBuffer = primaryCommandBuffer;
       this.secondaryCommandBufferSupplier = secondaryCommandBufferSupplier;
+      this.renderArea = renderArea;
       this.outputWidth = outputWidth;
       this.outputHeight = outputHeight;
       this.hasDepth = hasDepth;
@@ -81,10 +83,7 @@ public class VulkanRenderPass implements RenderPassBackend {
             viewport.minDepth(0.0F);
             viewport.maxDepth(1.0F);
             VK12.vkCmdSetViewport(this.currentSecondaryCommandBuffer, 0, viewport);
-            VkRect2D.Buffer renderArea = VkRect2D.calloc(1, stack);
-            renderArea.extent().set(this.outputWidth, this.outputHeight);
-            renderArea.offset().set(0, 0);
-            VK12.vkCmdSetScissor(this.currentSecondaryCommandBuffer, 0, renderArea);
+            setScissor(stack, this.currentSecondaryCommandBuffer, this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
          } catch (Throwable var5) {
             if (stack != null) {
                try {
@@ -167,10 +166,7 @@ public class VulkanRenderPass implements RenderPassBackend {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack);
-         scissor.offset().set(x, y);
-         scissor.extent().set(width, height);
-         VK12.vkCmdSetScissor(this.secondaryCommandBuffer(), 0, scissor);
+         setScissor(stack, this.secondaryCommandBuffer(), x, y, width, height);
       } catch (Throwable var9) {
          if (stack != null) {
             try {
@@ -189,8 +185,15 @@ public class VulkanRenderPass implements RenderPassBackend {
 
    }
 
+   private static void setScissor(final MemoryStack stack, final VkCommandBuffer commandBuffer, final int x, final int y, final int width, final int height) {
+      VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack);
+      scissor.offset().set(x, y);
+      scissor.extent().set(width, height);
+      VK12.vkCmdSetScissor(commandBuffer, 0, scissor);
+   }
+
    public void disableScissor() {
-      this.enableScissor(0, 0, this.outputWidth, this.outputHeight);
+      this.enableScissor(this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
    }
 
    public void setVertexBuffer(final int slot, final GpuBuffer vertexBuffer) {

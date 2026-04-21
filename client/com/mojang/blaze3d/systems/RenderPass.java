@@ -6,26 +6,25 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
 
 public class RenderPass implements AutoCloseable {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private final RenderPassBackend backend;
    private final GpuDeviceBackend device;
    private final Runnable onFinish;
+   private final RenderArea renderArea;
    private boolean isClosed;
    private int pushedDebugGroups;
 
-   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final Runnable onFinish) {
+   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final Runnable onFinish, final RenderArea renderArea) {
       super();
       this.backend = backend;
       this.device = device;
       this.onFinish = onFinish;
+      this.renderArea = renderArea;
    }
 
    public void pushDebugGroup(final Supplier<String> label) {
@@ -78,7 +77,15 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void enableScissor(final int x, final int y, final int width, final int height) {
-      this.backend.enableScissor(x, y, width, height);
+      if (width > 0 && height > 0) {
+         if (x >= this.renderArea.x() && y >= this.renderArea.y() && x + width <= this.renderArea.x() + this.renderArea.width() && y + height <= this.renderArea.height()) {
+            this.backend.enableScissor(x, y, width, height);
+         } else {
+            throw new IllegalArgumentException("Scissor at " + x + ", " + y + " with size " + width + "x" + height + " is out of bounds for render area " + String.valueOf(this.renderArea));
+         }
+      } else {
+         throw new IllegalArgumentException("Scissor size must be >0, was " + width + "x" + height);
+      }
    }
 
    public void disableScissor() {
@@ -136,6 +143,16 @@ public class RenderPass implements AutoCloseable {
 
       public Draw {
          super();
+      }
+   }
+
+   public static record RenderArea(int x, int y, int width, int height) {
+      public RenderArea {
+         super();
+      }
+
+      public boolean fillsTexture(final GpuTextureView texture) {
+         return this.x == 0 && this.y == 0 && this.width == texture.getWidth(0) && this.height == texture.getHeight(0);
       }
    }
 

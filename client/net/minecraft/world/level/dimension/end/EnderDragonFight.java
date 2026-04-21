@@ -462,7 +462,7 @@ public class EnderDragonFight extends SavedData {
    }
 
    public void onCrystalDestroyed(final EndCrystal crystal, final DamageSource source) {
-      if (this.respawnStage != null && this.respawnCrystals.contains(crystal)) {
+      if (this.respawnStage != null && this.respawnCrystals.stream().anyMatch((ref) -> ref.matches(crystal))) {
          this.abortRespawnSequence();
       } else {
          this.updateCrystalCount();

@@ -6,6 +6,7 @@ import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
 import com.mojang.blaze3d.systems.GpuQueryPool;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -39,12 +40,10 @@ import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo;
 import org.lwjgl.vulkan.VkCommandBufferInheritanceRenderingInfo;
 import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 import org.lwjgl.vulkan.VkDependencyInfo;
-import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkImageCopy;
 import org.lwjgl.vulkan.VkImageSubresourceLayers;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
 import org.lwjgl.vulkan.VkMemoryBarrier2;
-import org.lwjgl.vulkan.VkOffset2D;
 import org.lwjgl.vulkan.VkRect2D;
 import org.lwjgl.vulkan.VkRenderingAttachmentInfo;
 import org.lwjgl.vulkan.VkRenderingInfo;
@@ -334,20 +333,16 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       }
    }
 
-   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
-      return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
-   }
-
-   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+   public RenderPassBackend createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
       VulkanGpuTextureView vkColor = (VulkanGpuTextureView)colorTexture;
       VulkanGpuTextureView vulkanDepthAttachment = (VulkanGpuTextureView)depthTexture;
       this.device.instance().debug().beginDebugGroup(this.commandBuffer(), label);
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         VkExtent2D extent = VkExtent2D.calloc(stack).width(colorTexture.getWidth(0)).height(colorTexture.getHeight(0));
-         VkOffset2D offset = VkOffset2D.calloc(stack).set(0, 0);
-         VkRect2D.Buffer renderArea = VkRect2D.calloc(1, stack).extent(extent).offset(offset);
+         VkRect2D vkRenderArea = VkRect2D.calloc(stack);
+         vkRenderArea.extent().set(renderArea.width(), renderArea.height());
+         vkRenderArea.offset().set(renderArea.x(), renderArea.y());
          VkRenderingAttachmentInfo.Buffer colorAttachmentInfo = VkRenderingAttachmentInfo.calloc(1, stack);
          colorAttachmentInfo.sType$Default();
          colorAttachmentInfo.imageView(vkColor.vkImageView());
@@ -363,7 +358,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          VkRenderingInfo renderingInfo = VkRenderingInfo.calloc(stack).sType$Default();
-         renderingInfo.renderArea((VkRect2D)renderArea.get(0));
+         renderingInfo.renderArea(vkRenderArea);
          renderingInfo.flags(1);
          renderingInfo.layerCount(1);
          renderingInfo.viewMask(0);
@@ -410,17 +405,17 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
             return var4;
          };
-         this.currentRenderPass = new VulkanRenderPass(this.device, this::queueForDestroy, this.commandBuffer(), secondaryCommandBufferSupplier, colorTexture.getWidth(0), colorTexture.getHeight(0), depthTexture != null);
-      } catch (Throwable var19) {
+         this.currentRenderPass = new VulkanRenderPass(this.device, this::queueForDestroy, this.commandBuffer(), secondaryCommandBufferSupplier, renderArea, colorTexture.getWidth(0), colorTexture.getHeight(0), depthTexture != null);
+      } catch (Throwable var18) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var18) {
-               var19.addSuppressed(var18);
+            } catch (Throwable var17) {
+               var18.addSuppressed(var17);
             }
          }
 
-         throw var19;
+         throw var18;
       }
 
       if (stack != null) {
@@ -539,7 +534,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            this.createRenderPass(() -> "ClearColorDepthTextures", colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty());
+            this.createRenderPass(() -> "ClearColorDepthTextures", colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty(), new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0)));
 
             assert this.currentRenderPass != null;
 

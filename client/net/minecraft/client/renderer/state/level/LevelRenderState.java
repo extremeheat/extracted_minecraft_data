@@ -45,6 +45,7 @@ public class LevelRenderState {
       this.weatherRenderState.reset();
       this.worldBorderRenderState.reset();
       this.skyRenderState.reset();
+      this.particlesRenderState.reset();
       this.gameTime = 0L;
    }
 }

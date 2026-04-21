@@ -28,6 +28,10 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
    public static final TelemetryProperty<String> PLATFORM;
    public static final TelemetryProperty<Boolean> CLIENT_MODDED;
    public static final TelemetryProperty<String> LAUNCHER_NAME;
+   public static final TelemetryProperty<String> BACKEND_NAME;
+   public static final TelemetryProperty<String> BACKEND_FAILURE_MESSAGE;
+   public static final TelemetryProperty<String> BACKEND_FAILURE_REASON;
+   public static final TelemetryProperty<String> BACKEND_FAILURE_MISSING_CAPABILITIES;
    public static final TelemetryProperty<UUID> WORLD_SESSION_ID;
    public static final TelemetryProperty<Boolean> SERVER_MODDED;
    public static final TelemetryProperty<ServerType> SERVER_TYPE;
@@ -116,6 +120,10 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       PLATFORM = string("platform", "platform");
       CLIENT_MODDED = bool("client_modded", "clientModded");
       LAUNCHER_NAME = string("launcher_name", "launcherName");
+      BACKEND_NAME = string("backend_name", "backendName");
+      BACKEND_FAILURE_MESSAGE = string("backend_failure_message", "backendFailureMessage");
+      BACKEND_FAILURE_REASON = string("backend_failure_reason", "backendFailureReason");
+      BACKEND_FAILURE_MISSING_CAPABILITIES = string("backend_failure_missing_capabilities", "backendFailureMissingCapabilities");
       WORLD_SESSION_ID = uuid("world_session_id", "worldSessionId");
       SERVER_MODDED = bool("server_modded", "serverModded");
       SERVER_TYPE = create("server_type", "serverType", TelemetryProperty.ServerType.CODEC, (output, key, value) -> output.addProperty(key, value.getSerializedName()));

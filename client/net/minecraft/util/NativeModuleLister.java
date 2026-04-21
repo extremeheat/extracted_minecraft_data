@@ -126,10 +126,14 @@ public class NativeModuleLister {
       try {
          Pointer ptr = queryVersionValue(lpData, key, outSize);
          byte[] result = ptr.getByteArray(0L, (outSize.getValue() - 1) * 2);
-         return new String(result, StandardCharsets.UTF_16LE);
+         return sanitize(new String(result, StandardCharsets.UTF_16LE));
       } catch (Exception var5) {
          return "";
       }
+   }
+
+   private static String sanitize(final String input) {
+      return Util.CONTROL_CHARACTER_ESCAPER.escape(input);
    }
 
    public static void addCrashSection(final CrashReportCategory category) {

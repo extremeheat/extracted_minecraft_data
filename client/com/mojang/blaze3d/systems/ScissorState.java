@@ -42,4 +42,12 @@ public class ScissorState {
    public int height() {
       return this.height;
    }
+
+   public void setFrom(final ScissorState state) {
+      this.enabled = state.enabled;
+      this.x = state.x;
+      this.y = state.y;
+      this.width = state.width;
+      this.height = state.height;
+   }
 }

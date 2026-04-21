@@ -72,6 +72,7 @@ import org.jspecify.annotations.Nullable;
 public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable {
    public static final int SPLIT_COUNT = 2;
    public static final int MAX_SIZE = 2;
+   private static final int MIN_SIZE = 1;
    public static final int PICKUP_TIMER_DURATION = 100;
    public static final double PUSH_DISTANCE_THRESHOLD = 1.2999999523162842;
    private int pickupTimer = 0;
@@ -110,7 +111,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public SoundEvent getPickupSound() {
-      return SoundEvents.EMPTY;
+      return SoundEvents.BUCKET_FILL_SULFUR_CUBE;
    }
 
    public void saveToBucketTag(final ItemStack bucket) {
@@ -415,7 +416,12 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    protected void setSpawnSize(final ServerLevelAccessor level, final DifficultyInstance difficulty) {
-      this.setSize(2, true);
+      if (this.isBaby()) {
+         this.setSize(1, true);
+      } else {
+         this.setSize(2, true);
+      }
+
    }
 
    protected void setUpSplitCube(final AbstractCubeMob cubeMob, final int halfSize, final float xd, final float zd) {

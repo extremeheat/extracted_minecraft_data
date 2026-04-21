@@ -6,13 +6,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
@@ -30,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 public interface OrderedSubmitNodeCollector {
    void submitShadow(PoseStack poseStack, float radius, List<EntityRenderState.ShadowPiece> pieces);
 
-   void submitNameTag(PoseStack poseStack, @Nullable Vec3 nameTagAttachment, final int offset, Component name, boolean seeThrough, int lightCoords, double distanceToCameraSq, final CameraRenderState camera);
+   void submitNameTag(PoseStack poseStack, @Nullable Vec3 nameTagAttachment, final int offset, Component name, boolean seeThrough, int lightCoords, final CameraRenderState camera);
 
    void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor);
 
@@ -69,7 +70,7 @@ public interface OrderedSubmitNodeCollector {
 
    void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor);
 
-   void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress);
+   void submitBreakingBlockModel(PoseStack poseStack, List<BlockStateModelPart> parts, int progress);
 
    void submitShapeOutline(PoseStack poseStack, VoxelShape shape, RenderType renderType, int color, float width, boolean afterTerrain);
 
@@ -81,5 +82,7 @@ public interface OrderedSubmitNodeCollector {
       this.submitCustomGeometry(poseStack, renderType, 0, customGeometryRenderer);
    }
 
-   void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer);
+   void submitQuadParticleGroup(QuadParticleRenderState particles);
+
+   void submitGizmoPrimitives(DrawableGizmoPrimitives.Group group, CameraRenderState camera, boolean onTop);
 }

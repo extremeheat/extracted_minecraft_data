@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -89,10 +90,10 @@ public abstract class RenderTarget {
       }
    }
 
-   public void blitAndBlendToTexture(final GpuTextureView output) {
+   public void blitAndBlendToTexture(final GpuTextureView output, final GpuTextureView outputDepth) {
       RenderSystem.assertOnRenderThread();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, OptionalInt.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, OptionalInt.empty(), outputDepth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));

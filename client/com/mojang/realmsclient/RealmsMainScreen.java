@@ -432,7 +432,7 @@ public class RealmsMainScreen extends RealmsScreen {
          } catch (RealmsServiceException e) {
             throw new RuntimeException(e);
          }
-      }).thenAcceptAsync(callback, minecraft).exceptionally((e) -> {
+      }, Util.nonCriticalIoPool()).thenAcceptAsync(callback, minecraft).exceptionally((e) -> {
          LOGGER.error("Failed to execute call to Realms Service", e);
          return null;
       });

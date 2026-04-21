@@ -1,27 +1,16 @@
 package net.minecraft.client.renderer.state.level;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
 
-public class QuadParticleRenderState implements ParticleGroupRenderState, SubmitNodeCollector.ParticleGroupRenderer {
+public class QuadParticleRenderState implements ParticleGroupRenderState {
    private static final int INITIAL_PARTICLE_CAPACITY = 1024;
    private static final int FLOATS_PER_PARTICLE = 12;
    private static final int INTS_PER_PARTICLE = 2;
@@ -46,54 +35,15 @@ public class QuadParticleRenderState implements ParticleGroupRenderState, Submit
       return this.particleCount == 0;
    }
 
-   public @Nullable PreparedBuffers prepare(final ParticleFeatureRenderer.ParticleBufferCache cachedBuffer, final boolean translucent) {
-      if (this.isEmpty()) {
-         return null;
-      } else {
-         int vertexCount = this.particleCount * 4;
-
-         try (ByteBufferBuilder builder = ByteBufferBuilder.exactlySized(vertexCount * DefaultVertexFormat.PARTICLE.getVertexSize())) {
-            BufferBuilder bufferBuilder = new BufferBuilder(builder, VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-            Map<SingleQuadParticle.Layer, PreparedLayer> preparedLayers = new HashMap();
-            int offset = 0;
-
-            for(Map.Entry<SingleQuadParticle.Layer, Storage> entry : this.particles.entrySet()) {
-               if (((SingleQuadParticle.Layer)entry.getKey()).translucent() == translucent) {
-                  ((Storage)entry.getValue()).forEachParticle((x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords) -> this.renderRotatedQuad(bufferBuilder, x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords));
-                  if (((Storage)entry.getValue()).count() > 0) {
-                     preparedLayers.put((SingleQuadParticle.Layer)entry.getKey(), new PreparedLayer(offset, ((Storage)entry.getValue()).count() * 6));
-                  }
-
-                  offset += ((Storage)entry.getValue()).count() * 4;
-               }
-            }
-
-            MeshData mesh = bufferBuilder.build();
-            if (mesh != null) {
-               cachedBuffer.write(mesh.vertexBuffer());
-               RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).getBuffer(mesh.drawState().indexCount());
-               GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
-               return new PreparedBuffers(mesh.drawState().indexCount(), dynamicTransforms, preparedLayers);
-            } else {
-               return null;
-            }
-         }
+   public void buildLayer(final SingleQuadParticle.Layer layer, final VertexConsumer bufferBuilder) {
+      Storage storage = (Storage)this.particles.get(layer);
+      if (storage != null) {
+         storage.forEachParticle((x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords) -> this.renderRotatedQuad(bufferBuilder, x, y, z, xRot, yRot, zRot, wRot, scale, u0, u1, v0, v1, color, lightCoords));
       }
    }
 
-   public void render(final PreparedBuffers preparedBuffers, final ParticleFeatureRenderer.ParticleBufferCache bufferCache, final RenderPass renderPass, final TextureManager textureManager) {
-      RenderSystem.AutoStorageIndexBuffer indexBuffer = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      renderPass.setVertexBuffer(0, bufferCache.get());
-      renderPass.setIndexBuffer(indexBuffer.getBuffer(preparedBuffers.indexCount), indexBuffer.type());
-      renderPass.setUniform("DynamicTransforms", preparedBuffers.dynamicTransforms);
-
-      for(Map.Entry<SingleQuadParticle.Layer, PreparedLayer> entry : preparedBuffers.layers.entrySet()) {
-         renderPass.setPipeline(((SingleQuadParticle.Layer)entry.getKey()).pipeline());
-         AbstractTexture texture = textureManager.getTexture(((SingleQuadParticle.Layer)entry.getKey()).textureAtlasLocation());
-         renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-         renderPass.drawIndexed(((PreparedLayer)entry.getValue()).vertexOffset, 0, ((PreparedLayer)entry.getValue()).indexCount, 1);
-      }
-
+   public Set<SingleQuadParticle.Layer> layers() {
+      return this.particles.keySet();
    }
 
    protected void renderRotatedQuad(final VertexConsumer builder, final float x, final float y, final float z, final float xRot, final float yRot, final float zRot, final float wRot, final float scale, final float u0, final float u1, final float v0, final float v1, final int color, final int lightCoords) {
@@ -111,21 +61,9 @@ public class QuadParticleRenderState implements ParticleGroupRenderState, Submit
 
    public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       if (this.particleCount > 0) {
-         submitNodeCollector.submitParticleGroup(this);
+         submitNodeCollector.submitQuadParticleGroup(this);
       }
 
-   }
-
-   public static record PreparedBuffers(int indexCount, GpuBufferSlice dynamicTransforms, Map<SingleQuadParticle.Layer, PreparedLayer> layers) {
-      public PreparedBuffers {
-         super();
-      }
-   }
-
-   public static record PreparedLayer(int vertexOffset, int indexCount) {
-      public PreparedLayer {
-         super();
-      }
    }
 
    private static class Storage {
