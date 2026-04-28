@@ -39,17 +39,17 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       RandomSource random = context.random();
       BlockPos origin = context.origin();
       WorldGenLevel level = context.level();
-      int minGenOffset = config.minGenOffset;
-      int maxGenOffset = config.maxGenOffset;
+      int minGenOffset = config.minGenOffset();
+      int maxGenOffset = config.maxGenOffset();
       List<Pair<BlockPos, Integer>> points = Lists.newLinkedList();
-      int numPoints = config.distributionPoints.sample(random);
+      int numPoints = config.distributionPoints().sample(random);
       WorldgenRandom random1 = new WorldgenRandom(new LegacyRandomSource(level.getSeed()));
       NormalNoise noise = NormalNoise.create(random1, -4, 1.0);
       List<BlockPos> crackPoints = Lists.newLinkedList();
-      double crackSizeAdjustment = (double)numPoints / (double)config.outerWallDistance.maxInclusive();
-      GeodeLayerSettings layerSettings = config.geodeLayerSettings;
-      GeodeBlockSettings blockSettings = config.geodeBlockSettings;
-      GeodeCrackSettings crackSettings = config.geodeCrackSettings;
+      double crackSizeAdjustment = (double)numPoints / (double)config.outerWallDistance().maxInclusive();
+      GeodeLayerSettings layerSettings = config.geodeLayerSettings();
+      GeodeBlockSettings blockSettings = config.geodeBlockSettings();
+      GeodeCrackSettings crackSettings = config.geodeCrackSettings();
       double innerAir = 1.0 / Math.sqrt(layerSettings.filling);
       double innermostBlockLayer = 1.0 / Math.sqrt(layerSettings.innerLayer + crackSizeAdjustment);
       double innerCrust = 1.0 / Math.sqrt(layerSettings.middleLayer + crackSizeAdjustment);
@@ -59,19 +59,19 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       int numInvalidPoints = 0;
 
       for(int i = 0; i < numPoints; ++i) {
-         int x = config.outerWallDistance.sample(random);
-         int y = config.outerWallDistance.sample(random);
-         int z = config.outerWallDistance.sample(random);
+         int x = config.outerWallDistance().sample(random);
+         int y = config.outerWallDistance().sample(random);
+         int z = config.outerWallDistance().sample(random);
          BlockPos pos = origin.offset(x, y, z);
          BlockState state = level.getBlockState(pos);
          if (state.isAir() || state.is(blockSettings.invalidBlocks())) {
             ++numInvalidPoints;
-            if (numInvalidPoints > config.invalidBlocksThreshold) {
+            if (numInvalidPoints > config.invalidBlocksThreshold()) {
                return false;
             }
          }
 
-         points.add(Pair.of(pos, config.pointOffset.sample(random)));
+         points.add(Pair.of(pos, config.pointOffset().sample(random)));
       }
 
       if (shouldGenerateCrack) {
@@ -97,11 +97,11 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       }
 
       List<BlockPos> potentialCrystalPlacements = Lists.newArrayList();
-      HolderSet<Block> cantReplace = config.geodeBlockSettings.cannotReplace();
+      HolderSet<Block> cantReplace = config.geodeBlockSettings().cannotReplace();
       Predicate<BlockState> canReplace = (s) -> !s.is(cantReplace);
 
       for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(minGenOffset, minGenOffset, minGenOffset), origin.offset(maxGenOffset, maxGenOffset, maxGenOffset))) {
-         double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * config.noiseMultiplier;
+         double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * config.noiseMultiplier();
          double distSumShell = 0.0;
          double distSumCrack = 0.0;
 
@@ -127,14 +127,14 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
             } else if (distSumShell >= innerAir) {
                this.safeSetBlock(level, pointInside, blockSettings.fillingProvider().getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= innermostBlockLayer) {
-               boolean useAlternateLayer = (double)random.nextFloat() < config.useAlternateLayer0Chance;
+               boolean useAlternateLayer = (double)random.nextFloat() < config.useAlternateLayer0Chance();
                if (useAlternateLayer) {
                   this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
                } else {
                   this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
                }
 
-               if ((!config.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < config.usePotentialPlacementsChance) {
+               if ((!config.placementsRequireLayer0Alternate() || useAlternateLayer) && (double)random.nextFloat() < config.usePotentialPlacementsChance()) {
                   potentialCrystalPlacements.add(pointInside.immutable());
                }
             } else if (distSumShell >= innerCrust) {

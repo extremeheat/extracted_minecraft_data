@@ -15,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class WardenSpawnTracker {
-   public static final Codec<WardenSpawnTracker> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("ticks_since_last_warning").orElse(0).forGetter((o) -> o.ticksSinceLastWarning), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("warning_level").orElse(0).forGetter((o) -> o.warningLevel), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown_ticks").orElse(0).forGetter((o) -> o.cooldownTicks)).apply(i, WardenSpawnTracker::new));
+   public static final Codec<WardenSpawnTracker> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.optionalAlwaysPresentFieldOf(ExtraCodecs.NON_NEGATIVE_INT, "ticks_since_last_warning", 0).forGetter((o) -> o.ticksSinceLastWarning), ExtraCodecs.optionalAlwaysPresentFieldOf(ExtraCodecs.NON_NEGATIVE_INT, "warning_level", 0).forGetter((o) -> o.warningLevel), ExtraCodecs.optionalAlwaysPresentFieldOf(ExtraCodecs.NON_NEGATIVE_INT, "cooldown_ticks", 0).forGetter((o) -> o.cooldownTicks)).apply(i, WardenSpawnTracker::new));
    public static final int MAX_WARNING_LEVEL = 4;
    private static final double PLAYER_SEARCH_RADIUS = 16.0;
    private static final int WARNING_CHECK_DIAMETER = 48;

@@ -157,5 +157,9 @@ public class RandomSequences extends SavedData {
             return false;
          }
       }
+
+      public int hashCode() {
+         return Objects.hashCode(this.random);
+      }
    }
 }

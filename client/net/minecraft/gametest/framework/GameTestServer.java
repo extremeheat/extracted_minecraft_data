@@ -42,6 +42,7 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.notifications.EmptyNotificationService;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.PermissionSet;
@@ -121,7 +122,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<String> testSelection, final boolean verify, final int repeatCount) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, Optional.of(new GameRules(ENABLED_FEATURES)), Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer(), false);
+      super(serverThread, levelStorageSource, packRepository, worldStem, Optional.of(new GameRules(ENABLED_FEATURES)), Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer(), false, new NotificationManager());
       this.testSelection = testSelection;
       this.repeatCount = repeatCount;
       this.verify = verify;

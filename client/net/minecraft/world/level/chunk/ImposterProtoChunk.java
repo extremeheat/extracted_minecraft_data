@@ -162,7 +162,7 @@ public class ImposterProtoChunk extends ProtoChunk {
    public void removeBlockEntity(final BlockPos pos) {
    }
 
-   public void markPosForPostprocessing(final BlockPos blockPos) {
+   public void markPosForPostProcessing(final BlockPos blockPos) {
    }
 
    public void setBlockEntityNbt(final CompoundTag entityTag) {

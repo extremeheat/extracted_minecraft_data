@@ -43,6 +43,7 @@ public class LevelEvent {
    public static final int SOUND_CRAFTER_CRAFT = 1049;
    public static final int SOUND_CRAFTER_FAIL = 1050;
    public static final int SOUND_WIND_CHARGE_SHOOT = 1051;
+   public static final int SOUND_SULFUR_SPIKE_LAND = 1052;
    public static final int COMPOSTER_FILL = 1500;
    public static final int LAVA_FIZZ = 1501;
    public static final int REDSTONE_TORCH_BURNOUT = 1502;

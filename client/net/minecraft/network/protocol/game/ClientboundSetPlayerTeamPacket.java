@@ -3,16 +3,17 @@ package net.minecraft.network.protocol.game;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.Optional;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.TeamColor;
 import org.jspecify.annotations.Nullable;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
@@ -22,8 +23,6 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
    private static final int METHOD_CHANGE = 2;
    private static final int METHOD_JOIN = 3;
    private static final int METHOD_LEAVE = 4;
-   private static final int MAX_VISIBILITY_LENGTH = 40;
-   private static final int MAX_COLLISION_LENGTH = 40;
    private final int method;
    private final String name;
    private final Collection<String> players;
@@ -54,7 +53,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       this.name = input.readUtf();
       this.method = input.readByte();
       if (shouldHaveParameters(this.method)) {
-         this.parameters = Optional.of(new Parameters(input));
+         this.parameters = Optional.of((Parameters)ClientboundSetPlayerTeamPacket.Parameters.STREAM_CODEC.decode(input));
       } else {
          this.parameters = Optional.empty();
       }
@@ -71,7 +70,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       output.writeUtf(this.name);
       output.writeByte(this.method);
       if (shouldHaveParameters(this.method)) {
-         ((Parameters)this.parameters.orElseThrow(() -> new IllegalStateException("Parameters not present, but method is" + this.method))).write(output);
+         ClientboundSetPlayerTeamPacket.Parameters.STREAM_CODEC.encode(output, (Parameters)this.parameters.orElseThrow(() -> new IllegalStateException("Parameters not present, but method is" + this.method)));
       }
 
       if (shouldHavePlayerList(this.method)) {
@@ -151,73 +150,19 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       }
    }
 
-   public static class Parameters {
-      private final Component displayName;
-      private final Component playerPrefix;
-      private final Component playerSuffix;
-      private final Team.Visibility nametagVisibility;
-      private final Team.CollisionRule collisionRule;
-      private final ChatFormatting color;
-      private final int options;
+   public static record Parameters(Component displayName, Component playerPrefix, Component playerSuffix, Team.Visibility nameTagVisibility, Team.CollisionRule collisionRule, Optional<TeamColor> color, @PlayerTeam.OptionFlags byte options) {
+      public static final StreamCodec<RegistryFriendlyByteBuf, Parameters> STREAM_CODEC;
 
       public Parameters(final PlayerTeam team) {
+         this(team.getDisplayName(), team.getPlayerPrefix(), team.getPlayerSuffix(), team.getNameTagVisibility(), team.getCollisionRule(), team.getColor(), team.packOptions());
+      }
+
+      public Parameters {
          super();
-         this.displayName = team.getDisplayName();
-         this.options = team.packOptions();
-         this.nametagVisibility = team.getNameTagVisibility();
-         this.collisionRule = team.getCollisionRule();
-         this.color = team.getColor();
-         this.playerPrefix = team.getPlayerPrefix();
-         this.playerSuffix = team.getPlayerSuffix();
       }
 
-      public Parameters(final RegistryFriendlyByteBuf input) {
-         super();
-         this.displayName = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(input);
-         this.options = input.readByte();
-         this.nametagVisibility = (Team.Visibility)Team.Visibility.STREAM_CODEC.decode(input);
-         this.collisionRule = (Team.CollisionRule)Team.CollisionRule.STREAM_CODEC.decode(input);
-         this.color = (ChatFormatting)input.readEnum(ChatFormatting.class);
-         this.playerPrefix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(input);
-         this.playerSuffix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(input);
-      }
-
-      public Component getDisplayName() {
-         return this.displayName;
-      }
-
-      public int getOptions() {
-         return this.options;
-      }
-
-      public ChatFormatting getColor() {
-         return this.color;
-      }
-
-      public Team.Visibility getNametagVisibility() {
-         return this.nametagVisibility;
-      }
-
-      public Team.CollisionRule getCollisionRule() {
-         return this.collisionRule;
-      }
-
-      public Component getPlayerPrefix() {
-         return this.playerPrefix;
-      }
-
-      public Component getPlayerSuffix() {
-         return this.playerSuffix;
-      }
-
-      public void write(final RegistryFriendlyByteBuf output) {
-         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(output, this.displayName);
-         output.writeByte(this.options);
-         Team.Visibility.STREAM_CODEC.encode(output, this.nametagVisibility);
-         Team.CollisionRule.STREAM_CODEC.encode(output, this.collisionRule);
-         output.writeEnum(this.color);
-         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(output, this.playerPrefix);
-         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(output, this.playerSuffix);
+      static {
+         STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, Parameters::displayName, ComponentSerialization.TRUSTED_STREAM_CODEC, Parameters::playerPrefix, ComponentSerialization.TRUSTED_STREAM_CODEC, Parameters::playerSuffix, Team.Visibility.STREAM_CODEC, Parameters::nameTagVisibility, Team.CollisionRule.STREAM_CODEC, Parameters::collisionRule, ByteBufCodecs.optional(TeamColor.STREAM_CODEC), Parameters::color, ByteBufCodecs.BYTE, Parameters::options, Parameters::new);
       }
    }
 }

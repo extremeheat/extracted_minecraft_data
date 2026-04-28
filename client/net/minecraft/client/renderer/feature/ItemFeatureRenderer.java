@@ -7,9 +7,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.MatrixUtil;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.OutlineBufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -19,7 +17,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.jspecify.annotations.Nullable;
 
-public class ItemFeatureRenderer {
+public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
+   public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Item");
    public static final Identifier ENCHANTED_GLINT_ARMOR = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
    public static final Identifier ENCHANTED_GLINT_ITEM = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
    private static final float SPECIAL_FOIL_UI_SCALE = 0.5F;
@@ -32,65 +31,69 @@ public class ItemFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
-      for(Submit submit : nodeCollection.getItemSubmits()) {
-         if (!hasTranslucency(submit)) {
-            this.renderItem(context.bufferSource(), context.outlineBufferSource(), submit);
-         }
+   protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
+      for(Submit submit : submits) {
+         this.prepareSubmit(submit, false);
+      }
+
+      for(Submit submit : submits) {
+         this.prepareSubmit(submit, true);
       }
 
    }
 
-   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
-      for(Submit submit : nodeCollection.getItemSubmits()) {
-         if (hasTranslucency(submit)) {
-            this.renderItem(context.bufferSource(), context.outlineBufferSource(), submit);
-         }
+   private void prepareSubmit(final Submit submit, final boolean foil) {
+      if (foil) {
+         this.prepareFoilSubmit(submit);
+      } else if (submit.outlineColor() != 0) {
+         this.prepareOutlineSubmit(submit);
+      } else {
+         this.prepareMainSubmit(submit);
       }
 
    }
 
-   private static boolean hasTranslucency(final Submit submit) {
-      for(BakedQuad quad : submit.quads()) {
-         if (quad.materialInfo().itemRenderType().hasBlending()) {
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   private void renderItem(final MultiBufferSource bufferSource, final OutlineBufferSource outlineBufferSource, final Submit submit) {
-      PoseStack.Pose pose = submit.pose();
-      ItemStackRenderState.FoilType foilType = submit.foilType();
-      PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(submit.displayContext(), pose) : null;
+   private void prepareMainSubmit(final Submit submit) {
       this.quadInstance.setLightCoords(submit.lightCoords());
       this.quadInstance.setOverlayCoords(submit.overlayCoords());
-      if (submit.outlineColor() != 0) {
-         outlineBufferSource.setColor(submit.outlineColor());
-      }
 
       for(BakedQuad quad : submit.quads()) {
          BakedQuad.MaterialInfo material = quad.materialInfo();
          RenderType renderType = material.itemRenderType();
          this.quadInstance.setColor(getLayerColorSafe(submit.tintLayers(), material));
-         if (foilType != ItemStackRenderState.FoilType.NONE) {
-            VertexConsumer foilBuffer = getFoilBuffer(bufferSource, renderType, foilDecalPose);
-            foilBuffer.putBakedQuad(pose, quad, this.quadInstance);
-         }
-
-         if (submit.outlineColor() != 0) {
-            outlineBufferSource.getBuffer(renderType).putBakedQuad(pose, quad, this.quadInstance);
-         }
-
-         bufferSource.getBuffer(renderType).putBakedQuad(pose, quad, this.quadInstance);
+         this.getVertexBuilder(renderType).putBakedQuad(submit.pose(), quad, this.quadInstance);
       }
 
    }
 
-   private static VertexConsumer getFoilBuffer(final MultiBufferSource bufferSource, final RenderType renderType, final PoseStack.@Nullable Pose foilDecalPose) {
+   private void prepareOutlineSubmit(final Submit submit) {
+      for(BakedQuad quad : submit.quads()) {
+         BakedQuad.MaterialInfo material = quad.materialInfo();
+         RenderType renderType = (RenderType)material.itemRenderType().outline().orElse((Object)null);
+         if (renderType != null) {
+            this.quadInstance.setColor(submit.outlineColor());
+            this.getVertexBuilder(renderType).putBakedQuad(submit.pose(), quad, this.quadInstance);
+         }
+      }
+
+   }
+
+   private void prepareFoilSubmit(final Submit submit) {
+      ItemStackRenderState.FoilType foilType = submit.foilType();
+      if (foilType != ItemStackRenderState.FoilType.NONE) {
+         PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(submit.displayContext(), submit.pose()) : null;
+
+         for(BakedQuad quad : submit.quads()) {
+            VertexConsumer foilBuffer = this.getFoilBuffer(quad.materialInfo().itemRenderType(), foilDecalPose);
+            foilBuffer.putBakedQuad(submit.pose(), quad, this.quadInstance);
+         }
+
+      }
+   }
+
+   private VertexConsumer getFoilBuffer(final RenderType renderType, final PoseStack.@Nullable Pose foilDecalPose) {
       RenderType foilRenderType = useTransparentGlint(renderType) ? RenderTypes.glintTranslucent() : RenderTypes.glint();
-      VertexConsumer foilBuffer = bufferSource.getBuffer(foilRenderType);
+      VertexConsumer foilBuffer = this.getVertexBuilder(foilRenderType);
       if (foilDecalPose != null) {
          foilBuffer = new SheetedDecalTextureGenerator(foilBuffer, foilDecalPose, 0.0078125F);
       }
@@ -121,9 +124,27 @@ public class ItemFeatureRenderer {
       return material.isTinted() ? getLayerColorSafe(tintLayers, material.tintIndex()) : -1;
    }
 
-   public static record Submit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) {
+   public static record Submit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) implements TranslucentSubmit {
       public Submit {
          super();
+      }
+
+      public boolean hasTranslucency() {
+         for(BakedQuad quad : this.quads()) {
+            if (quad.materialInfo().itemRenderType().hasBlending()) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+
+      public float distanceToCameraSq() {
+         return TranslucentSubmit.computeDistanceToCameraSq(this.pose.pose());
+      }
+
+      public FeatureRendererType<Submit> featureType() {
+         return ItemFeatureRenderer.TYPE;
       }
    }
 }

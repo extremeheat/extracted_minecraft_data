@@ -8,7 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class SectionBufferBuilderPool {
+public class SectionBufferBuilderPool implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ArrayBlockingQueue<SectionBufferBuilderPack> freeBuffers;
 
@@ -53,5 +53,10 @@ public class SectionBufferBuilderPool {
 
    public int getFreeBufferCount() {
       return this.freeBuffers.size();
+   }
+
+   public void close() {
+      this.freeBuffers.forEach(SectionBufferBuilderPack::close);
+      this.freeBuffers.clear();
    }
 }

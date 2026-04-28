@@ -16,6 +16,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.Biomes;
@@ -33,7 +34,7 @@ import org.slf4j.Logger;
 
 public class FlatLevelGeneratorSettings {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<FlatLevelGeneratorSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET).lenientOptionalFieldOf("structure_overrides").forGetter((c) -> c.structureOverrides), FlatLayerInfo.CODEC.listOf().fieldOf("layers").forGetter(FlatLevelGeneratorSettings::getLayersInfo), Codec.BOOL.fieldOf("lakes").orElse(false).forGetter((s) -> s.addLakes), Codec.BOOL.fieldOf("features").orElse(false).forGetter((s) -> s.decoration), Biome.CODEC.lenientOptionalFieldOf("biome").orElseGet(Optional::empty).forGetter((s) -> Optional.of(s.biome)), RegistryOps.retrieveElement(Biomes.PLAINS), RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND), RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_SURFACE)).apply(i, FlatLevelGeneratorSettings::new)).comapFlatMap(FlatLevelGeneratorSettings::validateHeight, Function.identity()).stable();
+   public static final Codec<FlatLevelGeneratorSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET).lenientOptionalFieldOf("structure_overrides").forGetter((c) -> c.structureOverrides), FlatLayerInfo.CODEC.listOf().fieldOf("layers").forGetter(FlatLevelGeneratorSettings::getLayersInfo), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "lakes", false).forGetter((s) -> s.addLakes), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "features", false).forGetter((s) -> s.decoration), Biome.CODEC.lenientOptionalFieldOf("biome").orElseGet(Optional::empty).forGetter((s) -> Optional.of(s.biome)), RegistryOps.retrieveElement(Biomes.PLAINS), RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND), RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_SURFACE)).apply(i, FlatLevelGeneratorSettings::new)).comapFlatMap(FlatLevelGeneratorSettings::validateHeight, Function.identity()).stable();
    private final Optional<HolderSet<StructureSet>> structureOverrides;
    private final List<FlatLayerInfo> layersInfo;
    private final Holder<Biome> biome;
@@ -84,7 +85,7 @@ public class FlatLevelGeneratorSettings {
       FlatLevelGeneratorSettings settings = new FlatLevelGeneratorSettings(structureOverrides, biome, this.lakes);
 
       for(FlatLayerInfo layerInfo : layers) {
-         settings.layersInfo.add(new FlatLayerInfo(layerInfo.getHeight(), layerInfo.getBlockState().getBlock()));
+         settings.layersInfo.add(layerInfo);
          settings.updateLayers();
       }
 

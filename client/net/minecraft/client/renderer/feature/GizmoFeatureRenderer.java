@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -20,32 +19,29 @@ import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
 import org.joml.Vector4f;
 
-public class GizmoFeatureRenderer {
+public class GizmoFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
+   public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Gizmo");
    private final PoseStack poseStack = new PoseStack();
 
    public GizmoFeatureRenderer() {
       super();
    }
 
-   public void render(final SubmitNodeCollection collection, final FeatureFrameContext context, final boolean onTop) {
+   protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
       Matrix4f modelViewMatrix = RenderSystem.getModelViewMatrixCopy();
-      MultiBufferSource bufferSource = context.bufferSource();
 
-      for(Submit submit : collection.getGizmoSubmits()) {
-         if (submit.onTop() == onTop) {
-            CameraRenderState camera = submit.camera();
-            DrawableGizmoPrimitives.Group group = submit.group();
-            this.buildQuads(group.quads(), camera, bufferSource);
-            this.buildTriangleFans(group.triangleFans(), camera, bufferSource);
-            this.buildLines(group.lines(), camera, modelViewMatrix, group.opaque(), bufferSource);
-            this.buildTexts(group.texts(), camera, context.font(), bufferSource);
-            this.buildPoints(group.points(), camera, bufferSource);
-         }
+      for(Submit submit : submits) {
+         CameraRenderState camera = submit.camera;
+         this.buildQuads(submit.group.quads(), camera);
+         this.buildTriangleFans(submit.group.triangleFans(), camera);
+         this.buildLines(submit.group.lines(), camera, modelViewMatrix, submit.group.opaque());
+         this.buildTexts(submit.group.texts(), camera, context.font());
+         this.buildPoints(submit.group.points(), camera);
       }
 
    }
 
-   private void buildTexts(final List<DrawableGizmoPrimitives.Text> texts, final CameraRenderState camera, final Font font, final MultiBufferSource bufferSource) {
+   private void buildTexts(final List<DrawableGizmoPrimitives.Text> texts, final CameraRenderState camera, final Font font) {
       if (!texts.isEmpty() && camera.initialized) {
          double camX = camera.pos.x();
          double camY = camera.pos.y();
@@ -72,7 +68,7 @@ public class GizmoFeatureRenderer {
                }
 
                public void acceptRenderable(final TextRenderable renderable) {
-                  VertexConsumer buffer = bufferSource.getBuffer(renderable.renderType(Font.DisplayMode.NORMAL));
+                  VertexConsumer buffer = GizmoFeatureRenderer.this.getVertexBuilder(renderable.renderType(Font.DisplayMode.NORMAL));
                   renderable.render(pose, buffer, 15728880, false);
                }
             });
@@ -82,9 +78,9 @@ public class GizmoFeatureRenderer {
       }
    }
 
-   private void buildLines(final List<DrawableGizmoPrimitives.Line> lines, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final boolean opaque, final MultiBufferSource bufferSource) {
+   private void buildLines(final List<DrawableGizmoPrimitives.Line> lines, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final boolean opaque) {
       if (!lines.isEmpty()) {
-         VertexConsumer builder = bufferSource.getBuffer(opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
+         VertexConsumer builder = this.getVertexBuilder(opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
          PoseStack.Pose pose = this.poseStack.last();
          Vector4f start = new Vector4f();
          Vector4f end = new Vector4f();
@@ -126,7 +122,7 @@ public class GizmoFeatureRenderer {
       }
    }
 
-   private void buildTriangleFans(final List<DrawableGizmoPrimitives.TriangleFan> triangleFans, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+   private void buildTriangleFans(final List<DrawableGizmoPrimitives.TriangleFan> triangleFans, final CameraRenderState camera) {
       if (!triangleFans.isEmpty()) {
          PoseStack.Pose pose = this.poseStack.last();
          double camX = camera.pos.x();
@@ -134,7 +130,7 @@ public class GizmoFeatureRenderer {
          double camZ = camera.pos.z();
 
          for(DrawableGizmoPrimitives.TriangleFan triangleFan : triangleFans) {
-            VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugTriangleFan());
+            VertexConsumer builder = this.getVertexBuilder(RenderTypes.debugTriangleFan());
 
             for(Vec3 point : triangleFan.points()) {
                builder.addVertex(pose, (float)(point.x() - camX), (float)(point.y() - camY), (float)(point.z() - camZ)).setColor(triangleFan.color());
@@ -144,9 +140,9 @@ public class GizmoFeatureRenderer {
       }
    }
 
-   private void buildQuads(final List<DrawableGizmoPrimitives.Quad> quads, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+   private void buildQuads(final List<DrawableGizmoPrimitives.Quad> quads, final CameraRenderState camera) {
       if (!quads.isEmpty()) {
-         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugFilledBox());
+         VertexConsumer builder = this.getVertexBuilder(RenderTypes.debugFilledBox());
          PoseStack.Pose pose = this.poseStack.last();
          double camX = camera.pos.x();
          double camY = camera.pos.y();
@@ -162,9 +158,9 @@ public class GizmoFeatureRenderer {
       }
    }
 
-   private void buildPoints(final List<DrawableGizmoPrimitives.Point> points, final CameraRenderState camera, final MultiBufferSource bufferSource) {
+   private void buildPoints(final List<DrawableGizmoPrimitives.Point> points, final CameraRenderState camera) {
       if (!points.isEmpty()) {
-         VertexConsumer builder = bufferSource.getBuffer(RenderTypes.debugPoint());
+         VertexConsumer builder = this.getVertexBuilder(RenderTypes.debugPoint());
          PoseStack.Pose pose = this.poseStack.last();
          double camX = camera.pos.x();
          double camY = camera.pos.y();
@@ -178,9 +174,13 @@ public class GizmoFeatureRenderer {
       }
    }
 
-   public static record Submit(DrawableGizmoPrimitives.Group group, CameraRenderState camera, boolean onTop) {
+   public static record Submit(DrawableGizmoPrimitives.Group group, CameraRenderState camera) implements SubmitNode {
       public Submit {
          super();
+      }
+
+      public FeatureRendererType<Submit> featureType() {
+         return GizmoFeatureRenderer.TYPE;
       }
    }
 }

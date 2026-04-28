@@ -312,7 +312,8 @@ public class SoundEngine {
          if (this.tickCount >= (Integer)next.getValue()) {
             SoundInstance instance = (SoundInstance)next.getKey();
             if (instance instanceof TickableSoundInstance) {
-               ((TickableSoundInstance)instance).tick();
+               TickableSoundInstance tickableSoundInstance = (TickableSoundInstance)instance;
+               tickableSoundInstance.tick();
             }
 
             this.play(instance);
@@ -456,7 +457,8 @@ public class SoundEngine {
                }
 
                if (instance instanceof TickableSoundInstance) {
-                  this.tickingSounds.add((TickableSoundInstance)instance);
+                  TickableSoundInstance tickableSoundInstance = (TickableSoundInstance)instance;
+                  this.tickingSounds.add(tickableSoundInstance);
                }
 
                return startedSilently ? SoundEngine.PlayResult.STARTED_SILENTLY : SoundEngine.PlayResult.STARTED;

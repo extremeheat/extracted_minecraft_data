@@ -87,7 +87,17 @@ public final class IntArrayTag implements CollectionTag {
       if (this == obj) {
          return true;
       } else {
-         return obj instanceof IntArrayTag && Arrays.equals(this.data, ((IntArrayTag)obj).data);
+         boolean var10000;
+         if (obj instanceof IntArrayTag) {
+            IntArrayTag intArrayTag = (IntArrayTag)obj;
+            if (Arrays.equals(this.data, intArrayTag.data)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 

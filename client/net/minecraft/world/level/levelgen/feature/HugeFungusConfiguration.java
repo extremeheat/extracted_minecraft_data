@@ -7,7 +7,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 public class HugeFungusConfiguration implements FeatureConfiguration {
-   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("valid_base_block").forGetter((c) -> c.validBaseState), BlockState.CODEC.fieldOf("stem_state").forGetter((c) -> c.stemState), BlockState.CODEC.fieldOf("hat_state").forGetter((c) -> c.hatState), BlockState.CODEC.fieldOf("decor_state").forGetter((c) -> c.decorState), BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter((c) -> c.replaceableBlocks), Codec.BOOL.fieldOf("planted").orElse(false).forGetter((c) -> c.planted)).apply(i, HugeFungusConfiguration::new));
+   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("valid_base_block").forGetter((c) -> c.validBaseState), BlockState.CODEC.fieldOf("stem_state").forGetter((c) -> c.stemState), BlockState.CODEC.fieldOf("hat_state").forGetter((c) -> c.hatState), BlockState.CODEC.fieldOf("decor_state").forGetter((c) -> c.decorState), BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter((c) -> c.replaceableBlocks), Codec.BOOL.optionalFieldOf("planted", false).forGetter((c) -> c.planted)).apply(i, HugeFungusConfiguration::new));
    public final BlockState validBaseState;
    public final BlockState stemState;
    public final BlockState hatState;

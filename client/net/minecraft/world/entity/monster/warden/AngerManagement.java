@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +45,7 @@ public class AngerManagement {
    protected final Object2IntMap<UUID> angerByUuid;
 
    public static Codec<AngerManagement> codec(final Predicate<Entity> filter) {
-      return RecordCodecBuilder.create((i) -> i.group(SUSPECT_ANGER_PAIR.listOf().fieldOf("suspects").orElse(Collections.emptyList()).forGetter(AngerManagement::createUuidAngerPairs)).apply(i, (list) -> new AngerManagement(filter, list)));
+      return RecordCodecBuilder.create((i) -> i.group(SUSPECT_ANGER_PAIR.listOf().lenientOptionalFieldOf("suspects", List.of()).forGetter(AngerManagement::createUuidAngerPairs)).apply(i, (list) -> new AngerManagement(filter, list)));
    }
 
    public AngerManagement(final Predicate<Entity> filter, final List<Pair<UUID, Integer>> angerByUuid) {

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.screens.CreateBuffetWorldScreen;
 import net.minecraft.client.gui.screens.CreateFlatWorldScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -31,7 +32,17 @@ public interface PresetEditor {
       HolderGetter<Biome> biomes = registryAccess.lookupOrThrow(Registries.BIOME);
       HolderGetter<StructureSet> structureSets = registryAccess.lookupOrThrow(Registries.STRUCTURE_SET);
       HolderGetter<PlacedFeature> placedFeatures = registryAccess.lookupOrThrow(Registries.PLACED_FEATURE);
-      return new CreateFlatWorldScreen(parent, (flatWorldSettings) -> parent.getUiState().updateDimensions(flatWorldConfigurator(flatWorldSettings)), overworld instanceof FlatLevelSource ? ((FlatLevelSource)overworld).settings() : FlatLevelGeneratorSettings.getDefault(biomes, structureSets, placedFeatures));
+      CreateFlatWorldScreen var10000 = new CreateFlatWorldScreen;
+      Consumer var10003 = (flatWorldSettings) -> parent.getUiState().updateDimensions(flatWorldConfigurator(flatWorldSettings));
+      FlatLevelGeneratorSettings var10004;
+      if (overworld instanceof FlatLevelSource flatLevelSource) {
+         var10004 = flatLevelSource.settings();
+      } else {
+         var10004 = FlatLevelGeneratorSettings.getDefault(biomes, structureSets, placedFeatures);
+      }
+
+      var10000.<init>(parent, var10003, var10004);
+      return var10000;
    }, Optional.of(WorldPresets.SINGLE_BIOME_SURFACE), (PresetEditor)(parent, settings) -> new CreateBuffetWorldScreen(parent, settings, (biome) -> parent.getUiState().updateDimensions(fixedBiomeConfigurator(biome))));
 
    Screen createEditScreen(final CreateWorldScreen parent, final WorldCreationContext settings);

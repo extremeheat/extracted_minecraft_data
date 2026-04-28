@@ -90,13 +90,13 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
    }
 
    public void updateWidgetNarration(final NarrationElementOutput output) {
-      AbstractSelectionList.Entry var4 = this.getHovered();
-      if (var4 instanceof E hovered) {
+      E hovered = (E)(this.getHovered());
+      if (hovered != null) {
          hovered.updateNarration(output.nest());
          this.narrateListElementPosition(output, hovered);
       } else {
-         var4 = this.getFocused();
-         if (var4 instanceof E focused) {
+         E focused = (E)(this.getFocused());
+         if (focused != null) {
             focused.updateNarration(output.nest());
             this.narrateListElementPosition(output, focused);
          }

@@ -17,11 +17,15 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
@@ -55,6 +59,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Zoglin extends Monster implements HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final int MAX_HEALTH = 40;
    private static final int ATTACK_KNOCKBACK = 1;
    private static final float KNOCKBACK_RESISTANCE = 0.6F;
@@ -88,6 +93,10 @@ public class Zoglin extends Monster implements HoglinBase {
 
    private static ActivityData<Zoglin> initIdleActivity() {
       return ActivityData.<Zoglin>create(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(Zoglin::findNearestValidAttackTarget), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    private static ActivityData<Zoglin> initFightActivity() {
@@ -268,6 +277,7 @@ public class Zoglin extends Monster implements HoglinBase {
 
    static {
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.75F, 0.85F).withEyeHeight(0.625F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.875F, 0.0F));
       BRAIN_PROVIDER = Brain.<Zoglin>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS), (var0) -> getActivities());
    }
 }

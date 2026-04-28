@@ -106,7 +106,7 @@ public interface VibrationSystem {
    }
 
    public static final class Data {
-      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> Optional.ofNullable(o.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(i, (currentVibration, selectionStrategy, travelTimeInTicks) -> new Data((VibrationInfo)currentVibration.orElse((Object)null), selectionStrategy, travelTimeInTicks, true)));
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> Optional.ofNullable(o.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.optionalAlwaysPresentFieldOf(ExtraCodecs.NON_NEGATIVE_INT, "event_delay", 0).forGetter(Data::getTravelTimeInTicks)).apply(i, (currentVibration, selectionStrategy, travelTimeInTicks) -> new Data((VibrationInfo)currentVibration.orElse((Object)null), selectionStrategy, travelTimeInTicks, true)));
       public static final String NBT_TAG_KEY = "listener";
       private @Nullable VibrationInfo currentVibration;
       private int travelTimeInTicks;

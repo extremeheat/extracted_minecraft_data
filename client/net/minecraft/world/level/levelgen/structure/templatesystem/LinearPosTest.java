@@ -8,7 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class LinearPosTest extends PosRuleTest {
-   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((p) -> p.minChance), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((p) -> p.maxChance), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((p) -> p.minDist), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((p) -> p.maxDist)).apply(i, LinearPosTest::new));
+   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.optionalFieldOf("min_chance", 0.0F).forGetter((p) -> p.minChance), Codec.FLOAT.optionalFieldOf("max_chance", 0.0F).forGetter((p) -> p.maxChance), Codec.INT.optionalFieldOf("min_dist", 0).forGetter((p) -> p.minDist), Codec.INT.optionalFieldOf("max_dist", 0).forGetter((p) -> p.maxDist)).apply(i, LinearPosTest::new));
    private final float minChance;
    private final float maxChance;
    private final int minDist;

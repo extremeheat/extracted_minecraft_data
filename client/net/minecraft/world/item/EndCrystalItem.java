@@ -38,11 +38,12 @@ public class EndCrystalItem extends Item {
                return InteractionResult.FAIL;
             } else {
                if (level instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)level;
                   EndCrystal crystal = new EndCrystal(level, x + 0.5, y, z + 0.5);
                   crystal.setShowBottom(false);
                   level.addFreshEntity(crystal);
                   level.gameEvent(context.getPlayer(), GameEvent.ENTITY_PLACE, above);
-                  EnderDragonFight fight = ((ServerLevel)level).getDragonFight();
+                  EnderDragonFight fight = serverLevel.getDragonFight();
                   if (fight != null) {
                      fight.tryRespawn();
                   }

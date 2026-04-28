@@ -243,6 +243,7 @@ public class Zombie extends Monster {
    @VisibleForTesting
    public boolean convertVillagerToZombieVillager(final ServerLevel level, final Villager villager) {
       ZombieVillager zombieVillager = (ZombieVillager)villager.convertTo(EntityTypes.ZOMBIE_VILLAGER, ConversionParams.single(villager, true, true), (zombie) -> {
+         zombie.setVillagerDataFinalized(villager.getVillagerDataFinalized());
          zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(zombie.blockPosition()), EntitySpawnReason.CONVERSION, new ZombieGroupData(false, true));
          zombie.setVillagerData(villager.getVillagerData());
          zombie.setGossips(villager.getGossips().copy());
@@ -518,7 +519,7 @@ public class Zombie extends Monster {
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       DATA_SPECIAL_TYPE_ID = SynchedEntityData.<Integer>defineId(Zombie.class, EntityDataSerializers.INT);
       DATA_DROWNED_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.775F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.775F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
       DOOR_BREAKING_PREDICATE = (d) -> d == Difficulty.HARD;
    }
 

@@ -243,6 +243,13 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS;
    public static final TagKey<Block> SPELEOTHEMS;
+   public static final TagKey<Block> FOX_IMMUNE_TO;
+   public static final TagKey<Block> POLAR_BEAR_IMMUNE_TO;
+   public static final TagKey<Block> SNOW_GOLEM_IMMUNE_TO;
+   public static final TagKey<Block> STRAY_IMMUNE_TO;
+   public static final TagKey<Block> WITHER_IMMUNE_TO;
+   public static final TagKey<Block> WITHER_SKELETON_IMMUNE_TO;
+   public static final TagKey<Block> DEFAULT_IMMUNE_TO;
    public static final TagKey<Block> AIR;
 
    private BlockTags() {
@@ -492,6 +499,13 @@ public final class BlockTags {
       TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
       TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
       SPELEOTHEMS = create("speleothems");
+      FOX_IMMUNE_TO = create("fox_immune_to");
+      POLAR_BEAR_IMMUNE_TO = create("polar_bear_immune_to");
+      SNOW_GOLEM_IMMUNE_TO = create("snow_golem_immune_to");
+      STRAY_IMMUNE_TO = create("stray_immune_to");
+      WITHER_IMMUNE_TO = create("wither_immune_to");
+      WITHER_SKELETON_IMMUNE_TO = create("wither_skeleton_immune_to");
+      DEFAULT_IMMUNE_TO = create("default_immune_to");
       AIR = create("air");
    }
 }

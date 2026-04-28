@@ -305,7 +305,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public static AttributeSupplier.Builder createLivingAttributes() {
-      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE).add(Attributes.BOUNCINESS).add(Attributes.AIR_DRAG_MODIFIER).add(Attributes.FRICTION_MODIFIER).add(Attributes.NAMEPLATE_DISTANCE).add(Attributes.BELOW_NAME_DISTANCE);
+      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE).add(Attributes.BOUNCINESS).add(Attributes.AIR_DRAG_MODIFIER).add(Attributes.FRICTION_MODIFIER).add(Attributes.NAME_TAG_DISTANCE).add(Attributes.BELOW_NAME_DISTANCE);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
@@ -610,8 +610,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void setLastHurtMob(final Entity target) {
-      if (target instanceof LivingEntity) {
-         this.lastHurtMob = (LivingEntity)target;
+      if (target instanceof LivingEntity livingEntity) {
+         this.lastHurtMob = livingEntity;
       } else {
          this.lastHurtMob = null;
       }
@@ -1830,7 +1830,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             float damageResisted = oldDamage - damage;
             if (damageResisted > 0.0F && damageResisted < 3.4028235E37F) {
                if (this instanceof ServerPlayer) {
-                  ((ServerPlayer)this).awardStat(Stats.DAMAGE_RESISTED, Math.round(damageResisted * 10.0F));
+                  ServerPlayer serverPlayer = (ServerPlayer)this;
+                  serverPlayer.awardStat(Stats.DAMAGE_RESISTED, Math.round(damageResisted * 10.0F));
                } else if (damageSource.getEntity() instanceof ServerPlayer) {
                   ((ServerPlayer)damageSource.getEntity()).awardStat(Stats.DAMAGE_DEALT_RESISTED, Math.round(damageResisted * 10.0F));
                }
@@ -1842,10 +1843,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          } else if (damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
             return damage;
          } else {
-            Level var10 = this.level();
+            Level var12 = this.level();
             float enchantmentArmor;
-            if (var10 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var10;
+            if (var12 instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)var12;
                enchantmentArmor = EnchantmentHelper.getDamageProtection(serverLevel, this, damageSource);
             } else {
                enchantmentArmor = 0.0F;
@@ -3160,7 +3161,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (!entities.isEmpty()) {
          for(Entity entity : entities) {
             if (entity instanceof LivingEntity) {
-               this.doAutoAttackOnTouch((LivingEntity)entity);
+               LivingEntity livingEntity = (LivingEntity)entity;
+               this.doAutoAttackOnTouch(livingEntity);
                this.autoSpinAttackTicks = 0;
                this.setDeltaMovement(this.getDeltaMovement().scale(-0.2));
                break;
@@ -3218,8 +3220,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void onItemPickup(final ItemEntity entity) {
       Entity thrower = entity.getOwner();
-      if (thrower instanceof ServerPlayer) {
-         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.trigger((ServerPlayer)thrower, entity.getItem(), this);
+      if (thrower instanceof ServerPlayer serverPlayer) {
+         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.trigger(serverPlayer, entity.getItem(), this);
       }
 
    }

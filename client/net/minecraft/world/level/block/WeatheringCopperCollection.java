@@ -92,11 +92,6 @@ public record WeatheringCopperCollection<T>(ByState<T> weathering, ByState<T> wa
       return new ByState<R>(operation.apply(first.unaffected, second.unaffected), operation.apply(first.exposed, second.exposed), operation.apply(first.weathered, second.weathered), operation.apply(first.oxidized, second.oxidized));
    }
 
-   public void progressMapping(final BiConsumer<T, T> consumer) {
-      this.weathering.progressMapping(consumer);
-      this.waxed.progressMapping(consumer);
-   }
-
    static {
       STATES = new ByState<WeatheringCopper.WeatherState>(WeatheringCopper.WeatherState.UNAFFECTED, WeatheringCopper.WeatherState.EXPOSED, WeatheringCopper.WeatherState.WEATHERED, WeatheringCopper.WeatherState.OXIDIZED);
       PREFIXES = new WeatheringCopperCollection<String>(new ByState("", "exposed_", "weathered_", "oxidized_"), new ByState("waxed_", "waxed_exposed_", "waxed_weathered_", "waxed_oxidized_"));

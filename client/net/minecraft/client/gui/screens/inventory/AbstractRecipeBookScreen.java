@@ -60,7 +60,6 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       this.recipeBookComponent.extractRenderState(graphics, mouseX, mouseY, a);
       graphics.nextStratum();
       this.extractCarriedItem(graphics, mouseX, mouseY);
-      this.extractSnapbackItem(graphics);
       this.extractTooltip(graphics, mouseX, mouseY);
       this.recipeBookComponent.extractTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
    }

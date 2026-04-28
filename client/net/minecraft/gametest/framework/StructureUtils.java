@@ -42,39 +42,29 @@ public class StructureUtils {
    }
 
    public static Rotation getRotationForRotationSteps(final int rotationSteps) {
+      Rotation var10000;
       switch (rotationSteps) {
-         case 0 -> {
-            return Rotation.NONE;
-         }
-         case 1 -> {
-            return Rotation.CLOCKWISE_90;
-         }
-         case 2 -> {
-            return Rotation.CLOCKWISE_180;
-         }
-         case 3 -> {
-            return Rotation.COUNTERCLOCKWISE_90;
-         }
+         case 0 -> var10000 = Rotation.NONE;
+         case 1 -> var10000 = Rotation.CLOCKWISE_90;
+         case 2 -> var10000 = Rotation.CLOCKWISE_180;
+         case 3 -> var10000 = Rotation.COUNTERCLOCKWISE_90;
          default -> throw new IllegalArgumentException("rotationSteps must be a value from 0-3. Got value " + rotationSteps);
       }
+
+      return var10000;
    }
 
    public static int getRotationStepsForRotation(final Rotation rotation) {
+      byte var10000;
       switch (rotation) {
-         case NONE -> {
-            return 0;
-         }
-         case CLOCKWISE_90 -> {
-            return 1;
-         }
-         case CLOCKWISE_180 -> {
-            return 2;
-         }
-         case COUNTERCLOCKWISE_90 -> {
-            return 3;
-         }
+         case NONE -> var10000 = 0;
+         case CLOCKWISE_90 -> var10000 = 1;
+         case CLOCKWISE_180 -> var10000 = 2;
+         case COUNTERCLOCKWISE_90 -> var10000 = 3;
          default -> throw new IllegalArgumentException("Unknown rotation value, don't know how many steps it represents: " + String.valueOf(rotation));
       }
+
+      return var10000;
    }
 
    public static TestInstanceBlockEntity createNewEmptyTest(final Identifier id, final BlockPos structurePos, final Vec3i size, final Rotation rotation, final ServerLevel level) {

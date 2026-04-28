@@ -57,7 +57,8 @@ public class ShearsItem extends Item {
             Player player = context.getPlayer();
             ItemStack itemInHand = context.getItemInHand();
             if (player instanceof ServerPlayer) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, itemInHand);
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemInHand);
             }
 
             level.playSound(player, (BlockPos)pos, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS, 1.0F, 1.0F);

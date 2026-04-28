@@ -591,11 +591,10 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    protected boolean canHitEntity(final Entity entity) {
-      if (entity instanceof Player) {
-         Entity var3 = this.getOwner();
-         if (var3 instanceof Player) {
-            Player player = (Player)var3;
-            if (!player.canHarmPlayer((Player)entity)) {
+      if (entity instanceof Player playerEntity) {
+         Entity var4 = this.getOwner();
+         if (var4 instanceof Player player) {
+            if (!player.canHarmPlayer(playerEntity)) {
                return false;
             }
          }

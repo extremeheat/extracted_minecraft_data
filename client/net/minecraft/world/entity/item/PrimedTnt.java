@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
@@ -32,7 +33,8 @@ import org.jspecify.annotations.Nullable;
 public class PrimedTnt extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Integer> DATA_FUSE_ID;
    private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
-   private static final short DEFAULT_FUSE_TIME = 80;
+   public static final short DEFAULT_FUSE_TIME = 80;
+   public static final int NO_FUSE = -1;
    private static final float DEFAULT_EXPLOSION_POWER = 4.0F;
    private static final BlockState DEFAULT_BLOCK_STATE;
    private static final String TAG_BLOCK_STATE = "block_state";
@@ -149,6 +151,10 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    public int getFuse() {
       return (Integer)this.entityData.get(DATA_FUSE_ID);
+   }
+
+   public static int getRandomShortFuse(final int fuse, final RandomSource random) {
+      return random.nextInt(fuse / 4) + fuse / 8;
    }
 
    public void setBlockState(final BlockState blockState) {

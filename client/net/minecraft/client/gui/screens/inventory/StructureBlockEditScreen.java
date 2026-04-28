@@ -239,13 +239,17 @@ public class StructureBlockEditScreen extends Screen {
       this.rot90Button.active = true;
       this.rot180Button.active = true;
       this.rot270Button.active = true;
+      Button var10000 = this.rot0Button;
+      boolean var10001;
       switch (this.structure.getRotation()) {
-         case NONE -> this.rot0Button.active = false;
-         case CLOCKWISE_180 -> this.rot180Button.active = false;
-         case COUNTERCLOCKWISE_90 -> this.rot270Button.active = false;
-         case CLOCKWISE_90 -> this.rot90Button.active = false;
+         case NONE -> var10001 = false;
+         case CLOCKWISE_180 -> var10001 = false;
+         case COUNTERCLOCKWISE_90 -> var10001 = false;
+         case CLOCKWISE_90 -> var10001 = false;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
+      var10000.active = var10001;
    }
 
    private void updateMode(final StructureMode mode) {

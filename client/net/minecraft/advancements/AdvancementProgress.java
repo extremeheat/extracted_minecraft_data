@@ -181,6 +181,6 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       OBTAINED_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
       OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT).xmap(Instant::from, (instant) -> instant.atZone(ZoneId.systemDefault()));
       CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((map) -> Util.mapValues(map, CriterionProgress::new), (map) -> (Map)map.entrySet().stream().filter((e) -> ((CriterionProgress)e.getValue()).isDone()).collect(Collectors.toMap(Map.Entry::getKey, (e) -> (Instant)Objects.requireNonNull(((CriterionProgress)e.getValue()).getObtained()))));
-      CODEC = RecordCodecBuilder.create((i) -> i.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((a) -> a.criteria), Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)).apply(i, (criteria, done) -> new AdvancementProgress(new HashMap(criteria))));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((a) -> a.criteria), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "done", true).forGetter(AdvancementProgress::isDone)).apply(i, (criteria, done) -> new AdvancementProgress(new HashMap(criteria))));
    }
 }

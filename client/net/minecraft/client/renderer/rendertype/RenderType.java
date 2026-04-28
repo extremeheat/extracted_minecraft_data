@@ -1,21 +1,15 @@
 package net.minecraft.client.renderer.rendertype;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.function.Consumer;
-import net.minecraft.client.renderer.StagedVertexBuffer;
-import org.joml.Matrix4fStack;
+import net.minecraft.client.Minecraft;
+import org.joml.Matrix4f;
 
 public class RenderType {
    private static final int MEGABYTE = 1048576;
@@ -50,47 +44,19 @@ public class RenderType {
       return this.state.outputTarget;
    }
 
-   public void drawFromBuffer(final StagedVertexBuffer.ExecuteInfo info) {
-      this.drawFromBuffer(info.vertexBuffer(), info.indexBuffer(), info.indexType(), info.baseVertex(), info.firstIndex(), info.indexCount());
+   public PreparedRenderType prepare() {
+      Minecraft minecraft = Minecraft.getInstance();
+      List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
+      return new PreparedRenderType(this.state.pipeline, this.state.outputTarget, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
    }
 
-   public void drawFromBuffer(final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int baseVertex, final int firstIndex, final int indexCount) {
-      Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-      Consumer<Matrix4fStack> modelViewModifier = this.state.layeringTransform.getModifier();
+   private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {
+      Consumer<Matrix4f> modelViewModifier = this.state.layeringTransform.getModifier();
       if (modelViewModifier != null) {
-         modelViewStack.pushMatrix();
-         modelViewModifier.accept(modelViewStack);
+         modelViewModifier.accept(modelViewMatrix);
       }
 
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), this.state.textureTransform.createMatrix());
-      Map<String, RenderSetup.TextureAndSampler> textures = this.state.getTextures();
-      RenderTarget renderTarget = this.state.outputTarget.getRenderTarget();
-      GpuTextureView colorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : renderTarget.getColorTextureView();
-      GpuTextureView depthTexture = renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null;
-
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.name, colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
-         renderPass.setPipeline(this.state.pipeline);
-         ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
-         if (scissorState.enabled()) {
-            renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
-         }
-
-         RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         renderPass.setVertexBuffer(0, vertexBuffer);
-
-         for(Map.Entry<String, RenderSetup.TextureAndSampler> entry : textures.entrySet()) {
-            renderPass.bindTexture((String)entry.getKey(), ((RenderSetup.TextureAndSampler)entry.getValue()).textureView(), ((RenderSetup.TextureAndSampler)entry.getValue()).sampler());
-         }
-
-         renderPass.setIndexBuffer(indexBuffer, indexType);
-         renderPass.drawIndexed(baseVertex, firstIndex, indexCount, 1);
-      }
-
-      if (modelViewModifier != null) {
-         modelViewStack.popMatrix();
-      }
-
+      return RenderSystem.getDynamicUniforms().writeTransform(modelViewMatrix, this.state.textureTransform.createMatrix());
    }
 
    public VertexFormat format() {

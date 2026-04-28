@@ -182,9 +182,7 @@ public class Vec3 implements Position {
    public boolean equals(final Object o) {
       if (this == o) {
          return true;
-      } else if (!(o instanceof Vec3)) {
-         return false;
-      } else {
+      } else if (o instanceof Vec3) {
          Vec3 vec3 = (Vec3)o;
          if (Double.compare(vec3.x, this.x) != 0) {
             return false;
@@ -193,6 +191,8 @@ public class Vec3 implements Position {
          } else {
             return Double.compare(vec3.z, this.z) == 0;
          }
+      } else {
+         return false;
       }
    }
 

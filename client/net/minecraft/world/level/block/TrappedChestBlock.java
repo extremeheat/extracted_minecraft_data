@@ -39,7 +39,7 @@ public class TrappedChestBlock extends ChestBlock {
       return true;
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return Mth.clamp(ChestBlockEntity.getOpenCount(level, pos), 0, 15);
    }
 

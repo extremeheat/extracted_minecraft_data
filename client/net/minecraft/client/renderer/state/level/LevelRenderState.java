@@ -12,7 +12,6 @@ public class LevelRenderState {
    public final List<SectionUpdateRenderState> sectionUpdateRenderStates = new ArrayList();
    public final List<EntityRenderState> entityRenderStates = new ArrayList();
    public final List<BlockEntityRenderState> blockEntityRenderStates = new ArrayList();
-   public boolean haveGlowingEntities;
    public @Nullable BlockOutlineRenderState blockOutlineRenderState;
    public final List<BlockBreakingRenderState> blockBreakingRenderStates = new ArrayList();
    public final WeatherRenderState weatherRenderState = new WeatherRenderState();
@@ -40,7 +39,6 @@ public class LevelRenderState {
       this.entityRenderStates.clear();
       this.blockEntityRenderStates.clear();
       this.blockBreakingRenderStates.clear();
-      this.haveGlowingEntities = false;
       this.blockOutlineRenderState = null;
       this.weatherRenderState.reset();
       this.worldBorderRenderState.reset();

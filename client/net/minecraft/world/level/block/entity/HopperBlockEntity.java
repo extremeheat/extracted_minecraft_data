@@ -396,15 +396,16 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
 
    private static @Nullable Container getBlockContainer(final Level level, final BlockPos pos, final BlockState state) {
       Block block = state.getBlock();
-      if (block instanceof WorldlyContainerHolder) {
-         return ((WorldlyContainerHolder)block).getContainer(state, level, pos);
+      if (block instanceof WorldlyContainerHolder worldlyContainerHolder) {
+         return worldlyContainerHolder.getContainer(state, level, pos);
       } else {
          if (state.hasBlockEntity()) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof Container) {
                Container container = (Container)entity;
                if (container instanceof ChestBlockEntity && block instanceof ChestBlock) {
-                  container = ChestBlock.getContainer((ChestBlock)block, state, level, pos, true);
+                  ChestBlock chestBlock = (ChestBlock)block;
+                  container = ChestBlock.getContainer(chestBlock, state, level, pos, true);
                }
 
                return container;

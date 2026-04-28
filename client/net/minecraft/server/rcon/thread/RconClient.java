@@ -93,7 +93,7 @@ public class RconClient extends GenericThread {
             }
 
             return;
-         } catch (IOException var16) {
+         } catch (IOException var15) {
          } catch (Exception e) {
             LOGGER.error("Exception whilst parsing RCON input", e);
          }

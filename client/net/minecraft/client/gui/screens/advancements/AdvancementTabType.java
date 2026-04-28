@@ -76,39 +76,29 @@ enum AdvancementTabType {
    }
 
    public int getX(final int index) {
+      int var10000;
       switch (this.ordinal()) {
-         case 0 -> {
-            return (this.width + 4) * index;
-         }
-         case 1 -> {
-            return (this.width + 4) * index;
-         }
-         case 2 -> {
-            return -this.width + 4;
-         }
-         case 3 -> {
-            return 248;
-         }
-         default -> throw new UnsupportedOperationException("Don't know what this tab type is!" + String.valueOf(this));
+         case 0 -> var10000 = (this.width + 4) * index;
+         case 1 -> var10000 = (this.width + 4) * index;
+         case 2 -> var10000 = -this.width + 4;
+         case 3 -> var10000 = 248;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    public int getY(final int index) {
+      int var10000;
       switch (this.ordinal()) {
-         case 0 -> {
-            return -this.height + 4;
-         }
-         case 1 -> {
-            return 136;
-         }
-         case 2 -> {
-            return this.height * index;
-         }
-         case 3 -> {
-            return this.height * index;
-         }
-         default -> throw new UnsupportedOperationException("Don't know what this tab type is!" + String.valueOf(this));
+         case 0 -> var10000 = -this.height + 4;
+         case 1 -> var10000 = 136;
+         case 2 -> var10000 = this.height * index;
+         case 3 -> var10000 = this.height * index;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    public boolean isMouseOver(final int xo, final int yo, final int index, final double mx, final double my) {

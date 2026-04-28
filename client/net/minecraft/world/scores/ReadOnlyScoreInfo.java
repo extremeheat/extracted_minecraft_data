@@ -15,8 +15,4 @@ public interface ReadOnlyScoreInfo {
    default MutableComponent formatValue(final NumberFormat defaultFormat) {
       return ((NumberFormat)Objects.requireNonNullElse(this.numberFormat(), defaultFormat)).format(this.value());
    }
-
-   static MutableComponent safeFormatValue(final @Nullable ReadOnlyScoreInfo scoreInfo, final NumberFormat defaultFormat) {
-      return scoreInfo != null ? scoreInfo.formatValue(defaultFormat) : defaultFormat.format(0);
-   }
 }

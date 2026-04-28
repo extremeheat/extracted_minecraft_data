@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
 import org.jspecify.annotations.Nullable;
 
 public class EndSpikeConfiguration implements FeatureConfiguration {
-   public static final Codec<EndSpikeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((c) -> c.crystalInvulnerable), EndSpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((c) -> c.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((c) -> Optional.ofNullable(c.crystalBeamTarget))).apply(i, EndSpikeConfiguration::new));
+   public static final Codec<EndSpikeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("crystal_invulnerable", false).forGetter((c) -> c.crystalInvulnerable), EndSpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((c) -> c.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((c) -> Optional.ofNullable(c.crystalBeamTarget))).apply(i, EndSpikeConfiguration::new));
    private final boolean crystalInvulnerable;
    private final List<EndSpikeFeature.EndSpike> spikes;
    private final @Nullable BlockPos crystalBeamTarget;

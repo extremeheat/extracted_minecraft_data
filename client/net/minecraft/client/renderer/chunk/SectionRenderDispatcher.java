@@ -204,7 +204,7 @@ public class SectionRenderDispatcher {
    public class RenderSection implements RotatingSectionStorage.Value {
       public final int index;
       public final AtomicReference<SectionMesh> sectionMesh;
-      private @Nullable CompileTask lastCompileTask;
+      private CompileTask lastCompileTask;
       private ResortTransparencyTask lastResortTransparencyTask;
       private AABB bb;
       private volatile long sectionNode;

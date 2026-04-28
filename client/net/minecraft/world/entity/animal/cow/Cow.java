@@ -15,9 +15,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
@@ -30,6 +34,7 @@ import org.jspecify.annotations.Nullable;
 public class Cow extends AbstractCow {
    private static final EntityDataAccessor<Holder<CowVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<CowSoundVariant>> DATA_SOUND_VARIANT_ID;
+   private static final EntityDimensions BABY_DIMENSIONS;
 
    public Cow(final EntityType<? extends Cow> type, final Level level) {
       super(type, level);
@@ -93,6 +98,10 @@ public class Cow extends AbstractCow {
       return (CowSoundVariant)this.getSoundVariant().value();
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public <T> @Nullable T get(final DataComponentType<? extends T> type) {
       if (type == DataComponents.COW_VARIANT) {
          return (T)castComponentValue(type, this.getVariant());
@@ -122,5 +131,6 @@ public class Cow extends AbstractCow {
    static {
       DATA_VARIANT_ID = SynchedEntityData.<Holder<CowVariant>>defineId(Cow.class, EntityDataSerializers.COW_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<CowSoundVariant>>defineId(Cow.class, EntityDataSerializers.COW_SOUND_VARIANT);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.7F).withEyeHeight(0.69F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.75F, 0.0F));
    }
 }

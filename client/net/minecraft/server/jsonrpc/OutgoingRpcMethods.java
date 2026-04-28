@@ -44,6 +44,6 @@ public class OutgoingRpcMethods {
       PLAYER_BANNED = OutgoingRpcMethod.notificationWithParams().param("player", Schema.PLAYER_BAN_SCHEMA.asRef()).description("Player was added to ban list").register("bans/added");
       PLAYER_UNBANNED = OutgoingRpcMethod.notificationWithParams().param("player", Schema.PLAYER_SCHEMA.asRef()).description("Player was removed from ban list").register("bans/removed");
       GAMERULE_CHANGED = OutgoingRpcMethod.notificationWithParams().param("gamerule", Schema.TYPED_GAME_RULE_SCHEMA.asRef()).description("Gamerule was changed").register("gamerules/updated");
-      STATUS_HEARTBEAT = OutgoingRpcMethod.notificationWithParams().param("status", Schema.SERVER_STATE_SCHEMA.asRef()).description("Server status heartbeat").register("server/status");
+      STATUS_HEARTBEAT = OutgoingRpcMethod.notificationWithParams().allowPreServerInit().param("status", Schema.SERVER_STATE_SCHEMA.asRef()).description("Server status heartbeat, including before the server has spun up").register("server/status");
    }
 }

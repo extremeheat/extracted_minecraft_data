@@ -65,7 +65,7 @@ public class MapItem extends Item {
    }
 
    public void update(final Level level, final Entity player, final MapItemSavedData data) {
-      if (level.dimension() == data.dimension && player instanceof Player) {
+      if (level.dimension() == data.dimension && player instanceof Player player2) {
          int scale = 1 << data.scale;
          int centerX = data.centerX;
          int centerZ = data.centerZ;
@@ -76,7 +76,7 @@ public class MapItem extends Item {
             radius /= 2;
          }
 
-         MapItemSavedData.HoldingPlayer holdingPlayer = data.getHoldingPlayer((Player)player);
+         MapItemSavedData.HoldingPlayer holdingPlayer = data.getHoldingPlayer(player2);
          ++holdingPlayer.step;
          BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();

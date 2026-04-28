@@ -1,6 +1,7 @@
 package net.minecraft.commands;
 
 import com.mojang.serialization.Codec;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.resources.Identifier;
@@ -46,6 +47,10 @@ public class CacheableFunction {
          var10000 = false;
          return var10000;
       }
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.id});
    }
 
    static {

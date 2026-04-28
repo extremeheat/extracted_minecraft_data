@@ -84,9 +84,7 @@ public class AABB {
    public boolean equals(final Object o) {
       if (this == o) {
          return true;
-      } else if (!(o instanceof AABB)) {
-         return false;
-      } else {
+      } else if (o instanceof AABB) {
          AABB aabb = (AABB)o;
          if (Double.compare(aabb.minX, this.minX) != 0) {
             return false;
@@ -101,6 +99,8 @@ public class AABB {
          } else {
             return Double.compare(aabb.maxZ, this.maxZ) == 0;
          }
+      } else {
+         return false;
       }
    }
 

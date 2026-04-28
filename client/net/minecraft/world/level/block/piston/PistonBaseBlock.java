@@ -169,7 +169,8 @@ public class PistonBaseBlock extends DirectionalBlock {
       } else if (b0 == 1 || b0 == 2) {
          BlockEntity prevBlockEntity = level.getBlockEntity(pos.relative(direction));
          if (prevBlockEntity instanceof PistonMovingBlockEntity) {
-            ((PistonMovingBlockEntity)prevBlockEntity).finalTick();
+            PistonMovingBlockEntity pistonMovingBlockEntity = (PistonMovingBlockEntity)prevBlockEntity;
+            pistonMovingBlockEntity.finalTick();
          }
 
          BlockState movingPistonState = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, direction)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);

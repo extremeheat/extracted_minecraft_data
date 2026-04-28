@@ -217,10 +217,12 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
 
    public void onBrokenAfterFall(final Level level, final BlockPos pos, final FallingBlockEntity entity) {
       if (!entity.isSilent()) {
-         level.levelEvent(1045, pos, 0);
+         level.levelEvent(this.getStalactiteLandingSound(), pos, 0);
       }
 
    }
+
+   protected abstract int getStalactiteLandingSound();
 
    public DamageSource getFallDamageSource(final Entity entity) {
       return entity.damageSources().fallingStalactite(entity);

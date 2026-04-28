@@ -20,6 +20,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -98,7 +99,7 @@ public class LevelRenderer implements AutoCloseable {
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
    private final RenderBuffers renderBuffers;
    private final FeatureRenderDispatcher featureRenderDispatcher;
-   private final SubmitNodeStorage submitNodeStorage;
+   private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
    private final ModelManager modelManager;
    private final TextureManager textureManager;
    private final AtlasManager atlasManager;
@@ -129,7 +130,6 @@ public class LevelRenderer implements AutoCloseable {
       this.blockEntityRenderDispatcher = blockEntityRenderDispatcher;
       this.renderBuffers = gameRenderer.renderBuffers();
       this.featureRenderDispatcher = gameRenderer.featureRenderDispatcher();
-      this.submitNodeStorage = this.featureRenderDispatcher.getSubmitNodeStorage();
       this.modelManager = modelManager;
       this.textureManager = textureManager;
       this.atlasManager = atlasManager;
@@ -149,6 +149,8 @@ public class LevelRenderer implements AutoCloseable {
       modelViewStack.mul(modelViewMatrix);
       profiler.popPush("submitFeatures");
       this.submitFeatures(this.levelRenderState, this.submitNodeStorage, renderOutline);
+      profiler.popPush("prepareFeatures");
+      FeatureRenderDispatcher.PreparedFrame featureFrame = this.featureRenderDispatcher.prepareFrame(this.submitNodeStorage);
       profiler.popPush("setupFrameGraph");
       FrameGraphBuilder frame = new FrameGraphBuilder();
       this.targets.main = frame.<RenderTarget>importExternal("main", this.gameRenderer.mainRenderTarget());
@@ -176,9 +178,9 @@ public class LevelRenderer implements AutoCloseable {
       }
 
       ChunkSectionsToRender chunkSectionsToRender = this.prepareChunkRenders(this.levelRenderState.cameraRenderState.viewRotationMatrix);
-      this.addMainPass(frame, terrainFog, this.levelRenderState, profiler, chunkSectionsToRender);
+      this.addMainPass(frame, featureFrame, terrainFog, this.levelRenderState, profiler, chunkSectionsToRender);
       PostChain entityOutlineChain = this.shaderManager.getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
-      if (this.levelRenderState.haveGlowingEntities && entityOutlineChain != null) {
+      if (featureFrame.hasAnyOutline() && entityOutlineChain != null) {
          entityOutlineChain.addToFrame(frame, screenWidth, screenHeight, this.targets);
       }
 
@@ -192,7 +194,7 @@ public class LevelRenderer implements AutoCloseable {
          transparencyChain.addToFrame(frame, screenWidth, screenHeight, this.targets);
       }
 
-      this.addAlwaysOnTopPass(frame, terrainFog);
+      this.addAlwaysOnTopPass(frame, featureFrame, terrainFog);
       profiler.popPush("executeFrameGraph");
       frame.execute(resourceAllocator, new FrameGraphBuilder.Inspector() {
          {
@@ -210,7 +212,7 @@ public class LevelRenderer implements AutoCloseable {
       profiler.pop();
       this.targets.clear();
       modelViewStack.popMatrix();
-      this.featureRenderDispatcher.clearSubmitNodes();
+      featureFrame.close();
       profiler.push("compileSections");
       this.compileSections(cameraState);
       profiler.pop();
@@ -253,6 +255,15 @@ public class LevelRenderer implements AutoCloseable {
       this.finalizeGizmoCollection();
       this.finalizedGizmos.standardPrimitives().submit(submitNodeCollector, levelRenderState.cameraRenderState, false);
       this.finalizedGizmos.alwaysOnTopPrimitives().submit(submitNodeCollector, levelRenderState.cameraRenderState, true);
+      if (!levelRenderState.shouldShowEntityOutlines) {
+         ObjectIterator var5 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var5.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var5.next();
+            collection.outline.clear();
+         }
+      }
+
       this.checkPoseStack(poseStack);
    }
 
@@ -305,7 +316,7 @@ public class LevelRenderer implements AutoCloseable {
       }
    }
 
-   private void addMainPass(final FrameGraphBuilder frame, final GpuBufferSlice terrainFog, final LevelRenderState levelRenderState, final ProfilerFiller profiler, final ChunkSectionsToRender chunkSectionsToRender) {
+   private void addMainPass(final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame featureFrame, final GpuBufferSlice terrainFog, final LevelRenderState levelRenderState, final ProfilerFiller profiler, final ChunkSectionsToRender chunkSectionsToRender) {
       FramePass pass = frame.addPass("main");
       this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
       if (this.targets.translucent != null) {
@@ -324,7 +335,7 @@ public class LevelRenderer implements AutoCloseable {
          this.targets.particles = pass.<RenderTarget>readsAndWrites(this.targets.particles);
       }
 
-      if (levelRenderState.haveGlowingEntities && this.targets.entityOutline != null) {
+      if (featureFrame.hasAnyOutline() && this.targets.entityOutline != null) {
          this.targets.entityOutline = pass.<RenderTarget>readsAndWrites(this.targets.entityOutline);
       }
 
@@ -352,10 +363,8 @@ public class LevelRenderer implements AutoCloseable {
             RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), 0, outlineTarget.getDepthTexture(), 0.0);
          }
 
-         MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
          profiler.popPush("renderSolidFeatures");
-         this.featureRenderDispatcher.renderSolidFeatures();
-         bufferSource.uploadAndDraw();
+         featureFrame.executeSolid();
          profiler.pop();
          if (translucentTarget != null) {
             ((RenderTarget)translucentTarget.get()).copyDepthFrom(mainTarget.get());
@@ -370,15 +379,13 @@ public class LevelRenderer implements AutoCloseable {
          }
 
          profiler.push("renderTranslucentFeatures");
-         this.featureRenderDispatcher.renderTranslucentFeatures();
-         bufferSource.uploadAndDraw();
+         featureFrame.executeTranslucent();
          profiler.pop();
-         this.renderBuffers.outlineBufferSource().endOutlineBatch();
+         featureFrame.executeOutline();
          profiler.push("translucentTerrain");
          chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
          profiler.pop();
-         this.featureRenderDispatcher.renderTranslucentAfterTerrain();
-         bufferSource.uploadAndDraw();
+         featureFrame.executeTranslucentAfterTerrain();
       });
    }
 
@@ -410,8 +417,8 @@ public class LevelRenderer implements AutoCloseable {
       });
    }
 
-   private void addAlwaysOnTopPass(final FrameGraphBuilder frame, final GpuBufferSlice fog) {
-      if (this.featureRenderDispatcher.hasAnyAlwaysOnTop()) {
+   private void addAlwaysOnTopPass(final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame featureFrame, final GpuBufferSlice fog) {
+      if (featureFrame.hasAnyAlwaysOnTop()) {
          FramePass pass = frame.addPass("always_on_top");
          this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
          if (this.targets.itemEntity != null) {
@@ -422,13 +429,11 @@ public class LevelRenderer implements AutoCloseable {
          pass.executes(() -> {
             RenderSystem.setShaderFog(fog);
             PoseStack poseStack = new PoseStack();
-            MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
             RenderTarget mainRenderTarget = mainTarget.get();
             RenderSystem.outputColorTextureOverride = mainRenderTarget.getColorTextureView();
             RenderSystem.outputDepthTextureOverride = mainRenderTarget.getDepthTextureView();
             RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
-            this.featureRenderDispatcher.renderAlwaysOnTop();
-            bufferSource.uploadAndDraw();
+            featureFrame.executeAlwaysOnTop();
             RenderSystem.outputColorTextureOverride = null;
             RenderSystem.outputDepthTextureOverride = null;
             this.checkPoseStack(poseStack);
@@ -564,10 +569,6 @@ public class LevelRenderer implements AutoCloseable {
       double camZ = cameraPos.z();
 
       for(EntityRenderState state : levelRenderState.entityRenderStates) {
-         if (!levelRenderState.haveGlowingEntities) {
-            state.outlineColor = 0;
-         }
-
          this.entityRenderDispatcher.submit(state, levelRenderState.cameraRenderState, state.x - camX, state.y - camY, state.z - camZ, poseStack, output);
       }
 

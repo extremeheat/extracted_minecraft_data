@@ -18,6 +18,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -58,6 +61,7 @@ public class Ocelot extends Animal {
    public static final double SPRINT_SPEED_MOD = 1.33;
    private static final EntityDataAccessor<Boolean> DATA_TRUSTING;
    private static final boolean DEFAULT_TRUSTING = false;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private @Nullable OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
    private @Nullable OcelotTemptGoal temptGoal;
 
@@ -206,6 +210,10 @@ public class Ocelot extends Animal {
 
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public @Nullable Ocelot getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       return EntityTypes.OCELOT.create(level, EntitySpawnReason.BREEDING);
    }
@@ -252,6 +260,7 @@ public class Ocelot extends Animal {
 
    static {
       DATA_TRUSTING = SynchedEntityData.<Boolean>defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.35F).withEyeHeight(0.34375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.3125F, 0.0F));
    }
 
    private static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

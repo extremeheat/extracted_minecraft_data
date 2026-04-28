@@ -87,7 +87,17 @@ public final class LongArrayTag implements CollectionTag {
       if (this == obj) {
          return true;
       } else {
-         return obj instanceof LongArrayTag && Arrays.equals(this.data, ((LongArrayTag)obj).data);
+         boolean var10000;
+         if (obj instanceof LongArrayTag) {
+            LongArrayTag longArrayTag = (LongArrayTag)obj;
+            if (Arrays.equals(this.data, longArrayTag.data)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 

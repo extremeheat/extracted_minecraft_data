@@ -67,8 +67,9 @@ public class BoneMealItem extends Item {
       if (var5 instanceof BonemealableBlock block) {
          if (block.isValidBonemealTarget(level, pos, state)) {
             if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
                if (block.isBonemealSuccess(level, level.getRandom(), pos, state)) {
-                  block.performBonemeal((ServerLevel)level, level.getRandom(), pos, state);
+                  block.performBonemeal(serverLevel, level.getRandom(), pos, state);
                }
 
                itemStack.shrink(1);
@@ -86,9 +87,10 @@ public class BoneMealItem extends Item {
          if (!(level instanceof ServerLevel)) {
             return true;
          } else {
+            ServerLevel serverLevel = (ServerLevel)level;
             RandomSource random = level.getRandom();
 
-            label80:
+            label81:
             for(int j = 0; j < 128; ++j) {
                BlockPos testPos = pos;
                BlockState stateToGrow = Blocks.SEAGRASS.defaultBlockState();
@@ -96,7 +98,7 @@ public class BoneMealItem extends Item {
                for(int i = 0; i < j / 16; ++i) {
                   testPos = testPos.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
                   if (level.getBlockState(testPos).isCollisionShapeFullBlock(level, testPos)) {
-                     continue label80;
+                     continue label81;
                   }
                }
 
@@ -123,7 +125,7 @@ public class BoneMealItem extends Item {
                   if (testState.is(Blocks.WATER) && level.getFluidState(testPos).isFull()) {
                      level.setBlock(testPos, stateToGrow, 3);
                   } else if (testState.is(Blocks.SEAGRASS) && ((BonemealableBlock)Blocks.SEAGRASS).isValidBonemealTarget(level, testPos, testState) && random.nextInt(10) == 0) {
-                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal((ServerLevel)level, random, testPos, testState);
+                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal(serverLevel, random, testPos, testState);
                   }
                }
             }

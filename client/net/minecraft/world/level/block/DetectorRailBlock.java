@@ -46,6 +46,10 @@ public class DetectorRailBlock extends BaseRailBlock {
       return true;
    }
 
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Boolean)state.getValue(POWERED) ? 15 : 0;
+   }
+
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
       if (!level.isClientSide()) {
          if (!(Boolean)state.getValue(POWERED)) {
@@ -58,10 +62,6 @@ public class DetectorRailBlock extends BaseRailBlock {
       if ((Boolean)state.getValue(POWERED)) {
          this.checkPressed(level, pos, state);
       }
-   }
-
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 
    protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {

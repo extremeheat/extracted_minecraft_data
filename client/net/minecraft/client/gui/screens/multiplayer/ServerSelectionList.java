@@ -366,7 +366,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             }
          }
 
-         if ((Boolean)this.minecraft.options.touchscreen().get() || hovered) {
+         if (hovered) {
             graphics.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int relX = mouseX - this.getContentX();
             int relY = mouseY - this.getContentY();

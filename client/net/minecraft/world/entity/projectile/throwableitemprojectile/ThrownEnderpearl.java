@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -104,7 +105,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                if (owner instanceof ServerPlayer) {
                   ServerPlayer player = (ServerPlayer)owner;
                   if (player.connection.isAcceptingMessages()) {
-                     if (this.random.nextFloat() < 0.05F && level.isSpawningMonsters()) {
+                     if (this.random.nextFloat() < 0.05F && level.isSpawningMonsters() && level.getLevelData().getDifficulty() != Difficulty.PEACEFUL) {
                         Endermite endermite = EntityTypes.ENDERMITE.create(level, EntitySpawnReason.TRIGGERED);
                         if (endermite != null) {
                            endermite.snapTo(owner.getX(), owner.getY(), owner.getZ(), owner.getYRot(), owner.getXRot());

@@ -78,6 +78,11 @@ public final class MutableComponent implements Component {
       return this;
    }
 
+   public MutableComponent withColor(final TextColor color) {
+      this.setStyle(this.getStyle().withColor(color));
+      return this;
+   }
+
    public MutableComponent withoutShadow() {
       this.setStyle(this.getStyle().withoutShadow());
       return this;

@@ -17,6 +17,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SpawnUtil;
 import net.minecraft.util.Util;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -107,7 +108,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
             if (entity.creakingInfo == null) {
                if (updatedState.getValue(CreakingHeartBlock.STATE) == CreakingHeartState.AWAKE) {
-                  if (serverLevel.isSpawningMonsters()) {
+                  if (serverLevel.isSpawningMonsters() && serverLevel.getLevelData().getDifficulty() != Difficulty.PEACEFUL) {
                      Player player = level.getNearestPlayer((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), 32.0, false);
                      if (player != null) {
                         Creaking creaking = spawnProtector(serverLevel, entity);
@@ -223,10 +224,11 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    }
 
    public void creakingHurt() {
-      Object var2 = this.getCreakingProtector().orElse((Object)null);
-      if (var2 instanceof Creaking creaking) {
+      Optional<Creaking> creaking = this.getCreakingProtector();
+      if (!creaking.isEmpty()) {
          Level var3 = this.level;
-         if (var3 instanceof ServerLevel serverLevel) {
+         if (var3 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var3;
             if (this.emitter <= 0) {
                this.emitParticles(serverLevel, 20, false);
                if (this.getBlockState().getValue(CreakingHeartBlock.STATE) == CreakingHeartState.AWAKE) {
@@ -241,7 +243,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                }
 
                this.emitter = 100;
-               this.emitterTarget = creaking.getBoundingBox().getCenter();
+               this.emitterTarget = ((Creaking)creaking.get()).getBoundingBox().getCenter();
             }
          }
       }
@@ -286,13 +288,13 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    }
 
    private void emitParticles(final ServerLevel serverLevel, final int count, final boolean towardsCreaking) {
-      Object var5 = this.getCreakingProtector().orElse((Object)null);
-      if (var5 instanceof Creaking creaking) {
+      Optional<Creaking> creaking = this.getCreakingProtector();
+      if (!creaking.isEmpty()) {
          int color = towardsCreaking ? 16545810 : 6250335;
          RandomSource random = serverLevel.getRandom();
 
          for(double i = 0.0; i < (double)count; ++i) {
-            AABB box = creaking.getBoundingBox();
+            AABB box = ((Creaking)creaking.get()).getBoundingBox();
             Vec3 source = box.getMinPosition().add(random.nextDouble() * box.getXsize(), random.nextDouble() * box.getYsize(), random.nextDouble() * box.getZsize());
             Vec3 destination = Vec3.atLowerCornerOf(this.getBlockPos()).add(random.nextDouble(), random.nextDouble(), random.nextDouble());
             if (towardsCreaking) {
@@ -313,8 +315,9 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    }
 
    public void removeProtector(final @Nullable DamageSource damageSource) {
-      Object var3 = this.getCreakingProtector().orElse((Object)null);
-      if (var3 instanceof Creaking creaking) {
+      Optional<Creaking> creakingProtector = this.getCreakingProtector();
+      if (creakingProtector.isPresent()) {
+         Creaking creaking = (Creaking)creakingProtector.get();
          if (damageSource == null) {
             creaking.tearDown();
          } else {

@@ -204,7 +204,8 @@ public class OceanRuinPieces {
             level.setBlock(position, (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.WATERLOGGED, level.getFluidState(position).is(FluidTags.WATER)), 2);
             BlockEntity chest = level.getBlockEntity(position);
             if (chest instanceof ChestBlockEntity) {
-               ((ChestBlockEntity)chest).setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, random.nextLong());
+               ChestBlockEntity chestBlockEntity = (ChestBlockEntity)chest;
+               chestBlockEntity.setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, random.nextLong());
             }
          } else if ("drowned".equals(markerId)) {
             Drowned drowned = EntityTypes.DROWNED.create(level.getLevel(), EntitySpawnReason.STRUCTURE);

@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetItemCountFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetItemCountFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.BOOL.fieldOf("add").orElse(false).forGetter((f) -> f.add))).apply(i, SetItemCountFunction::new));
+   public static final MapCodec<SetItemCountFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.BOOL.optionalFieldOf("add", false).forGetter((f) -> f.add))).apply(i, SetItemCountFunction::new));
    private final NumberProvider count;
    private final boolean add;
 

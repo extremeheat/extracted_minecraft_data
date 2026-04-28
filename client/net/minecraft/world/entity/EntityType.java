@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.Objects;
@@ -23,10 +22,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
@@ -58,7 +60,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static final StreamCodec<RegistryFriendlyByteBuf, EntityType<?>> STREAM_CODEC;
    private final EntityFactory<T> factory;
    private final MobCategory category;
-   private final ImmutableSet<Block> immuneTo;
+   private final TagKey<Block> immuneTo;
    private final boolean serialize;
    private final boolean summon;
    private final boolean fireImmune;
@@ -77,7 +79,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return BuiltInRegistries.ENTITY_TYPE.getKey(type);
    }
 
-   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final ImmutableSet<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
+   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final TagKey<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ENTITY_TYPE.createIntrusiveHolder(this);
       this.factory = factory;
@@ -260,8 +262,16 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return this.requiredFeatures;
    }
 
+   public boolean canSpawn(final Level level) {
+      if (!this.isEnabled(level.enabledFeatures())) {
+         return false;
+      } else {
+         return this.isAllowedInPeaceful() || level.getDifficulty() != Difficulty.PEACEFUL;
+      }
+   }
+
    public @Nullable T create(final Level level, final EntitySpawnReason reason) {
-      return (T)(!this.isEnabled(level.enabledFeatures()) ? null : this.factory.create(this, level));
+      return (T)(!this.canSpawn(level) ? null : this.factory.create(this, level));
    }
 
    public static Optional<Entity> create(final ValueInput input, final Level level, final EntitySpawnReason reason) {
@@ -281,7 +291,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public boolean isBlockDangerous(final BlockState state) {
-      if (this.immuneTo.contains(state.getBlock())) {
+      if (state.is(this.immuneTo)) {
          return false;
       } else if (!this.fireImmune && NodeEvaluator.isBurningBlock(state)) {
          return true;
@@ -400,16 +410,16 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static class Builder<T extends Entity> {
       private final EntityFactory<T> factory;
       private final MobCategory category;
-      private ImmutableSet<Block> immuneTo = ImmutableSet.of();
-      private boolean serialize = true;
-      private boolean summon = true;
+      private TagKey<Block> immuneTo;
+      private boolean serialize;
+      private boolean summon;
       private boolean fireImmune;
       private boolean canSpawnFarFromPlayer;
-      private int clientTrackingRange = 5;
-      private int updateInterval = 3;
-      private EntityDimensions dimensions = EntityDimensions.scalable(0.6F, 1.8F);
-      private float spawnDimensionsScale = 1.0F;
-      private EntityAttachments.Builder attachments = EntityAttachments.builder();
+      private int clientTrackingRange;
+      private int updateInterval;
+      private EntityDimensions dimensions;
+      private float spawnDimensionsScale;
+      private EntityAttachments.Builder attachments;
       private FeatureFlagSet requiredFeatures;
       private DependantName<EntityType<?>, Optional<ResourceKey<LootTable>>> lootTable;
       private final DependantName<EntityType<?>, String> descriptionId;
@@ -417,6 +427,14 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
 
       private Builder(final EntityFactory<T> factory, final MobCategory category) {
          super();
+         this.immuneTo = BlockTags.DEFAULT_IMMUNE_TO;
+         this.serialize = true;
+         this.summon = true;
+         this.clientTrackingRange = 5;
+         this.updateInterval = 3;
+         this.dimensions = EntityDimensions.scalable(0.6F, 1.8F);
+         this.spawnDimensionsScale = 1.0F;
+         this.attachments = EntityAttachments.builder();
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.lootTable = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("entities/")));
          this.descriptionId = (id) -> Util.makeDescriptionId("entity", id.identifier());
@@ -502,8 +520,8 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
          return this;
       }
 
-      public Builder<T> immuneTo(final Block... blocks) {
-         this.immuneTo = ImmutableSet.copyOf(blocks);
+      public Builder<T> immuneTo(final TagKey<Block> tag) {
+         this.immuneTo = tag;
          return this;
       }
 

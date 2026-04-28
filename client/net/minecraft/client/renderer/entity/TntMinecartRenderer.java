@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.entity.state.MinecartTntRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 
 public class TntMinecartRenderer extends AbstractMinecartRenderer<MinecartTNT, MinecartTntRenderState> {
@@ -17,15 +16,13 @@ public class TntMinecartRenderer extends AbstractMinecartRenderer<MinecartTNT, M
    protected void submitMinecartContents(final MinecartTntRenderState state, final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
       float fuse = state.fuseRemainingInTicks;
       if (fuse > -1.0F && fuse < 10.0F) {
-         float g = 1.0F - fuse / 10.0F;
-         g = Mth.clamp(g, 0.0F, 1.0F);
-         g *= g;
-         g *= g;
-         float s = 1.0F + g * 0.3F;
-         poseStack.scale(s, s, s);
+         float swell = TntRenderer.getSwellAmount(fuse);
+         poseStack.translate((double)(-swell) * 0.5, 0.0, (double)(-swell) * 0.5);
+         float scale = 1.0F + swell;
+         poseStack.scale(scale, scale, scale);
       }
 
-      submitWhiteSolidBlock(blockModel, poseStack, submitNodeCollector, lightCoords, fuse > -1.0F && (int)fuse / 5 % 2 == 0, state.outlineColor);
+      submitWhiteSolidBlock(blockModel, poseStack, submitNodeCollector, lightCoords, TntRenderer.isLit(fuse), state.outlineColor);
    }
 
    public static void submitWhiteSolidBlock(final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final boolean white, final int outlineColor) {

@@ -437,10 +437,10 @@ public class SectionOcclusionGraph {
       }
 
       public boolean equals(final Object obj) {
-         if (!(obj instanceof Node other)) {
-            return false;
-         } else {
+         if (obj instanceof Node other) {
             return this.section.getSectionNode() == other.section.getSectionNode();
+         } else {
+            return false;
          }
       }
    }

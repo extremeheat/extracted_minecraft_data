@@ -90,23 +90,16 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       if (!canSupportRigidBlock(level, pos.below())) {
          return true;
       } else {
+         boolean var10000;
          switch (shape) {
-            case ASCENDING_EAST -> {
-               return !canSupportRigidBlock(level, pos.east());
-            }
-            case ASCENDING_WEST -> {
-               return !canSupportRigidBlock(level, pos.west());
-            }
-            case ASCENDING_NORTH -> {
-               return !canSupportRigidBlock(level, pos.north());
-            }
-            case ASCENDING_SOUTH -> {
-               return !canSupportRigidBlock(level, pos.south());
-            }
-            default -> {
-               return false;
-            }
+            case ASCENDING_EAST -> var10000 = !canSupportRigidBlock(level, pos.east());
+            case ASCENDING_WEST -> var10000 = !canSupportRigidBlock(level, pos.west());
+            case ASCENDING_NORTH -> var10000 = !canSupportRigidBlock(level, pos.north());
+            case ASCENDING_SOUTH -> var10000 = !canSupportRigidBlock(level, pos.south());
+            default -> var10000 = false;
          }
+
+         return var10000;
       }
    }
 

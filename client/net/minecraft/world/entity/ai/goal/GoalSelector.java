@@ -33,7 +33,7 @@ public class GoalSelector {
 
    public void removeAllGoals(final Predicate<Goal> predicate) {
       for(WrappedGoal availableGoal : this.availableGoals) {
-         if (predicate.test(availableGoal) && availableGoal.isRunning()) {
+         if (predicate.test(availableGoal.getGoal()) && availableGoal.isRunning()) {
             availableGoal.stop();
          }
       }

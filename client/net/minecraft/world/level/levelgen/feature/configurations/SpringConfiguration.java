@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.FluidState;
 
 public class SpringConfiguration implements FeatureConfiguration {
-   public static final Codec<SpringConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter((c) -> c.state), Codec.BOOL.fieldOf("requires_block_below").orElse(true).forGetter((c) -> c.requiresBlockBelow), Codec.INT.fieldOf("rock_count").orElse(4).forGetter((c) -> c.rockCount), Codec.INT.fieldOf("hole_count").orElse(1).forGetter((c) -> c.holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter((c) -> c.validBlocks)).apply(i, SpringConfiguration::new));
+   public static final Codec<SpringConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter((c) -> c.state), Codec.BOOL.optionalFieldOf("requires_block_below", true).forGetter((c) -> c.requiresBlockBelow), Codec.INT.optionalFieldOf("rock_count", 4).forGetter((c) -> c.rockCount), Codec.INT.optionalFieldOf("hole_count", 1).forGetter((c) -> c.holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter((c) -> c.validBlocks)).apply(i, SpringConfiguration::new));
    public final FluidState state;
    public final boolean requiresBlockBelow;
    public final int rockCount;

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -81,6 +82,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.TeamColor;
 import org.jspecify.annotations.Nullable;
 
 public class Hud {
@@ -408,9 +410,9 @@ public class Hud {
       Objective teamObjective = null;
       PlayerTeam playerTeam = scoreboard.getPlayersTeam(this.minecraft.player.getScoreboardName());
       if (playerTeam != null) {
-         DisplaySlot displaySlot = DisplaySlot.teamColorToSlot(playerTeam.getColor());
-         if (displaySlot != null) {
-            teamObjective = scoreboard.getDisplayObjective(displaySlot);
+         Optional<TeamColor> teamColor = playerTeam.getColor();
+         if (teamColor.isPresent()) {
+            teamObjective = scoreboard.getDisplayObjective(((TeamColor)teamColor.get()).displaySlot());
          }
       }
 
@@ -739,7 +741,8 @@ public class Hud {
          }
 
          if (vehicle instanceof LivingEntity) {
-            return (LivingEntity)vehicle;
+            LivingEntity livingEntity = (LivingEntity)vehicle;
+            return livingEntity;
          }
       }
 

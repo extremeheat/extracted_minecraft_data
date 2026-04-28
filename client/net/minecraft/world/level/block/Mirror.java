@@ -29,17 +29,14 @@ public enum Mirror implements StringRepresentable {
    public int mirror(final int rotation, final int steps) {
       int halfSteps = steps / 2;
       int correctedRotation = rotation > halfSteps ? rotation - steps : rotation;
+      int var10000;
       switch (this.ordinal()) {
-         case 1 -> {
-            return (halfSteps - correctedRotation + steps) % steps;
-         }
-         case 2 -> {
-            return (steps - correctedRotation) % steps;
-         }
-         default -> {
-            return rotation;
-         }
+         case 1 -> var10000 = (halfSteps - correctedRotation + steps) % steps;
+         case 2 -> var10000 = (steps - correctedRotation) % steps;
+         default -> var10000 = rotation;
       }
+
+      return var10000;
    }
 
    public Rotation getRotation(final Direction value) {

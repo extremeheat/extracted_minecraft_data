@@ -39,8 +39,8 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
 
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof StructureBlockEntity) {
-         return (InteractionResult)(((StructureBlockEntity)blockEntity).usedBy(player) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+      if (blockEntity instanceof StructureBlockEntity structureBlockEntity) {
+         return (InteractionResult)(structureBlockEntity.usedBy(player) ? InteractionResult.SUCCESS : InteractionResult.PASS);
       } else {
          return InteractionResult.PASS;
       }
@@ -51,7 +51,8 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
          if (by != null) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof StructureBlockEntity) {
-               ((StructureBlockEntity)blockEntity).createdBy(by);
+               StructureBlockEntity structureBlockEntity = (StructureBlockEntity)blockEntity;
+               structureBlockEntity.createdBy(by);
             }
          }
 
@@ -63,15 +64,14 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
-      if (level instanceof ServerLevel) {
+      if (level instanceof ServerLevel serverLevel) {
          BlockEntity blockEntity = level.getBlockEntity(pos);
-         if (blockEntity instanceof StructureBlockEntity) {
-            StructureBlockEntity structureBlock = (StructureBlockEntity)blockEntity;
+         if (blockEntity instanceof StructureBlockEntity structureBlock) {
             boolean shouldTrigger = level.hasNeighborSignal(pos);
             boolean isPowered = structureBlock.isPowered();
             if (shouldTrigger && !isPowered) {
                structureBlock.setPowered(true);
-               this.trigger((ServerLevel)level, structureBlock);
+               this.trigger(serverLevel, structureBlock);
             } else if (!shouldTrigger && isPowered) {
                structureBlock.setPowered(false);
             }

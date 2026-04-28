@@ -112,7 +112,7 @@ public class MultifaceSpreader {
          BlockState spreadState = this.getStateForPlacement(oldState, level, spreadPos.pos(), spreadPos.face());
          if (spreadState != null) {
             if (postProcess) {
-               level.getChunk(spreadPos.pos()).markPosForPostprocessing(spreadPos.pos());
+               level.getChunk(spreadPos.pos()).markPosForPostProcessing(spreadPos.pos());
             }
 
             return level.setBlock(spreadPos.pos(), spreadState, 2);

@@ -41,17 +41,14 @@ public interface WorldData {
    }
 
    default String getStorageVersionName(final int version) {
+      String var10000;
       switch (version) {
-         case 19132 -> {
-            return "McRegion";
-         }
-         case 19133 -> {
-            return "Anvil";
-         }
-         default -> {
-            return "Unknown?";
-         }
+         case 19132 -> var10000 = "McRegion";
+         case 19133 -> var10000 = "Anvil";
+         default -> var10000 = "Unknown?";
       }
+
+      return var10000;
    }
 
    ServerLevelData overworldData();

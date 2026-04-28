@@ -285,12 +285,12 @@ public class Blender {
    private static void generateBorderTick(final ChunkAccess chunk, final BlockPos pos) {
       BlockState blockState = chunk.getBlockState(pos);
       if (blockState.is(BlockTags.LEAVES)) {
-         chunk.markPosForPostprocessing(pos);
+         chunk.markPosForPostProcessing(pos);
       }
 
       FluidState fluidState = chunk.getFluidState(pos);
       if (!fluidState.isEmpty()) {
-         chunk.markPosForPostprocessing(pos);
+         chunk.markPosForPostProcessing(pos);
       }
 
    }

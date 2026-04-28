@@ -1,153 +1,356 @@
 package net.minecraft.client.renderer.feature;
 
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.OutlineBufferSource;
+import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 
 public class FeatureRenderDispatcher implements AutoCloseable {
-   private final SubmitNodeStorage submitNodeStorage;
    private final ModelManager modelManager;
-   private final MultiBufferSource.BufferSource bufferSource;
    private final AtlasManager atlasManager;
-   private final OutlineBufferSource outlineBufferSource;
    private final Font font;
    private final GameRenderState gameRenderState;
-   private final ShadowFeatureRenderer shadowFeatureRenderer = new ShadowFeatureRenderer();
-   private final FlameFeatureRenderer flameFeatureRenderer = new FlameFeatureRenderer();
-   private final ModelFeatureRenderer modelFeatureRenderer = new ModelFeatureRenderer();
-   private final NameTagFeatureRenderer nameTagFeatureRenderer = new NameTagFeatureRenderer();
-   private final TextFeatureRenderer textFeatureRenderer = new TextFeatureRenderer();
-   private final LeashFeatureRenderer leashFeatureRenderer = new LeashFeatureRenderer();
-   private final ItemFeatureRenderer itemFeatureRenderer = new ItemFeatureRenderer();
-   private final CustomFeatureRenderer customFeatureRenderer = new CustomFeatureRenderer();
-   private final MovingBlockFeatureRenderer movingBlockFeatureRenderer = new MovingBlockFeatureRenderer();
-   private final BlockModelFeatureRenderer blockModelFeatureRenderer = new BlockModelFeatureRenderer();
-   private final QuadParticleFeatureRenderer particleFeatureRenderer = new QuadParticleFeatureRenderer();
-   private final ShapeOutlineFeatureRenderer shapeOutlineFeatureRenderer = new ShapeOutlineFeatureRenderer();
-   private final GizmoFeatureRenderer gizmoFeatureRenderer = new GizmoFeatureRenderer();
+   private final StagedVertexBuffer stagedVertexBuffer;
+   private final FeatureRendererMap featureRenderers = new FeatureRendererMap();
+   private final PreparedFrame preparedFrame = new PreparedFrame();
 
-   public FeatureRenderDispatcher(final SubmitNodeStorage submitNodeStorage, final ModelManager modelManager, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager, final OutlineBufferSource outlineBufferSource, final Font font, final GameRenderState gameRenderState) {
+   public FeatureRenderDispatcher(final RenderBuffers renderBuffers, final ModelManager modelManager, final AtlasManager atlasManager, final Font font, final GameRenderState gameRenderState) {
       super();
-      this.submitNodeStorage = submitNodeStorage;
       this.modelManager = modelManager;
-      this.bufferSource = bufferSource;
       this.atlasManager = atlasManager;
-      this.outlineBufferSource = outlineBufferSource;
       this.font = font;
       this.gameRenderState = gameRenderState;
+      this.stagedVertexBuffer = renderBuffers.stagedVertexBuffer();
+      this.featureRenderers.put(ShadowFeatureRenderer.TYPE, new ShadowFeatureRenderer());
+      this.featureRenderers.put(FlameFeatureRenderer.TYPE, new FlameFeatureRenderer());
+      this.featureRenderers.put(ModelFeatureRenderer.TYPE, new ModelFeatureRenderer());
+      this.featureRenderers.put(NameTagFeatureRenderer.TYPE, new NameTagFeatureRenderer());
+      this.featureRenderers.put(TextFeatureRenderer.TYPE, new TextFeatureRenderer());
+      this.featureRenderers.put(LeashFeatureRenderer.TYPE, new LeashFeatureRenderer());
+      this.featureRenderers.put(ItemFeatureRenderer.TYPE, new ItemFeatureRenderer());
+      this.featureRenderers.put(CustomFeatureRenderer.TYPE, new CustomFeatureRenderer());
+      this.featureRenderers.put(BlockModelFeatureRenderer.TYPE, new BlockModelFeatureRenderer());
+      this.featureRenderers.put(MovingBlockFeatureRenderer.TYPE, new MovingBlockFeatureRenderer());
+      this.featureRenderers.put(QuadParticleFeatureRenderer.TYPE, new QuadParticleFeatureRenderer());
+      this.featureRenderers.put(ShapeOutlineFeatureRenderer.TYPE, new ShapeOutlineFeatureRenderer());
+      this.featureRenderers.put(GizmoFeatureRenderer.TYPE, new GizmoFeatureRenderer());
    }
 
-   private FeatureFrameContext createFrameContext() {
+   public PreparedFrame prepareFrame(final SubmitNodeStorage submitNodeStorage) {
       Minecraft minecraft = Minecraft.getInstance();
-      return new FeatureFrameContext(this.gameRenderState.optionsRenderState, this.font, this.modelManager.getBlockStateModelSet(), minecraft.getBlockColors(), minecraft.getTextureManager(), this.atlasManager, minecraft.gameRenderer.lightmap(), this.bufferSource, this.outlineBufferSource);
+      return this.prepareFrameWithContext(new FeatureFrameContext(this.gameRenderState.optionsRenderState, this.font, this.modelManager.getBlockStateModelSet(), minecraft.getBlockColors(), minecraft.getTextureManager(), this.atlasManager, minecraft.gameRenderer.lightmap(), this.stagedVertexBuffer), submitNodeStorage);
    }
 
-   public void renderSolidFeatures() {
-      FeatureFrameContext context = this.createFrameContext();
-      ObjectIterator var2 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
+   private PreparedFrame prepareFrameWithContext(final FeatureFrameContext context, final SubmitNodeStorage submitNodeStorage) {
+      PreparedFrame frame = this.preparedFrame.begin(context, submitNodeStorage);
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("sort");
+      submitNodeStorage.drainPhases((phase) -> phase.sortInto(new PhaseSubmitGrouper(frame, phase)));
+      profiler.popPush("beginPrepare");
 
-      while(var2.hasNext()) {
-         SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-         this.modelFeatureRenderer.renderSolid(collection, context);
-         this.flameFeatureRenderer.renderSolid(collection, context);
-         this.leashFeatureRenderer.renderSolid(collection, context);
-         this.itemFeatureRenderer.renderSolid(collection, context);
-         this.movingBlockFeatureRenderer.renderSolid(collection, context);
-         this.blockModelFeatureRenderer.renderSolid(collection, context);
-         this.customFeatureRenderer.renderSolid(collection, context);
-         this.particleFeatureRenderer.renderSolid(collection, context);
+      for(FeatureRenderer<?> renderer : this.featureRenderers.values()) {
+         renderer.beginPrepare(context);
       }
 
-   }
+      profiler.popPush("prepare");
 
-   public void renderTranslucentFeatures() {
-      FeatureFrameContext context = this.createFrameContext();
-      ObjectIterator var2 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
+      for(Map.Entry<FeatureRendererType<?>, List<PreparedGroup<?>>> entry : frame.groupsByFeature.entrySet()) {
+         profiler.push(((FeatureRendererType)entry.getKey()).toString());
 
-      while(var2.hasNext()) {
-         SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-         this.shadowFeatureRenderer.renderTranslucent(collection, context);
-         this.modelFeatureRenderer.renderTranslucent(collection, context);
-         this.nameTagFeatureRenderer.renderTranslucent(collection, context);
-         this.textFeatureRenderer.renderTranslucent(collection, context);
-         this.itemFeatureRenderer.renderTranslucent(collection, context);
-         this.movingBlockFeatureRenderer.renderTranslucent(collection, context);
-         this.blockModelFeatureRenderer.renderTranslucent(collection, context);
-         this.customFeatureRenderer.renderTranslucent(collection, context);
-         this.shapeOutlineFeatureRenderer.renderTranslucent(collection, context, false);
-         this.gizmoFeatureRenderer.render(collection, context, false);
-      }
-
-   }
-
-   public void renderTranslucentAfterTerrain() {
-      FeatureFrameContext context = this.createFrameContext();
-      ObjectIterator var2 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
-
-      while(var2.hasNext()) {
-         SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-         this.particleFeatureRenderer.renderTranslucent(collection, context);
-         this.shapeOutlineFeatureRenderer.renderTranslucent(collection, context, true);
-      }
-
-   }
-
-   public void renderAlwaysOnTop() {
-      FeatureFrameContext context = this.createFrameContext();
-      ObjectIterator var2 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
-
-      while(var2.hasNext()) {
-         SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-         this.gizmoFeatureRenderer.render(collection, context, true);
-      }
-
-   }
-
-   public void clearSubmitNodes() {
-      this.submitNodeStorage.clear();
-   }
-
-   public void renderAllFeatures() {
-      this.renderSolidFeatures();
-      this.renderTranslucentFeatures();
-      this.renderTranslucentAfterTerrain();
-      this.renderAlwaysOnTop();
-      this.clearSubmitNodes();
-      this.bufferSource.uploadAndDraw();
-   }
-
-   public void endFrame() {
-      this.particleFeatureRenderer.endFrame();
-   }
-
-   public SubmitNodeStorage getSubmitNodeStorage() {
-      return this.submitNodeStorage;
-   }
-
-   public boolean hasAnyAlwaysOnTop() {
-      ObjectIterator var1 = this.submitNodeStorage.getSubmitsPerOrder().values().iterator();
-
-      while(var1.hasNext()) {
-         SubmitNodeCollection collection = (SubmitNodeCollection)var1.next();
-
-         for(GizmoFeatureRenderer.Submit gizmos : collection.getGizmoSubmits()) {
-            if (gizmos.onTop()) {
-               return true;
-            }
+         for(PreparedGroup<?> group : (List)entry.getValue()) {
+            group.prepare(context, this.featureRenderers, frame.allSubmits);
          }
+
+         profiler.pop();
       }
 
-      return false;
+      profiler.popPush("finishPrepare");
+
+      for(FeatureRenderer<?> renderer : this.featureRenderers.values()) {
+         renderer.finishPrepare(context);
+      }
+
+      profiler.popPush("uploadSharedVertexBuffer");
+      this.stagedVertexBuffer.upload();
+      profiler.pop();
+      return frame;
+   }
+
+   public void renderAllFeatures(final SubmitNodeStorage submitNodeStorage) {
+      try (PreparedFrame frame = this.prepareFrame(submitNodeStorage)) {
+         frame.executeSolid();
+         frame.executeTranslucent();
+         frame.executeTranslucentAfterTerrain();
+         frame.executeAlwaysOnTop();
+      }
+
    }
 
    public void close() {
-      this.particleFeatureRenderer.close();
+      this.featureRenderers.close();
+   }
+
+   public class PreparedFrame implements AutoCloseable {
+      private @Nullable FeatureFrameContext context;
+      private @Nullable SubmitNodeStorage submitNodeStorage;
+      private final List<SubmitNode> allSubmits;
+      private final Map<FeatureRenderPhase<?>, List<PreparedGroup<?>>> groupsByPhase;
+      private final Map<FeatureRendererType<?>, List<PreparedGroup<?>>> groupsByFeature;
+
+      public PreparedFrame() {
+         Objects.requireNonNull(FeatureRenderDispatcher.this);
+         super();
+         this.allSubmits = new ArrayList();
+         this.groupsByPhase = new IdentityHashMap();
+         this.groupsByFeature = new IdentityHashMap();
+      }
+
+      private PreparedFrame begin(final FeatureFrameContext context, final SubmitNodeStorage submitNodeStorage) {
+         if (this.context != null) {
+            throw new IllegalStateException("PreparedFrame already in use");
+         } else {
+            this.context = context;
+            this.submitNodeStorage = submitNodeStorage;
+            return this;
+         }
+      }
+
+      public void executeSolid() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.solid, context);
+         }
+
+      }
+
+      public void executeTranslucent() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.shadows, context);
+            this.executePhase(collection.translucentModels, context);
+            this.executePhase(collection.seeThroughNameTags, context);
+            this.executePhase(collection.nameTags, context);
+            this.executePhase(collection.texts, context);
+            this.executePhase(collection.translucentCustomGeometry, context);
+            this.executePhase(collection.shapeOutlines, context);
+            this.executePhase(collection.gizmos, context);
+         }
+
+         var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.translucentBlocksAndItems, context);
+            this.executePhase(collection.breakingOverlay, context);
+            this.executePhase(collection.waterMask, context);
+         }
+
+      }
+
+      public void executeOutline() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.outline, context);
+         }
+
+      }
+
+      public void executeTranslucentAfterTerrain() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.afterTerrain, context);
+         }
+
+      }
+
+      public void executeAlwaysOnTop() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
+            this.executePhase(collection.alwaysOnTop, context);
+         }
+
+      }
+
+      private void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context) {
+         ProfilerFiller profiler = Profiler.get();
+
+         for(PreparedGroup<?> group : (List)this.groupsByPhase.getOrDefault(phase, List.of())) {
+            profiler.push(group.featureType.toString());
+            group.execute(context, FeatureRenderDispatcher.this.featureRenderers, this.allSubmits);
+            profiler.pop();
+         }
+
+      }
+
+      public boolean hasAnyAlwaysOnTop() {
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var2 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var2.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
+            if (!((List)this.groupsByPhase.getOrDefault(collection.alwaysOnTop, List.of())).isEmpty()) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+
+      public boolean hasAnyOutline() {
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var2 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var2.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
+            if (!((List)this.groupsByPhase.getOrDefault(collection.outline, List.of())).isEmpty()) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+
+      public void close() {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context, "Frame not in use");
+         this.context = null;
+         this.submitNodeStorage = null;
+
+         for(FeatureRenderer<?> featureRenderer : FeatureRenderDispatcher.this.featureRenderers.values()) {
+            featureRenderer.finishExecute(context);
+         }
+
+         FeatureRenderDispatcher.this.stagedVertexBuffer.endDraw();
+         this.allSubmits.clear();
+         clearGroups(this.groupsByPhase.values());
+         clearGroups(this.groupsByFeature.values());
+      }
+
+      private static void clearGroups(final Collection<List<PreparedGroup<?>>> groupsSet) {
+         groupsSet.removeIf((groups) -> {
+            if (groups.isEmpty()) {
+               return true;
+            } else {
+               groups.clear();
+               return false;
+            }
+         });
+      }
+   }
+
+   private static class PhaseSubmitGrouper implements FeatureRenderPhase.Output {
+      private final PreparedFrame frame;
+      private final List<SubmitNode> allSubmits;
+      private final List<PreparedGroup<?>> phaseGroups;
+      private @Nullable PreparedGroup<?> lastGroup;
+
+      public PhaseSubmitGrouper(final PreparedFrame frame, final FeatureRenderPhase<?> phase) {
+         super();
+         this.frame = frame;
+         this.allSubmits = frame.allSubmits;
+         this.phaseGroups = (List)frame.groupsByPhase.computeIfAbsent(phase, (var0) -> new ArrayList());
+      }
+
+      public void accept(final SubmitNode submit, final boolean strictlyOrdered) {
+         int index = this.allSubmits.size();
+         this.allSubmits.add(submit);
+         this.addOrExtendGroup(submit.featureType(), strictlyOrdered, index, index);
+      }
+
+      public <Submit extends SubmitNode> void acceptFeatureGroup(final FeatureRendererType<Submit> featureType, final Collection<Submit> submits, final boolean strictlyOrdered) {
+         if (!submits.isEmpty()) {
+            for(Submit submit : submits) {
+               if (submit.featureType() != featureType) {
+                  String var10002 = String.valueOf(submit);
+                  throw new IllegalArgumentException(var10002 + " was not of feature type " + String.valueOf(featureType));
+               }
+            }
+
+            int fromInclusive = this.allSubmits.size();
+            this.allSubmits.addAll(submits);
+            int toInclusive = this.allSubmits.size() - 1;
+            this.addOrExtendGroup(featureType, strictlyOrdered, fromInclusive, toInclusive);
+         }
+
+      }
+
+      private <Submit extends SubmitNode> void addOrExtendGroup(final FeatureRendererType<Submit> featureType, final boolean strictlyOrdered, final int fromInclusive, final int toInclusive) {
+         if (this.lastGroup != null && this.lastGroup.featureType == featureType && this.lastGroup.strictlyOrdered == strictlyOrdered) {
+            this.lastGroup.toInclusive = toInclusive;
+         } else {
+            List<PreparedGroup<?>> featureGroups = (List)this.frame.groupsByFeature.computeIfAbsent(featureType, (var0) -> new ArrayList());
+            PreparedGroup<Submit> group = new PreparedGroup<Submit>(featureGroups.size(), featureType, strictlyOrdered, fromInclusive, toInclusive);
+            this.phaseGroups.add(group);
+            featureGroups.add(group);
+            this.lastGroup = group;
+         }
+      }
+   }
+
+   private static class PreparedGroup<Submit extends SubmitNode> {
+      private final int featureGroupIndex;
+      private final FeatureRendererType<Submit> featureType;
+      private final boolean strictlyOrdered;
+      private final int fromInclusive;
+      private int toInclusive;
+
+      public PreparedGroup(final int featureGroupIndex, final FeatureRendererType<Submit> featureType, final boolean strictlyOrdered, final int fromInclusive, final int toInclusive) {
+         super();
+         this.featureGroupIndex = featureGroupIndex;
+         this.featureType = featureType;
+         this.strictlyOrdered = strictlyOrdered;
+         this.fromInclusive = fromInclusive;
+         this.toInclusive = toInclusive;
+      }
+
+      public void prepare(final FeatureFrameContext context, final FeatureRendererMap featureRenderers, final List<SubmitNode> submits) {
+         FeatureRenderer<Submit> featureRenderer = featureRenderers.<Submit>getOrThrow(this.featureType);
+         featureRenderer.prepareGroup(context, this.sliceUnchecked(submits), this.strictlyOrdered);
+      }
+
+      public void execute(final FeatureFrameContext context, final FeatureRendererMap featureRenderers, final List<SubmitNode> submits) {
+         FeatureRenderer<Submit> featureRenderer = featureRenderers.<Submit>getOrThrow(this.featureType);
+         featureRenderer.executeGroup(context, this.featureGroupIndex, this.sliceUnchecked(submits), this.strictlyOrdered);
+      }
+
+      private List<Submit> sliceUnchecked(final List<SubmitNode> submits) {
+         return submits.subList(this.fromInclusive, this.toInclusive + 1);
+      }
    }
 }

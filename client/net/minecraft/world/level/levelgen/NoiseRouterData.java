@@ -1,5 +1,7 @@
 package net.minecraft.world.level.levelgen;
 
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -114,7 +116,7 @@ public class NoiseRouterData {
       DensityFunction factor = registerAndWrap(context, factorName, splineWithBlending(DensityFunctions.spline(TerrainProvider.overworldFactor(continents, erosion, weirdness, ridges, amplified)), BLENDING_FACTOR));
       DensityFunction depth = registerAndWrap(context, depthName, offsetToDepth(offset));
       DensityFunction unscaledJaggedness = registerAndWrap(context, jaggednessName, splineWithBlending(DensityFunctions.spline(TerrainProvider.overworldJaggedness(continents, erosion, weirdness, ridges, amplified)), BLENDING_JAGGEDNESS));
-      DensityFunction jaggedness = DensityFunctions.mul(unscaledJaggedness, jaggedNoise.halfNegative());
+      DensityFunction jaggedness = DensityFunctions.flatCache(DensityFunctions.mul(unscaledJaggedness, jaggedNoise.halfNegative()));
       DensityFunction initialDensity = noiseGradientDensity(factor, DensityFunctions.add(depth, jaggedness));
       context.register(slopedCheeseName, DensityFunctions.add(initialDensity, getFunction(functions, BASE_3D_NOISE_OVERWORLD)));
    }
@@ -148,8 +150,8 @@ public class NoiseRouterData {
    private static DensityFunction entrances(final HolderGetter<DensityFunction> functions, final HolderGetter<NormalNoise.NoiseParameters> noises) {
       DensityFunction spaghetti3DRarityModulator = DensityFunctions.cacheOnce(DensityFunctions.noise(noises.getOrThrow(Noises.SPAGHETTI_3D_RARITY), 2.0, 1.0));
       DensityFunction spaghetti3DThicknessModulator = DensityFunctions.mappedNoise(noises.getOrThrow(Noises.SPAGHETTI_3D_THICKNESS), -0.065, -0.088);
-      DensityFunction spaghetti3DCave1 = DensityFunctions.weirdScaledSampler(spaghetti3DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_3D_1), DensityFunctions.WeirdScaledSampler.RarityValueMapper.TYPE1);
-      DensityFunction spaghetti3DCave2 = DensityFunctions.weirdScaledSampler(spaghetti3DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_3D_2), DensityFunctions.WeirdScaledSampler.RarityValueMapper.TYPE1);
+      DensityFunction spaghetti3DCave1 = NoiseRouterData.QuantizedSpaghettiRarity.wrapRarity3d(spaghetti3DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_3D_1));
+      DensityFunction spaghetti3DCave2 = NoiseRouterData.QuantizedSpaghettiRarity.wrapRarity3d(spaghetti3DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_3D_2));
       DensityFunction spaghetti3DFunction = DensityFunctions.add(DensityFunctions.max(spaghetti3DCave1, spaghetti3DCave2), spaghetti3DThicknessModulator).clamp(-1.0, 1.0);
       DensityFunction spaghettiRoughnessFunction = getFunction(functions, SPAGHETTI_ROUGHNESS_FUNCTION);
       DensityFunction bigEntranceNoiseSource = DensityFunctions.noise(noises.getOrThrow(Noises.CAVE_ENTRANCE), 0.75, 0.5);
@@ -183,10 +185,10 @@ public class NoiseRouterData {
 
    private static DensityFunction spaghetti2D(final HolderGetter<DensityFunction> functions, final HolderGetter<NormalNoise.NoiseParameters> noises) {
       DensityFunction spaghetti2DRarityModulator = DensityFunctions.noise(noises.getOrThrow(Noises.SPAGHETTI_2D_MODULATOR), 2.0, 1.0);
-      DensityFunction spaghetti2DCave = DensityFunctions.weirdScaledSampler(spaghetti2DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_2D), DensityFunctions.WeirdScaledSampler.RarityValueMapper.TYPE2);
+      DensityFunction spaghetti2DCave = NoiseRouterData.QuantizedSpaghettiRarity.wrapRarity2d(spaghetti2DRarityModulator, noises.getOrThrow(Noises.SPAGHETTI_2D));
       DensityFunction spaghetti2DElevationModulator = DensityFunctions.mappedNoise(noises.getOrThrow(Noises.SPAGHETTI_2D_ELEVATION), 0.0, (double)Math.floorDiv(-64, 8), 8.0);
       DensityFunction spaghetti2DThicknessModulator = getFunction(functions, SPAGHETTI_2D_THICKNESS_MODULATOR);
-      DensityFunction slopedSpaghetti = DensityFunctions.add(spaghetti2DElevationModulator, DensityFunctions.yClampedGradient(-64, 320, 8.0, -40.0)).abs();
+      DensityFunction slopedSpaghetti = DensityFunctions.add(DensityFunctions.flatCache(spaghetti2DElevationModulator), DensityFunctions.yClampedGradient(-64, 320, 8.0, -40.0)).abs();
       DensityFunction layerRidged = DensityFunctions.add(slopedSpaghetti, spaghetti2DThicknessModulator).cube();
       double ridgeOffset = 0.083;
       DensityFunction caveNoise = DensityFunctions.add(spaghetti2DCave, DensityFunctions.mul(DensityFunctions.constant(0.083), spaghetti2DThicknessModulator));
@@ -209,7 +211,7 @@ public class NoiseRouterData {
 
    private static DensityFunction postProcess(final DensityFunction slide) {
       DensityFunction blended = DensityFunctions.blendDensity(slide);
-      return DensityFunctions.mul(DensityFunctions.interpolated(blended), DensityFunctions.constant(0.64)).squeeze();
+      return DensityFunctions.interpolated(DensityFunctions.mul(blended, DensityFunctions.constant(0.64))).squeeze();
    }
 
    private static DensityFunction remap(final DensityFunction input, final double fromMin, final double fromMax, final double toMin, final double toMax) {
@@ -231,7 +233,7 @@ public class NoiseRouterData {
       DensityFunction factor = getFunction(functions, largeBiomes ? FACTOR_LARGE : (amplified ? FACTOR_AMPLIFIED : FACTOR));
       DensityFunction depth = getFunction(functions, largeBiomes ? DEPTH_LARGE : (amplified ? DEPTH_AMPLIFIED : DEPTH));
       DensityFunction preliminarySurfaceLevel = preliminarySurfaceLevel(offset, factor, amplified);
-      DensityFunction slopedCheese = getFunction(functions, largeBiomes ? SLOPED_CHEESE_LARGE : (amplified ? SLOPED_CHEESE_AMPLIFIED : SLOPED_CHEESE));
+      DensityFunction slopedCheese = DensityFunctions.cacheOnce(getFunction(functions, largeBiomes ? SLOPED_CHEESE_LARGE : (amplified ? SLOPED_CHEESE_AMPLIFIED : SLOPED_CHEESE)));
       DensityFunction surfaceWithEntrances = DensityFunctions.min(slopedCheese, DensityFunctions.mul(DensityFunctions.constant(5.0), getFunction(functions, ENTRANCES)));
       DensityFunction caves = DensityFunctions.rangeChoice(slopedCheese, -1000000.0, 1.5625, surfaceWithEntrances, underground(functions, noises, slopedCheese));
       DensityFunction fullNoise = DensityFunctions.min(postProcess(slideOverworld(amplified, caves)), getFunction(functions, NOODLE));
@@ -331,26 +333,16 @@ public class NoiseRouterData {
          super();
       }
 
-      protected static double getSphaghettiRarity2D(final double rarityFactor) {
-         if (rarityFactor < -0.75) {
-            return 0.5;
-         } else if (rarityFactor < -0.5) {
-            return 0.75;
-         } else if (rarityFactor < 0.5) {
-            return 1.0;
-         } else {
-            return rarityFactor < 0.75 ? 2.0 : 3.0;
-         }
+      public static DensityFunction wrapRarity2d(final DensityFunction input, final Holder<NormalNoise.NoiseParameters> noise) {
+         return DensityFunctions.intervalSelect(input, DoubleList.of(new double[]{-0.75, -0.5, 0.5, 0.75}), List.of(noiseFunctionForRarity(noise, 0.5), noiseFunctionForRarity(noise, 0.75), noiseFunctionForRarity(noise, 1.0), noiseFunctionForRarity(noise, 2.0), noiseFunctionForRarity(noise, 3.0))).abs();
       }
 
-      protected static double getSpaghettiRarity3D(final double rarityFactor) {
-         if (rarityFactor < -0.5) {
-            return 0.75;
-         } else if (rarityFactor < 0.0) {
-            return 1.0;
-         } else {
-            return rarityFactor < 0.5 ? 1.5 : 2.0;
-         }
+      public static DensityFunction wrapRarity3d(final DensityFunction input, final Holder<NormalNoise.NoiseParameters> noise) {
+         return DensityFunctions.intervalSelect(input, DoubleList.of(-0.5, 0.0, 0.5), List.of(noiseFunctionForRarity(noise, 0.75), noiseFunctionForRarity(noise, 1.0), noiseFunctionForRarity(noise, 1.5), noiseFunctionForRarity(noise, 2.0))).abs();
+      }
+
+      private static DensityFunction noiseFunctionForRarity(final Holder<NormalNoise.NoiseParameters> noise, final double rarity) {
+         return DensityFunctions.mul(DensityFunctions.constant(rarity), DensityFunctions.noise(noise, 1.0 / rarity, 1.0 / rarity));
       }
    }
 }

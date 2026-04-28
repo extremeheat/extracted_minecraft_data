@@ -32,6 +32,7 @@ import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.LevelLoadListener;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.PermissionSet;
@@ -68,7 +69,7 @@ public class IntegratedServer extends MinecraftServer {
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
 
    public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
-      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false);
+      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false, new NotificationManager());
       this.setSingleplayerProfile(minecraft.getGameProfile());
       this.setDemo(minecraft.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));

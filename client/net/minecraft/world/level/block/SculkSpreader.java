@@ -354,7 +354,7 @@ public class SculkSpreader {
 
       static {
          DIRECTION_SET = Direction.CODEC.listOf().xmap((l) -> Sets.newEnumSet(l, Direction.class), Lists::newArrayList);
-         CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter((o) -> o.updateDelay), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((o) -> Optional.ofNullable(o.getFacingData()))).apply(i, ChargeCursor::new));
+         CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).optionalFieldOf("charge", 0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).optionalFieldOf("decay_delay", 1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).optionalFieldOf("update_delay", 0).forGetter((o) -> o.updateDelay), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((o) -> Optional.ofNullable(o.getFacingData()))).apply(i, ChargeCursor::new));
       }
    }
 }

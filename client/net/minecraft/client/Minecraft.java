@@ -273,11 +273,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public final LevelExtractor levelExtractor;
    public final LevelRenderer levelRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
-   private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
    public final ParticleEngine particleEngine;
-   private final ParticleResources particleResources;
    private final User user;
    public final Font font;
    public final Font fontFilterFishy;
@@ -291,7 +289,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private InputType lastInputType;
    public final File gameDirectory;
    private final String launchedVersion;
-   private final String versionType;
    private final Proxy proxy;
    private final boolean offlineDeveloperMode;
    private final LevelStorageSource levelSource;
@@ -325,7 +322,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final QuickPlayLog quickPlayLog;
    private final Services services;
    private final PlayerSkinRenderCache playerSkinRenderCache;
-   private volatile boolean imeStatusChanged;
    private final TimerQuery timerQuery;
    public @Nullable MultiPlayerGameMode gameMode;
    public @Nullable ClientLevel level;
@@ -388,7 +384,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       File assetsDirectory = gameConfig.location.assetDirectory;
       this.resourcePackDirectory = gameConfig.location.resourcePackDirectory.toPath();
       this.launchedVersion = gameConfig.game.launchVersion;
-      this.versionType = gameConfig.game.versionType;
       Path gameDirPath = this.gameDirectory.toPath();
       this.directoryValidator = LevelStorageSource.parseValidator(gameDirPath.resolve("allowed_symlinks.txt"));
       ClientPackSource clientPackSource = new ClientPackSource(gameConfig.location.getExternalAssetSource(), this.directoryValidator);
@@ -402,7 +397,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.services = Services.create(authenticationService, this.gameDirectory);
       this.user = gameConfig.user.user;
       this.profileFuture = this.offlineDeveloperMode ? CompletableFuture.completedFuture((Object)null) : CompletableFuture.supplyAsync(() -> this.services.sessionService().fetchProfile(this.user.getProfileId(), true), Util.nonCriticalIoPool());
-      this.userApiService = this.createUserApiService(authenticationService, gameConfig);
+      this.userApiService = createUserApiService(authenticationService, gameConfig);
       this.userPropertiesFuture = CompletableFuture.supplyAsync(() -> {
          try {
             return this.userApiService.fetchProperties();
@@ -466,11 +461,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             LOGGER.info("Using graphics device: {} ({})", deviceInfo.name(), deviceInfo.vendorName());
             LOGGER.info("Using graphics device extensions: {}", String.join(", ", deviceInfo.underlyingExtensions()));
             break;
-         } catch (BackendCreationException var25) {
-            LOGGER.error("Failed to create backend {}", backend.getName(), var25);
-            errorMsgBuilder.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(var25.getMessage());
-            if (this.backendCreationException == null || var25.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
-               this.backendCreationException = var25;
+         } catch (BackendCreationException var27) {
+            LOGGER.error("Failed to create backend {}", backend.getName(), var27);
+            errorMsgBuilder.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(var27.getMessage());
+            if (this.backendCreationException == null || var27.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
+               this.backendCreationException = var27;
             }
 
             if (windowCandidate != null) {
@@ -519,7 +514,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
          this.resourcePackRepository.reload();
          this.options.loadSelectedResourcePacks(this.resourcePackRepository);
-         this.languageManager = new LanguageManager(this.options.languageCode, (languageData) -> {
+         this.languageManager = new LanguageManager(this.options.languageCode, (var1) -> {
             if (this.player != null) {
                this.player.connection.updateSearchTrees();
             }
@@ -557,22 +552,21 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager.registerReloadListener(this.modelManager);
          EquipmentAssetManager equipmentAssets = new EquipmentAssetManager();
          this.resourceManager.registerReloadListener(equipmentAssets);
-         this.blockModelResolver = new BlockModelResolver(this.modelManager);
+         BlockModelResolver blockModelResolver = new BlockModelResolver(this.modelManager);
          this.itemModelResolver = new ItemModelResolver(this.modelManager);
          this.mapTextureManager = new MapTextureManager(this.textureManager);
          this.mapRenderer = new MapRenderer(this.atlasManager, this.mapTextureManager);
          this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
-         this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.blockModelResolver, this.itemModelResolver, this.mapRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache);
+         this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, blockModelResolver, this.itemModelResolver, this.mapRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache);
          this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
-         this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockModelResolver, this.itemModelResolver, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
+         this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), blockModelResolver, this.itemModelResolver, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
          this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
-         this.particleResources = new ParticleResources();
-         this.resourceManager.registerReloadListener(this.particleResources);
-         this.particleEngine = new ParticleEngine(this.level, this.particleResources);
-         ParticleResources var10000 = this.particleResources;
+         ParticleResources particleResources = new ParticleResources();
+         this.resourceManager.registerReloadListener(particleResources);
+         this.particleEngine = new ParticleEngine(this.level, particleResources);
          ParticleEngine var10001 = this.particleEngine;
          Objects.requireNonNull(var10001);
-         var10000.onReload(var10001::clearParticles);
+         particleResources.onReload(var10001::clearParticles);
          this.gameRenderer = new GameRenderer(this, this.entityRenderDispatcher.getItemInHandRenderer(), this.modelManager);
          WindowRenderState windowRenderState = this.gameRenderer.gameRenderState().windowRenderState;
          windowRenderState.width = this.window.getWidth();
@@ -608,7 +602,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                if (!messages.isEmpty()) {
                   message.append("\n\nReported GL debug messages:\n").append(String.join("\n", messages));
                }
-            } catch (Throwable var23) {
+            } catch (Throwable var25) {
             }
 
             this.window.setWindowed(mainRenderTarget.width, mainRenderTarget.height);
@@ -748,7 +742,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return builder.toString();
    }
 
-   private UserApiService createUserApiService(final YggdrasilAuthenticationService authService, final GameConfig config) {
+   private static UserApiService createUserApiService(final YggdrasilAuthenticationService authService, final GameConfig config) {
       return config.game.offlineDeveloperMode ? UserApiService.OFFLINE : authService.createUserApiService(config.user.user.getAccessToken());
    }
 
@@ -870,10 +864,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public String getLaunchedVersion() {
       return this.launchedVersion;
-   }
-
-   public String getVersionType() {
-      return this.versionType;
    }
 
    public void delayCrash(final CrashReport crash) {
@@ -1290,7 +1280,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void pauseIfInactive() {
-      if (!this.window.isFocused() && this.options.pauseOnLostFocus && (!(Boolean)this.options.touchscreen().get() || !this.mouseHandler.isRightPressed())) {
+      if (!this.window.isFocused() && this.options.pauseOnLostFocus) {
          if (Util.getMillis() - this.lastActiveTime > 500L) {
             this.pauseGame(false);
          }
@@ -1966,7 +1956,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       Duration worldLoadDuration = Duration.between(worldLoadStart, Instant.now());
       SocketAddress socketAddress = this.singleplayerServer.getConnection().startMemoryChannel();
       Connection connection = Connection.connectToLocalServer(socketAddress);
-      connection.initiateServerboundPlayConnection(socketAddress.toString(), 0, new ClientHandshakePacketListenerImpl(connection, this, (ServerData)null, (Screen)null, newWorld, worldLoadDuration, (status) -> {
+      connection.initiateServerboundPlayConnection(socketAddress.toString(), 0, new ClientHandshakePacketListenerImpl(connection, this, (ServerData)null, (Screen)null, newWorld, worldLoadDuration, (var0) -> {
       }, loadTracker, (TransferState)null));
       connection.send(new ServerboundHelloPacket(this.getUser().getName(), this.getUser().getProfileId()));
       this.pendingConnection = connection;
@@ -2395,11 +2385,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.singleplayerServer;
    }
 
-   public boolean isSingleplayer() {
-      IntegratedServer singleplayerServer = this.getSingleplayerServer();
-      return singleplayerServer != null && !singleplayerServer.isPublished();
-   }
-
    public boolean isLocalPlayer(final UUID profileId) {
       return profileId.equals(this.getUser().getProfileId());
    }
@@ -2471,7 +2456,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          return screenMusic;
       } else {
          Camera camera = this.gameRenderer.mainCamera();
-         if (this.player != null && camera != null) {
+         if (this.player != null) {
             Level playerLevel = this.player.level();
             if (playerLevel.dimension() == Level.END && this.gui.hud.getBossOverlay().shouldPlayMusic()) {
                return Musics.END_BOSS;
@@ -2488,12 +2473,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public float getMusicVolume() {
-      if (this.gui.screen() != null && this.gui.screen().getBackgroundMusic() != null) {
-         return 1.0F;
-      } else {
-         Camera camera = this.gameRenderer.mainCamera();
-         return camera != null ? (Float)camera.attributeProbe().getValue(EnvironmentAttributes.MUSIC_VOLUME, 1.0F) : 1.0F;
-      }
+      return this.gui.screen() != null && this.gui.screen().getBackgroundMusic() != null ? 1.0F : (Float)this.gameRenderer.mainCamera().attributeProbe().getValue(EnvironmentAttributes.MUSIC_VOLUME, 1.0F);
    }
 
    public Services services() {
@@ -2641,7 +2621,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             } catch (InterruptedException var19) {
             }
 
-            Screenshot.grab(folder, "panorama_" + i + ".png", target, 4, (result) -> {
+            Screenshot.grab(folder, "panorama_" + i + ".png", target, 4, (var0) -> {
             });
          }
 

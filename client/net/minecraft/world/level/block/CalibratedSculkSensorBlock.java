@@ -45,7 +45,7 @@ public class CalibratedSculkSensorBlock extends SculkSensorBlock {
    }
 
    public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return direction != state.getValue(FACING) ? super.getSignal(state, level, pos, direction) : 0;
+      return direction != state.getValue(FACING) ? super.ownSignal(state, level, pos) : 0;
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

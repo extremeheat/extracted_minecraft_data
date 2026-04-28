@@ -237,6 +237,7 @@ import net.minecraft.util.datafix.fixes.RemoveBlockEntityTagFix;
 import net.minecraft.util.datafix.fixes.RemoveEmptyItemInBrushableBlockFix;
 import net.minecraft.util.datafix.fixes.RemoveGolemGossipFix;
 import net.minecraft.util.datafix.fixes.RenameEnchantmentsFix;
+import net.minecraft.util.datafix.fixes.RenameNameplateToNameTagFix;
 import net.minecraft.util.datafix.fixes.RenamedCoralFansFix;
 import net.minecraft.util.datafix.fixes.RenamedCoralFix;
 import net.minecraft.util.datafix.fixes.ReorganizePoi;
@@ -899,9 +900,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var307 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var307);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var307::contains));
+      Set var308 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var308);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var308::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1198,6 +1199,8 @@ public class DataFixers {
       fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4885 = fixerUpper.addSchema(4885, V4885::new);
       fixerUpper.addFixer(new RemoveBlockEntityTagFix(v4885, Set.of("minecraft:bed")));
+      Schema v4888 = fixerUpper.addSchema(4888, SAME_NAMESPACED);
+      fixerUpper.addFixer(new RenameNameplateToNameTagFix(v4888));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

@@ -159,7 +159,15 @@ public class ServerChunkCache extends ChunkSource {
          for(int i = 0; i < 4; ++i) {
             if (pos == this.lastChunkPos[i] && this.lastChunkStatus[i] == ChunkStatus.FULL) {
                ChunkAccess chunkAccess = this.lastChunk[i];
-               return chunkAccess instanceof LevelChunk ? (LevelChunk)chunkAccess : null;
+               LevelChunk var10000;
+               if (chunkAccess instanceof LevelChunk) {
+                  LevelChunk levelChunk = (LevelChunk)chunkAccess;
+                  var10000 = levelChunk;
+               } else {
+                  var10000 = null;
+               }
+
+               return var10000;
             }
          }
 
@@ -171,7 +179,8 @@ public class ServerChunkCache extends ChunkSource {
             if (chunk != null) {
                this.storeInCache(pos, chunk, ChunkStatus.FULL);
                if (chunk instanceof LevelChunk) {
-                  return (LevelChunk)chunk;
+                  LevelChunk levelChunk = (LevelChunk)chunk;
+                  return levelChunk;
                }
             }
 
@@ -342,7 +351,7 @@ public class ServerChunkCache extends ChunkSource {
       List<MobCategory> spawningCategories;
       if (doMobSpawning) {
          boolean spawnPersistent = this.level.getGameTime() % 400L == 0L;
-         spawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnCookie, spawnPersistent);
+         spawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnCookie, this.spawnEnemies, spawnPersistent);
       } else {
          spawningCategories = List.of();
       }

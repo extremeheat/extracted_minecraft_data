@@ -34,6 +34,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
+import net.minecraft.server.jsonrpc.JsonRpc;
+import net.minecraft.server.jsonrpc.ManagementServer;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
@@ -128,6 +131,8 @@ public class Main {
 
          File universePath = new File((String)options.valueOf(universe));
          Services services = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), universePath);
+         NotificationManager notificationManager = new NotificationManager();
+         ManagementServer jsonRpcServer = JsonRpc.create(settings, notificationManager);
          String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);
          LevelStorageSource levelStorageSource = LevelStorageSource.createDefault(universePath.toPath());
          LevelStorageSource.LevelStorageAccess access = levelStorageSource.validateAndCreateAccess(levelName);
@@ -191,7 +196,8 @@ public class Main {
 
          access.saveDataTag(data);
          final DedicatedServer dedicatedServer = (DedicatedServer)MinecraftServer.spin((thread) -> {
-            DedicatedServer server = new DedicatedServer(thread, access, packRepository, worldStem, Optional.empty(), settings, DataFixers.getDataFixer(), services);
+            DedicatedServer server = new DedicatedServer(thread, access, packRepository, worldStem, Optional.empty(), settings, DataFixers.getDataFixer(), services, jsonRpcServer, notificationManager);
+            notificationManager.setServer(server);
             server.setPort((Integer)options.valueOf(port));
             server.setDemo(options.has(demo));
             server.setId((String)options.valueOf(serverId));

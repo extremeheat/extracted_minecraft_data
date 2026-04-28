@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
@@ -140,7 +141,6 @@ import net.minecraft.world.entity.vehicle.minecart.MinecartSpawner;
 import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityTypes {
@@ -342,7 +342,7 @@ public class EntityTypes {
       BAMBOO_CHEST_RAFT = register(EntityTypeIds.BAMBOO_CHEST_RAFT, EntityType.Builder.of(chestRaftFactory(() -> Items.BAMBOO_CHEST_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BAMBOO_RAFT = register(EntityTypeIds.BAMBOO_RAFT, EntityType.Builder.of(raftFactory(() -> Items.BAMBOO_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BAT = register(EntityTypeIds.BAT, EntityType.Builder.of(Bat::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5));
-      BEE = register(EntityTypeIds.BEE, EntityType.Builder.of(Bee::new, MobCategory.CREATURE).sized(0.7F, 0.6F).eyeHeight(0.3F).clientTrackingRange(8));
+      BEE = register(EntityTypeIds.BEE, EntityType.Builder.of(Bee::new, MobCategory.CREATURE).sized(0.55F, 0.5F).eyeHeight(0.3F).clientTrackingRange(8));
       BIRCH_BOAT = register(EntityTypeIds.BIRCH_BOAT, EntityType.Builder.of(boatFactory(() -> Items.BIRCH_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BIRCH_CHEST_BOAT = register(EntityTypeIds.BIRCH_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.BIRCH_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BLAZE = register(EntityTypeIds.BLAZE, EntityType.Builder.of(Blaze::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(8).notInPeaceful());
@@ -385,7 +385,7 @@ public class EntityTypes {
       FALLING_BLOCK = register(EntityTypeIds.FALLING_BLOCK, EntityType.Builder.of(FallingBlockEntity::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.98F).clientTrackingRange(10).updateInterval(20));
       FIREBALL = register(EntityTypeIds.FIREBALL, EntityType.Builder.of(LargeFireball::new, MobCategory.MISC).noLootTable().sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10));
       FIREWORK_ROCKET = register(EntityTypeIds.FIREWORK_ROCKET, EntityType.Builder.of(FireworkRocketEntity::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
-      FOX = register(EntityTypeIds.FOX, EntityType.Builder.of(Fox::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.4F).passengerAttachments(new Vec3(0.0, 0.6375, -0.25)).clientTrackingRange(8).immuneTo(Blocks.SWEET_BERRY_BUSH));
+      FOX = register(EntityTypeIds.FOX, EntityType.Builder.of(Fox::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.4F).passengerAttachments(new Vec3(0.0, 0.6375, -0.25)).clientTrackingRange(8).immuneTo(BlockTags.FOX_IMMUNE_TO));
       FROG = register(EntityTypeIds.FROG, EntityType.Builder.of(Frog::new, MobCategory.CREATURE).sized(0.5F, 0.5F).passengerAttachments(new Vec3(0.0, 0.375, -0.25)).clientTrackingRange(10));
       FURNACE_MINECART = register(EntityTypeIds.FURNACE_MINECART, EntityType.Builder.of(MinecartFurnace::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       GHAST = register(EntityTypeIds.GHAST, EntityType.Builder.of(Ghast::new, MobCategory.MONSTER).fireImmune().sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10).notInPeaceful());
@@ -395,7 +395,7 @@ public class EntityTypes {
       GLOW_SQUID = register(EntityTypeIds.GLOW_SQUID, EntityType.Builder.of(GlowSquid::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(10));
       GOAT = register(EntityTypeIds.GOAT, EntityType.Builder.of(Goat::new, MobCategory.CREATURE).sized(0.9F, 1.3F).passengerAttachments(1.1125F).clientTrackingRange(10));
       GUARDIAN = register(EntityTypeIds.GUARDIAN, EntityType.Builder.of(Guardian::new, MobCategory.MONSTER).sized(0.85F, 0.85F).eyeHeight(0.425F).passengerAttachments(0.975F).clientTrackingRange(8).notInPeaceful());
-      HOGLIN = register(EntityTypeIds.HOGLIN, EntityType.Builder.of(Hoglin::new, MobCategory.MONSTER).sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8));
+      HOGLIN = register(EntityTypeIds.HOGLIN, EntityType.Builder.of(Hoglin::new, MobCategory.MONSTER).sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8).notInPeaceful());
       HOPPER_MINECART = register(EntityTypeIds.HOPPER_MINECART, EntityType.Builder.of(MinecartHopper::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       HORSE = register(EntityTypeIds.HORSE, EntityType.Builder.of(Horse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.44375F).clientTrackingRange(10));
       HUSK = register(EntityTypeIds.HUSK, EntityType.Builder.of(Husk::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.075F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
@@ -435,7 +435,7 @@ public class EntityTypes {
       PIGLIN = register(EntityTypeIds.PIGLIN, EntityType.Builder.of(Piglin::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8));
       PIGLIN_BRUTE = register(EntityTypeIds.PIGLIN_BRUTE, EntityType.Builder.of(PiglinBrute::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       PILLAGER = register(EntityTypeIds.PILLAGER, EntityType.Builder.of(Pillager::new, MobCategory.MONSTER).canSpawnFarFromPlayer().sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8).notInPeaceful());
-      POLAR_BEAR = register(EntityTypeIds.POLAR_BEAR, EntityType.Builder.of(PolarBear::new, MobCategory.CREATURE).immuneTo(Blocks.POWDER_SNOW).sized(1.4F, 1.4F).clientTrackingRange(10));
+      POLAR_BEAR = register(EntityTypeIds.POLAR_BEAR, EntityType.Builder.of(PolarBear::new, MobCategory.CREATURE).immuneTo(BlockTags.POLAR_BEAR_IMMUNE_TO).sized(1.4F, 1.4F).clientTrackingRange(10));
       SPLASH_POTION = register(EntityTypeIds.SPLASH_POTION, EntityType.Builder.of(ThrownSplashPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       LINGERING_POTION = register(EntityTypeIds.LINGERING_POTION, EntityType.Builder.of(ThrownLingeringPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       PUFFERFISH = register(EntityTypeIds.PUFFERFISH, EntityType.Builder.of(Pufferfish::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.7F).eyeHeight(0.455F).clientTrackingRange(4));
@@ -452,14 +452,14 @@ public class EntityTypes {
       SMALL_FIREBALL = register(EntityTypeIds.SMALL_FIREBALL, EntityType.Builder.of(SmallFireball::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10));
       SNIFFER = register(EntityTypeIds.SNIFFER, EntityType.Builder.of(Sniffer::new, MobCategory.CREATURE).sized(1.9F, 1.75F).eyeHeight(1.05F).passengerAttachments(2.09375F).nameTagOffset(2.05F).clientTrackingRange(10));
       SNOWBALL = register(EntityTypeIds.SNOWBALL, EntityType.Builder.of(Snowball::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
-      SNOW_GOLEM = register(EntityTypeIds.SNOW_GOLEM, EntityType.Builder.of(SnowGolem::new, MobCategory.MISC).immuneTo(Blocks.POWDER_SNOW).sized(0.7F, 1.9F).eyeHeight(1.7F).clientTrackingRange(8));
+      SNOW_GOLEM = register(EntityTypeIds.SNOW_GOLEM, EntityType.Builder.of(SnowGolem::new, MobCategory.MISC).immuneTo(BlockTags.SNOW_GOLEM_IMMUNE_TO).sized(0.7F, 1.9F).eyeHeight(1.7F).clientTrackingRange(8));
       SPAWNER_MINECART = register(EntityTypeIds.SPAWNER_MINECART, EntityType.Builder.of(MinecartSpawner::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       SPECTRAL_ARROW = register(EntityTypeIds.SPECTRAL_ARROW, EntityType.Builder.of(SpectralArrow::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20));
       SPIDER = register(EntityTypeIds.SPIDER, EntityType.Builder.of(Spider::new, MobCategory.MONSTER).sized(1.4F, 0.9F).eyeHeight(0.65F).passengerAttachments(0.765F).clientTrackingRange(8).notInPeaceful());
       SPRUCE_BOAT = register(EntityTypeIds.SPRUCE_BOAT, EntityType.Builder.of(boatFactory(() -> Items.SPRUCE_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       SPRUCE_CHEST_BOAT = register(EntityTypeIds.SPRUCE_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.SPRUCE_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       SQUID = register(EntityTypeIds.SQUID, EntityType.Builder.of(Squid::new, MobCategory.WATER_CREATURE).sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(8));
-      STRAY = register(EntityTypeIds.STRAY, EntityType.Builder.of(Stray::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).immuneTo(Blocks.POWDER_SNOW).clientTrackingRange(8).notInPeaceful());
+      STRAY = register(EntityTypeIds.STRAY, EntityType.Builder.of(Stray::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).immuneTo(BlockTags.STRAY_IMMUNE_TO).clientTrackingRange(8).notInPeaceful());
       STRIDER = register(EntityTypeIds.STRIDER, EntityType.Builder.of(Strider::new, MobCategory.CREATURE).fireImmune().sized(0.9F, 1.7F).clientTrackingRange(10));
       SULFUR_CUBE = register(EntityTypeIds.SULFUR_CUBE, EntityType.Builder.of(SulfurCube::new, MobCategory.MONSTER).sized(0.49F, 0.49F).eyeHeight(0.175F).spawnDimensionsScale(2.0F).clientTrackingRange(10));
       TADPOLE = register(EntityTypeIds.TADPOLE, EntityType.Builder.of(Tadpole::new, MobCategory.CREATURE).sized(0.4F, 0.3F).eyeHeight(0.19500001F).clientTrackingRange(10));
@@ -477,8 +477,8 @@ public class EntityTypes {
       WARDEN = register(EntityTypeIds.WARDEN, EntityType.Builder.of(Warden::new, MobCategory.MONSTER).sized(0.9F, 2.9F).passengerAttachments(3.15F).attach(EntityAttachment.WARDEN_CHEST, 0.0F, 1.6F, 0.0F).clientTrackingRange(16).fireImmune().notInPeaceful());
       WIND_CHARGE = register(EntityTypeIds.WIND_CHARGE, EntityType.Builder.of(WindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
       WITCH = register(EntityTypeIds.WITCH, EntityType.Builder.of(Witch::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.62F).passengerAttachments(2.2625F).clientTrackingRange(8).notInPeaceful());
-      WITHER = register(EntityTypeIds.WITHER, EntityType.Builder.of(WitherBoss::new, MobCategory.MONSTER).fireImmune().immuneTo(Blocks.WITHER_ROSE).sized(0.9F, 3.5F).clientTrackingRange(10).notInPeaceful());
-      WITHER_SKELETON = register(EntityTypeIds.WITHER_SKELETON, EntityType.Builder.of(WitherSkeleton::new, MobCategory.MONSTER).fireImmune().immuneTo(Blocks.WITHER_ROSE).sized(0.7F, 2.4F).eyeHeight(2.1F).ridingOffset(-0.875F).clientTrackingRange(8).notInPeaceful());
+      WITHER = register(EntityTypeIds.WITHER, EntityType.Builder.of(WitherBoss::new, MobCategory.MONSTER).fireImmune().immuneTo(BlockTags.WITHER_IMMUNE_TO).sized(0.9F, 3.5F).clientTrackingRange(10).notInPeaceful());
+      WITHER_SKELETON = register(EntityTypeIds.WITHER_SKELETON, EntityType.Builder.of(WitherSkeleton::new, MobCategory.MONSTER).fireImmune().immuneTo(BlockTags.WITHER_SKELETON_IMMUNE_TO).sized(0.7F, 2.4F).eyeHeight(2.1F).ridingOffset(-0.875F).clientTrackingRange(8).notInPeaceful());
       WITHER_SKULL = register(EntityTypeIds.WITHER_SKULL, EntityType.Builder.of(WitherSkull::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10));
       WOLF = register(EntityTypeIds.WOLF, EntityType.Builder.of(Wolf::new, MobCategory.CREATURE).sized(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3(0.0, 0.81875, -0.0625)).clientTrackingRange(10));
       ZOGLIN = register(EntityTypeIds.ZOGLIN, EntityType.Builder.of(Zoglin::new, MobCategory.MONSTER).fireImmune().sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8).notInPeaceful());

@@ -2,6 +2,7 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 public class Abilities {
    private static final boolean DEFAULT_INVULNERABLE = false;
@@ -54,7 +55,7 @@ public class Abilities {
    }
 
    public static record Packed(boolean invulnerable, boolean flying, boolean mayFly, boolean instabuild, boolean mayBuild, float flyingSpeed, float walkingSpeed) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("invulnerable").orElse(false).forGetter(Packed::invulnerable), Codec.BOOL.fieldOf("flying").orElse(false).forGetter(Packed::flying), Codec.BOOL.fieldOf("mayfly").orElse(false).forGetter(Packed::mayFly), Codec.BOOL.fieldOf("instabuild").orElse(false).forGetter(Packed::instabuild), Codec.BOOL.fieldOf("mayBuild").orElse(true).forGetter(Packed::mayBuild), Codec.FLOAT.fieldOf("flySpeed").orElse(0.05F).forGetter(Packed::flyingSpeed), Codec.FLOAT.fieldOf("walkSpeed").orElse(0.1F).forGetter(Packed::walkingSpeed)).apply(i, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "invulnerable", false).forGetter(Packed::invulnerable), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "flying", false).forGetter(Packed::flying), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "mayfly", false).forGetter(Packed::mayFly), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "instabuild", false).forGetter(Packed::instabuild), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "mayBuild", true).forGetter(Packed::mayBuild), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.FLOAT, "flySpeed", 0.05F).forGetter(Packed::flyingSpeed), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.FLOAT, "walkSpeed", 0.1F).forGetter(Packed::walkingSpeed)).apply(i, Packed::new));
 
       public Packed {
          super();

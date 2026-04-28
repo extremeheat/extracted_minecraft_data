@@ -41,7 +41,15 @@ public class DebugEntryPosition implements DebugScreenEntry {
          }
 
          String faceString = var10000;
-         LongSet chunks = (LongSet)(serverOrClientLevel instanceof ServerLevel ? ((ServerLevel)serverOrClientLevel).getForceLoadedChunks() : LongSets.EMPTY_SET);
+         Object var13;
+         if (serverOrClientLevel instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)serverOrClientLevel;
+            var13 = serverLevel.getForceLoadedChunks();
+         } else {
+            var13 = LongSets.EMPTY_SET;
+         }
+
+         LongSet chunks = (LongSet)var13;
          Identifier var10001 = GROUP;
          String var10002 = String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", minecraft.getCameraEntity().getX(), minecraft.getCameraEntity().getY(), minecraft.getCameraEntity().getZ());
          String var10003 = String.format(Locale.ROOT, "Block: %d %d %d", feetPos.getX(), feetPos.getY(), feetPos.getZ());

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -107,7 +106,7 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
       return null;
    }
 
-   public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   public int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       if (state.getValue(MODE) != TestBlockMode.START) {
          return 0;
       } else {

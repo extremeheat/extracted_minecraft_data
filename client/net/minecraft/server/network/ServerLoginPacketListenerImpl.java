@@ -220,7 +220,14 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
          private @Nullable InetAddress getAddress() {
             SocketAddress remoteAddress = ServerLoginPacketListenerImpl.this.connection.getRemoteAddress();
-            return ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && remoteAddress instanceof InetSocketAddress ? ((InetSocketAddress)remoteAddress).getAddress() : null;
+            InetAddress var10000;
+            if (ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && remoteAddress instanceof InetSocketAddress inetSocketAddress) {
+               var10000 = inetSocketAddress.getAddress();
+            } else {
+               var10000 = null;
+            }
+
+            return var10000;
          }
       };
       thread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));

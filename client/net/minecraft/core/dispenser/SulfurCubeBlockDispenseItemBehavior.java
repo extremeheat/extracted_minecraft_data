@@ -2,6 +2,7 @@ package net.minecraft.core.dispenser;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -15,13 +16,11 @@ public class SulfurCubeBlockDispenseItemBehavior extends DefaultDispenseItemBeha
    }
 
    protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
-      return dispenseBlock(source, dispensed) ? dispensed : super.execute(source, dispensed);
+      return dispenseBlock(source.level(), source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING)), dispensed) ? dispensed : super.execute(source, dispensed);
    }
 
-   public static boolean dispenseBlock(final BlockSource source, final ItemStack dispensed) {
-      BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
-
-      for(SulfurCube entity : source.level().getEntitiesOfClass(SulfurCube.class, new AABB(pos))) {
+   public static boolean dispenseBlock(final ServerLevel level, final BlockPos pos, final ItemStack dispensed) {
+      for(SulfurCube entity : level.getEntitiesOfClass(SulfurCube.class, new AABB(pos))) {
          if (entity.equipItem(dispensed)) {
             dispensed.shrink(1);
             return true;

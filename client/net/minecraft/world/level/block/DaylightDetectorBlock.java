@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -49,10 +48,6 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Integer)state.getValue(POWER);
-   }
-
    private static void updateSignalStrength(final BlockState state, final Level level, final BlockPos pos) {
       int target = level.getEffectiveSkyBrightness(pos);
       float sunAngle = (Float)level.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, pos) * 0.017453292F;
@@ -89,6 +84,10 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Integer)state.getValue(POWER);
    }
 
    public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {

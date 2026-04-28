@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ExtraCodecs;
 import org.jspecify.annotations.Nullable;
 
 public class AttributeInstance {
@@ -199,7 +200,7 @@ public class AttributeInstance {
    }
 
    public static record Packed(Holder<Attribute> attribute, double baseValue, List<AttributeModifier> modifiers) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("id").forGetter(Packed::attribute), Codec.DOUBLE.fieldOf("base").orElse(0.0).forGetter(Packed::baseValue), AttributeModifier.CODEC.listOf().optionalFieldOf("modifiers", List.of()).forGetter(Packed::modifiers)).apply(i, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("id").forGetter(Packed::attribute), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.DOUBLE, "base", 0.0).forGetter(Packed::baseValue), AttributeModifier.CODEC.listOf().optionalFieldOf("modifiers", List.of()).forGetter(Packed::modifiers)).apply(i, Packed::new));
       public static final Codec<List<Packed>> LIST_CODEC;
 
       public Packed {

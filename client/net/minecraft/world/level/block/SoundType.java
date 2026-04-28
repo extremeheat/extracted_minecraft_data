@@ -129,6 +129,7 @@ public class SoundType {
    public static final SoundType DRIED_GHAST;
    public static final SoundType SULFUR;
    public static final SoundType POTENT_SULFUR;
+   public static final SoundType SULFUR_SPIKE;
    public static final SoundType CINNABAR;
    public final float volume;
    public final float pitch;
@@ -303,6 +304,7 @@ public class SoundType {
       DRIED_GHAST = new SoundType(1.0F, 1.0F, SoundEvents.DRIED_GHAST_BREAK, SoundEvents.DRIED_GHAST_STEP, SoundEvents.EMPTY, SoundEvents.EMPTY, SoundEvents.DRIED_GHAST_FALL);
       SULFUR = new SoundType(1.0F, 1.0F, SoundEvents.SULFUR_BREAK, SoundEvents.SULFUR_STEP, SoundEvents.SULFUR_PLACE, SoundEvents.SULFUR_HIT, SoundEvents.SULFUR_FALL);
       POTENT_SULFUR = new SoundType(1.0F, 1.0F, SoundEvents.POTENT_SULFUR_BREAK, SoundEvents.POTENT_SULFUR_STEP, SoundEvents.POTENT_SULFUR_PLACE, SoundEvents.POTENT_SULFUR_HIT, SoundEvents.POTENT_SULFUR_FALL);
+      SULFUR_SPIKE = new SoundType(1.0F, 1.0F, SoundEvents.SULFUR_SPIKE_BREAK, SoundEvents.SULFUR_SPIKE_STEP, SoundEvents.SULFUR_SPIKE_PLACE, SoundEvents.SULFUR_SPIKE_HIT, SoundEvents.SULFUR_SPIKE_FALL);
       CINNABAR = new SoundType(1.0F, 1.0F, SoundEvents.CINNABAR_BREAK, SoundEvents.CINNABAR_STEP, SoundEvents.CINNABAR_PLACE, SoundEvents.CINNABAR_HIT, SoundEvents.CINNABAR_FALL);
    }
 }

@@ -39,6 +39,8 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
@@ -690,7 +692,7 @@ public class Fox extends Animal {
       };
       STALKABLE_PREY = (entity) -> entity instanceof Chicken || entity instanceof Rabbit;
       AVOID_PLAYERS = (entity) -> !entity.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity);
-      BABY_DIMENSIONS = EntityTypes.FOX.getDimensions().scale(0.6F).withEyeHeight(0.2975F);
+      BABY_DIMENSIONS = EntityTypes.FOX.getDimensions().scale(0.6F).withEyeHeight(0.34375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.375F, 0.0F));
       TRUSTED_LIST_CODEC = EntityReference.codec().listOf();
    }
 
@@ -999,7 +1001,8 @@ public class Fox extends Animal {
             return false;
          } else if (!(target instanceof Chicken) && !(target instanceof Rabbit) && !(target instanceof Monster)) {
             if (target instanceof TamableAnimal) {
-               return !((TamableAnimal)target).isTame();
+               TamableAnimal tamableAnimal = (TamableAnimal)target;
+               return !tamableAnimal.isTame();
             } else {
                if (target instanceof Player) {
                   Player player = (Player)target;

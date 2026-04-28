@@ -181,7 +181,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
             return;
          }
 
-         level.getChunk(pos).markPosForPostprocessing(pos);
+         level.getChunk(pos).markPosForPostProcessing(pos);
       }
 
    }

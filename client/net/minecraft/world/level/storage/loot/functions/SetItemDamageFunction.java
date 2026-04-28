@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 
 public class SetItemDamageFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SetItemDamageFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("damage").forGetter((f) -> f.damage), Codec.BOOL.fieldOf("add").orElse(false).forGetter((f) -> f.add))).apply(i, SetItemDamageFunction::new));
+   public static final MapCodec<SetItemDamageFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("damage").forGetter((f) -> f.damage), Codec.BOOL.optionalFieldOf("add", false).forGetter((f) -> f.add))).apply(i, SetItemDamageFunction::new));
    private final NumberProvider damage;
    private final boolean add;
 

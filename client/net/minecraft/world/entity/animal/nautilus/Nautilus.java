@@ -8,9 +8,13 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
@@ -19,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Nautilus extends AbstractNautilus {
    private static final int NAUTILUS_TOTAL_AIR_SUPPLY = 300;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final Brain.Provider<Nautilus> BRAIN_PROVIDER;
 
    public Nautilus(final EntityType<? extends Nautilus> type, final Level level) {
@@ -41,6 +46,10 @@ public class Nautilus extends AbstractNautilus {
       }
 
       return baby;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    protected void customServerAiStep(final ServerLevel level) {
@@ -130,6 +139,7 @@ public class Nautilus extends AbstractNautilus {
    }
 
    static {
+      BABY_DIMENSIONS = EntityTypes.NAUTILUS.getDimensions().scale(0.5F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.5F, 0.0F));
       BRAIN_PROVIDER = Brain.<Nautilus>provider(List.of(MemoryModuleType.ANGRY_AT, MemoryModuleType.ATTACK_TARGET_COOLDOWN), List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.NEAREST_PLAYERS, SensorType.HURT_BY, SensorType.NAUTILUS_TEMPTATIONS), (var0) -> NautilusAi.getActivities());
    }
 }

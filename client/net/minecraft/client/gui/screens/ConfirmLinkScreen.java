@@ -31,7 +31,7 @@ public class ConfirmLinkScreen extends ConfirmScreen {
    }
 
    public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final Component message, final URI uri, final Component noButton, final boolean trusted) {
-      this(callback, title, message, uri.toString(), noButton, true);
+      this(callback, title, message, uri.toString(), noButton, trusted);
    }
 
    public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final Component message, final String url, final Component noButtonComponent, final boolean trusted) {

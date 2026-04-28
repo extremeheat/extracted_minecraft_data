@@ -22,6 +22,7 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Unit;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.level.gamerules.GameRule;
@@ -36,11 +37,12 @@ public interface TestEnvironmentDefinition<SavedDataType> {
 
    static MapCodec<? extends TestEnvironmentDefinition<?>> bootstrap(final Registry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
-      Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
+      Registry.register(registry, (String)"difficulty", TestEnvironmentDefinition.SetDifficulty.CODEC);
+      Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
+      Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"timeline_attributes", TestEnvironmentDefinition.Timelines.CODEC);
-      Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
    }
 
    SavedDataType setup(ServerLevel level);
@@ -272,6 +274,28 @@ public interface TestEnvironmentDefinition<SavedDataType> {
       }
 
       public MapCodec<Timelines> codec() {
+         return CODEC;
+      }
+   }
+
+   public static record SetDifficulty(Difficulty difficulty) implements TestEnvironmentDefinition<Difficulty> {
+      public static final MapCodec<SetDifficulty> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Difficulty.CODEC.fieldOf("difficulty").forGetter(SetDifficulty::difficulty)).apply(i, SetDifficulty::new));
+
+      public SetDifficulty {
+         super();
+      }
+
+      public Difficulty setup(final ServerLevel level) {
+         Difficulty oldDifficulty = level.getDifficulty();
+         level.getServer().setDifficulty(this.difficulty, true);
+         return oldDifficulty;
+      }
+
+      public void teardown(final ServerLevel level, final Difficulty saveData) {
+         level.getServer().setDifficulty(saveData, true);
+      }
+
+      public MapCodec<SetDifficulty> codec() {
          return CODEC;
       }
    }

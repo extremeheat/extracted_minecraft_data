@@ -216,24 +216,24 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   public static short packOffsetCoordinates(final BlockPos blockPos) {
-      int x = blockPos.getX();
-      int y = blockPos.getY();
-      int z = blockPos.getZ();
+   public static short packOffsetCoordinates(final BlockPos pos) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
       int dx = x & 15;
       int dy = y & 15;
       int dz = z & 15;
       return (short)(dx | dy << 4 | dz << 8);
    }
 
-   public static BlockPos unpackOffsetCoordinates(final short packedCoord, final int sectionY, final ChunkPos chunkPos) {
-      int posX = SectionPos.sectionToBlockCoord(chunkPos.x(), packedCoord & 15);
-      int posY = SectionPos.sectionToBlockCoord(sectionY, packedCoord >>> 4 & 15);
-      int posZ = SectionPos.sectionToBlockCoord(chunkPos.z(), packedCoord >>> 8 & 15);
+   public static BlockPos unpackOffsetCoordinates(final short packedData, final int sectionY, final ChunkPos chunkPos) {
+      int posX = SectionPos.sectionToBlockCoord(chunkPos.x(), packedData & 15);
+      int posY = SectionPos.sectionToBlockCoord(sectionY, packedData >>> 4 & 15);
+      int posZ = SectionPos.sectionToBlockCoord(chunkPos.z(), packedData >>> 8 & 15);
       return new BlockPos(posX, posY, posZ);
    }
 
-   public void markPosForPostprocessing(final BlockPos blockPos) {
+   public void markPosForPostProcessing(final BlockPos blockPos) {
       if (this.isInsideBuildHeight(blockPos)) {
          ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(blockPos.getY())).add(packOffsetCoordinates(blockPos));
       }

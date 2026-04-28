@@ -214,6 +214,13 @@ public class VanillaBlockTagsProvider extends TagsProvider<Block> {
       this.tag(BlockTags.TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS).add(BlockItemIds.SOUL_SAND, BlockItemIds.SOUL_SOIL);
       this.tag(BlockTags.SPELEOTHEMS).add(BlockItemIds.POINTED_DRIPSTONE, BlockItemIds.SULFUR_SPIKE);
       this.tag(BlockTags.SULFUR_SPIKE_REPLACEABLE).add(BlockItemIds.SULFUR, BlockItemIds.CINNABAR);
+      this.tag(BlockTags.FOX_IMMUNE_TO).add(BlockItemIds.SWEET_BERRY_CROP);
+      this.tag(BlockTags.POLAR_BEAR_IMMUNE_TO).add(BlockItemIds.POWDER_SNOW);
+      this.tag(BlockTags.SNOW_GOLEM_IMMUNE_TO).add(BlockItemIds.POWDER_SNOW);
+      this.tag(BlockTags.STRAY_IMMUNE_TO).add(BlockItemIds.POWDER_SNOW);
+      this.tag(BlockTags.WITHER_IMMUNE_TO).add(BlockItemIds.WITHER_ROSE);
+      this.tag(BlockTags.WITHER_SKELETON_IMMUNE_TO).add(BlockItemIds.WITHER_ROSE);
+      this.tag(BlockTags.DEFAULT_IMMUNE_TO);
       this.tag(BlockTags.AIR).add(BlockItemIds.AIR).add(BlockIds.VOID_AIR, BlockIds.CAVE_AIR);
    }
 

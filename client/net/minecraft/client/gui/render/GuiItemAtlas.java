@@ -12,7 +12,7 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 public class GuiItemAtlas implements AutoCloseable {
    private static final int MINIMUM_TEXTURE_SIZE = 512;
    private static final int MAXIMUM_TEXTURE_SIZE = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
-   private final SubmitNodeCollector submitNodeCollector;
+   private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final int textureSize;
    private final int slotTextureSize;
@@ -36,9 +36,8 @@ public class GuiItemAtlas implements AutoCloseable {
    private final Projection projection = new Projection();
    private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("items");
 
-   public GuiItemAtlas(final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final int textureSize, final int slotTextureSize) {
+   public GuiItemAtlas(final FeatureRenderDispatcher featureRenderDispatcher, final int textureSize, final int slotTextureSize) {
       super();
-      this.submitNodeCollector = submitNodeCollector;
       this.featureRenderDispatcher = featureRenderDispatcher;
       int storageSize = textureSize / slotTextureSize;
       this.textureSize = textureSize;
@@ -106,8 +105,8 @@ public class GuiItemAtlas implements AutoCloseable {
       RenderSystem.enableScissorForRenderTypeDraws(left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       Lighting.Entry lighting = item.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
       Minecraft.getInstance().gameRenderer.lighting().setupFor(lighting);
-      item.submit(this.poseStack, this.submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
-      this.featureRenderDispatcher.renderAllFeatures();
+      item.submit(this.poseStack, this.submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      this.featureRenderDispatcher.renderAllFeatures(this.submitNodeStorage);
       RenderSystem.disableScissorForRenderTypeDraws();
       RenderSystem.outputColorTextureOverride = null;
       RenderSystem.outputDepthTextureOverride = null;

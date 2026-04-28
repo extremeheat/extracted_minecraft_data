@@ -68,6 +68,11 @@ public interface SignalGetter extends BlockGetter {
       return state.isRedstoneConductor(this, pos) ? Math.max(signal, this.getDirectSignalTo(pos)) : signal;
    }
 
+   default int getBestOwnOrNeighbourSignal(final BlockPos pos) {
+      BlockState blockState = this.getBlockState(pos);
+      return Math.max(this.getBestNeighborSignal(pos), blockState.isSignalSource() ? blockState.getOwnSignal(this, pos) : 0);
+   }
+
    default boolean hasNeighborSignal(final BlockPos blockPos) {
       if (this.getSignal(blockPos.below(), Direction.DOWN) > 0) {
          return true;

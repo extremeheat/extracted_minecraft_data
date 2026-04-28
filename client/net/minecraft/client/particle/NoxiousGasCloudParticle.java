@@ -6,7 +6,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.PotentSulfurEntity;
+import net.minecraft.world.level.block.entity.PotentSulfurBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +23,7 @@ public class NoxiousGasCloudParticle extends NoRenderParticle {
       if (this.age % 2 == 0) {
          BlockPos sourceBlock = BlockPos.containing(this.x, this.y, this.z);
          Vec3 particlePos = pickRandomParticleSpawnPoint(this.level, sourceBlock);
-         if (PotentSulfurEntity.canBeReachedByNoxiousGas(this.level, sourceBlock, particlePos)) {
+         if (PotentSulfurBlockEntity.canBeReachedByNoxiousGas(this.level, sourceBlock, particlePos)) {
             spawnNoxiousGasParticle(this.level, particlePos);
          }
 

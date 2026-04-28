@@ -94,6 +94,10 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       }
    }
 
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.source, this.expires, this.reason, this.getUser()});
+   }
+
    static {
       DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
    }

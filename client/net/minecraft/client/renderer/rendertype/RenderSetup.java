@@ -1,16 +1,16 @@
 package net.minecraft.client.renderer.rendertype;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.SamplerCache;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
@@ -51,28 +51,26 @@ public final class RenderSetup {
       return new RenderSetupBuilder(pipeline);
    }
 
-   public Map<String, TextureAndSampler> getTextures() {
+   public List<PreparedRenderType.Texture> prepareTextures(final TextureManager textureManager, final SamplerCache samplerCache, final GpuTextureView overlayTexture, final GpuTextureView lightmapTexture) {
       if (this.textures.isEmpty() && !this.useOverlay && !this.useLightmap) {
-         return Collections.emptyMap();
+         return List.of();
       } else {
-         Map<String, TextureAndSampler> result = new HashMap();
+         ImmutableList.Builder<PreparedRenderType.Texture> textures = ImmutableList.builderWithExpectedSize(this.textures.size() + 2);
          if (this.useOverlay) {
-            result.put("Sampler1", new TextureAndSampler(Minecraft.getInstance().gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+            textures.add(new PreparedRenderType.Texture("Sampler1", overlayTexture, samplerCache.getClampToEdge(FilterMode.LINEAR)));
          }
 
          if (this.useLightmap) {
-            result.put("Sampler2", new TextureAndSampler(Minecraft.getInstance().gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+            textures.add(new PreparedRenderType.Texture("Sampler2", lightmapTexture, samplerCache.getClampToEdge(FilterMode.LINEAR)));
          }
-
-         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
 
          for(Map.Entry<String, TextureBinding> entry : this.textures.entrySet()) {
             AbstractTexture texture = textureManager.getTexture(((TextureBinding)entry.getValue()).location);
             GpuSampler samplerOverride = (GpuSampler)((TextureBinding)entry.getValue()).sampler().get();
-            result.put((String)entry.getKey(), new TextureAndSampler(texture.getTextureView(), samplerOverride != null ? samplerOverride : texture.getSampler()));
+            textures.add(new PreparedRenderType.Texture((String)entry.getKey(), texture.getTextureView(), samplerOverride != null ? samplerOverride : texture.getSampler()));
          }
 
-         return result;
+         return textures.build();
       }
    }
 
@@ -173,12 +171,6 @@ public final class RenderSetup {
 
       public RenderSetup createRenderSetup() {
          return new RenderSetup(this.pipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.outputTarget, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload);
-      }
-   }
-
-   public static record TextureAndSampler(GpuTextureView textureView, GpuSampler sampler) {
-      public TextureAndSampler {
-         super();
       }
    }
 

@@ -342,7 +342,17 @@ public final class CompoundTag implements Tag {
       if (this == obj) {
          return true;
       } else {
-         return obj instanceof CompoundTag && Objects.equals(this.tags, ((CompoundTag)obj).tags);
+         boolean var10000;
+         if (obj instanceof CompoundTag) {
+            CompoundTag compoundTag = (CompoundTag)obj;
+            if (Objects.equals(this.tags, compoundTag.tags)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 

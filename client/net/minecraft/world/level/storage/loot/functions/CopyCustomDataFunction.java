@@ -138,8 +138,8 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
          public void merge(final Tag target, final NbtPathArgument.NbtPath path, final List<Tag> sources) throws CommandSyntaxException {
             List<Tag> targets = path.getOrCreate(target, ListTag::new);
             targets.forEach((tag) -> {
-               if (tag instanceof ListTag) {
-                  sources.forEach((source) -> ((ListTag)tag).add(source.copy()));
+               if (tag instanceof ListTag listTag) {
+                  sources.forEach((source) -> listTag.add(source.copy()));
                }
 
             });
@@ -149,10 +149,10 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
          public void merge(final Tag target, final NbtPathArgument.NbtPath path, final List<Tag> sources) throws CommandSyntaxException {
             List<Tag> targets = path.getOrCreate(target, CompoundTag::new);
             targets.forEach((tag) -> {
-               if (tag instanceof CompoundTag) {
+               if (tag instanceof CompoundTag compoundTag) {
                   sources.forEach((source) -> {
-                     if (source instanceof CompoundTag) {
-                        ((CompoundTag)tag).merge((CompoundTag)source);
+                     if (source instanceof CompoundTag sourceTag) {
+                        compoundTag.merge(sourceTag);
                      }
 
                   });

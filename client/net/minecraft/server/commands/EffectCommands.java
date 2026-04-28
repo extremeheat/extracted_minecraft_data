@@ -55,9 +55,9 @@ public class EffectCommands {
       }
 
       for(Entity entity : entities) {
-         if (entity instanceof LivingEntity) {
+         if (entity instanceof LivingEntity livingEntity) {
             MobEffectInstance instance = new MobEffectInstance(effectHolder, duration, amplifier, false, particles);
-            if (((LivingEntity)entity).addEffect(instance, source.getEntity())) {
+            if (livingEntity.addEffect(instance, source.getEntity())) {
                ++count;
             }
          }
@@ -80,8 +80,10 @@ public class EffectCommands {
       int count = 0;
 
       for(Entity entity : entities) {
-         if (entity instanceof LivingEntity && ((LivingEntity)entity).removeAllEffects()) {
-            ++count;
+         if (entity instanceof LivingEntity livingEntity) {
+            if (livingEntity.removeAllEffects()) {
+               ++count;
+            }
          }
       }
 
@@ -103,8 +105,10 @@ public class EffectCommands {
       int count = 0;
 
       for(Entity entity : entities) {
-         if (entity instanceof LivingEntity && ((LivingEntity)entity).removeEffect(effectHolder)) {
-            ++count;
+         if (entity instanceof LivingEntity livingEntity) {
+            if (livingEntity.removeEffect(effectHolder)) {
+               ++count;
+            }
          }
       }
 

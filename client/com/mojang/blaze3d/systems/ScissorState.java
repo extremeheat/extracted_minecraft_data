@@ -11,6 +11,15 @@ public class ScissorState {
       super();
    }
 
+   public ScissorState(final ScissorState state) {
+      super();
+      this.enabled = state.enabled;
+      this.x = state.x;
+      this.y = state.y;
+      this.width = state.width;
+      this.height = state.height;
+   }
+
    public void enable(final int x, final int y, final int width, final int height) {
       this.enabled = true;
       this.x = x;

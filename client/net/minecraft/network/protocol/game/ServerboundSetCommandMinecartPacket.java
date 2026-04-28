@@ -46,7 +46,11 @@ public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePac
 
    public @Nullable BaseCommandBlock getCommandBlock(final Level level) {
       Entity entity = level.getEntity(this.entity);
-      return entity instanceof MinecartCommandBlock ? ((MinecartCommandBlock)entity).getCommandBlock() : null;
+      if (entity instanceof MinecartCommandBlock minecartCommandBlock) {
+         return minecartCommandBlock.getCommandBlock();
+      } else {
+         return null;
+      }
    }
 
    public String getCommand() {

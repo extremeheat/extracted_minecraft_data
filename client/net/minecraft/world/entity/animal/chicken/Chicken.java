@@ -22,6 +22,8 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -56,7 +58,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Chicken extends Animal {
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.4F).withEyeHeight(0.28F);
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final EntityDataAccessor<Holder<ChickenVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<ChickenSoundVariant>> DATA_SOUND_VARIANT_ID;
    private static final boolean DEFAULT_CHICKEN_JOCKEY = false;
@@ -250,8 +252,8 @@ public class Chicken extends Animal {
 
    protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
       super.positionRider(passenger, moveFunction);
-      if (passenger instanceof LivingEntity) {
-         ((LivingEntity)passenger).yBodyRot = this.yBodyRot;
+      if (passenger instanceof LivingEntity livingEntity) {
+         livingEntity.yBodyRot = this.yBodyRot;
       }
 
    }
@@ -265,6 +267,7 @@ public class Chicken extends Animal {
    }
 
    static {
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.4F).withEyeHeight(0.28125F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.375F, 0.0F));
       DATA_VARIANT_ID = SynchedEntityData.<Holder<ChickenVariant>>defineId(Chicken.class, EntityDataSerializers.CHICKEN_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<ChickenSoundVariant>>defineId(Chicken.class, EntityDataSerializers.CHICKEN_SOUND_VARIANT);
    }

@@ -597,10 +597,13 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          passenger.setYRot(passenger.getYRot() + this.deltaRotation);
          passenger.setYHeadRot(passenger.getYHeadRot() + this.deltaRotation);
          this.clampRotation(passenger);
-         if (passenger instanceof Animal && this.getPassengers().size() == this.getMaxPassengers()) {
-            int rotationOffset = passenger.getId() % 2 == 0 ? 90 : 270;
-            passenger.setYBodyRot(((Animal)passenger).yBodyRot + (float)rotationOffset);
-            passenger.setYHeadRot(passenger.getYHeadRot() + (float)rotationOffset);
+         if (passenger instanceof Animal) {
+            Animal animal = (Animal)passenger;
+            if (this.getPassengers().size() == this.getMaxPassengers()) {
+               int rotationOffset = passenger.getId() % 2 == 0 ? 90 : 270;
+               passenger.setYBodyRot(animal.yBodyRot + (float)rotationOffset);
+               passenger.setYHeadRot(passenger.getYHeadRot() + (float)rotationOffset);
+            }
          }
 
       }

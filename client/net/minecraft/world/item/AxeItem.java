@@ -48,7 +48,8 @@ public class AxeItem extends Item {
          } else {
             ItemStack itemInHand = context.getItemInHand();
             if (player instanceof ServerPlayer) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, itemInHand);
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemInHand);
             }
 
             level.setBlock(pos, (BlockState)newBlock.get(), 11);

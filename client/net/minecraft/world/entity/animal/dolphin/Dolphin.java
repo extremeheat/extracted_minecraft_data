@@ -25,6 +25,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -32,6 +35,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -75,6 +79,7 @@ public class Dolphin extends AgeableWaterCreature {
    private static final int TOTAL_MOISTNESS_LEVEL = 2400;
    public static final Predicate<ItemEntity> ALLOWED_ITEMS;
    public static final float BABY_SCALE = 0.65F;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final boolean DEFAULT_GOT_FISH = false;
    private @Nullable BlockPos treasurePos;
 
@@ -305,6 +310,10 @@ public class Dolphin extends AgeableWaterCreature {
       return target != null ? target.closerToCenterThan(this.position(), 12.0) : false;
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
       this.moveRelative(this.getSpeed(), input);
       this.move(MoverType.SELF, this.getDeltaMovement());
@@ -324,6 +333,7 @@ public class Dolphin extends AgeableWaterCreature {
       MOISTNESS_LEVEL = SynchedEntityData.<Integer>defineId(Dolphin.class, EntityDataSerializers.INT);
       SWIM_WITH_PLAYER_TARGETING = TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight();
       ALLOWED_ITEMS = (e) -> !e.hasPickUpDelay() && e.isAlive() && e.isInWater();
+      BABY_DIMENSIONS = EntityTypes.DOLPHIN.getDimensions().scale(0.65F).withEyeHeight(0.09375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.3125F, 0.0F));
    }
 
    private class PlayWithItemsGoal extends Goal {

@@ -81,7 +81,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
@@ -305,6 +304,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    public void tick(final BooleanSupplier haveTime) {
       ProfilerFiller profiler = Profiler.get();
       this.handlingTick = true;
+      this.environmentAttributes().invalidateTickCache();
       TickRateManager tickRateManager = this.tickRateManager();
       boolean runs = tickRateManager.runsNormally();
       if (runs) {
@@ -414,7 +414,6 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
       this.debugSynchronizers.tick(this.server.debugSubscribers());
       profiler.pop();
-      this.environmentAttributes().invalidateTickCache();
    }
 
    public boolean shouldTickBlocksAt(final long chunkPos) {
@@ -1677,7 +1676,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public boolean isSpawningMonsters() {
-      return this.getLevelData().getDifficulty() != Difficulty.PEACEFUL && (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && (Boolean)this.getGameRules().get(GameRules.SPAWN_MONSTERS);
+      return (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && (Boolean)this.getGameRules().get(GameRules.SPAWN_MONSTERS);
    }
 
    public void close() throws IOException {

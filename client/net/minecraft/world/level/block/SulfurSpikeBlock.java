@@ -15,4 +15,8 @@ public class SulfurSpikeBlock extends SpeleothemBlock {
    public SulfurSpikeBlock(final BlockState blockToGrowOn, final BlockBehaviour.Properties properties) {
       super(blockToGrowOn, properties);
    }
+
+   protected int getStalactiteLandingSound() {
+      return 1052;
+   }
 }

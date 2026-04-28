@@ -79,8 +79,9 @@ public class Slime extends AbstractCubeMob implements Enemy {
             return false;
          }
 
+         WorldGenLevel worldGenLevel = (WorldGenLevel)level;
          ChunkPos chunkPos = ChunkPos.containing(pos);
-         boolean slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x(), chunkPos.z(), ((WorldGenLevel)level).getSeed(), 987234911L).nextInt(10) == 0;
+         boolean slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x(), chunkPos.z(), worldGenLevel.getSeed(), 987234911L).nextInt(10) == 0;
          if (random.nextInt(10) == 0 && slimeChunk && pos.getY() < 40) {
             return checkMobSpawnRules(type, level, spawnReason, pos, random);
          }

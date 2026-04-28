@@ -267,7 +267,7 @@ public class WorldGenRegion implements WorldGenLevel {
          if ((updateFlags & 16) == 0) {
             BlockPos postProcessPos = blockState.getPostProcessPos(this, pos);
             if (postProcessPos != null) {
-               this.markPosForPostprocessing(postProcessPos);
+               this.markPosForPostProcessing(postProcessPos);
             }
          }
 
@@ -275,8 +275,8 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   private void markPosForPostprocessing(final BlockPos blockPos) {
-      this.getChunk(blockPos).markPosForPostprocessing(blockPos);
+   private void markPosForPostProcessing(final BlockPos blockPos) {
+      this.getChunk(blockPos).markPosForPostProcessing(blockPos);
    }
 
    public boolean addFreshEntity(final Entity entity) {

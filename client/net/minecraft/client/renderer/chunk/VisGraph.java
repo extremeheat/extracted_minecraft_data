@@ -122,45 +122,17 @@ public class VisGraph {
    }
 
    private int getNeighborIndexAtFace(final int index, final Direction direction) {
+      int var10000;
       switch (direction) {
-         case DOWN:
-            if ((index >> 8 & 15) == 0) {
-               return -1;
-            }
-
-            return index - DY;
-         case UP:
-            if ((index >> 8 & 15) == 15) {
-               return -1;
-            }
-
-            return index + DY;
-         case NORTH:
-            if ((index >> 4 & 15) == 0) {
-               return -1;
-            }
-
-            return index - DZ;
-         case SOUTH:
-            if ((index >> 4 & 15) == 15) {
-               return -1;
-            }
-
-            return index + DZ;
-         case WEST:
-            if ((index >> 0 & 15) == 0) {
-               return -1;
-            }
-
-            return index - DX;
-         case EAST:
-            if ((index >> 0 & 15) == 15) {
-               return -1;
-            }
-
-            return index + DX;
-         default:
-            return -1;
+         case DOWN -> var10000 = (index >> 8 & 15) == 0 ? -1 : index - DY;
+         case UP -> var10000 = (index >> 8 & 15) == 15 ? -1 : index + DY;
+         case NORTH -> var10000 = (index >> 4 & 15) == 0 ? -1 : index - DZ;
+         case SOUTH -> var10000 = (index >> 4 & 15) == 15 ? -1 : index + DZ;
+         case WEST -> var10000 = (index >> 0 & 15) == 0 ? -1 : index - DX;
+         case EAST -> var10000 = (index >> 0 & 15) == 15 ? -1 : index + DX;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 }

@@ -2,10 +2,8 @@ package net.minecraft.server.dedicated;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.net.HostAndPort;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
-import io.netty.handler.ssl.SslContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,17 +38,13 @@ import net.minecraft.server.ServerLinks;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.gui.MinecraftServerGui;
-import net.minecraft.server.jsonrpc.JsonRpcNotificationService;
 import net.minecraft.server.jsonrpc.ManagementServer;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
-import net.minecraft.server.jsonrpc.security.AuthenticationHandler;
-import net.minecraft.server.jsonrpc.security.JsonRpcSslContextProvider;
-import net.minecraft.server.jsonrpc.security.SecurityConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.network.ServerTextFilter;
 import net.minecraft.server.network.TextFilter;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.Permission;
@@ -63,7 +57,6 @@ import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
-import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
@@ -95,14 +88,14 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private boolean isTickTimeLoggingEnabled;
    private final ServerLinks serverLinks;
    private final Map<String, String> codeOfConductTexts;
-   private @Nullable ManagementServer jsonRpcServer;
-   private long lastHeartbeat;
+   private final @Nullable ManagementServer jsonRpcServer;
 
-   public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer(), true);
+   public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services, final @Nullable ManagementServer jsonRpcServer, final NotificationManager notificationManager) {
+      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer(), true, notificationManager);
       this.settings = settings;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(settings.getProperties());
+      this.jsonRpcServer = jsonRpcServer;
       this.serverLinks = createServerLinks(settings);
       if (settings.getProperties().codeOfConduct) {
          this.codeOfConductTexts = readCodeOfConducts();
@@ -161,40 +154,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
    }
 
-   private SslContext createSslContext() {
-      try {
-         return JsonRpcSslContextProvider.createFrom(this.getProperties().managementServerTlsKeystore, this.getProperties().managementServerTlsKeystorePassword);
-      } catch (Exception e) {
-         JsonRpcSslContextProvider.printInstructions();
-         throw new IllegalStateException("Failed to configure TLS for the server management protocol", e);
-      }
-   }
-
    protected boolean initServer() throws IOException {
-      int managementPort = this.getProperties().managementServerPort;
-      if (this.getProperties().managementServerEnabled) {
-         String managementServerSecret = this.settings.getProperties().managementServerSecret;
-         if (!SecurityConfig.isValid(managementServerSecret)) {
-            throw new IllegalStateException("Invalid management server secret, must be 40 alphanumeric characters");
-         }
-
-         String managementHost = this.getProperties().managementServerHost;
-         HostAndPort hostAndPort = HostAndPort.fromParts(managementHost, managementPort);
-         SecurityConfig securityConfig = new SecurityConfig(managementServerSecret);
-         String allowedOrigins = this.getProperties().managementServerAllowedOrigins;
-         AuthenticationHandler authenticationHandler = new AuthenticationHandler(securityConfig, allowedOrigins);
-         LOGGER.info("Starting json RPC server on {}", hostAndPort);
-         this.jsonRpcServer = new ManagementServer(hostAndPort, authenticationHandler);
-         MinecraftApi minecraftApi = MinecraftApi.of(this);
-         minecraftApi.notificationManager().registerService(new JsonRpcNotificationService(minecraftApi, this.jsonRpcServer));
-         if (this.getProperties().managementServerTlsEnabled) {
-            SslContext sslContext = this.createSslContext();
-            this.jsonRpcServer.startWithTls(minecraftApi, sslContext);
-         } else {
-            this.jsonRpcServer.startWithoutTls(minecraftApi);
-         }
-      }
-
       Thread consoleThread = new Thread("Server console handler") {
          {
             Objects.requireNonNull(DedicatedServer.this);
@@ -330,16 +290,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       super.tickServer(haveTime);
       if (this.jsonRpcServer != null) {
          this.jsonRpcServer.tick();
-      }
-
-      long millis = Util.getMillis();
-      int heartbeatInterval = this.statusHeartbeatInterval();
-      if (heartbeatInterval > 0) {
-         long intervalMillis = (long)heartbeatInterval * TimeUtil.MILLISECONDS_PER_SECOND;
-         if (millis - this.lastHeartbeat >= intervalMillis) {
-            this.lastHeartbeat = millis;
-            this.notificationManager().statusHeartbeat();
-         }
       }
 
    }
@@ -592,8 +542,13 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return (Integer)this.settings.getProperties().statusHeartbeatInterval.get();
    }
 
-   public void setStatusHeartbeatInterval(final int statusHeartbeatInterval) {
-      this.settings.update((p) -> (DedicatedServerProperties)p.statusHeartbeatInterval.update(this.registryAccess(), statusHeartbeatInterval));
+   public boolean setStatusHeartbeatInterval(final int statusHeartbeatInterval) {
+      if (this.jsonRpcServer != null && this.jsonRpcServer.scheduleHeartbeat(this.notificationManager(), (long)statusHeartbeatInterval)) {
+         this.settings.update((p) -> (DedicatedServerProperties)p.statusHeartbeatInterval.update(this.registryAccess(), statusHeartbeatInterval));
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public String getMotd() {

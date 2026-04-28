@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 public class EntitySelectorOptions {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<String, Option> OPTIONS = Maps.newHashMap();
+   private static final Predicate<EntitySelectorParser> ALWAYS_AVAILABLE = (var0) -> true;
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.unknown", name));
    public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.inapplicable", name));
    public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.distance.negative"));
@@ -77,21 +78,17 @@ public class EntitySelectorOptions {
       if (OPTIONS.isEmpty()) {
          register("name", (parser) -> {
             int start = parser.getReader().getCursor();
-            boolean not = parser.shouldInvertValue();
+            boolean inverted = parser.shouldInvertValue();
             String name = parser.getReader().readString();
-            if (parser.hasNameNotEquals() && !not) {
+            InvertableSetOptionState state = parser.nameOption();
+            if (!state.canParse(inverted)) {
                parser.getReader().setCursor(start);
                throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "name");
             } else {
-               if (not) {
-                  parser.setHasNameNotEquals(true);
-               } else {
-                  parser.setHasNameEquals(true);
-               }
-
-               parser.addPredicate((e) -> e.getPlainTextName().equals(name) != not);
+               state.markParsed(inverted);
+               parser.addPredicate((e) -> e.getPlainTextName().equals(name) != inverted);
             }
-         }, (s) -> !s.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
+         }, (s) -> s.nameOption().canParseAny(), Component.translatable("argument.entity.options.name.description"));
          register("distance", (parser) -> {
             int start = parser.getReader().getCursor();
             MinMaxBounds.Doubles value = MinMaxBounds.Doubles.fromReader(parser.getReader());
@@ -148,9 +145,9 @@ public class EntitySelectorOptions {
                throw ERROR_LIMIT_TOO_SMALL.createWithContext(parser.getReader());
             } else {
                parser.setMaxResults(count);
-               parser.setLimited(true);
+               parser.limitedOption().markParsed();
             }
-         }, (s) -> !s.isCurrentEntity() && !s.isLimited(), Component.translatable("argument.entity.options.limit.description"));
+         }, (s) -> !s.isCurrentEntity() && s.limitedOption().canParse(), Component.translatable("argument.entity.options.limit.description"));
          register("sort", (parser) -> {
             int start = parser.getReader().getCursor();
             String name = parser.getReader().readUnquotedString();
@@ -175,13 +172,14 @@ public class EntitySelectorOptions {
             }
 
             parser.setOrder(var10001);
-            parser.setSorted(true);
-         }, (s) -> !s.isCurrentEntity() && !s.isSorted(), Component.translatable("argument.entity.options.sort.description"));
+            parser.sortedOption().markParsed();
+         }, (s) -> !s.isCurrentEntity() && s.sortedOption().canParse(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", (parser) -> {
+            InvertableSetOptionState state = parser.gamemodeOption();
             parser.setSuggestions((b, m) -> {
                String prefix = b.getRemaining().toLowerCase(Locale.ROOT);
-               boolean addNormal = !parser.hasGamemodeNotEquals();
-               boolean addInverted = true;
+               boolean addNormal = state.canParsePositive();
+               boolean addInverted = state.canParseNegative();
                if (!prefix.isEmpty()) {
                   if (prefix.charAt(0) == '!') {
                      addNormal = false;
@@ -207,7 +205,7 @@ public class EntitySelectorOptions {
             });
             int start = parser.getReader().getCursor();
             boolean inverted = parser.shouldInvertValue();
-            if (parser.hasGamemodeNotEquals() && !inverted) {
+            if (!state.canParse(inverted)) {
                parser.getReader().setCursor(start);
                throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "gamemode");
             } else {
@@ -226,35 +224,36 @@ public class EntitySelectorOptions {
                         return false;
                      }
                   });
-                  if (inverted) {
-                     parser.setHasGamemodeNotEquals(true);
-                  } else {
-                     parser.setHasGamemodeEquals(true);
-                  }
-
+                  state.markParsed(inverted);
                }
             }
-         }, (s) -> !s.hasGamemodeEquals(), Component.translatable("argument.entity.options.gamemode.description"));
+         }, (s) -> s.gamemodeOption().canParseAny(), Component.translatable("argument.entity.options.gamemode.description"));
          register("team", (parser) -> {
+            InvertableSetOptionState state = parser.teamOption();
+            int start = parser.getReader().getCursor();
             boolean inverted = parser.shouldInvertValue();
             String expected = parser.getReader().readUnquotedString();
-            parser.addPredicate((e) -> {
-               Team current = e.getTeam();
-               String currentName = current == null ? "" : current.getName();
-               return currentName.equals(expected) != inverted;
-            });
-            if (inverted) {
-               parser.setHasTeamNotEquals(true);
+            if (!state.canParse(inverted)) {
+               parser.getReader().setCursor(start);
+               throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "team");
             } else {
-               parser.setHasTeamEquals(true);
+               parser.addPredicate((e) -> {
+                  Team current = e.getTeam();
+                  String currentName = current == null ? "" : current.getName();
+                  return currentName.equals(expected) != inverted;
+               });
+               state.markParsed(inverted);
             }
-
-         }, (s) -> !s.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
+         }, (s) -> s.teamOption().canParseAny(), Component.translatable("argument.entity.options.team.description"));
          register("type", (parser) -> {
+            InvertableSetOptionState state = parser.typeOption();
             parser.setSuggestions((b, m) -> {
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location()), b, "!#");
-               if (!parser.isTypeLimitedInversely()) {
+               if (state.canParseNegative()) {
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location()), b, "!#");
+               }
+
+               if (state.canParseNegative()) {
                   SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b);
                   SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location()), b, String.valueOf('#'));
                }
@@ -263,14 +262,10 @@ public class EntitySelectorOptions {
             });
             int start = parser.getReader().getCursor();
             boolean inverted = parser.shouldInvertValue();
-            if (parser.isTypeLimitedInversely() && !inverted) {
+            if (!state.canParse(inverted)) {
                parser.getReader().setCursor(start);
                throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "type");
             } else {
-               if (inverted) {
-                  parser.setTypeLimitedInversely();
-               }
-
                if (parser.isTag()) {
                   TagKey<EntityType<?>> id = TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.read(parser.getReader()));
                   parser.addPredicate((e) -> e.is(id) != inverted);
@@ -290,8 +285,9 @@ public class EntitySelectorOptions {
                   }
                }
 
+               state.markParsed(inverted);
             }
-         }, (s) -> !s.isTypeLimited(), Component.translatable("argument.entity.options.type.description"));
+         }, (s) -> s.typeOption().canParseAny(), Component.translatable("argument.entity.options.type.description"));
          register("tag", (parser) -> {
             boolean inverted = parser.shouldInvertValue();
             String tag = parser.getReader().readUnquotedString();
@@ -302,7 +298,7 @@ public class EntitySelectorOptions {
                   return e.entityTags().contains(tag) != inverted;
                }
             });
-         }, (s) -> true, Component.translatable("argument.entity.options.tag.description"));
+         }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.tag.description"));
          register("nbt", (parser) -> {
             boolean inverted = parser.shouldInvertValue();
             CompoundTag tag = TagParser.parseCompoundAsArgument(parser.getReader());
@@ -320,7 +316,7 @@ public class EntitySelectorOptions {
                   return NbtUtils.compareNbt(tag, output.buildResult(), true) != inverted;
                }
             });
-         }, (s) -> true, Component.translatable("argument.entity.options.nbt.description"));
+         }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.nbt.description"));
          register("scores", (parser) -> {
             StringReader reader = parser.getReader();
             Map<String, MinMaxBounds.Ints> expected = Maps.newHashMap();
@@ -366,8 +362,8 @@ public class EntitySelectorOptions {
                });
             }
 
-            parser.setHasScores(true);
-         }, (s) -> !s.hasScores(), Component.translatable("argument.entity.options.scores.description"));
+            parser.scoresOption().markParsed();
+         }, (s) -> s.scoresOption().canParse(), Component.translatable("argument.entity.options.scores.description"));
          register("advancements", (parser) -> {
             StringReader reader = parser.getReader();
             Map<Identifier, Predicate<AdvancementProgress>> expected = Maps.newHashMap();
@@ -446,8 +442,8 @@ public class EntitySelectorOptions {
                parser.setIncludesEntities(false);
             }
 
-            parser.setHasAdvancements(true);
-         }, (s) -> !s.hasAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
+            parser.advancementsOption().markParsed();
+         }, (s) -> s.advancementsOption().canParse(), Component.translatable("argument.entity.options.advancements.description"));
          register("predicate", (parser) -> {
             boolean inverted = parser.shouldInvertValue();
             ResourceKey<LootItemCondition> id = ResourceKey.create(Registries.PREDICATE, Identifier.read(parser.getReader()));
@@ -467,7 +463,7 @@ public class EntitySelectorOptions {
                   return false;
                }
             });
-         }, (s) -> true, Component.translatable("argument.entity.options.predicate.description"));
+         }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.predicate.description"));
       }
    }
 

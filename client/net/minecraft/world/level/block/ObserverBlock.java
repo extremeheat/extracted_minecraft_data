@@ -81,12 +81,16 @@ public class ObserverBlock extends DirectionalBlock {
       return true;
    }
 
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Boolean)state.getValue(POWERED) ? 15 : 0;
+   }
+
    protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return state.getSignal(level, pos, direction);
    }
 
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Boolean)state.getValue(POWERED) && state.getValue(FACING) == direction ? 15 : 0;
+      return state.getValue(FACING) == direction ? this.ownSignal(state, level, pos) : 0;
    }
 
    protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {

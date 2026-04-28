@@ -6,7 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.MultifaceGrowthConfiguration;
 
@@ -23,49 +25,55 @@ public class MultifaceGrowthFeature extends Feature<MultifaceGrowthConfiguration
       if (!isAirOrWater(level.getBlockState(origin))) {
          return false;
       } else {
-         List<Direction> searchDirections = config.getShuffledDirections(random);
-         if (placeGrowthIfPossible(level, origin, level.getBlockState(origin), config, random, searchDirections)) {
-            return true;
+         Block var7 = config.placeBlock;
+         if (!(var7 instanceof MultifaceSpreadeableBlock)) {
+            return false;
          } else {
-            BlockPos.MutableBlockPos pos = origin.mutable();
+            MultifaceSpreadeableBlock placerBlock = (MultifaceSpreadeableBlock)var7;
+            List var14 = config.getShuffledDirections(random);
+            if (placeGrowthIfPossible(placerBlock, level, origin, level.getBlockState(origin), config, random, var14)) {
+               return true;
+            } else {
+               BlockPos.MutableBlockPos pos = origin.mutable();
 
-            for(Direction searchDirection : searchDirections) {
-               pos.set(origin);
-               List<Direction> placementDirections = config.getShuffledDirectionsExcept(random, searchDirection.getOpposite());
+               for(Direction searchDirection : var14) {
+                  pos.set(origin);
+                  List<Direction> placementDirections = config.getShuffledDirectionsExcept(random, searchDirection.getOpposite());
 
-               for(int i = 0; i < config.searchRange; ++i) {
-                  pos.setWithOffset(origin, (Direction)searchDirection);
-                  BlockState state = level.getBlockState(pos);
-                  if (!isAirOrWater(state) && !state.is(config.placeBlock)) {
-                     break;
-                  }
+                  for(int i = 0; i < config.searchRange; ++i) {
+                     pos.setWithOffset(origin, (Direction)searchDirection);
+                     BlockState state = level.getBlockState(pos);
+                     if (!isAirOrWater(state) && !state.is(config.placeBlock)) {
+                        break;
+                     }
 
-                  if (placeGrowthIfPossible(level, pos, state, config, random, placementDirections)) {
-                     return true;
+                     if (placeGrowthIfPossible(placerBlock, level, pos, state, config, random, placementDirections)) {
+                        return true;
+                     }
                   }
                }
-            }
 
-            return false;
+               return false;
+            }
          }
       }
    }
 
-   public static boolean placeGrowthIfPossible(final WorldGenLevel level, final BlockPos pos, final BlockState oldState, final MultifaceGrowthConfiguration config, final RandomSource random, final List<Direction> placementDirections) {
+   public static boolean placeGrowthIfPossible(final MultifaceSpreadeableBlock placerBlock, final WorldGenLevel level, final BlockPos pos, final BlockState oldState, final MultifaceGrowthConfiguration config, final RandomSource random, final List<Direction> placementDirections) {
       BlockPos.MutableBlockPos mutable = pos.mutable();
 
       for(Direction placementDirection : placementDirections) {
          BlockState neighbourState = level.getBlockState(mutable.setWithOffset(pos, (Direction)placementDirection));
          if (neighbourState.is(config.canBePlacedOn)) {
-            BlockState newState = config.placeBlock.getStateForPlacement(oldState, level, pos, placementDirection);
+            BlockState newState = placerBlock.getStateForPlacement(oldState, level, pos, placementDirection);
             if (newState == null) {
                return false;
             }
 
             level.setBlock(pos, newState, 3);
-            level.getChunk(pos).markPosForPostprocessing(pos);
+            level.getChunk(pos).markPosForPostProcessing(pos);
             if (random.nextFloat() < config.chanceOfSpreading) {
-               config.placeBlock.getSpreader().spreadFromFaceTowardRandomDirection(newState, level, pos, placementDirection, random, true);
+               placerBlock.getSpreader().spreadFromFaceTowardRandomDirection(newState, level, pos, placementDirection, random, true);
             }
 
             return true;

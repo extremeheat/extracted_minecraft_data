@@ -25,24 +25,36 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
       poseStack.pushPose();
       poseStack.translate(0.0F, 0.5F, 0.0F);
       float fuse = state.fuseRemainingInTicks;
-      if (state.fuseRemainingInTicks < 10.0F) {
-         float g = 1.0F - state.fuseRemainingInTicks / 10.0F;
-         g = Mth.clamp(g, 0.0F, 1.0F);
-         g *= g;
-         g *= g;
-         float s = 1.0F + g * 0.3F;
-         poseStack.scale(s, s, s);
+      if (fuse < 10.0F) {
+         float scale = 1.0F + getSwellAmount(fuse);
+         poseStack.scale(scale, scale, scale);
       }
 
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
       poseStack.translate(-0.5F, -0.5F, 0.5F);
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
       if (!state.blockState.isEmpty()) {
-         TntMinecartRenderer.submitWhiteSolidBlock(state.blockState, poseStack, submitNodeCollector, state.lightCoords, (int)fuse / 5 % 2 == 0, state.outlineColor);
+         TntMinecartRenderer.submitWhiteSolidBlock(state.blockState, poseStack, submitNodeCollector, state.lightCoords, isLit(fuse), state.outlineColor);
       }
 
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
+   }
+
+   public static float getSwellAmount(final float fuse) {
+      float g = 1.0F - fuse / 10.0F;
+      g = Mth.clamp(g, 0.0F, 1.0F);
+      g *= g;
+      g *= g;
+      return g * 0.3F;
+   }
+
+   public static boolean isLit(final float fuse) {
+      if (fuse < 0.0F) {
+         return false;
+      } else {
+         return (int)(fuse / 5.0F) % 2 == 0;
+      }
    }
 
    public TntRenderState createRenderState() {

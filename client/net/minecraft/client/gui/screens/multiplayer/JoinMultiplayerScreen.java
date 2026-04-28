@@ -81,8 +81,8 @@ public class JoinMultiplayerScreen extends Screen {
       }).width(100).build());
       this.editButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.edit"), (button) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
-         if (entry instanceof ServerSelectionList.OnlineServerEntry) {
-            ServerData current = ((ServerSelectionList.OnlineServerEntry)entry).getServerData();
+         if (entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
+            ServerData current = onlineServerEntry.getServerData();
             this.editingServer = new ServerData(current.name, current.ip, ServerData.Type.OTHER);
             this.editingServer.copyFrom(current);
             this.minecraft.gui.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.edit.title"), this::editServerCallback, this.editingServer));
@@ -91,8 +91,8 @@ public class JoinMultiplayerScreen extends Screen {
       }).width(74).build());
       this.deleteButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.delete"), (button) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
-         if (entry instanceof ServerSelectionList.OnlineServerEntry) {
-            String serverName = ((ServerSelectionList.OnlineServerEntry)entry).getServerData().name;
+         if (entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
+            String serverName = onlineServerEntry.getServerData().name;
             if (serverName != null) {
                Component title = Component.translatable("selectServer.deleteQuestion");
                Component warning = Component.translatable("selectServer.deleteWarning", serverName);
@@ -148,8 +148,8 @@ public class JoinMultiplayerScreen extends Screen {
 
    private void deleteCallback(final boolean result) {
       ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
-      if (result && entry instanceof ServerSelectionList.OnlineServerEntry) {
-         this.servers.remove(((ServerSelectionList.OnlineServerEntry)entry).getServerData());
+      if (result && entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
+         this.servers.remove(onlineServerEntry.getServerData());
          this.servers.save();
          this.serverSelectionList.setSelected((ServerSelectionList.Entry)null);
          this.serverSelectionList.updateOnlineServers(this.servers);
@@ -160,8 +160,8 @@ public class JoinMultiplayerScreen extends Screen {
 
    private void editServerCallback(final boolean result) {
       ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
-      if (result && entry instanceof ServerSelectionList.OnlineServerEntry) {
-         ServerData current = ((ServerSelectionList.OnlineServerEntry)entry).getServerData();
+      if (result && entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
+         ServerData current = onlineServerEntry.getServerData();
          current.name = this.editingServer.name;
          current.ip = this.editingServer.ip;
          current.copyFrom(this.editingServer);

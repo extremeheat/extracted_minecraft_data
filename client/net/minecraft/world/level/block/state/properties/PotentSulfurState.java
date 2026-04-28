@@ -1,0 +1,29 @@
+package net.minecraft.world.level.block.state.properties;
+
+import net.minecraft.util.StringRepresentable;
+
+public enum PotentSulfurState implements StringRepresentable {
+   DRY("dry"),
+   WET("wet"),
+   DORMANT("dormant"),
+   ERUPTING("erupting");
+
+   private final String name;
+
+   private PotentSulfurState(final String name) {
+      this.name = name;
+   }
+
+   public String toString() {
+      return this.name;
+   }
+
+   public String getSerializedName() {
+      return this.name;
+   }
+
+   // $FF: synthetic method
+   private static PotentSulfurState[] $values() {
+      return new PotentSulfurState[]{DRY, WET, DORMANT, ERUPTING};
+   }
+}

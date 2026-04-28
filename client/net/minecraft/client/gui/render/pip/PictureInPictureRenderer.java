@@ -29,6 +29,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    private @Nullable GpuTextureView depthTextureView;
    private final Projection projection = new Projection();
    private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName());
+   private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
 
    public PictureInPictureRenderer() {
       super();
@@ -48,9 +49,8 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          poseStack.translate((float)width / 2.0F, this.getTranslateY(height, guiScale), 0.0F);
          float scale = (float)guiScale * renderState.scale();
          poseStack.scale(scale, scale, -scale);
-         SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
-         this.renderToTexture(renderState, poseStack, submitNodeStorage);
-         featureRenderDispatcher.renderAllFeatures();
+         this.renderToTexture(renderState, poseStack, this.submitNodeStorage);
+         featureRenderDispatcher.renderAllFeatures(this.submitNodeStorage);
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
          this.blitTexture(renderState, guiRenderState);

@@ -320,7 +320,8 @@ public class StructureTemplate {
                         BlockState state = level.getBlockState(pos);
                         Block block = state.getBlock();
                         if (block instanceof LiquidBlockContainer) {
-                           ((LiquidBlockContainer)block).placeLiquid(level, pos, state, toPlace);
+                           LiquidBlockContainer liquidBlockContainer = (LiquidBlockContainer)block;
+                           liquidBlockContainer.placeLiquid(level, pos, state, toPlace);
                            filled = true;
                            iterator.remove();
                         }
@@ -464,13 +465,17 @@ public class StructureTemplate {
    }
 
    public Vec3i getSize(final Rotation rotation) {
+      Vec3i var10000;
       switch (rotation) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            return new Vec3i(this.size.getZ(), this.size.getY(), this.size.getX());
+            var10000 = new Vec3i(this.size.getZ(), this.size.getY(), this.size.getX());
+            break;
          default:
-            return this.size;
+            var10000 = this.size;
       }
+
+      return var10000;
    }
 
    public static BlockPos transform(final BlockPos pos, final Mirror mirror, final Rotation rotation, final BlockPos pivot) {
@@ -486,20 +491,15 @@ public class StructureTemplate {
 
       int pivotX = pivot.getX();
       int pivotZ = pivot.getZ();
+      BlockPos var10000;
       switch (rotation) {
-         case COUNTERCLOCKWISE_90 -> {
-            return new BlockPos(pivotX - pivotZ + z, y, pivotX + pivotZ - x);
-         }
-         case CLOCKWISE_90 -> {
-            return new BlockPos(pivotX + pivotZ - z, y, pivotZ - pivotX + x);
-         }
-         case CLOCKWISE_180 -> {
-            return new BlockPos(pivotX + pivotX - x, y, pivotZ + pivotZ - z);
-         }
-         default -> {
-            return wasMirrored ? new BlockPos(x, y, z) : pos;
-         }
+         case COUNTERCLOCKWISE_90 -> var10000 = new BlockPos(pivotX - pivotZ + z, y, pivotX + pivotZ - x);
+         case CLOCKWISE_90 -> var10000 = new BlockPos(pivotX + pivotZ - z, y, pivotZ - pivotX + x);
+         case CLOCKWISE_180 -> var10000 = new BlockPos(pivotX + pivotX - x, y, pivotZ + pivotZ - z);
+         default -> var10000 = wasMirrored ? new BlockPos(x, y, z) : pos;
       }
+
+      return var10000;
    }
 
    public static Vec3 transform(final Vec3 pos, final Mirror mirror, final Rotation rotation, final BlockPos pivot) {
@@ -515,20 +515,15 @@ public class StructureTemplate {
 
       int pivotX = pivot.getX();
       int pivotZ = pivot.getZ();
+      Vec3 var10000;
       switch (rotation) {
-         case COUNTERCLOCKWISE_90 -> {
-            return new Vec3((double)(pivotX - pivotZ) + z, y, (double)(pivotX + pivotZ + 1) - x);
-         }
-         case CLOCKWISE_90 -> {
-            return new Vec3((double)(pivotX + pivotZ + 1) - z, y, (double)(pivotZ - pivotX) + x);
-         }
-         case CLOCKWISE_180 -> {
-            return new Vec3((double)(pivotX + pivotX + 1) - x, y, (double)(pivotZ + pivotZ + 1) - z);
-         }
-         default -> {
-            return wasMirrored ? new Vec3(x, y, z) : pos;
-         }
+         case COUNTERCLOCKWISE_90 -> var10000 = new Vec3((double)(pivotX - pivotZ) + z, y, (double)(pivotX + pivotZ + 1) - x);
+         case CLOCKWISE_90 -> var10000 = new Vec3((double)(pivotX + pivotZ + 1) - z, y, (double)(pivotZ - pivotX) + x);
+         case CLOCKWISE_180 -> var10000 = new Vec3((double)(pivotX + pivotX + 1) - x, y, (double)(pivotZ + pivotZ + 1) - z);
+         default -> var10000 = wasMirrored ? new Vec3(x, y, z) : pos;
       }
+
+      return var10000;
    }
 
    public BlockPos getZeroPositionWithTransform(final BlockPos zeroPos, final Mirror mirror, final Rotation rotation) {
@@ -540,14 +535,16 @@ public class StructureTemplate {
       --sizeZ;
       int mirrorDeltaX = mirror == Mirror.FRONT_BACK ? sizeX : 0;
       int mirrorDeltaZ = mirror == Mirror.LEFT_RIGHT ? sizeZ : 0;
-      BlockPos targetPos = zeroPos;
+      BlockPos var10000;
       switch (rotation) {
-         case COUNTERCLOCKWISE_90 -> targetPos = zeroPos.offset(mirrorDeltaZ, 0, sizeX - mirrorDeltaX);
-         case CLOCKWISE_90 -> targetPos = zeroPos.offset(sizeZ - mirrorDeltaZ, 0, mirrorDeltaX);
-         case CLOCKWISE_180 -> targetPos = zeroPos.offset(sizeX - mirrorDeltaX, 0, sizeZ - mirrorDeltaZ);
-         case NONE -> targetPos = zeroPos.offset(mirrorDeltaX, 0, mirrorDeltaZ);
+         case COUNTERCLOCKWISE_90 -> var10000 = zeroPos.offset(mirrorDeltaZ, 0, sizeX - mirrorDeltaX);
+         case CLOCKWISE_90 -> var10000 = zeroPos.offset(sizeZ - mirrorDeltaZ, 0, mirrorDeltaX);
+         case CLOCKWISE_180 -> var10000 = zeroPos.offset(sizeX - mirrorDeltaX, 0, sizeZ - mirrorDeltaZ);
+         case NONE -> var10000 = zeroPos.offset(mirrorDeltaX, 0, mirrorDeltaZ);
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
+      BlockPos targetPos = var10000;
       return targetPos;
    }
 

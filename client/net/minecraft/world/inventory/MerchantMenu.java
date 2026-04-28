@@ -147,7 +147,18 @@ public class MerchantMenu extends AbstractContainerMenu {
       super.removed(player);
       this.trader.setTradingPlayer((Player)null);
       if (!this.trader.isClientSide()) {
-         if (!player.isAlive() || player instanceof ServerPlayer && ((ServerPlayer)player).hasDisconnected()) {
+         label39: {
+            if (player.isAlive()) {
+               if (!(player instanceof ServerPlayer)) {
+                  break label39;
+               }
+
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               if (!serverPlayer.hasDisconnected()) {
+                  break label39;
+               }
+            }
+
             ItemStack itemStack = this.tradeContainer.removeItemNoUpdate(0);
             if (!itemStack.isEmpty()) {
                player.drop(itemStack, false);
@@ -157,7 +168,11 @@ public class MerchantMenu extends AbstractContainerMenu {
             if (!itemStack.isEmpty()) {
                player.drop(itemStack, false);
             }
-         } else if (player instanceof ServerPlayer) {
+
+            return;
+         }
+
+         if (player instanceof ServerPlayer) {
             player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(0));
             player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(1));
          }

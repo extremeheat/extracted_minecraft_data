@@ -842,7 +842,16 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          ChunkPos pos = ChunkPos.unpack(posKey);
          ChunkHolder holder = (ChunkHolder)entry.getValue();
          Optional<ChunkAccess> chunk = Optional.ofNullable(holder.getLatestChunk());
-         Optional<LevelChunk> fullChunk = chunk.flatMap((chunkAccess) -> chunkAccess instanceof LevelChunk ? Optional.of((LevelChunk)chunkAccess) : Optional.empty());
+         Optional<LevelChunk> fullChunk = chunk.flatMap((chunkAccess) -> {
+            Optional var10000;
+            if (chunkAccess instanceof LevelChunk levelChunk) {
+               var10000 = Optional.of(levelChunk);
+            } else {
+               var10000 = Optional.empty();
+            }
+
+            return var10000;
+         });
          csvOutput.writeRow(pos.x(), pos.z(), holder.getTicketLevel(), chunk.isPresent(), chunk.map(ChunkAccess::getPersistedStatus).orElse((Object)null), fullChunk.map(LevelChunk::getFullStatus).orElse((Object)null), printFuture(holder.getFullChunkFuture()), printFuture(holder.getTickingChunkFuture()), printFuture(holder.getEntityTickingChunkFuture()), this.ticketStorage.getTicketDebugString(posKey, false), this.anyPlayerCloseEnoughForSpawning(pos), fullChunk.map((c) -> c.getBlockEntities().size()).orElse(0), this.ticketStorage.getTicketDebugString(posKey, true), this.distanceManager.getChunkLevel(posKey, true), fullChunk.map((levelChunk) -> levelChunk.getBlockTicks().count()).orElse(0), fullChunk.map((levelChunk) -> levelChunk.getFluidTicks().count()).orElse(0));
       }
 
@@ -1162,7 +1171,8 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
             trackedEntity.updatePlayers(players);
             Entity entity = trackedEntity.entity;
             if (entity instanceof ServerPlayer) {
-               movedPlayers.add((ServerPlayer)entity);
+               ServerPlayer serverPlayer = (ServerPlayer)entity;
+               movedPlayers.add(serverPlayer);
             }
 
             trackedEntity.lastSectionPos = newPos;
@@ -1328,8 +1338,8 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       }
 
       public boolean equals(final Object obj) {
-         if (obj instanceof TrackedEntity) {
-            return ((TrackedEntity)obj).entity.getId() == this.entity.getId();
+         if (obj instanceof TrackedEntity trackedEntity) {
+            return trackedEntity.entity.getId() == this.entity.getId();
          } else {
             return false;
          }

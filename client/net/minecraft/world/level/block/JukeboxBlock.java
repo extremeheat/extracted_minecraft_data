@@ -85,9 +85,9 @@ public class JukeboxBlock extends BaseEntityBlock {
       return true;
    }
 
-   public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      BlockEntity var6 = level.getBlockEntity(pos);
-      if (var6 instanceof JukeboxBlockEntity jukebox) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      BlockEntity var5 = level.getBlockEntity(pos);
+      if (var5 instanceof JukeboxBlockEntity jukebox) {
          if (jukebox.getSongPlayer().isPlaying()) {
             return 15;
          }

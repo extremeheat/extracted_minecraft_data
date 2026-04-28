@@ -43,7 +43,7 @@ public interface OutgoingRpcMethod<Params, Result> {
       return new OutgoingRpcMethodBuilder<Params, Result>(Method::new);
    }
 
-   public static record Attributes(boolean discoverable) {
+   public static record Attributes(boolean discoverable, boolean allowPreServerInit) {
       public Attributes {
          super();
       }
@@ -106,11 +106,12 @@ public interface OutgoingRpcMethod<Params, Result> {
    }
 
    public static class OutgoingRpcMethodBuilder<Params, Result> {
-      public static final Attributes DEFAULT_ATTRIBUTES = new Attributes(true);
+      public static final Attributes DEFAULT_ATTRIBUTES = new Attributes(true, false);
       private final Factory<Params, Result> method;
       private String description = "";
       private @Nullable ParamInfo<Params> paramInfo;
       private @Nullable ResultInfo<Result> resultInfo;
+      private boolean allowPreServerInit = false;
 
       public OutgoingRpcMethodBuilder(final Factory<Params, Result> method) {
          super();
@@ -132,9 +133,21 @@ public interface OutgoingRpcMethod<Params, Result> {
          return this;
       }
 
+      public OutgoingRpcMethodBuilder<Params, Result> allowPreServerInit() {
+         this.allowPreServerInit = true;
+         return this;
+      }
+
       private OutgoingRpcMethod<Params, Result> build() {
          MethodInfo<Params, Result> methodInfo = new MethodInfo<Params, Result>(this.description, this.paramInfo, this.resultInfo);
-         return this.method.create(methodInfo, DEFAULT_ATTRIBUTES);
+         Attributes attributes;
+         if (this.allowPreServerInit) {
+            attributes = new Attributes(DEFAULT_ATTRIBUTES.discoverable(), true);
+         } else {
+            attributes = DEFAULT_ATTRIBUTES;
+         }
+
+         return this.method.create(methodInfo, attributes);
       }
 
       public Holder.Reference<OutgoingRpcMethod<Params, Result>> register(final String key) {

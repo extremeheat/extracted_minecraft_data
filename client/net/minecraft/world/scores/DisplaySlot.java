@@ -1,10 +1,8 @@
 package net.minecraft.world.scores;
 
 import java.util.function.IntFunction;
-import net.minecraft.ChatFormatting;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import org.jspecify.annotations.Nullable;
 
 public enum DisplaySlot implements StringRepresentable {
    LIST(0, "list"),
@@ -43,72 +41,6 @@ public enum DisplaySlot implements StringRepresentable {
 
    public String getSerializedName() {
       return this.name;
-   }
-
-   public static @Nullable DisplaySlot teamColorToSlot(final ChatFormatting color) {
-      DisplaySlot var10000;
-      switch (color) {
-         case BLACK:
-            var10000 = TEAM_BLACK;
-            break;
-         case DARK_BLUE:
-            var10000 = TEAM_DARK_BLUE;
-            break;
-         case DARK_GREEN:
-            var10000 = TEAM_DARK_GREEN;
-            break;
-         case DARK_AQUA:
-            var10000 = TEAM_DARK_AQUA;
-            break;
-         case DARK_RED:
-            var10000 = TEAM_DARK_RED;
-            break;
-         case DARK_PURPLE:
-            var10000 = TEAM_DARK_PURPLE;
-            break;
-         case GOLD:
-            var10000 = TEAM_GOLD;
-            break;
-         case GRAY:
-            var10000 = TEAM_GRAY;
-            break;
-         case DARK_GRAY:
-            var10000 = TEAM_DARK_GRAY;
-            break;
-         case BLUE:
-            var10000 = TEAM_BLUE;
-            break;
-         case GREEN:
-            var10000 = TEAM_GREEN;
-            break;
-         case AQUA:
-            var10000 = TEAM_AQUA;
-            break;
-         case RED:
-            var10000 = TEAM_RED;
-            break;
-         case LIGHT_PURPLE:
-            var10000 = TEAM_LIGHT_PURPLE;
-            break;
-         case YELLOW:
-            var10000 = TEAM_YELLOW;
-            break;
-         case WHITE:
-            var10000 = TEAM_WHITE;
-            break;
-         case BOLD:
-         case ITALIC:
-         case UNDERLINE:
-         case RESET:
-         case OBFUSCATED:
-         case STRIKETHROUGH:
-            var10000 = null;
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
    }
 
    // $FF: synthetic method

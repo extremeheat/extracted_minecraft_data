@@ -2,15 +2,18 @@ package net.minecraft.server.notifications;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserBanListEntry;
 import net.minecraft.world.level.gamerules.GameRule;
+import org.jspecify.annotations.Nullable;
 
 public class NotificationManager implements NotificationService {
    private final List<NotificationService> notificationServices = Lists.newArrayList();
+   private @Nullable DedicatedServer server;
 
    public NotificationManager() {
       super();
@@ -18,6 +21,18 @@ public class NotificationManager implements NotificationService {
 
    public void registerService(final NotificationService notificationService) {
       this.notificationServices.add(notificationService);
+   }
+
+   public void setServer(final DedicatedServer server) {
+      if (this.server != null) {
+         throw new IllegalStateException("Server already set");
+      } else {
+         this.server = server;
+      }
+   }
+
+   public @Nullable DedicatedServer server() {
+      return this.server;
    }
 
    public void playerJoined(final ServerPlayer player) {

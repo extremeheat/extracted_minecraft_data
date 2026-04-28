@@ -30,6 +30,7 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -96,7 +97,7 @@ public class EnderDragonFight extends SavedData {
    private @Nullable DragonRespawnStage respawnStage;
    private int respawnTime;
    private List<EntityReference<EndCrystal>> respawnCrystals;
-   public static final Codec<EnderDragonFight> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("needs_state_scanning").orElse(true).forGetter((fight) -> fight.needsStateScanning), Codec.BOOL.fieldOf("dragon_killed").orElse(false).forGetter((fight) -> fight.dragonKilled), Codec.BOOL.fieldOf("previously_killed").orElse(false).forGetter((fight) -> fight.hasPreviouslyKilledDragon), DragonRespawnStage.CODEC.optionalFieldOf("respawn_stage").forGetter((fight) -> Optional.ofNullable(fight.respawnStage)), Codec.INT.fieldOf("respawn_time").orElse(0).forGetter((fight) -> fight.respawnTime), UUIDUtil.CODEC.lenientOptionalFieldOf("dragon_uuid").forGetter((fight) -> Optional.ofNullable(fight.dragonUUID)), BlockPos.CODEC.lenientOptionalFieldOf("exit_portal_location").forGetter((fight) -> Optional.ofNullable(fight.exitPortalLocation)), Codec.list(Codec.INT).lenientOptionalFieldOf("gateways", new ArrayList()).forGetter((fight) -> fight.gateways), Codec.list(EntityReference.codec()).optionalFieldOf("respawn_crystals", List.of()).forGetter((fight) -> fight.respawnCrystals)).apply(i, EnderDragonFight::new));
+   public static final Codec<EnderDragonFight> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "needs_state_scanning", true).forGetter((fight) -> fight.needsStateScanning), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "dragon_killed", false).forGetter((fight) -> fight.dragonKilled), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "previously_killed", false).forGetter((fight) -> fight.hasPreviouslyKilledDragon), DragonRespawnStage.CODEC.optionalFieldOf("respawn_stage").forGetter((fight) -> Optional.ofNullable(fight.respawnStage)), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.INT, "respawn_time", 0).forGetter((fight) -> fight.respawnTime), UUIDUtil.CODEC.lenientOptionalFieldOf("dragon_uuid").forGetter((fight) -> Optional.ofNullable(fight.dragonUUID)), BlockPos.CODEC.lenientOptionalFieldOf("exit_portal_location").forGetter((fight) -> Optional.ofNullable(fight.exitPortalLocation)), Codec.list(Codec.INT).lenientOptionalFieldOf("gateways", new ArrayList()).forGetter((fight) -> fight.gateways), Codec.list(EntityReference.codec()).optionalFieldOf("respawn_crystals", List.of()).forGetter((fight) -> fight.respawnCrystals)).apply(i, EnderDragonFight::new));
    public static final SavedDataType<EnderDragonFight> TYPE;
 
    public static EnderDragonFight createDefault() {
@@ -330,7 +331,8 @@ public class EnderDragonFight extends SavedData {
                   return false;
                }
 
-               FullChunkStatus status = ((LevelChunk)chunk).getFullStatus();
+               LevelChunk levelChunk = (LevelChunk)chunk;
+               FullChunkStatus status = levelChunk.getFullStatus();
                if (!status.isOrAfter(FullChunkStatus.BLOCK_TICKING)) {
                   return false;
                }

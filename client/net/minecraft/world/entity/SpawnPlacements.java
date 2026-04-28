@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.AgeableWaterCreature;
 import net.minecraft.world.entity.animal.Animal;
@@ -75,8 +76,12 @@ public class SpawnPlacements {
    }
 
    public static <T extends Entity> boolean checkSpawnRules(final EntityType<T> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
-      Data data = (Data)DATA_BY_TYPE.get(type);
-      return data == null || data.predicate.test(type, level, spawnReason, pos, random);
+      if (!type.isAllowedInPeaceful() && level.getDifficulty() == Difficulty.PEACEFUL) {
+         return false;
+      } else {
+         Data data = (Data)DATA_BY_TYPE.get(type);
+         return data == null || data.predicate.test(type, level, spawnReason, pos, random);
+      }
    }
 
    static {

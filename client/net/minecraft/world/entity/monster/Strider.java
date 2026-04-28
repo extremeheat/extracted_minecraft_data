@@ -24,6 +24,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -81,6 +83,7 @@ public class Strider extends Animal implements ItemSteerable {
    private static final float STEERING_MODIFIER = 0.55F;
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
    private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private final ItemBasedSteering steering;
    private @Nullable TemptGoal temptGoal;
 
@@ -166,6 +169,10 @@ public class Strider extends Animal implements ItemSteerable {
 
    public boolean canStandOnFluid(final FluidState fluid) {
       return fluid.is(FluidTags.LAVA);
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
@@ -441,6 +448,7 @@ public class Strider extends Animal implements ItemSteerable {
       SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_ID, -0.3400000035762787, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Strider.class, EntityDataSerializers.INT);
       DATA_SUFFOCATING = SynchedEntityData.<Boolean>defineId(Strider.class, EntityDataSerializers.BOOLEAN);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.85F).withEyeHeight(0.4375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.65625F, 0.0F));
    }
 
    private static class StriderPathNavigation extends GroundPathNavigation {

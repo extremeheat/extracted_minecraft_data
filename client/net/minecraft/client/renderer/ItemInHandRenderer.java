@@ -317,7 +317,7 @@ public class ItemInHandRenderer {
       poseStack.translate((float)invert * 0.56F, -0.52F + inverseArmHeight * -0.6F, -0.72F);
    }
 
-   public void renderHandsWithItems(final float frameInterp, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LocalPlayer player, final int lightCoords) {
+   public void submitHandsWithItems(final float frameInterp, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LocalPlayer player, final int lightCoords) {
       this.synchronizeVisibleHandItems(player.getMainHandItem(), player.getOffhandItem());
       float attackValue = player.getAttackAnim(frameInterp);
       InteractionHand attackHand = (InteractionHand)MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND);
@@ -330,16 +330,15 @@ public class ItemInHandRenderer {
       if (handRenderSelection.renderMainHand) {
          float mainHandAttack = attackHand == InteractionHand.MAIN_HAND ? attackValue : 0.0F;
          float mainhandInverseArmHeight = this.itemModelResolver.swapAnimationScale(this.mainHandItem) * (1.0F - Mth.lerp(frameInterp, this.oMainHandHeight, this.mainHandHeight));
-         this.renderArmWithItem(player, frameInterp, xRot, InteractionHand.MAIN_HAND, mainHandAttack, this.mainHandItem, mainhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
+         this.submitArmWithItem(player, frameInterp, xRot, InteractionHand.MAIN_HAND, mainHandAttack, this.mainHandItem, mainhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
       }
 
       if (handRenderSelection.renderOffHand) {
          float offHandAttack = attackHand == InteractionHand.OFF_HAND ? attackValue : 0.0F;
          float offhandInverseArmHeight = this.itemModelResolver.swapAnimationScale(this.offHandItem) * (1.0F - Mth.lerp(frameInterp, this.oOffHandHeight, this.offHandHeight));
-         this.renderArmWithItem(player, frameInterp, xRot, InteractionHand.OFF_HAND, offHandAttack, this.offHandItem, offhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
+         this.submitArmWithItem(player, frameInterp, xRot, InteractionHand.OFF_HAND, offHandAttack, this.offHandItem, offhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
       }
 
-      this.minecraft.gameRenderer.featureRenderDispatcher().renderAllFeatures();
    }
 
    @VisibleForTesting
@@ -371,7 +370,7 @@ public class ItemInHandRenderer {
       return item.is(Items.CROSSBOW) && CrossbowItem.isCharged(item);
    }
 
-   private void renderArmWithItem(final AbstractClientPlayer player, final float frameInterp, final float xRot, final InteractionHand hand, final float attack, final ItemStack itemStack, final float inverseArmHeight, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+   private void submitArmWithItem(final AbstractClientPlayer player, final float frameInterp, final float xRot, final InteractionHand hand, final float attack, final ItemStack itemStack, final float inverseArmHeight, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
       if (!player.isScoping()) {
          boolean isMainHand = hand == InteractionHand.MAIN_HAND;
          HumanoidArm arm = isMainHand ? player.getMainArm() : player.getMainArm().getOpposite();

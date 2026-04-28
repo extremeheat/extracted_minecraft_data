@@ -32,6 +32,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -39,6 +42,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -93,6 +97,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Holder<WolfVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<WolfSoundVariant>> DATA_SOUND_VARIANT_ID;
    public static final TargetingConditions.Selector PREY_SELECTOR;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final float START_HEALTH = 8.0F;
    private static final float TAME_HEALTH = 40.0F;
    private static final float ARMOR_REPAIR_UNIT = 0.125F;
@@ -537,6 +542,10 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_COLLAR_COLOR, color.getId());
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public @Nullable Wolf getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       Wolf baby = EntityTypes.WOLF.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Wolf partnerWolf) {
@@ -646,6 +655,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<WolfSoundVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_SOUND_VARIANT);
       PREY_SELECTOR = (target, level) -> target.is(EntityTypes.SHEEP) || target.is(EntityTypes.RABBIT) || target.is(EntityTypes.FOX);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.425F).withEyeHeight(0.34375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.4375F, 0.0F));
       DEFAULT_COLLAR_COLOR = DyeColor.RED;
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }

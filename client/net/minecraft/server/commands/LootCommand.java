@@ -63,10 +63,10 @@ public class LootCommand {
 
    private static Container getContainer(final CommandSourceStack source, final BlockPos pos) throws CommandSyntaxException {
       BlockEntity blockEntity = source.getLevel().getBlockEntity(pos);
-      if (!(blockEntity instanceof Container)) {
-         throw ItemCommands.ERROR_TARGET_NOT_A_CONTAINER.create(pos.getX(), pos.getY(), pos.getZ());
+      if (blockEntity instanceof Container container) {
+         return container;
       } else {
-         return (Container)blockEntity;
+         throw ItemCommands.ERROR_TARGET_NOT_A_CONTAINER.create(pos.getX(), pos.getY(), pos.getZ());
       }
    }
 
@@ -211,8 +211,8 @@ public class LootCommand {
 
    private static ItemStack getSourceHandItem(final CommandSourceStack source, final EquipmentSlot slot) throws CommandSyntaxException {
       Entity entity = source.getEntityOrException();
-      if (entity instanceof LivingEntity) {
-         return ((LivingEntity)entity).getItemBySlot(slot);
+      if (entity instanceof LivingEntity livingEntity) {
+         return livingEntity.getItemBySlot(slot);
       } else {
          throw ERROR_NO_HELD_ITEMS.create(entity.getDisplayName());
       }

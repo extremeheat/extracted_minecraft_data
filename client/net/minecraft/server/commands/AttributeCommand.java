@@ -51,10 +51,10 @@ public class AttributeCommand {
    }
 
    private static LivingEntity getLivingEntity(final Entity target) throws CommandSyntaxException {
-      if (!(target instanceof LivingEntity)) {
-         throw ERROR_NOT_LIVING_ENTITY.create(target.getName());
+      if (target instanceof LivingEntity livingEntity) {
+         return livingEntity;
       } else {
-         return (LivingEntity)target;
+         throw ERROR_NOT_LIVING_ENTITY.create(target.getName());
       }
    }
 

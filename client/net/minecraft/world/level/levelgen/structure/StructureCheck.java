@@ -112,9 +112,7 @@ public class StructureCheck {
       }
 
       Tag result = collectFields.getResult();
-      if (!(result instanceof CompoundTag chunkTag)) {
-         return null;
-      } else {
+      if (result instanceof CompoundTag chunkTag) {
          int version = NbtUtils.getDataVersion(chunkTag);
          SimpleRegionStorage.injectDatafixingContext(chunkTag, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
 
@@ -133,6 +131,8 @@ public class StructureCheck {
             this.storeFullResults(posKey, knownStarts);
             return this.checkStructureInfo(knownStarts, structure, requireUnreferenced);
          }
+      } else {
+         return null;
       }
    }
 

@@ -81,7 +81,9 @@ public class Camel extends AbstractHorse {
    public final AnimationState sitUpAnimationState = new AnimationState();
    public final AnimationState idleAnimationState = new AnimationState();
    public final AnimationState dashAnimationState = new AnimationState();
-   private static final EntityDimensions SITTING_DIMENSIONS;
+   private static final EntityDimensions BABY_STANDING_DIMENSIONS;
+   private static final EntityDimensions BABY_SITTING_DIMENSIONS;
+   private static final EntityDimensions ADULT_SITTING_DIMENSIONS;
    private int dashCooldown = 0;
    private int idleAnimationTimeout = 0;
 
@@ -141,7 +143,7 @@ public class Camel extends AbstractHorse {
    }
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
-      return pose == Pose.SITTING ? SITTING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(pose);
+      return pose == Pose.SITTING ? (this.isBaby() ? BABY_SITTING_DIMENSIONS : ADULT_SITTING_DIMENSIONS) : (this.isBaby() ? BABY_STANDING_DIMENSIONS : super.getDefaultDimensions(pose));
    }
 
    protected void customServerAiStep(final ServerLevel level) {
@@ -459,7 +461,8 @@ public class Camel extends AbstractHorse {
    }
 
    private double getBodyAnchorAnimationYOffset(final boolean isFront, final float partialTicks, final EntityDimensions dimensions, final float scale) {
-      double baseSitOffset = (double)(dimensions.height() - 0.375F * scale);
+      double ageSitYOffset = this.isBaby() ? 0.09375 : 0.375;
+      double baseSitOffset = (double)dimensions.height() - ageSitYOffset;
       float sittingHeightDifference = scale * 1.43F;
       float verticalDrop = sittingHeightDifference - scale * 0.2F;
       float bottomPoint = sittingHeightDifference - verticalDrop;
@@ -602,7 +605,9 @@ public class Camel extends AbstractHorse {
       BRAIN_PROVIDER = Brain.<Camel>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS, SensorType.NEAREST_ADULT), (var0) -> CamelAi.getActivities());
       DASH = SynchedEntityData.<Boolean>defineId(Camel.class, EntityDataSerializers.BOOLEAN);
       LAST_POSE_CHANGE_TICK = SynchedEntityData.<Long>defineId(Camel.class, EntityDataSerializers.LONG);
-      SITTING_DIMENSIONS = EntityDimensions.scalable(EntityTypes.CAMEL.getWidth(), EntityTypes.CAMEL.getHeight() - 1.43F).withEyeHeight(0.845F);
+      BABY_STANDING_DIMENSIONS = EntityDimensions.scalable(0.95F, 1.4F).withEyeHeight(1.38F);
+      BABY_SITTING_DIMENSIONS = EntityDimensions.scalable(0.95F, 0.425F).withEyeHeight(0.41F);
+      ADULT_SITTING_DIMENSIONS = EntityDimensions.scalable(EntityTypes.CAMEL.getWidth(), EntityTypes.CAMEL.getHeight() - 1.43F).withEyeHeight(0.845F);
    }
 
    private class CamelBodyRotationControl extends BodyRotationControl {

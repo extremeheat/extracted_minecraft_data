@@ -2,8 +2,8 @@ package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
-import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -13,35 +13,41 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
-public class ShadowFeatureRenderer {
+public class ShadowFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
+   public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Shadow");
    private static final RenderType SHADOW_RENDER_TYPE = RenderTypes.entityShadow(Identifier.withDefaultNamespace("textures/misc/shadow.png"));
 
    public ShadowFeatureRenderer() {
       super();
    }
 
-   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
-      VertexConsumer buffer = context.bufferSource().getBuffer(SHADOW_RENDER_TYPE);
+   protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
+      VertexConsumer builder = this.getVertexBuilder(SHADOW_RENDER_TYPE);
 
-      for(Submit submit : nodeCollection.getShadowSubmits()) {
-         for(EntityRenderState.ShadowPiece piece : submit.pieces()) {
-            AABB aabb = piece.shapeBelow().bounds();
-            float x01 = piece.relativeX() + (float)aabb.minX;
-            float x11 = piece.relativeX() + (float)aabb.maxX;
-            float y01 = piece.relativeY() + (float)aabb.minY;
-            float z01 = piece.relativeZ() + (float)aabb.minZ;
-            float z11 = piece.relativeZ() + (float)aabb.maxZ;
-            float radius = submit.radius();
-            float u0 = -x01 / 2.0F / radius + 0.5F;
-            float u1 = -x11 / 2.0F / radius + 0.5F;
-            float v0 = -z01 / 2.0F / radius + 0.5F;
-            float v1 = -z11 / 2.0F / radius + 0.5F;
-            int color = ARGB.white(piece.alpha());
-            shadowVertex(submit.pose(), buffer, color, x01, y01, z01, u0, v0);
-            shadowVertex(submit.pose(), buffer, color, x01, y01, z11, u0, v1);
-            shadowVertex(submit.pose(), buffer, color, x11, y01, z11, u1, v1);
-            shadowVertex(submit.pose(), buffer, color, x11, y01, z01, u1, v0);
-         }
+      for(Submit submit : submits) {
+         this.prepare(submit, builder);
+      }
+
+   }
+
+   private void prepare(final Submit submit, final VertexConsumer builder) {
+      for(EntityRenderState.ShadowPiece piece : submit.pieces()) {
+         AABB aabb = piece.shapeBelow().bounds();
+         float x01 = piece.relativeX() + (float)aabb.minX;
+         float x11 = piece.relativeX() + (float)aabb.maxX;
+         float y01 = piece.relativeY() + (float)aabb.minY;
+         float z01 = piece.relativeZ() + (float)aabb.minZ;
+         float z11 = piece.relativeZ() + (float)aabb.maxZ;
+         float radius = submit.radius();
+         float u0 = -x01 / 2.0F / radius + 0.5F;
+         float u1 = -x11 / 2.0F / radius + 0.5F;
+         float v0 = -z01 / 2.0F / radius + 0.5F;
+         float v1 = -z11 / 2.0F / radius + 0.5F;
+         int color = ARGB.white(piece.alpha());
+         shadowVertex(submit.pose(), builder, color, x01, y01, z01, u0, v0);
+         shadowVertex(submit.pose(), builder, color, x01, y01, z11, u0, v1);
+         shadowVertex(submit.pose(), builder, color, x11, y01, z11, u1, v1);
+         shadowVertex(submit.pose(), builder, color, x11, y01, z01, u1, v0);
       }
 
    }
@@ -51,9 +57,13 @@ public class ShadowFeatureRenderer {
       buffer.addVertex(position.x(), position.y(), position.z(), color, u, v, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
    }
 
-   public static record Submit(Matrix4fc pose, float radius, List<EntityRenderState.ShadowPiece> pieces) {
+   public static record Submit(Matrix4fc pose, float radius, List<EntityRenderState.ShadowPiece> pieces) implements SubmitNode {
       public Submit {
          super();
+      }
+
+      public FeatureRendererType<Submit> featureType() {
+         return ShadowFeatureRenderer.TYPE;
       }
    }
 }

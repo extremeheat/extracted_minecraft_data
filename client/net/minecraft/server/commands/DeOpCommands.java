@@ -32,7 +32,7 @@ public class DeOpCommands {
          if (list.isOp(player)) {
             list.deop(player);
             ++count;
-            source.sendSuccess(() -> Component.translatable("commands.deop.success", ((NameAndId)players.iterator().next()).name()), true);
+            source.sendSuccess(() -> Component.translatable("commands.deop.success", player.name()), true);
          }
       }
 

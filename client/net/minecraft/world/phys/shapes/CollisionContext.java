@@ -45,7 +45,7 @@ public interface CollisionContext {
    }
 
    static CollisionContext placementContext(final @Nullable Player player) {
-      return new EntityCollisionContext(player != null ? player.isDescending() : false, true, player != null ? player.getY() : -1.7976931348623157E308, player instanceof LivingEntity ? ((LivingEntity)player).getMainHandItem() : ItemStack.EMPTY, false, player);
+      return new EntityCollisionContext(player != null ? player.isDescending() : false, true, player != null ? player.getY() : -1.7976931348623157E308, player != null ? player.getMainHandItem() : ItemStack.EMPTY, false, player);
    }
 
    static CollisionContext withPosition(final @Nullable Entity entity, final double position) {

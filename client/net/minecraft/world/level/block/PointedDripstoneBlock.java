@@ -52,6 +52,10 @@ public class PointedDripstoneBlock extends SpeleothemBlock {
       super(blockToGrowOn, properties);
    }
 
+   protected int getStalactiteLandingSound() {
+      return 1045;
+   }
+
    public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
       if (state.getValue(TIP_DIRECTION) == Direction.UP && state.getValue(THICKNESS) == SpeleothemThickness.TIP) {
          entity.causeFallDamage(fallDistance + 2.5, 2.0F, level.damageSources().stalagmite());

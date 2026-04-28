@@ -447,7 +447,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          var10000.setPosition(textX, var10002 + 9 + 3);
          this.infoText.extractRenderState(graphics, mouseX, mouseY, a);
          graphics.blit(RenderPipelines.GUI_TEXTURED, this.icon.textureLocation(), this.getContentX(), this.getContentY(), 0.0F, 0.0F, 32, 32, 32, 32);
-         if (this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER && ((Boolean)this.minecraft.options.touchscreen().get() || hovered)) {
+         if (this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER && hovered) {
             graphics.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int relX = mouseX - this.getContentX();
             int relY = mouseY - this.getContentY();

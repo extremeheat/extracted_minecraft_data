@@ -57,8 +57,8 @@ public class BarrelBlock extends BaseEntityBlock {
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof BarrelBlockEntity) {
-         ((BarrelBlockEntity)blockEntity).recheckOpen();
+      if (blockEntity instanceof BarrelBlockEntity barrelBlockEntity) {
+         barrelBlockEntity.recheckOpen();
       }
 
    }

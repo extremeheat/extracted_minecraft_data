@@ -312,7 +312,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return server;
    }
 
-   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener, final boolean propagatesCrashes) {
+   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener, final boolean propagatesCrashes, final NotificationManager notificationManager) {
       super("Server", propagatesCrashes);
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.onMetricsRecordingStopped = (results) -> this.stopRecordingMetrics();
@@ -364,8 +364,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.resources.managers.getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
          this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
-         this.notificationManager = new NotificationManager();
-         this.serverActivityMonitor = new ServerActivityMonitor(this.notificationManager, 30);
+         this.notificationManager = notificationManager;
+         this.serverActivityMonitor = new ServerActivityMonitor(notificationManager, 30);
          this.packetProcessor = new PacketProcessor(serverThread);
          this.clockManager = (ServerClockManager)this.getDataStorage().computeIfAbsent(ServerClockManager.TYPE);
          this.clockManager.init(this);

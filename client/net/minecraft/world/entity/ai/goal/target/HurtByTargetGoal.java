@@ -76,12 +76,26 @@ public class HurtByTargetGoal extends TargetGoal {
       while(true) {
          Mob other;
          while(true) {
-            if (!var5.hasNext()) {
-               return;
+            while(true) {
+               if (!var5.hasNext()) {
+                  return;
+               }
+
+               other = (Mob)var5.next();
+               if (this.mob != other && other.getTarget() == null) {
+                  Mob var8 = this.mob;
+                  if (!(var8 instanceof TamableAnimal)) {
+                     break;
+                  }
+
+                  TamableAnimal tamableAnimal = (TamableAnimal)var8;
+                  if (tamableAnimal.getOwner() == ((TamableAnimal)other).getOwner()) {
+                     break;
+                  }
+               }
             }
 
-            other = (Mob)var5.next();
-            if (this.mob != other && other.getTarget() == null && (!(this.mob instanceof TamableAnimal) || ((TamableAnimal)this.mob).getOwner() == ((TamableAnimal)other).getOwner()) && !other.isAlliedTo(this.mob.getLastHurtByMob())) {
+            if (!other.isAlliedTo(this.mob.getLastHurtByMob())) {
                if (this.toIgnoreAlert == null) {
                   break;
                }

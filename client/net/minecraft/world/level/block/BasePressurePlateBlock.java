@@ -111,16 +111,16 @@ public abstract class BasePressurePlateBlock extends Block {
       level.updateNeighborsAt(pos.below(), this);
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return this.getSignalForState(state);
-   }
-
    protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return direction == Direction.UP ? this.getSignalForState(state) : 0;
    }
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return this.getSignalForState(state);
    }
 
    protected static int getEntityCount(final Level level, final AABB entityDetectionBox, final Class<? extends Entity> entityClass) {

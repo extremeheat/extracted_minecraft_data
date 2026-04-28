@@ -174,8 +174,8 @@ public class GameTestHelper {
       return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
    }
 
-   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
-      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
+   public <E extends Mob> E spawn(final EntityType<E> entityType, final double x, final double y, final double z, final EntitySpawnReason entitySpawnReason) {
+      return (E)(this.spawn(entityType, new Vec3(x, y, z), entitySpawnReason));
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
@@ -1102,13 +1102,17 @@ public class GameTestHelper {
    public AABB getRelativeBounds() {
       AABB absolute = this.testInfo.getStructureBounds();
       Rotation rotation = this.testInfo.getRotation();
+      AABB var10000;
       switch (rotation) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            return new AABB(0.0, 0.0, 0.0, absolute.getZsize(), absolute.getYsize(), absolute.getXsize());
+            var10000 = new AABB(0.0, 0.0, 0.0, absolute.getZsize(), absolute.getYsize(), absolute.getXsize());
+            break;
          default:
-            return new AABB(0.0, 0.0, 0.0, absolute.getXsize(), absolute.getYsize(), absolute.getZsize());
+            var10000 = new AABB(0.0, 0.0, 0.0, absolute.getXsize(), absolute.getYsize(), absolute.getZsize());
       }
+
+      return var10000;
    }
 
    public void forEveryBlockInStructure(final Consumer<BlockPos> forBlock) {

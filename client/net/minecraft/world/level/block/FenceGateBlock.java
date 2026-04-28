@@ -92,20 +92,15 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      boolean var10000;
       switch (type) {
-         case LAND -> {
-            return (Boolean)state.getValue(OPEN);
-         }
-         case WATER -> {
-            return false;
-         }
-         case AIR -> {
-            return (Boolean)state.getValue(OPEN);
-         }
-         default -> {
-            return false;
-         }
+         case LAND -> var10000 = (Boolean)state.getValue(OPEN);
+         case WATER -> var10000 = false;
+         case AIR -> var10000 = (Boolean)state.getValue(OPEN);
+         default -> var10000 = false;
       }
+
+      return var10000;
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {

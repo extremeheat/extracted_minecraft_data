@@ -187,9 +187,8 @@ public interface ContainerEventHandler extends GuiEventListener {
       GuiEventListener focus = this.getFocused();
       ScreenDirection direction = arrowNavigation.direction();
       if (focus == null) {
-         ScreenRectangle previousFocus = arrowNavigation.previousFocus();
-         if (previousFocus instanceof ScreenRectangle) {
-            return ComponentPath.path(this, this.nextFocusPathInDirection(previousFocus, arrowNavigation.direction(), (GuiEventListener)null, arrowNavigation));
+         if (arrowNavigation.previousFocus() != null) {
+            return ComponentPath.path(this, this.nextFocusPathInDirection(arrowNavigation.previousFocus(), arrowNavigation.direction(), (GuiEventListener)null, arrowNavigation));
          } else {
             ScreenRectangle borderRectangle = this.getBorderForArrowNavigation(direction.getOpposite());
             return ComponentPath.path(this, this.nextFocusPathInDirection(borderRectangle, direction, (GuiEventListener)null, arrowNavigation));

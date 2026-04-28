@@ -79,7 +79,17 @@ public final class ByteArrayTag implements CollectionTag {
       if (this == obj) {
          return true;
       } else {
-         return obj instanceof ByteArrayTag && Arrays.equals(this.data, ((ByteArrayTag)obj).data);
+         boolean var10000;
+         if (obj instanceof ByteArrayTag) {
+            ByteArrayTag byteArrayTag = (ByteArrayTag)obj;
+            if (Arrays.equals(this.data, byteArrayTag.data)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 

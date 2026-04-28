@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipePropertySet;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
@@ -32,17 +31,15 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    private final Container container;
    private final ContainerData data;
    protected final Level level;
-   private final RecipeType<? extends AbstractCookingRecipe> recipeType;
    private final RecipePropertySet acceptedInputs;
    private final RecipeBookType recipeBookType;
 
-   protected AbstractFurnaceMenu(final MenuType<?> menuType, final RecipeType<? extends AbstractCookingRecipe> recipeType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory) {
-      this(menuType, recipeType, allowedInputs, recipeBookType, containerId, inventory, new SimpleContainer(3), new SimpleContainerData(4));
+   protected AbstractFurnaceMenu(final MenuType<?> menuType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory) {
+      this(menuType, allowedInputs, recipeBookType, containerId, inventory, new SimpleContainer(3), new SimpleContainerData(4));
    }
 
-   protected AbstractFurnaceMenu(final MenuType<?> menuType, final RecipeType<? extends AbstractCookingRecipe> recipeType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory, final Container container, final ContainerData data) {
+   protected AbstractFurnaceMenu(final MenuType<?> menuType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory, final Container container, final ContainerData data) {
       super(menuType, containerId);
-      this.recipeType = recipeType;
       this.recipeBookType = recipeBookType;
       checkContainerSize(container, 3);
       checkContainerDataCount(data, 4);
@@ -58,8 +55,9 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    }
 
    public void fillCraftSlotsStackedContents(final StackedItemContents stackedContents) {
-      if (this.container instanceof StackedContentsCompatible) {
-         ((StackedContentsCompatible)this.container).fillStackedContents(stackedContents);
+      Container var3 = this.container;
+      if (var3 instanceof StackedContentsCompatible stackedContentsCompatible) {
+         stackedContentsCompatible.fillStackedContents(stackedContents);
       }
 
    }

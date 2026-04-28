@@ -124,12 +124,14 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof CommandBlockEntity && player.canUseGameMasterBlocks()) {
-         player.openCommandBlock((CommandBlockEntity)blockEntity);
-         return InteractionResult.SUCCESS;
-      } else {
-         return InteractionResult.PASS;
+      if (blockEntity instanceof CommandBlockEntity commandBlockEntity) {
+         if (player.canUseGameMasterBlocks()) {
+            player.openCommandBlock(commandBlockEntity);
+            return InteractionResult.SUCCESS;
+         }
       }
+
+      return InteractionResult.PASS;
    }
 
    protected boolean hasAnalogOutputSignal(final BlockState state) {
@@ -138,7 +140,11 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
    protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      return blockEntity instanceof CommandBlockEntity ? ((CommandBlockEntity)blockEntity).getCommandBlock().getSuccessCount() : 0;
+      if (blockEntity instanceof CommandBlockEntity commandBlockEntity) {
+         return commandBlockEntity.getCommandBlock().getSuccessCount();
+      } else {
+         return 0;
+      }
    }
 
    public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {

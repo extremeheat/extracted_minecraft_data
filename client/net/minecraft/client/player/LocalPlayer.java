@@ -242,8 +242,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public float getCurrentMood() {
       for(AmbientSoundHandler ambientSoundHandler : this.ambientSoundHandlers) {
-         if (ambientSoundHandler instanceof BiomeAmbientSoundsHandler) {
-            return ((BiomeAmbientSoundsHandler)ambientSoundHandler).getMoodiness();
+         if (ambientSoundHandler instanceof BiomeAmbientSoundsHandler biomeAmbientSoundsHandler) {
+            return biomeAmbientSoundsHandler.getMoodiness();
          }
       }
 

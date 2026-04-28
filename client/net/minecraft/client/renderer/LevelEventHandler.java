@@ -204,6 +204,9 @@ public class LevelEventHandler {
          case 1051:
             this.level.playLocalSound(pos, SoundEvents.WIND_CHARGE_THROW, SoundSource.BLOCKS, 0.5F, 0.4F / (this.level.getRandom().nextFloat() * 0.4F + 0.8F), false);
             break;
+         case 1052:
+            this.level.playLocalSound(pos, SoundEvents.SULFUR_SPIKE_LAND, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
          case 1500:
             ComposterBlock.handleFill(this.level, pos, data > 0);
             break;
@@ -416,8 +419,8 @@ public class LevelEventHandler {
             break;
          case 3008:
             BlockState blockStateForBrushing = Block.stateById(data);
-            Block velocityX = blockStateForBrushing.getBlock();
-            if (velocityX instanceof BrushableBlock brushableBlock) {
+            Block y = blockStateForBrushing.getBlock();
+            if (y instanceof BrushableBlock brushableBlock) {
                this.level.playLocalSound(pos, brushableBlock.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
             }
 
@@ -442,8 +445,8 @@ public class LevelEventHandler {
             TrialSpawner.addEjectItemParticles(this.level, pos, random);
             break;
          case 3015:
-            BlockEntity x = this.level.getBlockEntity(pos);
-            if (x instanceof VaultBlockEntity entity) {
+            BlockEntity soundType = this.level.getBlockEntity(pos);
+            if (soundType instanceof VaultBlockEntity entity) {
                VaultBlockEntity.Client.emitActivationParticles(this.level, entity.getBlockPos(), entity.getBlockState(), entity.getSharedData(), data == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
                this.level.playLocalSound(pos, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             }

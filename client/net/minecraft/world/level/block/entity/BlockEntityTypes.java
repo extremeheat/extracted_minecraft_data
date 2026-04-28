@@ -65,7 +65,7 @@ public class BlockEntityTypes {
    public static final BlockEntityType<TestBlockEntity> TEST_BLOCK;
    public static final BlockEntityType<TestInstanceBlockEntity> TEST_INSTANCE_BLOCK;
    public static final BlockEntityType<CopperGolemStatueBlockEntity> COPPER_GOLEM_STATUE;
-   public static final BlockEntityType<PotentSulfurEntity> POTENT_SULFUR;
+   public static final BlockEntityType<PotentSulfurBlockEntity> POTENT_SULFUR;
    static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
 
    public BlockEntityTypes() {
@@ -138,7 +138,7 @@ public class BlockEntityTypes {
       TEST_BLOCK = register(BlockEntityTypeIds.TEST_BLOCK, TestBlockEntity::new, Blocks.TEST_BLOCK);
       TEST_INSTANCE_BLOCK = register(BlockEntityTypeIds.TEST_INSTANCE_BLOCK, TestInstanceBlockEntity::new, Blocks.TEST_INSTANCE_BLOCK);
       COPPER_GOLEM_STATUE = register(BlockEntityTypeIds.COPPER_GOLEM_STATUE, CopperGolemStatueBlockEntity::new, Blocks.COPPER_GOLEM_STATUE.asList());
-      POTENT_SULFUR = register(BlockEntityTypeIds.POTENT_SULFUR, PotentSulfurEntity::new, Blocks.POTENT_SULFUR);
+      POTENT_SULFUR = register(BlockEntityTypeIds.POTENT_SULFUR, PotentSulfurBlockEntity::new, Blocks.POTENT_SULFUR);
       OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);
    }
 }

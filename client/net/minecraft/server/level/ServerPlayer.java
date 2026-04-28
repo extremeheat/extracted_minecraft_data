@@ -17,6 +17,7 @@ import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -202,6 +203,7 @@ import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.TeamColor;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -822,20 +824,17 @@ public class ServerPlayer extends Player {
    }
 
    private void respawnEntityOnShoulder(final CompoundTag tag) {
-      ServerLevel var3 = this.level();
-      if (var3 instanceof ServerLevel) {
-         ServerLevel serverLevel = var3;
-         if (!tag.isEmpty()) {
-            try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-               EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), serverLevel.registryAccess(), tag), serverLevel, EntitySpawnReason.LOAD).ifPresent((entity) -> {
-                  if (entity instanceof TamableAnimal tamed) {
-                     tamed.setOwner(this);
-                  }
+      ServerLevel serverLevel = this.level();
+      if (!tag.isEmpty()) {
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+            EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), serverLevel.registryAccess(), tag), serverLevel, EntitySpawnReason.LOAD).ifPresent((entity) -> {
+               if (entity instanceof TamableAnimal tamed) {
+                  tamed.setOwner(this);
+               }
 
-                  entity.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
-                  serverLevel.addWithUUID(entity);
-               });
-            }
+               entity.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
+               serverLevel.addWithUUID(entity);
+            });
          }
       }
 
@@ -957,13 +956,13 @@ public class ServerPlayer extends Player {
       }
    }
 
-   private void handleTeamKill(final ScoreHolder source, final ScoreHolder target, final ObjectiveCriteria[] criteriaByTeam) {
+   private void handleTeamKill(final ScoreHolder source, final ScoreHolder target, final Map<TeamColor, ObjectiveCriteria> criteriaByTeam) {
       Scoreboard scoreboard = this.level().getScoreboard();
       PlayerTeam ownTeam = scoreboard.getPlayersTeam(target.getScoreboardName());
-      if (ownTeam != null) {
-         int color = ownTeam.getColor().getId();
-         if (color >= 0 && color < criteriaByTeam.length) {
-            scoreboard.forAllObjectives(criteriaByTeam[color], source, ScoreAccess::increment);
+      if (ownTeam != null && ownTeam.getColor().isPresent()) {
+         ObjectiveCriteria criteria = (ObjectiveCriteria)criteriaByTeam.get(ownTeam.getColor().get());
+         if (criteria != null) {
+            scoreboard.forAllObjectives(criteria, source, ScoreAccess::increment);
          }
       }
 

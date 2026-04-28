@@ -56,8 +56,11 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             BlockPos placePos = clicked.getBlock() instanceof LiquidBlockContainer && this.content == Fluids.WATER ? pos : directionOffsetPos;
             if (this.emptyContents(player, level, placePos, hitResult)) {
                this.checkExtraContent(player, level, itemStack, placePos);
-               if (player instanceof ServerPlayer && this.content != Fluids.EMPTY) {
-                  CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, placePos, itemStack);
+               if (player instanceof ServerPlayer) {
+                  ServerPlayer serverPlayer = (ServerPlayer)player;
+                  if (this.content != Fluids.EMPTY) {
+                     CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, placePos, itemStack);
+                  }
                }
 
                player.awardStat(Stats.ITEM_USED.get(this));

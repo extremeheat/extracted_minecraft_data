@@ -68,10 +68,25 @@ public class HarvestFarmland extends Behavior<Villager> {
    }
 
    private boolean validPos(final BlockPos blockPos, final ServerLevel level) {
-      BlockState state = level.getBlockState(blockPos);
-      Block block = state.getBlock();
-      Block blockBelow = level.getBlockState(blockPos.below()).getBlock();
-      return block instanceof CropBlock && ((CropBlock)block).isMaxAge(state) || state.isAir() && blockBelow instanceof FarmlandBlock;
+      boolean var10000;
+      label21: {
+         BlockState state = level.getBlockState(blockPos);
+         Block block = state.getBlock();
+         Block blockBelow = level.getBlockState(blockPos.below()).getBlock();
+         if (block instanceof CropBlock cropBlock) {
+            if (cropBlock.isMaxAge(state)) {
+               break label21;
+            }
+         }
+
+         if (!state.isAir() || !(blockBelow instanceof FarmlandBlock)) {
+            var10000 = false;
+            return var10000;
+         }
+      }
+
+      var10000 = true;
+      return var10000;
    }
 
    protected void start(final ServerLevel level, final Villager body, final long timestamp) {
@@ -95,8 +110,11 @@ public class HarvestFarmland extends Behavior<Villager> {
             BlockState blockState = level.getBlockState(this.aboveFarmlandPos);
             Block block = blockState.getBlock();
             Block blockBelow = level.getBlockState(this.aboveFarmlandPos.below()).getBlock();
-            if (block instanceof CropBlock && ((CropBlock)block).isMaxAge(blockState)) {
-               level.destroyBlock(this.aboveFarmlandPos, true, body);
+            if (block instanceof CropBlock) {
+               CropBlock cropBlock = (CropBlock)block;
+               if (cropBlock.isMaxAge(blockState)) {
+                  level.destroyBlock(this.aboveFarmlandPos, true, body);
+               }
             }
 
             if (blockState.isAir() && blockBelow instanceof FarmlandBlock && body.hasFarmSeeds()) {
@@ -127,13 +145,16 @@ public class HarvestFarmland extends Behavior<Villager> {
                }
             }
 
-            if (block instanceof CropBlock && !((CropBlock)block).isMaxAge(blockState)) {
-               this.validFarmlandAroundVillager.remove(this.aboveFarmlandPos);
-               this.aboveFarmlandPos = this.getValidFarmland(level);
-               if (this.aboveFarmlandPos != null) {
-                  this.nextOkStartTime = timestamp + 20L;
-                  body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
-                  body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
+            if (block instanceof CropBlock) {
+               CropBlock cropBlock = (CropBlock)block;
+               if (!cropBlock.isMaxAge(blockState)) {
+                  this.validFarmlandAroundVillager.remove(this.aboveFarmlandPos);
+                  this.aboveFarmlandPos = this.getValidFarmland(level);
+                  if (this.aboveFarmlandPos != null) {
+                     this.nextOkStartTime = timestamp + 20L;
+                     body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
+                     body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
+                  }
                }
             }
          }

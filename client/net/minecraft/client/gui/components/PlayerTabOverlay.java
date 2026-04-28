@@ -113,9 +113,12 @@ public class PlayerTabOverlay {
             }
 
             if (displayObjective.getRenderType() != ObjectiveCriteria.RenderType.HEARTS) {
-               NumberFormat objectiveDefaultFormat = displayObjective.numberFormatOrDefault(StyledFormat.PLAYER_LIST_DEFAULT);
-               formattedPlayerScore = ReadOnlyScoreInfo.safeFormatValue(scoreInfo, objectiveDefaultFormat);
-               playerScoreWidth = this.minecraft.font.width((FormattedText)formattedPlayerScore);
+               if (scoreInfo != null) {
+                  NumberFormat objectiveDefaultFormat = displayObjective.numberFormatOrDefault(StyledFormat.PLAYER_LIST_DEFAULT);
+                  formattedPlayerScore = scoreInfo.formatValue(objectiveDefaultFormat);
+                  playerScoreWidth = this.minecraft.font.width((FormattedText)formattedPlayerScore);
+               }
+
                maxScoreWidth = Math.max(maxScoreWidth, playerScoreWidth > 0 ? spacerWidth + playerScoreWidth : 0);
             }
          }

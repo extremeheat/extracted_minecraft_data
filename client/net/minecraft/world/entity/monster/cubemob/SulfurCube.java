@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -25,6 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SulfurCubeArchetype;
@@ -53,7 +56,9 @@ import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -64,6 +69,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -82,6 +88,9 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private static final float VERTICAL_PUSH_MULTIPLIER = 0.3F;
    private static final float DAMAGE_MULTIPLIER_SCALE = 0.6F;
    private static final float PUSH_SOUND_THRESHOLD = 0.5F;
+   private OptionalInt maxFuseFromArchetype = OptionalInt.empty();
+   private int fuse = -1;
+   private static final EntityDataAccessor<Integer> MAX_FUSE;
    private static final EntityDataAccessor<Boolean> FROM_BUCKET;
    private static final boolean DEFAULT_FROM_BUCKET = false;
    private static final Predicate<ItemEntity> ALLOWED_ITEMS;
@@ -95,6 +104,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
       super.defineSynchedData(entityData);
       entityData.define(FROM_BUCKET, false);
+      entityData.define(MAX_FUSE, -1);
    }
 
    protected void addBehaviourGoals() {
@@ -104,6 +114,26 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
    public boolean fromBucket() {
       return (Boolean)this.entityData.get(FROM_BUCKET);
+   }
+
+   public int getFuse() {
+      return this.fuse;
+   }
+
+   public boolean isPrimed() {
+      return this.getFuse() >= 0;
+   }
+
+   private void setFuse(final int fuse) {
+      this.fuse = fuse;
+   }
+
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (MAX_FUSE.equals(accessor)) {
+         this.setFuse((Integer)this.entityData.get(MAX_FUSE));
+      }
+
+      super.onSyncedDataUpdated(accessor);
    }
 
    public void setFromBucket(final boolean fromBucket) {
@@ -177,27 +207,113 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
-      if (this.hasBodyItem() && source.is(DamageTypeTags.SULFUR_CUBE_WITH_BLOCK_IMMUNE_TO)) {
-         Entity var5 = source.getEntity();
-         if (var5 instanceof Player) {
-            Player player = (Player)var5;
-            this.playerHit(player, damage);
-            return false;
-         } else {
+      if (this.hasBodyItem()) {
+         if (this.canExplode() && !this.isPrimed()) {
+            label46: {
+               Entity sourceEntity = source.getDirectEntity();
+               if (!source.is(DamageTypeTags.IS_FIRE)) {
+                  label44: {
+                     if (sourceEntity instanceof AbstractArrow) {
+                        AbstractArrow projectile = (AbstractArrow)sourceEntity;
+                        if (projectile.isOnFire()) {
+                           break label44;
+                        }
+                     }
+
+                     if (source.is(DamageTypeTags.IS_EXPLOSION)) {
+                        this.primeTime(true);
+                     }
+                     break label46;
+                  }
+               }
+
+               this.primeTime(false);
+            }
+         }
+
+         if (source.is(DamageTypeTags.SULFUR_CUBE_WITH_BLOCK_IMMUNE_TO)) {
+            Entity var7 = source.getEntity();
+            if (var7 instanceof LivingEntity) {
+               LivingEntity player = (LivingEntity)var7;
+               if (!source.is(DamageTypeTags.IS_EXPLOSION)) {
+                  this.entityHit(player, damage);
+                  return false;
+               }
+            }
+
             return true;
          }
-      } else {
-         return super.hurtServer(level, source, damage);
       }
+
+      return super.hurtServer(level, source, damage);
    }
 
    public boolean hasBodyItem() {
       return !this.getItemBySlot(EquipmentSlot.BODY).isEmpty();
    }
 
+   public boolean canExplode() {
+      return this.maxFuseFromArchetype.isPresent() && this.isAlive() && !this.isPrimed();
+   }
+
    @VisibleForTesting
    public List<SulfurCubeArchetype> matchingArchetypes(final ItemStack stack) {
       return (List)this.level().registryAccess().lookupOrThrow(Registries.SULFUR_CUBE_ARCHETYPE).stream().filter((arch) -> stack.is(arch.items())).collect(Collectors.toCollection(ArrayList::new));
+   }
+
+   public void tick() {
+      this.tickFuse();
+      this.primeWhenOnPoweredPosition();
+      super.tick();
+   }
+
+   private void tickFuse() {
+      if (this.fuse > 0) {
+         --this.fuse;
+         if (this.fuse == 0) {
+            Level var2 = this.level();
+            if (var2 instanceof ServerLevel) {
+               ServerLevel level = (ServerLevel)var2;
+               this.dropLeash();
+               this.remove(Entity.RemovalReason.DISCARDED);
+               level.explode(this, this.getX(), this.getY(), this.getZ(), 3.0F, Level.ExplosionInteraction.TNT);
+            }
+         }
+      }
+
+   }
+
+   private void primeWhenOnPoweredPosition() {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel level) {
+         if (this.canExplode()) {
+            BlockPos here = BlockPos.containing(this.position());
+            if (level.getBestOwnOrNeighbourSignal(here) != 0) {
+               this.primeTime(false);
+            }
+         }
+      }
+
+   }
+
+   public boolean primeTime(final boolean imminent) {
+      if (!this.maxFuseFromArchetype.isEmpty() && this.isAlive()) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var3;
+            if ((Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES) && !this.isPrimed()) {
+               int fuseTime = imminent ? PrimedTnt.getRandomShortFuse(this.maxFuseFromArchetype.getAsInt(), this.getRandom()) : this.maxFuseFromArchetype.getAsInt();
+               this.setInvulnerable(true);
+               this.setFuse(fuseTime);
+               this.entityData.set(MAX_FUSE, fuseTime);
+               this.makeSound(SoundEvents.TNT_PRIMED);
+               this.gameEvent(GameEvent.PRIME_FUSE);
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    protected void customServerAiStep(final ServerLevel level) {
@@ -229,10 +345,15 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          }
 
          this.floatsInLiquids = false;
+         this.maxFuseFromArchetype = OptionalInt.empty();
 
          for(SulfurCubeArchetype archetype : this.matchingArchetypes(current)) {
             if (archetype.buoyant()) {
                this.floatsInLiquids = true;
+            }
+
+            if (archetype.explosionFuse().isPresent()) {
+               this.maxFuseFromArchetype = OptionalInt.of((Integer)archetype.explosionFuse().get());
             }
 
             for(SulfurCubeArchetype.AttributeEntry mod : archetype.attributeModifiers()) {
@@ -265,28 +386,42 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          } else {
             return super.mobInteract(player, hand);
          }
-      } else if (heldItem.is(Items.SHEARS) && this.readyForShearing()) {
-         Level var5 = this.level();
-         if (var5 instanceof ServerLevel) {
-            ServerLevel level = (ServerLevel)var5;
-            ItemStack itemStackToShear = this.getItemBySlot(EquipmentSlot.BODY);
-            this.shear(level, SoundSource.PLAYERS, heldItem);
-            this.gameEvent(GameEvent.SHEAR, player);
-            heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
-            CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
-         }
-
+      } else if (this.isPrimed()) {
          return InteractionResult.SUCCESS;
-      } else if (isSwallowableItem(heldItem)) {
-         boolean itWorked = this.equipItem(heldItem);
-         if (itWorked) {
+      } else if (!this.canExplode() || !heldItem.is(Items.FLINT_AND_STEEL) && !heldItem.is(Items.FIRE_CHARGE)) {
+         if (heldItem.is(Items.SHEARS) && this.readyForShearing()) {
+            Level var5 = this.level();
+            if (var5 instanceof ServerLevel) {
+               ServerLevel level = (ServerLevel)var5;
+               ItemStack itemStackToShear = this.getItemBySlot(EquipmentSlot.BODY);
+               this.shear(level, SoundSource.PLAYERS, heldItem);
+               this.gameEvent(GameEvent.SHEAR, player);
+               heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
+               CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
+            }
+
+            return InteractionResult.SUCCESS;
+         } else if (isSwallowableItem(heldItem)) {
+            boolean itWorked = this.equipItem(heldItem);
+            if (itWorked) {
+               heldItem.consume(1, player);
+               this.gameEvent(GameEvent.ENTITY_INTERACT);
+            }
+
+            return (InteractionResult)(itWorked ? InteractionResult.SUCCESS : InteractionResult.PASS);
+         } else {
+            return (InteractionResult)Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
+         }
+      } else {
+         this.primeTime(false);
+         if (heldItem.is(Items.FLINT_AND_STEEL)) {
+            heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
+         } else {
             heldItem.consume(1, player);
-            this.gameEvent(GameEvent.ENTITY_INTERACT);
          }
 
-         return (InteractionResult)(itWorked ? InteractionResult.SUCCESS : InteractionResult.PASS);
-      } else {
-         return (InteractionResult)Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
+         player.awardStat(Stats.ITEM_USED.get(heldItem.getItem()));
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -454,11 +589,14 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       super.addAdditionalSaveData(output);
       output.putInt("pickup_timer", this.pickupTimer);
       output.putBoolean("from_bucket", this.fromBucket());
+      output.putInt("fuse", this.getFuse());
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       this.pickupTimer = input.getIntOr("pickup_timer", 0);
       this.setFromBucket(input.getBooleanOr("from_bucket", false));
+      this.setFuse(input.getIntOr("fuse", -1));
+      this.entityData.set(MAX_FUSE, this.getFuse());
       super.readAdditionalSaveData(input);
    }
 
@@ -487,7 +625,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       }
    }
 
-   private void playerHit(final Player player, final float damage) {
+   private void entityHit(final LivingEntity player, final float damage) {
       Vec3 playerEyePosition = player.getEyePosition();
       Vec3 cubePosition = this.getBoundingBox().getCenter();
       Vec3 playerToCubeDirectionEye = cubePosition.subtract(playerEyePosition);
@@ -542,6 +680,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    static {
+      MAX_FUSE = SynchedEntityData.<Integer>defineId(SulfurCube.class, EntityDataSerializers.INT);
       FROM_BUCKET = SynchedEntityData.<Boolean>defineId(SulfurCube.class, EntityDataSerializers.BOOLEAN);
       ALLOWED_ITEMS = (e) -> !e.hasPickUpDelay() && e.isAlive() && isSwallowableItem(e.getItem());
    }

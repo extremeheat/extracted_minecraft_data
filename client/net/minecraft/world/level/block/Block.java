@@ -135,7 +135,11 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static Block byItem(final @Nullable Item item) {
-      return item instanceof BlockItem ? ((BlockItem)item).getBlock() : Blocks.AIR;
+      if (item instanceof BlockItem blockItem) {
+         return blockItem.getBlock();
+      } else {
+         return Blocks.AIR;
+      }
    }
 
    public static BlockState pushEntitiesUp(final BlockState state, final BlockState newState, final LevelAccessor level, final BlockPos pos) {

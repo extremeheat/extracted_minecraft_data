@@ -178,7 +178,8 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
                   player.awardStat(Stats.ENCHANT_ITEM);
                   if (player instanceof ServerPlayer) {
-                     CriteriaTriggers.ENCHANTED_ITEM.trigger((ServerPlayer)player, enchantmentItem, enchantmentCost);
+                     ServerPlayer serverPlayer = (ServerPlayer)player;
+                     CriteriaTriggers.ENCHANTED_ITEM.trigger(serverPlayer, enchantmentItem, enchantmentCost);
                   }
 
                   this.enchantSlots.setChanged();

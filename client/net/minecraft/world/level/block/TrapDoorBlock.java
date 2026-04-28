@@ -62,20 +62,15 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      boolean var10000;
       switch (type) {
-         case LAND -> {
-            return (Boolean)state.getValue(OPEN);
-         }
-         case WATER -> {
-            return (Boolean)state.getValue(WATERLOGGED);
-         }
-         case AIR -> {
-            return (Boolean)state.getValue(OPEN);
-         }
-         default -> {
-            return false;
-         }
+         case LAND -> var10000 = (Boolean)state.getValue(OPEN);
+         case WATER -> var10000 = (Boolean)state.getValue(WATERLOGGED);
+         case AIR -> var10000 = (Boolean)state.getValue(OPEN);
+         default -> var10000 = false;
       }
+
+      return var10000;
    }
 
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {

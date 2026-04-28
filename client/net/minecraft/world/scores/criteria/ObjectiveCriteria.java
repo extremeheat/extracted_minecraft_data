@@ -4,15 +4,17 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.ChatFormatting;
+import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.scores.TeamColor;
 
 public class ObjectiveCriteria {
    private static final Map<String, ObjectiveCriteria> CUSTOM_CRITERIA = Maps.newHashMap();
@@ -29,11 +31,22 @@ public class ObjectiveCriteria {
    public static final ObjectiveCriteria ARMOR;
    public static final ObjectiveCriteria EXPERIENCE;
    public static final ObjectiveCriteria LEVEL;
-   public static final ObjectiveCriteria[] TEAM_KILL;
-   public static final ObjectiveCriteria[] KILLED_BY_TEAM;
+   public static final Map<TeamColor, ObjectiveCriteria> TEAM_KILL;
+   public static final Map<TeamColor, ObjectiveCriteria> KILLED_BY_TEAM;
    private final String name;
    private final boolean readOnly;
    private final RenderType renderType;
+
+   private static Map<TeamColor, ObjectiveCriteria> registerForEveryTeamColor(final Function<TeamColor, String> idFactory) {
+      Map<TeamColor, ObjectiveCriteria> result = new EnumMap(TeamColor.class);
+
+      for(TeamColor value : TeamColor.values()) {
+         String id = (String)idFactory.apply(value);
+         result.put(value, registerCustom(id));
+      }
+
+      return result;
+   }
 
    private static ObjectiveCriteria registerCustom(final String name, final boolean readOnly, final RenderType renderType) {
       ObjectiveCriteria result = new ObjectiveCriteria(name, readOnly, renderType);
@@ -102,8 +115,8 @@ public class ObjectiveCriteria {
       ARMOR = registerCustom("armor", true, ObjectiveCriteria.RenderType.INTEGER);
       EXPERIENCE = registerCustom("xp", true, ObjectiveCriteria.RenderType.INTEGER);
       LEVEL = registerCustom("level", true, ObjectiveCriteria.RenderType.INTEGER);
-      TEAM_KILL = new ObjectiveCriteria[]{registerCustom("teamkill." + ChatFormatting.BLACK.getName()), registerCustom("teamkill." + ChatFormatting.DARK_BLUE.getName()), registerCustom("teamkill." + ChatFormatting.DARK_GREEN.getName()), registerCustom("teamkill." + ChatFormatting.DARK_AQUA.getName()), registerCustom("teamkill." + ChatFormatting.DARK_RED.getName()), registerCustom("teamkill." + ChatFormatting.DARK_PURPLE.getName()), registerCustom("teamkill." + ChatFormatting.GOLD.getName()), registerCustom("teamkill." + ChatFormatting.GRAY.getName()), registerCustom("teamkill." + ChatFormatting.DARK_GRAY.getName()), registerCustom("teamkill." + ChatFormatting.BLUE.getName()), registerCustom("teamkill." + ChatFormatting.GREEN.getName()), registerCustom("teamkill." + ChatFormatting.AQUA.getName()), registerCustom("teamkill." + ChatFormatting.RED.getName()), registerCustom("teamkill." + ChatFormatting.LIGHT_PURPLE.getName()), registerCustom("teamkill." + ChatFormatting.YELLOW.getName()), registerCustom("teamkill." + ChatFormatting.WHITE.getName())};
-      KILLED_BY_TEAM = new ObjectiveCriteria[]{registerCustom("killedByTeam." + ChatFormatting.BLACK.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_BLUE.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_GREEN.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_AQUA.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_RED.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_PURPLE.getName()), registerCustom("killedByTeam." + ChatFormatting.GOLD.getName()), registerCustom("killedByTeam." + ChatFormatting.GRAY.getName()), registerCustom("killedByTeam." + ChatFormatting.DARK_GRAY.getName()), registerCustom("killedByTeam." + ChatFormatting.BLUE.getName()), registerCustom("killedByTeam." + ChatFormatting.GREEN.getName()), registerCustom("killedByTeam." + ChatFormatting.AQUA.getName()), registerCustom("killedByTeam." + ChatFormatting.RED.getName()), registerCustom("killedByTeam." + ChatFormatting.LIGHT_PURPLE.getName()), registerCustom("killedByTeam." + ChatFormatting.YELLOW.getName()), registerCustom("killedByTeam." + ChatFormatting.WHITE.getName())};
+      TEAM_KILL = registerForEveryTeamColor((format) -> "teamkill." + format.getSerializedName());
+      KILLED_BY_TEAM = registerForEveryTeamColor((format) -> "killedByTeam." + format.getSerializedName());
    }
 
    public static enum RenderType implements StringRepresentable {

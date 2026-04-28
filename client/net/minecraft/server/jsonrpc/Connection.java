@@ -33,6 +33,7 @@ import net.minecraft.server.jsonrpc.methods.InvalidParameterJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.InvalidRequestJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.MethodNotFoundJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.RemoteRpcErrorException;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Contract;
@@ -131,18 +132,23 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
    }
 
    @Contract("_,_,false->null;_,_,true->!null")
-   private <Params, Result> @Nullable CompletableFuture<Result> sendRequest(final Holder.Reference<? extends OutgoingRpcMethod<Params, ? extends Result>> method, final @Nullable Params params, final boolean expectReply) {
-      List<JsonElement> jsonParams = params != null ? List.of((JsonElement)Objects.requireNonNull((method.value()).encodeParams(params))) : List.of();
-      if (expectReply) {
-         CompletableFuture<Result> future = new CompletableFuture();
-         int id = this.transactionId.incrementAndGet();
-         long time = Util.timeSource.get(TimeUnit.MILLISECONDS);
-         this.pendingRequests.put(id, new PendingRpcRequest(method, future, time + 5000L));
-         this.channel.writeAndFlush(JsonRPCUtils.createRequest(id, method.key().identifier(), jsonParams));
-         return future;
+   private <Params, Result> @Nullable CompletableFuture<Result> sendRequest(final Holder.Reference<? extends OutgoingRpcMethod<Params, ? extends Result>> methodHolder, final @Nullable Params params, final boolean expectReply) {
+      OutgoingRpcMethod<Params, ? extends Result> method = methodHolder.value();
+      if (this.minecraftApi.notificationManager().server() == null && !method.attributes().allowPreServerInit()) {
+         return CompletableFuture.failedFuture(new InvalidRequestJsonRpcException("Method cannot be dispatched pre server initialization: " + String.valueOf(method)));
       } else {
-         this.channel.writeAndFlush(JsonRPCUtils.createRequest((Integer)null, method.key().identifier(), jsonParams));
-         return null;
+         List<JsonElement> jsonParams = params != null ? List.of((JsonElement)Objects.requireNonNull(method.encodeParams(params))) : List.of();
+         if (expectReply) {
+            CompletableFuture<Result> future = new CompletableFuture();
+            int id = this.transactionId.incrementAndGet();
+            long time = Util.timeSource.get(TimeUnit.MILLISECONDS);
+            this.pendingRequests.put(id, new PendingRpcRequest(methodHolder, future, time + 5000L));
+            this.channel.writeAndFlush(JsonRPCUtils.createRequest(id, methodHolder.key().identifier(), jsonParams));
+            return future;
+         } else {
+            this.channel.writeAndFlush(JsonRPCUtils.createRequest((Integer)null, methodHolder.key().identifier(), jsonParams));
+            return null;
+         }
       }
    }
 
@@ -211,20 +217,26 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
          Optional<IncomingRpcMethod<?, ?>> incomingRpcMethod = BuiltInRegistries.INCOMING_RPC_METHOD.getOptional(identifier);
          if (incomingRpcMethod.isEmpty()) {
             throw new MethodNotFoundJsonRpcException("Method not found: " + method);
-         } else if (((IncomingRpcMethod)incomingRpcMethod.get()).attributes().runOnMainThread()) {
-            try {
-               return (JsonElement)this.minecraftApi.submit((Supplier)(() -> ((IncomingRpcMethod)incomingRpcMethod.get()).apply(this.minecraftApi, params, this.clientInfo))).join();
-            } catch (CompletionException e) {
-               Throwable var7 = e.getCause();
-               if (var7 instanceof RuntimeException) {
-                  RuntimeException re = (RuntimeException)var7;
-                  throw re;
-               } else {
-                  throw e;
-               }
-            }
          } else {
-            return ((IncomingRpcMethod)incomingRpcMethod.get()).apply(this.minecraftApi, params, this.clientInfo);
+            IncomingRpcMethod.Attributes attributes = ((IncomingRpcMethod)incomingRpcMethod.get()).attributes();
+            NotificationManager notificationManager = this.minecraftApi.notificationManager();
+            if (notificationManager != null && notificationManager.server() == null && !attributes.allowPreServerInit()) {
+               throw new InvalidRequestJsonRpcException("Method cannot be dispatched pre server initialization: " + method);
+            } else if (attributes.runOnMainThread()) {
+               try {
+                  return (JsonElement)this.minecraftApi.submit((Supplier)(() -> ((IncomingRpcMethod)incomingRpcMethod.get()).apply(this.minecraftApi, params, this.clientInfo))).join();
+               } catch (CompletionException e) {
+                  Throwable var9 = e.getCause();
+                  if (var9 instanceof RuntimeException) {
+                     RuntimeException re = (RuntimeException)var9;
+                     throw re;
+                  } else {
+                     throw e;
+                  }
+               }
+            } else {
+               return ((IncomingRpcMethod)incomingRpcMethod.get()).apply(this.minecraftApi, params, this.clientInfo);
+            }
          }
       }
    }

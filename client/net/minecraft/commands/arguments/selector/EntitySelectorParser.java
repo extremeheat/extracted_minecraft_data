@@ -19,6 +19,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
+import net.minecraft.commands.arguments.selector.options.InvertableSetOptionState;
+import net.minecraft.commands.arguments.selector.options.SetOnceOptionState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionSetSupplier;
@@ -78,24 +80,29 @@ public class EntitySelectorParser {
    private int startPosition;
    private @Nullable UUID entityUUID;
    private BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> suggestions;
-   private boolean hasNameEquals;
-   private boolean hasNameNotEquals;
-   private boolean isLimited;
-   private boolean isSorted;
-   private boolean hasGamemodeEquals;
-   private boolean hasGamemodeNotEquals;
-   private boolean hasTeamEquals;
-   private boolean hasTeamNotEquals;
+   private final InvertableSetOptionState nameOption;
+   private final SetOnceOptionState limitedOption;
+   private final SetOnceOptionState sortedOption;
+   private final InvertableSetOptionState gamemodeOption;
+   private final InvertableSetOptionState teamOption;
    private @Nullable EntityType<?> type;
-   private boolean typeInverse;
-   private boolean hasScores;
-   private boolean hasAdvancements;
+   private final InvertableSetOptionState typeOption;
+   private final SetOnceOptionState scoresOption;
+   private final SetOnceOptionState advancementsOption;
    private boolean usesSelectors;
 
    public EntitySelectorParser(final StringReader reader, final boolean allowSelectors) {
       super();
       this.order = EntitySelector.ORDER_ARBITRARY;
       this.suggestions = SUGGEST_NOTHING;
+      this.nameOption = new InvertableSetOptionState();
+      this.limitedOption = new SetOnceOptionState();
+      this.sortedOption = new SetOnceOptionState();
+      this.gamemodeOption = new InvertableSetOptionState();
+      this.teamOption = new InvertableSetOptionState();
+      this.typeOption = new InvertableSetOptionState();
+      this.scoresOption = new SetOnceOptionState();
+      this.advancementsOption = new SetOnceOptionState();
       this.reader = reader;
       this.allowSelectors = allowSelectors;
    }
@@ -563,99 +570,39 @@ public class EntitySelectorParser {
       return (CompletableFuture)this.suggestions.apply(builder.createOffset(this.reader.getCursor()), names);
    }
 
-   public boolean hasNameEquals() {
-      return this.hasNameEquals;
+   public InvertableSetOptionState nameOption() {
+      return this.nameOption;
    }
 
-   public void setHasNameEquals(final boolean hasNameEquals) {
-      this.hasNameEquals = hasNameEquals;
+   public SetOnceOptionState limitedOption() {
+      return this.limitedOption;
    }
 
-   public boolean hasNameNotEquals() {
-      return this.hasNameNotEquals;
+   public SetOnceOptionState sortedOption() {
+      return this.sortedOption;
    }
 
-   public void setHasNameNotEquals(final boolean hasNameNotEquals) {
-      this.hasNameNotEquals = hasNameNotEquals;
+   public InvertableSetOptionState gamemodeOption() {
+      return this.gamemodeOption;
    }
 
-   public boolean isLimited() {
-      return this.isLimited;
-   }
-
-   public void setLimited(final boolean limited) {
-      this.isLimited = limited;
-   }
-
-   public boolean isSorted() {
-      return this.isSorted;
-   }
-
-   public void setSorted(final boolean sorted) {
-      this.isSorted = sorted;
-   }
-
-   public boolean hasGamemodeEquals() {
-      return this.hasGamemodeEquals;
-   }
-
-   public void setHasGamemodeEquals(final boolean hasGamemodeEquals) {
-      this.hasGamemodeEquals = hasGamemodeEquals;
-   }
-
-   public boolean hasGamemodeNotEquals() {
-      return this.hasGamemodeNotEquals;
-   }
-
-   public void setHasGamemodeNotEquals(final boolean hasGamemodeNotEquals) {
-      this.hasGamemodeNotEquals = hasGamemodeNotEquals;
-   }
-
-   public boolean hasTeamEquals() {
-      return this.hasTeamEquals;
-   }
-
-   public void setHasTeamEquals(final boolean hasTeamEquals) {
-      this.hasTeamEquals = hasTeamEquals;
-   }
-
-   public boolean hasTeamNotEquals() {
-      return this.hasTeamNotEquals;
-   }
-
-   public void setHasTeamNotEquals(final boolean hasTeamNotEquals) {
-      this.hasTeamNotEquals = hasTeamNotEquals;
+   public InvertableSetOptionState teamOption() {
+      return this.teamOption;
    }
 
    public void limitToType(final EntityType<?> type) {
       this.type = type;
    }
 
-   public void setTypeLimitedInversely() {
-      this.typeInverse = true;
+   public InvertableSetOptionState typeOption() {
+      return this.typeOption;
    }
 
-   public boolean isTypeLimited() {
-      return this.type != null;
+   public SetOnceOptionState scoresOption() {
+      return this.scoresOption;
    }
 
-   public boolean isTypeLimitedInversely() {
-      return this.typeInverse;
-   }
-
-   public boolean hasScores() {
-      return this.hasScores;
-   }
-
-   public void setHasScores(final boolean hasScores) {
-      this.hasScores = hasScores;
-   }
-
-   public boolean hasAdvancements() {
-      return this.hasAdvancements;
-   }
-
-   public void setHasAdvancements(final boolean hasAdvancements) {
-      this.hasAdvancements = hasAdvancements;
+   public SetOnceOptionState advancementsOption() {
+      return this.advancementsOption;
    }
 }

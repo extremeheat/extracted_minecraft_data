@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 
 public class SulfurCubeRenderState extends SlimeRenderState {
    public BlockModelRenderState containedBlock = new BlockModelRenderState();
+   public float fuseRemainingTicks;
 
    public SulfurCubeRenderState() {
       super();

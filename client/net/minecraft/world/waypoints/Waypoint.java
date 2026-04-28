@@ -16,6 +16,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.scores.TeamColor;
 
 public interface Waypoint {
    AttributeModifier WAYPOINT_TRANSMIT_RANGE_HIDE_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("waypoint_transmit_range_hide"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
@@ -51,7 +52,7 @@ public interface Waypoint {
 
       public Icon cloneAndAssignStyle(final LivingEntity livingEntity) {
          ResourceKey<WaypointStyleAsset> overrideStyle = this.getOverrideStyle();
-         Optional<Integer> colorOverride = this.color.or(() -> Optional.ofNullable(livingEntity.getTeam()).map((t) -> t.getColor().getColor()).map((teamColor) -> teamColor == 0 ? -13619152 : teamColor));
+         Optional<Integer> colorOverride = this.color.or(() -> Optional.ofNullable(livingEntity.getTeam()).flatMap((t) -> t.getColor()).map((teamColor) -> teamColor == TeamColor.BLACK ? -13619152 : teamColor.rgb()));
          return overrideStyle == this.style && colorOverride.isEmpty() ? this : new Icon(overrideStyle, colorOverride);
       }
 

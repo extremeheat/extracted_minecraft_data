@@ -124,7 +124,8 @@ public class Guardian extends Monster {
          } else {
             Entity entity = this.level().getEntity((Integer)this.entityData.get(DATA_ID_ATTACK_TARGET));
             if (entity instanceof LivingEntity) {
-               this.clientSideCachedAttackTarget = (LivingEntity)entity;
+               LivingEntity livingEntity = (LivingEntity)entity;
+               this.clientSideCachedAttackTarget = livingEntity;
                return this.clientSideCachedAttackTarget;
             } else {
                return null;

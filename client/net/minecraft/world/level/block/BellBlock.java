@@ -112,17 +112,23 @@ public class BellBlock extends BaseEntityBlock {
       if (clickedDirection.getAxis() != Direction.Axis.Y && !(clickY > 0.8123999834060669)) {
          Direction facing = (Direction)state.getValue(FACING);
          BellAttachType attachType = (BellAttachType)state.getValue(ATTACHMENT);
+         boolean var10000;
          switch (attachType) {
             case FLOOR:
-               return facing.getAxis() == clickedDirection.getAxis();
+               var10000 = facing.getAxis() == clickedDirection.getAxis();
+               break;
             case SINGLE_WALL:
             case DOUBLE_WALL:
-               return facing.getAxis() != clickedDirection.getAxis();
+               var10000 = facing.getAxis() != clickedDirection.getAxis();
+               break;
             case CEILING:
-               return true;
+               var10000 = true;
+               break;
             default:
-               return false;
+               var10000 = false;
          }
+
+         return var10000;
       } else {
          return false;
       }
@@ -134,12 +140,12 @@ public class BellBlock extends BaseEntityBlock {
 
    public boolean attemptToRing(final @Nullable Entity ringingEntity, final Level level, final BlockPos pos, @Nullable Direction direction) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (!level.isClientSide() && blockEntity instanceof BellBlockEntity) {
+      if (!level.isClientSide() && blockEntity instanceof BellBlockEntity bellBlockEntity) {
          if (direction == null) {
             direction = (Direction)level.getBlockState(pos).getValue(FACING);
          }
 
-         ((BellBlockEntity)blockEntity).onHit(direction);
+         bellBlockEntity.onHit(direction);
          level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0F, 1.0F);
          level.gameEvent(ringingEntity, GameEvent.BLOCK_CHANGE, pos);
          return true;
@@ -231,17 +237,14 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    private static Direction getConnectedDirection(final BlockState state) {
+      Direction var10000;
       switch ((BellAttachType)state.getValue(ATTACHMENT)) {
-         case FLOOR -> {
-            return Direction.UP;
-         }
-         case CEILING -> {
-            return Direction.DOWN;
-         }
-         default -> {
-            return ((Direction)state.getValue(FACING)).getOpposite();
-         }
+         case FLOOR -> var10000 = Direction.UP;
+         case CEILING -> var10000 = Direction.DOWN;
+         default -> var10000 = ((Direction)state.getValue(FACING)).getOpposite();
       }
+
+      return var10000;
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

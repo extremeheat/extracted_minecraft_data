@@ -1582,6 +1582,12 @@ public class SoundEvents {
    public static final SoundEvent STRAY_DEATH = register("entity.stray.death");
    public static final SoundEvent STRAY_HURT = register("entity.stray.hurt");
    public static final SoundEvent STRAY_STEP = register("entity.stray.step");
+   public static final SoundEvent SULFUR_SPIKE_BREAK = register("block.sulfur_spike.break");
+   public static final SoundEvent SULFUR_SPIKE_STEP = register("block.sulfur_spike.step");
+   public static final SoundEvent SULFUR_SPIKE_PLACE = register("block.sulfur_spike.place");
+   public static final SoundEvent SULFUR_SPIKE_HIT = register("block.sulfur_spike.hit");
+   public static final SoundEvent SULFUR_SPIKE_FALL = register("block.sulfur_spike.fall");
+   public static final SoundEvent SULFUR_SPIKE_LAND = register("block.sulfur_spike.land");
    public static final SoundEvent SWEET_BERRY_BUSH_BREAK = register("block.sweet_berry_bush.break");
    public static final SoundEvent SWEET_BERRY_BUSH_PLACE = register("block.sweet_berry_bush.place");
    public static final SoundEvent SWEET_BERRY_BUSH_PICK_BERRIES = register("block.sweet_berry_bush.pick_berries");
@@ -1848,6 +1854,8 @@ public class SoundEvents {
    public static final SoundEvent POTENT_SULFUR_PLACE = register("block.potent_sulfur.place");
    public static final SoundEvent POTENT_SULFUR_HIT = register("block.potent_sulfur.hit");
    public static final SoundEvent POTENT_SULFUR_FALL = register("block.potent_sulfur.fall");
+   public static final SoundEvent GEYSER_ERUPTION_START = register("block.potent_sulfur.geyser_eruption");
+   public static final SoundEvent GEYSER_ERUPTION_ACTIVE = register("block.potent_sulfur.geyser_eruption_active");
    public static final SoundEvent CINNABAR_BREAK = register("block.cinnabar.break");
    public static final SoundEvent CINNABAR_STEP = register("block.cinnabar.step");
    public static final SoundEvent CINNABAR_PLACE = register("block.cinnabar.place");

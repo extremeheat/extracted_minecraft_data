@@ -40,7 +40,7 @@ public class CreakingAi {
    }
 
    static ActivityData<Creaking> initIdleActivity() {
-      return ActivityData.<Creaking>create(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((level, mob) -> mob instanceof Creaking && mob.isActive(), (level, mob) -> mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      return ActivityData.<Creaking>create(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((level, mob) -> mob.isActive(), (level, mob) -> mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    static ActivityData<Creaking> initFightActivity(final Creaking body) {

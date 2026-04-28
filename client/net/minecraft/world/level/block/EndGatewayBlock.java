@@ -46,8 +46,8 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof TheEndGatewayBlockEntity) {
-         int particleCount = ((TheEndGatewayBlockEntity)blockEntity).getParticleAmount();
+      if (blockEntity instanceof TheEndGatewayBlockEntity theEndGatewayBlockEntity) {
+         int particleCount = theEndGatewayBlockEntity.getParticleAmount();
 
          for(int i = 0; i < particleCount; ++i) {
             double x = (double)pos.getX() + random.nextDouble();

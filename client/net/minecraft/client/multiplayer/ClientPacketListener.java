@@ -275,7 +275,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.TickRateManager;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -1633,14 +1632,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleUpdateMobEffect(final ClientboundUpdateMobEffectPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity entity = this.level.getEntity(packet.getEntityId());
-      if (entity instanceof LivingEntity) {
-         Holder<MobEffect> effect = packet.getEffect();
+      if (entity instanceof LivingEntity livingEntity) {
+         Holder effect = packet.getEffect();
          MobEffectInstance mobEffectInstance = new MobEffectInstance(effect, packet.getEffectDurationTicks(), packet.getEffectAmplifier(), packet.isEffectAmbient(), packet.isEffectVisible(), packet.effectShowsIcon(), (MobEffectInstance)null);
          if (!packet.shouldBlend()) {
             mobEffectInstance.skipBlending();
          }
 
-         ((LivingEntity)entity).forceAddEffect(mobEffectInstance, (Entity)null);
+         livingEntity.forceAddEffect(mobEffectInstance, (Entity)null);
       }
    }
 
@@ -2067,13 +2066,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       Optional<ClientboundSetPlayerTeamPacket.Parameters> parameters = packet.getParameters();
       parameters.ifPresent((p) -> {
-         team.setDisplayName(p.getDisplayName());
-         team.setColor(p.getColor());
-         team.unpackOptions(p.getOptions());
-         team.setNameTagVisibility(p.getNametagVisibility());
-         team.setCollisionRule(p.getCollisionRule());
-         team.setPlayerPrefix(p.getPlayerPrefix());
-         team.setPlayerSuffix(p.getPlayerSuffix());
+         team.setDisplayName(p.displayName());
+         team.setColor(p.color());
+         team.unpackOptions(p.options());
+         team.setNameTagVisibility(p.nameTagVisibility());
+         team.setCollisionRule(p.collisionRule());
+         team.setPlayerPrefix(p.playerPrefix());
+         team.setPlayerSuffix(p.playerSuffix());
       });
       ClientboundSetPlayerTeamPacket.Action playerAction = packet.getPlayerAction();
       if (playerAction == ClientboundSetPlayerTeamPacket.Action.ADD) {
@@ -2131,7 +2130,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          if (!(entity instanceof LivingEntity)) {
             throw new IllegalStateException("Server tried to update attributes of a non-living entity (actually: " + String.valueOf(entity) + ")");
          } else {
-            AttributeMap attributes = ((LivingEntity)entity).getAttributes();
+            LivingEntity livingEntity = (LivingEntity)entity;
+            AttributeMap attributes = livingEntity.getAttributes();
 
             for(ClientboundUpdateAttributesPacket.AttributeSnapshot attribute : packet.getValues()) {
                AttributeInstance instance = attributes.getInstance(attribute.attribute());

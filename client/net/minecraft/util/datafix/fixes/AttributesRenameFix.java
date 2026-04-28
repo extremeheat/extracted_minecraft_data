@@ -15,18 +15,32 @@ import net.minecraft.util.datafix.ExtraDataFixUtils;
 public class AttributesRenameFix extends DataFix {
    private final String name;
    private final UnaryOperator<String> renames;
+   private final boolean oldDataComponentFormat;
 
    public AttributesRenameFix(final Schema outputSchema, final String name, final UnaryOperator<String> renames) {
+      this(outputSchema, name, renames, false);
+   }
+
+   public AttributesRenameFix(final Schema outputSchema, final String name, final UnaryOperator<String> renames, final boolean oldDataComponentFormat) {
       super(outputSchema, false);
       this.name = name;
       this.renames = renames;
+      this.oldDataComponentFormat = oldDataComponentFormat;
    }
 
    protected TypeRewriteRule makeRule() {
-      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped(this.name + " (Components)", this.getInputSchema().getType(References.DATA_COMPONENTS), this::fixDataComponents), new TypeRewriteRule[]{this.fixTypeEverywhereTyped(this.name + " (Entity)", this.getInputSchema().getType(References.ENTITY), this::fixEntity), this.fixTypeEverywhereTyped(this.name + " (Player)", this.getInputSchema().getType(References.PLAYER), this::fixEntity)});
+      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped(this.name + " (Components)", this.getInputSchema().getType(References.DATA_COMPONENTS), this.oldDataComponentFormat ? this::fixDataComponentsOld : this::fixDataComponents), new TypeRewriteRule[]{this.fixTypeEverywhereTyped(this.name + " (Entity)", this.getInputSchema().getType(References.ENTITY), this::fixEntity), this.fixTypeEverywhereTyped(this.name + " (Player)", this.getInputSchema().getType(References.PLAYER), this::fixEntity)});
    }
 
    private Typed<?> fixDataComponents(final Typed<?> components) {
+      return components.update(DSL.remainderFinder(), (componentData) -> componentData.update("minecraft:attribute_modifiers", (attributeModifiers) -> {
+            Optional var10000 = attributeModifiers.asStreamOpt().result().map((modifierStream) -> modifierStream.map(this::fixTypeField));
+            Objects.requireNonNull(attributeModifiers);
+            return (Dynamic)DataFixUtils.orElse(var10000.map(attributeModifiers::createList), attributeModifiers);
+         }));
+   }
+
+   private Typed<?> fixDataComponentsOld(final Typed<?> components) {
       return components.update(DSL.remainderFinder(), (componentData) -> componentData.update("minecraft:attribute_modifiers", (attributeModifiers) -> attributeModifiers.update("modifiers", (modifiers) -> {
                Optional var10000 = modifiers.asStreamOpt().result().map((modifierStream) -> modifierStream.map(this::fixTypeField));
                Objects.requireNonNull(modifiers);

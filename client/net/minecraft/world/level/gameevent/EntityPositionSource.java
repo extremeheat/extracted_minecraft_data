@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityPositionSource implements PositionSource {
-   public static final MapCodec<EntityPositionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(UUIDUtil.CODEC.fieldOf("source_entity").forGetter(EntityPositionSource::getUuid), Codec.FLOAT.fieldOf("y_offset").orElse(0.0F).forGetter((o) -> o.yOffset)).apply(i, (uuid, offset) -> new EntityPositionSource(Either.right(Either.left(uuid)), offset)));
+   public static final MapCodec<EntityPositionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(UUIDUtil.CODEC.fieldOf("source_entity").forGetter(EntityPositionSource::getUuid), Codec.FLOAT.optionalFieldOf("y_offset", 0.0F).forGetter((o) -> o.yOffset)).apply(i, (uuid, offset) -> new EntityPositionSource(Either.right(Either.left(uuid)), offset)));
    public static final StreamCodec<ByteBuf, EntityPositionSource> STREAM_CODEC;
    private Either<Entity, Either<UUID, Integer>> entityOrUuidOrId;
    private final float yOffset;

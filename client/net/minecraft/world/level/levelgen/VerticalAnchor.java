@@ -35,7 +35,18 @@ public interface VerticalAnchor {
    }
 
    private static Either<Absolute, Either<AboveBottom, BelowTop>> split(final VerticalAnchor anchor) {
-      return anchor instanceof Absolute ? Either.left((Absolute)anchor) : Either.right(anchor instanceof AboveBottom ? Either.left((AboveBottom)anchor) : Either.right((BelowTop)anchor));
+      if (anchor instanceof Absolute absolute) {
+         return Either.left(absolute);
+      } else {
+         Either var10000;
+         if (anchor instanceof AboveBottom aboveBottom) {
+            var10000 = Either.left(aboveBottom);
+         } else {
+            var10000 = Either.right((BelowTop)anchor);
+         }
+
+         return Either.right(var10000);
+      }
    }
 
    int resolveY(final WorldGenerationContext heightAccessor);

@@ -395,8 +395,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       public void getTag(final Tag parent, final List<Tag> output) {
-         if (parent instanceof CompoundTag) {
-            Tag result = ((CompoundTag)parent).get(this.name);
+         if (parent instanceof CompoundTag compoundTag) {
+            Tag result = compoundTag.get(this.name);
             if (result != null) {
                output.add(result);
             }
@@ -670,8 +670,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       public void getTag(final Tag parent, final List<Tag> output) {
-         if (parent instanceof CompoundTag) {
-            Tag result = ((CompoundTag)parent).get(this.name);
+         if (parent instanceof CompoundTag compoundTag) {
+            Tag result = compoundTag.get(this.name);
             if (this.predicate.test(result)) {
                output.add(result);
             }

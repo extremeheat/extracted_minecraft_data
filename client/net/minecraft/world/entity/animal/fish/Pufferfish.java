@@ -166,17 +166,14 @@ public class Pufferfish extends AbstractFish {
    }
 
    private static float getScale(final int state) {
+      float var10000;
       switch (state) {
-         case 0 -> {
-            return 0.5F;
-         }
-         case 1 -> {
-            return 0.7F;
-         }
-         default -> {
-            return 1.0F;
-         }
+         case 0 -> var10000 = 0.5F;
+         case 1 -> var10000 = 0.7F;
+         default -> var10000 = 1.0F;
       }
+
+      return var10000;
    }
 
    static {

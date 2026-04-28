@@ -35,7 +35,8 @@ public class DragonFireball extends AbstractHurtingProjectile {
             AreaEffectCloud cloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
             Entity owner = this.getOwner();
             if (owner instanceof LivingEntity) {
-               cloud.setOwner((LivingEntity)owner);
+               LivingEntity livingEntity = (LivingEntity)owner;
+               cloud.setOwner(livingEntity);
             }
 
             cloud.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));

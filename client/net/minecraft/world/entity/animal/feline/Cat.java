@@ -26,6 +26,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -81,6 +84,7 @@ public class Cat extends TamableAnimal {
    private static final EntityDataAccessor<Holder<CatSoundVariant>> DATA_SOUND_VARIANT_ID;
    private static final ResourceKey<CatVariant> DEFAULT_VARIANT;
    private static final DyeColor DEFAULT_COLLAR_COLOR;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private @Nullable CatAvoidEntityGoal<Player> avoidPlayersGoal;
    private @Nullable TemptGoal temptGoal;
    private float lieDownAmount;
@@ -268,6 +272,10 @@ public class Cat extends TamableAnimal {
 
    public static AttributeSupplier.Builder createAttributes() {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    protected void playEatingSound() {
@@ -480,6 +488,7 @@ public class Cat extends TamableAnimal {
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<CatSoundVariant>>defineId(Cat.class, EntityDataSerializers.CAT_SOUND_VARIANT);
       DEFAULT_VARIANT = CatVariants.BLACK;
       DEFAULT_COLLAR_COLOR = DyeColor.RED;
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.3F, 0.35F).withEyeHeight(0.34375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.3125F, 0.0F));
    }
 
    private static class CatAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

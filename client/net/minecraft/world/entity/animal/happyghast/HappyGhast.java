@@ -20,12 +20,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -70,6 +72,7 @@ public class HappyGhast extends Animal {
    private static final EntityDataAccessor<Boolean> IS_LEASH_HOLDER;
    private static final EntityDataAccessor<Boolean> STAYS_STILL;
    private static final float MAX_SCALE = 1.0F;
+   private static final EntityDimensions BABY_DIMENSIONS;
 
    public HappyGhast(final EntityType<? extends HappyGhast> type, final Level level) {
       super(type, level);
@@ -203,6 +206,10 @@ public class HappyGhast extends Animal {
 
    public int getMaxSpawnClusterSize() {
       return 1;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
@@ -536,6 +543,7 @@ public class HappyGhast extends Animal {
       BRAIN_PROVIDER = Brain.<HappyGhast>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS, SensorType.NEAREST_ADULT_ANY_TYPE, SensorType.NEAREST_PLAYERS), (var0) -> HappyGhastAi.getActivities());
       IS_LEASH_HOLDER = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
       STAYS_STILL = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
+      BABY_DIMENSIONS = EntityTypes.HAPPY_GHAST.getDimensions().scale(0.2375F).withEyeHeight(0.46875F);
    }
 
    private static class BabyFlyingPathNavigation extends FlyingPathNavigation {

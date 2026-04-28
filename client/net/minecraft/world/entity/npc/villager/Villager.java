@@ -503,6 +503,14 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       this.entityData.set(DATA_VILLAGER_DATA, data);
    }
 
+   public boolean getVillagerDataFinalized() {
+      return (Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED);
+   }
+
+   public void setVillagerDataFinalized(final boolean villagerDataFinalized) {
+      this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, villagerDataFinalized);
+   }
+
    public VillagerData getVillagerData() {
       return (VillagerData)this.entityData.get(DATA_VILLAGER_DATA);
    }
@@ -855,7 +863,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
       DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(Villager.class, EntityDataSerializers.BOOLEAN);
       FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.63F);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.63F);
       BRAIN_PROVIDER = Brain.<Villager>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED), (body) -> {
          Holder<VillagerProfession> profession = body.getVillagerData().profession();
          List<ActivityData<Villager>> activities = new ArrayList();

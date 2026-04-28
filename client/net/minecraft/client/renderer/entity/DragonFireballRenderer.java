@@ -29,18 +29,24 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
       poseStack.pushPose();
       poseStack.scale(2.0F, 2.0F, 2.0F);
       poseStack.mulPose((Quaternionfc)camera.orientation);
-      submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, state.outlineColor, (pose, buffer) -> {
-         vertex(buffer, pose, state.lightCoords, 0.0F, 0, 0, 1);
-         vertex(buffer, pose, state.lightCoords, 1.0F, 0, 1, 1);
-         vertex(buffer, pose, state.lightCoords, 1.0F, 1, 1, 0);
-         vertex(buffer, pose, state.lightCoords, 0.0F, 1, 0, 0);
-      });
+      submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> buildQuad(state, pose, buffer, -1));
+      if (state.outlineColor != 0 && RENDER_TYPE.outline().isPresent()) {
+         submitNodeCollector.submitCustomGeometry(poseStack, (RenderType)RENDER_TYPE.outline().get(), (pose, buffer) -> buildQuad(state, pose, buffer, state.outlineColor));
+      }
+
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   private static void vertex(final VertexConsumer builder, final PoseStack.Pose pose, final int lightCoords, final float x, final int y, final int u, final int v) {
-      builder.addVertex(pose, x - 0.5F, (float)y - 0.25F, 0.0F).setColor(-1).setUv((float)u, (float)v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, 1.0F, 0.0F);
+   private static void buildQuad(final EntityRenderState state, final PoseStack.Pose pose, final VertexConsumer buffer, final int color) {
+      vertex(buffer, pose, state.lightCoords, 0.0F, 0, 0, 1, color);
+      vertex(buffer, pose, state.lightCoords, 1.0F, 0, 1, 1, color);
+      vertex(buffer, pose, state.lightCoords, 1.0F, 1, 1, 0, color);
+      vertex(buffer, pose, state.lightCoords, 0.0F, 1, 0, 0, color);
+   }
+
+   private static void vertex(final VertexConsumer builder, final PoseStack.Pose pose, final int lightCoords, final float x, final int y, final int u, final int v, final int color) {
+      builder.addVertex(pose, x - 0.5F, (float)y - 0.25F, 0.0F).setColor(color).setUv((float)u, (float)v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, 1.0F, 0.0F);
    }
 
    public EntityRenderState createRenderState() {

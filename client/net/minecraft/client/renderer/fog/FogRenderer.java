@@ -139,7 +139,8 @@ public class FogRenderer implements AutoCloseable {
          float brightenFactor;
          if (fogType == FogType.WATER) {
             if (entity instanceof LocalPlayer) {
-               brightenFactor = ((LocalPlayer)entity).getWaterVision();
+               LocalPlayer localPlayer = (LocalPlayer)entity;
+               brightenFactor = localPlayer.getWaterVision();
             } else {
                brightenFactor = 1.0F;
             }

@@ -284,8 +284,8 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
 
    public abstract void removeBlockEntity(BlockPos pos);
 
-   public void markPosForPostprocessing(final BlockPos blockPos) {
-      LOGGER.warn("Trying to mark a block for PostProcessing @ {}, but this operation is not supported.", blockPos);
+   public void markPosForPostProcessing(final BlockPos blockPos) {
+      LOGGER.warn("Trying to mark a block for post processing @ {}, but this operation is not supported.", blockPos);
    }
 
    public @Nullable ShortList[] getPostProcessing() {

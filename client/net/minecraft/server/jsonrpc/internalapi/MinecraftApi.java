@@ -2,7 +2,6 @@ package net.minecraft.server.jsonrpc.internalapi;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.notifications.NotificationManager;
 
@@ -70,16 +69,16 @@ public class MinecraftApi {
       return this.notificationManager;
    }
 
-   public static MinecraftApi of(final DedicatedServer server) {
+   public static MinecraftApi of(final NotificationManager notificationManager) {
       JsonRpcLogger jsonrpcLogger = new JsonRpcLogger();
-      MinecraftAllowListServiceImpl allowListService = new MinecraftAllowListServiceImpl(server, jsonrpcLogger);
-      MinecraftBanListServiceImpl banListService = new MinecraftBanListServiceImpl(server, jsonrpcLogger);
-      MinecraftPlayerListServiceImpl playerListService = new MinecraftPlayerListServiceImpl(server, jsonrpcLogger);
-      MinecraftGameRuleServiceImpl gameRuleService = new MinecraftGameRuleServiceImpl(server, jsonrpcLogger);
-      MinecraftOperatorListServiceImpl operatorListService = new MinecraftOperatorListServiceImpl(server, jsonrpcLogger);
-      MinecraftServerSettingsServiceImpl serverSettingsService = new MinecraftServerSettingsServiceImpl(server, jsonrpcLogger);
-      MinecraftServerStateServiceImpl serverStateService = new MinecraftServerStateServiceImpl(server, jsonrpcLogger);
-      MinecraftExecutorService executorService = new MinecraftExecutorServiceImpl(server);
-      return new MinecraftApi(server.notificationManager(), allowListService, banListService, playerListService, gameRuleService, operatorListService, serverSettingsService, serverStateService, executorService);
+      MinecraftAllowListServiceImpl allowListService = new MinecraftAllowListServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftBanListServiceImpl banListService = new MinecraftBanListServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftPlayerListServiceImpl playerListService = new MinecraftPlayerListServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftGameRuleServiceImpl gameRuleService = new MinecraftGameRuleServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftOperatorListServiceImpl operatorListService = new MinecraftOperatorListServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftServerSettingsServiceImpl serverSettingsService = new MinecraftServerSettingsServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftServerStateServiceImpl serverStateService = new MinecraftServerStateServiceImpl(notificationManager, jsonrpcLogger);
+      MinecraftExecutorService executorService = new MinecraftExecutorServiceImpl(notificationManager);
+      return new MinecraftApi(notificationManager, allowListService, banListService, playerListService, gameRuleService, operatorListService, serverSettingsService, serverStateService, executorService);
    }
 }

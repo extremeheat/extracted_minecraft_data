@@ -689,7 +689,7 @@ public class Panda extends Animal {
       HIDDEN_GENE_ID = SynchedEntityData.<Byte>defineId(Panda.class, EntityDataSerializers.BYTE);
       DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(Panda.class, EntityDataSerializers.BYTE);
       BREED_TARGETING = TargetingConditions.forNonCombat().range(8.0);
-      BABY_DIMENSIONS = EntityTypes.PANDA.getDimensions().scale(0.5F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.40625F, 0.0F));
+      BABY_DIMENSIONS = EntityTypes.PANDA.getDimensions().scale(0.5F).withEyeHeight(0.28125F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.5625F, 0.0F));
    }
 
    public static enum Gene implements StringRepresentable {

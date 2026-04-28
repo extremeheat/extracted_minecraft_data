@@ -788,7 +788,8 @@ public abstract class Player extends Avatar implements ContainerUser {
    public InteractionResult interactOn(final Entity entity, final InteractionHand hand, final Vec3 location) {
       if (this.isSpectator()) {
          if (entity instanceof MenuProvider) {
-            this.openMenu((MenuProvider)entity);
+            MenuProvider menuProvider = (MenuProvider)entity;
+            this.openMenu(menuProvider);
          }
 
          return InteractionResult.PASS;
@@ -804,11 +805,12 @@ public abstract class Player extends Avatar implements ContainerUser {
             return interact;
          } else {
             if (!itemStack.isEmpty() && entity instanceof LivingEntity) {
+               LivingEntity livingEntity = (LivingEntity)entity;
                if (this.hasInfiniteMaterials()) {
                   itemStack = itemStackClone;
                }
 
-               InteractionResult interactionResult = itemStack.interactLivingEntity(this, (LivingEntity)entity, hand);
+               InteractionResult interactionResult = itemStack.interactLivingEntity(this, livingEntity, hand);
                if (interactionResult.consumesAction()) {
                   this.level().gameEvent(GameEvent.ENTITY_INTERACT, entity.position(), GameEvent.Context.of((Entity)this));
                   if (itemStack.isEmpty() && !this.hasInfiniteMaterials()) {
@@ -1004,8 +1006,8 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    private void damageStatsAndHearts(final Entity entity, final float oldLivingEntityHealth) {
-      if (entity instanceof LivingEntity) {
-         float actualDamage = oldLivingEntityHealth - ((LivingEntity)entity).getHealth();
+      if (entity instanceof LivingEntity livingEntity) {
+         float actualDamage = oldLivingEntityHealth - livingEntity.getHealth();
          this.awardStat(Stats.DAMAGE_DEALT, Math.round(actualDamage * 10.0F));
          if (this.level() instanceof ServerLevel && actualDamage > 2.0F) {
             int count = (int)((double)actualDamage * 0.5);
@@ -1017,8 +1019,8 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    private void itemAttackInteraction(final Entity entity, final ItemStack attackingItemStack, final DamageSource damageSource, final boolean applyToTarget) {
       Entity hurtTarget = entity;
-      if (entity instanceof EnderDragonPart) {
-         hurtTarget = ((EnderDragonPart)entity).parentMob;
+      if (entity instanceof EnderDragonPart enderDragonPart) {
+         hurtTarget = enderDragonPart.parentMob;
       }
 
       boolean itemHurtEnemy = false;
@@ -1062,10 +1064,12 @@ public abstract class Player extends Avatar implements ContainerUser {
          this.setSprinting(false);
       }
 
-      if (entity instanceof ServerPlayer && entity.hurtMarked) {
-         ((ServerPlayer)entity).connection.send(new ClientboundSetEntityMotionPacket(entity));
-         entity.hurtMarked = false;
-         entity.setDeltaMovement(oldMovement);
+      if (entity instanceof ServerPlayer serverPlayer) {
+         if (entity.hurtMarked) {
+            serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
+            entity.hurtMarked = false;
+            entity.setDeltaMovement(oldMovement);
+         }
       }
 
    }

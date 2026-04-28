@@ -216,20 +216,15 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      BlockState var10000;
       switch (rotation) {
-         case CLOCKWISE_180 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(SOUTH))).setValue(EAST, (WallSide)state.getValue(WEST))).setValue(SOUTH, (WallSide)state.getValue(NORTH))).setValue(WEST, (WallSide)state.getValue(EAST));
-         }
-         case COUNTERCLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(EAST))).setValue(EAST, (WallSide)state.getValue(SOUTH))).setValue(SOUTH, (WallSide)state.getValue(WEST))).setValue(WEST, (WallSide)state.getValue(NORTH));
-         }
-         case CLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(WEST))).setValue(EAST, (WallSide)state.getValue(NORTH))).setValue(SOUTH, (WallSide)state.getValue(EAST))).setValue(WEST, (WallSide)state.getValue(SOUTH));
-         }
-         default -> {
-            return state;
-         }
+         case CLOCKWISE_180 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(SOUTH))).setValue(EAST, (WallSide)state.getValue(WEST))).setValue(SOUTH, (WallSide)state.getValue(NORTH))).setValue(WEST, (WallSide)state.getValue(EAST));
+         case COUNTERCLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(EAST))).setValue(EAST, (WallSide)state.getValue(SOUTH))).setValue(SOUTH, (WallSide)state.getValue(WEST))).setValue(WEST, (WallSide)state.getValue(NORTH));
+         case CLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (WallSide)state.getValue(WEST))).setValue(EAST, (WallSide)state.getValue(NORTH))).setValue(SOUTH, (WallSide)state.getValue(EAST))).setValue(WEST, (WallSide)state.getValue(SOUTH));
+         default -> var10000 = state;
       }
+
+      return var10000;
    }
 
    protected BlockState mirror(final BlockState state, final Mirror mirror) {

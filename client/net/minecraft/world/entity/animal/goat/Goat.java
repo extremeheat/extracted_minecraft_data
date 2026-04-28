@@ -24,6 +24,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -53,7 +55,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Goat extends Animal {
-   public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.scalable(0.9F, 1.3F).scale(0.7F);
+   public static final float LONG_JUMPING_DIMENSION_SCALE_FACTOR = 0.7F;
+   private static final EntityDimensions BABY_DIMENSIONS;
    public static final float BABY_DEFAULT_X_HEAD_ROT = 22.5F;
    public static final float MAX_ADDED_RAMMING_X_HEAD_ROT = 30.0F;
    private static final float BABY_SCALE = 0.55F;
@@ -221,7 +224,8 @@ public class Goat extends Animal {
    }
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
-      return pose == Pose.LONG_JUMPING ? LONG_JUMPING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(pose);
+      EntityDimensions entityDimensions = this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+      return pose == Pose.LONG_JUMPING ? entityDimensions.scale(0.7F) : entityDimensions;
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -324,6 +328,7 @@ public class Goat extends Animal {
    }
 
    static {
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.65F).withEyeHeight(0.59375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.53125F, 0.0F));
       BRAIN_PROVIDER = Brain.<Goat>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS), (var0) -> GoatAi.getActivities());
       DATA_IS_SCREAMING_GOAT = SynchedEntityData.<Boolean>defineId(Goat.class, EntityDataSerializers.BOOLEAN);
       DATA_HAS_LEFT_HORN = SynchedEntityData.<Boolean>defineId(Goat.class, EntityDataSerializers.BOOLEAN);

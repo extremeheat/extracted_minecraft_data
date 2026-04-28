@@ -1,34 +1,14 @@
 package net.minecraft.client.renderer;
 
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSortedSets;
-import java.util.SequencedSet;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.util.Util;
-
 public class RenderBuffers implements AutoCloseable {
    private final SectionBufferBuilderPack fixedBufferPack = new SectionBufferBuilderPack();
    private final SectionBufferBuilderPool sectionBufferPool;
-   private final MultiBufferSource.BufferSource bufferSource;
-   private final OutlineBufferSource outlineBufferSource;
+   private final StagedVertexBuffer stagedVertexBuffer;
 
    public RenderBuffers(final int maxSectionBuilders) {
       super();
       this.sectionBufferPool = SectionBufferBuilderPool.allocate(maxSectionBuilders);
-      SequencedSet<RenderType> fixedTypes = (SequencedSet)Util.make(new ObjectLinkedOpenHashSet(), (types) -> {
-         types.add(Sheets.cutoutBlockItemSheet());
-         types.add(Sheets.translucentBlockItemSheet());
-         types.add(Sheets.cutoutItemSheet());
-         types.add(Sheets.translucentItemSheet());
-         types.add(RenderTypes.glint());
-         types.add(RenderTypes.glintTranslucent());
-         types.add(RenderTypes.waterMask());
-         types.addAll(ModelBakery.DESTROY_TYPES);
-      });
-      this.bufferSource = MultiBufferSource.create(786432, fixedTypes);
-      this.outlineBufferSource = new OutlineBufferSource(MultiBufferSource.create(1536, ObjectSortedSets.emptySet()));
+      this.stagedVertexBuffer = new StagedVertexBuffer(() -> "Shared Buffer", 4194304);
    }
 
    public SectionBufferBuilderPack fixedBufferPack() {
@@ -39,21 +19,16 @@ public class RenderBuffers implements AutoCloseable {
       return this.sectionBufferPool;
    }
 
-   public MultiBufferSource.BufferSource bufferSource() {
-      return this.bufferSource;
-   }
-
-   public OutlineBufferSource outlineBufferSource() {
-      return this.outlineBufferSource;
+   public StagedVertexBuffer stagedVertexBuffer() {
+      return this.stagedVertexBuffer;
    }
 
    public void endFrame() {
-      this.bufferSource.endFrame();
-      this.outlineBufferSource.endFrame();
+      this.stagedVertexBuffer.endFrame();
    }
 
    public void close() {
-      this.bufferSource.close();
-      this.outlineBufferSource.close();
+      this.sectionBufferPool.close();
+      this.stagedVertexBuffer.close();
    }
 }

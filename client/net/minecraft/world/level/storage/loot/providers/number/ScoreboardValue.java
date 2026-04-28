@@ -15,7 +15,7 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 
 public record ScoreboardValue(ScoreboardNameProvider target, String score, float scale) implements NumberProvider {
-   public static final MapCodec<ScoreboardValue> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target), Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score), Codec.FLOAT.fieldOf("scale").orElse(1.0F).forGetter(ScoreboardValue::scale)).apply(i, ScoreboardValue::new));
+   public static final MapCodec<ScoreboardValue> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target), Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score), Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(ScoreboardValue::scale)).apply(i, ScoreboardValue::new));
 
    public ScoreboardValue {
       super();

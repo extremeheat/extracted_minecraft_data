@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -91,15 +90,12 @@ public class LanguageSelectScreen extends OptionsSubScreen {
    }
 
    private void onDone() {
-      if (this.languageSelectionList != null) {
-         AbstractSelectionList.Entry var2 = this.languageSelectionList.getSelected();
-         if (var2 instanceof LanguageSelectionList.Entry) {
-            LanguageSelectionList.Entry selectedEntry = (LanguageSelectionList.Entry)var2;
-            if (!selectedEntry.code.equals(this.languageManager.getSelected())) {
-               this.languageManager.setSelected(selectedEntry.code);
-               this.options.languageCode = selectedEntry.code;
-               this.minecraft.reloadResourcePacks();
-            }
+      if (this.languageSelectionList != null && this.languageSelectionList.getSelected() != null) {
+         LanguageSelectionList.Entry selectedEntry = (LanguageSelectionList.Entry)this.languageSelectionList.getSelected();
+         if (!selectedEntry.code.equals(this.languageManager.getSelected())) {
+            this.languageManager.setSelected(selectedEntry.code);
+            this.options.languageCode = selectedEntry.code;
+            this.minecraft.reloadResourcePacks();
          }
       }
 

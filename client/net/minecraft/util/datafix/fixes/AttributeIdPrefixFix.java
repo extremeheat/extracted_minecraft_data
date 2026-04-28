@@ -8,7 +8,7 @@ public class AttributeIdPrefixFix extends AttributesRenameFix {
    private static final List<String> PREFIXES = List.of("generic.", "horse.", "player.", "zombie.");
 
    public AttributeIdPrefixFix(final Schema outputSchema) {
-      super(outputSchema, "AttributeIdPrefixFix", AttributeIdPrefixFix::replaceId);
+      super(outputSchema, "AttributeIdPrefixFix", AttributeIdPrefixFix::replaceId, true);
    }
 
    private static String replaceId(final String id) {

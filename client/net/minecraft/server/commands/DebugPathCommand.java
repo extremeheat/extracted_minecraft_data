@@ -30,9 +30,7 @@ public class DebugPathCommand {
 
    private static int fillBlocks(final CommandSourceStack source, final BlockPos target) throws CommandSyntaxException {
       Entity entity = source.getEntity();
-      if (!(entity instanceof Mob mob)) {
-         throw ERROR_NOT_MOB.create();
-      } else {
+      if (entity instanceof Mob mob) {
          PathNavigation pathNavigation = new GroundPathNavigation(mob, source.getLevel());
          Path path = pathNavigation.createPath(target, 0);
          if (path == null) {
@@ -43,6 +41,8 @@ public class DebugPathCommand {
             source.sendSuccess(() -> Component.literal("Made path"), true);
             return 1;
          }
+      } else {
+         throw ERROR_NOT_MOB.create();
       }
    }
 }

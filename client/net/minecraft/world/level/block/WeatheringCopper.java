@@ -21,8 +21,9 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatherState> {
    Supplier<BiMap<Block, Block>> NEXT_BY_BLOCK = Suppliers.memoize(() -> {
       ImmutableBiMap.Builder<Block, Block> builder = ImmutableBiMap.builder();
       Stream.of(Blocks.COPPER_BLOCK, Blocks.CUT_COPPER, Blocks.CHISELED_COPPER, Blocks.CUT_COPPER_SLAB, Blocks.CUT_COPPER_STAIRS, Blocks.COPPER_DOOR, Blocks.COPPER_TRAPDOOR, Blocks.COPPER_BARS, Blocks.COPPER_GRATE, Blocks.COPPER_BULB, Blocks.COPPER_LANTERN, Blocks.COPPER_CHEST, Blocks.COPPER_GOLEM_STATUE, Blocks.LIGHTNING_ROD, Blocks.COPPER_CHAIN).forEach((collection) -> {
+         WeatheringCopperCollection.ByState var10000 = collection.weathering();
          Objects.requireNonNull(builder);
-         collection.progressMapping(builder::put);
+         var10000.progressMapping(builder::put);
       });
       return builder.build();
    });

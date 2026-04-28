@@ -198,7 +198,6 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       double camY = cameraPos.y();
       double camZ = cameraPos.z();
       TickRateManager tickRateManager = this.minecraft.level.tickRateManager();
-      boolean shouldShowEntityOutlines = this.shouldShowEntityOutlines(camera);
       Entity.setViewScale(Mth.clamp((double)this.minecraft.options.getEffectiveRenderDistance() / 8.0, 1.0, 2.5) * (Double)this.minecraft.options.entityDistanceScaling().get());
       EntityRenderDispatcher entityRenderDispatcher = this.levelRenderer.entityRenderDispatcher();
 
@@ -215,9 +214,6 @@ public class LevelExtractor implements ResourceManagerReloadListener {
                float partialEntity = deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
                EntityRenderState state = this.extractEntity(entity, partialEntity);
                output.entityRenderStates.add(state);
-               if (state.appearsGlowing() && shouldShowEntityOutlines) {
-                  output.haveGlowingEntities = true;
-               }
             }
          }
       }

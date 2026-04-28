@@ -115,17 +115,23 @@ public abstract class StructurePiece {
       if (orientation == null) {
          return x;
       } else {
+         int var10000;
          switch (orientation) {
             case NORTH:
             case SOUTH:
-               return this.boundingBox.minX() + x;
+               var10000 = this.boundingBox.minX() + x;
+               break;
             case WEST:
-               return this.boundingBox.maxX() - z;
+               var10000 = this.boundingBox.maxX() - z;
+               break;
             case EAST:
-               return this.boundingBox.minX() + z;
+               var10000 = this.boundingBox.minX() + z;
+               break;
             default:
-               return x;
+               var10000 = x;
          }
+
+         return var10000;
       }
    }
 
@@ -138,17 +144,23 @@ public abstract class StructurePiece {
       if (orientation == null) {
          return z;
       } else {
+         int var10000;
          switch (orientation) {
             case NORTH:
-               return this.boundingBox.maxZ() - z;
+               var10000 = this.boundingBox.maxZ() - z;
+               break;
             case SOUTH:
-               return this.boundingBox.minZ() + z;
+               var10000 = this.boundingBox.minZ() + z;
+               break;
             case WEST:
             case EAST:
-               return this.boundingBox.minZ() + x;
+               var10000 = this.boundingBox.minZ() + x;
+               break;
             default:
-               return z;
+               var10000 = z;
          }
+
+         return var10000;
       }
    }
 
@@ -171,7 +183,7 @@ public abstract class StructurePiece {
             }
 
             if (SHAPE_CHECK_BLOCKS.contains(blockState.getBlock())) {
-               level.getChunk(pos).markPosForPostprocessing(pos);
+               level.getChunk(pos).markPosForPostProcessing(pos);
             }
 
          }
@@ -369,7 +381,8 @@ public abstract class StructurePiece {
          level.setBlock(pos, blockState, 2);
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (blockEntity instanceof ChestBlockEntity) {
-            ((ChestBlockEntity)blockEntity).setLootTable(lootTable, random.nextLong());
+            ChestBlockEntity chestBlockEntity = (ChestBlockEntity)blockEntity;
+            chestBlockEntity.setLootTable(lootTable, random.nextLong());
          }
 
          return true;
@@ -384,7 +397,8 @@ public abstract class StructurePiece {
          this.placeBlock(level, (BlockState)Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, facing), x, y, z, chunkBB);
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (blockEntity instanceof DispenserBlockEntity) {
-            ((DispenserBlockEntity)blockEntity).setLootTable(lootTable, random.nextLong());
+            DispenserBlockEntity dispenserBlockEntity = (DispenserBlockEntity)blockEntity;
+            dispenserBlockEntity.setLootTable(lootTable, random.nextLong());
          }
 
          return true;

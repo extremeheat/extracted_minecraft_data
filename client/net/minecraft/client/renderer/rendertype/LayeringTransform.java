@@ -2,17 +2,17 @@ package net.minecraft.client.renderer.rendertype;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.function.Consumer;
-import org.joml.Matrix4fStack;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 public class LayeringTransform {
    private final String name;
-   private final @Nullable Consumer<Matrix4fStack> modifier;
+   private final @Nullable Consumer<Matrix4f> modifier;
    public static final LayeringTransform NO_LAYERING = new LayeringTransform("no_layering", (Consumer)null);
-   public static final LayeringTransform VIEW_OFFSET_Z_LAYERING = new LayeringTransform("view_offset_z_layering", (modelViewStack) -> RenderSystem.getProjectionType().applyLayeringTransform(modelViewStack, 1.0F));
-   public static final LayeringTransform VIEW_OFFSET_Z_LAYERING_FORWARD = new LayeringTransform("view_offset_z_layering_forward", (modelViewStack) -> RenderSystem.getProjectionType().applyLayeringTransform(modelViewStack, -1.0F));
+   public static final LayeringTransform VIEW_OFFSET_Z_LAYERING = new LayeringTransform("view_offset_z_layering", (modelViewMatrix) -> RenderSystem.getProjectionType().applyLayeringTransform(modelViewMatrix, 1.0F));
+   public static final LayeringTransform VIEW_OFFSET_Z_LAYERING_FORWARD = new LayeringTransform("view_offset_z_layering_forward", (modelViewMatrix) -> RenderSystem.getProjectionType().applyLayeringTransform(modelViewMatrix, -1.0F));
 
-   public LayeringTransform(final String name, final @Nullable Consumer<Matrix4fStack> modifier) {
+   public LayeringTransform(final String name, final @Nullable Consumer<Matrix4f> modifier) {
       super();
       this.name = name;
       this.modifier = modifier;
@@ -22,7 +22,7 @@ public class LayeringTransform {
       return "LayeringTransform[" + this.name + "]";
    }
 
-   public @Nullable Consumer<Matrix4fStack> getModifier() {
+   public @Nullable Consumer<Matrix4f> getModifier() {
       return this.modifier;
    }
 }

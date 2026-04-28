@@ -323,8 +323,8 @@ public class NbtIo {
 
    public static CompoundTag read(final DataInput input, final NbtAccounter accounter) throws IOException {
       Tag tag = readUnnamedTag(input, accounter);
-      if (tag instanceof CompoundTag) {
-         return (CompoundTag)tag;
+      if (tag instanceof CompoundTag compoundTag) {
+         return compoundTag;
       } else {
          throw new IOException("Root tag must be a named compound tag");
       }

@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class PlaceOnGroundDecorator extends TreeDecorator {
-   public static final MapCodec<PlaceOnGroundDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("tries").orElse(128).forGetter((p) -> p.tries), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("radius").orElse(2).forGetter((p) -> p.radius), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("height").orElse(1).forGetter((p) -> p.height), BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter((p) -> p.blockStateProvider)).apply(i, PlaceOnGroundDecorator::new));
+   public static final MapCodec<PlaceOnGroundDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("tries", 128).forGetter((p) -> p.tries), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("radius", 2).forGetter((p) -> p.radius), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("height", 1).forGetter((p) -> p.height), BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter((p) -> p.blockStateProvider)).apply(i, PlaceOnGroundDecorator::new));
    private final int tries;
    private final int radius;
    private final int height;

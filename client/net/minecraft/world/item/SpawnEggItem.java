@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -42,59 +41,57 @@ public class SpawnEggItem extends Item {
 
    public InteractionResult useOn(final UseOnContext context) {
       Level level = context.getLevel();
-      if (!(level instanceof ServerLevel serverLevel)) {
-         return InteractionResult.SUCCESS;
-      } else {
-         ItemStack itemStack = context.getItemInHand();
-         BlockPos pos = context.getClickedPos();
-         Direction clickedFace = context.getClickedFace();
-         BlockState blockState = level.getBlockState(pos);
-         BlockEntity var9 = level.getBlockEntity(pos);
-         if (var9 instanceof Spawner spawnerHolder) {
-            EntityType<?> type = getType(itemStack);
-            if (type == null) {
-               return InteractionResult.FAIL;
-            } else if (!serverLevel.isSpawnerBlockEnabled()) {
-               Player var11 = context.getPlayer();
-               if (var11 instanceof ServerPlayer) {
-                  ServerPlayer serverPlayer = (ServerPlayer)var11;
-                  serverPlayer.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
+      ItemStack itemStack = context.getItemInHand();
+      EntityType<?> type = getType(itemStack);
+      if (type != null && type.canSpawn(level)) {
+         if (!(level instanceof ServerLevel)) {
+            return InteractionResult.SUCCESS;
+         } else {
+            ServerLevel serverLevel = (ServerLevel)level;
+            BlockPos pos = context.getClickedPos();
+            Direction clickedFace = context.getClickedFace();
+            BlockState blockState = level.getBlockState(pos);
+            BlockEntity var10 = level.getBlockEntity(pos);
+            if (var10 instanceof Spawner) {
+               Spawner spawnerHolder = (Spawner)var10;
+               if (!serverLevel.isSpawnerBlockEnabled()) {
+                  Player var11 = context.getPlayer();
+                  if (var11 instanceof ServerPlayer) {
+                     ServerPlayer serverPlayer = (ServerPlayer)var11;
+                     serverPlayer.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
+                  }
+
+                  return InteractionResult.FAIL;
+               } else {
+                  spawnerHolder.setEntityId(type, level.getRandom());
+                  level.sendBlockUpdated(pos, blockState, blockState, 3);
+                  level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
+                  itemStack.shrink(1);
+                  return InteractionResult.SUCCESS;
+               }
+            } else {
+               BlockPos spawnPos;
+               if (blockState.getCollisionShape(level, pos).isEmpty()) {
+                  spawnPos = pos;
+               } else {
+                  spawnPos = pos.relative(clickedFace);
                }
 
-               return InteractionResult.FAIL;
-            } else {
-               spawnerHolder.setEntityId(type, level.getRandom());
-               level.sendBlockUpdated(pos, blockState, blockState, 3);
-               level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
-               itemStack.shrink(1);
-               return InteractionResult.SUCCESS;
+               return spawnMob(type, context.getPlayer(), itemStack, serverLevel, spawnPos, true, !Objects.equals(pos, spawnPos) && clickedFace == Direction.UP);
             }
-         } else {
-            BlockPos spawnPos;
-            if (blockState.getCollisionShape(level, pos).isEmpty()) {
-               spawnPos = pos;
-            } else {
-               spawnPos = pos.relative(clickedFace);
-            }
-
-            return spawnMob(context.getPlayer(), itemStack, level, spawnPos, true, !Objects.equals(pos, spawnPos) && clickedFace == Direction.UP);
          }
+      } else {
+         return InteractionResult.FAIL;
       }
    }
 
-   private static InteractionResult spawnMob(final @Nullable LivingEntity user, final ItemStack itemStack, final Level level, final BlockPos spawnPos, final boolean tryMoveDown, final boolean movedUp) {
-      EntityType<?> type = getType(itemStack);
-      if (type == null) {
-         return InteractionResult.FAIL;
-      } else if (!type.isAllowedInPeaceful() && level.getDifficulty() == Difficulty.PEACEFUL) {
-         return InteractionResult.FAIL;
-      } else {
-         if (type.spawn((ServerLevel)level, itemStack, user, spawnPos, EntitySpawnReason.SPAWN_ITEM_USE, tryMoveDown, movedUp) != null) {
-            itemStack.consume(1, user);
-            level.gameEvent(user, GameEvent.ENTITY_PLACE, spawnPos);
-         }
-
+   private static InteractionResult spawnMob(final EntityType<?> type, final @Nullable LivingEntity user, final ItemStack itemStack, final ServerLevel level, final BlockPos spawnPos, final boolean tryMoveDown, final boolean movedUp) {
+      if (type.spawn(level, itemStack, user, spawnPos, EntitySpawnReason.SPAWN_ITEM_USE, tryMoveDown, movedUp) != null) {
+         itemStack.consume(1, user);
+         level.gameEvent(user, GameEvent.ENTITY_PLACE, spawnPos);
          return InteractionResult.SUCCESS;
+      } else {
+         return InteractionResult.FAIL;
       }
    }
 
@@ -103,23 +100,30 @@ public class SpawnEggItem extends Item {
       BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
       if (hitResult.getType() != HitResult.Type.BLOCK) {
          return InteractionResult.PASS;
-      } else if (level instanceof ServerLevel) {
-         ServerLevel serverLevel = (ServerLevel)level;
-         BlockPos pos = hitResult.getBlockPos();
-         if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) {
-            return InteractionResult.PASS;
-         } else if (level.mayInteract(player, pos) && player.mayUseItemAt(pos, hitResult.getDirection(), itemStack)) {
-            InteractionResult result = spawnMob(player, itemStack, level, pos, false, false);
-            if (result == InteractionResult.SUCCESS) {
-               player.awardStat(Stats.ITEM_USED.get(this));
-            }
+      } else {
+         EntityType<?> type = getType(itemStack);
+         if (type != null && type.canSpawn(level)) {
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               BlockPos pos = hitResult.getBlockPos();
+               if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) {
+                  return InteractionResult.PASS;
+               } else if (level.mayInteract(player, pos) && player.mayUseItemAt(pos, hitResult.getDirection(), itemStack)) {
+                  InteractionResult result = spawnMob(type, player, itemStack, serverLevel, pos, false, false);
+                  if (result == InteractionResult.SUCCESS) {
+                     player.awardStat(Stats.ITEM_USED.get(this));
+                  }
 
-            return result;
+                  return result;
+               } else {
+                  return InteractionResult.FAIL;
+               }
+            } else {
+               return InteractionResult.SUCCESS;
+            }
          } else {
             return InteractionResult.FAIL;
          }
-      } else {
-         return InteractionResult.SUCCESS;
       }
    }
 
@@ -142,7 +146,8 @@ public class SpawnEggItem extends Item {
       } else {
          Mob offspring;
          if (parent instanceof AgeableMob) {
-            offspring = ((AgeableMob)parent).getBreedOffspring(level, (AgeableMob)parent);
+            AgeableMob ageableMob = (AgeableMob)parent;
+            offspring = ageableMob.getBreedOffspring(level, ageableMob);
          } else {
             offspring = type.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
          }

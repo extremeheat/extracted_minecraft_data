@@ -59,7 +59,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
       return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 

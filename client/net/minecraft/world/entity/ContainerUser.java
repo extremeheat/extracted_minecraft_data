@@ -9,8 +9,8 @@ public interface ContainerUser {
    double getContainerInteractionRange();
 
    default LivingEntity getLivingEntity() {
-      if (this instanceof LivingEntity) {
-         return (LivingEntity)this;
+      if (this instanceof LivingEntity livingEntity) {
+         return livingEntity;
       } else {
          throw new IllegalStateException("A container user must be a LivingEntity");
       }

@@ -24,11 +24,14 @@ import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.jsonrpc.security.AuthenticationHandler;
 import net.minecraft.server.jsonrpc.websocket.JsonToWebSocketEncoder;
 import net.minecraft.server.jsonrpc.websocket.WebSocketToJsonCodec;
+import net.minecraft.server.notifications.NotificationManager;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -38,6 +41,7 @@ public class ManagementServer {
    private final AuthenticationHandler authenticationHandler;
    private @Nullable Channel serverChannel;
    private final NioEventLoopGroup nioEventLoopGroup;
+   private @Nullable ScheduledFuture<?> heartbeat;
    private final Set<Connection> connections = Sets.newIdentityHashSet();
 
    public ManagementServer(final HostAndPort hostAndPort, final AuthenticationHandler authenticationHandler) {
@@ -52,6 +56,18 @@ public class ManagementServer {
       this.hostAndPort = hostAndPort;
       this.authenticationHandler = authenticationHandler;
       this.nioEventLoopGroup = nioEventLoopGroup;
+   }
+
+   public boolean scheduleHeartbeat(final NotificationManager notificationManager, final long period) {
+      if (this.heartbeat != null && !this.heartbeat.cancel(true)) {
+         LOGGER.warn("The existing heartbeat was not canceled and the new heartbeat of {} seconds has not been applied.", period);
+         return false;
+      } else {
+         NioEventLoopGroup var10001 = this.nioEventLoopGroup;
+         Objects.requireNonNull(notificationManager);
+         this.heartbeat = var10001.scheduleAtFixedRate(notificationManager::statusHeartbeat, period, period, TimeUnit.SECONDS);
+         return true;
+      }
    }
 
    public void onConnected(final Connection connection) {

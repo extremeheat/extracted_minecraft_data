@@ -85,7 +85,7 @@ public class SurfaceSystem {
             if (heightAccessor.isInsideBuildHeight(blockY)) {
                protoChunk.setBlockState(columnPos.setY(blockY), state);
                if (!state.getFluidState().isEmpty()) {
-                  protoChunk.markPosForPostprocessing(columnPos);
+                  protoChunk.markPosForPostProcessing(columnPos);
                }
             }
 

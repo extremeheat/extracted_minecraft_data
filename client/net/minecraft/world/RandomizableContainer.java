@@ -77,7 +77,8 @@ public interface RandomizableContainer extends Container {
       if (lootTableKey != null && level != null && level.getServer() != null) {
          LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(lootTableKey);
          if (player instanceof ServerPlayer) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, lootTableKey);
+            ServerPlayer serverPlayer = (ServerPlayer)player;
+            CriteriaTriggers.GENERATE_LOOT.trigger(serverPlayer, lootTableKey);
          }
 
          this.setLootTable((ResourceKey)null);

@@ -64,6 +64,10 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.SULFUR_BUBBLES, SulfurBubbleParticle.Provider::new);
       this.register(ParticleTypes.NOXIOUS_GAS, NoxiousGasParticle.Provider::new);
       this.register(ParticleTypes.NOXIOUS_GAS_CLOUD, new NoxiousGasCloudParticle.Provider());
+      this.register(ParticleTypes.GEYSER, GeyserEruptionParticle.Provider::new);
+      this.register(ParticleTypes.GEYSER_BASE, GeyserBaseParticle.Provider::new);
+      this.register(ParticleTypes.GEYSER_POOF, GeyserBaseParticle.Provider::new);
+      this.register(ParticleTypes.GEYSER_PLUME, GeyserPlumeParticle.Provider::new);
       this.register(ParticleTypes.CAMPFIRE_COSY_SMOKE, CampfireSmokeParticle.CosyProvider::new);
       this.register(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, CampfireSmokeParticle.SignalProvider::new);
       this.register(ParticleTypes.CLOUD, PlayerCloudParticle.Provider::new);

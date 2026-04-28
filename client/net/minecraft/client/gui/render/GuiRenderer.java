@@ -28,12 +28,10 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.CubeMap;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.StagedVertexBuffer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.WindowRenderState;
@@ -73,8 +71,6 @@ public class GuiRenderer implements AutoCloseable {
    private int firstDrawIndexAfterBlur = 2147483647;
    private final Projection guiProjection = new Projection();
    private final ProjectionMatrixBuffer guiProjectionMatrixBuffer = new ProjectionMatrixBuffer("gui");
-   private final MultiBufferSource.BufferSource bufferSource;
-   private final SubmitNodeCollector submitNodeCollector;
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
    private @Nullable GuiItemAtlas itemAtlas;
@@ -85,11 +81,9 @@ public class GuiRenderer implements AutoCloseable {
    private @Nullable TextureSetup previousTextureSetup = null;
    private StagedVertexBuffer.@Nullable Draw previousDraw;
 
-   public GuiRenderer(final GuiRenderState renderState, final MultiBufferSource.BufferSource bufferSource, final SubmitNodeCollector submitNodeCollector, final FeatureRenderDispatcher featureRenderDispatcher, final List<PictureInPictureRenderer<?>> pictureInPictureRenderers) {
+   public GuiRenderer(final GuiRenderState renderState, final FeatureRenderDispatcher featureRenderDispatcher, final List<PictureInPictureRenderer<?>> pictureInPictureRenderers) {
       super();
       this.renderState = renderState;
-      this.bufferSource = bufferSource;
-      this.submitNodeCollector = submitNodeCollector;
       this.featureRenderDispatcher = featureRenderDispatcher;
       ImmutableMap.Builder<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> builder = ImmutableMap.builder();
 
@@ -151,7 +145,6 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void prepare() {
-      this.bufferSource.uploadAndDraw();
       this.preparePictureInPicture();
       this.prepareItemElements();
       this.prepareText();
@@ -296,7 +289,7 @@ public class GuiRenderer implements AutoCloseable {
                this.itemAtlas.close();
             }
 
-            this.itemAtlas = new GuiItemAtlas(this.submitNodeCollector, this.featureRenderDispatcher, newTextureSize, slotTextureSize);
+            this.itemAtlas = new GuiItemAtlas(this.featureRenderDispatcher, newTextureSize, slotTextureSize);
             return this.itemAtlas;
          }
       }

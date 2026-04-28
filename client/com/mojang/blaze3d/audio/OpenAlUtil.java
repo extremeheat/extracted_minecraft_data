@@ -15,26 +15,17 @@ public class OpenAlUtil {
    }
 
    private static String alErrorToString(final int error) {
+      String var10000;
       switch (error) {
-         case 40961 -> {
-            return "Invalid name parameter.";
-         }
-         case 40962 -> {
-            return "Invalid enumerated parameter value.";
-         }
-         case 40963 -> {
-            return "Invalid parameter parameter value.";
-         }
-         case 40964 -> {
-            return "Invalid operation.";
-         }
-         case 40965 -> {
-            return "Unable to allocate memory.";
-         }
-         default -> {
-            return "An unrecognized error occurred.";
-         }
+         case 40961 -> var10000 = "Invalid name parameter.";
+         case 40962 -> var10000 = "Invalid enumerated parameter value.";
+         case 40963 -> var10000 = "Invalid parameter parameter value.";
+         case 40964 -> var10000 = "Invalid operation.";
+         case 40965 -> var10000 = "Unable to allocate memory.";
+         default -> var10000 = "An unrecognized error occurred.";
       }
+
+      return var10000;
    }
 
    static boolean checkALError(final String location) {
@@ -48,26 +39,17 @@ public class OpenAlUtil {
    }
 
    private static String alcErrorToString(final int error) {
+      String var10000;
       switch (error) {
-         case 40961 -> {
-            return "Invalid device.";
-         }
-         case 40962 -> {
-            return "Invalid context.";
-         }
-         case 40963 -> {
-            return "Illegal enum.";
-         }
-         case 40964 -> {
-            return "Invalid value.";
-         }
-         case 40965 -> {
-            return "Unable to allocate memory.";
-         }
-         default -> {
-            return "An unrecognized error occurred.";
-         }
+         case 40961 -> var10000 = "Invalid device.";
+         case 40962 -> var10000 = "Invalid context.";
+         case 40963 -> var10000 = "Illegal enum.";
+         case 40964 -> var10000 = "Invalid value.";
+         case 40965 -> var10000 = "Unable to allocate memory.";
+         default -> var10000 = "An unrecognized error occurred.";
       }
+
+      return var10000;
    }
 
    static boolean checkALCError(final long device, final String location) {

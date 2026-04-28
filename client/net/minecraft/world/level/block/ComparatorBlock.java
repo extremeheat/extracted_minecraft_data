@@ -51,7 +51,11 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
 
    protected int getOutputSignal(final BlockGetter level, final BlockPos pos, final BlockState state) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      return blockEntity instanceof ComparatorBlockEntity ? ((ComparatorBlockEntity)blockEntity).getOutputSignal() : 0;
+      if (blockEntity instanceof ComparatorBlockEntity comparatorBlockEntity) {
+         return comparatorBlockEntity.getOutputSignal();
+      } else {
+         return 0;
+      }
    }
 
    private int calculateOutputSignal(final Level level, final BlockPos pos, final BlockState state) {
@@ -127,7 +131,15 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       if (!level.getBlockTicks().willTickThisTick(pos, this)) {
          int outputValue = this.calculateOutputSignal(level, pos, state);
          BlockEntity blockEntity = level.getBlockEntity(pos);
-         int oldValue = blockEntity instanceof ComparatorBlockEntity ? ((ComparatorBlockEntity)blockEntity).getOutputSignal() : 0;
+         int var10000;
+         if (blockEntity instanceof ComparatorBlockEntity) {
+            ComparatorBlockEntity comparatorBlockEntity = (ComparatorBlockEntity)blockEntity;
+            var10000 = comparatorBlockEntity.getOutputSignal();
+         } else {
+            var10000 = 0;
+         }
+
+         int oldValue = var10000;
          if (outputValue != oldValue || (Boolean)state.getValue(POWERED) != this.shouldTurnOn(level, pos, state)) {
             TickPriority priority = this.shouldPrioritize(level, pos, state) ? TickPriority.HIGH : TickPriority.NORMAL;
             level.scheduleTick(pos, this, 2, priority);

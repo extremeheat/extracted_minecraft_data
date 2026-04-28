@@ -119,8 +119,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
    private final CrossFrameResourcePool resourcePool = new CrossFrameResourcePool(3);
    private final FogRenderer fogRenderer = new FogRenderer();
    private final GuiRenderer guiRenderer;
-   private final SubmitNodeStorage submitNodeStorage;
    private final FeatureRenderDispatcher featureRenderDispatcher;
+   private final SubmitNodeStorage handAndScreenSubmitNodeStorage = new SubmitNodeStorage();
    private @Nullable Identifier postEffectId;
    private boolean effectActive;
    private final Camera mainCamera = new Camera();
@@ -144,11 +144,9 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
          throw new SilentInitException("Unable to allocate render buffers", e);
       }
 
-      MultiBufferSource.BufferSource bufferSource = this.renderBuffers.bufferSource();
       AtlasManager atlasManager = minecraft.getAtlasManager();
-      this.submitNodeStorage = new SubmitNodeStorage();
-      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, modelManager, bufferSource, atlasManager, this.renderBuffers.outlineBufferSource(), minecraft.font, this.gameRenderState);
-      this.guiRenderer = new GuiRenderer(this.gameRenderState.guiRenderState, bufferSource, this.submitNodeStorage, this.featureRenderDispatcher, List.of(new GuiEntityRenderer(minecraft.getEntityRenderDispatcher()), new GuiSkinRenderer(), new GuiBookModelRenderer(), new GuiBannerResultRenderer(atlasManager), new GuiSignRenderer(atlasManager), new GuiProfilerChartRenderer()));
+      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.renderBuffers, modelManager, atlasManager, minecraft.font, this.gameRenderState);
+      this.guiRenderer = new GuiRenderer(this.gameRenderState.guiRenderState, this.featureRenderDispatcher, List.of(new GuiEntityRenderer(minecraft.getEntityRenderDispatcher()), new GuiSkinRenderer(), new GuiBookModelRenderer(), new GuiBannerResultRenderer(atlasManager), new GuiSignRenderer(atlasManager), new GuiProfilerChartRenderer()));
       this.screenEffectRenderer = new ScreenEffectRenderer(minecraft, atlasManager);
       this.debugCrosshairRenderer = new DebugCrosshairRenderer();
       this.mainRenderTarget = new MainTarget(minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight());
@@ -173,10 +171,6 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
    public RenderBuffers renderBuffers() {
       return this.renderBuffers;
-   }
-
-   public SubmitNodeStorage submitNodeStorage() {
-      return this.submitNodeStorage;
    }
 
    public FeatureRenderDispatcher featureRenderDispatcher() {
@@ -358,23 +352,22 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
    private void renderItemInHand(final CameraRenderState cameraState, final float deltaPartialTick, final Matrix4fc modelViewMatrix) {
       if (!cameraState.isPanoramicMode) {
-         this.featureRenderDispatcher.renderAllFeatures();
-         PoseStack poseStack = new PoseStack();
-         poseStack.pushPose();
-         poseStack.mulPose((Matrix4fc)modelViewMatrix.invert(new Matrix4f()));
-         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-         modelViewStack.pushMatrix().mul(modelViewMatrix);
-         this.bobHurt(cameraState, poseStack);
-         if (this.gameRenderState.optionsRenderState.bobView) {
-            this.bobView(cameraState, poseStack);
-         }
-
          if (this.gameRenderState.optionsRenderState.cameraType.isFirstPerson() && !cameraState.entityRenderState.isSleeping && !this.gameRenderState.guiRenderState.isHudHidden && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
-            this.itemInHandRenderer.renderHandsWithItems(deltaPartialTick, poseStack, this.submitNodeStorage, this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, deltaPartialTick));
-         }
+            PoseStack poseStack = new PoseStack();
+            poseStack.pushPose();
+            poseStack.mulPose((Matrix4fc)modelViewMatrix.invert(new Matrix4f()));
+            Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+            modelViewStack.pushMatrix().mul(modelViewMatrix);
+            this.bobHurt(cameraState, poseStack);
+            if (this.gameRenderState.optionsRenderState.bobView) {
+               this.bobView(cameraState, poseStack);
+            }
 
-         modelViewStack.popMatrix();
-         poseStack.popPose();
+            this.itemInHandRenderer.submitHandsWithItems(deltaPartialTick, poseStack, this.handAndScreenSubmitNodeStorage, this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, deltaPartialTick));
+            this.featureRenderDispatcher.renderAllFeatures(this.handAndScreenSubmitNodeStorage);
+            modelViewStack.popMatrix();
+            poseStack.popPose();
+         }
       }
    }
 
@@ -443,8 +436,6 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       this.guiRenderer.endFrame();
       profiler.pop();
       this.useUiLightmap = false;
-      this.submitNodeStorage.endFrame();
-      this.featureRenderDispatcher.endFrame();
       this.renderBuffers.endFrame();
       this.resourcePool.endFrame();
       profiler.pop();
@@ -585,8 +576,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.mainRenderTarget.getDepthTexture(), 0.0);
       this.renderItemInHand(cameraState, cameraEntityPartialTicks, modelViewMatrix);
       profiler.popPush("screenEffects");
-      this.screenEffectRenderer.submit(optionsState.cameraType.isFirstPerson(), isSleeping, worldPartialTicks, this.submitNodeStorage, this.gameRenderState.guiRenderState.isHudHidden);
-      this.featureRenderDispatcher.renderAllFeatures();
+      this.screenEffectRenderer.submit(optionsState.cameraType.isFirstPerson(), isSleeping, worldPartialTicks, this.handAndScreenSubmitNodeStorage, this.gameRenderState.guiRenderState.isHudHidden);
+      this.featureRenderDispatcher.renderAllFeatures(this.handAndScreenSubmitNodeStorage);
       profiler.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
       if (this.gameRenderState.levelRenderState.render3dCrosshair && optionsState.cameraType.isFirstPerson() && !this.gameRenderState.guiRenderState.isHudHidden) {

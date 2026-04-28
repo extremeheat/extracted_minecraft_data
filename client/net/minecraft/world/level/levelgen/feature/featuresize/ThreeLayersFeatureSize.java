@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 
 public class ThreeLayersFeatureSize extends FeatureSize {
-   public static final MapCodec<ThreeLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(0, 80).fieldOf("limit").orElse(1).forGetter((s) -> s.limit), Codec.intRange(0, 80).fieldOf("upper_limit").orElse(1).forGetter((s) -> s.upperLimit), Codec.intRange(0, 16).fieldOf("lower_size").orElse(0).forGetter((s) -> s.lowerSize), Codec.intRange(0, 16).fieldOf("middle_size").orElse(1).forGetter((s) -> s.middleSize), Codec.intRange(0, 16).fieldOf("upper_size").orElse(1).forGetter((s) -> s.upperSize), minClippedHeightCodec()).apply(i, ThreeLayersFeatureSize::new));
+   public static final MapCodec<ThreeLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(0, 80).optionalFieldOf("limit", 1).forGetter((s) -> s.limit), Codec.intRange(0, 80).optionalFieldOf("upper_limit", 1).forGetter((s) -> s.upperLimit), Codec.intRange(0, 16).optionalFieldOf("lower_size", 0).forGetter((s) -> s.lowerSize), Codec.intRange(0, 16).optionalFieldOf("middle_size", 1).forGetter((s) -> s.middleSize), Codec.intRange(0, 16).optionalFieldOf("upper_size", 1).forGetter((s) -> s.upperSize), minClippedHeightCodec()).apply(i, ThreeLayersFeatureSize::new));
    private final int limit;
    private final int upperLimit;
    private final int lowerSize;

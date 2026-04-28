@@ -694,8 +694,8 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
    public boolean tameWithName(final Player player) {
       this.setOwner(player);
       this.setTamed(true);
-      if (player instanceof ServerPlayer) {
-         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)player, this);
+      if (player instanceof ServerPlayer serverPlayer) {
+         CriteriaTriggers.TAME_ANIMAL.trigger(serverPlayer, this);
       }
 
       this.level().broadcastEntityEvent(this, (byte)7);
@@ -898,8 +898,8 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
 
    protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
       super.positionRider(passenger, moveFunction);
-      if (passenger instanceof LivingEntity) {
-         ((LivingEntity)passenger).yBodyRot = this.yBodyRot;
+      if (passenger instanceof LivingEntity livingEntity) {
+         livingEntity.yBodyRot = this.yBodyRot;
       }
 
    }

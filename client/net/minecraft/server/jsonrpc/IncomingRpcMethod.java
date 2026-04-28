@@ -36,7 +36,7 @@ public interface IncomingRpcMethod<Params, Result> {
       return new IncomingRpcMethodBuilder<Void, Result>(supplier);
    }
 
-   public static record Attributes(boolean runOnMainThread, boolean discoverable) {
+   public static record Attributes(boolean runOnMainThread, boolean discoverable, boolean allowPreServerInit) {
       public Attributes {
          super();
       }
@@ -115,6 +115,7 @@ public interface IncomingRpcMethod<Params, Result> {
       private boolean runOnMainThread = true;
       private @Nullable ParameterlessRpcMethodFunction<Result> parameterlessFunction;
       private @Nullable RpcMethodFunction<Params, Result> parameterFunction;
+      private boolean allowPreServerInit = false;
 
       public IncomingRpcMethodBuilder(final ParameterlessRpcMethodFunction<Result> function) {
          super();
@@ -128,7 +129,7 @@ public interface IncomingRpcMethod<Params, Result> {
 
       public IncomingRpcMethodBuilder(final Function<MinecraftApi, Result> supplier) {
          super();
-         this.parameterlessFunction = (apiService, clientInfo) -> supplier.apply(apiService);
+         this.parameterlessFunction = (apiService, var2) -> supplier.apply(apiService);
       }
 
       public IncomingRpcMethodBuilder<Params, Result> description(final String description) {
@@ -156,11 +157,16 @@ public interface IncomingRpcMethod<Params, Result> {
          return this;
       }
 
+      public IncomingRpcMethodBuilder<Params, Result> allowPreServerInit() {
+         this.allowPreServerInit = true;
+         return this;
+      }
+
       public IncomingRpcMethod<Params, Result> build() {
          if (this.resultInfo == null) {
             throw new IllegalStateException("No response defined");
          } else {
-            Attributes attributes = new Attributes(this.runOnMainThread, this.discoverable);
+            Attributes attributes = new Attributes(this.runOnMainThread, this.discoverable, this.allowPreServerInit);
             MethodInfo<Params, Result> methodInfo = new MethodInfo<Params, Result>(this.description, this.paramInfo, this.resultInfo);
             if (this.parameterlessFunction != null) {
                return new ParameterlessMethod<Params, Result>(methodInfo, attributes, this.parameterlessFunction);

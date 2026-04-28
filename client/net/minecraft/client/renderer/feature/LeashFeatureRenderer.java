@@ -1,16 +1,17 @@
 package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollection;
+import java.util.List;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-public class LeashFeatureRenderer {
+public class LeashFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
+   public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Leash");
    private static final int LEASH_RENDER_STEPS = 24;
    private static final float LEASH_WIDTH = 0.05F;
 
@@ -18,14 +19,18 @@ public class LeashFeatureRenderer {
       super();
    }
 
-   public void renderSolid(final SubmitNodeCollection nodeCollection, final FeatureFrameContext context) {
-      for(Submit submit : nodeCollection.getLeashSubmits()) {
-         renderLeash(submit.pose(), context.bufferSource(), submit.leashState());
+   protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
+      VertexConsumer builder = this.getVertexBuilder(RenderTypes.leash());
+
+      for(Submit submit : submits) {
+         prepare(submit, builder);
       }
 
    }
 
-   private static void renderLeash(final Matrix4f pose, final MultiBufferSource bufferSource, final EntityRenderState.LeashState leashState) {
+   private static void prepare(final Submit submit, final VertexConsumer builder) {
+      Matrix4f pose = submit.pose();
+      EntityRenderState.LeashState leashState = submit.leashState();
       float dx = (float)(leashState.end.x - leashState.start.x);
       float dy = (float)(leashState.end.y - leashState.start.y);
       float dz = (float)(leashState.end.z - leashState.start.z);
@@ -33,7 +38,6 @@ public class LeashFeatureRenderer {
       float dxOff = dz * offsetFactor;
       float dzOff = dx * offsetFactor;
       pose.translate((float)leashState.offset.x, (float)leashState.offset.y, (float)leashState.offset.z);
-      VertexConsumer builder = bufferSource.getBuffer(RenderTypes.leash());
 
       for(int k = 0; k <= 24; ++k) {
          addVertexPair(builder, pose, dx, dy, dz, 0.05F, dxOff, dzOff, k, false, leashState);
@@ -67,9 +71,13 @@ public class LeashFeatureRenderer {
       builder.addVertex(pose, x + dxOff, y + 0.05F - fudge, z - dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
    }
 
-   public static record Submit(Matrix4f pose, EntityRenderState.LeashState leashState) {
+   public static record Submit(Matrix4f pose, EntityRenderState.LeashState leashState) implements SubmitNode {
       public Submit {
          super();
+      }
+
+      public FeatureRendererType<Submit> featureType() {
+         return LeashFeatureRenderer.TYPE;
       }
    }
 }

@@ -33,14 +33,15 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
 
       while(reader.canRead() && reader.peek() != ' ') {
          char c = reader.read();
-         Direction.Axis axis;
+         Direction.Axis var10000;
          switch (c) {
-            case 'x' -> axis = Direction.Axis.X;
-            case 'y' -> axis = Direction.Axis.Y;
-            case 'z' -> axis = Direction.Axis.Z;
+            case 'x' -> var10000 = Direction.Axis.X;
+            case 'y' -> var10000 = Direction.Axis.Y;
+            case 'z' -> var10000 = Direction.Axis.Z;
             default -> throw ERROR_INVALID.createWithContext(reader);
          }
 
+         Direction.Axis axis = var10000;
          if (result.contains(axis)) {
             throw ERROR_INVALID.createWithContext(reader);
          }

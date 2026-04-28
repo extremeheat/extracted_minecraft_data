@@ -192,12 +192,12 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
 
       label63: {
-         this.extractNameplates(entity, state, partialTicks);
+         this.extractNameTags(entity, state, partialTicks);
          state.isDiscrete = entity.isDiscrete();
          Level level = entity.level();
          if (entity instanceof Leashable leashable) {
-            Entity roper = leashable.getLeashHolder();
-            if (roper instanceof Entity) {
+            if (leashable.getLeashHolder() != null) {
+               Entity roper = leashable.getLeashHolder();
                float entityYRot = entity.getPreciseBodyRotation(partialTicks) * 0.017453292F;
                Vec3 attachOffset = leashable.getLeashOffset(partialTicks);
                BlockPos entityEyePos = BlockPos.containing(entity.getEyePosition(partialTicks));
@@ -264,14 +264,14 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       state.lightCoords = this.getPackedLightCoords(entity, partialTicks);
    }
 
-   protected void extractNameplates(final T entity, final S state, final float partialTicks) {
-      this.extractNameplates(entity, state, partialTicks, 64.0, 10.0);
+   protected void extractNameTags(final T entity, final S state, final float partialTicks) {
+      this.extractNameTags(entity, state, partialTicks, 64.0, 10.0);
    }
 
-   protected final void extractNameplates(final T entity, final S state, final float partialTicks, final double nameplateDistance, final double belowNameDistance) {
+   protected final void extractNameTags(final T entity, final S state, final float partialTicks, final double nameTagDistance, final double belowNameDistance) {
       if (this.entityRenderDispatcher.camera != null) {
          state.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(entity);
-         boolean shouldShowName = state.distanceToCameraSq < Mth.square(nameplateDistance) && this.shouldShowName(entity, state.distanceToCameraSq);
+         boolean shouldShowName = state.distanceToCameraSq < Mth.square(nameTagDistance) && this.shouldShowName(entity, state.distanceToCameraSq);
          if (shouldShowName) {
             state.nameTag = this.getNameTag(entity);
             state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTicks));

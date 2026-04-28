@@ -2,6 +2,7 @@ package net.minecraft.world.phys;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 
@@ -40,8 +41,19 @@ public class Vec2 {
       return new Vec2(this.x + v, this.y + v);
    }
 
-   public boolean equals(final Vec2 rhs) {
-      return this.x == rhs.x && this.y == rhs.y;
+   public boolean equals(final Object rhs) {
+      if (this == rhs) {
+         return true;
+      } else if (!(rhs instanceof Vec2)) {
+         return false;
+      } else {
+         Vec2 other = (Vec2)rhs;
+         return this.x == other.x && this.y == other.y;
+      }
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.x, this.y});
    }
 
    public Vec2 normalized() {

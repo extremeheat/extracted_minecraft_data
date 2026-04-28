@@ -10,39 +10,39 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.scores.TeamColor;
 
-public class ColorArgument implements ArgumentType<ChatFormatting> {
+public class TeamColorArgument implements ArgumentType<TeamColor> {
    private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
    public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.color.invalid", value));
 
-   private ColorArgument() {
+   private TeamColorArgument() {
       super();
    }
 
-   public static ColorArgument color() {
-      return new ColorArgument();
+   public static TeamColorArgument teamColor() {
+      return new TeamColorArgument();
    }
 
-   public static ChatFormatting getColor(final CommandContext<CommandSourceStack> context, final String name) {
-      return (ChatFormatting)context.getArgument(name, ChatFormatting.class);
+   public static TeamColor getTeamColor(final CommandContext<CommandSourceStack> context, final String name) {
+      return (TeamColor)context.getArgument(name, TeamColor.class);
    }
 
-   public ChatFormatting parse(final StringReader reader) throws CommandSyntaxException {
+   public TeamColor parse(final StringReader reader) throws CommandSyntaxException {
       String id = reader.readUnquotedString();
-      ChatFormatting result = ChatFormatting.getByName(id);
-      if (result != null && !result.isFormat()) {
-         return result;
-      } else {
+      TeamColor result = TeamColor.byName(id);
+      if (result == null) {
          throw ERROR_INVALID_VALUE.createWithContext(reader, id);
+      } else {
+         return result;
       }
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(ChatFormatting.getNames(true, false), builder);
+      return SharedSuggestionProvider.suggest(TeamColor.VALUES.stream().map(TeamColor::getSerializedName), builder);
    }
 
    public Collection<String> getExamples() {

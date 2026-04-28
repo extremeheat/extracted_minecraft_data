@@ -34,7 +34,7 @@ public class DifficultyCommand {
    public static int setDifficulty(final CommandSourceStack source, final Difficulty difficulty) throws CommandSyntaxException {
       MinecraftServer server = source.getServer();
       if (server.getWorldData().getDifficulty() == difficulty) {
-         throw ERROR_ALREADY_SAME_DIFFICULTY.create(difficulty.getSerializedName());
+         throw ERROR_ALREADY_SAME_DIFFICULTY.create(difficulty.getDisplayName());
       } else {
          server.setDifficulty(difficulty, true);
          source.sendSuccess(() -> Component.translatable("commands.difficulty.success", difficulty.getDisplayName()), true);

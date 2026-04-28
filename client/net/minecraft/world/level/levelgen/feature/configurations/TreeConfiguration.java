@@ -5,7 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.featuresize.FeatureSize;
@@ -17,8 +19,7 @@ import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 
 public class TreeConfiguration implements FeatureConfiguration {
-   public static final BlockPredicate CAN_PLACE_BELOW_OVERWORLD_TRUNKS;
-   public static final RuleBasedStateProvider PLACE_BELOW_OVERWORLD_TRUNKS;
+   public static final BlockPredicate CAN_PLACE_BELOW_TREE_TRUNKS;
    public static final Codec<TreeConfiguration> CODEC;
    public final BlockStateProvider trunkProvider;
    public final TrunkPlacer trunkPlacer;
@@ -43,10 +44,13 @@ public class TreeConfiguration implements FeatureConfiguration {
       this.belowTrunkProvider = belowTrunkProvider;
    }
 
+   public static BlockStateProvider defaultPlaceBelowTreeTrunkProvider(final HolderGetter<Biome> biomes) {
+      return RuleBasedStateProvider.ifTrueThenProvide(CAN_PLACE_BELOW_TREE_TRUNKS, Blocks.DIRT);
+   }
+
    static {
-      CAN_PLACE_BELOW_OVERWORLD_TRUNKS = BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK));
-      PLACE_BELOW_OVERWORLD_TRUNKS = RuleBasedStateProvider.ifTrueThenProvide(CAN_PLACE_BELOW_OVERWORLD_TRUNKS, Blocks.DIRT);
-      CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((c) -> c.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((c) -> c.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((c) -> c.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((c) -> c.rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((c) -> c.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((c) -> c.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((c) -> c.ignoreVines), BlockStateProvider.CODEC.fieldOf("below_trunk_provider").orElse(PLACE_BELOW_OVERWORLD_TRUNKS).forGetter((c) -> c.belowTrunkProvider)).apply(i, TreeConfiguration::new));
+      CAN_PLACE_BELOW_TREE_TRUNKS = BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((c) -> c.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((c) -> c.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((c) -> c.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((c) -> c.rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((c) -> c.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((c) -> c.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((c) -> c.ignoreVines), BlockStateProvider.CODEC.fieldOf("below_trunk_provider").forGetter((c) -> c.belowTrunkProvider)).apply(i, TreeConfiguration::new));
    }
 
    public static class TreeConfigurationBuilder {
@@ -72,8 +76,8 @@ public class TreeConfiguration implements FeatureConfiguration {
          this.belowTrunkProvider = belowTrunkProvider;
       }
 
-      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final FeatureSize minimumSize) {
-         this(trunkProvider, trunkPlacer, foliageProvider, foliagePlacer, Optional.empty(), minimumSize, TreeConfiguration.PLACE_BELOW_OVERWORLD_TRUNKS);
+      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final FeatureSize minimumSize, final BlockStateProvider belowTrunkProvider) {
+         this(trunkProvider, trunkPlacer, foliageProvider, foliagePlacer, Optional.empty(), minimumSize, belowTrunkProvider);
       }
 
       public TreeConfigurationBuilder belowTrunkProvider(final BlockStateProvider belowTrunkProvider) {

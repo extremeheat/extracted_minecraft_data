@@ -123,7 +123,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       int blockY = context.blockY();
       int blockZ = context.blockZ();
       if (blockY >= minY && blockY < minY + noiseSettings.height()) {
-         NoiseChunk noiseChunk = new NoiseChunk(1, randomState, blockX - Math.floorMod(blockX, cellWidth), blockZ - Math.floorMod(blockZ, cellWidth), noiseSettings, DensityFunctions.BeardifierMarker.INSTANCE, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), context.getBlender());
+         NoiseChunk noiseChunk = new NoiseChunk(1, randomState, blockX - Math.floorMod(blockX, cellWidth), blockZ - Math.floorMod(blockZ, cellWidth), noiseSettings, DensityFunctions.BeardifierMarker.INSTANCE, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty());
          noiseChunk.initializeForFirstCellX();
          noiseChunk.advanceCellX(0);
          noiseChunk.selectCellYZ(Math.floorDiv(blockY - minY, cellHeight), 0);
@@ -356,7 +356,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
                            worldSurface.update(xInSection, posY, zInSection, state);
                            if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
                               blockPos.set(posX, posY, posZ);
-                              centerChunk.markPosForPostprocessing(blockPos);
+                              centerChunk.markPosForPostProcessing(blockPos);
                            }
                         }
                      }

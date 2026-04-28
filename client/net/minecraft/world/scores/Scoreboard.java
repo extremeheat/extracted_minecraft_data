@@ -370,9 +370,7 @@ public class Scoreboard {
       Optional var10000 = packed.displayName();
       Objects.requireNonNull(team);
       var10000.ifPresent(team::setDisplayName);
-      var10000 = packed.color();
-      Objects.requireNonNull(team);
-      var10000.ifPresent(team::setColor);
+      team.setColor(packed.color());
       team.setAllowFriendlyFire(packed.allowFriendlyFire());
       team.setSeeFriendlyInvisibles(packed.seeFriendlyInvisibles());
       team.setPlayerPrefix(packed.memberNamePrefix());

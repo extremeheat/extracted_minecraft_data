@@ -27,7 +27,7 @@ public class IncomingRpcMethods {
       registerServerStateService(methodRegistry);
       registerServerSettingsService(methodRegistry);
       registerGameRuleService(methodRegistry);
-      return IncomingRpcMethod.method((Function)((apiService) -> DiscoveryService.discover(Schema.getSchemaRegistry()))).undiscoverable().notOnMainThread().response("result", Schema.DISCOVERY_SCHEMA).register(methodRegistry, "rpc.discover");
+      return IncomingRpcMethod.method((Function)((apiService) -> DiscoveryService.discover(Schema.getSchemaRegistry()))).undiscoverable().allowPreServerInit().notOnMainThread().response("result", Schema.DISCOVERY_SCHEMA).register(methodRegistry, "rpc.discover");
    }
 
    private static void registerAllowListService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {

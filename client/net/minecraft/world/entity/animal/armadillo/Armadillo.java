@@ -30,11 +30,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -60,6 +62,7 @@ public class Armadillo extends Animal {
    public static final int SCARE_CHECK_INTERVAL = 80;
    private static final double SCARE_DISTANCE_HORIZONTAL = 7.0;
    private static final double SCARE_DISTANCE_VERTICAL = 2.0;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final Brain.Provider<Armadillo> BRAIN_PROVIDER;
    private static final EntityDataAccessor<ArmadilloState> ARMADILLO_STATE;
    private long inStateTicks = 0L;
@@ -163,6 +166,10 @@ public class Armadillo extends Animal {
 
    public float getAgeScale() {
       return this.isBaby() ? 0.6F : 1.0F;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
    private void setupAnimationStates() {
@@ -364,6 +371,7 @@ public class Armadillo extends Animal {
    }
 
    static {
+      BABY_DIMENSIONS = EntityTypes.ARMADILLO.getDimensions().scale(0.6F).withEyeHeight(0.21875F);
       BRAIN_PROVIDER = Brain.<Armadillo>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS, SensorType.NEAREST_ADULT, SensorType.ARMADILLO_SCARE_DETECTED), (var0) -> ArmadilloAi.getActivities());
       ARMADILLO_STATE = SynchedEntityData.<ArmadilloState>defineId(Armadillo.class, EntityDataSerializers.ARMADILLO_STATE);
    }

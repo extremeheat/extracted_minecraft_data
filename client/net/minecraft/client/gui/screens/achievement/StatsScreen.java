@@ -388,8 +388,23 @@ public class StatsScreen extends Screen {
                key2 = 0;
             } else if (ItemStatisticsList.this.blockColumns.contains(ItemStatisticsList.this.sortColumn)) {
                StatType<Block> type = ItemStatisticsList.this.sortColumn;
-               key1 = item1 instanceof BlockItem ? StatsScreen.this.stats.getValue(type, ((BlockItem)item1).getBlock()) : -1;
-               key2 = item2 instanceof BlockItem ? StatsScreen.this.stats.getValue(type, ((BlockItem)item2).getBlock()) : -1;
+               int var10000;
+               if (item1 instanceof BlockItem) {
+                  BlockItem blockItem = (BlockItem)item1;
+                  var10000 = StatsScreen.this.stats.getValue(type, blockItem.getBlock());
+               } else {
+                  var10000 = -1;
+               }
+
+               key1 = var10000;
+               if (item2 instanceof BlockItem) {
+                  BlockItem blockItem = (BlockItem)item2;
+                  var10000 = StatsScreen.this.stats.getValue(type, blockItem.getBlock());
+               } else {
+                  var10000 = -1;
+               }
+
+               key2 = var10000;
             } else {
                StatType<Item> type = ItemStatisticsList.this.sortColumn;
                key1 = StatsScreen.this.stats.getValue(type, item1);

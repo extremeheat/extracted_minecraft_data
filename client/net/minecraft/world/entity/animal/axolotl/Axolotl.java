@@ -43,6 +43,8 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -535,7 +537,7 @@ public class Axolotl extends Animal implements Bucketable {
       DATA_VARIANT = SynchedEntityData.<Integer>defineId(Axolotl.class, EntityDataSerializers.INT);
       DATA_PLAYING_DEAD = SynchedEntityData.<Boolean>defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
       FROM_BUCKET = SynchedEntityData.<Boolean>defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 0.25F).withEyeHeight(0.2F);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.375F, 0.21F).withEyeHeight(0.09375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.1875F, 0.0F));
    }
 
    public static enum Variant implements StringRepresentable {

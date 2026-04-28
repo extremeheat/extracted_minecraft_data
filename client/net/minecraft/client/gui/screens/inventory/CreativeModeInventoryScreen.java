@@ -496,7 +496,6 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       selectedTab = tab;
       this.quickCraftSlots.clear();
       (this.menu).items.clear();
-      this.clearDraggingState();
       if (selectedTab.getType() == CreativeModeTab.Type.HOTBAR) {
          HotbarManager manager = this.minecraft.getHotbarManager();
 

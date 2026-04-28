@@ -109,16 +109,16 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Boolean)state.getValue(POWERED) ? 15 : 0;
-   }
-
    protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return (Boolean)state.getValue(POWERED) && getConnectedDirection(state) == direction ? 15 : 0;
    }
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {

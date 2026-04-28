@@ -10,12 +10,13 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ExtraCodecs;
 
 public record VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {
    public static final int MIN_VILLAGER_LEVEL = 1;
    public static final int MAX_VILLAGER_LEVEL = 5;
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((d) -> d.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((d) -> d.profession), Codec.INT.fieldOf("level").orElse(1).forGetter((d) -> d.level)).apply(i, VillagerData::new));
+   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((d) -> d.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((d) -> d.profession), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.INT, "level", 1).forGetter((d) -> d.level)).apply(i, VillagerData::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC;
 
    public VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {

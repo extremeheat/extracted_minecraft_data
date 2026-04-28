@@ -118,20 +118,15 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      boolean var10000;
       switch (type) {
-         case LAND -> {
-            return false;
-         }
-         case WATER -> {
-            return state.getFluidState().is(FluidTags.WATER);
-         }
-         case AIR -> {
-            return false;
-         }
-         default -> {
-            return false;
-         }
+         case LAND -> var10000 = false;
+         case WATER -> var10000 = state.getFluidState().is(FluidTags.WATER);
+         case AIR -> var10000 = false;
+         default -> var10000 = false;
       }
+
+      return var10000;
    }
 
    static {

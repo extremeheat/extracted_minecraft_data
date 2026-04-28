@@ -44,7 +44,6 @@ public class MouseHandler {
    private int fakeRightMouse;
    private @Nullable MouseButtonInfo activeButton = null;
    private boolean ignoreFirstMove = true;
-   private int clickDepth;
    private double mousePressedTime;
    private final SmoothDouble smoothTurnX = new SmoothDouble();
    private final SmoothDouble smoothTurnY = new SmoothDouble();
@@ -71,17 +70,9 @@ public class MouseHandler {
          boolean pressed = action == 1;
          MouseButtonInfo buttonInfo = this.simulateRightClick(rawButtonInfo, pressed);
          if (pressed) {
-            if ((Boolean)this.minecraft.options.touchscreen().get() && this.clickDepth++ > 0) {
-               return;
-            }
-
             this.activeButton = buttonInfo;
             this.mousePressedTime = Blaze3D.getTime();
          } else if (this.activeButton != null) {
-            if ((Boolean)this.minecraft.options.touchscreen().get() && --this.clickDepth > 0) {
-               return;
-            }
-
             this.activeButton = null;
          }
 

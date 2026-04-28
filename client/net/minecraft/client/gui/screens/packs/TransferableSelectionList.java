@@ -130,7 +130,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
             this.descriptionWidget.setMessage(ComponentUtils.mergeStyles(this.pack.getExtendedDescription(), Style.EMPTY.withColor(-8355712)));
          }
 
-         if (this.showHoverOverlay() && ((Boolean)this.minecraft.options.touchscreen().get() || hovered || this.parent.getSelected() == this && this.parent.isFocused())) {
+         if (this.showHoverOverlay() && (hovered || this.parent.getSelected() == this && this.parent.isFocused())) {
             graphics.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int relX = mouseX - this.getContentX();
             int relY = mouseY - this.getContentY();

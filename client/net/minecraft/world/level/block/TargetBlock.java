@@ -88,7 +88,7 @@ public class TargetBlock extends Block {
 
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return (Integer)state.getValue(OUTPUT_POWER);
    }
 

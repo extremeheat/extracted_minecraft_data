@@ -68,7 +68,12 @@ public class SectionUpdateTracker {
       }
 
       public void setSectionNode(final long sectionNode) {
-         this.sectionNode = sectionNode;
+         if (this.sectionNode != sectionNode) {
+            this.sectionNode = sectionNode;
+            this.isDirty = true;
+            this.isDirtyFromPlayer = false;
+         }
+
       }
 
       public long getSectionNode() {

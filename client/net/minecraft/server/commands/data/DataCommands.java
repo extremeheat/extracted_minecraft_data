@@ -282,12 +282,12 @@ public class DataCommands {
 
    private static int getNumeric(final CommandSourceStack source, final DataAccessor accessor, final NbtPathArgument.NbtPath path, final double scale) throws CommandSyntaxException {
       Tag tag = getSingleTag(path, accessor);
-      if (!(tag instanceof NumericTag)) {
-         throw ERROR_GET_NOT_NUMBER.create(path.toString());
-      } else {
-         int result = Mth.floor(((NumericTag)tag).doubleValue() * scale);
+      if (tag instanceof NumericTag numericTag) {
+         int result = Mth.floor(numericTag.doubleValue() * scale);
          source.sendSuccess(() -> accessor.getPrintSuccess(path, scale, result), false);
          return result;
+      } else {
+         throw ERROR_GET_NOT_NUMBER.create(path.toString());
       }
    }
 

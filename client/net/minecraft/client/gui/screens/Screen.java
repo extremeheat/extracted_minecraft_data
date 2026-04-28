@@ -241,12 +241,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void removeWidget(final GuiEventListener widget) {
-      if (widget instanceof Renderable) {
-         this.renderables.remove((Renderable)widget);
+      if (widget instanceof Renderable renderable) {
+         this.renderables.remove(renderable);
       }
 
-      if (widget instanceof NarratableEntry) {
-         this.narratables.remove((NarratableEntry)widget);
+      if (widget instanceof NarratableEntry narratableEntry) {
+         this.narratables.remove(narratableEntry);
       }
 
       if (this.getFocused() == widget) {

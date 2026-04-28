@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,6 +83,10 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
 
    static BlockPredicate matchesFluids(final Fluid... fluids) {
       return matchesFluids(Vec3i.ZERO, fluids);
+   }
+
+   static BlockPredicate matchesBiomes(final HolderSet<Biome> biomes) {
+      return new MatchingBiomesPredicate(biomes);
    }
 
    static BlockPredicate not(final BlockPredicate predicate) {

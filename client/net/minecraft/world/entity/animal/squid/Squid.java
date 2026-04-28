@@ -47,7 +47,7 @@ public class Squid extends AgeableWaterCreature {
    private float tentacleSpeed;
    private float rotateSpeed;
    private Vec3 movementVector;
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 0.63F).withEyeHeight(0.37F);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 0.5F).withEyeHeight(0.37F);
 
    public Squid(final EntityType<? extends Squid> type, final Level level) {
       super(type, level);

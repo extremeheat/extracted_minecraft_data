@@ -212,7 +212,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    static {
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.78F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.78F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
       SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
       SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_ID, 0.05, AttributeModifier.Operation.ADD_VALUE);
       FIRST_ANGER_SOUND_DELAY = TimeUtil.rangeOfSeconds(0, 1);

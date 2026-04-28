@@ -101,11 +101,11 @@ public final class NaturalSpawner {
       return (Biome)chunk.getNoiseBiome(QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ())).value();
    }
 
-   public static List<MobCategory> getFilteredSpawningCategories(final SpawnState state, final boolean spawnPersistent) {
+   public static List<MobCategory> getFilteredSpawningCategories(final SpawnState state, final boolean spawnEnemies, final boolean spawnPersistent) {
       List<MobCategory> spawningCategories = new ArrayList(SPAWNING_CATEGORIES.length);
 
       for(MobCategory mobCategory : SPAWNING_CATEGORIES) {
-         if ((spawnPersistent || !mobCategory.isPersistent()) && state.canSpawnForCategoryGlobal(mobCategory)) {
+         if ((spawnEnemies || mobCategory.isFriendly()) && (spawnPersistent || !mobCategory.isPersistent()) && state.canSpawnForCategoryGlobal(mobCategory)) {
             spawningCategories.add(mobCategory);
          }
       }

@@ -408,8 +408,8 @@ public class Bee extends Animal implements NeutralMob {
 
    private boolean doesHiveHaveSpace(final BlockPos hivePos) {
       BlockEntity blockEntity = this.level().getBlockEntity(hivePos);
-      if (blockEntity instanceof BeehiveBlockEntity) {
-         return !((BeehiveBlockEntity)blockEntity).isFull();
+      if (blockEntity instanceof BeehiveBlockEntity beehiveBlockEntity) {
+         return !beehiveBlockEntity.isFull();
       } else {
          return false;
       }

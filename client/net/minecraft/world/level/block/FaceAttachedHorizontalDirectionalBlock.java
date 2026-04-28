@@ -54,17 +54,14 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    }
 
    protected static Direction getConnectedDirection(final BlockState state) {
+      Direction var10000;
       switch ((AttachFace)state.getValue(FACE)) {
-         case CEILING -> {
-            return Direction.DOWN;
-         }
-         case FLOOR -> {
-            return Direction.UP;
-         }
-         default -> {
-            return (Direction)state.getValue(FACING);
-         }
+         case CEILING -> var10000 = Direction.DOWN;
+         case FLOOR -> var10000 = Direction.UP;
+         default -> var10000 = (Direction)state.getValue(FACING);
       }
+
+      return var10000;
    }
 
    static {

@@ -121,11 +121,11 @@ public class Pack {
    public boolean equals(final Object o) {
       if (this == o) {
          return true;
-      } else if (!(o instanceof Pack)) {
-         return false;
-      } else {
+      } else if (o instanceof Pack) {
          Pack that = (Pack)o;
          return this.location.equals(that.location);
+      } else {
+         return false;
       }
    }
 

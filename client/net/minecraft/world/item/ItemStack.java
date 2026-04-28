@@ -1107,7 +1107,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
       UNBREAKABLE_TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
       INTANGIBLE_TOOLTIP = Component.translatable("item.intangible").withStyle(ChatFormatting.GRAY);
-      MAP_CODEC = MapCodec.recursive("ItemStack", (subCodec) -> RecordCodecBuilder.mapCodec((i) -> i.group(Item.CODEC_WITH_BOUND_COMPONENTS.fieldOf("id").forGetter(ItemStack::typeHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((s) -> s.components.asPatch())).apply(i, ItemStack::new)));
+      MAP_CODEC = MapCodec.recursive("ItemStack", (subCodec) -> RecordCodecBuilder.mapCodec((i) -> i.group(Item.CODEC_WITH_BOUND_COMPONENTS.fieldOf("id").forGetter(ItemStack::typeHolder), ExtraCodecs.optionalAlwaysPresentFieldOf(ExtraCodecs.intRange(1, 99), "count", 1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((s) -> s.components.asPatch())).apply(i, ItemStack::new)));
       MapCodec var10000 = MAP_CODEC;
       Objects.requireNonNull(var10000);
       CODEC = Codec.lazyInitialized(var10000::codec);

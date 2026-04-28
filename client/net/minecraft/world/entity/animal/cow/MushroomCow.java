@@ -29,11 +29,15 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -56,6 +60,7 @@ import org.jspecify.annotations.Nullable;
 public class MushroomCow extends AbstractCow implements Shearable {
    private static final EntityDataAccessor<Integer> DATA_TYPE;
    private static final int MUTATE_CHANCE = 1024;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final String TAG_STEW_EFFECTS = "stew_effects";
    private @Nullable SuspiciousStewEffects stewEffects;
    private @Nullable UUID lastLightningBoltUUID;
@@ -210,6 +215,10 @@ public class MushroomCow extends AbstractCow implements Shearable {
       }
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public @Nullable MushroomCow getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       MushroomCow baby = EntityTypes.MOOSHROOM.create(level, EntitySpawnReason.BREEDING);
       if (baby != null) {
@@ -234,6 +243,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
    static {
       DATA_TYPE = SynchedEntityData.<Integer>defineId(MushroomCow.class, EntityDataSerializers.INT);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.7F).withEyeHeight(0.69F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.75F, 0.0F));
    }
 
    public static enum Variant implements StringRepresentable {

@@ -426,7 +426,17 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
       if (this == obj) {
          return true;
       } else {
-         return obj instanceof ListTag && Objects.equals(this.list, ((ListTag)obj).list);
+         boolean var10000;
+         if (obj instanceof ListTag) {
+            ListTag listTag = (ListTag)obj;
+            if (Objects.equals(this.list, listTag.list)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 

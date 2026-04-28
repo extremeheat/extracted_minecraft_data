@@ -202,7 +202,6 @@ public class Options {
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
    private final OptionInstance<Boolean> directionalAudio;
    private final OptionInstance<Boolean> backgroundForChatOnly;
-   private final OptionInstance<Boolean> touchscreen;
    private final OptionInstance<Boolean> fullscreen;
    private boolean initialExclusiveFullscreen;
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING = Component.translatable("options.exclusiveFullscreen.warningTooltip");
@@ -670,10 +669,6 @@ public class Options {
       return this.backgroundForChatOnly;
    }
 
-   public OptionInstance<Boolean> touchscreen() {
-      return this.touchscreen;
-   }
-
    public OptionInstance<Boolean> fullscreen() {
       return this.fullscreen;
    }
@@ -972,7 +967,6 @@ public class Options {
          soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (caption, value) -> value ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, OptionInstance.NO_ACTION);
-      this.touchscreen = OptionInstance.createBoolean("options.touchscreen", false);
       this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (value) -> {
          Minecraft minecraft = Minecraft.getInstance();
          if (minecraft.getWindow() != null && minecraft.getWindow().isFullscreen() != value) {
@@ -1211,7 +1205,6 @@ public class Options {
       access.process("realmsNotifications", this.realmsNotifications);
       access.process("showSubtitles", this.showSubtitles);
       access.process("directionalAudio", this.directionalAudio);
-      access.process("touchscreen", this.touchscreen);
       access.process("bobView", this.bobView);
       access.process("toggleCrouch", this.toggleCrouch);
       access.process("toggleSprint", this.toggleSprint);

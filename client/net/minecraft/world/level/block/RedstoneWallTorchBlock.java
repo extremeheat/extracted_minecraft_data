@@ -69,7 +69,7 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    }
 
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Boolean)state.getValue(LIT) && state.getValue(FACING) != direction ? 15 : 0;
+      return state.getValue(FACING) != direction ? this.ownSignal(state, level, pos) : 0;
    }
 
    protected BlockState rotate(final BlockState state, final Rotation rotation) {

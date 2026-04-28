@@ -38,25 +38,19 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
-import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraft.world.level.block.CandleBlock;
-import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.CarvedPumpkinBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -181,39 +175,7 @@ public interface DispenseItemBehavior {
             }
          }
       });
-      DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
-            ServerLevel level = source.level();
-            this.setSuccess(true);
-            Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
-            BlockPos targetPos = source.pos().relative(facing);
-            BlockState target = level.getBlockState(targetPos);
-            if (BaseFireBlock.canBePlacedAt(level, targetPos, facing)) {
-               level.setBlockAndUpdate(targetPos, BaseFireBlock.getState(level, targetPos));
-               level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, targetPos);
-            } else if (!CampfireBlock.canLight(target) && !CandleBlock.canLight(target) && !CandleCakeBlock.canLight(target)) {
-               if (target.getBlock() instanceof TntBlock) {
-                  if (TntBlock.prime(level, targetPos)) {
-                     level.removeBlock(targetPos, false);
-                  } else {
-                     this.setSuccess(false);
-                  }
-               } else {
-                  this.setSuccess(false);
-               }
-            } else {
-               level.setBlockAndUpdate(targetPos, (BlockState)target.setValue(BlockStateProperties.LIT, true));
-               level.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, targetPos);
-            }
-
-            if (this.isSuccess()) {
-               dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (item) -> {
-               });
-            }
-
-            return dispensed;
-         }
-      });
+      DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new FlintAndSteelDispenseItemBehavior());
       DispenserBlock.registerBehavior(Items.BONE_MEAL, new OptionalDispenseItemBehavior() {
          protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             this.setSuccess(true);
@@ -236,13 +198,17 @@ public interface DispenseItemBehavior {
                return dispensed;
             } else {
                BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
-               PrimedTnt tnt = new PrimedTnt(level, (double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5, (LivingEntity)null);
-               level.addFreshEntity(tnt);
-               level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-               level.gameEvent((Entity)null, GameEvent.ENTITY_PLACE, target);
-               dispensed.shrink(1);
-               this.setSuccess(true);
-               return dispensed;
+               if (SulfurCubeBlockDispenseItemBehavior.dispenseBlock(level, target, dispensed)) {
+                  return dispensed;
+               } else {
+                  PrimedTnt tnt = new PrimedTnt(level, (double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5, (LivingEntity)null);
+                  level.addFreshEntity(tnt);
+                  level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.gameEvent((Entity)null, GameEvent.ENTITY_PLACE, target);
+                  dispensed.shrink(1);
+                  this.setSuccess(true);
+                  return dispensed;
+               }
             }
          }
       });
@@ -256,7 +222,8 @@ public interface DispenseItemBehavior {
                level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, target);
                BlockEntity skull = level.getBlockEntity(target);
                if (skull instanceof SkullBlockEntity) {
-                  WitherSkullBlock.checkSpawn(level, target, (SkullBlockEntity)skull);
+                  SkullBlockEntity skullBlockEntity = (SkullBlockEntity)skull;
+                  WitherSkullBlock.checkSpawn(level, target, skullBlockEntity);
                }
 
                dispensed.shrink(1);

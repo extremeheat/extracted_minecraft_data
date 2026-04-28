@@ -157,6 +157,7 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.TeamColor;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
@@ -187,8 +188,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public static final int TOTAL_AIR_SUPPLY = 300;
    public static final int MAX_ENTITY_TAG_COUNT = 1024;
    private static final Codec<List<String>> TAG_LIST_CODEC;
-   public static final double DEFAULT_NAMEPLATE_DISTANCE = 64.0;
+   public static final double DEFAULT_NAME_TAG_DISTANCE = 64.0;
    public static final double DEFAULT_BELOW_NAME_DISTANCE = 10.0;
+   public static final double MAX_NAME_TAG_DISTANCE = 512.0;
    public static final float DELTA_AFFECTED_BY_BLOCKS_BELOW_0_2 = 0.2F;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_0_5 = 0.500001;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_1_0 = 0.999999;
@@ -349,7 +351,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public int getTeamColor() {
       Team team = this.getTeam();
-      return team != null && team.getColor().getColor() != null ? team.getColor().getColor() : 16777215;
+      return team != null && team.getColor().isPresent() ? ((TeamColor)team.getColor().get()).rgb() : 16777215;
    }
 
    public boolean isSpectator() {
@@ -431,8 +433,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public boolean equals(final Object obj) {
-      if (obj instanceof Entity) {
-         return ((Entity)obj).id == this.id;
+      if (obj instanceof Entity entity) {
+         return entity.id == this.id;
       } else {
          return false;
       }
@@ -2006,8 +2008,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void awardKillScore(final Entity victim, final DamageSource killingBlow) {
-      if (victim instanceof ServerPlayer) {
-         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((ServerPlayer)victim, this, killingBlow);
+      if (victim instanceof ServerPlayer serverPlayer) {
+         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger(serverPlayer, this, killingBlow);
       }
 
    }
@@ -3285,11 +3287,13 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       Objective objective = scoreboard.getDisplayObjective(DisplaySlot.BELOW_NAME);
       if (objective != null) {
          ReadOnlyScoreInfo score = scoreboard.getPlayerScoreInfo(this, objective);
-         Component formattedValue = ReadOnlyScoreInfo.safeFormatValue(score, objective.numberFormatOrDefault(StyledFormat.NO_STYLE));
-         return Component.empty().append(formattedValue).append(CommonComponents.SPACE).append(objective.getDisplayName());
-      } else {
-         return null;
+         if (score != null) {
+            Component formattedValue = score.formatValue(objective.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            return Component.empty().append(formattedValue).append(CommonComponents.SPACE).append(objective.getDisplayName());
+         }
       }
+
+      return null;
    }
 
    public boolean teleportTo(final ServerLevel level, final double x, final double y, final double z, final Set<Relative> relatives, final float newYRot, final float newXRot, final boolean resetCamera) {

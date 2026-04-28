@@ -11,6 +11,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Player;
@@ -125,6 +126,6 @@ public class SignText {
 
    static {
       LINES_CODEC = ComponentSerialization.CODEC.listOf().comapFlatMap((input) -> Util.fixedSize((List)input, 4).map((components) -> new Component[]{(Component)components.get(0), (Component)components.get(1), (Component)components.get(2), (Component)components.get(3)}), (components) -> List.of(components[0], components[1], components[2], components[3]));
-      DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(LINES_CODEC.fieldOf("messages").forGetter((o) -> o.messages), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter((o) -> o.color), Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter((o) -> o.hasGlowingText)).apply(i, SignText::load));
+      DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(LINES_CODEC.fieldOf("messages").forGetter((o) -> o.messages), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), ExtraCodecs.optionalAlwaysPresentFieldOf(DyeColor.CODEC, "color", DyeColor.BLACK).forGetter((o) -> o.color), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "has_glowing_text", false).forGetter((o) -> o.hasGlowingText)).apply(i, SignText::load));
    }
 }

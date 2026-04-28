@@ -26,10 +26,17 @@ public abstract class BaseEntityBlock extends Block implements EntityBlock {
 
    protected @Nullable MenuProvider getMenuProvider(final BlockState state, final Level level, final BlockPos pos) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      return blockEntity instanceof MenuProvider ? (MenuProvider)blockEntity : null;
+      MenuProvider var10000;
+      if (blockEntity instanceof MenuProvider menuProvider) {
+         var10000 = menuProvider;
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
-   protected static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(final BlockEntityType<A> actual, final BlockEntityType<E> expected, final BlockEntityTicker<? super E> ticker) {
+   protected static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(final BlockEntityType<A> actual, final BlockEntityType<E> expected, final @Nullable BlockEntityTicker<? super E> ticker) {
       return expected == actual ? ticker : null;
    }
 }

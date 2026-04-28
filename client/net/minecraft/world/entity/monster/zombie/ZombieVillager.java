@@ -89,7 +89,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
       output.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      output.putBoolean("VillagerDataFinalized", (Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED));
+      output.putBoolean("VillagerDataFinalized", this.getVillagerDataFinalized());
       output.storeNullable("Offers", MerchantOffers.CODEC, this.tradeOffers);
       output.storeNullable("Gossips", GossipContainer.CODEC, this.gossips);
       output.putInt("ConversionTime", this.isConverting() ? this.villagerConversionTime : -1);
@@ -101,7 +101,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       super.readAdditionalSaveData(input);
       Optional<VillagerData> villagerDataOptional = input.<VillagerData>read("VillagerData", VillagerData.CODEC);
       if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
-         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
+         this.setVillagerDataFinalized(true);
          VillagerData villagerData = (VillagerData)villagerDataOptional.orElseGet(this::initializeVillagerData);
          this.entityData.set(DATA_VILLAGER_DATA, villagerData);
       }
@@ -121,9 +121,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
-      if (!(Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED)) {
+      if (!this.getVillagerDataFinalized()) {
          this.setVillagerData(this.getVillagerData().withType(level.registryAccess(), VillagerType.byBiome(level.getBiome(this.blockPosition()))));
-         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
+         this.setVillagerDataFinalized(true);
       }
 
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
@@ -215,6 +215,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
             }
          }
 
+         villager.setVillagerDataFinalized(this.getVillagerDataFinalized());
          villager.setVillagerData(this.getVillagerData());
          if (this.gossips != null) {
             villager.setGossips(this.gossips);
@@ -230,7 +231,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          if (this.conversionStarter != null) {
             Player player = level.getPlayerByUUID(this.conversionStarter);
             if (player instanceof ServerPlayer) {
-               CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger((ServerPlayer)player, this, villager);
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger(serverPlayer, this, villager);
                level.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, player, villager);
             }
          }
@@ -310,6 +312,14 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.entityData.set(DATA_VILLAGER_DATA, villagerData);
    }
 
+   public boolean getVillagerDataFinalized() {
+      return (Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED);
+   }
+
+   public void setVillagerDataFinalized(final boolean villagerDataFinalized) {
+      this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, villagerDataFinalized);
+   }
+
    public VillagerData getVillagerData() {
       return (VillagerData)this.entityData.get(DATA_VILLAGER_DATA);
    }
@@ -345,6 +355,6 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       DATA_CONVERTING_ID = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
       DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA);
       DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.67F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.125F, 0.0F));
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.67F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.125F, 0.0F));
    }
 }

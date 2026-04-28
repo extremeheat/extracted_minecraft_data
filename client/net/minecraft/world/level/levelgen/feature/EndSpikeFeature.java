@@ -114,7 +114,7 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
    }
 
    public static class EndSpike {
-      public static final Codec<EndSpike> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.fieldOf("centerX").orElse(0).forGetter((s) -> s.centerX), Codec.INT.fieldOf("centerZ").orElse(0).forGetter((s) -> s.centerZ), Codec.INT.fieldOf("radius").orElse(0).forGetter((s) -> s.radius), Codec.INT.fieldOf("height").orElse(0).forGetter((s) -> s.height), Codec.BOOL.fieldOf("guarded").orElse(false).forGetter((s) -> s.guarded)).apply(i, EndSpike::new));
+      public static final Codec<EndSpike> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.optionalFieldOf("centerX", 0).forGetter((s) -> s.centerX), Codec.INT.optionalFieldOf("centerZ", 0).forGetter((s) -> s.centerZ), Codec.INT.optionalFieldOf("radius", 0).forGetter((s) -> s.radius), Codec.INT.optionalFieldOf("height", 0).forGetter((s) -> s.height), Codec.BOOL.optionalFieldOf("guarded", false).forGetter((s) -> s.guarded)).apply(i, EndSpike::new));
       private final int centerX;
       private final int centerZ;
       private final int radius;

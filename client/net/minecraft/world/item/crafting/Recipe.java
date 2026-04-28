@@ -63,7 +63,7 @@ public interface Recipe<T extends RecipeInput> {
       String group();
 
       static <CategoryType, SelfType extends BookInfo<CategoryType>> MapCodec<SelfType> mapCodec(final Codec<CategoryType> categoryCodec, final CategoryType defaultCategory, final Constructor<CategoryType, SelfType> constructor) {
-         return RecordCodecBuilder.mapCodec((i) -> i.group(categoryCodec.fieldOf("category").orElse(defaultCategory).forGetter(BookInfo::category), Codec.STRING.optionalFieldOf("group", "").forGetter(BookInfo::group)).apply(i, constructor));
+         return RecordCodecBuilder.mapCodec((i) -> i.group(categoryCodec.optionalFieldOf("category", defaultCategory).forGetter(BookInfo::category), Codec.STRING.optionalFieldOf("group", "").forGetter(BookInfo::group)).apply(i, constructor));
       }
 
       static <CategoryType, SelfType extends BookInfo<CategoryType>> StreamCodec<RegistryFriendlyByteBuf, SelfType> streamCodec(final StreamCodec<? super RegistryFriendlyByteBuf, CategoryType> categoryCodec, final Constructor<CategoryType, SelfType> constructor) {

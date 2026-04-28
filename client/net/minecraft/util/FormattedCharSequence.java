@@ -53,20 +53,15 @@ public interface FormattedCharSequence {
 
    static FormattedCharSequence composite(final List<FormattedCharSequence> parts) {
       int size = parts.size();
+      FormattedCharSequence var10000;
       switch (size) {
-         case 0 -> {
-            return EMPTY;
-         }
-         case 1 -> {
-            return (FormattedCharSequence)parts.get(0);
-         }
-         case 2 -> {
-            return fromPair((FormattedCharSequence)parts.get(0), (FormattedCharSequence)parts.get(1));
-         }
-         default -> {
-            return fromList(ImmutableList.copyOf(parts));
-         }
+         case 0 -> var10000 = EMPTY;
+         case 1 -> var10000 = (FormattedCharSequence)parts.get(0);
+         case 2 -> var10000 = fromPair((FormattedCharSequence)parts.get(0), (FormattedCharSequence)parts.get(1));
+         default -> var10000 = fromList(ImmutableList.copyOf(parts));
       }
+
+      return var10000;
    }
 
    static FormattedCharSequence fromPair(final FormattedCharSequence first, final FormattedCharSequence second) {

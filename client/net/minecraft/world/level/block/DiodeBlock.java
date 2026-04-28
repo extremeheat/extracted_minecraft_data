@@ -63,18 +63,6 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return state.getSignal(level, pos, direction);
-   }
-
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      if (!(Boolean)state.getValue(POWERED)) {
-         return 0;
-      } else {
-         return state.getValue(FACING) == direction ? this.getOutputSignal(level, pos, state) : 0;
-      }
-   }
-
    protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
       if (level.getBlockState(pos).is(this)) {
          if (state.canSurvive(level, pos)) {
@@ -140,6 +128,18 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Boolean)state.getValue(POWERED) ? this.getOutputSignal(level, pos, state) : 0;
+   }
+
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return state.getSignal(level, pos, direction);
+   }
+
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return state.getValue(FACING) == direction ? this.ownSignal(state, level, pos) : 0;
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {

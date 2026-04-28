@@ -508,6 +508,14 @@ public class ExtraCodecs {
       return var2.xmap(var10001, baseFolder::relativize);
    }
 
+   public static <A> MapCodec<A> optionalAlwaysPresentFieldOf(final Codec<A> elementCodec, final String name, final A defaultValue, final boolean lenient) {
+      return Codec.optionalField(name, elementCodec, lenient).xmap((o) -> o.orElse(defaultValue), Optional::of);
+   }
+
+   public static <A> MapCodec<A> optionalAlwaysPresentFieldOf(final Codec<A> elementCodec, final String name, final A defaultValue) {
+      return optionalAlwaysPresentFieldOf(elementCodec, name, defaultValue, false);
+   }
+
    static {
       JSON = converter(JsonOps.INSTANCE);
       JAVA = converter(JavaOps.INSTANCE);

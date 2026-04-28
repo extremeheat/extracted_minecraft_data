@@ -67,7 +67,23 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
                return false;
             } else {
                Container container = ((ChestMenu)player.containerMenu).getContainer();
-               return container == ChestBlockEntity.this || container instanceof CompoundContainer && ((CompoundContainer)container).contains(ChestBlockEntity.this);
+               boolean var10000;
+               if (container != ChestBlockEntity.this) {
+                  label32: {
+                     if (container instanceof CompoundContainer) {
+                        CompoundContainer compoundContainer = (CompoundContainer)container;
+                        if (compoundContainer.contains(ChestBlockEntity.this)) {
+                           break label32;
+                        }
+                     }
+
+                     var10000 = false;
+                     return var10000;
+                  }
+               }
+
+               var10000 = true;
+               return var10000;
             }
          }
       };
@@ -167,7 +183,8 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
       if (state.hasBlockEntity()) {
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (blockEntity instanceof ChestBlockEntity) {
-            return ((ChestBlockEntity)blockEntity).openersCounter.getOpenerCount();
+            ChestBlockEntity chestBlockEntity = (ChestBlockEntity)blockEntity;
+            return chestBlockEntity.openersCounter.getOpenerCount();
          }
       }
 

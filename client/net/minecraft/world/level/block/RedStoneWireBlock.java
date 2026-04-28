@@ -309,7 +309,7 @@ public class RedStoneWireBlock extends Block {
 
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       if (this.shouldSignal && direction != Direction.DOWN) {
-         int power = (Integer)state.getValue(POWER);
+         int power = this.ownSignal(state, level, pos);
          if (power == 0) {
             return 0;
          } else {
@@ -318,6 +318,10 @@ public class RedStoneWireBlock extends Block {
       } else {
          return 0;
       }
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Integer)state.getValue(POWER);
    }
 
    protected static boolean shouldConnectTo(final BlockState blockState) {
@@ -378,20 +382,15 @@ public class RedStoneWireBlock extends Block {
    }
 
    protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      BlockState var10000;
       switch (rotation) {
-         case CLOCKWISE_180 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(SOUTH))).setValue(EAST, (RedstoneSide)state.getValue(WEST))).setValue(SOUTH, (RedstoneSide)state.getValue(NORTH))).setValue(WEST, (RedstoneSide)state.getValue(EAST));
-         }
-         case COUNTERCLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(EAST))).setValue(EAST, (RedstoneSide)state.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)state.getValue(WEST))).setValue(WEST, (RedstoneSide)state.getValue(NORTH));
-         }
-         case CLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(WEST))).setValue(EAST, (RedstoneSide)state.getValue(NORTH))).setValue(SOUTH, (RedstoneSide)state.getValue(EAST))).setValue(WEST, (RedstoneSide)state.getValue(SOUTH));
-         }
-         default -> {
-            return state;
-         }
+         case CLOCKWISE_180 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(SOUTH))).setValue(EAST, (RedstoneSide)state.getValue(WEST))).setValue(SOUTH, (RedstoneSide)state.getValue(NORTH))).setValue(WEST, (RedstoneSide)state.getValue(EAST));
+         case COUNTERCLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(EAST))).setValue(EAST, (RedstoneSide)state.getValue(SOUTH))).setValue(SOUTH, (RedstoneSide)state.getValue(WEST))).setValue(WEST, (RedstoneSide)state.getValue(NORTH));
+         case CLOCKWISE_90 -> var10000 = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (RedstoneSide)state.getValue(WEST))).setValue(EAST, (RedstoneSide)state.getValue(NORTH))).setValue(SOUTH, (RedstoneSide)state.getValue(EAST))).setValue(WEST, (RedstoneSide)state.getValue(SOUTH));
+         default -> var10000 = state;
       }
+
+      return var10000;
    }
 
    protected BlockState mirror(final BlockState state, final Mirror mirror) {

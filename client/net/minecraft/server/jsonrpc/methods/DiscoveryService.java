@@ -39,7 +39,7 @@ public class DiscoveryService {
          schemas.put(component.name(), component.schema().info());
       }
 
-      DiscoverInfo discoverInfo = new DiscoverInfo("Minecraft Server JSON-RPC", "2.0.0");
+      DiscoverInfo discoverInfo = new DiscoverInfo("Minecraft Server JSON-RPC", "3.0.0");
       return new DiscoverResponse("1.3.2", discoverInfo, methods, new DiscoverComponents(schemas));
    }
 

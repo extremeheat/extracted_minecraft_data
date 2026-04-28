@@ -71,8 +71,7 @@ public class TntBlock extends Block {
    public void wasExploded(final ServerLevel level, final BlockPos pos, final Explosion explosion) {
       if ((Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
          PrimedTnt primed = new PrimedTnt(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, explosion.getIndirectSourceEntity());
-         int fuse = primed.getFuse();
-         primed.setFuse((short)(level.getRandom().nextInt(fuse / 4) + fuse / 8));
+         primed.setFuse(PrimedTnt.getRandomShortFuse(primed.getFuse(), level.getRandom()));
          level.addFreshEntity(primed);
       }
    }
@@ -125,8 +124,18 @@ public class TntBlock extends Block {
       if (level instanceof ServerLevel serverLevel) {
          BlockPos pos = blockHit.getBlockPos();
          Entity owner = projectile.getOwner();
-         if (projectile.isOnFire() && projectile.mayInteract(serverLevel, pos) && prime(level, pos, owner instanceof LivingEntity ? (LivingEntity)owner : null)) {
-            level.removeBlock(pos, false);
+         if (projectile.isOnFire() && projectile.mayInteract(serverLevel, pos)) {
+            LivingEntity var10002;
+            if (owner instanceof LivingEntity) {
+               LivingEntity livingEntity = (LivingEntity)owner;
+               var10002 = livingEntity;
+            } else {
+               var10002 = null;
+            }
+
+            if (prime(level, pos, var10002)) {
+               level.removeBlock(pos, false);
+            }
          }
       }
 

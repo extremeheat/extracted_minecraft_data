@@ -141,23 +141,16 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    }
 
    private static float sleepDirectionToRotation(final Direction direction) {
+      float var10000;
       switch (direction) {
-         case SOUTH -> {
-            return 90.0F;
-         }
-         case WEST -> {
-            return 0.0F;
-         }
-         case NORTH -> {
-            return 270.0F;
-         }
-         case EAST -> {
-            return 180.0F;
-         }
-         default -> {
-            return 0.0F;
-         }
+         case SOUTH -> var10000 = 90.0F;
+         case WEST -> var10000 = 0.0F;
+         case NORTH -> var10000 = 270.0F;
+         case EAST -> var10000 = 180.0F;
+         default -> var10000 = 0.0F;
       }
+
+      return var10000;
    }
 
    protected boolean isShaking(final S state) {
@@ -224,23 +217,16 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          Team myTeam = player.getTeam();
          if (team != null) {
             Team.Visibility visibility = team.getNameTagVisibility();
+            boolean var10000;
             switch (visibility) {
-               case ALWAYS -> {
-                  return isVisibleToPlayer;
-               }
-               case NEVER -> {
-                  return false;
-               }
-               case HIDE_FOR_OTHER_TEAMS -> {
-                  return myTeam == null ? isVisibleToPlayer : team.isAlliedTo(myTeam) && (team.canSeeFriendlyInvisibles() || isVisibleToPlayer);
-               }
-               case HIDE_FOR_OWN_TEAM -> {
-                  return myTeam == null ? isVisibleToPlayer : !team.isAlliedTo(myTeam) && isVisibleToPlayer;
-               }
-               default -> {
-                  return true;
-               }
+               case ALWAYS -> var10000 = isVisibleToPlayer;
+               case NEVER -> var10000 = false;
+               case HIDE_FOR_OTHER_TEAMS -> var10000 = myTeam == null ? isVisibleToPlayer : team.isAlliedTo(myTeam) && (team.canSeeFriendlyInvisibles() || isVisibleToPlayer);
+               case HIDE_FOR_OWN_TEAM -> var10000 = myTeam == null ? isVisibleToPlayer : !team.isAlliedTo(myTeam) && isVisibleToPlayer;
+               default -> throw new MatchException((String)null, (Throwable)null);
             }
+
+            return var10000;
          }
       }
 
@@ -328,10 +314,10 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       state.isInvisibleToPlayer = state.isInvisible && entity.isInvisibleTo(minecraft.player);
    }
 
-   protected void extractNameplates(final T entity, final S state, final float partialTicks) {
-      double nameplateDistance = entity.getAttribute(Attributes.NAMEPLATE_DISTANCE).getValue();
+   protected void extractNameTags(final T entity, final S state, final float partialTicks) {
+      double nameTagDistance = entity.getAttribute(Attributes.NAME_TAG_DISTANCE).getValue();
       double belowNameDistance = entity.getAttribute(Attributes.BELOW_NAME_DISTANCE).getValue();
-      super.extractNameplates(entity, state, partialTicks, nameplateDistance, belowNameDistance);
+      super.extractNameTags(entity, state, partialTicks, nameTagDistance, belowNameDistance);
    }
 
    private static float solveBodyRot(final LivingEntity entity, final float headRot, final float partialTicks) {

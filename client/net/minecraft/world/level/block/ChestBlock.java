@@ -300,8 +300,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof ChestBlockEntity) {
-         ((ChestBlockEntity)blockEntity).recheckOpen();
+      if (blockEntity instanceof ChestBlockEntity chestBlockEntity) {
+         chestBlockEntity.recheckOpen();
       }
 
    }

@@ -6,7 +6,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.KeyDispatchDataCodec;
-import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
@@ -63,7 +62,26 @@ public interface DensityFunction {
 
    void fillArray(final double[] output, final ContextProvider contextProvider);
 
-   DensityFunction mapAll(final Visitor visitor);
+   DensityFunction mapChildren(final Visitor visitor);
+
+   default DensityFunction mapAll(final Visitor visitor) {
+      class RecursiveVisitor implements Visitor {
+         RecursiveVisitor() {
+            Objects.requireNonNull(DensityFunction.this);
+            super();
+         }
+
+         public DensityFunction apply(final DensityFunction input) {
+            return visitor.apply(input.mapChildren(this));
+         }
+
+         public NoiseHolder visitNoise(final NoiseHolder noise) {
+            return visitor.visitNoise(noise);
+         }
+      }
+
+      return (new RecursiveVisitor()).apply(this);
+   }
 
    double minValue();
 
@@ -140,20 +158,8 @@ public interface DensityFunction {
          contextProvider.fillAllDirectly(output, this);
       }
 
-      default DensityFunction mapAll(final Visitor visitor) {
-         return visitor.apply(this);
-      }
-   }
-
-   public interface FunctionContext {
-      int blockX();
-
-      int blockY();
-
-      int blockZ();
-
-      default Blender getBlender() {
-         return Blender.empty();
+      default DensityFunction mapChildren(final Visitor visitor) {
+         return this;
       }
    }
 
@@ -167,5 +173,13 @@ public interface DensityFunction {
       FunctionContext forIndex(int index);
 
       void fillAllDirectly(double[] output, DensityFunction function);
+   }
+
+   public interface FunctionContext {
+      int blockX();
+
+      int blockY();
+
+      int blockZ();
    }
 }

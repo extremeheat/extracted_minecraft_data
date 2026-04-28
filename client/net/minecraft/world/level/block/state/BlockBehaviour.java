@@ -133,20 +133,15 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      boolean var10000;
       switch (type) {
-         case LAND -> {
-            return !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-         }
-         case WATER -> {
-            return state.getFluidState().is(FluidTags.WATER);
-         }
-         case AIR -> {
-            return !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-         }
-         default -> {
-            return false;
-         }
+         case LAND -> var10000 = !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+         case WATER -> var10000 = state.getFluidState().is(FluidTags.WATER);
+         case AIR -> var10000 = !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+         default -> var10000 = false;
       }
+
+      return var10000;
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
@@ -203,10 +198,6 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected boolean useShapeForLightOcclusion(final BlockState state) {
-      return false;
-   }
-
-   protected boolean isSignalSource(final BlockState state) {
       return false;
    }
 
@@ -343,7 +334,15 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected void attack(final BlockState state, final Level level, final BlockPos pos, final Player player) {
    }
 
+   protected boolean isSignalSource(final BlockState state) {
+      return false;
+   }
+
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return this.ownSignal(state, level, pos);
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return 0;
    }
 
@@ -965,6 +964,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean isSignalSource() {
          return this.getBlock().isSignalSource(this.asState());
+      }
+
+      public int getOwnSignal(final BlockGetter level, final BlockPos pos) {
+         return this.getBlock().ownSignal(this.asState(), level, pos);
       }
 
       public int getSignal(final BlockGetter level, final BlockPos pos, final Direction direction) {

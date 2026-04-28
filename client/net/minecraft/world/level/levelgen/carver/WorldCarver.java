@@ -123,7 +123,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
          } else {
             chunk.setBlockState(blockPos, state);
             if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
-               chunk.markPosForPostprocessing(blockPos);
+               chunk.markPosForPostProcessing(blockPos);
             }
 
             if (hasGrass.isTrue()) {
@@ -132,7 +132,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
                   context.topMaterial(biomeGetter, chunk, helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
                      chunk.setBlockState(helperPos, topMaterial);
                      if (!topMaterial.getFluidState().isEmpty()) {
-                        chunk.markPosForPostprocessing(helperPos);
+                        chunk.markPosForPostProcessing(helperPos);
                      }
 
                   });

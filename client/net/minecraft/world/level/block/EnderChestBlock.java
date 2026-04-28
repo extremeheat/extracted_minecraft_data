@@ -145,8 +145,8 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof EnderChestBlockEntity) {
-         ((EnderChestBlockEntity)blockEntity).recheckOpen();
+      if (blockEntity instanceof EnderChestBlockEntity enderChestBlockEntity) {
+         enderChestBlockEntity.recheckOpen();
       }
 
    }

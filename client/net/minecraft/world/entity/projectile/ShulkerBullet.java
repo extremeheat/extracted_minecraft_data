@@ -265,7 +265,14 @@ public class ShulkerBullet extends Projectile {
       super.onHitEntity(hitResult);
       Entity target = hitResult.getEntity();
       Entity owner = this.getOwner();
-      LivingEntity livingOwner = owner instanceof LivingEntity ? (LivingEntity)owner : null;
+      LivingEntity var10000;
+      if (owner instanceof LivingEntity livingEntity) {
+         var10000 = livingEntity;
+      } else {
+         var10000 = null;
+      }
+
+      LivingEntity livingOwner = var10000;
       DamageSource damageSource = this.damageSources().mobProjectile(this, livingOwner);
       boolean wasHurt = target.hurtOrSimulate(damageSource, 4.0F);
       if (wasHurt) {

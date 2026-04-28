@@ -38,8 +38,8 @@ public class ChainedJsonException extends IOException {
    }
 
    public static ChainedJsonException forException(final Exception e) {
-      if (e instanceof ChainedJsonException) {
-         return (ChainedJsonException)e;
+      if (e instanceof ChainedJsonException chainedJsonException) {
+         return chainedJsonException;
       } else {
          String message = e.getMessage();
          if (e instanceof FileNotFoundException) {

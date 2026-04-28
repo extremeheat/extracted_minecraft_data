@@ -79,19 +79,22 @@ public class KeyboardHandler {
    }
 
    private boolean handleChunkDebugKeys(final KeyEvent event) {
+      boolean var10000;
       switch (event.key()) {
          case 69:
             if (this.minecraft.player == null) {
-               return false;
+               var10000 = false;
+            } else {
+               boolean chunkSectionPaths = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_PATHS);
+               this.debugFeedback("SectionPath: " + (chunkSectionPaths ? "shown" : "hidden"));
+               var10000 = true;
             }
-
-            boolean chunkSectionPaths = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_PATHS);
-            this.debugFeedback("SectionPath: " + (chunkSectionPaths ? "shown" : "hidden"));
-            return true;
+            break;
          case 70:
             boolean fogEnabled = FogRenderer.toggleFog();
             this.debugFeedbackEnabledStatus("Fog: ", fogEnabled);
-            return true;
+            var10000 = true;
+            break;
          case 71:
          case 72:
          case 73:
@@ -105,19 +108,22 @@ public class KeyboardHandler {
          case 83:
          case 84:
          default:
-            return false;
+            var10000 = false;
+            break;
          case 76:
             this.minecraft.smartCull = !this.minecraft.smartCull;
             this.debugFeedbackEnabledStatus("SmartCull: ", this.minecraft.smartCull);
-            return true;
+            var10000 = true;
+            break;
          case 79:
             if (this.minecraft.player == null) {
-               return false;
+               var10000 = false;
+            } else {
+               boolean renderOctree = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_OCTREE);
+               this.debugFeedbackEnabledStatus("Frustum culling Octree: ", renderOctree);
+               var10000 = true;
             }
-
-            boolean renderOctree = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_OCTREE);
-            this.debugFeedbackEnabledStatus("Frustum culling Octree: ", renderOctree);
-            return true;
+            break;
          case 85:
             if (event.hasShiftDown()) {
                this.minecraft.gameRenderer.mainCamera().killFrustum();
@@ -127,20 +133,24 @@ public class KeyboardHandler {
                this.debugFeedback("Captured frustum");
             }
 
-            return true;
+            var10000 = true;
+            break;
          case 86:
             if (this.minecraft.player == null) {
-               return false;
+               var10000 = false;
+            } else {
+               boolean sectionVisibility = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
+               this.debugFeedbackEnabledStatus("SectionVisibility: ", sectionVisibility);
+               var10000 = true;
             }
-
-            boolean sectionVisibility = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
-            this.debugFeedbackEnabledStatus("SectionVisibility: ", sectionVisibility);
-            return true;
+            break;
          case 87:
             this.minecraft.wireframe = !this.minecraft.wireframe;
             this.debugFeedbackEnabledStatus("WireFrame: ", this.minecraft.wireframe);
-            return true;
+            var10000 = true;
       }
+
+      return var10000;
    }
 
    private void debugFeedbackEnabledStatus(final String prefix, final boolean isEnabled) {
@@ -447,29 +457,38 @@ public class KeyboardHandler {
             }
          }
 
-         if (action == 1 && (!(screen instanceof KeyBindsScreen) || ((KeyBindsScreen)screen).lastKeySelection <= Util.getMillis() - 20L)) {
-            if (options.keyFullscreen.matches(event)) {
-               window.toggleFullScreen();
-               boolean fullscreen = window.isFullscreen();
-               options.fullscreen().set(fullscreen);
-               options.save();
-               Screen var26 = this.minecraft.gui.screen();
-               if (var26 instanceof VideoSettingsScreen) {
-                  VideoSettingsScreen videoSettingsScreen = (VideoSettingsScreen)var26;
-                  videoSettingsScreen.updateFullscreenButton(fullscreen);
+         if (action == 1) {
+            label226: {
+               if (screen instanceof KeyBindsScreen) {
+                  KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
+                  if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
+                     break label226;
+                  }
                }
 
-               return;
-            }
+               if (options.keyFullscreen.matches(event)) {
+                  window.toggleFullScreen();
+                  boolean fullscreen = window.isFullscreen();
+                  options.fullscreen().set(fullscreen);
+                  options.save();
+                  Screen var14 = this.minecraft.gui.screen();
+                  if (var14 instanceof VideoSettingsScreen) {
+                     VideoSettingsScreen videoSettingsScreen = (VideoSettingsScreen)var14;
+                     videoSettingsScreen.updateFullscreenButton(fullscreen);
+                  }
 
-            if (options.keyScreenshot.matches(event)) {
-               if (event.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
-                  this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
-               } else {
-                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.gameRenderer.mainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
+                  return;
                }
 
-               return;
+               if (options.keyScreenshot.matches(event)) {
+                  if (event.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
+                     this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
+                  } else {
+                     Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.gameRenderer.mainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
+                  }
+
+                  return;
+               }
             }
          }
 
@@ -485,7 +504,7 @@ public class KeyboardHandler {
                   }
                }
 
-               LocalPlayer wasDisabled = this.minecraft.player;
+               LocalPlayer report = this.minecraft.player;
             }
          }
 

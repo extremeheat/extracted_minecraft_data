@@ -474,8 +474,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    private <T extends BlockEntity> void removeGameEventListener(final T blockEntity, final ServerLevel level) {
       Block block = blockEntity.getBlockState().getBlock();
-      if (block instanceof EntityBlock) {
-         GameEventListener listener = ((EntityBlock)block).getListener(level, blockEntity);
+      if (block instanceof EntityBlock entityBlock) {
+         GameEventListener listener = entityBlock.getListener(level, blockEntity);
          if (listener != null) {
             int section = SectionPos.blockToSectionCoord(blockEntity.getBlockPos().getY());
             GameEventListenerRegistry listenerRegistry = this.getListenerRegistry(section);
@@ -689,8 +689,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    private <T extends BlockEntity> void addGameEventListener(final T blockEntity, final ServerLevel level) {
       Block block = blockEntity.getBlockState().getBlock();
-      if (block instanceof EntityBlock) {
-         GameEventListener listener = ((EntityBlock)block).getListener(level, blockEntity);
+      if (block instanceof EntityBlock entityBlock) {
+         GameEventListener listener = entityBlock.getListener(level, blockEntity);
          if (listener != null) {
             this.getListenerRegistry(SectionPos.blockToSectionCoord(blockEntity.getBlockPos().getY())).register(listener);
          }

@@ -36,78 +36,47 @@ public class GlDebug {
    }
 
    public static String sourceToString(final int source) {
+      String var10000;
       switch (source) {
-         case 33350 -> {
-            return "API";
-         }
-         case 33351 -> {
-            return "WINDOW SYSTEM";
-         }
-         case 33352 -> {
-            return "SHADER COMPILER";
-         }
-         case 33353 -> {
-            return "THIRD PARTY";
-         }
-         case 33354 -> {
-            return "APPLICATION";
-         }
-         case 33355 -> {
-            return "OTHER";
-         }
-         default -> {
-            return printUnknownToken(source);
-         }
+         case 33350 -> var10000 = "API";
+         case 33351 -> var10000 = "WINDOW SYSTEM";
+         case 33352 -> var10000 = "SHADER COMPILER";
+         case 33353 -> var10000 = "THIRD PARTY";
+         case 33354 -> var10000 = "APPLICATION";
+         case 33355 -> var10000 = "OTHER";
+         default -> var10000 = printUnknownToken(source);
       }
+
+      return var10000;
    }
 
    public static String typeToString(final int type) {
+      String var10000;
       switch (type) {
-         case 33356 -> {
-            return "ERROR";
-         }
-         case 33357 -> {
-            return "DEPRECATED BEHAVIOR";
-         }
-         case 33358 -> {
-            return "UNDEFINED BEHAVIOR";
-         }
-         case 33359 -> {
-            return "PORTABILITY";
-         }
-         case 33360 -> {
-            return "PERFORMANCE";
-         }
-         case 33361 -> {
-            return "OTHER";
-         }
-         case 33384 -> {
-            return "MARKER";
-         }
-         default -> {
-            return printUnknownToken(type);
-         }
+         case 33356 -> var10000 = "ERROR";
+         case 33357 -> var10000 = "DEPRECATED BEHAVIOR";
+         case 33358 -> var10000 = "UNDEFINED BEHAVIOR";
+         case 33359 -> var10000 = "PORTABILITY";
+         case 33360 -> var10000 = "PERFORMANCE";
+         case 33361 -> var10000 = "OTHER";
+         case 33384 -> var10000 = "MARKER";
+         default -> var10000 = printUnknownToken(type);
       }
+
+      return var10000;
    }
 
    public static String severityToString(final int severity) {
+      String var10000;
       switch (severity) {
-         case 33387 -> {
-            return "NOTIFICATION";
-         }
-         case 37190 -> {
-            return "HIGH";
-         }
-         case 37191 -> {
-            return "MEDIUM";
-         }
-         case 37192 -> {
-            return "LOW";
-         }
-         default -> {
-            return printUnknownToken(severity);
-         }
+         case 33387 -> var10000 = "NOTIFICATION";
+         case 37190 -> var10000 = "HIGH";
+         case 37191 -> var10000 = "MEDIUM";
+         case 37192 -> var10000 = "LOW";
+         default -> var10000 = printUnknownToken(severity);
       }
+
+      return var10000;
    }
 
    private void printDebugLog(final int source, final int type, final int id, final int severity, final int length, final long message, final long userParam) {

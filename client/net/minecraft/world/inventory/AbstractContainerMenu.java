@@ -800,7 +800,11 @@ public abstract class AbstractContainerMenu {
    }
 
    public static int getRedstoneSignalFromBlockEntity(final @Nullable BlockEntity blockEntity) {
-      return blockEntity instanceof Container ? getRedstoneSignalFromContainer((Container)blockEntity) : 0;
+      if (blockEntity instanceof Container container) {
+         return getRedstoneSignalFromContainer(container);
+      } else {
+         return 0;
+      }
    }
 
    public static int getRedstoneSignalFromContainer(final @Nullable Container container) {

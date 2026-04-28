@@ -164,7 +164,8 @@ public abstract class BaseSpawner {
                      level.levelEvent(2004, pos, 0);
                      level.gameEvent(entity, GameEvent.ENTITY_PLACE, spawnBlockPos);
                      if (entity instanceof Mob) {
-                        ((Mob)entity).spawnAnim();
+                        Mob mob = (Mob)entity;
+                        mob.spawnAnim();
                      }
 
                      delay = true;

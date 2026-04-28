@@ -25,6 +25,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -33,6 +36,7 @@ import net.minecraft.world.entity.ItemBasedSteering;
 import net.minecraft.world.entity.ItemSteerable;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -64,6 +68,7 @@ public class Pig extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
    private static final EntityDataAccessor<Holder<PigVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<PigSoundVariant>> DATA_SOUND_VARIANT_ID;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private final ItemBasedSteering steering;
 
    public Pig(final EntityType<? extends Pig> type, final Level level) {
@@ -221,6 +226,10 @@ public class Pig extends Animal implements ItemSteerable {
       return this.steering.boost(this.getRandom());
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public @Nullable Pig getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       Pig baby = EntityTypes.PIG.create(level, EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Pig partnerPig) {
@@ -294,5 +303,6 @@ public class Pig extends Animal implements ItemSteerable {
       DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Pig.class, EntityDataSerializers.INT);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<PigVariant>>defineId(Pig.class, EntityDataSerializers.PIG_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<PigSoundVariant>>defineId(Pig.class, EntityDataSerializers.PIG_SOUND_VARIANT);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.45F).withEyeHeight(0.40625F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.5F, 0.0F));
    }
 }

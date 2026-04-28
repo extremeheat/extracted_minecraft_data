@@ -20,10 +20,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -55,6 +59,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
+   private static final EntityDimensions BABY_DIMENSIONS;
    private static final EntityDataAccessor<Byte> DATA_WOOL_ID;
    private static final DyeColor DEFAULT_COLOR;
    private static final boolean DEFAULT_SHEARED = false;
@@ -244,6 +249,10 @@ public class Sheep extends Animal implements Shearable {
       return SheepColorSpawnRules.getSheepColor(biome, level.getRandom());
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
    public @Nullable Sheep getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       Sheep sheep = EntityTypes.SHEEP.create(level, EntitySpawnReason.BREEDING);
       if (sheep != null) {
@@ -270,6 +279,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    static {
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.45F, 0.65F).withEyeHeight(0.65625F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.5625F, 0.0F));
       DATA_WOOL_ID = SynchedEntityData.<Byte>defineId(Sheep.class, EntityDataSerializers.BYTE);
       DEFAULT_COLOR = DyeColor.WHITE;
    }

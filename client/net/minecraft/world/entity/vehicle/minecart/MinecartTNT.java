@@ -29,13 +29,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 public class MinecartTNT extends AbstractMinecart {
-   private static final byte EVENT_PRIME = 10;
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
    private static final String TAG_EXPLOSION_SPEED_FACTOR = "explosion_speed_factor";
-   private static final String TAG_FUSE = "fuse";
    private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
-   private static final int NO_FUSE = -1;
    private @Nullable DamageSource ignitionSource;
    private int fuse = -1;
    private float explosionPowerBase = 4.0F;
@@ -131,7 +128,7 @@ public class MinecartTNT extends AbstractMinecart {
    }
 
    public void handleEntityEvent(final byte id) {
-      if (id == 10) {
+      if (id == 70) {
          this.primeFuse((DamageSource)null);
       } else {
          super.handleEntityEvent(id);
@@ -153,7 +150,7 @@ public class MinecartTNT extends AbstractMinecart {
             this.ignitionSource = this.damageSources().explosion(this, source.getEntity());
          }
 
-         this.level().broadcastEntityEvent(this, (byte)10);
+         this.level().broadcastEntityEvent(this, (byte)70);
          if (!this.isSilent()) {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
          }

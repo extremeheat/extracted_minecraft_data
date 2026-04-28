@@ -166,7 +166,7 @@ public class LecternBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 
@@ -182,7 +182,8 @@ public class LecternBlock extends BaseEntityBlock {
       if ((Boolean)state.getValue(HAS_BOOK)) {
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (blockEntity instanceof LecternBlockEntity) {
-            return ((LecternBlockEntity)blockEntity).getRedstoneSignal();
+            LecternBlockEntity lecternBlockEntity = (LecternBlockEntity)blockEntity;
+            return lecternBlockEntity.getRedstoneSignal();
          }
       }
 
@@ -217,8 +218,8 @@ public class LecternBlock extends BaseEntityBlock {
 
    private void openScreen(final Level level, final BlockPos pos, final Player player) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof LecternBlockEntity) {
-         player.openMenu((LecternBlockEntity)blockEntity);
+      if (blockEntity instanceof LecternBlockEntity lecternBlockEntity) {
+         player.openMenu(lecternBlockEntity);
          player.awardStat(Stats.INTERACT_WITH_LECTERN);
       }
 

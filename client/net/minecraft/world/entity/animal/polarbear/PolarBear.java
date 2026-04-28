@@ -19,6 +19,8 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -64,6 +66,7 @@ public class PolarBear extends Animal implements NeutralMob {
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
    private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private static final EntityDimensions BABY_DIMENSIONS;
 
    public PolarBear(final EntityType<? extends PolarBear> type, final Level level) {
       super(type, level);
@@ -191,12 +194,13 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
+      EntityDimensions dimension = this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
       if (this.clientSideStandAnimation > 0.0F) {
          float standFactor = this.clientSideStandAnimation / 6.0F;
          float heightScaleFactor = 1.0F + standFactor;
-         return super.getDefaultDimensions(pose).scale(1.0F, heightScaleFactor);
+         return dimension.scale(1.0F, heightScaleFactor);
       } else {
-         return super.getDefaultDimensions(pose);
+         return dimension;
       }
    }
 
@@ -227,6 +231,7 @@ public class PolarBear extends Animal implements NeutralMob {
    static {
       DATA_STANDING_ID = SynchedEntityData.<Boolean>defineId(PolarBear.class, EntityDataSerializers.BOOLEAN);
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.7F, 0.7F).withEyeHeight(0.34375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.625F, 0.0F));
    }
 
    private class PolarBearHurtByTargetGoal extends HurtByTargetGoal {

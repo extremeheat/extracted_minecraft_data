@@ -149,7 +149,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       return true;
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return (Integer)state.getValue(POWER);
    }
 

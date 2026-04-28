@@ -143,8 +143,8 @@ public class HopperBlock extends BaseEntityBlock {
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(level, pos, state, entity, (HopperBlockEntity)blockEntity);
+      if (blockEntity instanceof HopperBlockEntity hopperBlockEntity) {
+         HopperBlockEntity.entityInside(level, pos, state, entity, hopperBlockEntity);
       }
 
    }

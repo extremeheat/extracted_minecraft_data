@@ -4,6 +4,10 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public class CompactVectorArray {
+   private static final int VECTOR_SIZE = 3;
+   private static final int OFFSET_X = 0;
+   private static final int OFFSET_Y = 1;
+   private static final int OFFSET_Z = 2;
    private final float[] contents;
 
    public CompactVectorArray(final int count) {
@@ -38,6 +42,6 @@ public class CompactVectorArray {
    }
 
    public float getZ(final int index) {
-      return this.contents[3 * index + 1];
+      return this.contents[3 * index + 2];
    }
 }

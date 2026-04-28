@@ -29,6 +29,12 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
    protected void scale(final SulfurCubeRenderState state, final PoseStack poseStack) {
       this.downscaleSlightly(poseStack);
       super.scale(state, poseStack);
+      float fuse = state.fuseRemainingTicks;
+      if (fuse < 10.0F && fuse > 0.0F) {
+         float s = 1.0F + TntRenderer.getSwellAmount(fuse);
+         poseStack.scale(s, s, s);
+      }
+
       poseStack.scale(0.5F, 0.5F, 0.5F);
       poseStack.translate(-0.0F, 0.98F, -0.0F);
    }
@@ -43,6 +49,7 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
 
    public void extractRenderState(final SulfurCube entity, final SulfurCubeRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
+      state.fuseRemainingTicks = entity.isPrimed() ? (float)entity.getFuse() - partialTicks + 1.0F : 0.0F;
       ItemStack containedBlock = entity.getBodyArmorItem();
       if (!containedBlock.isEmpty()) {
          BlockItemStateProperties blockItemState = (BlockItemStateProperties)containedBlock.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);

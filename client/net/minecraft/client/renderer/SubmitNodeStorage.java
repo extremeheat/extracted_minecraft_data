@@ -3,12 +3,14 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -32,7 +34,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    }
 
    public SubmitNodeCollection order(final int order) {
-      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (ignored) -> new SubmitNodeCollection(this));
+      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (var0) -> new SubmitNodeCollection());
    }
 
    public void submitShadow(final PoseStack poseStack, final float radius, final List<EntityRenderState.ShadowPiece> pieces) {
@@ -79,8 +81,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType);
    }
 
-   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final int outlineColor, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
-      this.order(0).submitCustomGeometry(poseStack, renderType, outlineColor, customGeometryRenderer);
+   public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
+      this.order(0).submitCustomGeometry(poseStack, renderType, customGeometryRenderer);
    }
 
    public void submitQuadParticleGroup(final QuadParticleRenderState particles) {
@@ -91,16 +93,22 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitGizmoPrimitives(group, camera, onTop);
    }
 
-   public void clear() {
-      this.submitsPerOrder.values().forEach(SubmitNodeCollection::clear);
-   }
-
-   public void endFrame() {
-      this.submitsPerOrder.values().removeIf((collection) -> !collection.wasUsed());
-      this.submitsPerOrder.values().forEach(SubmitNodeCollection::endFrame);
-   }
-
    public Int2ObjectAVLTreeMap<SubmitNodeCollection> getSubmitsPerOrder() {
       return this.submitsPerOrder;
+   }
+
+   public void drainPhases(final Consumer<FeatureRenderPhase<?>> consumer) {
+      this.submitsPerOrder.values().removeIf((collection) -> {
+         boolean empty = true;
+
+         for(FeatureRenderPhase<?> phase : collection.allPhases()) {
+            if (!phase.isEmpty()) {
+               consumer.accept(phase);
+               empty = false;
+            }
+         }
+
+         return empty;
+      });
    }
 }

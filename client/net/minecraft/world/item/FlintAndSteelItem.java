@@ -37,7 +37,8 @@ public class FlintAndSteelItem extends Item {
             level.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
             ItemStack itemStack = context.getItemInHand();
             if (player instanceof ServerPlayer) {
-               CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, relativePos, itemStack);
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, relativePos, itemStack);
                itemStack.hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
             }
 

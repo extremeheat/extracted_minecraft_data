@@ -31,8 +31,8 @@ public class MobBucketItem extends BucketItem {
    }
 
    public void checkExtraContent(final @Nullable LivingEntity user, final Level level, final ItemStack itemStack, final BlockPos pos) {
-      if (level instanceof ServerLevel) {
-         this.spawn((ServerLevel)level, itemStack, pos);
+      if (level instanceof ServerLevel serverLevel) {
+         this.spawn(serverLevel, itemStack, pos);
          level.gameEvent(user, GameEvent.ENTITY_PLACE, pos);
       }
 

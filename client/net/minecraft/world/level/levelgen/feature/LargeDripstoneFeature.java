@@ -32,11 +32,14 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          return false;
       } else {
          Optional<Column> column = Column.scan(level, origin, config.floorToCeilingSearchRange, SpeleothemUtils::isEmptyOrWater, (state) -> SpeleothemUtils.isBaseOrLava(state, Blocks.DRIPSTONE_BLOCK, config.replaceableBlocks));
-         if (!column.isEmpty() && column.get() instanceof Column.Range) {
-            Column.Range columnRange = (Column.Range)column.get();
-            if (columnRange.height() < 4) {
-               return false;
-            } else {
+         if (!column.isEmpty()) {
+            Object var8 = column.get();
+            if (var8 instanceof Column.Range) {
+               Column.Range columnRange = (Column.Range)var8;
+               if (columnRange.height() < 4) {
+                  return false;
+               }
+
                int maxColumnRadiusBasedOnColumnHeight = (int)((float)columnRange.height() * config.maxColumnRadiusToCaveHeightRatio);
                int maxColumnRadius = Mth.clamp(maxColumnRadiusBasedOnColumnHeight, config.columnRadius.minInclusive(), config.columnRadius.maxInclusive());
                int radius = Mth.randomBetweenInclusive(random, config.columnRadius.minInclusive(), maxColumnRadius);
@@ -65,9 +68,9 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
                return true;
             }
-         } else {
-            return false;
          }
+
+         return false;
       }
    }
 

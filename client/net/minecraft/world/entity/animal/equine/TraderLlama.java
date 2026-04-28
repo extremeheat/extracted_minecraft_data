@@ -147,8 +147,8 @@ public class TraderLlama extends Llama {
       public void start() {
          this.mob.setTarget(this.ownerLastHurtBy);
          Entity leashHolder = this.llama.getLeashHolder();
-         if (leashHolder instanceof WanderingTrader) {
-            this.timestamp = ((WanderingTrader)leashHolder).getLastHurtByMobTimestamp();
+         if (leashHolder instanceof WanderingTrader wanderingTrader) {
+            this.timestamp = wanderingTrader.getLastHurtByMobTimestamp();
          }
 
          super.start();

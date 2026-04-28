@@ -73,6 +73,10 @@ public final class Ingredient implements Predicate<ItemStack>, StackedContents.I
       }
    }
 
+   public int hashCode() {
+      return Objects.hashCode(this.values);
+   }
+
    public static Ingredient of(final ItemLike itemLike) {
       return new Ingredient(HolderSet.direct(itemLike.asItem().builtInRegistryHolder()));
    }

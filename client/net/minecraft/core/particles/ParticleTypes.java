@@ -18,6 +18,10 @@ public class ParticleTypes {
    public static final SimpleParticleType SULFUR_BUBBLES = register("sulfur_bubbles", false);
    public static final SimpleParticleType NOXIOUS_GAS = register("noxious_gas", false);
    public static final SimpleParticleType NOXIOUS_GAS_CLOUD = register("noxious_gas_cloud", false);
+   public static final ParticleType<GeyserParticleOptions> GEYSER = register("geyser", true, GeyserParticleOptions::codec, GeyserParticleOptions::streamCodec);
+   public static final ParticleType<GeyserBaseParticleOptions> GEYSER_BASE = register("geyser_base", true, GeyserBaseParticleOptions::codec, GeyserBaseParticleOptions::streamCodec);
+   public static final ParticleType<GeyserBaseParticleOptions> GEYSER_POOF = register("geyser_poof", true, GeyserBaseParticleOptions::codec, GeyserBaseParticleOptions::streamCodec);
+   public static final ParticleType<GeyserParticleOptions> GEYSER_PLUME = register("geyser_plume", true, GeyserParticleOptions::codec, GeyserParticleOptions::streamCodec);
    public static final SimpleParticleType CLOUD = register("cloud", false);
    public static final SimpleParticleType COPPER_FIRE_FLAME = register("copper_fire_flame", false);
    public static final SimpleParticleType CRIT = register("crit", false);

@@ -236,8 +236,8 @@ public class FallingBlockEntity extends Entity {
    }
 
    public void callOnBrokenAfterFall(final Block block, final BlockPos pos) {
-      if (block instanceof Fallable) {
-         ((Fallable)block).onBrokenAfterFall(this.level(), pos, this);
+      if (block instanceof Fallable fallable) {
+         fallable.onBrokenAfterFall(this.level(), pos, this);
       }
 
    }

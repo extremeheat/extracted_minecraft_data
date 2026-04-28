@@ -343,11 +343,9 @@ public interface Leashable {
       if (leashData == null) {
          return null;
       } else {
-         if (leashData.delayedLeashHolderId != 0 && entity.level().isClientSide()) {
-            Entity ntt = entity.level().getEntity(leashData.delayedLeashHolderId);
-            if (ntt instanceof Entity) {
-               leashData.setLeashHolder(ntt);
-            }
+         Entity ntt = entity.level().getEntity(leashData.delayedLeashHolderId);
+         if (leashData.delayedLeashHolderId != 0 && entity.level().isClientSide() && ntt != null) {
+            leashData.setLeashHolder(ntt);
          }
 
          return leashData.leashHolder;

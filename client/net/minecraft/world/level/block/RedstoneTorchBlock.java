@@ -59,10 +59,6 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
    }
 
-   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
-      return (Boolean)state.getValue(LIT) && Direction.UP != direction ? 15 : 0;
-   }
-
    protected boolean hasNeighborSignal(final Level level, final BlockPos pos, final BlockState state) {
       return level.hasSignal(pos.below(), Direction.DOWN);
    }
@@ -102,6 +98,14 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (Boolean)state.getValue(LIT) ? 15 : 0;
+   }
+
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return Direction.UP != direction ? this.ownSignal(state, level, pos) : 0;
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

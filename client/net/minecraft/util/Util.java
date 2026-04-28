@@ -238,7 +238,14 @@ public class Util {
    }
 
    public static void throwAsRuntime(final Throwable throwable) {
-      throw throwable instanceof RuntimeException ? (RuntimeException)throwable : new RuntimeException(throwable);
+      RuntimeException var10000;
+      if (throwable instanceof RuntimeException runtimeException) {
+         var10000 = runtimeException;
+      } else {
+         var10000 = new RuntimeException(throwable);
+      }
+
+      throw var10000;
    }
 
    private static void onThreadException(final Thread thread, Throwable throwable) {

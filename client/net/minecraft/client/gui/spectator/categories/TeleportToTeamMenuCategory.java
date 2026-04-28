@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.TeamColor;
 
 public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
    private static final Identifier TELEPORT_TO_TEAM_SPRITE = Identifier.withDefaultNamespace("spectator/teleport_to_team");
@@ -102,12 +103,9 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       }
 
       public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
-         Integer teamColor = this.team.getColor().getColor();
-         if (teamColor != null) {
-            float red = (float)(teamColor >> 16 & 255) / 255.0F;
-            float green = (float)(teamColor >> 8 & 255) / 255.0F;
-            float blue = (float)(teamColor & 255) / 255.0F;
-            graphics.fill(1, 1, 15, 15, ARGB.colorFromFloat(alpha, red * brightness, green * brightness, blue * brightness));
+         Optional<TeamColor> teamColor = this.team.getColor();
+         if (teamColor.isPresent()) {
+            graphics.fill(1, 1, 15, 15, ARGB.scaleRGB(((TeamColor)teamColor.get()).rgb(), brightness));
          }
 
          PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.iconSkin.get(), 2, 2, 12, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));

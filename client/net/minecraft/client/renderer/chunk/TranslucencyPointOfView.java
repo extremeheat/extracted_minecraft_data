@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
+import java.util.Objects;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -42,5 +43,9 @@ public final class TranslucencyPointOfView {
          TranslucencyPointOfView otherPerspective = (TranslucencyPointOfView)other;
          return this.x == otherPerspective.x && this.y == otherPerspective.y && this.z == otherPerspective.z;
       }
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.x, this.y, this.z});
    }
 }

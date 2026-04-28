@@ -178,11 +178,11 @@ public class VertexFormat {
       }
 
       public int indexCount(final int vertexCount) {
-         int indexCount;
+         int var10000;
          switch (this.ordinal()) {
             case 0:
             case 7:
-               indexCount = vertexCount / 4 * 6;
+               var10000 = vertexCount / 4 * 6;
                break;
             case 1:
             case 2:
@@ -190,12 +190,13 @@ public class VertexFormat {
             case 4:
             case 5:
             case 6:
-               indexCount = vertexCount;
+               var10000 = vertexCount;
                break;
             default:
-               indexCount = 0;
+               var10000 = 0;
          }
 
+         int indexCount = var10000;
          return indexCount;
       }
 

@@ -133,15 +133,15 @@ public class ServerEntity {
             this.sendDirtyEntityData();
             this.wasRiding = true;
          } else {
-            label197: {
+            label196: {
                Entity currentPosition = this.entity;
                if (currentPosition instanceof AbstractMinecart) {
                   AbstractMinecart minecart = (AbstractMinecart)currentPosition;
-                  MinecartBehavior var33 = minecart.getBehavior();
-                  if (var33 instanceof NewMinecartBehavior) {
-                     NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var33;
+                  MinecartBehavior var34 = minecart.getBehavior();
+                  if (var34 instanceof NewMinecartBehavior) {
+                     NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var34;
                      this.handleMinecartPosRot(newMinecartBehavior, yRotn, xRotn, shouldSendRotation);
-                     break label197;
+                     break label196;
                   }
                }
 
@@ -178,14 +178,26 @@ public class ServerEntity {
                   sentRotation = true;
                }
 
-               if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
+               label180: {
+                  if (!this.entity.needsSync && !this.trackDelta) {
+                     Entity var21 = this.entity;
+                     if (!(var21 instanceof LivingEntity)) {
+                        break label180;
+                     }
+
+                     LivingEntity livingEntity = (LivingEntity)var21;
+                     if (!livingEntity.isFallFlying()) {
+                        break label180;
+                     }
+                  }
+
                   Vec3 movement = this.entity.getDeltaMovement();
                   double diff = movement.distanceToSqr(this.lastSentMovement);
                   if (diff > 1.0E-7 || diff > 0.0 && movement.lengthSqr() == 0.0) {
                      this.lastSentMovement = movement;
-                     Entity var24 = this.entity;
-                     if (var24 instanceof AbstractHurtingProjectile) {
-                        AbstractHurtingProjectile projectile = (AbstractHurtingProjectile)var24;
+                     Entity var25 = this.entity;
+                     if (var25 instanceof AbstractHurtingProjectile) {
+                        AbstractHurtingProjectile projectile = (AbstractHurtingProjectile)var25;
                         this.synchronizer.sendToTrackingPlayers(new ClientboundBundlePacket(List.of(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement), new ClientboundProjectilePowerPacket(projectile.getId(), projectile.accelerationPower))));
                      } else {
                         this.synchronizer.sendToTrackingPlayers(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
@@ -343,8 +355,9 @@ public class ServerEntity {
          this.synchronizer.sendToTrackingPlayersAndSelf(new ClientboundSetEntityDataPacket(this.entity.getId(), packedValues));
       }
 
-      if (this.entity instanceof LivingEntity) {
-         Set<AttributeInstance> attributes = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
+      Entity var4 = this.entity;
+      if (var4 instanceof LivingEntity livingEntity) {
+         Set<AttributeInstance> attributes = livingEntity.getAttributes().getAttributesToSync();
          if (!attributes.isEmpty()) {
             this.synchronizer.sendToTrackingPlayersAndSelf(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributes));
          }

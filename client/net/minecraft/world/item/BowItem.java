@@ -24,9 +24,7 @@ public class BowItem extends ProjectileWeaponItem {
    }
 
    public boolean releaseUsing(final ItemStack itemStack, final Level level, final LivingEntity entity, final int remainingTime) {
-      if (!(entity instanceof Player player)) {
-         return false;
-      } else {
+      if (entity instanceof Player player) {
          ItemStack projectile = player.getProjectile(itemStack);
          if (projectile.isEmpty()) {
             return false;
@@ -49,6 +47,8 @@ public class BowItem extends ProjectileWeaponItem {
                return true;
             }
          }
+      } else {
+         return false;
       }
    }
 

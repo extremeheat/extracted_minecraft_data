@@ -99,7 +99,7 @@ public class PresetFlatWorldScreen extends Screen {
          LOGGER.error("Error while parsing flat world string => Unknown block, {}", blockId);
          return null;
       } else {
-         return new FlatLayerInfo(actualHeight, (Block)((Holder.Reference)block.get()).value());
+         return new FlatLayerInfo(actualHeight, (Holder)block.get());
       }
    }
 

@@ -3,8 +3,8 @@ package net.minecraft.world.scores;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.IntFunction;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -36,7 +36,7 @@ public abstract class Team {
 
    public abstract Visibility getNameTagVisibility();
 
-   public abstract ChatFormatting getColor();
+   public abstract Optional<TeamColor> getColor();
 
    public abstract Collection<String> getPlayers();
 

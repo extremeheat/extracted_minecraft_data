@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 
 public class TwoLayersFeatureSize extends FeatureSize {
-   public static final MapCodec<TwoLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(0, 81).fieldOf("limit").orElse(1).forGetter((s) -> s.limit), Codec.intRange(0, 16).fieldOf("lower_size").orElse(0).forGetter((s) -> s.lowerSize), Codec.intRange(0, 16).fieldOf("upper_size").orElse(1).forGetter((s) -> s.upperSize), minClippedHeightCodec()).apply(i, TwoLayersFeatureSize::new));
+   public static final MapCodec<TwoLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(0, 81).optionalFieldOf("limit", 1).forGetter((s) -> s.limit), Codec.intRange(0, 16).optionalFieldOf("lower_size", 0).forGetter((s) -> s.lowerSize), Codec.intRange(0, 16).optionalFieldOf("upper_size", 1).forGetter((s) -> s.upperSize), minClippedHeightCodec()).apply(i, TwoLayersFeatureSize::new));
    private final int limit;
    private final int lowerSize;
    private final int upperSize;

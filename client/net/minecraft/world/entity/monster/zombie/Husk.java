@@ -57,9 +57,9 @@ public class Husk extends Zombie {
 
    public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       boolean result = super.doHurtTarget(level, target);
-      if (result && this.getMainHandItem().isEmpty() && target instanceof LivingEntity) {
+      if (result && this.getMainHandItem().isEmpty() && target instanceof LivingEntity livingEntity) {
          float difficulty = level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
-         ((LivingEntity)target).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)difficulty), this);
+         livingEntity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)difficulty), this);
       }
 
       return result;
@@ -124,7 +124,7 @@ public class Husk extends Zombie {
    }
 
    static {
-      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.825F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.825F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
    }
 
    public static class HuskGroupData extends Zombie.ZombieGroupData {
