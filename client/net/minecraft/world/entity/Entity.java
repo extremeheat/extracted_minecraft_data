@@ -844,15 +844,18 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          }
 
          double gravityCompensation;
+         double effectiveDrag;
          if (restitution > 0.0) {
             double portionWithMovement = movement.y / currentMovement.y;
             gravityCompensation = portionWithMovement * this.getEffectiveGravity();
+            effectiveDrag = Mth.lerp(portionWithMovement, 1.0, (double)this.getAirDrag());
             bounced = true;
          } else {
             gravityCompensation = 0.0;
+            effectiveDrag = 1.0;
          }
 
-         movementAfterBounce = movementAfterBounce.with(Direction.Axis.Y, (gravityCompensation - currentMovement.y) * restitution);
+         movementAfterBounce = movementAfterBounce.with(Direction.Axis.Y, (gravityCompensation - currentMovement.y) * effectiveDrag * restitution);
       }
 
       if (bounced) {
@@ -1396,7 +1399,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public BlockPos adjustSpawnLocation(final ServerLevel level, final BlockPos spawnSuggestion) {
       BlockPos spawnBlockPos = level.getRespawnData().pos();
-      Vec3 spawnPos = spawnBlockPos.getCenter();
+      Vec3 spawnPos = Vec3.atCenterOf(spawnBlockPos);
       int spawnHeight = level.getChunkAt(spawnBlockPos).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnBlockPos.getX(), spawnBlockPos.getZ()) + 1;
       return BlockPos.containing(spawnPos.x, (double)spawnHeight, spawnPos.z);
    }
@@ -1517,6 +1520,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    }
 
+   protected float getAirDrag() {
+      return 0.98F;
+   }
+
    protected MovementEmission getMovementEmission() {
       return Entity.MovementEmission.ALL;
    }
@@ -1576,7 +1583,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.wasTouchingWater;
    }
 
-   boolean isInRain() {
+   private boolean isInRain() {
       BlockPos pos = this.blockPosition();
       return this.level().isRainingAt(pos) || this.level().isRainingAt(BlockPos.containing((double)pos.getX(), this.getBoundingBox().maxY, (double)pos.getZ()));
    }
@@ -1770,7 +1777,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void snapTo(final BlockPos spawnPos, final float yRot, final float xRot) {
-      this.snapTo(spawnPos.getBottomCenter(), yRot, xRot);
+      this.snapTo(Vec3.atBottomCenterOf(spawnPos), yRot, xRot);
    }
 
    public void snapTo(final Vec3 spawnPos, final float yRot, final float xRot) {
@@ -4100,8 +4107,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       EVENTS(false, true),
       ALL(true, true);
 
-      final boolean sounds;
-      final boolean events;
+      private final boolean sounds;
+      private final boolean events;
 
       private MovementEmission(final boolean sounds, final boolean events) {
          this.sounds = sounds;

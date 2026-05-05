@@ -19,8 +19,6 @@ import org.joml.Matrix4fc;
 public class MovingBlockFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Moving Block");
    private final PoseStack poseStack = new PoseStack();
-   private final BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, quad.materialInfo().layer());
-   private final BlockQuadOutput solidQuadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, ChunkSectionLayer.SOLID);
 
    public MovingBlockFeatureRenderer() {
       super();
@@ -37,30 +35,40 @@ public class MovingBlockFeatureRenderer extends RenderTypeFeatureRenderer<Submit
          BlockStateModel model = context.blockStateModelSet().get(blockState);
          this.poseStack.setIdentity();
          this.poseStack.mulPose(submit.pose());
-         BlockQuadOutput blockOutput = ModelBlockRenderer.forceOpaque(cutoutLeaves, blockState) ? this.solidQuadOutput : this.quadOutput;
+         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, quad.materialInfo().layer(), submit.outlineColor());
+         BlockQuadOutput solidQuadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, ChunkSectionLayer.SOLID, submit.outlineColor());
+         BlockQuadOutput blockOutput = ModelBlockRenderer.forceOpaque(cutoutLeaves, blockState) ? solidQuadOutput : quadOutput;
          long blockSeed = blockState.getSeed(movingBlockRenderState.randomSeedPos);
          blockRenderer.tesselateBlock(blockOutput, 0.0F, 0.0F, 0.0F, movingBlockRenderState, movingBlockRenderState.blockPos, blockState, model, blockSeed);
       }
 
    }
 
-   private void putBakedQuad(final PoseStack poseStack, final float x, final float y, final float z, final BakedQuad quad, final QuadInstance instance, final ChunkSectionLayer layer) {
+   private void putBakedQuad(final PoseStack poseStack, final float x, final float y, final float z, final BakedQuad quad, final QuadInstance instance, final ChunkSectionLayer layer, final int outlineColor) {
       poseStack.pushPose();
       poseStack.translate(x, y, z);
-      RenderType var10001;
+      RenderType var10000;
       switch (layer) {
-         case SOLID -> var10001 = RenderTypes.solidMovingBlock();
-         case CUTOUT -> var10001 = RenderTypes.cutoutMovingBlock();
-         case TRANSLUCENT -> var10001 = RenderTypes.translucentMovingBlock();
+         case SOLID -> var10000 = RenderTypes.solidMovingBlock();
+         case CUTOUT -> var10000 = RenderTypes.cutoutMovingBlock();
+         case TRANSLUCENT -> var10000 = RenderTypes.translucentMovingBlock();
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      VertexConsumer buffer = this.getVertexBuilder(var10001);
+      RenderType renderType = var10000;
+      VertexConsumer buffer;
+      if (outlineColor != 0 && renderType.outline().isPresent()) {
+         instance.setColor(outlineColor);
+         buffer = this.getVertexBuilder((RenderType)renderType.outline().get());
+      } else {
+         buffer = this.getVertexBuilder(renderType);
+      }
+
       buffer.putBakedQuad(poseStack.last(), quad, instance);
       poseStack.popPose();
    }
 
-   public static record Submit(Matrix4fc pose, MovingBlockRenderState movingBlockRenderState) implements TranslucentSubmit {
+   public static record Submit(Matrix4fc pose, MovingBlockRenderState movingBlockRenderState, int outlineColor) implements TranslucentSubmit {
       public Submit {
          super();
       }

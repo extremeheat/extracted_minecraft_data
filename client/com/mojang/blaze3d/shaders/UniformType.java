@@ -1,13 +1,10 @@
 package com.mojang.blaze3d.shaders;
 
 public enum UniformType {
-   UNIFORM_BUFFER("ubo"),
-   TEXEL_BUFFER("utb");
+   UNIFORM_BUFFER,
+   TEXEL_BUFFER;
 
-   final String name;
-
-   private UniformType(final String name) {
-      this.name = name;
+   private UniformType() {
    }
 
    // $FF: synthetic method

@@ -82,7 +82,7 @@ public class MetricSampler {
       }
    }
 
-   DoubleSupplier getSampler() {
+   public DoubleSupplier getSampler() {
       return this.sampler;
    }
 

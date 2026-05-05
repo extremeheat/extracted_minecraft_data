@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 
 public class QuadParticleGroup extends ParticleGroup<SingleQuadParticle> {
    private final ParticleRenderType particleType;
-   final QuadParticleRenderState particleTypeRenderState = new QuadParticleRenderState();
+   private final QuadParticleRenderState particleTypeRenderState = new QuadParticleRenderState();
 
    public QuadParticleGroup(final ParticleEngine engine, final ParticleRenderType particleType) {
       super(engine);

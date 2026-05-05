@@ -7,7 +7,9 @@ import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.stream.IntStream;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
@@ -26,7 +28,7 @@ public class GlStateManager {
    private static int numTextures = 0;
    private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
    private static int numBuffers = 0;
-   private static final BlendState BLEND = new BlendState();
+   private static final BlendState[] BLEND = new BlendState[8];
    private static final DepthState DEPTH = new DepthState();
    private static final CullState CULL = new CullState();
    private static final PolygonOffsetState POLY_OFFSET = new PolygonOffsetState();
@@ -35,7 +37,7 @@ public class GlStateManager {
    private static int activeTexture;
    private static final int TEXTURE_COUNT = 12;
    private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
-   private static @ColorTargetState.WriteMask int COLOR_MASK = 15;
+   private static final @ColorTargetState.WriteMask int[] COLOR_MASK = new int[8];
    private static int readFbo;
    private static int writeFbo;
 
@@ -86,23 +88,24 @@ public class GlStateManager {
 
    }
 
-   public static void _disableBlend() {
+   public static void _disableBlend(int index) {
       RenderSystem.assertOnRenderThread();
-      BLEND.mode.disable();
+      BLEND[index].mode.disable();
    }
 
-   public static void _enableBlend() {
+   public static void _enableBlend(int index) {
       RenderSystem.assertOnRenderThread();
-      BLEND.mode.enable();
+      BLEND[index].mode.enable();
    }
 
    public static void _blendFuncSeparate(final int srcRgb, final int dstRgb, final int srcAlpha, final int dstAlpha) {
       RenderSystem.assertOnRenderThread();
-      if (srcRgb != BLEND.srcRgb || dstRgb != BLEND.dstRgb || srcAlpha != BLEND.srcAlpha || dstAlpha != BLEND.dstAlpha) {
-         BLEND.srcRgb = srcRgb;
-         BLEND.dstRgb = dstRgb;
-         BLEND.srcAlpha = srcAlpha;
-         BLEND.dstAlpha = dstAlpha;
+      BlendState firstBlend = BLEND[0];
+      if (srcRgb != firstBlend.srcRgb || dstRgb != firstBlend.dstRgb || srcAlpha != firstBlend.srcAlpha || dstAlpha != firstBlend.dstAlpha) {
+         firstBlend.srcRgb = srcRgb;
+         firstBlend.dstRgb = dstRgb;
+         firstBlend.srcAlpha = srcAlpha;
+         firstBlend.dstAlpha = dstAlpha;
          glBlendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
       }
 
@@ -110,9 +113,10 @@ public class GlStateManager {
 
    public static void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
       RenderSystem.assertOnRenderThread();
-      if (modeRgb != BLEND.modeRgb || modeAlpha != BLEND.modeAlpha) {
-         BLEND.modeRgb = modeRgb;
-         BLEND.modeAlpha = modeAlpha;
+      BlendState firstBlend = BLEND[0];
+      if (modeRgb != firstBlend.modeRgb || modeAlpha != firstBlend.modeAlpha) {
+         firstBlend.modeRgb = modeRgb;
+         firstBlend.modeAlpha = modeAlpha;
          glBlendEquationSeparate(modeRgb, modeAlpha);
       }
 
@@ -469,9 +473,21 @@ public class GlStateManager {
 
    public static void _colorMask(final @ColorTargetState.WriteMask int writeMask) {
       RenderSystem.assertOnRenderThread();
-      if (writeMask != COLOR_MASK) {
-         COLOR_MASK = writeMask;
-         GL11.glColorMask((writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
+
+      for(int i = 0; i < COLOR_MASK.length; ++i) {
+         if (writeMask != COLOR_MASK[i]) {
+            COLOR_MASK[i] = writeMask;
+            GL30.glColorMaski(i, (writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
+         }
+      }
+
+   }
+
+   public static void _colorMask(final int index, final @ColorTargetState.WriteMask int writeMask) {
+      RenderSystem.assertOnRenderThread();
+      if (writeMask != COLOR_MASK[index]) {
+         COLOR_MASK[index] = writeMask;
+         GL30.glColorMaski(index, (writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
       }
 
    }
@@ -479,6 +495,24 @@ public class GlStateManager {
    public static void _clear(final int mask) {
       RenderSystem.assertOnRenderThread();
       GL11.glClear(mask);
+      if (MacosUtil.IS_MACOS) {
+         _getError();
+      }
+
+   }
+
+   public static void _clearBuffer(final int index, final Vector4fc clearColor) {
+      RenderSystem.assertOnRenderThread();
+      GL30.glClearBufferfv(6144, index, new float[]{clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w()});
+      if (MacosUtil.IS_MACOS) {
+         _getError();
+      }
+
+   }
+
+   public static void _clearBuffer(final double clearDepth) {
+      RenderSystem.assertOnRenderThread();
+      GL30.glClearBufferfv(6145, 0, new float[]{(float)clearDepth});
       if (MacosUtil.IS_MACOS) {
          _getError();
       }
@@ -556,6 +590,11 @@ public class GlStateManager {
    public static void _glDeleteSync(final long sync) {
       RenderSystem.assertOnRenderThread();
       GL32.glDeleteSync(sync);
+   }
+
+   static {
+      Arrays.setAll(COLOR_MASK, (var0) -> 15);
+      Arrays.setAll(BLEND, (var0) -> new BlendState());
    }
 
    private static class TextureState {

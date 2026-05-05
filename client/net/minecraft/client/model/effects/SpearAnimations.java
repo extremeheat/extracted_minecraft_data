@@ -115,8 +115,8 @@ public class SpearAnimations {
       poseStack.translate(0.0, 0.0, -0.25 * (double)(endingAmount - middleAmount));
    }
 
-   static record UseParams(float raiseProgress, float raiseProgressStart, float raiseProgressMiddle, float raiseProgressEnd, float swayProgress, float lowerProgress, float raiseBackProgress, float swayIntensity, float swayScaleSlow, float swayScaleFast) {
-      UseParams {
+   private static record UseParams(float raiseProgress, float raiseProgressStart, float raiseProgressMiddle, float raiseProgressEnd, float swayProgress, float lowerProgress, float raiseBackProgress, float swayIntensity, float swayScaleSlow, float swayScaleFast) {
+      private UseParams {
          super();
       }
 

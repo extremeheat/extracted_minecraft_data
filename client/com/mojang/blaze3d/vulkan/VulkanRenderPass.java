@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.vulkan;
 
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
@@ -10,7 +11,6 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,8 +37,8 @@ public class VulkanRenderPass implements RenderPassBackend {
    private final VulkanDevice device;
    private final Consumer<Destroyable> garbageQueue;
    private final VkCommandBuffer primaryCommandBuffer;
-   final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier;
-   private final RenderPass.RenderArea renderArea;
+   private final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier;
+   private final RenderPass.@Nullable RenderArea renderArea;
    private final int outputWidth;
    private final int outputHeight;
    private final boolean hasDepth;
@@ -49,7 +49,7 @@ public class VulkanRenderPass implements RenderPassBackend {
    protected final HashMap<String, GpuBufferSlice> uniforms = new HashMap();
    protected final HashMap<String, TextureViewAndSampler> textures = new HashMap();
 
-   public VulkanRenderPass(final VulkanDevice device, final Consumer<Destroyable> garbageQueue, final VkCommandBuffer primaryCommandBuffer, final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier, final RenderPass.RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth) {
+   public VulkanRenderPass(final VulkanDevice device, final Consumer<Destroyable> garbageQueue, final VkCommandBuffer primaryCommandBuffer, final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier, final RenderPass.@Nullable RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth) {
       super();
       this.device = device;
       this.garbageQueue = garbageQueue;
@@ -83,7 +83,9 @@ public class VulkanRenderPass implements RenderPassBackend {
             viewport.minDepth(0.0F);
             viewport.maxDepth(1.0F);
             VK12.vkCmdSetViewport(this.currentSecondaryCommandBuffer, 0, viewport);
-            setScissor(stack, this.currentSecondaryCommandBuffer, this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
+            if (this.renderArea != null) {
+               setScissor(stack, this.currentSecondaryCommandBuffer, this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
+            }
          } catch (Throwable var5) {
             if (stack != null) {
                try {
@@ -193,24 +195,31 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void disableScissor() {
-      this.enableScissor(this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
+      if (this.renderArea != null) {
+         this.enableScissor(this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
+      } else {
+         this.enableScissor(0, 0, this.outputWidth, this.outputHeight);
+      }
+
    }
 
-   public void setVertexBuffer(final int slot, final GpuBuffer vertexBuffer) {
+   public void setVertexBuffer(final int slot, final @Nullable GpuBufferSlice vertexBuffer) {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         VK12.vkCmdBindVertexBuffers(this.secondaryCommandBuffer(), slot, stack.longs(((VulkanGpuBuffer)vertexBuffer).vkBuffer()), stack.longs(0L));
-      } catch (Throwable var7) {
+         long buffer = vertexBuffer != null ? ((VulkanGpuBuffer)vertexBuffer.buffer()).vkBuffer() : 0L;
+         long offset = vertexBuffer != null ? vertexBuffer.offset() : 0L;
+         VK12.vkCmdBindVertexBuffers(this.secondaryCommandBuffer(), slot, stack.longs(buffer), stack.longs(offset));
+      } catch (Throwable var9) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var6) {
-               var7.addSuppressed(var6);
+            } catch (Throwable var8) {
+               var9.addSuppressed(var8);
             }
          }
 
-         throw var7;
+         throw var9;
       }
 
       if (stack != null) {
@@ -219,7 +228,7 @@ public class VulkanRenderPass implements RenderPassBackend {
 
    }
 
-   public void setIndexBuffer(final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType) {
+   public void setIndexBuffer(final GpuBuffer indexBuffer, final IndexType indexType) {
       byte var10000;
       switch (indexType) {
          case SHORT -> var10000 = 0;
@@ -240,7 +249,7 @@ public class VulkanRenderPass implements RenderPassBackend {
       }
    }
 
-   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final VertexFormat.@Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
+   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
       for(RenderPass.Draw<T> draw : draws) {
          BiConsumer<T, RenderPass.UniformUploader> uniformUploaderConsumer = draw.uniformUploaderConsumer();
          if (uniformUploaderConsumer != null) {
@@ -252,7 +261,7 @@ public class VulkanRenderPass implements RenderPassBackend {
          assert draw.indexType() != null || defaultIndexType != null;
 
          this.setIndexBuffer(draw.indexBuffer() == null ? defaultIndexBuffer : draw.indexBuffer(), draw.indexType() == null ? defaultIndexType : draw.indexType());
-         this.setVertexBuffer(0, draw.vertexBuffer());
+         this.setVertexBuffer(0, draw.vertexBuffer().slice());
          this.drawIndexed(draw.baseVertex(), draw.firstIndex(), draw.indexCount(), 1);
       }
 

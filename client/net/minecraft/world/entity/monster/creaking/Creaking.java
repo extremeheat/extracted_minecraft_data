@@ -413,9 +413,9 @@ public class Creaking extends Monster {
       return this.getTargetFromBrain();
    }
 
-   public void knockback(final double power, final double xd, final double zd) {
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
       if (this.canMove()) {
-         super.knockback(power, xd, zd);
+         super.knockback(power, xd, zd, source, damage);
       }
    }
 
@@ -566,7 +566,7 @@ public class Creaking extends Monster {
    }
 
    private class CreakingPathNavigation extends GroundPathNavigation {
-      CreakingPathNavigation(final Creaking mob, final Level level) {
+      public CreakingPathNavigation(final Creaking mob, final Level level) {
          Objects.requireNonNull(Creaking.this);
          super(mob, level);
       }

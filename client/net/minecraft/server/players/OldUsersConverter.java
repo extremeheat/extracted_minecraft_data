@@ -38,7 +38,7 @@ public class OldUsersConverter {
       super();
    }
 
-   static List<String> readOldListFormat(final File file, final Map<String, String[]> userMap) throws IOException {
+   private static List<String> readOldListFormat(final File file, final Map<String, String[]> userMap) throws IOException {
       List<String> lines = Files.readLines(file, StandardCharsets.UTF_8);
 
       for(String line : lines) {

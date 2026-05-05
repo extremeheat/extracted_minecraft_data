@@ -101,7 +101,7 @@ public class ChargeAttack extends Behavior<Animal> {
          }
 
          this.dealDamageToTarget(level, body, closestAttackTarget);
-         this.dealKnockBack(body, closestAttackTarget);
+         this.dealKnockBack(level, body, closestAttackTarget);
          this.stop(level, body, timestamp);
       }
 
@@ -116,12 +116,14 @@ public class ChargeAttack extends Behavior<Animal> {
 
    }
 
-   private void dealKnockBack(final Animal body, final LivingEntity target) {
+   private void dealKnockBack(final ServerLevel level, final Animal body, final LivingEntity target) {
       int movementSpeedLevel = body.hasEffect(MobEffects.SPEED) ? body.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
       int movementSlowdownLevel = body.hasEffect(MobEffects.SLOWNESS) ? body.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
       float speedBoostPower = 0.25F * (float)(movementSpeedLevel - movementSlowdownLevel);
       float speedFactor = Mth.clamp(this.speed * (float)body.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.2F, 2.0F) + speedBoostPower;
-      body.causeExtraKnockback(target, speedFactor * this.knockbackForce, body.getDeltaMovement());
+      DamageSource damageSource = level.damageSources().mobAttack(body);
+      float damage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
+      body.causeExtraKnockback(target, speedFactor * this.knockbackForce, body.getDeltaMovement(), damageSource, damage);
    }
 
    protected void stop(final ServerLevel level, final Animal body, final long timestamp) {

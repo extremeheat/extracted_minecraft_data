@@ -174,7 +174,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
    public void onUseTick(final Level level, final LivingEntity entity, final ItemStack itemStack, final int ticksRemaining) {
       if (!level.isClientSide()) {
-         ChargingSounds sounds = this.getChargingSounds(itemStack);
+         ChargingSounds sounds = getChargingSounds(itemStack);
          float tickPercent = (float)(itemStack.getUseDuration(entity) - ticksRemaining) / (float)getChargeDuration(itemStack, entity);
          if (tickPercent < 0.2F) {
             this.startSoundPlayed = false;
@@ -211,7 +211,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return ItemUseAnimation.CROSSBOW;
    }
 
-   ChargingSounds getChargingSounds(final ItemStack itemStack) {
+   private static ChargingSounds getChargingSounds(final ItemStack itemStack) {
       return (ChargingSounds)EnchantmentHelper.pickHighestLevel(itemStack, EnchantmentEffectComponents.CROSSBOW_CHARGING_SOUNDS).orElse(DEFAULT_SOUNDS);
    }
 

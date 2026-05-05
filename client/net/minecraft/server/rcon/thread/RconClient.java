@@ -25,7 +25,7 @@ public class RconClient extends GenericThread {
    private final String rconPassword;
    private final ServerInterface serverInterface;
 
-   RconClient(final ServerInterface serverInterface, final String rconPassword, final Socket socket) {
+   public RconClient(final ServerInterface serverInterface, final String rconPassword, final Socket socket) {
       super("RCON Client " + String.valueOf(socket.getInetAddress()));
       this.serverInterface = serverInterface;
       this.client = socket;

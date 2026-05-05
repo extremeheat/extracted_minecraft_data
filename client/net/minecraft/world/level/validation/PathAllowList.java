@@ -1,5 +1,6 @@
 package net.minecraft.world.level.validation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.nio.file.FileSystem;
@@ -76,7 +77,7 @@ public class PathAllowList implements PathMatcher {
          return this.type().compile(fileSystem, this.pattern);
       }
 
-      static Optional<ConfigEntry> parse(final String definition) {
+      public static Optional<ConfigEntry> parse(final String definition) {
          if (!definition.isBlank() && !definition.startsWith("#")) {
             if (!definition.startsWith("[")) {
                return Optional.of(new ConfigEntry(PathAllowList.EntryType.PREFIX, definition));
@@ -108,14 +109,17 @@ public class PathAllowList implements PathMatcher {
          }
       }
 
+      @VisibleForTesting
       static ConfigEntry glob(final String pattern) {
          return new ConfigEntry(PathAllowList.EntryType.FILESYSTEM, "glob:" + pattern);
       }
 
+      @VisibleForTesting
       static ConfigEntry regex(final String pattern) {
          return new ConfigEntry(PathAllowList.EntryType.FILESYSTEM, "regex:" + pattern);
       }
 
+      @VisibleForTesting
       static ConfigEntry prefix(final String pattern) {
          return new ConfigEntry(PathAllowList.EntryType.PREFIX, pattern);
       }

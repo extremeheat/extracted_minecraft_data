@@ -52,7 +52,7 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
       }
    }
 
-   protected boolean hasScore(final LootContext context, final Entity entity, final Scoreboard scoreboard, final String objectiveName, final IntRange range) {
+   private boolean hasScore(final LootContext context, final Entity entity, final Scoreboard scoreboard, final String objectiveName, final IntRange range) {
       Objective objective = scoreboard.getObjective(objectiveName);
       if (objective == null) {
          return false;

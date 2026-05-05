@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import java.nio.ByteBuffer;
@@ -18,7 +19,7 @@ public abstract class StagingBuffer implements AutoCloseable {
    }
 
    public static StagingBuffer create(final String name, final GpuDevice gpuDevice, final int bufferSize) {
-      return (StagingBuffer)(!gpuDevice.getDeviceInfo().hintsAndWorkarounds().writeToBufferIsSlow() ? new Cpu(bufferSize) : new PersistentlyMapped(name, gpuDevice, bufferSize));
+      return (StagingBuffer)(gpuDevice.getDeviceInfo().hintsAndWorkarounds().writeToBufferIsSlow() && gpuDevice.getDeviceInfo().features().persistentMapping() ? new PersistentlyMapped(name, bufferSize) : new Cpu(bufferSize));
    }
 
    public @Nullable BufferHandle tryAppend(final ByteBuffer buffer) {
@@ -41,16 +42,16 @@ public abstract class StagingBuffer implements AutoCloseable {
 
    protected abstract void copyTo(final CommandEncoder encoder, final GpuBuffer dstBuffer, long dstOffset, long stagingBufferOffset, long copySize);
 
-   protected void rotateBuffer(final CommandEncoder encoder) {
+   protected void rotateBuffer() {
    }
 
    public Uploader startUploading(final CommandEncoder encoder) {
       return new Uploader(encoder);
    }
 
-   private void tryClearAndRotate(final CommandEncoder encoder) {
+   private void tryClearAndRotate() {
       if (this.nextWriteOffset > 0 && this.usedBufferCount == 0) {
-         this.rotateBuffer(encoder);
+         this.rotateBuffer();
          this.nextWriteOffset = 0;
       }
 
@@ -81,16 +82,15 @@ public abstract class StagingBuffer implements AutoCloseable {
 
    private static class PersistentlyMapped extends StagingBuffer {
       private final MappableRingBuffer mappableRingBuffer;
-      private GpuBuffer.MappedView currentMappedView;
+      private GpuBufferSlice.MappedView currentMappedView;
       private GpuBuffer currentGPUBuffer;
       private ByteBuffer currentBuffer;
 
-      private PersistentlyMapped(final String name, final GpuDevice gpuDevice, final int bufferSize) {
+      private PersistentlyMapped(final String name, final int bufferSize) {
          super();
          this.mappableRingBuffer = new MappableRingBuffer(() -> name + " staging buffer", 18, bufferSize / 2);
-         CommandEncoder encoder = gpuDevice.createCommandEncoder();
          this.currentGPUBuffer = this.mappableRingBuffer.currentBuffer();
-         this.currentMappedView = encoder.mapBuffer(this.currentGPUBuffer, false, true);
+         this.currentMappedView = this.currentGPUBuffer.map(false, true);
          this.currentBuffer = this.currentMappedView.data();
       }
 
@@ -102,11 +102,11 @@ public abstract class StagingBuffer implements AutoCloseable {
          encoder.copyToBuffer(this.currentGPUBuffer.slice(stagingBufferOffset, copySize), dstBuffer.slice(dstOffset, copySize));
       }
 
-      protected void rotateBuffer(final CommandEncoder encoder) {
+      protected void rotateBuffer() {
          this.currentMappedView.close();
          this.mappableRingBuffer.rotate();
          this.currentGPUBuffer = this.mappableRingBuffer.currentBuffer();
-         this.currentMappedView = encoder.mapBuffer(this.currentGPUBuffer, false, true);
+         this.currentMappedView = this.currentGPUBuffer.map(false, true);
          this.currentBuffer = this.currentMappedView.data();
       }
 
@@ -131,7 +131,7 @@ public abstract class StagingBuffer implements AutoCloseable {
       }
 
       public void close() {
-         StagingBuffer.this.tryClearAndRotate(this.encoder);
+         StagingBuffer.this.tryClearAndRotate();
       }
 
       public void checkValidFor(final StagingBuffer stagingBuffer) {

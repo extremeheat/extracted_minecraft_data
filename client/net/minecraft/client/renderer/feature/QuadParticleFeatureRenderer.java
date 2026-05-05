@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.feature;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -8,15 +9,14 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.StagedVertexBuffer;
@@ -45,7 +45,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
             if (!particles.isEmpty()) {
                for(SingleQuadParticle.Layer layer : particles.layers()) {
                   if (layer.translucent() == submit.translucent()) {
-                     StagedVertexBuffer.Draw draw = (StagedVertexBuffer.Draw)drawByLayer.computeIfAbsent(layer, (var1) -> stagedVertexBuffer.appendDraw(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, (VertexSorting)null));
+                     StagedVertexBuffer.Draw draw = (StagedVertexBuffer.Draw)drawByLayer.computeIfAbsent(layer, (var1) -> stagedVertexBuffer.appendDraw(DefaultVertexFormat.PARTICLE, PrimitiveTopology.QUADS, (VertexSorting)null));
                      particles.buildLayer(layer, stagedVertexBuffer.getVertexBuilder(draw));
                   }
                }
@@ -71,7 +71,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
       GpuTextureView colorTextureView = useParticleTarget ? particleTarget.getColorTextureView() : mainTarget.getColorTextureView();
       GpuTextureView depthTextureView = useParticleTarget ? particleTarget.getDepthTextureView() : mainTarget.getDepthTextureView();
 
-      try (RenderPass renderPass = device.createCommandEncoder().createRenderPass(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"), colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty())) {
+      try (RenderPass renderPass = device.createCommandEncoder().createRenderPass(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"), colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
          renderPass.setUniform("Projection", RenderSystem.getProjectionMatrixBuffer());
          renderPass.setUniform("Fog", RenderSystem.getShaderFog());
          renderPass.setUniform("DynamicTransforms", (GpuBufferSlice)Objects.requireNonNull(this.dynamicTransforms));
@@ -86,7 +86,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
          StagedVertexBuffer.ExecuteInfo executeInfo = stagedBuffer.getExecuteInfo((StagedVertexBuffer.Draw)entry.getValue());
          if (executeInfo != null) {
             renderPass.setPipeline(((SingleQuadParticle.Layer)entry.getKey()).pipeline());
-            renderPass.setVertexBuffer(0, executeInfo.vertexBuffer());
+            renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             AbstractTexture texture = textureManager.getTexture(((SingleQuadParticle.Layer)entry.getKey()).textureAtlasLocation());
             renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());

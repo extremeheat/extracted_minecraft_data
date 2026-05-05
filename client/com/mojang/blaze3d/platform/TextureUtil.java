@@ -2,6 +2,7 @@ package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -75,7 +76,7 @@ public class TextureUtil {
          GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", 9, bufferLength);
          CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
          Runnable onCopyComplete = () -> {
-            try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
+            try (GpuBufferSlice.MappedView read = buffer.map(true, false)) {
                ByteBuffer data = read.data();
                Objects.requireNonNull(data);
                IntUnaryOperator decodeTexel = data::getInt;

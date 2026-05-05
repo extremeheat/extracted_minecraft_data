@@ -118,12 +118,12 @@ public class TracyZoneFiller implements ProfilerFiller {
          this.value = 0;
       }
 
-      void set(final int value) {
+      public void set(final int value) {
          this.value = value;
          this.plot.setValue((double)value);
       }
 
-      void add(final int amount) {
+      public void add(final int amount) {
          this.set(this.value + amount);
       }
    }

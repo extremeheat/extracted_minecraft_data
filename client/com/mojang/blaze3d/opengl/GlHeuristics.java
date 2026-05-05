@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.systems.DeviceFeatures;
 import com.mojang.blaze3d.systems.DeviceInfo;
 import com.mojang.blaze3d.systems.DeviceLimits;
 import com.mojang.blaze3d.systems.DeviceType;
@@ -15,7 +16,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
-class GlHeuristics {
+public class GlHeuristics {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final List<String> DEVICE_NAMES_THAT_IMPLY_CPU = List.of("mesa offscreen", "llvmpipe");
    private static final List<String> DEVICE_NAMES_THAT_IMPLY_VIRTUAL = List.of("virtgl");
@@ -64,7 +65,7 @@ class GlHeuristics {
    public DeviceInfo createDeviceInfo(final GLCapabilities capabilities, final int maxSupportedAnisotropy, final Set<String> enabledExtensions) {
       String renderer = GlStateManager._getString(7937);
       String vendor = GlStateManager._getString(7936);
-      return new DeviceInfo(renderer, vendor, GlStateManager._getString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL11.glGetInteger(35380), getMaxSupportedTextureSize()), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd()), this.guessDeviceType(renderer.toLowerCase(Locale.ROOT), vendor.toLowerCase(Locale.ROOT)));
+      return new DeviceInfo(renderer, vendor, GlStateManager._getString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL11.glGetInteger(35380), getMaxSupportedTextureSize(), GL11.glGetInteger(34852)), new DeviceFeatures(enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd()), this.guessDeviceType(renderer.toLowerCase(Locale.ROOT), vendor.toLowerCase(Locale.ROOT)));
    }
 
    private DeviceType guessDeviceType(final String renderer, final String vendor) {

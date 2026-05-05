@@ -93,7 +93,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return ((MobEffect)this.effect.value()).createParticleOptions(this);
    }
 
-   void setDetailsFrom(final MobEffectInstance copy) {
+   private void setDetailsFrom(final MobEffectInstance copy) {
       this.duration = copy.duration;
       this.amplifier = copy.amplifier;
       this.ambient = copy.ambient;

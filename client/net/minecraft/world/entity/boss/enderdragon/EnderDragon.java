@@ -477,9 +477,9 @@ public class EnderDragon extends Mob implements Enemy {
 
    }
 
-   public void knockback(final double power, final double xd, final double zd) {
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
       if (!this.phaseManager.getCurrentPhase().isSitting()) {
-         super.knockback(power, xd, zd);
+         super.knockback(power, xd, zd, source, damage);
       }
    }
 

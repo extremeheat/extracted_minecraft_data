@@ -10,11 +10,11 @@ import net.minecraft.world.level.dimension.DimensionType;
 
 public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int noiseSizeVertical) {
    public static final Codec<NoiseSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("min_y").forGetter(NoiseSettings::minY), Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(NoiseSettings::height), Codec.intRange(1, 4).fieldOf("size_horizontal").forGetter(NoiseSettings::noiseSizeHorizontal), Codec.intRange(1, 4).fieldOf("size_vertical").forGetter(NoiseSettings::noiseSizeVertical)).apply(i, NoiseSettings::new)).comapFlatMap(NoiseSettings::guardY, Function.identity());
-   protected static final NoiseSettings OVERWORLD_NOISE_SETTINGS = create(-64, 384, 1, 2);
-   protected static final NoiseSettings NETHER_NOISE_SETTINGS = create(0, 128, 1, 2);
-   protected static final NoiseSettings END_NOISE_SETTINGS = create(0, 128, 2, 1);
-   protected static final NoiseSettings CAVES_NOISE_SETTINGS = create(-64, 192, 1, 2);
-   protected static final NoiseSettings FLOATING_ISLANDS_NOISE_SETTINGS = create(0, 256, 2, 1);
+   static final NoiseSettings OVERWORLD_NOISE_SETTINGS = create(-64, 384, 1, 2);
+   static final NoiseSettings NETHER_NOISE_SETTINGS = create(0, 128, 1, 2);
+   static final NoiseSettings END_NOISE_SETTINGS = create(0, 128, 2, 1);
+   static final NoiseSettings CAVES_NOISE_SETTINGS = create(-64, 192, 1, 2);
+   static final NoiseSettings FLOATING_ISLANDS_NOISE_SETTINGS = create(0, 256, 2, 1);
 
    public NoiseSettings {
       super();

@@ -5,10 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -20,7 +22,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -77,12 +78,20 @@ public class SurfaceRules {
       return new BiomeConditionSource(HolderSet.direct(biomes::getOrThrow, target));
    }
 
-   public static ConditionSource noiseCondition(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange) {
-      return noiseCondition(noise, minRange, 1.7976931348623157E308);
+   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange) {
+      return noiseCondition2d(noise, minRange, 1.7976931348623157E308);
    }
 
-   public static ConditionSource noiseCondition(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange, final double maxRange) {
-      return new NoiseThresholdConditionSource(noise, minRange, maxRange);
+   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange, final double maxRange) {
+      return new NoiseThresholdConditionSource(noise, minRange, maxRange, false);
+   }
+
+   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange) {
+      return noiseCondition3d(noise, minRange, 1.7976931348623157E308);
+   }
+
+   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange, final double maxRange) {
+      return new NoiseThresholdConditionSource(noise, minRange, maxRange, true);
    }
 
    public static ConditionSource verticalGradient(final String randomName, final VerticalAnchor trueAtAndBelow, final VerticalAnchor falseAtAndAbove) {
@@ -125,10 +134,6 @@ public class SurfaceRules {
       return SurfaceRules.Bandlands.INSTANCE;
    }
 
-   public static RuleSource noiseGradient(final ResourceKey<NormalNoise.NoiseParameters> noise, final List<Optional<BlockState>> gradient) {
-      return new NoiseGradientRuleSource(noise, gradient);
-   }
-
    private static <A> MapCodec<? extends A> register(final Registry<MapCodec<? extends A>> registry, final String name, final MapCodec<? extends A> codec) {
       return (MapCodec)Registry.register(registry, (String)name, codec);
    }
@@ -160,6 +165,8 @@ public class SurfaceRules {
       private final @Nullable Set<Holder<Biome>> possibleBiomes;
       private long lastPreliminarySurfaceCellOrigin = 9223372036854775807L;
       private final int[] preliminarySurfaceCache = new int[4];
+      private final Map<ResourceKey<NormalNoise.NoiseParameters>, DoubleSupplier> noiseSamplers2d = new IdentityHashMap();
+      private final Map<ResourceKey<NormalNoise.NoiseParameters>, DoubleSupplier> noiseSamplers3d = new IdentityHashMap();
       private long lastUpdateXZ = -9223372036854775807L;
       private int blockX;
       private int blockZ;
@@ -258,6 +265,54 @@ public class SurfaceRules {
          return this.minSurfaceLevel;
       }
 
+      protected DoubleSupplier getNoiseSampler(final ResourceKey<NormalNoise.NoiseParameters> noiseId, final boolean is3d) {
+         return is3d ? (DoubleSupplier)this.noiseSamplers3d.computeIfAbsent(noiseId, this::createNoiseSampler3d) : (DoubleSupplier)this.noiseSamplers2d.computeIfAbsent(noiseId, this::createNoiseSampler2d);
+      }
+
+      private DoubleSupplier createNoiseSampler2d(final ResourceKey<NormalNoise.NoiseParameters> noiseId) {
+         final NormalNoise noise = this.randomState.getOrCreateNoise(noiseId);
+         return new DoubleSupplier() {
+            private long lastUpdateXZ;
+            private double lastNoise;
+
+            {
+               Objects.requireNonNull(Context.this);
+               this.lastUpdateXZ = Context.this.lastUpdateXZ - 1L;
+            }
+
+            public double getAsDouble() {
+               if (this.lastUpdateXZ != Context.this.lastUpdateXZ) {
+                  this.lastNoise = noise.getValue((double)Context.this.blockX, 0.0, (double)Context.this.blockZ);
+                  this.lastUpdateXZ = Context.this.lastUpdateXZ;
+               }
+
+               return this.lastNoise;
+            }
+         };
+      }
+
+      private DoubleSupplier createNoiseSampler3d(final ResourceKey<NormalNoise.NoiseParameters> noiseId) {
+         final NormalNoise noise = this.randomState.getOrCreateNoise(noiseId);
+         return new DoubleSupplier() {
+            private long lastUpdateY;
+            private double lastNoise;
+
+            {
+               Objects.requireNonNull(Context.this);
+               this.lastUpdateY = Context.this.lastUpdateY - 1L;
+            }
+
+            public double getAsDouble() {
+               if (this.lastUpdateY != Context.this.lastUpdateY) {
+                  this.lastNoise = noise.getValue((double)Context.this.blockX, (double)Context.this.blockY, (double)Context.this.blockZ);
+                  this.lastUpdateY = Context.this.lastUpdateY;
+               }
+
+               return this.lastNoise;
+            }
+         };
+      }
+
       private static final class HoleCondition extends LazyXZCondition {
          private HoleCondition(final Context context) {
             super(context);
@@ -318,7 +373,7 @@ public class SurfaceRules {
    private abstract static class LazyCondition implements Condition {
       protected final Context context;
       private long lastUpdate;
-      @Nullable Boolean result;
+      private @Nullable Boolean result;
 
       protected LazyCondition(final Context context) {
          super();
@@ -413,19 +468,6 @@ public class SurfaceRules {
       }
    }
 
-   private static record NoiseGradientRule(NormalNoise noise, List<@Nullable BlockState> gradient) implements SurfaceRule {
-      private NoiseGradientRule {
-         super();
-      }
-
-      public @Nullable BlockState tryApply(final int blockX, final int blockY, final int blockZ) {
-         double noiseValue = this.noise.getValue((double)blockX, (double)blockY, (double)blockZ);
-         double normalizedNoiseValue = (noiseValue + 1.0) / 2.0;
-         int index = Mth.floor(normalizedNoiseValue * (double)this.gradient.size());
-         return (BlockState)this.gradient.get(Mth.clamp(index, 0, this.gradient.size() - 1));
-      }
-   }
-
    public interface ConditionSource extends Function<Context, Condition> {
       Codec<ConditionSource> CODEC = BuiltInRegistries.MATERIAL_CONDITION.byNameCodec().dispatch(ConditionSource::codec, Function.identity());
 
@@ -451,7 +493,6 @@ public class SurfaceRules {
 
       static MapCodec<? extends RuleSource> bootstrap(final Registry<MapCodec<? extends RuleSource>> registry) {
          SurfaceRules.register(registry, "bandlands", SurfaceRules.Bandlands.CODEC);
-         SurfaceRules.register(registry, "noise_gradient", SurfaceRules.NoiseGradientRuleSource.CODEC);
          SurfaceRules.register(registry, "block", SurfaceRules.BlockRuleSource.CODEC);
          SurfaceRules.register(registry, "sequence", SurfaceRules.SequenceRuleSource.CODEC);
          return SurfaceRules.<RuleSource>register(registry, "condition", SurfaceRules.TestRuleSource.CODEC);
@@ -671,8 +712,8 @@ public class SurfaceRules {
       }
    }
 
-   private static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold) implements ConditionSource {
-      private static final MapCodec<NoiseThresholdConditionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold)).apply(i, NoiseThresholdConditionSource::new));
+   private static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold, boolean is3d) implements ConditionSource {
+      private static final MapCodec<NoiseThresholdConditionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold), Codec.BOOL.optionalFieldOf("is_3d", false).forGetter(NoiseThresholdConditionSource::is3d)).apply(i, NoiseThresholdConditionSource::new));
 
       private NoiseThresholdConditionSource {
          super();
@@ -683,16 +724,16 @@ public class SurfaceRules {
       }
 
       public Condition apply(final Context ruleContext) {
-         final NormalNoise noise = ruleContext.randomState.getOrCreateNoise(this.noise);
+         final DoubleSupplier noise = ruleContext.getNoiseSampler(this.noise, this.is3d);
 
-         class NoiseThresholdCondition extends LazyXZCondition {
-            private NoiseThresholdCondition() {
+         class NoiseThresholdCondition implements Condition {
+            NoiseThresholdCondition() {
                Objects.requireNonNull(NoiseThresholdConditionSource.this);
-               super(NoiseThresholdConditionSource.this);
+               super();
             }
 
-            protected boolean compute() {
-               double value = noise.getValue((double)this.context.blockX, 0.0, (double)this.context.blockZ);
+            public boolean test() {
+               double value = noise.getAsDouble();
                return value >= NoiseThresholdConditionSource.this.minThreshold && value <= NoiseThresholdConditionSource.this.maxThreshold;
             }
          }
@@ -876,29 +917,6 @@ public class SurfaceRules {
       // $FF: synthetic method
       private static Bandlands[] $values() {
          return new Bandlands[]{INSTANCE};
-      }
-   }
-
-   private static record NoiseGradientRuleSource(ResourceKey<NormalNoise.NoiseParameters> noise, List<Optional<BlockState>> gradient) implements RuleSource {
-      private static final Codec<Optional<BlockState>> OPTIONAL_STATE_CODEC;
-      public static final MapCodec<NoiseGradientRuleSource> CODEC;
-
-      private NoiseGradientRuleSource {
-         super();
-      }
-
-      public MapCodec<NoiseGradientRuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRule apply(final Context context) {
-         NormalNoise noise = context.randomState.getOrCreateNoise(this.noise);
-         return new NoiseGradientRule(noise, this.gradient.stream().map((s) -> (BlockState)s.orElse((Object)null)).toList());
-      }
-
-      static {
-         OPTIONAL_STATE_CODEC = BlockState.CODEC.optionalFieldOf("state").codec();
-         CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseGradientRuleSource::noise), ExtraCodecs.nonEmptyList(OPTIONAL_STATE_CODEC.listOf()).fieldOf("gradient").forGetter(NoiseGradientRuleSource::gradient)).apply(i, NoiseGradientRuleSource::new));
       }
    }
 

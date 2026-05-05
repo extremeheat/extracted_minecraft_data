@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
-   final Minecraft minecraft;
+   private final Minecraft minecraft;
 
    public EntityHitboxDebugRenderer(final Minecraft minecraft) {
       super();

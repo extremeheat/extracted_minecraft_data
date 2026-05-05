@@ -65,7 +65,7 @@ public class Time extends NeedleDirectionHelper implements RangeSelectItemModelP
          return this.name;
       }
 
-      abstract float get(final ClientLevel level, final ItemStack itemStack, final ItemOwner owner, final RandomSource random);
+      public abstract float get(final ClientLevel level, final ItemStack itemStack, final ItemOwner owner, final RandomSource random);
 
       // $FF: synthetic method
       private static TimeSource[] $values() {

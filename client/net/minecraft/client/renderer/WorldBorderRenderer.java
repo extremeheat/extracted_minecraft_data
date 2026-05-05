@@ -1,5 +1,7 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -11,11 +13,10 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.level.WorldBorderRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -45,7 +46,7 @@ public class WorldBorderRenderer implements AutoCloseable {
    public WorldBorderRenderer() {
       super();
       this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16L * (long)DefaultVertexFormat.POSITION_TEX.getVertexSize());
-      this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      this.indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
    }
 
    public void close() {
@@ -66,7 +67,7 @@ public class WorldBorderRenderer implements AutoCloseable {
          double maxX = Math.min((double)Mth.ceil(cameraX + renderDistance), borderMaxX);
          float u0x = (float)(Mth.floor(minX) & 1) * 0.5F;
          float u1x = (float)(maxX - minX) / 2.0F;
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_TEX);
          bufferBuilder.addVertex(0.0F, -halfHeightY, (float)(borderMaxZ - minZ)).setUv(u0x, v1);
          bufferBuilder.addVertex((float)(maxX - minX), -halfHeightY, (float)(borderMaxZ - minZ)).setUv(u1x + u0x, v1);
          bufferBuilder.addVertex((float)(maxX - minX), halfHeightY, (float)(borderMaxZ - minZ)).setUv(u1x + u0x, v0);
@@ -147,13 +148,13 @@ public class WorldBorderRenderer implements AutoCloseable {
          GpuBuffer indexBuffer = this.indices.getBuffer(6);
          GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), new Vector4f(red, green, blue, (float)state.alpha), new Vector3f((float)(this.lastMinX - cameraX), (float)(-cameraPos.y), (float)(this.lastMinZ - cameraZ)), (new Matrix4f()).translation(offset, offset, 0.0F));
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
             renderPass.setPipeline(renderPipeline);
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
             renderPass.setIndexBuffer(indexBuffer, this.indices.type());
             renderPass.bindTexture("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
-            renderPass.setVertexBuffer(0, this.worldBorderBuffer);
+            renderPass.setVertexBuffer(0, this.worldBorderBuffer.slice());
             ArrayList<RenderPass.Draw<WorldBorderRenderer>> draws = new ArrayList();
 
             for(WorldBorderRenderState.DistancePerDirection distancePerDirection : state.closestBorder(cameraX, cameraZ)) {
@@ -163,7 +164,7 @@ public class WorldBorderRenderer implements AutoCloseable {
                }
             }
 
-            renderPass.drawMultipleIndexed(draws, (GpuBuffer)null, (VertexFormat.IndexType)null, Collections.emptyList(), this);
+            renderPass.drawMultipleIndexed(draws, (GpuBuffer)null, (IndexType)null, Collections.emptyList(), this);
          }
 
       }

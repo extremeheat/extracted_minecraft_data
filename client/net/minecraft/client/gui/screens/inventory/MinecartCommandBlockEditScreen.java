@@ -12,11 +12,11 @@ public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScre
       this.minecart = minecart;
    }
 
-   public BaseCommandBlock getCommandBlock() {
+   protected BaseCommandBlock getCommandBlock() {
       return this.minecart.getCommandBlock();
    }
 
-   int getPreviousY() {
+   protected int getPreviousY() {
       return 150;
    }
 

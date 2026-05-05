@@ -36,8 +36,8 @@ public class PickedUpItemTrigger extends SimpleCriterionTrigger<TriggerInstance>
          super();
       }
 
-      public static Criterion<TriggerInstance> thrownItemPickedUpByEntity(final ContextAwarePredicate player, final Optional<ItemPredicate> item, final Optional<ContextAwarePredicate> entity) {
-         return CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.createCriterion(new TriggerInstance(Optional.of(player), item, entity));
+      public static Criterion<TriggerInstance> thrownItemPickedUpByEntity(final Optional<ContextAwarePredicate> player, final Optional<ItemPredicate> item, final Optional<ContextAwarePredicate> entity) {
+         return CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.createCriterion(new TriggerInstance(player, item, entity));
       }
 
       public static Criterion<TriggerInstance> thrownItemPickedUpByPlayer(final Optional<ContextAwarePredicate> player, final Optional<ItemPredicate> item, final Optional<ContextAwarePredicate> entity) {

@@ -8,9 +8,10 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.function.Supplier;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -44,30 +45,58 @@ public class CommandEncoder {
       return this.isInRenderPass;
    }
 
-   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor) {
+   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor) {
       return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
    }
 
-   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
       return this.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth, new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0)));
    }
 
-   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final OptionalInt clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
+   public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
+      RenderPassDescriptor descriptor = RenderPassDescriptor.create(label).withColorAttachment(colorTexture, clearColor);
+      if (depthTexture != null) {
+         descriptor.withDepthAttachment(depthTexture, clearDepth);
+      }
+
+      descriptor.withRenderArea(renderArea);
+      return this.createRenderPass(descriptor);
+   }
+
+   public RenderPass createRenderPass(final RenderPassDescriptor descriptor) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
-         if (clearDepth.isPresent() && depthTexture == null) {
-            LOGGER.warn("Depth clear value was provided but no depth texture is being used");
-         }
-
-         if (colorTexture.isClosed()) {
-            throw new IllegalStateException("Color texture is closed");
-         } else if ((colorTexture.texture().usage() & 8) == 0) {
-            throw new IllegalStateException("Color texture must have USAGE_RENDER_ATTACHMENT");
-         } else if (colorTexture.texture().getDepthOrLayers() > 1) {
-            throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported as an attachment");
+         int maxColorAttachments = RenderSystem.getDevice().getDeviceInfo().limits().maxColorAttachments();
+         int colorAttachmentCount = descriptor.colorAttachments.size();
+         if (colorAttachmentCount > maxColorAttachments) {
+            throw new IllegalStateException("Render pass created with " + colorAttachmentCount + " color attachments but device only supports " + maxColorAttachments);
          } else {
-            if (depthTexture != null) {
+            for(int i = 0; i < colorAttachmentCount; ++i) {
+               RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.get(i);
+               if (colorAttachment != null) {
+                  GpuTextureView colorTexture = colorAttachment.textureView();
+                  if (colorTexture.isClosed()) {
+                     throw new IllegalStateException("Color texture " + i + " is closed");
+                  }
+
+                  if ((colorTexture.texture().usage() & 8) == 0) {
+                     throw new IllegalStateException("Color texture " + i + " must have USAGE_RENDER_ATTACHMENT");
+                  }
+
+                  if (colorTexture.texture().getDepthOrLayers() > 1) {
+                     throw new UnsupportedOperationException("Color texture " + i + ": Textures with multiple depths or layers are not yet supported as an attachment");
+                  }
+
+                  if (descriptor.renderArea != null && (descriptor.renderArea.x() < 0 || descriptor.renderArea.y() < 0 || descriptor.renderArea.x() + descriptor.renderArea.width() > colorTexture.getWidth(0) || descriptor.renderArea.y() + descriptor.renderArea.height() > colorTexture.getHeight(0))) {
+                     String var10002 = String.valueOf(descriptor.renderArea);
+                     throw new IllegalArgumentException("RenderPass render area " + var10002 + " is out of bounds for color texture of " + colorTexture.getWidth(0) + "x" + colorTexture.getHeight(0));
+                  }
+               }
+            }
+
+            if (descriptor.depthAttachment != null) {
+               GpuTextureView depthTexture = descriptor.depthAttachment.textureView();
                if (depthTexture.isClosed()) {
                   throw new IllegalStateException("Depth texture is closed");
                }
@@ -77,21 +106,16 @@ public class CommandEncoder {
                }
 
                if (depthTexture.texture().getDepthOrLayers() > 1) {
-                  throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported as an attachment");
+                  throw new UnsupportedOperationException("Depth texture: Textures with multiple depths or layers are not yet supported as an attachment");
                }
             }
 
-            if (renderArea.x() >= 0 && renderArea.y() >= 0 && renderArea.x() + renderArea.width() <= colorTexture.getWidth(0) && renderArea.y() + renderArea.height() <= colorTexture.getHeight(0)) {
-               this.isInRenderPass = true;
-               if (this.profiler != null) {
-                  this.profiler.pushZone(this, (String)label.get());
-               }
-
-               return new RenderPass(this.backend.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth, renderArea), this.device, this::submitRenderPass, renderArea);
-            } else {
-               String var10002 = String.valueOf(renderArea);
-               throw new IllegalArgumentException("RenderPass render area " + var10002 + " is out of bounds for color texture of " + colorTexture.getWidth(0) + "x" + colorTexture.getHeight(0));
+            this.isInRenderPass = true;
+            if (this.profiler != null) {
+               this.profiler.pushZone(this, (String)descriptor.label().get());
             }
+
+            return new RenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments, this::submitRenderPass, descriptor.renderArea);
          }
       }
    }
@@ -109,7 +133,7 @@ public class CommandEncoder {
       }
    }
 
-   public void clearColorTexture(final GpuTexture colorTexture, final int clearColor) {
+   public void clearColorTexture(final GpuTexture colorTexture, final Vector4fc clearColor) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
@@ -118,7 +142,7 @@ public class CommandEncoder {
       }
    }
 
-   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final int clearColor, final GpuTexture depthTexture, final double clearDepth) {
+   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final Vector4fc clearColor, final GpuTexture depthTexture, final double clearDepth) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
@@ -128,7 +152,7 @@ public class CommandEncoder {
       }
    }
 
-   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final int clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight) {
+   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final Vector4fc clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
@@ -166,32 +190,6 @@ public class CommandEncoder {
             } else {
                this.backend.writeToBuffer(destination, data);
             }
-         }
-      }
-   }
-
-   public GpuBuffer.MappedView mapBuffer(final GpuBuffer buffer, final boolean read, final boolean write) {
-      return this.mapBuffer(buffer.slice(), read, write);
-   }
-
-   public GpuBuffer.MappedView mapBuffer(final GpuBufferSlice slice, final boolean read, final boolean write) {
-      if (this.isInRenderPass) {
-         throw new IllegalStateException("Close the existing render pass before performing additional commands");
-      } else {
-         GpuBuffer buffer = slice.buffer();
-         if (buffer.isClosed()) {
-            throw new IllegalStateException("Buffer already closed");
-         } else if (!read && !write) {
-            throw new IllegalArgumentException("At least read or write must be true");
-         } else if (read && (buffer.usage() & 1) == 0) {
-            throw new IllegalStateException("Buffer is not readable");
-         } else if (write && (buffer.usage() & 2) == 0) {
-            throw new IllegalStateException("Buffer is not writable");
-         } else if (slice.offset() + slice.length() > buffer.size()) {
-            long var10002 = slice.length();
-            throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + var10002 + " bytes at offset " + slice.offset() + " from " + buffer.size() + " size buffer)");
-         } else {
-            return this.backend.mapBuffer(slice, read, write);
          }
       }
    }

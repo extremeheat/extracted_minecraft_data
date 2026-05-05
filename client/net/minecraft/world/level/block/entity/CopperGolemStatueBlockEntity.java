@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class CopperGolemStatueBlockEntity extends BlockEntity {
@@ -37,7 +38,7 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
 
    private CopperGolem initCopperGolem(final BlockState state, final CopperGolem copperGolem) {
       BlockPos blockPos = this.getBlockPos();
-      copperGolem.snapTo(blockPos.getCenter().x, (double)blockPos.getY(), blockPos.getCenter().z, ((Direction)state.getValue(CopperGolemStatueBlock.FACING)).toYRot(), 0.0F);
+      copperGolem.snapTo(Vec3.atCenterOf(blockPos).x, (double)blockPos.getY(), Vec3.atCenterOf(blockPos).z, ((Direction)state.getValue(CopperGolemStatueBlock.FACING)).toYRot(), 0.0F);
       copperGolem.yHeadRot = copperGolem.getYRot();
       copperGolem.yBodyRot = copperGolem.getYRot();
       copperGolem.playSpawnSound();

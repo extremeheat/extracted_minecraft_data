@@ -19,7 +19,7 @@ public class BackupConfirmScreen extends Screen {
    private final Component description;
    private final boolean promptForCacheErase;
    private MultiLineLabel message;
-   final Component confirmation;
+   private final Component confirmation;
    protected int id;
    private Checkbox eraseCache;
 

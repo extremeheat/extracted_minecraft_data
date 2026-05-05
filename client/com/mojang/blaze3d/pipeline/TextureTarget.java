@@ -1,11 +1,12 @@
 package com.mojang.blaze3d.pipeline;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.jspecify.annotations.Nullable;
 
 public class TextureTarget extends RenderTarget {
-   public TextureTarget(final @Nullable String label, final int width, final int height, final boolean useDepth) {
-      super(label, useDepth);
+   public TextureTarget(final @Nullable String label, final int width, final int height, final boolean useDepth, final GpuFormat format) {
+      super(label, useDepth, format);
       RenderSystem.assertOnRenderThread();
       this.resize(width, height);
    }

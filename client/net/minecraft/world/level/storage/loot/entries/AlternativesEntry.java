@@ -19,7 +19,7 @@ public class AlternativesEntry extends CompositeEntryBase {
       }
    };
 
-   AlternativesEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+   public AlternativesEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
       super(children, conditions);
    }
 

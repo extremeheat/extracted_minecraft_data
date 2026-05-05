@@ -248,7 +248,7 @@ public class CommandSuggestions {
 
    private static boolean hasMessageArguments(final ParseResults<ClientSuggestionProvider> parseResults) {
       class Visitor implements ArgumentVisitor.Output<ClientSuggestionProvider> {
-         boolean foundMessageArgument;
+         private boolean foundMessageArgument;
 
          Visitor() {
             super();

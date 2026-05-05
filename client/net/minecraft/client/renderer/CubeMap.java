@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -12,9 +13,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -51,7 +51,7 @@ public class CubeMap implements AutoCloseable {
       RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
       GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
       GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
-      RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer indexBuffer = indices.getBuffer(36);
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
@@ -61,10 +61,10 @@ public class CubeMap implements AutoCloseable {
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
       modelViewStack.popMatrix();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(renderPipeline);
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setVertexBuffer(0, this.vertexBuffer);
+         renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, indices.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          AbstractTexture texture = minecraft.getTextureManager().getTexture(this.location);
@@ -77,7 +77,7 @@ public class CubeMap implements AutoCloseable {
    private static GpuBuffer initializeVertices() {
       GpuBuffer var3;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 4 * 6)) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION);
          bufferBuilder.addVertex(-1.0F, -1.0F, 1.0F);
          bufferBuilder.addVertex(-1.0F, 1.0F, 1.0F);
          bufferBuilder.addVertex(1.0F, 1.0F, 1.0F);

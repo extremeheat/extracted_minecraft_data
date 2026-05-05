@@ -6,7 +6,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.ListBuilder;
 import java.util.function.UnaryOperator;
 
-abstract class AbstractListBuilder<T, B> implements ListBuilder<T> {
+public abstract class AbstractListBuilder<T, B> implements ListBuilder<T> {
    private final DynamicOps<T> ops;
    protected DataResult<B> builder = DataResult.success(this.initBuilder(), Lifecycle.stable());
 

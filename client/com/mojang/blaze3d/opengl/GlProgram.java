@@ -6,6 +6,7 @@ import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
 import java.util.List;
@@ -31,16 +32,26 @@ public class GlProgram implements AutoCloseable {
       this.debugLabel = debugLabel;
    }
 
-   public static GlProgram link(final GlShaderModule vertexShader, final GlShaderModule fragmentShader, final VertexFormat vertexFormat, final String debugLabel) throws ShaderManager.CompilationException {
+   public static GlProgram link(final GlShaderModule vertexShader, final GlShaderModule fragmentShader, final @Nullable VertexFormat[] vertexBindings, final String debugLabel) throws ShaderManager.CompilationException {
       int programId = GlStateManager.glCreateProgram();
       if (programId <= 0) {
          throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + programId + ")");
       } else {
          int attributeLocation = 0;
+         String previousName = null;
 
-         for(String attributeName : vertexFormat.getElementAttributeNames()) {
-            GlStateManager._glBindAttribLocation(programId, attributeLocation, attributeName);
-            ++attributeLocation;
+         for(VertexFormat vertexFormat : vertexBindings) {
+            if (vertexFormat != null) {
+               for(VertexFormatElement attribute : vertexFormat.getElements()) {
+                  String attributeName = attribute.name();
+                  if (!attributeName.equals(previousName)) {
+                     GlStateManager._glBindAttribLocation(programId, attributeLocation, attributeName);
+                  }
+
+                  previousName = attributeName;
+                  ++attributeLocation;
+               }
+            }
          }
 
          GlStateManager.glAttachShader(programId, vertexShader.getShaderId());

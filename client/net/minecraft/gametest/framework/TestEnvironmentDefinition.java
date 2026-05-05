@@ -122,7 +122,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
             this.thundering = thundering;
          }
 
-         void apply(final ServerLevel level) {
+         public void apply(final ServerLevel level) {
             level.getServer().setWeatherParameters(this.clearTime, this.rainTime, this.raining, this.thundering);
          }
 

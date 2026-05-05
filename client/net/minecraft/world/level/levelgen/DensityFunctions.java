@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 
 public final class DensityFunctions {
    private static final Codec<DensityFunction> CODEC;
-   protected static final double MAX_REASONABLE_NOISE_VALUE = 1000000.0;
+   static final double MAX_REASONABLE_NOISE_VALUE = 1000000.0;
    private static final Codec<Double> NOISE_VALUE_CODEC;
    public static final Codec<DensityFunction> DIRECT_CODEC;
 
@@ -290,7 +290,7 @@ public final class DensityFunctions {
       double transform(final double input);
    }
 
-   protected static enum BlendAlpha implements DensityFunction.SimpleFunction {
+   static enum BlendAlpha implements DensityFunction.SimpleFunction {
       INSTANCE;
 
       public static final KeyDispatchDataCodec<DensityFunction> CODEC = KeyDispatchDataCodec.<DensityFunction>of(MapCodec.unit(INSTANCE));
@@ -324,7 +324,7 @@ public final class DensityFunctions {
       }
    }
 
-   protected static enum BlendOffset implements DensityFunction.SimpleFunction {
+   static enum BlendOffset implements DensityFunction.SimpleFunction {
       INSTANCE;
 
       public static final KeyDispatchDataCodec<DensityFunction> CODEC = KeyDispatchDataCodec.<DensityFunction>of(MapCodec.unit(INSTANCE));
@@ -366,7 +366,7 @@ public final class DensityFunctions {
       }
    }
 
-   protected static enum BeardifierMarker implements BeardifierOrMarker {
+   static enum BeardifierMarker implements BeardifierOrMarker {
       INSTANCE;
 
       private BeardifierMarker() {
@@ -439,8 +439,8 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Marker(Type type, DensityFunction wrapped) implements MarkerOrMarked {
-      protected Marker {
+   static record Marker(Type type, DensityFunction wrapped) implements MarkerOrMarked {
+      Marker {
          super();
       }
 
@@ -460,7 +460,7 @@ public final class DensityFunctions {
          return this.type == DensityFunctions.Marker.Type.BlendDensity ? 1.0 / 0.0 : this.wrapped.maxValue();
       }
 
-      static enum Type implements StringRepresentable {
+      public static enum Type implements StringRepresentable {
          Interpolated("interpolated"),
          FlatCache("flat_cache"),
          Cache2D("cache_2d"),
@@ -757,7 +757,7 @@ public final class DensityFunctions {
       }
    }
 
-   interface ShiftNoise extends DensityFunction {
+   protected interface ShiftNoise extends DensityFunction {
       DensityFunction.NoiseHolder offsetNoise();
 
       default double minValue() {
@@ -935,7 +935,7 @@ public final class DensityFunctions {
          return this.type.codec;
       }
 
-      static enum Type implements StringRepresentable {
+      public static enum Type implements StringRepresentable {
          ABS("abs"),
          SQUARE("square"),
          CUBE("cube"),
@@ -962,7 +962,7 @@ public final class DensityFunctions {
       }
    }
 
-   interface TwoArgumentSimpleFunction extends DensityFunction {
+   public interface TwoArgumentSimpleFunction extends DensityFunction {
       Logger LOGGER = LogUtils.getLogger();
 
       static TwoArgumentSimpleFunction create(final Type type, final DensityFunction argument1, final DensityFunction argument2) {
@@ -1094,7 +1094,7 @@ public final class DensityFunctions {
          return new MulOrAdd(this.specificType, function, minValue, maxValue, this.argument);
       }
 
-      static enum Type {
+      public static enum Type {
          MUL,
          ADD;
 

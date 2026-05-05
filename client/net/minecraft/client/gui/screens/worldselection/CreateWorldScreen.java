@@ -609,7 +609,7 @@ public class CreateWorldScreen extends Screen {
          Objects.requireNonNull(CreateWorldScreen.this);
          super(TITLE);
          GridLayout.RowHelper helper = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
-         CycleButton<WorldCreationUiState.WorldTypeEntry> typeButton = (CycleButton)helper.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier()).withCustomNarration(WorldTab::createTypeButtonNarration).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (button, newPreset) -> CreateWorldScreen.this.uiState.setWorldType(newPreset)));
+         CycleButton<WorldCreationUiState.WorldTypeEntry> typeButton = (CycleButton)helper.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier()).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (button, newPreset) -> CreateWorldScreen.this.uiState.setWorldType(newPreset)));
          typeButton.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener((data) -> {
             WorldCreationUiState.WorldTypeEntry worldType = data.getWorldType();
@@ -679,10 +679,6 @@ public class CreateWorldScreen extends Screen {
                return CreateWorldScreen.this.uiState.getNormalPresetList();
             }
          };
-      }
-
-      private static MutableComponent createTypeButtonNarration(final CycleButton<WorldCreationUiState.WorldTypeEntry> button) {
-         return ((WorldCreationUiState.WorldTypeEntry)button.getValue()).isAmplified() ? CommonComponents.joinForNarration(button.createDefaultNarrationMessage(), AMPLIFIED_HELP_TEXT) : button.createDefaultNarrationMessage();
       }
    }
 

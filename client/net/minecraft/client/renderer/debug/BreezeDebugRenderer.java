@@ -39,7 +39,7 @@ public class BreezeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
             Gizmos.circle(drawCenter, 24.0F, GizmoStyle.stroke(OUTER_CIRCLE_COLOR));
          });
          info.jumpTarget().ifPresent((blockPos) -> {
-            Gizmos.arrow(entity.position(), blockPos.getCenter(), JUMP_TARGET_LINE_COLOR);
+            Gizmos.arrow(entity.position(), Vec3.atCenterOf(blockPos), JUMP_TARGET_LINE_COLOR);
             Gizmos.cuboid(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(blockPos)), GizmoStyle.fill(ARGB.colorFromFloat(1.0F, 1.0F, 0.0F, 0.0F)));
          });
       });

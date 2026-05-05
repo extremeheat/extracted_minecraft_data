@@ -1,5 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -19,10 +21,11 @@ public class MeshData implements AutoCloseable {
    }
 
    public static void decodeQuadCentroids(final ByteBuffer vertexBuffer, final int vertexCount, final VertexFormat format, final CompactVectorArray output, final int outputIndex) {
-      int positionOffset = vertexBuffer.position() + format.getOffset(VertexFormatElement.POSITION);
-      if (positionOffset == -1) {
+      VertexFormatElement positionElement = format.getElement("Position");
+      if (positionElement == null) {
          throw new IllegalArgumentException("Cannot identify quad centers with no position element");
       } else {
+         int positionOffset = vertexBuffer.position() + positionElement.offset();
          int vertexStride = format.getVertexSize();
          int quadStride = vertexStride * 4;
          int quadCount = vertexCount / 4;
@@ -62,7 +65,7 @@ public class MeshData implements AutoCloseable {
    }
 
    public @Nullable SortState sortQuads(final ByteBufferBuilder indexBufferTarget, final VertexSorting sorting) {
-      if (this.drawState.mode() != VertexFormat.Mode.QUADS) {
+      if (this.drawState.primitiveTopology() != PrimitiveTopology.QUADS) {
          return null;
       } else {
          CompactVectorArray centroids = new CompactVectorArray(this.drawState.vertexCount() / 4);
@@ -81,13 +84,13 @@ public class MeshData implements AutoCloseable {
 
    }
 
-   public static record DrawState(VertexFormat format, int vertexCount, int indexCount, VertexFormat.Mode mode, VertexFormat.IndexType indexType) {
+   public static record DrawState(VertexFormat format, int vertexCount, int indexCount, PrimitiveTopology primitiveTopology, IndexType indexType) {
       public DrawState {
          super();
       }
    }
 
-   public static record SortState(CompactVectorArray centroids, VertexFormat.IndexType indexType) {
+   public static record SortState(CompactVectorArray centroids, IndexType indexType) {
       public SortState {
          super();
       }
@@ -129,7 +132,7 @@ public class MeshData implements AutoCloseable {
 
       }
 
-      private IntConsumer indexWriter(final long pointer, final VertexFormat.IndexType indexType) {
+      private IntConsumer indexWriter(final long pointer, final IndexType indexType) {
          MutableLong nextIndex = new MutableLong(pointer);
          IntConsumer var10000;
          switch (indexType) {

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.lighting;
 
+import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
@@ -34,7 +35,8 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
       return this.map.isEmpty();
    }
 
-   protected static class InternalMap extends Long2LongLinkedOpenHashMap {
+   @VisibleForTesting
+   static class InternalMap extends Long2LongLinkedOpenHashMap {
       private static final int X_BITS = Mth.log2(60000000);
       private static final int Z_BITS = Mth.log2(60000000);
       private static final int Y_BITS;
@@ -51,10 +53,12 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          this.minSize = expected;
       }
 
+      @VisibleForTesting
       static long getOuterKey(final long key) {
          return key & ~OUTER_MASK;
       }
 
+      @VisibleForTesting
       static int getInnerKey(final long key) {
          int innerX = (int)(key >>> X_OFFSET & 3L);
          int innerY = (int)(key >>> 0 & 3L);
@@ -62,6 +66,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          return innerX << 4 | innerZ << 2 | innerY;
       }
 
+      @VisibleForTesting
       static long getFullKey(long outerKey, final int innerKey) {
          outerKey |= (long)(innerKey >>> 4 & 3) << X_OFFSET;
          outerKey |= (long)(innerKey >>> 2 & 3) << Z_OFFSET;

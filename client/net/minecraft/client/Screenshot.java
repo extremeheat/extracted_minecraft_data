@@ -1,9 +1,9 @@
 package net.minecraft.client;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
@@ -85,9 +85,8 @@ public class Screenshot {
          throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
       } else if (width % downscaleFactor == 0 && height % downscaleFactor == 0) {
          GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, (long)width * (long)height * (long)sourceTexture.getFormat().pixelSize());
-         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
          RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(sourceTexture, buffer, 0L, () -> {
-            try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
+            try (GpuBufferSlice.MappedView read = buffer.map(true, false)) {
                int outputHeight = height / downscaleFactor;
                int outputWidth = width / downscaleFactor;
                NativeImage image = new NativeImage(outputWidth, outputHeight, false);

@@ -45,7 +45,7 @@ public class JfrResultJsonSerializer {
    private static final String DURATION_NANOS_TOTAL = "durationNanosTotal";
    private static final String TOTAL_BYTES = "totalBytes";
    private static final String COUNT_PER_SECOND = "countPerSecond";
-   final Gson gson;
+   private final Gson gson;
 
    public JfrResultJsonSerializer() {
       super();

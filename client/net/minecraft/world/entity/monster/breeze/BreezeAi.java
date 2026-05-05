@@ -59,7 +59,7 @@ public class BreezeAi {
       return ActivityData.<Breeze>create(var10000, ImmutableList.of(Pair.of(var10001, StopAttackingIfTargetInvalid.create(var10002::test)), Pair.of(1, new Shoot()), Pair.of(2, new LongJump()), Pair.of(3, new ShootWhenStuck()), Pair.of(4, new Slide())), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT)));
    }
 
-   static void updateActivity(final Breeze body) {
+   public static void updateActivity(final Breeze body) {
       body.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.IDLE));
    }
 

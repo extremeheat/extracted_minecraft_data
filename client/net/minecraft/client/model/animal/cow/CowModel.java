@@ -25,7 +25,7 @@ public class CowModel extends QuadrupedModel<LivingEntityRenderState> {
       return LayerDefinition.create(mesh, 64, 64);
    }
 
-   static MeshDefinition createBaseCowModel() {
+   public static MeshDefinition createBaseCowModel() {
       MeshDefinition mesh = new MeshDefinition();
       PartDefinition root = mesh.getRoot();
       root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -6.0F, 8.0F, 8.0F, 6.0F).texOffs(1, 33).addBox(-3.0F, 1.0F, -7.0F, 6.0F, 3.0F, 1.0F).texOffs(22, 0).addBox("right_horn", -5.0F, -5.0F, -5.0F, 1.0F, 3.0F, 1.0F).texOffs(22, 0).addBox("left_horn", 4.0F, -5.0F, -5.0F, 1.0F, 3.0F, 1.0F), PartPose.offset(0.0F, 4.0F, -8.0F));

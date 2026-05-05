@@ -68,7 +68,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          super();
       }
 
-      abstract void refreshEntry();
+      public abstract void refreshEntry();
    }
 
    public class CategoryEntry extends Entry {
@@ -93,7 +93,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          return List.of(this.categoryName);
       }
 
-      protected void refreshEntry() {
+      public void refreshEntry() {
       }
    }
 
@@ -153,7 +153,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          return ImmutableList.of(this.changeButton, this.resetButton);
       }
 
-      protected void refreshEntry() {
+      public void refreshEntry() {
          this.changeButton.setMessage(this.key.getTranslatedKeyMessage());
          this.resetButton.active = !this.key.isDefault();
          this.hasCollision = false;

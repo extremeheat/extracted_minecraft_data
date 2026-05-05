@@ -73,7 +73,7 @@ public class LongJump extends Behavior<Breeze> {
                BlockState bs = level.getBlockState(targetPos.below());
                if (breeze.getType().isBlockDangerous(bs)) {
                   return false;
-               } else if (!BreezeUtil.hasLineOfSight(breeze, targetPos.getCenter()) && !BreezeUtil.hasLineOfSight(breeze, targetPos.above(4).getCenter())) {
+               } else if (!BreezeUtil.hasLineOfSight(breeze, Vec3.atCenterOf(targetPos)) && !BreezeUtil.hasLineOfSight(breeze, Vec3.atCenterOf(targetPos.above(4)))) {
                   return false;
                } else {
                   breeze.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, targetPos);
@@ -99,7 +99,7 @@ public class LongJump extends Behavior<Breeze> {
 
       breeze.setPose(Pose.INHALING);
       level.playSound((Entity)null, breeze, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
-      breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((targetPos) -> breeze.lookAt(EntityAnchorArgument.Anchor.EYES, targetPos.getCenter()));
+      breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((targetPos) -> breeze.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(targetPos)));
    }
 
    protected void tick(final ServerLevel level, final Breeze breeze, final long timestamp) {

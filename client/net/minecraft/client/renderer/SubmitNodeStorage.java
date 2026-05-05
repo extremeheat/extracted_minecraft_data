@@ -61,8 +61,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
    }
 
-   public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
-      this.order(0).submitMovingBlock(poseStack, movingBlockRenderState);
+   public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState, final int outlineColor) {
+      this.order(0).submitMovingBlock(poseStack, movingBlockRenderState, outlineColor);
    }
 
    public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final List<BlockStateModelPart> modelParts, final int[] tintLayers, final int lightCoords, final int overlayCoords, final int outlineColor) {

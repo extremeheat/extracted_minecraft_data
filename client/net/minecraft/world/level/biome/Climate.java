@@ -205,6 +205,7 @@ public class Climate {
          return leaf.value;
       }
 
+      @VisibleForTesting
       abstract static class Node<T> {
          protected final Parameter[] parameterSpace;
 
@@ -246,11 +247,11 @@ public class Climate {
       private static final class SubTree<T> extends Node<T> {
          private final Node<T>[] children;
 
-         protected SubTree(final List<? extends Node<T>> children) {
+         public SubTree(final List<? extends Node<T>> children) {
             this(Climate.RTree.buildParameterSpace(children), children);
          }
 
-         protected SubTree(final List<Parameter> parameterSpace, final List<? extends Node<T>> children) {
+         public SubTree(final List<Parameter> parameterSpace, final List<? extends Node<T>> children) {
             super(parameterSpace);
             this.children = (Node[])children.toArray(new Node[0]);
          }
@@ -332,7 +333,7 @@ public class Climate {
       }
 
       @VisibleForTesting
-      protected long[] toParameterArray() {
+      long[] toParameterArray() {
          return new long[]{this.temperature, this.humidity, this.continentalness, this.erosion, this.depth, this.weirdness, 0L};
       }
    }
@@ -348,7 +349,7 @@ public class Climate {
          return Mth.square(this.temperature.distance(target.temperature)) + Mth.square(this.humidity.distance(target.humidity)) + Mth.square(this.continentalness.distance(target.continentalness)) + Mth.square(this.erosion.distance(target.erosion)) + Mth.square(this.depth.distance(target.depth)) + Mth.square(this.weirdness.distance(target.weirdness)) + Mth.square(this.offset);
       }
 
-      protected List<Parameter> parameterSpace() {
+      List<Parameter> parameterSpace() {
          return ImmutableList.of(this.temperature, this.humidity, this.continentalness, this.erosion, this.depth, this.weirdness, new Parameter(this.offset, this.offset));
       }
    }
@@ -474,6 +475,7 @@ public class Climate {
       }
    }
 
+   @VisibleForTesting
    interface DistanceMetric<T> {
       long distance(RTree.Node<T> node, long[] target);
    }

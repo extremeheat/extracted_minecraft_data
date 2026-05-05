@@ -28,7 +28,7 @@ public class OpenAlUtil {
       return var10000;
    }
 
-   static boolean checkALError(final String location) {
+   public static boolean checkALError(final String location) {
       int error = AL10.alGetError();
       if (error != 0) {
          LOGGER.error("{}: {}", location, alErrorToString(error));
@@ -52,7 +52,7 @@ public class OpenAlUtil {
       return var10000;
    }
 
-   static boolean checkALCError(final long device, final String location) {
+   public static boolean checkALCError(final long device, final String location) {
       int error = ALC10.alcGetError(device);
       if (error != 0) {
          LOGGER.error("{} ({}): {}", new Object[]{location, device, alcErrorToString(error)});
@@ -62,7 +62,7 @@ public class OpenAlUtil {
       }
    }
 
-   static int audioFormatToOpenAl(final AudioFormat audioFormat) {
+   public static int audioFormatToOpenAl(final AudioFormat audioFormat) {
       AudioFormat.Encoding encoding = audioFormat.getEncoding();
       int channels = audioFormat.getChannels();
       int sampleSizeInBits = audioFormat.getSampleSizeInBits();

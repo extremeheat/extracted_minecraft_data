@@ -15,7 +15,7 @@ public abstract class StoredUserEntry<T> {
       return this.user;
    }
 
-   boolean hasExpired() {
+   public boolean hasExpired() {
       return false;
    }
 

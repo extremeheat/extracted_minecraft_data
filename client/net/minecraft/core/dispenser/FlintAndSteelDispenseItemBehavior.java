@@ -30,22 +30,22 @@ public class FlintAndSteelDispenseItemBehavior extends OptionalDispenseItemBehav
       Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
       BlockPos targetPos = source.pos().relative(facing);
       BlockState target = level.getBlockState(targetPos);
-      if (BaseFireBlock.canBePlacedAt(level, targetPos, facing)) {
-         level.setBlockAndUpdate(targetPos, BaseFireBlock.getState(level, targetPos));
-         level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, targetPos);
-      } else if (!CampfireBlock.canLight(target) && !CandleBlock.canLight(target) && !CandleCakeBlock.canLight(target)) {
-         if (target.getBlock() instanceof TntBlock) {
-            if (TntBlock.prime(level, targetPos)) {
-               level.removeBlock(targetPos, false);
-            } else {
-               this.setSuccess(false);
+      if (!tryIgniteExplosiveEntities(level, targetPos)) {
+         if (BaseFireBlock.canBePlacedAt(level, targetPos, facing)) {
+            level.setBlockAndUpdate(targetPos, BaseFireBlock.getState(level, targetPos));
+            level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, targetPos);
+         } else if (!CampfireBlock.canLight(target) && !CandleBlock.canLight(target) && !CandleCakeBlock.canLight(target)) {
+            if (target.getBlock() instanceof TntBlock) {
+               if (TntBlock.prime(level, targetPos)) {
+                  level.removeBlock(targetPos, false);
+               } else {
+                  this.setSuccess(false);
+               }
             }
-         } else if (!tryIgniteExplosiveEntities(level, targetPos)) {
-            this.setSuccess(false);
+         } else {
+            level.setBlockAndUpdate(targetPos, (BlockState)target.setValue(BlockStateProperties.LIT, true));
+            level.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, targetPos);
          }
-      } else {
-         level.setBlockAndUpdate(targetPos, (BlockState)target.setValue(BlockStateProperties.LIT, true));
-         level.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, targetPos);
       }
 
       if (this.isSuccess()) {

@@ -1,28 +1,35 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
 public class RenderPass implements AutoCloseable {
+   public static final int MAX_VERTEX_BUFFERS = 16;
    private final RenderPassBackend backend;
    private final GpuDeviceBackend device;
    private final Runnable onFinish;
-   private final RenderArea renderArea;
+   private final @Nullable RenderArea renderArea;
    private boolean isClosed;
    private int pushedDebugGroups;
+   private final List<@Nullable RenderPassDescriptor.Attachment<Optional<Vector4fc>>> colorAttachments;
 
-   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final Runnable onFinish, final RenderArea renderArea) {
+   public RenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final List<@Nullable RenderPassDescriptor.Attachment<Optional<Vector4fc>>> colorAttachments, final Runnable onFinish, final @Nullable RenderArea renderArea) {
       super();
       this.backend = backend;
       this.device = device;
+      this.colorAttachments = colorAttachments;
       this.onFinish = onFinish;
       this.renderArea = renderArea;
    }
@@ -56,7 +63,22 @@ public class RenderPass implements AutoCloseable {
    }
 
    public void setPipeline(final RenderPipeline pipeline) {
-      this.backend.setPipeline(pipeline);
+      ColorTargetState[] colorTargetStates = pipeline.getColorTargetStates();
+      if (colorTargetStates.length != this.colorAttachments.size()) {
+         throw new IllegalStateException("Render pass color attachment count must match pipeline color target state count.");
+      } else {
+         for(int i = 0; i < this.colorAttachments.size(); ++i) {
+            RenderPassDescriptor.Attachment<Optional<Vector4fc>> attachment = (RenderPassDescriptor.Attachment)this.colorAttachments.get(i);
+            if (attachment != null) {
+               ColorTargetState colorTargetState = colorTargetStates[i];
+               if (colorTargetState == null || colorTargetState.format() != attachment.textureView().texture().getFormat()) {
+                  throw new IllegalStateException("Render pass color attachment " + i + " format doesn't match pipeline format.");
+               }
+            }
+         }
+
+         this.backend.setPipeline(pipeline);
+      }
    }
 
    public void bindTexture(final String name, final @Nullable GpuTextureView textureView, final @Nullable GpuSampler sampler) {
@@ -92,11 +114,21 @@ public class RenderPass implements AutoCloseable {
       this.backend.disableScissor();
    }
 
-   public void setVertexBuffer(final int slot, final GpuBuffer vertexBuffer) {
-      this.backend.setVertexBuffer(slot, vertexBuffer);
+   public void setVertexBuffer(final int slot, final @Nullable GpuBufferSlice vertexBuffer) {
+      if (slot >= 0 && slot < 16) {
+         if (vertexBuffer != null && vertexBuffer.buffer().isClosed()) {
+            throw new IllegalStateException("Vertex buffer at slot " + slot + " has been closed!");
+         } else if (vertexBuffer != null && (vertexBuffer.buffer().usage() & 32) == 0) {
+            throw new IllegalStateException("Vertex buffer at slot " + slot + " doesn't have GpuBuffer.USAGE_VERTEX flag!");
+         } else {
+            this.backend.setVertexBuffer(slot, vertexBuffer);
+         }
+      } else {
+         throw new IllegalArgumentException("Vertex buffer slot is out of range: " + slot);
+      }
    }
 
-   public void setIndexBuffer(final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType) {
+   public void setIndexBuffer(final GpuBuffer indexBuffer, final IndexType indexType) {
       this.backend.setIndexBuffer(indexBuffer, indexType);
    }
 
@@ -108,7 +140,7 @@ public class RenderPass implements AutoCloseable {
       }
    }
 
-   public <T> void drawMultipleIndexed(final Collection<Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final VertexFormat.@Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
+   public <T> void drawMultipleIndexed(final Collection<Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
@@ -136,8 +168,8 @@ public class RenderPass implements AutoCloseable {
 
    }
 
-   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, VertexFormat.@Nullable IndexType indexType, int firstIndex, int indexCount, int baseVertex, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
-      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final VertexFormat.IndexType indexType, final int firstIndex, final int indexCount, final int baseVertex) {
+   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, @Nullable IndexType indexType, int firstIndex, int indexCount, int baseVertex, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
+      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final IndexType indexType, final int firstIndex, final int indexCount, final int baseVertex) {
          this(slot, vertexBuffer, indexBuffer, indexType, firstIndex, indexCount, baseVertex, (BiConsumer)null);
       }
 

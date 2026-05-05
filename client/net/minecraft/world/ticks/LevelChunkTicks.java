@@ -2,6 +2,7 @@ package net.minecraft.world.ticks;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -14,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 
 public class LevelChunkTicks<T> implements TickContainerAccess<T>, SerializableTickContainer<T> {
+   private static final Comparator<ScheduledTick<?>> SUB_TICK_ORDERING = Comparator.comparingLong(ScheduledTick::subTickOrder);
    private final Queue<ScheduledTick<T>> tickQueue;
    private @Nullable List<SavedTick<T>> pendingTicks;
    private final Set<ScheduledTick<?>> ticksPerPosition;
@@ -100,7 +102,10 @@ public class LevelChunkTicks<T> implements TickContainerAccess<T>, SerializableT
          ticks.addAll(this.pendingTicks);
       }
 
-      for(ScheduledTick<T> tick : this.tickQueue) {
+      List<ScheduledTick<T>> sortedTicks = new ArrayList(this.tickQueue);
+      sortedTicks.sort(SUB_TICK_ORDERING);
+
+      for(ScheduledTick<T> tick : sortedTicks) {
          ticks.add(tick.toSavedTick(currentTick));
       }
 

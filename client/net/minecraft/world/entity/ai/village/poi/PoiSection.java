@@ -152,7 +152,7 @@ public class PoiSection {
       this.byType.clear();
    }
 
-   boolean isValid() {
+   public boolean isValid() {
       return this.isValid;
    }
 

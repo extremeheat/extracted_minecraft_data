@@ -20,12 +20,12 @@ public class RandomSelectorFeature extends Feature<RandomFeatureConfiguration> {
       ChunkGenerator chunkGenerator = context.chunkGenerator();
       BlockPos origin = context.origin();
 
-      for(WeightedPlacedFeature feature : config.features) {
-         if (random.nextFloat() < feature.chance) {
+      for(WeightedPlacedFeature feature : config.features()) {
+         if (random.nextFloat() < feature.chance()) {
             return feature.place(level, chunkGenerator, random, origin);
          }
       }
 
-      return ((PlacedFeature)config.defaultFeature.value()).place(level, chunkGenerator, random, origin);
+      return ((PlacedFeature)config.defaultFeature().value()).place(level, chunkGenerator, random, origin);
    }
 }

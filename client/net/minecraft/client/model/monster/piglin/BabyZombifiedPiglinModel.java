@@ -12,7 +12,7 @@ public class BabyZombifiedPiglinModel extends ZombifiedPiglinModel {
       return BabyPiglinModel.createBodyLayer();
    }
 
-   float getDefaultEarAngleInDegrees() {
+   protected float getDefaultEarAngleInDegrees() {
       return 5.0F;
    }
 }

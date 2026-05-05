@@ -17,7 +17,7 @@ public final class CubeDefinition {
    private final UVPair texScale;
    private final Set<Direction> visibleFaces;
 
-   protected CubeDefinition(final @Nullable String comment, final float xTexOffs, final float yTexOffs, final float minX, final float minY, final float minZ, final float width, final float height, final float depth, final CubeDeformation grow, final boolean mirror, final float xTexScale, final float yTexScale, final Set<Direction> visibleFaces) {
+   public CubeDefinition(final @Nullable String comment, final float xTexOffs, final float yTexOffs, final float minX, final float minY, final float minZ, final float width, final float height, final float depth, final CubeDeformation grow, final boolean mirror, final float xTexScale, final float yTexScale, final Set<Direction> visibleFaces) {
       super();
       this.comment = comment;
       this.texCoord = new UVPair(xTexOffs, yTexOffs);

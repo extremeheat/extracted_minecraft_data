@@ -81,7 +81,7 @@ public enum VaultState implements StringRepresentable {
                var10000 = updateStateForConnectedPlayers(serverLevel, pos, config, serverData, sharedData, config.deactivationRange());
             } else {
                float ejectionSoundProgress = serverData.ejectionProgress();
-               this.ejectResultItem(serverLevel, pos, serverData.popNextItemToEject(), ejectionSoundProgress);
+               ejectResultItem(serverLevel, pos, serverData.popNextItemToEject(), ejectionSoundProgress);
                sharedData.setDisplayItem(serverData.getNextItemToEject());
                boolean isLastEjection = serverData.getItemsToEject().isEmpty();
                int ejectionDelay = isLastEjection ? 20 : 20;
@@ -113,7 +113,7 @@ public enum VaultState implements StringRepresentable {
    protected void onExit(final ServerLevel serverLevel, final BlockPos pos, final VaultConfig config, final VaultSharedData sharedData) {
    }
 
-   private void ejectResultItem(final ServerLevel serverLevel, final BlockPos pos, final ItemStack itemToEject, final float ejectionSoundProgress) {
+   private static void ejectResultItem(final ServerLevel serverLevel, final BlockPos pos, final ItemStack itemToEject, final float ejectionSoundProgress) {
       DefaultDispenseItemBehavior.spawnItem(serverLevel, itemToEject, 2, Direction.UP, Vec3.atBottomCenterOf(pos).relative(Direction.UP, 1.2));
       serverLevel.levelEvent(3017, pos, 0);
       serverLevel.playSound((Entity)null, pos, SoundEvents.VAULT_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, 0.8F + 0.4F * ejectionSoundProgress);
@@ -128,7 +128,7 @@ public enum VaultState implements StringRepresentable {
       HALF_LIT(6),
       LIT(12);
 
-      final int value;
+      private final int value;
 
       private LightLevel(final int value) {
          this.value = value;

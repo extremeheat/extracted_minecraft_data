@@ -10,6 +10,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.valueproviders.ConstantFloat;
+import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
@@ -17,6 +21,7 @@ import net.minecraft.world.item.Item;
 public class SulfurCubeArchetypes {
    public static final ResourceKey<SulfurCubeArchetype> REGULAR = createKey(Identifier.withDefaultNamespace("regular"));
    public static final ResourceKey<SulfurCubeArchetype> BOUNCY = createKey(Identifier.withDefaultNamespace("bouncy"));
+   public static final ResourceKey<SulfurCubeArchetype> SLOW_BOUNCY = createKey(Identifier.withDefaultNamespace("slow_bouncy"));
    public static final ResourceKey<SulfurCubeArchetype> SLOW_FLAT = createKey(Identifier.withDefaultNamespace("slow_flat"));
    public static final ResourceKey<SulfurCubeArchetype> FAST_FLAT = createKey(Identifier.withDefaultNamespace("fast_flat"));
    public static final ResourceKey<SulfurCubeArchetype> LIGHT = createKey(Identifier.withDefaultNamespace("light"));
@@ -25,22 +30,25 @@ public class SulfurCubeArchetypes {
    public static final ResourceKey<SulfurCubeArchetype> HIGH_RESISTANCE = createKey(Identifier.withDefaultNamespace("high_resistance"));
    public static final ResourceKey<SulfurCubeArchetype> STICKY = createKey(Identifier.withDefaultNamespace("sticky"));
    public static final ResourceKey<SulfurCubeArchetype> EXPLOSIVE = createKey(Identifier.withDefaultNamespace("explosive"));
+   public static final ResourceKey<SulfurCubeArchetype> HOT = createKey(Identifier.withDefaultNamespace("hot"));
 
    public SulfurCubeArchetypes() {
       super();
    }
 
    public static void bootstrap(final BootstrapContext<SulfurCubeArchetype> context) {
-      register(context, REGULAR, ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty());
-      register(context, BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY, archetype(2.0F, 0.9F, 0.3F, 0.01F), true, Optional.empty());
-      register(context, SLOW_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT, archetype(-0.7F, 0.2F, 0.3F, 0.1F), false, Optional.empty());
-      register(context, FAST_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT, archetype(2.0F, 0.2F, 0.1F, 0.01F), false, Optional.empty());
-      register(context, LIGHT, ItemTags.SULFUR_CUBE_ARCHETYPE_LIGHT, archetype(1.0F, 1.0F, 0.3F, 1.8F), true, Optional.empty());
-      register(context, FAST_SLIDING, ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_SLIDING, archetype(-0.5F, 0.1F, 0.05F, 0.01F), false, Optional.empty());
-      register(context, SLOW_SLIDING, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING, archetype(-0.8F, 0.1F, 0.05F, 0.01F), false, Optional.empty());
-      register(context, STICKY, ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY, archetype(2.0F, 0.0F, 2.0F, 0.01F), false, Optional.empty());
-      register(context, HIGH_RESISTANCE, ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE, archetype(-0.7F, 0.2F, 1.0F, 0.01F), false, Optional.empty());
-      register(context, EXPLOSIVE, ItemTags.SULFUR_CUBE_ARCHETYPE_EXPLOSIVE, archetype(1.0F, 0.5F, 0.3F, 0.3F), true, Optional.of(120));
+      register(context, REGULAR, ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
+      register(context, BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY, archetype(2.0F, 0.9F, 0.3F, 0.01F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.07F));
+      register(context, SLOW_BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_BOUNCY, archetype(-0.4F, 0.6F, 0.3F, 0.05F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.16F));
+      register(context, SLOW_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT, archetype(-0.5F, 0.4F, 0.4F, 0.1F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.07F));
+      register(context, FAST_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT, archetype(1.0F, 0.5F, 0.2F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.73F, 0.06F));
+      register(context, LIGHT, ItemTags.SULFUR_CUBE_ARCHETYPE_LIGHT, archetype(1.0F, 1.0F, 0.3F, 1.8F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.12F));
+      register(context, FAST_SLIDING, ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_SLIDING, archetype(-0.5F, 0.1F, 0.05F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.53F, 0.06F));
+      register(context, SLOW_SLIDING, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_SLIDING, archetype(-0.8F, 0.1F, 0.05F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
+      register(context, STICKY, ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY, archetype(2.0F, 0.0F, 2.0F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
+      register(context, HIGH_RESISTANCE, ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE, archetype(-0.7F, 0.2F, 1.0F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
+      register(context, EXPLOSIVE, ItemTags.SULFUR_CUBE_ARCHETYPE_EXPLOSIVE, archetype(1.0F, 0.5F, 0.3F, 0.3F), true, Optional.of(new SulfurCubeArchetype.ExplosionData(3, false, 120)), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
+      register(context, HOT, ItemTags.SULFUR_CUBE_ARCHETYPE_HOT, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.of(contactDamage(context, DamageTypes.HOT_FLOOR, ConstantFloat.of(1.0F), false)), knockBackHitScale(0.33F, 0.06F));
    }
 
    private static ResourceKey<SulfurCubeArchetype> createKey(final Identifier id) {
@@ -59,7 +67,15 @@ public class SulfurCubeArchetypes {
       return List.of(add(Attributes.KNOCKBACK_RESISTANCE, (double)(-speed)), add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, (double)(-speed)), add(Attributes.BOUNCINESS, (double)bounce), multiply(Attributes.FRICTION_MODIFIER, (double)friction), multiply(Attributes.AIR_DRAG_MODIFIER, (double)drag));
    }
 
-   private static void register(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<SulfurCubeArchetype> name, final TagKey<Item> blocks, final List<Function<ResourceKey<SulfurCubeArchetype>, SulfurCubeArchetype.AttributeEntry>> modifiers, final boolean floats, final Optional<Integer> maxFuse) {
-      context.register(name, new SulfurCubeArchetype(context.lookup(Registries.ITEM).getOrThrow(blocks), modifiers.stream().map((f) -> (SulfurCubeArchetype.AttributeEntry)f.apply(name)).toList(), floats, maxFuse));
+   private static SulfurCubeArchetype.ContactDamage contactDamage(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<DamageType> damageType, final FloatProvider amount, final boolean attributeToSource) {
+      return new SulfurCubeArchetype.ContactDamage(context.lookup(Registries.DAMAGE_TYPE).getOrThrow(damageType), amount, attributeToSource);
+   }
+
+   private static SulfurCubeArchetype.KnockbackModifiers knockBackHitScale(final float horizontalPower, final float verticalPower) {
+      return new SulfurCubeArchetype.KnockbackModifiers(horizontalPower, verticalPower);
+   }
+
+   private static void register(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<SulfurCubeArchetype> name, final TagKey<Item> blocks, final List<Function<ResourceKey<SulfurCubeArchetype>, SulfurCubeArchetype.AttributeEntry>> modifiers, final boolean floats, final Optional<SulfurCubeArchetype.ExplosionData> maxFuse, final Optional<SulfurCubeArchetype.ContactDamage> contactDamage, final SulfurCubeArchetype.KnockbackModifiers knockbackModifiers) {
+      context.register(name, new SulfurCubeArchetype(context.lookup(Registries.ITEM).getOrThrow(blocks), modifiers.stream().map((f) -> (SulfurCubeArchetype.AttributeEntry)f.apply(name)).toList(), floats, maxFuse, contactDamage, knockbackModifiers));
    }
 }

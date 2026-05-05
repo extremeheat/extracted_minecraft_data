@@ -169,9 +169,9 @@ public class BlockTintCache {
    }
 
    private static class LatestCacheInfo {
-      public int x = -2147483648;
-      public int z = -2147483648;
-      @Nullable CacheData cache;
+      private int x = -2147483648;
+      private int z = -2147483648;
+      private @Nullable CacheData cache;
 
       private LatestCacheInfo() {
          super();

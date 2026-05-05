@@ -191,9 +191,9 @@ public class UberGpuBuffer<T> implements AutoCloseable {
    }
 
    public static class UberGpuBufferHeap extends TlsfAllocator.Heap {
-      GpuBuffer gpuBuffer;
+      private final GpuBuffer gpuBuffer;
 
-      UberGpuBufferHeap(final long size, final GpuDevice gpuDevice, final @GpuBuffer.Usage int usage, final String name) {
+      public UberGpuBufferHeap(final long size, final GpuDevice gpuDevice, final @GpuBuffer.Usage int usage, final String name) {
          super(size);
          this.gpuBuffer = gpuDevice.createBuffer(() -> name, usage | 8 | 16, size);
       }

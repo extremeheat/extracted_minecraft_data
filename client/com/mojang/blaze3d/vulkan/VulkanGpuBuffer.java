@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vulkan;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -20,6 +21,7 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
    private boolean closed = false;
    private final long vkBuffer;
    private final long vmaAllocation;
+   private int mappingRefCount = 0;
 
    public VulkanGpuBuffer(final VulkanDevice device, final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final long size, final boolean forceHostVisibleAllocation) {
       super(usage, size);
@@ -90,7 +92,11 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+         if (this.mappingRefCount != 0) {
+            throw new IllegalStateException("Attempt to close a mapped buffer");
+         } else {
+            this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+         }
       }
    }
 
@@ -98,54 +104,63 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
       return this.vkBuffer;
    }
 
-   public GpuBuffer.MappedView map(final long offset, final long length) {
-      MemoryStack stack = MemoryStack.stackPush();
+   public GpuBufferSlice.MappedView map(final long offset, final long length, final boolean read, final boolean write) {
+      if (this.isClosed()) {
+         throw new IllegalStateException("Buffer already closed");
+      } else if (!read && !write) {
+         throw new IllegalArgumentException("At least read or write must be true");
+      } else if (read && (this.usage() & 1) == 0) {
+         throw new IllegalStateException("Buffer is not readable");
+      } else if (write && (this.usage() & 2) == 0) {
+         throw new IllegalStateException("Buffer is not writable");
+      } else if (offset + length > this.size()) {
+         throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + length + " bytes at offset " + offset + " from " + this.size() + " size buffer)");
+      } else if (length > 2147483647L) {
+         throw new IllegalArgumentException("Mapping buffer slice larger than 2GB is not supported");
+      } else if (offset >= 0L && length >= 0L) {
+         ++this.mappingRefCount;
+         MemoryStack stack = MemoryStack.stackPush();
 
-      VkMappedView var8;
-      try {
-         PointerBuffer pointer = stack.callocPointer(1);
-         VulkanUtils.crashIfFailure(Vma.vmaMapMemory(this.device.vma(), this.vmaAllocation, pointer), "Failed to map buffer");
-         ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(pointer.get(0) + offset, (int)length);
-         var8 = new VkMappedView(byteBuffer);
-      } catch (Throwable var10) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var9) {
-               var10.addSuppressed(var9);
+         GpuBufferSlice.MappedView var10;
+         try {
+            PointerBuffer pointer = stack.callocPointer(1);
+            VulkanUtils.crashIfFailure(Vma.vmaMapMemory(this.device.vma(), this.vmaAllocation, pointer), "Failed to map buffer");
+            ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(pointer.get(0) + offset, (int)length);
+            var10 = new GpuBufferSlice.MappedView(this.slice(offset, length), byteBuffer, new Runnable() {
+               private boolean closed;
+
+               {
+                  Objects.requireNonNull(VulkanGpuBuffer.this);
+                  this.closed = false;
+               }
+
+               public void run() {
+                  if (!this.closed) {
+                     this.closed = true;
+                     --VulkanGpuBuffer.this.mappingRefCount;
+                     Vma.vmaUnmapMemory(VulkanGpuBuffer.this.device.vma(), VulkanGpuBuffer.this.vmaAllocation);
+                  }
+               }
+            });
+         } catch (Throwable var12) {
+            if (stack != null) {
+               try {
+                  stack.close();
+               } catch (Throwable var11) {
+                  var12.addSuppressed(var11);
+               }
             }
+
+            throw var12;
          }
 
-         throw var10;
-      }
-
-      if (stack != null) {
-         stack.close();
-      }
-
-      return var8;
-   }
-
-   private class VkMappedView implements GpuBuffer.MappedView {
-      private final ByteBuffer data;
-      private boolean closed;
-
-      private VkMappedView(final ByteBuffer data) {
-         Objects.requireNonNull(VulkanGpuBuffer.this);
-         super();
-         this.closed = false;
-         this.data = data;
-      }
-
-      public ByteBuffer data() {
-         return this.data;
-      }
-
-      public void close() {
-         if (!this.closed) {
-            this.closed = true;
-            Vma.vmaUnmapMemory(VulkanGpuBuffer.this.device.vma(), VulkanGpuBuffer.this.vmaAllocation);
+         if (stack != null) {
+            stack.close();
          }
+
+         return var10;
+      } else {
+         throw new IllegalArgumentException("Offset or length must be positive integer values");
       }
    }
 }

@@ -83,7 +83,7 @@ public class RamTarget extends Behavior<Goat> {
          DamageSource source = level.damageSources().mobAttack(body);
          float blockedDamage = ramTarget.applyItemBlocking(level, source, damage);
          float blockingFactor = blockedDamage > 0.0F ? 0.5F : 1.0F;
-         ramTarget.knockback((double)(blockingFactor * speedFactor) * this.getKnockbackForce.applyAsDouble(body), this.ramDirection.x(), this.ramDirection.z());
+         ramTarget.knockback((double)(blockingFactor * speedFactor) * this.getKnockbackForce.applyAsDouble(body), this.ramDirection.x(), this.ramDirection.z(), source, damage);
          this.finishRam(level, body);
          level.playSound((Entity)null, body, (SoundEvent)this.getImpactSound.apply(body), SoundSource.NEUTRAL, 1.0F, 1.0F);
       } else if (this.hasRammedHornBreakingBlock(level, body)) {

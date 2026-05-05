@@ -56,8 +56,8 @@ public sealed interface InteractionResult {
    }
 
    public static record ItemContext(boolean wasItemInteraction, @Nullable ItemStack heldItemTransformedTo) {
-      static final ItemContext NONE = new ItemContext(false, (ItemStack)null);
-      static final ItemContext DEFAULT = new ItemContext(true, (ItemStack)null);
+      public static final ItemContext NONE = new ItemContext(false, (ItemStack)null);
+      public static final ItemContext DEFAULT = new ItemContext(true, (ItemStack)null);
 
       public ItemContext {
          super();

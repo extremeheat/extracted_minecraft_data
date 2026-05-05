@@ -8,10 +8,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.phys.shapes.Shapes;
 
-record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
+public record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
    public static final MapCodec<UnobstructedPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(UnobstructedPredicate::offset)).apply(i, UnobstructedPredicate::new));
 
-   UnobstructedPredicate {
+   public UnobstructedPredicate {
       super();
    }
 

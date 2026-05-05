@@ -132,13 +132,13 @@ public class SubtitleOverlay implements SoundEventListener {
       }
    }
 
-   static record SoundPlayedAt(Vec3 location, long time) {
-      SoundPlayedAt {
+   private static record SoundPlayedAt(Vec3 location, long time) {
+      private SoundPlayedAt {
          super();
       }
    }
 
-   static class Subtitle {
+   private static class Subtitle {
       private final Component text;
       private final float range;
       private final List<SoundPlayedAt> playedAt = new ArrayList();

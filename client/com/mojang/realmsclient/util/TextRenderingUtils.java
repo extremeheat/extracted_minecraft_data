@@ -74,11 +74,11 @@ public class TextRenderingUtils {
    public static class Line {
       public final List<LineSegment> segments;
 
-      Line(final LineSegment... segments) {
+      public Line(final LineSegment... segments) {
          this(Arrays.asList(segments));
       }
 
-      Line(final List<LineSegment> segments) {
+      public Line(final List<LineSegment> segments) {
          super();
          this.segments = segments;
       }

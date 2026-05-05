@@ -667,7 +667,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private class BeeHurtByOtherGoal extends HurtByTargetGoal {
-      BeeHurtByOtherGoal(final Bee bee) {
+      public BeeHurtByOtherGoal(final Bee bee) {
          Objects.requireNonNull(Bee.this);
          super(bee);
       }
@@ -685,7 +685,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private static class BeeBecomeAngryTargetGoal extends NearestAttackableTargetGoal<Player> {
-      BeeBecomeAngryTargetGoal(final Bee bee) {
+      public BeeBecomeAngryTargetGoal(final Bee bee) {
          Objects.requireNonNull(bee);
          super(bee, Player.class, 10, true, false, bee::isAngryAt);
       }
@@ -730,7 +730,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private class BeeWanderGoal extends Goal {
-      BeeWanderGoal() {
+      public BeeWanderGoal() {
          Objects.requireNonNull(Bee.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -782,7 +782,7 @@ public class Bee extends Animal implements NeutralMob {
       private static final int TICKS_BEFORE_HIVE_DROP = 60;
       private int ticksStuck;
 
-      BeeGoToHiveGoal() {
+      public BeeGoToHiveGoal() {
          Objects.requireNonNull(Bee.this);
          super();
          this.blacklistedTargets = Lists.newArrayList();
@@ -887,7 +887,7 @@ public class Bee extends Animal implements NeutralMob {
       private static final int MAX_TRAVELLING_TICKS = 2400;
       private int travellingTicks;
 
-      BeeGoToKnownFlowerGoal() {
+      public BeeGoToKnownFlowerGoal() {
          Objects.requireNonNull(Bee.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -933,7 +933,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private class BeeLookControl extends LookControl {
-      BeeLookControl(final Mob mob) {
+      public BeeLookControl(final Mob mob) {
          Objects.requireNonNull(Bee.this);
          super(mob);
       }
@@ -965,7 +965,7 @@ public class Bee extends Animal implements NeutralMob {
       private static final int MAX_POLLINATING_TICKS = 600;
       private Long2LongOpenHashMap unreachableFlowerCache;
 
-      BeePollinateGoal() {
+      public BeePollinateGoal() {
          Objects.requireNonNull(Bee.this);
          super();
          this.unreachableFlowerCache = new Long2LongOpenHashMap();
@@ -1163,7 +1163,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private class BeeGrowCropGoal extends BaseBeeGoal {
-      static final int GROW_CHANCE = 30;
+      private static final int GROW_CHANCE = 30;
 
       private BeeGrowCropGoal() {
          Objects.requireNonNull(Bee.this);
@@ -1228,7 +1228,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    private class BeeAttackGoal extends MeleeAttackGoal {
-      BeeAttackGoal(final PathfinderMob mob, final double speedModifier, final boolean trackTarget) {
+      public BeeAttackGoal(final PathfinderMob mob, final double speedModifier, final boolean trackTarget) {
          Objects.requireNonNull(Bee.this);
          super(mob, speedModifier, trackTarget);
       }

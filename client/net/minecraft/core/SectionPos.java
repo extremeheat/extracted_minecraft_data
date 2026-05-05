@@ -249,7 +249,7 @@ public class SectionPos extends Vec3i {
 
    public static Stream<SectionPos> betweenClosedStream(final int minX, final int minY, final int minZ, final int maxX, final int maxY, final int maxZ) {
       return StreamSupport.stream(new Spliterators.AbstractSpliterator<SectionPos>((long)((maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1)), 64) {
-         final Cursor3D cursor = new Cursor3D(minX, minY, minZ, maxX, maxY, maxZ);
+         private final Cursor3D cursor = new Cursor3D(minX, minY, minZ, maxX, maxY, maxZ);
 
          public boolean tryAdvance(final Consumer<? super SectionPos> action) {
             if (this.cursor.advance()) {

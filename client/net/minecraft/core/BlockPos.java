@@ -111,14 +111,6 @@ public class BlockPos extends Vec3i {
       return x == 0 && y == 0 && z == 0 ? this : new BlockPos(this.getX() + x, this.getY() + y, this.getZ() + z);
    }
 
-   public Vec3 getCenter() {
-      return Vec3.atCenterOf(this);
-   }
-
-   public Vec3 getBottomCenter() {
-      return Vec3.atBottomCenterOf(this);
-   }
-
    public BlockPos offset(final Vec3i vec) {
       return this.offset(vec.getX(), vec.getY(), vec.getZ());
    }
@@ -250,8 +242,8 @@ public class BlockPos extends Vec3i {
       int height = maxY - minY + 1;
       int depth = maxZ - minZ + 1;
       return () -> new AbstractIterator<BlockPos>() {
-            final MutableBlockPos nextPos = new MutableBlockPos();
-            int counter = limit;
+            private final MutableBlockPos nextPos = new MutableBlockPos();
+            private int counter = limit;
 
             protected BlockPos computeNext() {
                if (this.counter <= 0) {

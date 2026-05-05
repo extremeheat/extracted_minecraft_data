@@ -46,7 +46,7 @@ public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
       }
    }
 
-   static enum Timing {
+   public static enum Timing {
       BEFORE_GC,
       AFTER_GC;
 

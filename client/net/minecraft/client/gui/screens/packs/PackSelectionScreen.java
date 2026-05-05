@@ -134,15 +134,19 @@ public class PackSelectionScreen extends Screen {
    }
 
    private void updateFilteredEntries(final String value) {
-      this.filterEntries(value, this.model.getSelected(), this.selectedPackList);
-      this.filterEntries(value, this.model.getUnselected(), this.availablePackList);
+      this.updateFilteredEntries(value, (PackSelectionModel.EntryBase)null);
    }
 
-   private void filterEntries(final String value, final Stream<PackSelectionModel.Entry> oldEntries, final @Nullable TransferableSelectionList listToUpdate) {
+   private void updateFilteredEntries(final String value, final PackSelectionModel.EntryBase transferredEntry) {
+      this.filterEntries(value, this.model.getSelected(), this.selectedPackList, transferredEntry);
+      this.filterEntries(value, this.model.getUnselected(), this.availablePackList, transferredEntry);
+   }
+
+   private void filterEntries(final String value, final Stream<PackSelectionModel.Entry> oldEntries, final @Nullable TransferableSelectionList listToUpdate, final PackSelectionModel.EntryBase transferredEntry) {
       if (listToUpdate != null) {
          String lowerCaseValue = value.toLowerCase(Locale.ROOT);
          Stream<PackSelectionModel.Entry> filteredEntries = oldEntries.filter((packEntry) -> value.isBlank() || packEntry.getId().toLowerCase(Locale.ROOT).contains(lowerCaseValue) || packEntry.getTitle().getString().toLowerCase(Locale.ROOT).contains(lowerCaseValue) || packEntry.getDescription().getString().toLowerCase(Locale.ROOT).contains(lowerCaseValue));
-         listToUpdate.updateList(filteredEntries, (PackSelectionModel.EntryBase)null);
+         listToUpdate.updateList(filteredEntries, transferredEntry);
       }
    }
 
@@ -186,7 +190,7 @@ public class PackSelectionScreen extends Screen {
       }
 
       if (this.search != null) {
-         this.updateFilteredEntries(this.search.getValue());
+         this.updateFilteredEntries(this.search.getValue(), transferredEntry);
       }
 
       if (this.doneButton != null) {

@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.nio.ByteBuffer;
 
 public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_MAP_READ = 1;
@@ -18,11 +17,13 @@ public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
    private final @GpuBuffer.Usage int usage;
    private final long size;
+   private final GpuBufferSlice defaultSlice;
 
    public GpuBuffer(final @GpuBuffer.Usage int usage, final long size) {
       super();
       this.size = size;
       this.usage = usage;
+      this.defaultSlice = new GpuBufferSlice(this, 0L, size);
    }
 
    public long size() {
@@ -46,14 +47,14 @@ public abstract class GpuBuffer implements AutoCloseable {
    }
 
    public GpuBufferSlice slice() {
-      return new GpuBufferSlice(this, 0L, this.size);
+      return this.defaultSlice;
    }
 
-   public interface MappedView extends AutoCloseable {
-      ByteBuffer data();
-
-      void close();
+   public GpuBufferSlice.MappedView map(final boolean read, final boolean write) {
+      return this.map(0L, this.size, read, write);
    }
+
+   public abstract GpuBufferSlice.MappedView map(final long offset, final long length, final boolean read, final boolean write);
 
    @Retention(RetentionPolicy.CLASS)
    @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})

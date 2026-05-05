@@ -1,5 +1,7 @@
 package com.mojang.blaze3d.buffers;
 
+import java.nio.ByteBuffer;
+
 public record GpuBufferSlice(GpuBuffer buffer, long offset, long length) {
    public GpuBufferSlice {
       super();
@@ -10,6 +12,20 @@ public record GpuBufferSlice(GpuBuffer buffer, long offset, long length) {
          return new GpuBufferSlice(this.buffer, this.offset + offset, length);
       } else {
          throw new IllegalArgumentException("Offset of " + offset + " and length " + length + " would put new slice outside existing slice's range (of " + this.offset + "," + this.length + ")");
+      }
+   }
+
+   public MappedView map(final boolean read, final boolean write) {
+      return this.buffer.map(this.offset, this.length, read, write);
+   }
+
+   public static record MappedView(GpuBufferSlice slice, ByteBuffer data, Runnable onClose) implements AutoCloseable {
+      public MappedView {
+         super();
+      }
+
+      public void close() {
+         this.onClose.run();
       }
    }
 }

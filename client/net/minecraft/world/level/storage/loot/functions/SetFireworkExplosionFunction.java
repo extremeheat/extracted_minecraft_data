@@ -16,11 +16,11 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetFireworkExplosionFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter((f) -> f.shape), FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("colors").forGetter((f) -> f.colors), FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("fade_colors").forGetter((f) -> f.fadeColors), Codec.BOOL.optionalFieldOf("trail").forGetter((f) -> f.trail), Codec.BOOL.optionalFieldOf("twinkle").forGetter((f) -> f.twinkle))).apply(i, SetFireworkExplosionFunction::new));
    public static final FireworkExplosion DEFAULT_VALUE;
-   final Optional<FireworkExplosion.Shape> shape;
-   final Optional<IntList> colors;
-   final Optional<IntList> fadeColors;
-   final Optional<Boolean> trail;
-   final Optional<Boolean> twinkle;
+   private final Optional<FireworkExplosion.Shape> shape;
+   private final Optional<IntList> colors;
+   private final Optional<IntList> fadeColors;
+   private final Optional<Boolean> trail;
+   private final Optional<Boolean> twinkle;
 
    public SetFireworkExplosionFunction(final List<LootItemCondition> predicates, final Optional<FireworkExplosion.Shape> shape, final Optional<IntList> colors, final Optional<IntList> fadeColors, final Optional<Boolean> hasTrail, final Optional<Boolean> hasTwinkle) {
       super(predicates);

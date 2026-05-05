@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 public final class CubeVoxelShape extends VoxelShape {
-   protected CubeVoxelShape(final DiscreteVoxelShape shape) {
+   public CubeVoxelShape(final DiscreteVoxelShape shape) {
       super(shape);
    }
 

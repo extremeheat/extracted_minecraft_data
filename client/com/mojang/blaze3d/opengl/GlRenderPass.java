@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -9,7 +10,6 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,24 +19,25 @@ import net.minecraft.SharedConstants;
 import org.jspecify.annotations.Nullable;
 
 class GlRenderPass implements RenderPassBackend {
-   protected static final int MAX_VERTEX_BUFFERS = 1;
    public static final boolean VALIDATION;
    private final GlCommandEncoder encoder;
    private final GlDevice device;
    private final boolean hasDepthTexture;
    private final ScissorState defaultScissorState;
    protected @Nullable GlRenderPipeline pipeline;
-   protected final @Nullable GpuBuffer[] vertexBuffers = new GpuBuffer[1];
+   protected final @Nullable GpuBufferSlice[] vertexBuffers = new GpuBufferSlice[16];
+   protected boolean vertexBufferDirty = true;
    protected @Nullable GpuBuffer indexBuffer;
-   protected VertexFormat.IndexType indexType;
+   protected IndexType indexType;
    private final ScissorState scissorState;
    protected final HashMap<String, GpuBufferSlice> uniforms;
    protected final HashMap<String, TextureViewAndSampler> samplers;
    protected final Set<String> dirtyUniforms;
+   protected final int colorAttachmentCount;
 
-   public GlRenderPass(final GlCommandEncoder encoder, final GlDevice device, final boolean hasDepthTexture, final ScissorState defaultScissorState) {
+   public GlRenderPass(final GlCommandEncoder encoder, final GlDevice device, final boolean hasDepthTexture, final int colorAttachmentCount, final ScissorState defaultScissorState) {
       super();
-      this.indexType = VertexFormat.IndexType.INT;
+      this.indexType = IndexType.INT;
       this.scissorState = new ScissorState();
       this.uniforms = new HashMap();
       this.samplers = new HashMap();
@@ -44,6 +45,7 @@ class GlRenderPass implements RenderPassBackend {
       this.encoder = encoder;
       this.device = device;
       this.hasDepthTexture = hasDepthTexture;
+      this.colorAttachmentCount = colorAttachmentCount;
       this.defaultScissorState = defaultScissorState;
       this.scissorState.setFrom(defaultScissorState);
    }
@@ -117,15 +119,16 @@ class GlRenderPass implements RenderPassBackend {
       return this.scissorState.height();
    }
 
-   public void setVertexBuffer(final int slot, final GpuBuffer vertexBuffer) {
-      if (slot >= 0 && slot < 1) {
-         this.vertexBuffers[slot] = vertexBuffer;
-      } else {
-         throw new IllegalArgumentException("Vertex buffer slot is out of range: " + slot);
-      }
+   public void setVertexBuffer(final int slot, final @Nullable GpuBufferSlice vertexBuffer) {
+      GpuBuffer inputBuffer = vertexBuffer != null ? vertexBuffer.buffer() : null;
+      GpuBuffer existingBuffer = this.vertexBuffers[slot] != null ? this.vertexBuffers[slot].buffer() : null;
+      long inputOffset = vertexBuffer != null ? vertexBuffer.offset() : 0L;
+      long exitingOffset = this.vertexBuffers[slot] != null ? this.vertexBuffers[slot].offset() : 0L;
+      this.vertexBufferDirty |= inputBuffer != existingBuffer || inputOffset != exitingOffset;
+      this.vertexBuffers[slot] = vertexBuffer;
    }
 
-   public void setIndexBuffer(final @Nullable GpuBuffer indexBuffer, final VertexFormat.IndexType indexType) {
+   public void setIndexBuffer(final @Nullable GpuBuffer indexBuffer, final IndexType indexType) {
       this.indexBuffer = indexBuffer;
       this.indexType = indexType;
    }
@@ -134,12 +137,12 @@ class GlRenderPass implements RenderPassBackend {
       this.encoder.executeDraw(this, baseVertex, firstIndex, indexCount, this.indexType, instanceCount);
    }
 
-   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final VertexFormat.@Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
+   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
       this.encoder.executeDrawMultiple(this, draws, defaultIndexBuffer, defaultIndexType, dynamicUniforms, uniformArgument);
    }
 
    public void draw(final int firstVertex, final int vertexCount) {
-      this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (VertexFormat.IndexType)null, 1);
+      this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (IndexType)null, 1);
    }
 
    public void writeTimestamp(final GpuQueryPool pool, final int index) {

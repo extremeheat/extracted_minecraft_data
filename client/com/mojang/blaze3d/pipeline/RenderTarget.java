@@ -7,8 +7,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.jspecify.annotations.Nullable;
@@ -19,15 +19,17 @@ public abstract class RenderTarget {
    public int height;
    protected final String label;
    public final boolean useDepth;
+   protected final GpuFormat format;
    protected @Nullable GpuTexture colorTexture;
    protected @Nullable GpuTextureView colorTextureView;
    protected @Nullable GpuTexture depthTexture;
    protected @Nullable GpuTextureView depthTextureView;
 
-   public RenderTarget(final @Nullable String label, final boolean useDepth) {
+   public RenderTarget(final @Nullable String label, final boolean useDepth, final GpuFormat format) {
       super();
       this.label = label == null ? "FBO " + UNNAMED_RENDER_TARGETS++ : label;
       this.useDepth = useDepth;
+      this.format = format;
    }
 
    public void resize(final int width, final int height) {
@@ -83,7 +85,7 @@ public abstract class RenderTarget {
             this.depthTextureView = device.createTextureView(this.depthTexture);
          }
 
-         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, GpuFormat.RGBA8_UNORM, width, height, 1, 1);
+         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, this.format, width, height, 1, 1);
          this.colorTextureView = device.createTextureView(this.colorTexture);
       } else {
          throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + maxTextureSize + ")");
@@ -93,7 +95,7 @@ public abstract class RenderTarget {
    public void blitAndBlendToTexture(final GpuTextureView output, final GpuTextureView outputDepth) {
       RenderSystem.assertOnRenderThread();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, OptionalInt.empty(), outputDepth, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, Optional.empty(), outputDepth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));

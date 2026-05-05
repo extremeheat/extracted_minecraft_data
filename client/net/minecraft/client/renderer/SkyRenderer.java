@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -15,8 +16,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -73,7 +74,7 @@ public class SkyRenderer implements AutoCloseable {
 
    public SkyRenderer(final TextureManager textureManager, final AtlasManager atlasManager, final RenderTarget renderTarget) {
       super();
-      this.quadIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      this.quadIndices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       this.celestialsAtlas = atlasManager.getAtlasOrThrow(AtlasIds.CELESTIALS);
       this.renderTarget = renderTarget;
       this.starBuffer = this.buildStars();
@@ -85,14 +86,14 @@ public class SkyRenderer implements AutoCloseable {
       this.sunriseBuffer = this.buildSunriseFan();
 
       try (ByteBufferBuilder builder = ByteBufferBuilder.exactlySized(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
-         BufferBuilder bufferBuilder = new BufferBuilder(builder, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+         BufferBuilder bufferBuilder = new BufferBuilder(builder, PrimitiveTopology.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
          this.buildSkyDisc(bufferBuilder, 16.0F);
 
          try (MeshData meshData = bufferBuilder.buildOrThrow()) {
             this.topSkyBuffer = RenderSystem.getDevice().createBuffer(() -> "Top sky vertex buffer", 32, meshData.vertexBuffer());
          }
 
-         bufferBuilder = new BufferBuilder(builder, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+         bufferBuilder = new BufferBuilder(builder, PrimitiveTopology.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
          this.buildSkyDisc(bufferBuilder, -16.0F);
 
          try (MeshData meshData = bufferBuilder.buildOrThrow()) {
@@ -112,7 +113,7 @@ public class SkyRenderer implements AutoCloseable {
 
       GpuBuffer var16;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(18 * vtxSize)) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
          int centerColor = ARGB.white(1.0F);
          int ringColor = ARGB.white(0.0F);
          bufferBuilder.addVertex(0.0F, 100.0F, 0.0F).setColor(centerColor);
@@ -145,7 +146,7 @@ public class SkyRenderer implements AutoCloseable {
 
       GpuBuffer var6;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(4 * format.getVertexSize())) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, format);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, format);
          bufferBuilder.addVertex(-1.0F, 0.0F, -1.0F).setUv(sprite.getU0(), sprite.getV0());
          bufferBuilder.addVertex(1.0F, 0.0F, -1.0F).setUv(sprite.getU1(), sprite.getV0());
          bufferBuilder.addVertex(1.0F, 0.0F, 1.0F).setUv(sprite.getU1(), sprite.getV1());
@@ -165,7 +166,7 @@ public class SkyRenderer implements AutoCloseable {
 
       GpuBuffer var15;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(phases.length * 4 * format.getVertexSize())) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, format);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, format);
 
          for(MoonPhase phase : phases) {
             TextureAtlasSprite sprite = atlas.getSprite(Identifier.withDefaultNamespace("moon/" + phase.getSerializedName()));
@@ -189,7 +190,7 @@ public class SkyRenderer implements AutoCloseable {
 
       GpuBuffer var19;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION);
 
          for(int i = 0; i < 1500; ++i) {
             float x = random.nextFloat() * 2.0F - 1.0F;
@@ -230,7 +231,7 @@ public class SkyRenderer implements AutoCloseable {
    private static GpuBuffer buildEndSky() {
       GpuBuffer var10;
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(24 * DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize())) {
-         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
          for(int i = 0; i < 6; ++i) {
             Matrix4f pose = new Matrix4f();
@@ -261,11 +262,11 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView colorTexture = this.renderTarget.getColorTextureView();
       GpuTextureView depthTexture = this.renderTarget.getDepthTextureView();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky disc", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky disc", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.SKY);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         renderPass.setVertexBuffer(0, this.topSkyBuffer);
+         renderPass.setVertexBuffer(0, this.topSkyBuffer.slice());
          renderPass.draw(0, 10);
       }
 
@@ -308,11 +309,11 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView colorTexture = this.renderTarget.getColorTextureView();
       GpuTextureView depthTexture = this.renderTarget.getDepthTextureView();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky dark", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky dark", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.SKY);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         renderPass.setVertexBuffer(0, this.bottomSkyBuffer);
+         renderPass.setVertexBuffer(0, this.bottomSkyBuffer.slice());
          renderPass.draw(0, 10);
       }
 
@@ -351,12 +352,12 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView depth = this.renderTarget.getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky sun", color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky sun", color, Optional.empty(), depth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.CELESTIAL);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
-         renderPass.setVertexBuffer(0, this.sunBuffer);
+         renderPass.setVertexBuffer(0, this.sunBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
          renderPass.drawIndexed(0, 0, 6, 1);
       }
@@ -376,12 +377,12 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView depth = this.renderTarget.getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky moon", color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky moon", color, Optional.empty(), depth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.CELESTIAL);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
-         renderPass.setVertexBuffer(0, this.moonBuffer);
+         renderPass.setVertexBuffer(0, this.moonBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
          renderPass.drawIndexed(baseVertex, 0, 6, 1);
       }
@@ -399,11 +400,11 @@ public class SkyRenderer implements AutoCloseable {
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(this.starIndexCount);
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(starBrightness, starBrightness, starBrightness, starBrightness));
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Stars", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Stars", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(renderPipeline);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         renderPass.setVertexBuffer(0, this.starBuffer);
+         renderPass.setVertexBuffer(0, this.starBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
          renderPass.drawIndexed(0, 0, this.starIndexCount, 1);
       }
@@ -426,11 +427,11 @@ public class SkyRenderer implements AutoCloseable {
          GpuTextureView color = this.renderTarget.getColorTextureView();
          GpuTextureView depth = this.renderTarget.getDepthTextureView();
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sunrise sunset", color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sunrise sunset", color, Optional.empty(), depth, OptionalDouble.empty())) {
             renderPass.setPipeline(RenderPipelines.SUNRISE_SUNSET);
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-            renderPass.setVertexBuffer(0, this.sunriseBuffer);
+            renderPass.setVertexBuffer(0, this.sunriseBuffer.slice());
             renderPass.draw(0, 18);
          }
 
@@ -440,18 +441,18 @@ public class SkyRenderer implements AutoCloseable {
    }
 
    public void renderEndSky() {
-      RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer indexBuffer = autoIndices.getBuffer(36);
       GpuTextureView colorTexture = this.renderTarget.getColorTextureView();
       GpuTextureView depthTexture = this.renderTarget.getDepthTextureView();
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End sky", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End sky", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.END_SKY);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.bindTexture("Sampler0", this.endSkyTexture.getTextureView(), this.endSkyTexture.getSampler());
-         renderPass.setVertexBuffer(0, this.endSkyBuffer);
+         renderPass.setVertexBuffer(0, this.endSkyBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, autoIndices.type());
          renderPass.drawIndexed(0, 0, 36, 1);
       }
@@ -471,12 +472,12 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView depth = this.renderTarget.getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End flash", color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End flash", color, Optional.empty(), depth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.CELESTIAL);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
-         renderPass.setVertexBuffer(0, this.endFlashBuffer);
+         renderPass.setVertexBuffer(0, this.endFlashBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
          renderPass.drawIndexed(0, 0, 6, 1);
       }

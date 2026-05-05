@@ -19,7 +19,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
    }
 
    private void forEachListener(final DebugValueAccess debugValues, final ListenerVisitor visitor) {
-      debugValues.forEachBlock(DebugSubscriptions.GAME_EVENT_LISTENERS, (blockPos, listener) -> visitor.accept(blockPos.getCenter(), listener.listenerRadius()));
+      debugValues.forEachBlock(DebugSubscriptions.GAME_EVENT_LISTENERS, (blockPos, listener) -> visitor.accept(Vec3.atCenterOf(blockPos), listener.listenerRadius()));
       debugValues.forEachEntity(DebugSubscriptions.GAME_EVENT_LISTENERS, (entity, listener) -> visitor.accept(entity.position(), listener.listenerRadius()));
    }
 

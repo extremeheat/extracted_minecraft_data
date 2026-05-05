@@ -74,7 +74,7 @@ public abstract class Sensor<E extends LivingEntity> {
       return body.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, target) ? ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.test(level, body, target) : ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.test(level, body, target);
    }
 
-   static <T, U> BiPredicate<T, U> rememberPositives(final int invocations, final BiPredicate<T, U> predicate) {
+   public static <T, U> BiPredicate<T, U> rememberPositives(final int invocations, final BiPredicate<T, U> predicate) {
       AtomicInteger positivesLeft = new AtomicInteger(0);
       return (t, u) -> {
          if (predicate.test(t, u)) {

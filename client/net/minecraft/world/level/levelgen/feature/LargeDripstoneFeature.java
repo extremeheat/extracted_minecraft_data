@@ -47,7 +47,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
                LargeDripstone stalagmite = makeDripstone(origin.atY(columnRange.floor() + 1), true, random, radius, config.stalagmiteBluntness, config.heightScale);
                WindOffsetter wind;
                if (stalactite.isSuitableForWind(config) && stalagmite.isSuitableForWind(config)) {
-                  wind = new WindOffsetter(origin.getY(), random, config.windSpeed);
+                  wind = new WindOffsetter(origin.getY(), random, config.windSpeed, 16 - radius);
                } else {
                   wind = LargeDripstoneFeature.WindOffsetter.noWind();
                }
@@ -189,10 +189,12 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
    private static final class WindOffsetter {
       private final int originY;
       private final @Nullable Vec3 windSpeed;
+      private final int maxOffset;
 
-      private WindOffsetter(final int originY, final RandomSource random, final FloatProvider windSpeedRange) {
+      private WindOffsetter(final int originY, final RandomSource random, final FloatProvider windSpeedRange, final int maxOffset) {
          super();
          this.originY = originY;
+         this.maxOffset = maxOffset;
          float speed = windSpeedRange.sample(random);
          float direction = Mth.randomBetween(random, 0.0F, 3.1415927F);
          this.windSpeed = new Vec3((double)(Mth.cos((double)direction) * speed), 0.0, (double)(Mth.sin((double)direction) * speed));
@@ -202,6 +204,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          super();
          this.originY = 0;
          this.windSpeed = null;
+         this.maxOffset = 0;
       }
 
       private static WindOffsetter noWind() {
@@ -214,7 +217,9 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          } else {
             int dy = this.originY - pos.getY();
             Vec3 totalWindAdjust = this.windSpeed.scale((double)dy);
-            return pos.offset(Mth.floor(totalWindAdjust.x), 0, Mth.floor(totalWindAdjust.z));
+            int dx = Mth.clamp(Mth.floor(totalWindAdjust.x), -this.maxOffset, this.maxOffset);
+            int dz = Mth.clamp(Mth.floor(totalWindAdjust.z), -this.maxOffset, this.maxOffset);
+            return pos.offset(dx, 0, dz);
          }
       }
    }

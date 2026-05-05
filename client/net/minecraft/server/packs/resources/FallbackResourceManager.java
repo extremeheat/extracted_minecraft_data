@@ -338,7 +338,7 @@ public class FallbackResourceManager implements ResourceManager {
    }
 
    private static record EntryStack(Identifier fileLocation, Identifier metadataLocation, List<ResourceWithSource> fileSources, Map<PackResources, IoSupplier<InputStream>> metaSources) {
-      EntryStack(final Identifier fileLocation) {
+      public EntryStack(final Identifier fileLocation) {
          this(fileLocation, FallbackResourceManager.getMetadataLocation(fileLocation), new ArrayList(), new Object2ObjectArrayMap());
       }
 

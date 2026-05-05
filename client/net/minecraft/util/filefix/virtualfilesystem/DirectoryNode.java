@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 final class DirectoryNode extends Node {
    private final Map<String, Node> childNodes = new HashMap();
 
-   DirectoryNode(final CopyOnWriteFSPath path) {
+   public DirectoryNode(final CopyOnWriteFSPath path) {
       super(path);
    }
 

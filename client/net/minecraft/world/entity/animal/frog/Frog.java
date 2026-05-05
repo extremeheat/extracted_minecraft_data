@@ -313,7 +313,7 @@ public class Frog extends Animal {
    }
 
    private class FrogLookControl extends LookControl {
-      FrogLookControl(final Mob mob) {
+      public FrogLookControl(final Mob mob) {
          Objects.requireNonNull(Frog.this);
          super(mob);
       }
@@ -324,7 +324,7 @@ public class Frog extends Animal {
    }
 
    private static class FrogPathNavigation extends AmphibiousPathNavigation {
-      FrogPathNavigation(final Frog mob, final Level level) {
+      public FrogPathNavigation(final Frog mob, final Level level) {
          super(mob, level);
       }
 

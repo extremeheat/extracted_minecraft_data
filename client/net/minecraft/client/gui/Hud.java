@@ -1372,7 +1372,7 @@ public class Hud {
       }
    }
 
-   static enum ContextualInfo {
+   private static enum ContextualInfo {
       EMPTY,
       EXPERIENCE,
       LOCATOR,

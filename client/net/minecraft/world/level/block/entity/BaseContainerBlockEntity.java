@@ -128,7 +128,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       if (this.canOpen(player)) {
          return this.createMenu(containerId, inventory);
       } else {
-         sendChestLockedNotifications(this.getBlockPos().getCenter(), player, this.getDisplayName());
+         sendChestLockedNotifications(Vec3.atCenterOf(this.getBlockPos()), player, this.getDisplayName());
          return null;
       }
    }

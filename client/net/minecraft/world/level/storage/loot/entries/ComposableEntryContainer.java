@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 @FunctionalInterface
-interface ComposableEntryContainer {
+public interface ComposableEntryContainer {
    ComposableEntryContainer ALWAYS_FALSE = (context, output) -> false;
    ComposableEntryContainer ALWAYS_TRUE = (context, output) -> true;
 

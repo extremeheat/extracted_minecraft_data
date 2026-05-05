@@ -24,14 +24,9 @@ public class RepeatedNarrator {
 
    }
 
-   private static class Params {
-      private final Component narration;
-      private final RateLimiter rateLimiter;
-
-      Params(final Component narration, final RateLimiter rateLimiter) {
+   private static record Params(Component narration, RateLimiter rateLimiter) {
+      private Params {
          super();
-         this.narration = narration;
-         this.rateLimiter = rateLimiter;
       }
    }
 }

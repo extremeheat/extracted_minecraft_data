@@ -79,6 +79,12 @@ public class Vec2 {
       return new Vec2(-this.x, -this.y);
    }
 
+   public Vec2 rotate(final double angleRadians) {
+      float cosine = Mth.cos(angleRadians);
+      float sine = Mth.sin(angleRadians);
+      return new Vec2(this.x * cosine - this.y * sine, this.y * cosine + this.x * sine);
+   }
+
    static {
       CODEC = Codec.FLOAT.listOf().comapFlatMap((input) -> Util.fixedSize((List)input, 2).map((floats) -> new Vec2((Float)floats.get(0), (Float)floats.get(1))), (vec) -> List.of(vec.x, vec.y));
    }

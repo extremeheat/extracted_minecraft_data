@@ -25,6 +25,10 @@ public class FloatProviders {
       });
    }
 
+   public static Codec<FloatProvider> codec(final float minValue) {
+      return CODEC.validate((value) -> value.min() < minValue ? DataResult.error(() -> "Value provider too low: " + minValue + " [" + value.min() + "-" + value.max() + "]") : DataResult.success(value));
+   }
+
    public static MapCodec<? extends FloatProvider> bootstrap(final Registry<MapCodec<? extends FloatProvider>> registry) {
       Registry.register(registry, (String)"constant", ConstantFloat.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformFloat.MAP_CODEC);

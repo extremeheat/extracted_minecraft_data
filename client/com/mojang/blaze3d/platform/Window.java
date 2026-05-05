@@ -55,7 +55,6 @@ public final class Window implements AutoCloseable {
    private int framebufferHeight;
    private int guiScaledWidth;
    private int guiScaledHeight;
-   private boolean isResized;
    private int guiScale;
    private String errorSection = "";
    private boolean dirty;
@@ -317,7 +316,6 @@ public final class Window implements AutoCloseable {
                this.minimized = false;
                this.framebufferWidth = newWidth;
                this.framebufferHeight = newHeight;
-               this.isResized = true;
 
                try {
                   this.eventHandler.framebufferSizeChanged();
@@ -426,7 +424,6 @@ public final class Window implements AutoCloseable {
             this.y = 0;
             this.width = allowedWindowMinSize(mode.getWidth());
             this.height = allowedWindowMinSize(mode.getHeight());
-            this.isResized = true;
             GLFW.glfwSetWindowMonitor(this.handle, monitor.getMonitor(), this.x, this.y, this.width, this.height, mode.getRefreshRate());
             if (MacosUtil.IS_MACOS) {
                MacosUtil.clearResizableBit(this);
@@ -437,7 +434,6 @@ public final class Window implements AutoCloseable {
          this.y = this.windowedY;
          this.width = allowedWindowMinSize(this.windowedWidth);
          this.height = allowedWindowMinSize(this.windowedHeight);
-         this.isResized = true;
          GLFW.glfwSetWindowMonitor(this.handle, 0L, this.x, this.y, this.width, this.height, -1);
       }
 
@@ -553,14 +549,6 @@ public final class Window implements AutoCloseable {
          prev.free();
       }
 
-   }
-
-   public boolean isResized() {
-      return this.isResized;
-   }
-
-   public void resetIsResized() {
-      this.isResized = false;
    }
 
    public boolean isMinimized() {

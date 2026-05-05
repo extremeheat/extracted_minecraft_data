@@ -12,6 +12,6 @@ public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, Dis
    }
 
    public Vec3 center() {
-      return this.pos.getCenter();
+      return Vec3.atCenterOf(this.pos);
    }
 }

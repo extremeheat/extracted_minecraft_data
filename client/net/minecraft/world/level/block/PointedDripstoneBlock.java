@@ -212,8 +212,8 @@ public class PointedDripstoneBlock extends SpeleothemBlock {
       REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK = Block.column(4.0, 0.0, 16.0);
    }
 
-   static record FluidInfo(BlockPos pos, Fluid fluid, BlockState sourceState) {
-      FluidInfo {
+   private static record FluidInfo(BlockPos pos, Fluid fluid, BlockState sourceState) {
+      private FluidInfo {
          super();
       }
    }

@@ -5,31 +5,25 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.ByteBuffer;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
-import java.util.function.Supplier;
-import org.jspecify.annotations.Nullable;
+import org.joml.Vector4fc;
 
 public interface CommandEncoderBackend {
    void submit();
 
-   RenderPassBackend createRenderPass(Supplier<String> label, GpuTextureView colorTexture, OptionalInt clearColor, @Nullable GpuTextureView depthTexture, OptionalDouble clearDepth, RenderPass.RenderArea renderArea);
+   RenderPassBackend createRenderPass(RenderPassDescriptor descriptor);
 
    void submitRenderPass();
 
-   void clearColorTexture(GpuTexture colorTexture, int clearColor);
+   void clearColorTexture(GpuTexture colorTexture, Vector4fc clearColor);
 
-   void clearColorAndDepthTextures(GpuTexture colorTexture, int clearColor, GpuTexture depthTexture, double clearDepth);
+   void clearColorAndDepthTextures(GpuTexture colorTexture, Vector4fc clearColor, GpuTexture depthTexture, double clearDepth);
 
-   void clearColorAndDepthTextures(GpuTexture colorTexture, int clearColor, GpuTexture depthTexture, double clearDepth, int regionX, int regionY, int regionWidth, int regionHeight);
+   void clearColorAndDepthTextures(GpuTexture colorTexture, Vector4fc clearColor, GpuTexture depthTexture, double clearDepth, int regionX, int regionY, int regionWidth, int regionHeight);
 
    void clearDepthTexture(GpuTexture depthTexture, double clearDepth);
 
    void writeToBuffer(GpuBufferSlice destination, ByteBuffer data);
-
-   GpuBuffer.MappedView mapBuffer(GpuBufferSlice buffer, boolean read, boolean write);
 
    void copyToBuffer(GpuBufferSlice source, GpuBufferSlice target);
 

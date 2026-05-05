@@ -128,9 +128,9 @@ public class ExperienceOrb extends Entity {
          double fallSpeed = this.getDeltaMovement().y;
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
-         float friction = 0.98F;
+         float friction = this.getAirDrag();
          if (this.onGround()) {
-            friction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+            friction *= this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
          }
 
          this.setDeltaMovement(this.getDeltaMovement().scale((double)friction));
@@ -144,6 +144,10 @@ public class ExperienceOrb extends Entity {
          }
 
       }
+   }
+
+   protected float getAirDrag() {
+      return 0.98F;
    }
 
    private void followNearbyPlayer() {

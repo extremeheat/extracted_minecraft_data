@@ -200,7 +200,7 @@ public class JfrProfiler implements JvmProfiler {
 
    private void setupSummaryListener() {
       FlightRecorder.addListener(new FlightRecorderListener() {
-         final SummaryReporter summaryReporter;
+         private final SummaryReporter summaryReporter;
 
          {
             Objects.requireNonNull(JfrProfiler.this);

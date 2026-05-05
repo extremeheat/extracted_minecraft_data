@@ -452,17 +452,13 @@ public class Strider extends Animal implements ItemSteerable {
    }
 
    private static class StriderPathNavigation extends GroundPathNavigation {
-      StriderPathNavigation(final Strider mob, final Level level) {
+      public StriderPathNavigation(final Strider mob, final Level level) {
          super(mob, level);
       }
 
       protected PathFinder createPathFinder(final int maxVisitedNodes) {
          this.nodeEvaluator = new WalkNodeEvaluator();
          return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
-      }
-
-      protected boolean hasValidPathType(final PathType pathType) {
-         return pathType != PathType.LAVA && pathType != PathType.FIRE && pathType != PathType.FIRE_IN_NEIGHBOR ? super.hasValidPathType(pathType) : true;
       }
 
       public boolean isStableDestination(final BlockPos pos) {

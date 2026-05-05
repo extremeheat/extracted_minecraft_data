@@ -13,7 +13,7 @@ public class CaveCarverConfiguration extends CarverConfiguration {
    public static final Codec<CaveCarverConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(CarverConfiguration.CODEC.forGetter((c) -> c), FloatProviders.CODEC.fieldOf("horizontal_radius_multiplier").forGetter((c) -> c.horizontalRadiusMultiplier), FloatProviders.CODEC.fieldOf("vertical_radius_multiplier").forGetter((c) -> c.verticalRadiusMultiplier), FloatProviders.codec(-1.0F, 1.0F).fieldOf("floor_level").forGetter((c) -> c.floorLevel)).apply(i, CaveCarverConfiguration::new));
    public final FloatProvider horizontalRadiusMultiplier;
    public final FloatProvider verticalRadiusMultiplier;
-   final FloatProvider floorLevel;
+   public final FloatProvider floorLevel;
 
    public CaveCarverConfiguration(final float probability, final HeightProvider y, final FloatProvider yScale, final VerticalAnchor lavaLevel, final CarverDebugSettings debugSettings, final HolderSet<Block> replaceable, final FloatProvider horizontalRadiusMultiplier, final FloatProvider verticalRadiusMultiplier, final FloatProvider floorLevel) {
       super(probability, y, yScale, lavaLevel, debugSettings, replaceable);

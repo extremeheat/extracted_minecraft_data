@@ -52,7 +52,7 @@ public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 delta
    }
 
    private static Vec3 findAdjustedSharedSpawnPos(final ServerLevel newLevel, final Entity entity) {
-      return entity.adjustSpawnLocation(newLevel, newLevel.getRespawnData().pos()).getBottomCenter();
+      return Vec3.atBottomCenterOf(entity.adjustSpawnLocation(newLevel, newLevel.getRespawnData().pos()));
    }
 
    public TeleportTransition withRotation(final float yRot, final float xRot) {

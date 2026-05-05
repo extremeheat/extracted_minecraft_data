@@ -84,7 +84,7 @@ public abstract class RenderTypeFeatureRenderer<Submit extends SubmitNode> imple
             return (StagedVertexBuffer.Draw)this.draws.get(existingIndex);
          } else {
             VertexSorting quadSorting = renderType.sortOnUpload() ? RenderSystem.getProjectionType().vertexSorting() : null;
-            StagedVertexBuffer.Draw draw = this.stagedBuffer.appendDraw(renderType.format(), renderType.mode(), quadSorting);
+            StagedVertexBuffer.Draw draw = this.stagedBuffer.appendDraw(renderType.format(), renderType.primitiveTopology(), quadSorting);
             this.draws.add(draw);
             this.drawRenderTypes.add(preparedRenderType);
             return draw;

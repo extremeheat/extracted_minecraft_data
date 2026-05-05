@@ -812,7 +812,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
       baby.getAttribute(attribute).setBaseValue(newValue);
    }
 
-   static double createOffspringAttribute(double parentAValue, double parentBValue, final double attributeRangeMin, final double attributeRangeMax, final RandomSource random) {
+   public static double createOffspringAttribute(double parentAValue, double parentBValue, final double attributeRangeMin, final double attributeRangeMax, final RandomSource random) {
       if (attributeRangeMax <= attributeRangeMin) {
          throw new IllegalArgumentException("Incorrect range for an attribute");
       } else {

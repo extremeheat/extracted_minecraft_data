@@ -74,10 +74,14 @@ public abstract class ThrowableProjectile extends Projectile {
 
          inertia = 0.8F;
       } else {
-         inertia = 0.99F;
+         inertia = this.getAirDrag();
       }
 
       this.setDeltaMovement(movement.scale((double)inertia));
+   }
+
+   protected float getAirDrag() {
+      return 0.99F;
    }
 
    private void handleFirstTickBubbleColumn() {

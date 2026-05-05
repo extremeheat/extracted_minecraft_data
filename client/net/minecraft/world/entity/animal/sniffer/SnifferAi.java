@@ -91,7 +91,7 @@ public class SnifferAi {
       }), Pair.of(2, new LookAtTargetSink(45, 90)), Pair.of(3, new FeelingHappy(40, 100)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new Scenting(40, 80), 1), Pair.of(new Sniffing(40, 80), 1), Pair.of(SetEntityLookTarget.create(EntityTypes.PLAYER, 6.0F), 1), Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(new DoNothing(5, 20), 2))))), Set.of(Pair.of(MemoryModuleType.SNIFFER_DIGGING, MemoryStatus.VALUE_ABSENT)));
    }
 
-   static void updateActivity(final Sniffer body) {
+   public static void updateActivity(final Sniffer body) {
       body.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.DIG, Activity.SNIFF, Activity.IDLE));
    }
 

@@ -9,9 +9,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-class MatchingBlocksPredicate extends StateTestingPredicate {
-   private final HolderSet<Block> blocks;
+public class MatchingBlocksPredicate extends StateTestingPredicate {
    public static final MapCodec<MatchingBlocksPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).and(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("blocks").forGetter((c) -> c.blocks)).apply(i, MatchingBlocksPredicate::new));
+   private final HolderSet<Block> blocks;
 
    public MatchingBlocksPredicate(final Vec3i offset, final HolderSet<Block> blocks) {
       super(offset);

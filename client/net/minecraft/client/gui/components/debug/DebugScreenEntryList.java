@@ -188,11 +188,11 @@ public class DebugScreenEntryList {
 
    }
 
-   static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<Identifier, DebugScreenEntryStatus>> custom) {
+   private static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<Identifier, DebugScreenEntryStatus>> custom) {
       private static final Codec<Map<Identifier, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
       public static final Codec<SerializedOptions> CODEC;
 
-      SerializedOptions {
+      private SerializedOptions {
          super();
       }
 

@@ -29,7 +29,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private static final int COMPONENT_WIDTH = 212;
    private static final int EXTRA_SPACING = 2;
    private static final int DEFAULT_SPACING = 6;
-   static final Component TITLE = Component.translatable("mco.configure.world.settings.title");
+   public static final Component TITLE = Component.translatable("mco.configure.world.settings.title");
    private static final Component NAME_LABEL = Component.translatable("mco.configure.world.name");
    private static final Component DESCRIPTION_LABEL = Component.translatable("mco.configure.world.description");
    private static final Component REGION_PREFERENCE_LABEL = Component.translatable("mco.configure.world.region_preference");
@@ -38,14 +38,14 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private final Minecraft minecraft;
    private RealmsServer serverData;
    private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
-   final Button closeOpenButton;
+   private final Button closeOpenButton;
    private final EditBox descEdit;
    private final EditBox nameEdit;
    private final StringWidget selectedRegionStringWidget;
    private final ImageWidget selectedRegionImageWidget;
    private RegionSelection preferredRegionSelection;
 
-   RealmsSettingsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData, final Map<RealmsRegion, ServiceQuality> regionServiceQuality) {
+   public RealmsSettingsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData, final Map<RealmsRegion, ServiceQuality> regionServiceQuality) {
       super(TITLE);
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;

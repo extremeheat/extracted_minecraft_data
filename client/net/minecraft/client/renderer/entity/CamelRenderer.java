@@ -40,7 +40,7 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
       extractAdditionalState(entity, state, partialTicks);
    }
 
-   static void extractAdditionalState(final Camel entity, final CamelRenderState state, final float partialTicks) {
+   public static void extractAdditionalState(final Camel entity, final CamelRenderState state, final float partialTicks) {
       state.saddle = entity.getItemBySlot(EquipmentSlot.SADDLE).copy();
       state.isRidden = entity.isVehicle();
       state.jumpCooldown = getJumpCooldown(entity, partialTicks);
@@ -51,7 +51,7 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
       state.dashAnimationState.copyFrom(entity.dashAnimationState);
    }
 
-   static float getJumpCooldown(final Camel camel, final float partialTicks) {
+   private static float getJumpCooldown(final Camel camel, final float partialTicks) {
       return Math.max((float)camel.getJumpCooldown() - partialTicks, 0.0F);
    }
 }

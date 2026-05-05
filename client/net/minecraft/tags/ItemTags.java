@@ -66,6 +66,7 @@ public final class ItemTags {
    public static final TagKey<Item> HANGING_SIGNS;
    public static final TagKey<Item> BEE_FOOD;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_BOUNCY;
+   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_SLOW_BOUNCY;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_REGULAR;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_SLOW_FLAT;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_FAST_FLAT;
@@ -75,6 +76,7 @@ public final class ItemTags {
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_STICKY;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_EXPLOSIVE;
+   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_HOT;
    public static final TagKey<Item> SULFUR_CUBE_SWALLOWABLE;
    public static final TagKey<Item> BANNERS;
    public static final TagKey<Item> PIGLIN_REPELLENTS;
@@ -282,6 +284,7 @@ public final class ItemTags {
       HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.item();
       BEE_FOOD = BlockItemTags.BEE_FOOD.item();
       SULFUR_CUBE_ARCHETYPE_BOUNCY = bind("sulfur_cube_archetype/bouncy");
+      SULFUR_CUBE_ARCHETYPE_SLOW_BOUNCY = bind("sulfur_cube_archetype/slow_bouncy");
       SULFUR_CUBE_ARCHETYPE_REGULAR = bind("sulfur_cube_archetype/regular");
       SULFUR_CUBE_ARCHETYPE_SLOW_FLAT = bind("sulfur_cube_archetype/slow_flat");
       SULFUR_CUBE_ARCHETYPE_FAST_FLAT = bind("sulfur_cube_archetype/fast_flat");
@@ -291,6 +294,7 @@ public final class ItemTags {
       SULFUR_CUBE_ARCHETYPE_STICKY = bind("sulfur_cube_archetype/sticky");
       SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE = bind("sulfur_cube_archetype/high_resistance");
       SULFUR_CUBE_ARCHETYPE_EXPLOSIVE = bind("sulfur_cube_archetype/explosive");
+      SULFUR_CUBE_ARCHETYPE_HOT = bind("sulfur_cube_archetype/hot");
       SULFUR_CUBE_SWALLOWABLE = bind("sulfur_cube_swallowable");
       BANNERS = bind("banners");
       PIGLIN_REPELLENTS = bind("piglin_repellents");

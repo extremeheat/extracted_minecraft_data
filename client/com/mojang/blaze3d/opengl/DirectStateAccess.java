@@ -24,67 +24,71 @@ public abstract class DirectStateAccess {
       }
    }
 
-   abstract int createBuffer();
+   public abstract int createBuffer();
 
-   abstract void bufferData(int buffer, long size, @GpuBuffer.Usage int usage);
+   public abstract void bufferData(int buffer, long size, @GpuBuffer.Usage int usage);
 
-   abstract void bufferData(int buffer, ByteBuffer data, @GpuBuffer.Usage int usage);
+   public abstract void bufferData(int buffer, ByteBuffer data, @GpuBuffer.Usage int usage);
 
-   abstract void bufferSubData(int buffer, long offset, ByteBuffer data, @GpuBuffer.Usage int usage);
+   public abstract void bufferSubData(int buffer, long offset, ByteBuffer data, @GpuBuffer.Usage int usage);
 
-   abstract void bufferStorage(int buffer, long size, @GpuBuffer.Usage int usage);
+   public abstract void bufferStorage(int buffer, long size, @GpuBuffer.Usage int usage);
 
-   abstract void bufferStorage(int buffer, ByteBuffer data, @GpuBuffer.Usage int usage);
+   public abstract void bufferStorage(int buffer, ByteBuffer data, @GpuBuffer.Usage int usage);
 
-   abstract @Nullable ByteBuffer mapBufferRange(int buffer, long offset, long length, int access, @GpuBuffer.Usage int usage);
+   public abstract @Nullable ByteBuffer mapBufferRange(int buffer, long offset, long length, int access, @GpuBuffer.Usage int usage);
 
-   abstract void unmapBuffer(int buffer, @GpuBuffer.Usage int usage);
+   public abstract void unmapBuffer(int buffer, @GpuBuffer.Usage int usage);
 
-   abstract int createFrameBufferObject();
+   public abstract int createFrameBufferObject();
 
-   abstract void bindFrameBufferTextures(int fbo, int color0, int depth, int mipLevel, int bindSlot);
+   public abstract void bindFrameBufferTextures(int fbo, int[] color, int[] colorMipLevels, int depth, int depthMipLevel, int bindSlot);
 
-   abstract void blitFrameBuffers(int source, int dest, int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
+   public void bindFrameBufferTextures(final int fbo, final int color, final int depth, final int mipLevel, final int bindSlot) {
+      this.bindFrameBufferTextures(fbo, new int[]{color}, new int[]{mipLevel}, depth, mipLevel, bindSlot);
+   }
 
-   abstract void flushMappedBufferRange(final int handle, final long offset, final long length, final @GpuBuffer.Usage int usage);
+   public abstract void blitFrameBuffers(int source, int dest, int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
 
-   abstract void copyBufferSubData(int source, int target, long sourceOffset, long targetOffset, long length);
+   public abstract void flushMappedBufferRange(final int handle, final long offset, final long length, final @GpuBuffer.Usage int usage);
+
+   public abstract void copyBufferSubData(int source, int target, long sourceOffset, long targetOffset, long length);
 
    private static class Core extends DirectStateAccess {
       private Core() {
          super();
       }
 
-      int createBuffer() {
+      public int createBuffer() {
          GlStateManager.incrementTrackedBuffers();
          return ARBDirectStateAccess.glCreateBuffers();
       }
 
-      void bufferData(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
+      public void bufferData(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glNamedBufferData(buffer, size, GlConst.bufferUsageToGlEnum(usage));
       }
 
-      void bufferData(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+      public void bufferData(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glNamedBufferData(buffer, data, GlConst.bufferUsageToGlEnum(usage));
       }
 
-      void bufferSubData(final int buffer, final long offset, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+      public void bufferSubData(final int buffer, final long offset, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glNamedBufferSubData(buffer, offset, data);
       }
 
-      void bufferStorage(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
+      public void bufferStorage(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glNamedBufferStorage(buffer, size, GlConst.bufferUsageToGlFlag(usage));
       }
 
-      void bufferStorage(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+      public void bufferStorage(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glNamedBufferStorage(buffer, data, GlConst.bufferUsageToGlFlag(usage));
       }
 
-      @Nullable ByteBuffer mapBufferRange(final int buffer, final long offset, final long length, final int flags, final @GpuBuffer.Usage int usage) {
+      public @Nullable ByteBuffer mapBufferRange(final int buffer, final long offset, final long length, final int flags, final @GpuBuffer.Usage int usage) {
          return ARBDirectStateAccess.glMapNamedBufferRange(buffer, offset, length, flags);
       }
 
-      void unmapBuffer(final int buffer, final int usage) {
+      public void unmapBuffer(final int buffer, final int usage) {
          ARBDirectStateAccess.glUnmapNamedBuffer(buffer);
       }
 
@@ -92,9 +96,12 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glCreateFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int color0, final int depth, final int mipLevel, final @GpuBuffer.Usage int bindSlot) {
-         ARBDirectStateAccess.glNamedFramebufferTexture(fbo, 36064, color0, mipLevel);
-         ARBDirectStateAccess.glNamedFramebufferTexture(fbo, 36096, depth, mipLevel);
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final @GpuBuffer.Usage int bindSlot) {
+         for(int i = 0; i < color.length; ++i) {
+            ARBDirectStateAccess.glNamedFramebufferTexture(fbo, '\u8ce0' + i, color[i], colorMipLevels[i]);
+         }
+
+         ARBDirectStateAccess.glNamedFramebufferTexture(fbo, 36096, depth, depthMipLevel);
          if (bindSlot != 0) {
             GlStateManager._glBindFramebuffer(bindSlot, fbo);
          }
@@ -105,11 +112,11 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glBlitNamedFramebuffer(source, dest, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
       }
 
-      void flushMappedBufferRange(final int handle, final long offset, final long length, final @GpuBuffer.Usage int usage) {
+      public void flushMappedBufferRange(final int handle, final long offset, final long length, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glFlushMappedNamedBufferRange(handle, offset, length);
       }
 
-      void copyBufferSubData(final int source, final int target, final long sourceOffset, final long targetOffset, final long length) {
+      public void copyBufferSubData(final int source, final int target, final long sourceOffset, final long targetOffset, final long length) {
          ARBDirectStateAccess.glCopyNamedBufferSubData(source, target, sourceOffset, targetOffset, length);
       }
    }
@@ -119,7 +126,7 @@ public abstract class DirectStateAccess {
          super();
       }
 
-      private int selectBufferBindTarget(final @GpuBuffer.Usage int usage) {
+      private static int selectBufferBindTarget(final @GpuBuffer.Usage int usage) {
          if ((usage & 32) != 0) {
             return 34962;
          } else if ((usage & 64) != 0) {
@@ -129,68 +136,68 @@ public abstract class DirectStateAccess {
          }
       }
 
-      int createBuffer() {
+      public int createBuffer() {
          return GlStateManager._glGenBuffers();
       }
 
-      void bufferData(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void bufferData(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferData(target, size, GlConst.bufferUsageToGlEnum(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void bufferData(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void bufferData(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferData(target, data, GlConst.bufferUsageToGlEnum(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void bufferSubData(final int buffer, final long offset, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void bufferSubData(final int buffer, final long offset, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferSubData(target, offset, data);
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void bufferStorage(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void bufferStorage(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ARBBufferStorage.glBufferStorage(target, size, GlConst.bufferUsageToGlFlag(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void bufferStorage(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void bufferStorage(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ARBBufferStorage.glBufferStorage(target, data, GlConst.bufferUsageToGlFlag(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      @Nullable ByteBuffer mapBufferRange(final int buffer, final long offset, final long length, final int access, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public @Nullable ByteBuffer mapBufferRange(final int buffer, final long offset, final long length, final int access, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ByteBuffer byteBuffer = GlStateManager._glMapBufferRange(target, offset, length, access);
          GlStateManager._glBindBuffer(target, 0);
          return byteBuffer;
       }
 
-      void unmapBuffer(final int buffer, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void unmapBuffer(final int buffer, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glUnmapBuffer(target);
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void flushMappedBufferRange(final int buffer, final long offset, final long length, final @GpuBuffer.Usage int usage) {
-         int target = this.selectBufferBindTarget(usage);
+      public void flushMappedBufferRange(final int buffer, final long offset, final long length, final @GpuBuffer.Usage int usage) {
+         int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GL30.glFlushMappedBufferRange(target, offset, length);
          GlStateManager._glBindBuffer(target, 0);
       }
 
-      void copyBufferSubData(final int source, final int target, final long sourceOffset, final long targetOffset, final long length) {
+      public void copyBufferSubData(final int source, final int target, final long sourceOffset, final long targetOffset, final long length) {
          GlStateManager._glBindBuffer(36662, source);
          GlStateManager._glBindBuffer(36663, target);
          GL31.glCopyBufferSubData(36662, 36663, sourceOffset, targetOffset, length);
@@ -202,12 +209,16 @@ public abstract class DirectStateAccess {
          return GlStateManager.glGenFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int color0, final int depth, final int mipLevel, final int bindSlot) {
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int bindSlot) {
          int tempBindSlot = bindSlot == 0 ? '\u8ca9' : bindSlot;
          int oldFbo = GlStateManager.getFrameBuffer(tempBindSlot);
          GlStateManager._glBindFramebuffer(tempBindSlot, fbo);
-         GlStateManager._glFramebufferTexture2D(tempBindSlot, 36064, 3553, color0, mipLevel);
-         GlStateManager._glFramebufferTexture2D(tempBindSlot, 36096, 3553, depth, mipLevel);
+
+         for(int i = 0; i < color.length; ++i) {
+            GlStateManager._glFramebufferTexture2D(tempBindSlot, '\u8ce0' + i, 3553, color[i], colorMipLevels[i]);
+         }
+
+         GlStateManager._glFramebufferTexture2D(tempBindSlot, 36096, 3553, depth, depthMipLevel);
          if (bindSlot == 0) {
             GlStateManager._glBindFramebuffer(tempBindSlot, oldFbo);
          }

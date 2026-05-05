@@ -66,7 +66,7 @@ public interface OrderedSubmitNodeCollector {
       this.submitModel(model, Unit.INSTANCE, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
    }
 
-   void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState);
+   void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState, int outlineColor);
 
    void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor);
 

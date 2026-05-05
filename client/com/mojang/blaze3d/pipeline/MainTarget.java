@@ -16,7 +16,7 @@ public class MainTarget extends RenderTarget {
    private static final Dimension DEFAULT_DIMENSIONS = new Dimension(854, 480);
 
    public MainTarget(final int desiredWidth, final int desiredHeight) {
-      super("Main", true);
+      super("Main", true, GpuFormat.RGBA8_UNORM);
       this.createFrameBuffer(desiredWidth, desiredHeight);
    }
 
@@ -69,7 +69,7 @@ public class MainTarget extends RenderTarget {
 
    private @Nullable GpuTexture allocateColorAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, GpuFormat.RGBA8_UNORM, dimension.width, dimension.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, this.format, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }

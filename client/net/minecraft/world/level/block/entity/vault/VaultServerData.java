@@ -16,8 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class VaultServerData {
-   static final String TAG_NAME = "server_data";
-   static final Codec<VaultServerData> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((vault) -> vault.rewardedPlayers), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((vault) -> vault.stateUpdatingResumesAt), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((vault) -> vault.itemsToEject), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((vault) -> vault.totalEjectionsNeeded)).apply(i, VaultServerData::new));
+   public static final String TAG_NAME = "server_data";
+   public static final Codec<VaultServerData> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((vault) -> vault.rewardedPlayers), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((vault) -> vault.stateUpdatingResumesAt), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((vault) -> vault.itemsToEject), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((vault) -> vault.totalEjectionsNeeded)).apply(i, VaultServerData::new));
    private static final int MAX_REWARD_PLAYERS = 128;
    private final Set<UUID> rewardedPlayers = new ObjectLinkedOpenHashSet();
    private long stateUpdatingResumesAt;
@@ -26,7 +26,7 @@ public class VaultServerData {
    private int totalEjectionsNeeded;
    boolean isDirty;
 
-   VaultServerData(final Set<UUID> rewardedPlayers, final long stateUpdatingResumesAt, final List<ItemStack> itemsToEject, final int totalEjectionsNeeded) {
+   public VaultServerData(final Set<UUID> rewardedPlayers, final long stateUpdatingResumesAt, final List<ItemStack> itemsToEject, final int totalEjectionsNeeded) {
       super();
       this.rewardedPlayers.addAll(rewardedPlayers);
       this.stateUpdatingResumesAt = stateUpdatingResumesAt;
@@ -34,7 +34,7 @@ public class VaultServerData {
       this.totalEjectionsNeeded = totalEjectionsNeeded;
    }
 
-   VaultServerData() {
+   public VaultServerData() {
       super();
    }
 

@@ -51,7 +51,7 @@ public class WitherSkeleton extends AbstractSkeleton {
       return SoundEvents.WITHER_SKELETON_DEATH;
    }
 
-   SoundEvent getStepSound() {
+   protected SoundEvent getStepSound() {
       return SoundEvents.WITHER_SKELETON_STEP;
    }
 

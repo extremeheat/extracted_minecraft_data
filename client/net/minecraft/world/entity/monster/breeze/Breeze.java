@@ -200,7 +200,7 @@ public class Breeze extends Monster {
    }
 
    public boolean withinInnerCircleRange(final Vec3 target) {
-      Vec3 ourPosition = this.blockPosition().getCenter();
+      Vec3 ourPosition = Vec3.atCenterOf(this.blockPosition());
       return target.closerThan(ourPosition, 4.0, 10.0);
    }
 

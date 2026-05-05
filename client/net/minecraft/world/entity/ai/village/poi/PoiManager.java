@@ -221,7 +221,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    private final class DistanceTracker extends SectionTracker {
       private final Long2ByteMap levels;
 
-      protected DistanceTracker() {
+      DistanceTracker() {
          Objects.requireNonNull(PoiManager.this);
          super(7, 16, 256);
          this.levels = new Long2ByteOpenHashMap();

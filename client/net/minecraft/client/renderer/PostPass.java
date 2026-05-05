@@ -20,8 +20,8 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
@@ -105,7 +105,7 @@ public class PostPass implements AutoCloseable {
             SamplerCache samplerCache = RenderSystem.getSamplerCache();
             List<InputTexture> inputTextures = this.inputs.stream().map((i) -> new InputTexture(i.samplerName(), i.texture(targets), samplerCache.getClampToEdge(i.bilinear() ? FilterMode.LINEAR : FilterMode.NEAREST))).toList();
 
-            try (GpuBuffer.MappedView view = commandEncoder.mapBuffer(this.infoUbo.currentBuffer(), false, true)) {
+            try (GpuBufferSlice.MappedView view = this.infoUbo.currentBuffer().map(false, true)) {
                Std140Builder builder = Std140Builder.intoBuffer(view.data());
                builder.putVec2((float)outputTarget.width, (float)outputTarget.height);
 
@@ -114,7 +114,7 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), OptionalInt.empty(), outputTarget.useDepth ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.useDepth ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
                renderPass.setPipeline(this.pipeline);
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
@@ -206,8 +206,8 @@ public class PostPass implements AutoCloseable {
       }
    }
 
-   static record InputTexture(String samplerName, GpuTextureView view, GpuSampler sampler) {
-      InputTexture {
+   private static record InputTexture(String samplerName, GpuTextureView view, GpuSampler sampler) {
+      private InputTexture {
          super();
       }
    }

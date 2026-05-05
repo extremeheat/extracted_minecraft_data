@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
@@ -164,7 +164,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
 
       try (GpuBuffer ubo = device.createBuffer(() -> "SpriteAnimationInfo", 128, buffer)) {
          for(int level = 0; level < this.mipLevelCount; ++level) {
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], OptionalInt.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
                renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
 
                for(int i = 0; i < staticSprites.size(); ++i) {
@@ -238,7 +238,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    private void uploadAnimationFrames() {
       if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
          for(int level = 0; level <= this.maxMipLevel; ++level) {
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], OptionalInt.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
                for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
                   if (animationState.needsToDraw()) {
                      animationState.drawToAtlas(renderPass, animationState.getDrawUbo(level));

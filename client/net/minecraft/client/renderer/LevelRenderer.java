@@ -1,5 +1,7 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
@@ -87,6 +89,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
 public class LevelRenderer implements AutoCloseable {
@@ -94,6 +97,8 @@ public class LevelRenderer implements AutoCloseable {
    private static final Identifier ENTITY_OUTLINE_POST_CHAIN_ID = Identifier.withDefaultNamespace("entity_outline");
    private static final int MINIMUM_TRANSPARENT_SORT_COUNT = 15;
    private static final float CHUNK_VISIBILITY_THRESHOLD = 0.3F;
+   private static final Vector4fc SCREEN_SIZE_TARGET_CLEAR_COLOR = new Vector4f(0.0F);
+   private static final Vector4fc ENTITY_OUTLINE_CLEAR_COLOR = new Vector4f(0.0F);
    private final GameRenderer gameRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -136,7 +141,7 @@ public class LevelRenderer implements AutoCloseable {
       this.shaderManager = shaderManager;
       this.levelRenderState = gameRenderer.gameRenderState().levelRenderState;
       this.optionsRenderState = gameRenderer.gameRenderState().optionsRenderState;
-      this.entityOutlineTarget = new TextureTarget("Entity Outline", width, height, true);
+      this.entityOutlineTarget = new TextureTarget("Entity Outline", width, height, true, GpuFormat.RGBA8_UNORM);
    }
 
    public void render(final GraphicsResourceAllocator resourceAllocator, final DeltaTracker deltaTracker, final boolean renderOutline, final CameraRenderState cameraState, final Matrix4fc modelViewMatrix, final GpuBufferSlice terrainFog, final Vector4f fogColor, final boolean shouldRenderSky) {
@@ -156,7 +161,7 @@ public class LevelRenderer implements AutoCloseable {
       this.targets.main = frame.<RenderTarget>importExternal("main", this.gameRenderer.mainRenderTarget());
       int screenWidth = this.gameRenderer.mainRenderTarget().width;
       int screenHeight = this.gameRenderer.mainRenderTarget().height;
-      RenderTargetDescriptor screenSizeTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, true, 0);
+      RenderTargetDescriptor screenSizeTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, true, SCREEN_SIZE_TARGET_CLEAR_COLOR, GpuFormat.RGBA8_UNORM);
       PostChain transparencyChain = this.getTransparencyChain();
       if (transparencyChain != null) {
          this.targets.translucent = frame.<RenderTarget>createInternal("translucent", screenSizeTargetDescriptor);
@@ -171,7 +176,7 @@ public class LevelRenderer implements AutoCloseable {
       this.targets.main = clearPass.<RenderTarget>readsAndWrites(this.targets.main);
       clearPass.executes(() -> {
          RenderTarget mainRenderTarget = this.gameRenderer.mainRenderTarget();
-         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(mainRenderTarget.getColorTexture(), ARGB.colorFromFloat(0.0F, fogColor.x, fogColor.y, fogColor.z), mainRenderTarget.getDepthTexture(), 0.0);
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(mainRenderTarget.getColorTexture(), new Vector4f(fogColor.x, fogColor.y, fogColor.z, 0.0F), mainRenderTarget.getDepthTexture(), 0.0);
       });
       if (shouldRenderSky) {
          this.addSkyPass(frame, cameraState, terrainFog);
@@ -360,7 +365,7 @@ public class LevelRenderer implements AutoCloseable {
          this.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
          if (levelRenderState.shouldShowEntityOutlines && entityOutlineTarget != null) {
             RenderTarget outlineTarget = entityOutlineTarget.get();
-            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), 0, outlineTarget.getDepthTexture(), 0.0);
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), ENTITY_OUTLINE_CLEAR_COLOR, outlineTarget.getDepthTexture(), 0.0);
          }
 
          profiler.popPush("renderSolidFeatures");
@@ -475,7 +480,7 @@ public class LevelRenderer implements AutoCloseable {
                      }
 
                      int combinedHash = 173;
-                     VertexFormat vertexFormat = layer.pipeline().getVertexFormat();
+                     VertexFormat vertexFormat = layer.pipeline().getVertexFormatBinding(0);
                      GpuBuffer vertexBuffer = slice.vertexBuffer();
                      if (layer != ChunkSectionLayer.TRANSLUCENT) {
                         combinedHash = 31 * combinedHash + vertexBuffer.hashCode();
@@ -483,7 +488,7 @@ public class LevelRenderer implements AutoCloseable {
 
                      int firstIndex = 0;
                      GpuBuffer indexBuffer;
-                     VertexFormat.IndexType indexType;
+                     IndexType indexType;
                      if (!draw.hasCustomIndexBuffer()) {
                         if (draw.indexCount() > largestIndexCount) {
                            largestIndexCount = draw.indexCount();

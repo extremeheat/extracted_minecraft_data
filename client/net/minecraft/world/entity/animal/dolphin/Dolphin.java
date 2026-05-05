@@ -339,7 +339,7 @@ public class Dolphin extends AgeableWaterCreature {
    private class PlayWithItemsGoal extends Goal {
       private int cooldown;
 
-      PlayWithItemsGoal() {
+      public PlayWithItemsGoal() {
          Objects.requireNonNull(Dolphin.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -406,7 +406,7 @@ public class Dolphin extends AgeableWaterCreature {
       private final double speedModifier;
       private @Nullable Player player;
 
-      DolphinSwimWithPlayerGoal(final Dolphin dolphin, final double speedModifier) {
+      public DolphinSwimWithPlayerGoal(final Dolphin dolphin, final double speedModifier) {
          super();
          this.dolphin = dolphin;
          this.speedModifier = speedModifier;
@@ -454,7 +454,7 @@ public class Dolphin extends AgeableWaterCreature {
       private final Dolphin dolphin;
       private boolean stuck;
 
-      DolphinSwimToTreasureGoal(final Dolphin dolphin) {
+      public DolphinSwimToTreasureGoal(final Dolphin dolphin) {
          super();
          this.dolphin = dolphin;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));

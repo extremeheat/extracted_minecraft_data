@@ -143,10 +143,10 @@ public class ChaseClient {
    }
 
    private void handleTeleport(final Scanner scanner) {
-      this.parseTarget(scanner).ifPresent((target) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", target.level.identifier(), target.pos.x, target.pos.y, target.pos.z, target.rot.y, target.rot.x)));
+      parseTarget(scanner).ifPresent((target) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", target.level.identifier(), target.pos.x, target.pos.y, target.pos.z, target.rot.y, target.rot.x)));
    }
 
-   private Optional<TeleportTarget> parseTarget(final Scanner scanner) {
+   private static Optional<TeleportTarget> parseTarget(final Scanner scanner) {
       ResourceKey<Level> levelType = (ResourceKey)ChaseCommand.DIMENSION_NAMES.get(scanner.next());
       if (levelType == null) {
          return Optional.empty();
@@ -173,8 +173,8 @@ public class ChaseClient {
       });
    }
 
-   static record TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
-      TeleportTarget {
+   private static record TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
+      private TeleportTarget {
          super();
       }
    }

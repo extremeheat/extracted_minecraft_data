@@ -60,5 +60,5 @@ public abstract class AbstractPiglinModel<S extends HumanoidRenderState> extends
       this.rightEar.zRot = defaultAngle + Mth.cos((double)frequency) * amplitude;
    }
 
-   abstract float getDefaultEarAngleInDegrees();
+   protected abstract float getDefaultEarAngleInDegrees();
 }

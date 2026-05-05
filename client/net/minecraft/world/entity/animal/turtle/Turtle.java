@@ -276,7 +276,7 @@ public class Turtle extends Animal {
    }
 
    private static class TurtlePanicGoal extends PanicGoal {
-      TurtlePanicGoal(final Turtle turtle, final double speedModifier) {
+      public TurtlePanicGoal(final Turtle turtle, final double speedModifier) {
          super(turtle, speedModifier);
       }
 
@@ -302,7 +302,7 @@ public class Turtle extends Animal {
       private final double speedModifier;
       private boolean stuck;
 
-      TurtleTravelGoal(final Turtle turtle, final double speedModifier) {
+      public TurtleTravelGoal(final Turtle turtle, final double speedModifier) {
          super();
          this.turtle = turtle;
          this.speedModifier = speedModifier;
@@ -375,7 +375,7 @@ public class Turtle extends Animal {
       private int closeToHomeTryTicks;
       private static final int GIVE_UP_TICKS = 600;
 
-      TurtleGoHomeGoal(final Turtle turtle, final double speedModifier) {
+      public TurtleGoHomeGoal(final Turtle turtle, final double speedModifier) {
          super();
          this.turtle = turtle;
          this.speedModifier = speedModifier;
@@ -439,7 +439,7 @@ public class Turtle extends Animal {
    private static class TurtleBreedGoal extends BreedGoal {
       private final Turtle turtle;
 
-      TurtleBreedGoal(final Turtle turtle, final double speedModifier) {
+      public TurtleBreedGoal(final Turtle turtle, final double speedModifier) {
          super(turtle, speedModifier);
          this.turtle = turtle;
       }
@@ -475,7 +475,7 @@ public class Turtle extends Animal {
    private static class TurtleLayEggGoal extends MoveToBlockGoal {
       private final Turtle turtle;
 
-      TurtleLayEggGoal(final Turtle turtle, final double speedModifier) {
+      public TurtleLayEggGoal(final Turtle turtle, final double speedModifier) {
          super(turtle, speedModifier, 16);
          this.turtle = turtle;
       }
@@ -563,7 +563,7 @@ public class Turtle extends Animal {
    }
 
    private static class TurtleMoveControl<T extends Turtle> extends MoveControl<T> {
-      TurtleMoveControl(final T turtle) {
+      public TurtleMoveControl(final T turtle) {
          super(turtle);
       }
 
@@ -608,7 +608,7 @@ public class Turtle extends Animal {
    }
 
    private static class TurtlePathNavigation extends AmphibiousPathNavigation {
-      TurtlePathNavigation(final Turtle mob, final Level level) {
+      public TurtlePathNavigation(final Turtle mob, final Level level) {
          super(mob, level);
       }
 

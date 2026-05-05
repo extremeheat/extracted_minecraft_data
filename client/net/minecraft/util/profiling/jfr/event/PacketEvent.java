@@ -30,7 +30,7 @@ public abstract class PacketEvent extends Event {
    @DataAmount
    public final int bytes;
 
-   PacketEvent(final String protocolId, final String packetDirection, final String packetId, final SocketAddress remoteAddress, final int bytes) {
+   public PacketEvent(final String protocolId, final String packetDirection, final String packetId, final SocketAddress remoteAddress, final int bytes) {
       super();
       this.protocolId = protocolId;
       this.packetDirection = packetDirection;

@@ -554,6 +554,10 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    }
 
+   protected float getAirDrag() {
+      return 1.0F;
+   }
+
    private void controlBoat() {
       if (this.isVehicle()) {
          float acceleration = 0.0F;

@@ -78,7 +78,7 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
       return MetricSampler.builder("ticktime", MetricCategory.TICK_LOOP, timeSampler, stopwatch).withBeforeTick(Stopwatch::start).withThresholdAlert(thresholdAlerter).build();
    }
 
-   static class CpuStats {
+   public static class CpuStats {
       private final SystemInfo systemInfo = new SystemInfo();
       private final CentralProcessor processor;
       public final int nrOfCpus;
@@ -86,7 +86,7 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
       private double[] currentLoad;
       private long lastPollMs;
 
-      CpuStats() {
+      public CpuStats() {
          super();
          this.processor = this.systemInfo.getHardware().getProcessor();
          this.nrOfCpus = this.processor.getLogicalProcessorCount();

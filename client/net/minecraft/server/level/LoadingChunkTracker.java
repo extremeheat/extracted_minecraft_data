@@ -2,7 +2,7 @@ package net.minecraft.server.level;
 
 import net.minecraft.world.level.TicketStorage;
 
-class LoadingChunkTracker extends ChunkTracker {
+public class LoadingChunkTracker extends ChunkTracker {
    private static final int MAX_LEVEL;
    private final DistanceManager distanceManager;
    private final TicketStorage ticketStorage;

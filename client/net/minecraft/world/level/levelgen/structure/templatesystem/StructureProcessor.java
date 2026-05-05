@@ -8,7 +8,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 public interface StructureProcessor {
-   default StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   default StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       return processedBlockInfo;
    }
 
@@ -16,5 +16,9 @@ public interface StructureProcessor {
 
    default List<StructureTemplate.StructureBlockInfo> finalizeProcessing(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final List<StructureTemplate.StructureBlockInfo> originalBlockInfoList, final List<StructureTemplate.StructureBlockInfo> processedBlockInfoList, final StructurePlaceSettings settings) {
       return processedBlockInfoList;
+   }
+
+   default boolean evaluatesEntirePieceState() {
+      return false;
    }
 }

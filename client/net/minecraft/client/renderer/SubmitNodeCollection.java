@@ -138,13 +138,17 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    }
 
-   public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
-      MovingBlockFeatureRenderer.Submit submit = new MovingBlockFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState);
+   public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState, final int outlineColor) {
+      MovingBlockFeatureRenderer.Submit submit = new MovingBlockFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState, 0);
       BlockStateModel model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(movingBlockRenderState.blockState);
       if (model.hasMaterialFlag(1)) {
          this.translucentBlocksAndItems.submit((TranslucentSubmit)submit);
       } else {
          this.solid.submit(submit);
+      }
+
+      if (outlineColor != 0) {
+         this.outline.submit(new MovingBlockFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState, outlineColor));
       }
 
    }
@@ -163,7 +167,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       if (outlineColor != 0) {
          RenderType outlineRenderType = getOutlineRenderType(renderType);
          if (outlineRenderType != null) {
-            this.outline.submit(new BlockModelFeatureRenderer.Submit(pose, outlineRenderType, modelParts, BlockModelRenderState.EMPTY_TINTS, 15728880, OverlayTexture.NO_OVERLAY, -1, (PoseStack.Pose)null));
+            this.outline.submit(new BlockModelFeatureRenderer.Submit(pose, outlineRenderType, modelParts, BlockModelRenderState.EMPTY_TINTS, 15728880, OverlayTexture.NO_OVERLAY, outlineColor, (PoseStack.Pose)null));
          }
       }
 

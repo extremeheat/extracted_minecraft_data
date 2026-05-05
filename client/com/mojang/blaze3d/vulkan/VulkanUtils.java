@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.vulkan;
 
 import com.mojang.blaze3d.systems.BackendCreationException;
-import net.minecraft.util.ARGB;
+import org.joml.Vector4fc;
 import org.lwjgl.vulkan.VkClearColorValue;
 
 public class VulkanUtils {
@@ -82,11 +82,11 @@ public class VulkanUtils {
       return (bitfield & bitmask) == 0L;
    }
 
-   public static VkClearColorValue putArgb(final VkClearColorValue vkClearColor, final int argb) {
-      vkClearColor.float32(0, ARGB.redFloat(argb));
-      vkClearColor.float32(1, ARGB.greenFloat(argb));
-      vkClearColor.float32(2, ARGB.blueFloat(argb));
-      vkClearColor.float32(3, ARGB.alphaFloat(argb));
+   public static VkClearColorValue putArgb(final VkClearColorValue vkClearColor, final Vector4fc argb) {
+      vkClearColor.float32(0, argb.x());
+      vkClearColor.float32(1, argb.y());
+      vkClearColor.float32(2, argb.z());
+      vkClearColor.float32(3, argb.w());
       return vkClearColor;
    }
 }

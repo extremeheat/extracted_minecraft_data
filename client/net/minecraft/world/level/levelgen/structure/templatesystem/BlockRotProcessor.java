@@ -32,9 +32,9 @@ public class BlockRotProcessor implements StructureProcessor {
       this.rottableBlocks = blockTagKey;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       RandomSource random = settings.getRandom(processedBlockInfo.pos());
-      return (!this.rottableBlocks.isPresent() || originalBlockInfo.state().is((HolderSet)this.rottableBlocks.get())) && !(random.nextFloat() <= this.integrity) ? null : processedBlockInfo;
+      return (!this.rottableBlocks.isPresent() || processedBlockInfo.state().is((HolderSet)this.rottableBlocks.get())) && !(random.nextFloat() <= this.integrity) ? null : processedBlockInfo;
    }
 
    public MapCodec<BlockRotProcessor> codec() {

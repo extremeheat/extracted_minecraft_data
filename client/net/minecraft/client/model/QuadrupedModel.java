@@ -44,7 +44,7 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
       return mesh;
    }
 
-   static void createLegs(final PartDefinition root, final boolean mirrorLeftLeg, final boolean mirrorRightLeg, final int legSize, final CubeDeformation g) {
+   public static void createLegs(final PartDefinition root, final boolean mirrorLeftLeg, final boolean mirrorRightLeg, final int legSize, final CubeDeformation g) {
       CubeListBuilder rightLeg = CubeListBuilder.create().mirror(mirrorRightLeg).texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)legSize, 4.0F, g);
       CubeListBuilder leftLeg = CubeListBuilder.create().mirror(mirrorLeftLeg).texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)legSize, 4.0F, g);
       root.addOrReplaceChild("right_hind_leg", rightLeg, PartPose.offset(-3.0F, (float)(24 - legSize), 7.0F));

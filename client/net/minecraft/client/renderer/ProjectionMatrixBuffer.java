@@ -11,8 +11,8 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
 
 public class ProjectionMatrixBuffer implements AutoCloseable {
-   GpuBuffer buffer;
-   GpuBufferSlice bufferSlice;
+   private final GpuBuffer buffer;
+   private final GpuBufferSlice bufferSlice;
    private @Nullable Projection lastUploadedProjection = null;
    private long projectionMatrixVersion = -1L;
    private final Matrix4f tempMatrix = new Matrix4f();

@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class EntryGroup extends CompositeEntryBase {
    public static final MapCodec<EntryGroup> MAP_CODEC = createCodec(EntryGroup::new);
 
-   EntryGroup(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+   public EntryGroup(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
       super(children, conditions);
    }
 

@@ -71,8 +71,8 @@ public class OperatorService {
       }
    }
 
-   static record Op(NameAndId user, Optional<PermissionLevel> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
-      Op {
+   private static record Op(NameAndId user, Optional<PermissionLevel> permissionLevel, Optional<Boolean> bypassesPlayerLimit) {
+      private Op {
          super();
       }
    }

@@ -12,14 +12,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 
 public class VaultSharedData {
-   static final String TAG_NAME = "shared_data";
-   static final Codec<VaultSharedData> CODEC = RecordCodecBuilder.create((i) -> i.group(ItemStack.lenientOptionalFieldOf("display_item").forGetter((vault) -> vault.displayItem), UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("connected_players", Set.of()).forGetter((vault) -> vault.connectedPlayers), Codec.DOUBLE.lenientOptionalFieldOf("connected_particles_range", VaultConfig.DEFAULT.deactivationRange()).forGetter((vault) -> vault.connectedParticlesRange)).apply(i, VaultSharedData::new));
+   public static final String TAG_NAME = "shared_data";
+   public static final Codec<VaultSharedData> CODEC = RecordCodecBuilder.create((i) -> i.group(ItemStack.lenientOptionalFieldOf("display_item").forGetter((vault) -> vault.displayItem), UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("connected_players", Set.of()).forGetter((vault) -> vault.connectedPlayers), Codec.DOUBLE.lenientOptionalFieldOf("connected_particles_range", VaultConfig.DEFAULT.deactivationRange()).forGetter((vault) -> vault.connectedParticlesRange)).apply(i, VaultSharedData::new));
    private ItemStack displayItem;
    private Set<UUID> connectedPlayers;
    private double connectedParticlesRange;
    boolean isDirty;
 
-   VaultSharedData(final ItemStack displayItem, final Set<UUID> connectedPlayers, final double connectedParticlesRange) {
+   public VaultSharedData(final ItemStack displayItem, final Set<UUID> connectedPlayers, final double connectedParticlesRange) {
       super();
       this.displayItem = ItemStack.EMPTY;
       this.connectedPlayers = new ObjectLinkedOpenHashSet();
@@ -29,7 +29,7 @@ public class VaultSharedData {
       this.connectedParticlesRange = connectedParticlesRange;
    }
 
-   VaultSharedData() {
+   public VaultSharedData() {
       super();
       this.displayItem = ItemStack.EMPTY;
       this.connectedPlayers = new ObjectLinkedOpenHashSet();

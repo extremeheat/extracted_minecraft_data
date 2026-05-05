@@ -55,6 +55,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.configurations.TwistingVinesConfig;
 import net.minecraft.world.level.levelgen.feature.configurations.UnderwaterMagmaConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.WeightedRandomFeatureConfiguration;
 
 public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> NO_OP;
@@ -109,7 +110,10 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final BonusChestFeature BONUS_CHEST;
    public static final Feature<NoneFeatureConfiguration> BASALT_PILLAR;
    public static final Feature<OreConfiguration> SCATTERED_ORE;
+   /** @deprecated */
+   @Deprecated
    public static final Feature<RandomFeatureConfiguration> RANDOM_SELECTOR;
+   public static final Feature<WeightedRandomFeatureConfiguration> WEIGHTED_RANDOM_SELECTOR;
    public static final Feature<CompositeFeatureConfiguration> SIMPLE_RANDOM_SELECTOR;
    public static final Feature<RandomBooleanFeatureConfiguration> RANDOM_BOOLEAN_SELECTOR;
    public static final Feature<CompositeFeatureConfiguration> SEQUENCE;
@@ -240,6 +244,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       BASALT_PILLAR = register("basalt_pillar", new BasaltPillarFeature(NoneFeatureConfiguration.CODEC));
       SCATTERED_ORE = register("scattered_ore", new ScatteredOreFeature(OreConfiguration.CODEC));
       RANDOM_SELECTOR = register("random_selector", new RandomSelectorFeature(RandomFeatureConfiguration.CODEC));
+      WEIGHTED_RANDOM_SELECTOR = register("weighted_random_selector", new WeightedRandomSelectorFeature(WeightedRandomFeatureConfiguration.CODEC));
       SIMPLE_RANDOM_SELECTOR = register("simple_random_selector", new SimpleRandomSelectorFeature(CompositeFeatureConfiguration.CODEC));
       RANDOM_BOOLEAN_SELECTOR = register("random_boolean_selector", new RandomBooleanSelectorFeature(RandomBooleanFeatureConfiguration.CODEC));
       SEQUENCE = register("sequence", new SequenceFeature(CompositeFeatureConfiguration.CODEC));

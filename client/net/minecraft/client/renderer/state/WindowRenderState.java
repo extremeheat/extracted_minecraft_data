@@ -6,7 +6,6 @@ public class WindowRenderState {
    public int guiScale;
    public float appropriateLineWidth;
    public boolean isMinimized;
-   public boolean isResized;
 
    public WindowRenderState() {
       super();

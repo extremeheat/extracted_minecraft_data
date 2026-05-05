@@ -107,7 +107,7 @@ public class PlayerSpawnFinder {
    }
 
    private static boolean noCollisionNoLiquid(final CollisionGetter level, final BlockPos pos) {
-      return level.noCollision((Entity)null, PLAYER_DIMENSIONS.makeBoundingBox(pos.getBottomCenter()), true);
+      return level.noCollision((Entity)null, PLAYER_DIMENSIONS.makeBoundingBox(Vec3.atBottomCenterOf(pos)), true);
    }
 
    private static int getCoprime(final int possibleOrigins) {

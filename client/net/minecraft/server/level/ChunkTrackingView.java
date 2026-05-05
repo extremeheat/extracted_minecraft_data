@@ -105,7 +105,7 @@ public interface ChunkTrackingView {
       }
 
       @VisibleForTesting
-      protected boolean squareIntersects(final Positioned other) {
+      boolean squareIntersects(final Positioned other) {
          return this.minX() <= other.maxX() && this.maxX() >= other.minX() && this.minZ() <= other.maxZ() && this.maxZ() >= other.minZ();
       }
 

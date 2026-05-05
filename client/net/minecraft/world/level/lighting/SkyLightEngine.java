@@ -25,7 +25,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
    }
 
    @VisibleForTesting
-   protected SkyLightEngine(final LightChunkGetter chunkSource, final SkyLightSectionStorage storage) {
+   SkyLightEngine(final LightChunkGetter chunkSource, final SkyLightSectionStorage storage) {
       super(chunkSource, storage);
       this.mutablePos = new BlockPos.MutableBlockPos();
       this.emptyChunkSources = new ChunkSkyLightSources(chunkSource.getLevel());

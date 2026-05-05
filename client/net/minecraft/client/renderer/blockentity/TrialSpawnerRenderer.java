@@ -36,7 +36,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
       }
    }
 
-   static void extractSpawnerData(final SpawnerRenderState state, final float partialTicks, final @Nullable Entity displayEntity, final EntityRenderDispatcher entityRenderer, final double oSpin, final double spin) {
+   public static void extractSpawnerData(final SpawnerRenderState state, final float partialTicks, final @Nullable Entity displayEntity, final EntityRenderDispatcher entityRenderer, final double oSpin, final double spin) {
       if (displayEntity != null) {
          state.displayEntity = entityRenderer.extractEntity(displayEntity, partialTicks);
          state.displayEntity.lightCoords = state.lightCoords;

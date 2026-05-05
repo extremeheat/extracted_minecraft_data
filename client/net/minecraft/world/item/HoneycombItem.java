@@ -98,8 +98,8 @@ public class HoneycombItem extends Item implements SignApplicator {
       WAXED_RECIPES = builder.build();
    }
 
-   static record WaxedRecipeGroup(WeatheringCopperCollection<Block> block, Function<Block, Pair<RecipeCategory, String>> recipeIdProvider) {
-      WaxedRecipeGroup {
+   private static record WaxedRecipeGroup(WeatheringCopperCollection<Block> block, Function<Block, Pair<RecipeCategory, String>> recipeIdProvider) {
+      private WaxedRecipeGroup {
          super();
       }
    }

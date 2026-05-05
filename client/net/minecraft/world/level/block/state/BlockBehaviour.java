@@ -1247,10 +1247,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       private static final class Cache {
          private static final Direction[] DIRECTIONS = Direction.values();
          private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
-         protected final VoxelShape collisionShape;
-         protected final boolean largeCollisionShape;
+         public final VoxelShape collisionShape;
+         public final boolean largeCollisionShape;
          private final boolean[] faceSturdy;
-         protected final boolean isCollisionShapeFullBlock;
+         public final boolean isCollisionShapeFullBlock;
 
          private Cache(final BlockState state) {
             super();

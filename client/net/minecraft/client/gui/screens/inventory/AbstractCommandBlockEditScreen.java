@@ -37,9 +37,9 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
 
    }
 
-   abstract BaseCommandBlock getCommandBlock();
+   protected abstract BaseCommandBlock getCommandBlock();
 
-   abstract int getPreviousY();
+   protected abstract int getPreviousY();
 
    protected void init() {
       boolean trackOutput = this.getCommandBlock().isTrackOutput();

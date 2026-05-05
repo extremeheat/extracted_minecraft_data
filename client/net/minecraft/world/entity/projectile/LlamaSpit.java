@@ -43,16 +43,19 @@ public class LlamaSpit extends Projectile {
       double y = this.getY() + movement.y;
       double z = this.getZ() + movement.z;
       this.updateRotation();
-      float inertia = 0.99F;
       if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
          this.discard();
       } else if (this.isInWater()) {
          this.discard();
       } else {
-         this.setDeltaMovement(movement.scale(0.9900000095367432));
+         this.setDeltaMovement(movement.scale((double)this.getAirDrag()));
          this.applyGravity();
          this.setPos(x, y, z);
       }
+   }
+
+   protected float getAirDrag() {
+      return 0.99F;
    }
 
    protected void onHitEntity(final EntityHitResult hitResult) {

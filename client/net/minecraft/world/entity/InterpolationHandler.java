@@ -114,9 +114,9 @@ public class InterpolationHandler {
 
    private static class InterpolationData {
       protected int steps;
-      Vec3 position;
-      float yRot;
-      float xRot;
+      private Vec3 position;
+      private float yRot;
+      private float xRot;
 
       private InterpolationData(final int steps, final Vec3 position, final float yRot, final float xRot) {
          super();

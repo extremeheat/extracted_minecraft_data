@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Function;
 
-abstract class CombiningPredicate implements BlockPredicate {
+public abstract class CombiningPredicate implements BlockPredicate {
    protected final List<BlockPredicate> predicates;
 
    protected CombiningPredicate(final List<BlockPredicate> predicates) {

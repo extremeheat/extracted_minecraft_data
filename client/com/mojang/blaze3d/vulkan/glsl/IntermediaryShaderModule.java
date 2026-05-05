@@ -148,12 +148,20 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
          remainingSamplers.add(sampler.name());
       }
 
+      String previousName = null;
+      int attribLocation = 0;
+
       for(int i = 0; i < inputVariables.size(); ++i) {
          String variableName = (String)inputVariables.get(i);
          SpvVariable inputVariable = this.getInputVariable(variableName);
          if (inputVariable != null) {
-            spvAsIntBuffer.put(inputVariable.locationOffset(), i);
-            remainingInputs.remove(variableName);
+            if (!variableName.equals(previousName)) {
+               spvAsIntBuffer.put(inputVariable.locationOffset(), attribLocation);
+               remainingInputs.remove(variableName);
+            }
+
+            ++attribLocation;
+            previousName = variableName;
          }
       }
 
@@ -171,8 +179,8 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
                SpvSampler sampler = this.getSampler(entry.name());
                if (sampler != null) {
                   if (sampler.dimensions() != 1 && sampler.dimensions() != 3) {
-                     String var21 = SpvcUtil.imageDimensionToString(sampler.dimensions());
-                     throw new ShaderCompileException("Unsupported texture dimensions '" + var21 + "' for sampler " + entry.name());
+                     String var23 = SpvcUtil.imageDimensionToString(sampler.dimensions());
+                     throw new ShaderCompileException("Unsupported texture dimensions '" + var23 + "' for sampler " + entry.name());
                   }
 
                   spvAsIntBuffer.put(sampler.bindingOffset(), i);
@@ -231,7 +239,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       return var5;
    }
 
-   @Nullable SpvUniformBuffer getUniformBuffer(final String name) {
+   private @Nullable SpvUniformBuffer getUniformBuffer(final String name) {
       for(SpvUniformBuffer ubo : this.uniformBuffers) {
          if (ubo.name().equals(name)) {
             return ubo;
@@ -241,7 +249,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       return null;
    }
 
-   @Nullable SpvSampler getSampler(final String name) {
+   private @Nullable SpvSampler getSampler(final String name) {
       for(SpvSampler sampler : this.samplers) {
          if (sampler.name().equals(name)) {
             return sampler;
@@ -251,7 +259,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       return null;
    }
 
-   @Nullable SpvVariable getInputVariable(final String name) {
+   private @Nullable SpvVariable getInputVariable(final String name) {
       for(SpvVariable variable : this.inputs) {
          if (variable.name().equals(name)) {
             return variable;

@@ -40,7 +40,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private static final String TAG_BLOCK_STATE = "block_state";
    public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
-   private static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
+   public static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
    private @Nullable EntityReference<LivingEntity> owner;
    private boolean usedPortal;
    private float explosionPower;
@@ -85,7 +85,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.applyGravity();
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.applyEffectsFromBlocks();
-      this.setDeltaMovement(this.getDeltaMovement().scale(0.98));
+      this.setDeltaMovement(this.getDeltaMovement().scale((double)this.getAirDrag()));
       if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.7, -0.5, 0.7));
       }
@@ -154,7 +154,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    public static int getRandomShortFuse(final int fuse, final RandomSource random) {
-      return random.nextInt(fuse / 4) + fuse / 8;
+      return random.nextInt(Math.max(1, fuse / 4)) + fuse / 8;
    }
 
    public void setBlockState(final BlockState blockState) {

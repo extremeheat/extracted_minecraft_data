@@ -7,8 +7,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
-class DebugEntryVersion implements DebugScreenEntry {
-   DebugEntryVersion() {
+public class DebugEntryVersion implements DebugScreenEntry {
+   public DebugEntryVersion() {
       super();
    }
 

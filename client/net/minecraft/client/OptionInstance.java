@@ -163,7 +163,7 @@ public final class OptionInstance<T> {
       }
    }
 
-   interface CycleableValueSet<T> extends ValueSet<T> {
+   public interface CycleableValueSet<T> extends ValueSet<T> {
       CycleButton.ValueListSupplier<T> valueListSupplier();
 
       default ValueSetter<T> valueSetter() {
@@ -187,7 +187,7 @@ public final class OptionInstance<T> {
       }
    }
 
-   interface SliderableOrCyclableValueSet<T> extends SliderableValueSet<T>, CycleableValueSet<T> {
+   public interface SliderableOrCyclableValueSet<T> extends SliderableValueSet<T>, CycleableValueSet<T> {
       boolean createCycleButton();
 
       default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final ValueUpdateListener<? super T> onValueChanged) {
@@ -341,7 +341,7 @@ public final class OptionInstance<T> {
       }
    }
 
-   interface IntRangeBase extends SliderableValueSet<Integer> {
+   public interface IntRangeBase extends SliderableValueSet<Integer> {
       int minInclusive();
 
       int maxInclusive();

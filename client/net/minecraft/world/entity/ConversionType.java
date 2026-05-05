@@ -15,7 +15,7 @@ import net.minecraft.world.scores.Scoreboard;
 
 public enum ConversionType {
    SINGLE(true) {
-      void convert(final Mob from, final Mob to, final ConversionParams params) {
+      public void convert(final Mob from, final Mob to, final ConversionParams params) {
          Entity rootPassenger = from.getFirstPassenger();
          to.copyPosition(from);
          to.setDeltaMovement(from.getDeltaMovement());
@@ -61,11 +61,11 @@ public enum ConversionType {
             to.setLeashedTo(leashHolder, true);
          }
 
-         this.convertCommon(from, to, params);
+         ConversionType.convertCommon(from, to, params);
       }
    },
    SPLIT_ON_DEATH(false) {
-      void convert(final Mob from, final Mob to, final ConversionParams params) {
+      public void convert(final Mob from, final Mob to, final ConversionParams params) {
          Entity rootPassenger = from.getFirstPassenger();
          if (rootPassenger != null) {
             rootPassenger.stopRiding();
@@ -76,7 +76,7 @@ public enum ConversionType {
             from.dropLeash();
          }
 
-         this.convertCommon(from, to, params);
+         ConversionType.convertCommon(from, to, params);
       }
    };
 
@@ -91,9 +91,9 @@ public enum ConversionType {
       return this.discardAfterConversion;
    }
 
-   abstract void convert(final Mob from, final Mob to, final ConversionParams params);
+   public abstract void convert(Mob from, Mob to, ConversionParams params);
 
-   void convertCommon(final Mob from, final Mob to, final ConversionParams params) {
+   private static void convertCommon(final Mob from, final Mob to, final ConversionParams params) {
       to.setAbsorptionAmount(from.getAbsorptionAmount());
 
       for(MobEffectInstance effect : from.getActiveEffects()) {

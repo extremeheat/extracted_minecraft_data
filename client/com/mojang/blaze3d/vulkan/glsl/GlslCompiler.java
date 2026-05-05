@@ -5,6 +5,8 @@ import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.blaze3d.vulkan.VulkanBindGroupLayout;
 import com.mojang.blaze3d.vulkan.VulkanDevice;
 import java.nio.ByteBuffer;
@@ -55,7 +57,7 @@ public class GlslCompiler implements AutoCloseable {
       return var10;
    }
 
-   public CompiledModules compile(final VulkanDevice device, final RenderPipeline pipeline, final IntermediaryShaderModule vertex, final IntermediaryShaderModule fragment, final List<String> vertexInputs) throws ShaderCompileException {
+   public CompiledModules compile(final VulkanDevice device, final RenderPipeline pipeline, final IntermediaryShaderModule vertex, final IntermediaryShaderModule fragment) throws ShaderCompileException {
       String pipelineName = pipeline.getLocation().toString();
       List<VulkanBindGroupLayout.Entry> entries = new ArrayList();
       addToBindGroup(entries, vertex, pipeline);
@@ -66,7 +68,17 @@ public class GlslCompiler implements AutoCloseable {
          vertexOutputNames.add(output.name());
       }
 
-      vertex.rebind(vertexInputs, entries);
+      List<String> vertexInputNames = new ArrayList();
+
+      for(VertexFormat vertexFormat : pipeline.getVertexFormatBindings()) {
+         if (vertexFormat != null) {
+            for(VertexFormatElement attribute : vertexFormat.getElements()) {
+               vertexInputNames.add(attribute.name());
+            }
+         }
+      }
+
+      vertex.rebind(vertexInputNames, entries);
       fragment.rebind(vertexOutputNames, entries);
       long vertexId = vertex.createVulkanShaderModule(device);
       long fragmentId = fragment.createVulkanShaderModule(device);

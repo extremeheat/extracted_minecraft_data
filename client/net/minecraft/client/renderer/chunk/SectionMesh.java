@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.IndexType;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.Direction;
@@ -37,7 +37,7 @@ public interface SectionMesh extends AutoCloseable {
    default void close() {
    }
 
-   public static record SectionDraw(int indexCount, VertexFormat.IndexType indexType, boolean hasCustomIndexBuffer) {
+   public static record SectionDraw(int indexCount, IndexType indexType, boolean hasCustomIndexBuffer) {
       public SectionDraw {
          super();
       }

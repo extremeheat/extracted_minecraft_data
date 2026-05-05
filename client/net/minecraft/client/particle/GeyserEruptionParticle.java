@@ -55,7 +55,7 @@ public class GeyserEruptionParticle extends NoRenderParticle {
    }
 
    public static class Provider implements ParticleProvider<GeyserParticleOptions> {
-      public Provider(final SpriteSet sprites) {
+      public Provider() {
          super();
       }
 

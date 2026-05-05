@@ -106,7 +106,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
       level.removeBlock(position, false);
       HappyGhast ghastling = EntityTypes.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
       if (ghastling != null) {
-         Vec3 spawnAt = position.getBottomCenter();
+         Vec3 spawnAt = Vec3.atBottomCenterOf(position);
          ghastling.setBaby(true);
          float blockRotation = Direction.getYRot((Direction)state.getValue(FACING));
          ghastling.setYHeadRot(blockRotation);

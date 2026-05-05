@@ -34,7 +34,7 @@ public class NoxiousGasCloudParticle extends NoRenderParticle {
       RandomSource random = level.getRandom();
       Vec3 horizontalDirection = (new Vec3((double)(random.nextFloat() - 0.5F), 0.0, (double)(random.nextFloat() - 0.5F))).normalize();
       float distance = random.nextFloat() * 3.0F;
-      return centerBlock.getCenter().add(horizontalDirection.scale((double)distance)).subtract(0.0, 0.25, 0.0);
+      return Vec3.atCenterOf(centerBlock).add(horizontalDirection.scale((double)distance)).subtract(0.0, 0.25, 0.0);
    }
 
    private static void spawnNoxiousGasParticle(final Level level, final Vec3 pos) {

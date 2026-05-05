@@ -14,7 +14,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.chunk.status.ChunkPyramid;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jspecify.annotations.Nullable;
 
 public record ChunkPos(int x, int z) {
@@ -22,8 +21,6 @@ public record ChunkPos(int x, int z) {
    public static final StreamCodec<ByteBuf, ChunkPos> STREAM_CODEC;
    private static final int SAFETY_MARGIN = 1056;
    public static final long INVALID_CHUNK_POS;
-   private static final int SAFETY_MARGIN_CHUNKS;
-   public static final int MAX_COORDINATE_VALUE;
    public static final ChunkPos ZERO;
    private static final long COORD_BITS = 32L;
    private static final long COORD_MASK = 4294967295L;
@@ -60,7 +57,7 @@ public record ChunkPos(int x, int z) {
    }
 
    public static boolean isValid(final int x, final int z) {
-      return Mth.absMax(x, z) <= MAX_COORDINATE_VALUE;
+      return Mth.absMax(x, z) <= ChunkPyramid.MAX_CHUNK_COORDINATE_VALUE;
    }
 
    public long pack() {
@@ -238,8 +235,6 @@ public record ChunkPos(int x, int z) {
          }
       };
       INVALID_CHUNK_POS = pack(1875066, 1875066);
-      SAFETY_MARGIN_CHUNKS = (32 + ChunkPyramid.GENERATION_PYRAMID.getStepTo(ChunkStatus.FULL).accumulatedDependencies().size() + 1) * 2;
-      MAX_COORDINATE_VALUE = SectionPos.blockToSectionCoord(BlockPos.MAX_HORIZONTAL_COORDINATE) - SAFETY_MARGIN_CHUNKS;
       ZERO = new ChunkPos(0, 0);
    }
 }

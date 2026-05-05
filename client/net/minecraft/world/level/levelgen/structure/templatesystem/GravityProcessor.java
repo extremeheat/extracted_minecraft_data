@@ -20,7 +20,7 @@ public class GravityProcessor implements StructureProcessor {
       this.offset = offset;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       Heightmap.Types heightmap;
       if (level instanceof ServerLevel) {
          if (this.heightmap == Heightmap.Types.WORLD_SURFACE_WG) {
@@ -36,7 +36,7 @@ public class GravityProcessor implements StructureProcessor {
 
       BlockPos pos = processedBlockInfo.pos();
       int height = level.getHeight(heightmap, pos.getX(), pos.getZ()) + this.offset;
-      int delta = originalBlockInfo.pos().getY();
+      int delta = templateRelativePos.getY();
       return new StructureTemplate.StructureBlockInfo(new BlockPos(pos.getX(), height + delta, pos.getZ()), processedBlockInfo.state(), processedBlockInfo.nbt());
    }
 

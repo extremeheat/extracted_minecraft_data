@@ -1,7 +1,22 @@
 package com.mojang.blaze3d.vertex;
 
+import com.mojang.blaze3d.GpuFormat;
+
 public class DefaultVertexFormat {
-   public static final VertexFormat EMPTY = VertexFormat.builder().build();
+   public static final String POSITION_SEMANTIC_NAME = "Position";
+   public static final String COLOR_SEMANTIC_NAME = "Color";
+   public static final String UV0_SEMANTIC_NAME = "UV0";
+   public static final String UV1_SEMANTIC_NAME = "UV1";
+   public static final String UV2_SEMANTIC_NAME = "UV2";
+   public static final String NORMAL_SEMANTIC_NAME = "Normal";
+   public static final String LINE_WIDTH_SEMANTIC_NAME = "LineWidth";
+   private static final GpuFormat POSITION_FORMAT;
+   private static final GpuFormat COLOR_FORMAT;
+   private static final GpuFormat UV0_FORMAT;
+   private static final GpuFormat UV1_FORMAT;
+   private static final GpuFormat UV2_FORMAT;
+   private static final GpuFormat NORMAL_FORMAT;
+   private static final GpuFormat LINE_WIDTH_FORMAT;
    public static final VertexFormat BLOCK;
    public static final VertexFormat ENTITY;
    public static final VertexFormat PARTICLE;
@@ -22,19 +37,26 @@ public class DefaultVertexFormat {
    }
 
    static {
-      BLOCK = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).build();
-      ENTITY = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV1", VertexFormatElement.UV1).add("UV2", VertexFormatElement.UV2).add("Normal", VertexFormatElement.NORMAL).build();
-      PARTICLE = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("Color", VertexFormatElement.COLOR).add("UV2", VertexFormatElement.UV2).build();
-      POSITION = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).build();
-      POSITION_COLOR = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).build();
-      POSITION_COLOR_NORMAL = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("Normal", VertexFormatElement.NORMAL).build();
-      POSITION_COLOR_LIGHTMAP = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV2", VertexFormatElement.UV2).build();
-      POSITION_TEX = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).build();
-      POSITION_TEX_COLOR = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("Color", VertexFormatElement.COLOR).build();
-      POSITION_COLOR_TEX_LIGHTMAP = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).build();
-      POSITION_TEX_LIGHTMAP_COLOR = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).add("Color", VertexFormatElement.COLOR).build();
-      POSITION_TEX_COLOR_NORMAL = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("Color", VertexFormatElement.COLOR).add("Normal", VertexFormatElement.NORMAL).build();
-      POSITION_COLOR_LINE_WIDTH = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("LineWidth", VertexFormatElement.LINE_WIDTH).build();
-      POSITION_COLOR_NORMAL_LINE_WIDTH = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("Normal", VertexFormatElement.NORMAL).add("LineWidth", VertexFormatElement.LINE_WIDTH).build();
+      POSITION_FORMAT = GpuFormat.RGB32_FLOAT;
+      COLOR_FORMAT = GpuFormat.RGBA8_UNORM;
+      UV0_FORMAT = GpuFormat.RG32_FLOAT;
+      UV1_FORMAT = GpuFormat.RG16_SINT;
+      UV2_FORMAT = GpuFormat.RG16_SINT;
+      NORMAL_FORMAT = GpuFormat.RGBA8_SNORM;
+      LINE_WIDTH_FORMAT = GpuFormat.R32_FLOAT;
+      BLOCK = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV2", UV2_FORMAT).build();
+      ENTITY = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV1", UV1_FORMAT).addAttribute("UV2", UV2_FORMAT).addAttribute("Normal", NORMAL_FORMAT).build();
+      PARTICLE = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV2", UV2_FORMAT).build();
+      POSITION = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).build();
+      POSITION_COLOR = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).build();
+      POSITION_COLOR_NORMAL = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("Normal", NORMAL_FORMAT).build();
+      POSITION_COLOR_LIGHTMAP = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV2", UV2_FORMAT).build();
+      POSITION_TEX = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).build();
+      POSITION_TEX_COLOR = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("Color", COLOR_FORMAT).build();
+      POSITION_COLOR_TEX_LIGHTMAP = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV2", UV2_FORMAT).build();
+      POSITION_TEX_LIGHTMAP_COLOR = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV2", UV2_FORMAT).addAttribute("Color", COLOR_FORMAT).build();
+      POSITION_TEX_COLOR_NORMAL = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("Normal", NORMAL_FORMAT).build();
+      POSITION_COLOR_LINE_WIDTH = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("LineWidth", LINE_WIDTH_FORMAT).build();
+      POSITION_COLOR_NORMAL_LINE_WIDTH = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("Normal", NORMAL_FORMAT).addAttribute("LineWidth", LINE_WIDTH_FORMAT).build();
    }
 }

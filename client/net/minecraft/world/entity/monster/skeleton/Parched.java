@@ -44,7 +44,7 @@ public class Parched extends AbstractSkeleton {
       return SoundEvents.PARCHED_DEATH;
    }
 
-   SoundEvent getStepSound() {
+   protected SoundEvent getStepSound() {
       return SoundEvents.PARCHED_STEP;
    }
 

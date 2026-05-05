@@ -62,7 +62,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private final Projection projection;
    private Frustum cullFrustum;
    private @Nullable Frustum capturedFrustum;
-   boolean captureFrustum;
+   private boolean captureFrustum;
    private final Matrix4f cachedViewRotMatrix;
    private final Matrix4f cachedViewRotProjMatrix;
    private long lastProjectionVersion;

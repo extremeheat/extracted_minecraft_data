@@ -9,9 +9,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 
-class MatchingFluidsPredicate extends StateTestingPredicate {
-   private final HolderSet<Fluid> fluids;
+public class MatchingFluidsPredicate extends StateTestingPredicate {
    public static final MapCodec<MatchingFluidsPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).and(RegistryCodecs.homogeneousList(Registries.FLUID).fieldOf("fluids").forGetter((c) -> c.fluids)).apply(i, MatchingFluidsPredicate::new));
+   private final HolderSet<Fluid> fluids;
 
    public MatchingFluidsPredicate(final Vec3i offset, final HolderSet<Fluid> fluids) {
       super(offset);

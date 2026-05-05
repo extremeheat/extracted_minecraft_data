@@ -14,6 +14,7 @@ import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public abstract class RandomizableContainerBlockEntity extends BaseContainerBlockEntity implements RandomizableContainer {
@@ -75,7 +76,7 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
          return this.createMenu(containerId, inventory);
       } else {
          if (!player.isSpectator()) {
-            BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), player, this.getDisplayName());
+            BaseContainerBlockEntity.sendChestLockedNotifications(Vec3.atCenterOf(this.getBlockPos()), player, this.getDisplayName());
          }
 
          return null;

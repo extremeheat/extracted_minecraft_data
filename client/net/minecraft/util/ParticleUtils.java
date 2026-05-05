@@ -108,7 +108,7 @@ public class ParticleUtils {
    }
 
    public static void spawnSmashAttackParticles(final LevelAccessor level, final BlockPos pos, final int count) {
-      Vec3 center = pos.getCenter().add(0.0, 0.5, 0.0);
+      Vec3 center = Vec3.atCenterOf(pos).add(0.0, 0.5, 0.0);
       BlockParticleOption particle = new BlockParticleOption(ParticleTypes.DUST_PILLAR, level.getBlockState(pos));
 
       for(int i = 0; (float)i < (float)count / 3.0F; ++i) {

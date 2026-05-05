@@ -114,7 +114,7 @@ public class Skeleton extends AbstractSkeleton {
       return SoundEvents.SKELETON_DEATH;
    }
 
-   SoundEvent getStepSound() {
+   protected SoundEvent getStepSound() {
       return SoundEvents.SKELETON_STEP;
    }
 

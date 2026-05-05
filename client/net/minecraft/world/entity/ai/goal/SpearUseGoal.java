@@ -14,10 +14,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class SpearUseGoal<T extends Monster> extends Goal {
-   static final int MIN_REPOSITION_DISTANCE = 6;
-   static final int MAX_REPOSITION_DISTANCE = 7;
-   static final int MIN_COOLDOWN_DISTANCE = 9;
-   static final int MAX_COOLDOWN_DISTANCE = 11;
+   private static final int MIN_REPOSITION_DISTANCE = 6;
+   private static final int MAX_REPOSITION_DISTANCE = 7;
+   private static final int MIN_COOLDOWN_DISTANCE = 9;
+   private static final int MAX_COOLDOWN_DISTANCE = 11;
    private static final double MAX_FLEEING_TIME = (double)reducedTickDelay(100);
    private final T mob;
    private @Nullable SpearUseState state;

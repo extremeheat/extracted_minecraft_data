@@ -240,11 +240,11 @@ public class LeavesFix extends DataFix {
          return this.storage.get(pos);
       }
 
-      protected int getStateId(final String blockName, final boolean persistent, final int distance) {
+      protected static int getStateId(final String blockName, final boolean persistent, final int distance) {
          return LeavesFix.LEAVES.get(blockName) << 5 | (persistent ? 16 : 0) | distance;
       }
 
-      int getIndex() {
+      public int getIndex() {
          return this.index;
       }
 
@@ -274,7 +274,7 @@ public class LeavesFix extends DataFix {
             if (LeavesFix.LEAVES.containsKey(blockName)) {
                boolean persistent = Objects.equals(paletteTag.get("Properties").get("decayable").asString(""), "false");
                this.leaveIds.add(i);
-               this.stateToIdMap.put(this.getStateId(blockName, persistent, 7), i);
+               this.stateToIdMap.put(getStateId(blockName, persistent, 7), i);
                this.palette.set(i, this.makeLeafTag(paletteTag, blockName, persistent, 7));
             }
 
@@ -312,7 +312,7 @@ public class LeavesFix extends DataFix {
          Dynamic<?> baseTag = (Dynamic)this.palette.get(block);
          String blockName = baseTag.get("Name").asString("");
          boolean persistent = Objects.equals(baseTag.get("Properties").get("persistent").asString(""), "true");
-         int stateId = this.getStateId(blockName, persistent, distance);
+         int stateId = getStateId(blockName, persistent, distance);
          if (!this.stateToIdMap.containsKey(stateId)) {
             int id = this.palette.size();
             this.leaveIds.add(id);

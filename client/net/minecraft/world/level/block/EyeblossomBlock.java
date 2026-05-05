@@ -148,7 +148,7 @@ public class EyeblossomBlock extends FlowerBlock {
       }
 
       public void spawnTransformParticle(final ServerLevel level, final BlockPos pos, final RandomSource random) {
-         Vec3 start = pos.getCenter();
+         Vec3 start = Vec3.atCenterOf(pos);
          double lifetime = 0.5 + random.nextDouble();
          Vec3 velocity = new Vec3(random.nextDouble() - 0.5, random.nextDouble() + 1.0, random.nextDouble() - 0.5);
          Vec3 target = start.add(velocity.scale(lifetime));

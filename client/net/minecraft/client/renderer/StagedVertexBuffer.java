@@ -1,6 +1,9 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -39,17 +42,17 @@ public class StagedVertexBuffer implements AutoCloseable {
       this.indexBufferPool = new GpuBufferPool(() -> (String)label.get() + " - Index", 72);
    }
 
-   public Draw appendDraw(final VertexFormat format, final VertexFormat.Mode mode) {
-      return this.appendDraw(format, mode, (VertexSorting)null);
+   public Draw appendDraw(final VertexFormat format, final PrimitiveTopology primitiveTopology) {
+      return this.appendDraw(format, primitiveTopology, (VertexSorting)null);
    }
 
-   public Draw appendDraw(final VertexFormat format, final VertexFormat.Mode mode, final @Nullable VertexSorting quadSorting) {
+   public Draw appendDraw(final VertexFormat format, final PrimitiveTopology primitiveTopology, final @Nullable VertexSorting quadSorting) {
       if (this.currentVertexBuffer != null) {
          throw new IllegalStateException("Cannot append draw after upload");
-      } else if (quadSorting != null && mode != VertexFormat.Mode.QUADS) {
-         throw new IllegalArgumentException("Cannot sort draw with " + String.valueOf(mode));
+      } else if (quadSorting != null && primitiveTopology != PrimitiveTopology.QUADS) {
+         throw new IllegalArgumentException("Cannot sort draw with " + String.valueOf(primitiveTopology));
       } else {
-         Draw draw = new Draw(format, mode, quadSorting);
+         Draw draw = new Draw(format, primitiveTopology, quadSorting);
          this.draws.add(draw);
          return draw;
       }
@@ -63,7 +66,7 @@ public class StagedVertexBuffer implements AutoCloseable {
       } else {
          this.finishLastVertexBuilder();
          this.lastBuildingDraw = draw;
-         this.lastVertexBuilder = new BufferBuilder(this.stagingBuffer, draw.mode, draw.format);
+         this.lastVertexBuilder = new BufferBuilder(this.stagingBuffer, draw.primitiveTopology, draw.format);
          return this.lastVertexBuilder;
       }
    }
@@ -93,11 +96,11 @@ public class StagedVertexBuffer implements AutoCloseable {
                draw.vertexOffset = Mth.roundToward(nextVertexOffset, draw.format.getVertexSize());
                nextVertexOffset = draw.vertexOffset + draw.vertexBufferSize;
                if (draw.quadSorting != null) {
-                  VertexFormat.IndexType indexType = draw.indexType();
+                  IndexType indexType = draw.indexType();
                   draw.indexOffset = Mth.roundToward(nextIndexOffset, indexType.bytes);
                   nextIndexOffset = draw.indexOffset + draw.indexCount * indexType.bytes;
                } else {
-                  RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.mode);
+                  RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
                   autoIndices.getBuffer(draw.indexCount);
                }
             }
@@ -117,7 +120,7 @@ public class StagedVertexBuffer implements AutoCloseable {
       int stagingBufferSize = vertexBufferSize + indexBufferSize;
       GpuBuffer stagingBuffer = this.stagingGpuBufferPool.acquire(device, stagingBufferSize);
 
-      try (GpuBuffer.MappedView view = commandEncoder.mapBuffer(stagingBuffer.slice(0L, (long)stagingBufferSize), false, true)) {
+      try (GpuBufferSlice.MappedView view = stagingBuffer.slice(0L, (long)stagingBufferSize).map(false, true)) {
          ByteBuffer buffer = view.data();
 
          for(Draw draw : draws) {
@@ -172,11 +175,11 @@ public class StagedVertexBuffer implements AutoCloseable {
       } else {
          int baseVertex = draw.vertexOffset / draw.format.getVertexSize();
          if (this.currentIndexBuffer != null && draw.quadSorting != null) {
-            VertexFormat.IndexType indexType = draw.indexType();
+            IndexType indexType = draw.indexType();
             int firstIndex = draw.indexOffset / indexType.bytes;
             return new ExecuteInfo(this.currentVertexBuffer, this.currentIndexBuffer, indexType, baseVertex, firstIndex, draw.indexCount);
          } else {
-            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.mode);
+            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
             GpuBuffer indexBuffer = autoIndices.getBuffer(draw.indexCount);
             return new ExecuteInfo(this.currentVertexBuffer, indexBuffer, autoIndices.type(), baseVertex, 0, draw.indexCount);
          }
@@ -312,7 +315,7 @@ public class StagedVertexBuffer implements AutoCloseable {
 
    public static class Draw {
       private final VertexFormat format;
-      private final VertexFormat.Mode mode;
+      private final PrimitiveTopology primitiveTopology;
       private final @Nullable VertexSorting quadSorting;
       private final List<ByteBufferBuilder.Result> vertexBufferSlices = new ArrayList();
       private int vertexBufferSize;
@@ -321,10 +324,10 @@ public class StagedVertexBuffer implements AutoCloseable {
       private int vertexOffset;
       private int indexOffset;
 
-      private Draw(final VertexFormat format, final VertexFormat.Mode mode, final @Nullable VertexSorting quadSorting) {
+      private Draw(final VertexFormat format, final PrimitiveTopology primitiveTopology, final @Nullable VertexSorting quadSorting) {
          super();
          this.format = format;
-         this.mode = mode;
+         this.primitiveTopology = primitiveTopology;
          this.quadSorting = quadSorting;
       }
 
@@ -337,8 +340,8 @@ public class StagedVertexBuffer implements AutoCloseable {
          this.indexCount += mesh.drawState().indexCount();
       }
 
-      private VertexFormat.IndexType indexType() {
-         return VertexFormat.IndexType.least(this.vertexCount);
+      private IndexType indexType() {
+         return IndexType.least(this.vertexCount);
       }
 
       private void freeVertexData() {
@@ -351,7 +354,7 @@ public class StagedVertexBuffer implements AutoCloseable {
       }
    }
 
-   public static record ExecuteInfo(GpuBuffer vertexBuffer, GpuBuffer indexBuffer, VertexFormat.IndexType indexType, int baseVertex, int firstIndex, int indexCount) {
+   public static record ExecuteInfo(GpuBuffer vertexBuffer, GpuBuffer indexBuffer, IndexType indexType, int baseVertex, int firstIndex, int indexCount) {
       public ExecuteInfo {
          super();
       }

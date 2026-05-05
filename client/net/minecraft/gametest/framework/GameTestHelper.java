@@ -171,11 +171,15 @@ public class GameTestHelper {
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos) {
-      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
+      return (E)this.spawn(entityType, (Vec3)pos, (EntitySpawnReason)null);
    }
 
    public <E extends Mob> E spawn(final EntityType<E> entityType, final double x, final double y, final double z, final EntitySpawnReason entitySpawnReason) {
       return (E)(this.spawn(entityType, new Vec3(x, y, z), entitySpawnReason));
+   }
+
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos, final @Nullable EntitySpawnReason spawnReason) {
+      return (E)this.spawnEntity(entityType, pos).spawnReason(spawnReason).spawn();
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
@@ -290,7 +294,7 @@ public class GameTestHelper {
    }
 
    public void moveTo(final Mob mob, final BlockPos pos) {
-      this.moveTo(mob, pos.getBottomCenter());
+      this.moveTo(mob, Vec3.atBottomCenterOf(pos));
    }
 
    public void moveTo(final Mob mob, final Vec3 pos) {

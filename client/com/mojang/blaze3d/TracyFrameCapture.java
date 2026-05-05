@@ -1,6 +1,7 @@
 package com.mojang.blaze3d;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -10,7 +11,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.jtracy.TracyClient;
-import java.util.OptionalInt;
+import java.util.Optional;
 import net.minecraft.client.renderer.RenderPipelines;
 
 public class TracyFrameCapture implements AutoCloseable {
@@ -79,7 +80,7 @@ public class TracyFrameCapture implements AutoCloseable {
          this.status = TracyFrameCapture.Status.WAITING_FOR_COPY;
          CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, Optional.empty())) {
             renderPass.setPipeline(RenderPipelines.TRACY_BLIT);
             renderPass.bindTexture("InSampler", captureTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             renderPass.draw(0, 3);
@@ -94,7 +95,7 @@ public class TracyFrameCapture implements AutoCloseable {
       if (this.status == TracyFrameCapture.Status.WAITING_FOR_UPLOAD) {
          this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
 
-         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.pixelbuffer, true, false)) {
+         try (GpuBufferSlice.MappedView view = this.pixelbuffer.map(true, false)) {
             TracyClient.frameImage(view.data(), this.width, this.height, this.lastCaptureDelay, true);
          }
 
@@ -113,7 +114,7 @@ public class TracyFrameCapture implements AutoCloseable {
       this.pixelbuffer.close();
    }
 
-   static enum Status {
+   private static enum Status {
       WAITING_FOR_CAPTURE,
       WAITING_FOR_COPY,
       WAITING_FOR_UPLOAD;

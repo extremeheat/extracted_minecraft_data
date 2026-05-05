@@ -420,17 +420,17 @@ public interface Leashable {
    }
 
    public static record Wrench(Vec3 force, double torque) {
-      static final Wrench ZERO;
+      public static final Wrench ZERO;
 
       public Wrench {
          super();
       }
 
-      static double torqueFromForce(final Vec3 leverArm, final Vec3 force) {
+      public static double torqueFromForce(final Vec3 leverArm, final Vec3 force) {
          return leverArm.z * force.x - leverArm.x * force.z;
       }
 
-      static Wrench accumulate(final List<Wrench> wrenches) {
+      public static Wrench accumulate(final List<Wrench> wrenches) {
          if (wrenches.isEmpty()) {
             return ZERO;
          } else {

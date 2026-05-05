@@ -5,7 +5,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
 
-class AllOfPredicate extends CombiningPredicate {
+public class AllOfPredicate extends CombiningPredicate {
    public static final MapCodec<AllOfPredicate> CODEC = codec(AllOfPredicate::new);
 
    public AllOfPredicate(final List<BlockPredicate> predicates) {

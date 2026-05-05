@@ -139,7 +139,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
       if (this.exitPortal != null) {
          BlockPos pos = this.exactTeleport ? this.exitPortal : findExitPosition(currentLevel, this.exitPortal);
-         return pos.getBottomCenter();
+         return Vec3.atBottomCenterOf(pos);
       } else {
          return null;
       }

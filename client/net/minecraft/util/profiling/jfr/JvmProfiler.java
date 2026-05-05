@@ -48,7 +48,7 @@ public interface JvmProfiler {
 
    public static class NoOpProfiler implements JvmProfiler {
       private static final Logger LOGGER = LogUtils.getLogger();
-      static final ProfiledDuration noOpCommit = (ignored) -> {
+      private static final ProfiledDuration NO_OP_COMMIT = (ignored) -> {
       };
 
       public NoOpProfiler() {
@@ -91,7 +91,7 @@ public interface JvmProfiler {
       }
 
       public ProfiledDuration onWorldLoadedStarted() {
-         return noOpCommit;
+         return NO_OP_COMMIT;
       }
 
       public @Nullable ProfiledDuration onChunkGenerate(final ChunkPos pos, final ResourceKey<Level> dimension, final String name) {
@@ -99,7 +99,7 @@ public interface JvmProfiler {
       }
 
       public ProfiledDuration onStructureGenerate(final ChunkPos sourceChunkPos, final ResourceKey<Level> dimension, final Holder<Structure> structure) {
-         return noOpCommit;
+         return NO_OP_COMMIT;
       }
    }
 }

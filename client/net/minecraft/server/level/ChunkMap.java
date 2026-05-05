@@ -887,7 +887,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return contextTag;
    }
 
-   void collectSpawningChunks(final List<LevelChunk> output) {
+   public void collectSpawningChunks(final List<LevelChunk> output) {
       LongIterator spawnCandidateChunks = this.distanceManager.getSpawnCandidateChunks();
 
       while(spawnCandidateChunks.hasNext()) {
@@ -902,7 +902,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
 
    }
 
-   void forEachBlockTickingChunk(final Consumer<LevelChunk> tickingChunkConsumer) {
+   public void forEachBlockTickingChunk(final Consumer<LevelChunk> tickingChunkConsumer) {
       this.distanceManager.forEachEntityTickingChunk((chunkPos) -> {
          ChunkHolder holder = (ChunkHolder)this.visibleChunkMap.get(chunkPos);
          if (holder != null) {
@@ -914,12 +914,12 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       });
    }
 
-   boolean anyPlayerCloseEnoughForSpawning(final ChunkPos pos) {
+   public boolean anyPlayerCloseEnoughForSpawning(final ChunkPos pos) {
       TriState triState = this.distanceManager.hasPlayersNearby(pos.pack());
       return triState == TriState.DEFAULT ? this.anyPlayerCloseEnoughForSpawningInternal(pos) : triState.toBoolean(true);
    }
 
-   boolean anyPlayerCloseEnoughTo(final BlockPos pos, final int maxDistance) {
+   public boolean anyPlayerCloseEnoughTo(final BlockPos pos, final int maxDistance) {
       Vec3 target = new Vec3(pos);
 
       for(ServerPlayer player : this.playerMap.getAllPlayers()) {
@@ -988,7 +988,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return player.isSpectator() && !(Boolean)this.level.getGameRules().get(GameRules.SPECTATORS_GENERATE_CHUNKS);
    }
 
-   void updatePlayerStatus(final ServerPlayer player, final boolean added) {
+   private void updatePlayerStatus(final ServerPlayer player, final boolean added) {
       boolean ignored = this.skipPlayer(player);
       boolean wasIgnored = this.playerMap.ignoredOrUnknown(player);
       if (added) {

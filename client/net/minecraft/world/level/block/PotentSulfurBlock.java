@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.PotentSulfurState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
@@ -83,6 +84,7 @@ public class PotentSulfurBlock extends BaseEntityBlock {
       if (state.getValue(STATE) == PotentSulfurState.ERUPTING) {
          level.blockEvent(pos, this, 0, 0);
          level.playSound((Entity)null, (BlockPos)pos, SoundEvents.GEYSER_ERUPTION_START, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(state));
       }
 
    }

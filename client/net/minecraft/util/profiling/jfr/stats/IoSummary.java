@@ -44,7 +44,7 @@ public final class IoSummary<T> {
          super();
       }
 
-      CountAndSize add(final CountAndSize that) {
+      public CountAndSize add(final CountAndSize that) {
          return new CountAndSize(this.totalCount + that.totalCount, this.totalSize + that.totalSize);
       }
 

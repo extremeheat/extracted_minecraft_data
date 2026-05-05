@@ -40,7 +40,7 @@ public class RecipePropertySet {
       return this.items.contains(itemStack.typeHolder());
    }
 
-   static RecipePropertySet create(final Collection<Ingredient> ingredients) {
+   public static RecipePropertySet create(final Collection<Ingredient> ingredients) {
       Set<Holder<Item>> items = (Set)ingredients.stream().flatMap(Ingredient::items).collect(Collectors.toUnmodifiableSet());
       return new RecipePropertySet(items);
    }

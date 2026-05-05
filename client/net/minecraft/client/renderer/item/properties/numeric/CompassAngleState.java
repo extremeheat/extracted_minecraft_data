@@ -129,7 +129,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
          return this.name;
       }
 
-      abstract @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner entity);
+      public abstract @Nullable GlobalPos get(final ClientLevel level, final ItemStack itemStack, final @Nullable ItemOwner entity);
 
       // $FF: synthetic method
       private static CompassTarget[] $values() {

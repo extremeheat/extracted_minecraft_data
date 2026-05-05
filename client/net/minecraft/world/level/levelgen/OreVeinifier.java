@@ -21,7 +21,7 @@ public final class OreVeinifier {
       super();
    }
 
-   protected static NoiseChunk.BlockStateFiller create(final DensityFunction veinToggle, final DensityFunction veinRidged, final DensityFunction veinGap, final PositionalRandomFactory oreVeinsPositionalRandomFactory) {
+   static NoiseChunk.BlockStateFiller create(final DensityFunction veinToggle, final DensityFunction veinRidged, final DensityFunction veinGap, final PositionalRandomFactory oreVeinsPositionalRandomFactory) {
       BlockState defaultState = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
       return (context) -> {
          double oreVeininessNoiseValue = veinToggle.compute(context);

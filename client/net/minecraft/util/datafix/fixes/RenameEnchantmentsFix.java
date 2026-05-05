@@ -14,8 +14,8 @@ import java.util.function.Function;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class RenameEnchantmentsFix extends DataFix {
-   final String name;
-   final Map<String, String> renames;
+   private final String name;
+   private final Map<String, String> renames;
 
    public RenameEnchantmentsFix(final Schema outputSchema, final String name, final Map<String, String> renames) {
       super(outputSchema, false);

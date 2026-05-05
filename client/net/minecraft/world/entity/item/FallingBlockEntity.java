@@ -231,7 +231,7 @@ public class FallingBlockEntity extends Entity {
             }
          }
 
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.98));
+         this.setDeltaMovement(this.getDeltaMovement().scale((double)this.getAirDrag()));
       }
    }
 

@@ -114,13 +114,13 @@ public class CauldronInteractions {
       addDefaultInteractions(POWDER_SNOW);
    }
 
-   static void addDefaultInteractions(final CauldronInteraction.Dispatcher interactionMap) {
+   public static void addDefaultInteractions(final CauldronInteraction.Dispatcher interactionMap) {
       interactionMap.put(Items.LAVA_BUCKET, CauldronInteractions::fillLavaInteraction);
       interactionMap.put(Items.WATER_BUCKET, CauldronInteractions::fillWaterInteraction);
       interactionMap.put(Items.POWDER_SNOW_BUCKET, CauldronInteractions::fillPowderSnowInteraction);
    }
 
-   static InteractionResult fillBucket(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final ItemStack newItem, final Predicate<BlockState> canFill, final SoundEvent soundEvent) {
+   public static InteractionResult fillBucket(final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final ItemStack newItem, final Predicate<BlockState> canFill, final SoundEvent soundEvent) {
       if (!canFill.test(state)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
@@ -138,7 +138,7 @@ public class CauldronInteractions {
       }
    }
 
-   static InteractionResult emptyBucket(final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final BlockState newState, final SoundEvent soundEvent) {
+   public static InteractionResult emptyBucket(final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final ItemStack itemInHand, final BlockState newState, final SoundEvent soundEvent) {
       if (!level.isClientSide()) {
          Item itemUsed = itemInHand.getItem();
          player.setItemInHand(hand, ItemUtils.createFilledResult(itemInHand, player, new ItemStack(Items.BUCKET)));

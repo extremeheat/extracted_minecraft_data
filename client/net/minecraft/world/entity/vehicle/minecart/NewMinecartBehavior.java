@@ -175,15 +175,15 @@ public class NewMinecartBehavior extends MinecartBehavior {
          Vec3 targetPosition;
          if (inCorner) {
             Vec3 from0to1 = exit1.subtract(exit0);
-            Vec3 from0toPos = previousPosition.subtract(targetBlockPos.getBottomCenter()).subtract(exit0);
+            Vec3 from0toPos = previousPosition.subtract(Vec3.atBottomCenterOf(targetBlockPos)).subtract(exit0);
             Vec3 travelVectorFrom0 = from0to1.scale(from0to1.dot(from0toPos) / from0to1.dot(from0to1));
-            targetPosition = targetBlockPos.getBottomCenter().add(exit0).add(travelVectorFrom0);
+            targetPosition = Vec3.atBottomCenterOf(targetBlockPos).add(exit0).add(travelVectorFrom0);
             yRot = 180.0F - (float)(Math.atan2(travelVectorFrom0.z, travelVectorFrom0.x) * 180.0 / 3.141592653589793);
             yRot += this.minecart.isFlipped() ? 180.0F : 0.0F;
          } else {
             boolean zSnap = exit0.subtract(exit1).x != 0.0;
             boolean xSnap = exit0.subtract(exit1).z != 0.0;
-            targetPosition = new Vec3(xSnap ? targetBlockPos.getCenter().x : previousPosition.x, (double)targetBlockPos.getY(), zSnap ? targetBlockPos.getCenter().z : previousPosition.z);
+            targetPosition = new Vec3(xSnap ? Vec3.atCenterOf(targetBlockPos).x : previousPosition.x, (double)targetBlockPos.getY(), zSnap ? Vec3.atCenterOf(targetBlockPos).z : previousPosition.z);
          }
 
          Vec3 diffFromBlock = targetPosition.subtract(previousPosition);
@@ -191,7 +191,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
          float xRot = 0.0F;
          boolean inHill = exit0.y() != exit1.y();
          if (inHill) {
-            Vec3 inPosition = targetBlockPos.getBottomCenter().add(horizontalInDirection);
+            Vec3 inPosition = Vec3.atBottomCenterOf(targetBlockPos).add(horizontalInDirection);
             double horizontalDistanceFromIn = inPosition.distanceTo(this.position());
             this.setPos(this.position().add(0.0, horizontalDistanceFromIn + 0.1, 0.0));
             xRot = this.minecart.isFlipped() ? 45.0F : -45.0F;
@@ -405,7 +405,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
                horizontalOutDirection = horizontalInDirection;
             }
 
-            Vec3 outPosition = pos.getBottomCenter().add(horizontalOutDirection).add(0.0, 0.1, 0.0).add(horizontalOutDirection.normalize().scale(9.999999747378752E-6));
+            Vec3 outPosition = Vec3.atBottomCenterOf(pos).add(horizontalOutDirection).add(0.0, 0.1, 0.0).add(horizontalOutDirection.normalize().scale(9.999999747378752E-6));
             if (inHill && !this.isDecending(movement, shape)) {
                outPosition = outPosition.add(0.0, 1.0, 0.0);
             }
@@ -545,11 +545,11 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    private static class TrackIteration {
-      double movementLeft = 0.0;
-      boolean firstIteration = true;
-      boolean hasGainedSlopeSpeed = false;
-      boolean hasHalted = false;
-      boolean hasBoosted = false;
+      public double movementLeft = 0.0;
+      public boolean firstIteration = true;
+      public boolean hasGainedSlopeSpeed = false;
+      public boolean hasHalted = false;
+      public boolean hasBoosted = false;
 
       private TrackIteration() {
          super();

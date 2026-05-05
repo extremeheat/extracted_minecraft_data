@@ -9,15 +9,13 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class WeightedPlacedFeature {
+/** @deprecated */
+@Deprecated
+public record WeightedPlacedFeature(Holder<PlacedFeature> feature, float chance) {
    public static final Codec<WeightedPlacedFeature> CODEC = RecordCodecBuilder.create((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((f) -> f.feature), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((f) -> f.chance)).apply(i, WeightedPlacedFeature::new));
-   public final Holder<PlacedFeature> feature;
-   public final float chance;
 
-   public WeightedPlacedFeature(final Holder<PlacedFeature> feature, final float chance) {
+   public WeightedPlacedFeature {
       super();
-      this.feature = feature;
-      this.chance = chance;
    }
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {

@@ -78,7 +78,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
       if (newLevel == null) {
          return null;
       } else {
-         Vec3 spawnPos = spawnBlockPos.getBottomCenter();
+         Vec3 spawnPos = Vec3.atBottomCenterOf(spawnBlockPos);
          float yRot;
          float xRot;
          Set<Relative> relatives;
@@ -99,7 +99,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
                return serverPlayer.findRespawnPositionAndUseSpawnBlock(false, TeleportTransition.DO_NOTHING);
             }
 
-            spawnPos = entity.adjustSpawnLocation(newLevel, spawnBlockPos).getBottomCenter();
+            spawnPos = Vec3.atBottomCenterOf(entity.adjustSpawnLocation(newLevel, spawnBlockPos));
          }
 
          return new TeleportTransition(newLevel, spawnPos, Vec3.ZERO, yRot, xRot, relatives, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET));

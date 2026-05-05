@@ -403,14 +403,15 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
    public void render(final DeltaTracker deltaTracker, final boolean advanceGameTime) {
       ProfilerFiller profiler = Profiler.get();
       profiler.push("render");
-      if (this.gameRenderState.windowRenderState.isResized) {
-         this.resize(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height);
+      WindowRenderState windowRenderState = this.gameRenderState.windowRenderState;
+      if (windowRenderState.width != this.mainRenderTarget.width || windowRenderState.height != this.mainRenderTarget.height) {
+         this.resize(windowRenderState.width, windowRenderState.height);
       }
 
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.mainRenderTarget.getColorTexture(), this.gameRenderState.guiRenderState.clearColorOverride, this.mainRenderTarget.getDepthTexture(), 0.0);
       boolean resourcesLoaded = this.minecraft.isGameLoadFinished();
       boolean shouldRenderLevel = resourcesLoaded && advanceGameTime && this.minecraft.level != null;
-      this.globalSettingsUniform.update(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height, this.gameRenderState.optionsRenderState.glintStrength, this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime(), deltaTracker, this.gameRenderState.optionsRenderState.menuBackgroundBlurriness, this.gameRenderState.levelRenderState.cameraRenderState.pos, this.gameRenderState.optionsRenderState.textureFiltering == TextureFilteringMethod.RGSS);
+      this.globalSettingsUniform.update(windowRenderState.width, windowRenderState.height, this.gameRenderState.optionsRenderState.glintStrength, this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime(), deltaTracker, this.gameRenderState.optionsRenderState.menuBackgroundBlurriness, this.gameRenderState.levelRenderState.cameraRenderState.pos, this.gameRenderState.optionsRenderState.textureFiltering == TextureFilteringMethod.RGSS);
       if (shouldRenderLevel) {
          this.lightmap.render(this.gameRenderState.lightmapRenderState);
          profiler.push("world");
@@ -594,7 +595,6 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       windowState.guiScale = window.getGuiScale();
       windowState.appropriateLineWidth = window.getAppropriateLineWidth();
       windowState.isMinimized = window.isMinimized();
-      windowState.isResized = window.isResized();
    }
 
    private void extractOptions() {

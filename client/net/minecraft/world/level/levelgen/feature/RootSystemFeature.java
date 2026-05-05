@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.RootSystemConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
@@ -46,6 +47,21 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
          }
       }
 
+      if (config.levelTestDistance() > 0) {
+         BlockPos.MutableBlockPos cornerPos = pos.mutable();
+
+         for(int i = 0; i < 4; ++i) {
+            cornerPos.move(Direction.from2DDataValue(i), config.levelTestDistance());
+            BlockState below = level.getBlockState(cornerPos.below(config.maxLevelDeviation()));
+            BlockState above = level.getBlockState(cornerPos.above(config.maxLevelDeviation()));
+            if (below.isAir() || !above.isAir()) {
+               return false;
+            }
+
+            cornerPos.set(pos);
+         }
+      }
+
       return true;
    }
 
@@ -61,6 +77,10 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    private static boolean placeDirtAndTree(final WorldGenLevel level, final ChunkGenerator generator, final RootSystemConfiguration config, final RandomSource random, final BlockPos.MutableBlockPos workingPos, final BlockPos pos) {
       for(int y = 0; y < config.rootColumnMaxHeight(); ++y) {
          workingPos.move(Direction.UP);
+         if (level.getHeight(Heightmap.Types.WORLD_SURFACE, workingPos) < workingPos.getY()) {
+            return false;
+         }
+
          if (config.allowedTreePosition().test(level, workingPos) && spaceForTree(level, config, workingPos)) {
             BlockPos belowPos = workingPos.below();
             if (level.getFluidState(belowPos).is(FluidTags.LAVA) || !level.getBlockState(belowPos).isSolid()) {

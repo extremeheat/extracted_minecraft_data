@@ -26,7 +26,7 @@ public final class RegionFileStorage implements AutoCloseable {
    private final Path folder;
    private final boolean sync;
 
-   RegionFileStorage(final RegionStorageInfo info, final Path folder, final boolean sync) {
+   public RegionFileStorage(final RegionStorageInfo info, final Path folder, final boolean sync) {
       super();
       this.folder = folder;
       this.sync = sync;
@@ -118,7 +118,7 @@ public final class RegionFileStorage implements AutoCloseable {
 
    }
 
-   protected void write(final ChunkPos pos, final @Nullable CompoundTag value) throws IOException {
+   public void write(final ChunkPos pos, final @Nullable CompoundTag value) throws IOException {
       if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {
          RegionFile region = this.getRegionFile(pos);
          if (value == null) {

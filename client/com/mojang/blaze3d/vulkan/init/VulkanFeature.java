@@ -34,7 +34,7 @@ public record VulkanFeature(VulkanPNextStruct struct, String name, long offset) 
       return this.set(features2.address(), value);
    }
 
-   boolean set(final long pNextChain, final boolean value) {
+   private boolean set(final long pNextChain, final boolean value) {
       long structAddr = this.struct.findStructInPNextChain(pNextChain);
       if (structAddr == 0L) {
          return false;

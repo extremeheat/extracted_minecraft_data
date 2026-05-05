@@ -97,8 +97,8 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
    }
 
-   static record SimpleNeighborUpdate(BlockPos pos, Block block, @Nullable Orientation orientation) implements NeighborUpdates {
-      SimpleNeighborUpdate {
+   private static record SimpleNeighborUpdate(BlockPos pos, Block block, @Nullable Orientation orientation) implements NeighborUpdates {
+      private SimpleNeighborUpdate {
          super();
       }
 
@@ -113,8 +113,8 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       }
    }
 
-   static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) implements NeighborUpdates {
-      FullNeighborUpdate {
+   private static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) implements NeighborUpdates {
+      private FullNeighborUpdate {
          super();
       }
 
@@ -128,14 +128,14 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       }
    }
 
-   static final class MultiNeighborUpdate implements NeighborUpdates {
+   private static final class MultiNeighborUpdate implements NeighborUpdates {
       private final BlockPos sourcePos;
       private final Block sourceBlock;
       private @Nullable Orientation orientation;
       private final @Nullable Direction skipDirection;
       private int idx = 0;
 
-      MultiNeighborUpdate(final BlockPos sourcePos, final Block sourceBlock, final @Nullable Orientation orientation, final @Nullable Direction skipDirection) {
+      public MultiNeighborUpdate(final BlockPos sourcePos, final Block sourceBlock, final @Nullable Orientation orientation, final @Nullable Direction skipDirection) {
          super();
          this.sourcePos = sourcePos;
          this.sourceBlock = sourceBlock;

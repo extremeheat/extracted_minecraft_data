@@ -7,15 +7,15 @@ import org.joml.Matrix3x2fc;
 import org.jspecify.annotations.Nullable;
 
 public final class GuiTextRenderState implements ScreenArea {
-   public final Font font;
-   public final FormattedCharSequence text;
+   private final Font font;
+   private final FormattedCharSequence text;
    public final Matrix3x2fc pose;
-   public final int x;
-   public final int y;
-   public final int color;
-   public final int backgroundColor;
-   public final boolean dropShadow;
-   final boolean includeEmpty;
+   private final int x;
+   private final int y;
+   private final int color;
+   private final int backgroundColor;
+   private final boolean dropShadow;
+   private final boolean includeEmpty;
    public final @Nullable ScreenRectangle scissor;
    private Font.@Nullable PreparedText preparedText;
    private @Nullable ScreenRectangle bounds;

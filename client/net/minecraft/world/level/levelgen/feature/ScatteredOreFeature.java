@@ -11,7 +11,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
 public class ScatteredOreFeature extends Feature<OreConfiguration> {
    private static final int MAX_DIST_FROM_ORIGIN = 7;
 
-   ScatteredOreFeature(final Codec<OreConfiguration> codec) {
+   public ScatteredOreFeature(final Codec<OreConfiguration> codec) {
       super(codec);
    }
 

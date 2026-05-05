@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
 
-class ReplaceablePredicate extends StateTestingPredicate {
+public class ReplaceablePredicate extends StateTestingPredicate {
    public static final MapCodec<ReplaceablePredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).apply(i, ReplaceablePredicate::new));
 
    public ReplaceablePredicate(final Vec3i offset) {

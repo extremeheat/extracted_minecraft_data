@@ -93,7 +93,7 @@ public class BedBlock extends HorizontalDirectionalBlock {
                level.removeBlock(blockPos, false);
             }
 
-            Vec3 boomPos = pos.getCenter();
+            Vec3 boomPos = Vec3.atCenterOf(pos);
             level.explode((Entity)null, level.damageSources().badRespawnPointExplosion(boomPos), (ExplosionDamageCalculator)null, boomPos, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS_SERVER;
          } else if ((Boolean)state.getValue(OCCUPIED)) {

@@ -54,6 +54,10 @@ public interface Bucketable {
             tag.putBoolean("Invulnerable", entity.isInvulnerable());
          }
 
+         if (entity.isPersistenceRequired()) {
+            tag.putBoolean("PersistenceRequired", entity.isPersistenceRequired());
+         }
+
          tag.putFloat("Health", entity.getHealth());
       });
    }
@@ -76,6 +80,12 @@ public interface Bucketable {
       var10000 = tag.getBoolean("Invulnerable");
       Objects.requireNonNull(entity);
       var10000.ifPresent(entity::setInvulnerable);
+      tag.getBoolean("PersistenceRequired").ifPresent((required) -> {
+         if (required) {
+            entity.setPersistenceRequired();
+         }
+
+      });
       var10000 = tag.getFloat("Health");
       Objects.requireNonNull(entity);
       var10000.ifPresent(entity::setHealth);

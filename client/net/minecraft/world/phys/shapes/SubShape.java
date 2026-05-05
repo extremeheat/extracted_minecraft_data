@@ -12,7 +12,7 @@ public final class SubShape extends DiscreteVoxelShape {
    private final int endY;
    private final int endZ;
 
-   protected SubShape(final DiscreteVoxelShape parent, final int startX, final int startY, final int startZ, final int endX, final int endY, final int endZ) {
+   SubShape(final DiscreteVoxelShape parent, final int startX, final int startY, final int startZ, final int endX, final int endY, final int endZ) {
       super(endX - startX, endY - startY, endZ - startZ);
       this.parent = parent;
       this.startX = startX;

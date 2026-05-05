@@ -13,7 +13,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathFinder;
-import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 
@@ -51,7 +50,7 @@ public class GroundPathNavigation extends PathNavigation {
       }
    }
 
-   final BlockPos findSurfacePosition(final LevelChunk chunk, BlockPos pos, final int reachRange) {
+   private BlockPos findSurfacePosition(final LevelChunk chunk, BlockPos pos, final int reachRange) {
       if (chunk.getBlockState(pos).isAir()) {
          BlockPos.MutableBlockPos columnPos = pos.mutable().move(Direction.DOWN);
 
@@ -130,16 +129,6 @@ public class GroundPathNavigation extends PathNavigation {
 
    public boolean canNavigateGround() {
       return true;
-   }
-
-   protected boolean hasValidPathType(final PathType pathType) {
-      if (pathType == PathType.WATER) {
-         return false;
-      } else if (pathType == PathType.LAVA) {
-         return false;
-      } else {
-         return pathType != PathType.OPEN;
-      }
    }
 
    public void setAvoidSun(final boolean avoidSun) {

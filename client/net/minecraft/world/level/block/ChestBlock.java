@@ -348,7 +348,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
                      return ChestMenu.sixRows(containerId, inventory, container);
                   } else {
                      Direction connectedDirection = ChestBlock.getConnectedDirection(first.getBlockState());
-                     Vec3 firstCenter = first.getBlockPos().getCenter();
+                     Vec3 firstCenter = Vec3.atCenterOf(first.getBlockPos());
                      Vec3 centerBetweenChests = firstCenter.add((double)connectedDirection.getStepX() / 2.0, 0.0, (double)connectedDirection.getStepZ() / 2.0);
                      BaseContainerBlockEntity.sendChestLockedNotifications(centerBetweenChests, player, this.getDisplayName());
                      return null;

@@ -111,7 +111,7 @@ public record ShortTag(short value) implements NumericTag {
    private static class Cache {
       private static final int HIGH = 1024;
       private static final int LOW = -128;
-      static final ShortTag[] cache = new ShortTag[1153];
+      private static final ShortTag[] cache = new ShortTag[1153];
 
       private Cache() {
          super();

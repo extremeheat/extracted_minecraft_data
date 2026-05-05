@@ -89,11 +89,11 @@ public class ArmadilloAi {
    }
 
    public static class ArmadilloBallUp extends Behavior<Armadillo> {
-      static final int BALL_UP_STAY_IN_STATE;
-      static final int TICKS_DELAY_TO_DETERMINE_IF_DANGER_IS_STILL_AROUND = 5;
-      static final int DANGER_DETECTED_RECENTLY_DANGER_THRESHOLD = 75;
-      int nextPeekTimer = 0;
-      boolean dangerWasAround;
+      private static final int BALL_UP_STAY_IN_STATE;
+      private static final int TICKS_DELAY_TO_DETERMINE_IF_DANGER_IS_STILL_AROUND = 5;
+      private static final int DANGER_DETECTED_RECENTLY_DANGER_THRESHOLD = 75;
+      private int nextPeekTimer = 0;
+      private boolean dangerWasAround;
 
       public ArmadilloBallUp() {
          super(Map.of(), BALL_UP_STAY_IN_STATE);

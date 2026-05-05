@@ -16,6 +16,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 
 public class AnyBlockInteractionTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public AnyBlockInteractionTrigger() {
@@ -29,7 +30,7 @@ public class AnyBlockInteractionTrigger extends SimpleCriterionTrigger<TriggerIn
    public void trigger(final ServerPlayer player, final BlockPos pos, final ItemInstance tool) {
       ServerLevel level = player.level();
       BlockState state = level.getBlockState(pos);
-      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, pos.getCenter()).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.ADVANCEMENT_LOCATION);
+      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.ADVANCEMENT_LOCATION);
       LootContext context = (new LootContext.Builder(params)).create(Optional.empty());
       this.trigger(player, (t) -> t.matches(context));
    }

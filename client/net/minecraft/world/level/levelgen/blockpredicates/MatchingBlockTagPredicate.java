@@ -9,8 +9,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class MatchingBlockTagPredicate extends StateTestingPredicate {
-   final TagKey<Block> tag;
    public static final MapCodec<MatchingBlockTagPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).and(TagKey.codec(Registries.BLOCK).fieldOf("tag").forGetter((c) -> c.tag)).apply(i, MatchingBlockTagPredicate::new));
+   private final TagKey<Block> tag;
 
    protected MatchingBlockTagPredicate(final Vec3i offset, final TagKey<Block> tag) {
       super(offset);

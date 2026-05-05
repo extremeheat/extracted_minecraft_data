@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.chunk;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -116,7 +116,7 @@ public class SectionCompiler {
       BufferBuilder builder = (BufferBuilder)startedLayers.get(layer);
       if (builder == null) {
          ByteBufferBuilder buffer = buffers.buffer(layer);
-         builder = new BufferBuilder(buffer, VertexFormat.Mode.QUADS, layer.vertexFormat());
+         builder = new BufferBuilder(buffer, PrimitiveTopology.QUADS, layer.vertexFormat());
          startedLayers.put(layer, builder);
       }
 

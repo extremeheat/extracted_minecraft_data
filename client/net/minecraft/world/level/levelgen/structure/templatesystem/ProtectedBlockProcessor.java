@@ -17,7 +17,7 @@ public record ProtectedBlockProcessor(HolderSet<Block> cannotReplace) implements
       super();
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       return !level.getBlockState(processedBlockInfo.pos()).is(this.cannotReplace) ? processedBlockInfo : null;
    }
 

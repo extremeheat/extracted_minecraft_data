@@ -362,7 +362,7 @@ public abstract class Raider extends PatrollingMonster {
    public class RaiderCelebration extends Goal {
       private final Raider mob;
 
-      RaiderCelebration(final Raider mob) {
+      public RaiderCelebration(final Raider mob) {
          Objects.requireNonNull(Raider.this);
          super();
          this.mob = mob;

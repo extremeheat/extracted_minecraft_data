@@ -192,7 +192,7 @@ public class FileUtil {
       Files.createDirectories(Files.exists(dir, new LinkOption[0]) ? dir.toRealPath() : dir);
    }
 
-   static boolean isEmptyPath(final Path path) {
+   public static boolean isEmptyPath(final Path path) {
       return path.getNameCount() == 1 && path.getFileName().toString().isEmpty();
    }
 }

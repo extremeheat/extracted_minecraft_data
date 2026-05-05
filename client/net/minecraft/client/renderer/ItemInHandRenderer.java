@@ -598,8 +598,8 @@ public class ItemInHandRenderer {
       RENDER_MAIN_HAND_ONLY(true, false),
       RENDER_OFF_HAND_ONLY(false, true);
 
-      final boolean renderMainHand;
-      final boolean renderOffHand;
+      public final boolean renderMainHand;
+      public final boolean renderOffHand;
 
       private HandRenderSelection(final boolean renderMainHand, final boolean renderOffHand) {
          this.renderMainHand = renderMainHand;

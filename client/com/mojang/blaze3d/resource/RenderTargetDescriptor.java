@@ -1,16 +1,18 @@
 package com.mojang.blaze3d.resource;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.joml.Vector4fc;
 
-public record RenderTargetDescriptor(int width, int height, boolean useDepth, int clearColor) implements ResourceDescriptor<RenderTarget> {
+public record RenderTargetDescriptor(int width, int height, boolean useDepth, Vector4fc clearColor, GpuFormat format) implements ResourceDescriptor<RenderTarget> {
    public RenderTargetDescriptor {
       super();
    }
 
    public RenderTarget allocate() {
-      return new TextureTarget((String)null, this.width, this.height, this.useDepth);
+      return new TextureTarget((String)null, this.width, this.height, this.useDepth, this.format);
    }
 
    public void prepare(final RenderTarget resource) {
@@ -30,7 +32,7 @@ public record RenderTargetDescriptor(int width, int height, boolean useDepth, in
       if (!(other instanceof RenderTargetDescriptor descriptor)) {
          return false;
       } else {
-         return this.width == descriptor.width && this.height == descriptor.height && this.useDepth == descriptor.useDepth;
+         return this.width == descriptor.width && this.height == descriptor.height && this.useDepth == descriptor.useDepth && this.format == descriptor.format;
       }
    }
 }

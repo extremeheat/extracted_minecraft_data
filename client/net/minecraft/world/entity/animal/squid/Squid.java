@@ -159,7 +159,7 @@ public class Squid extends AgeableWaterCreature {
                yd -= this.getGravity();
             }
 
-            this.setDeltaMovement(0.0, yd * 0.9800000190734863, 0.0);
+            this.setDeltaMovement(0.0, yd * (double)this.getAirDrag(), 0.0);
          }
 
          this.xBodyRot += (-90.0F - this.xBodyRot) * 0.02F;

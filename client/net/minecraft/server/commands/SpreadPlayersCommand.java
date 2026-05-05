@@ -208,19 +208,19 @@ public class SpreadPlayersCommand {
          super();
       }
 
-      double dist(final Position target) {
+      public double dist(final Position target) {
          double dx = this.x - target.x;
          double dz = this.z - target.z;
          return Math.sqrt(dx * dx + dz * dz);
       }
 
-      void normalize() {
+      public void normalize() {
          double dist = this.getLength();
          this.x /= dist;
          this.z /= dist;
       }
 
-      double getLength() {
+      public double getLength() {
          return Math.sqrt(this.x * this.x + this.z * this.z);
       }
 

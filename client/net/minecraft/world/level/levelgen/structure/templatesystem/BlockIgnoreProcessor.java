@@ -26,7 +26,7 @@ public class BlockIgnoreProcessor implements StructureProcessor {
       this.toIgnore = ImmutableList.copyOf(toIgnore);
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       return this.toIgnore.contains(processedBlockInfo.state().getBlock()) ? null : processedBlockInfo;
    }
 

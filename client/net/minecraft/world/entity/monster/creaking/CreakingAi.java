@@ -31,7 +31,7 @@ public class CreakingAi {
       super();
    }
 
-   static ActivityData<Creaking> initCoreActivity() {
+   private static ActivityData<Creaking> initCoreActivity() {
       return ActivityData.<Creaking>create(Activity.CORE, 0, ImmutableList.of(new Swim<Creaking>(0.8F) {
          protected boolean checkExtraStartConditions(final ServerLevel level, final Creaking body) {
             return body.canMove() && super.checkExtraStartConditions(level, (LivingEntity)body);
@@ -39,11 +39,11 @@ public class CreakingAi {
       }, new LookAtTargetSink(45, 90), new MoveToTargetSink()));
    }
 
-   static ActivityData<Creaking> initIdleActivity() {
+   private static ActivityData<Creaking> initIdleActivity() {
       return ActivityData.<Creaking>create(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((level, mob) -> mob.isActive(), (level, mob) -> mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
-   static ActivityData<Creaking> initFightActivity(final Creaking body) {
+   private static ActivityData<Creaking> initFightActivity(final Creaking body) {
       return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(Creaking::canMove, 40), StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((level, target) -> !isAttackTargetStillReachable(body, target)))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)));
    }
 

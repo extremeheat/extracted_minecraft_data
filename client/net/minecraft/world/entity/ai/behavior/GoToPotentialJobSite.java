@@ -13,7 +13,7 @@ import net.minecraft.world.entity.schedule.Activity;
 
 public class GoToPotentialJobSite extends Behavior<Villager> {
    private static final int TICKS_UNTIL_TIMEOUT = 1200;
-   final float speedModifier;
+   private final float speedModifier;
 
    public GoToPotentialJobSite(final float speedModifier) {
       super(ImmutableMap.of(MemoryModuleType.POTENTIAL_JOB_SITE, MemoryStatus.VALUE_PRESENT), 1200);

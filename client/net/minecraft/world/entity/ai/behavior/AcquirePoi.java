@@ -119,7 +119,7 @@ public class AcquirePoi {
       private long nextScheduledAttemptTimestamp;
       private int currentDelay;
 
-      JitteredLinearRetry(final RandomSource random, final long firstAttemptTimestamp) {
+      public JitteredLinearRetry(final RandomSource random, final long firstAttemptTimestamp) {
          super();
          this.random = random;
          this.markAttempt(firstAttemptTimestamp);

@@ -176,7 +176,7 @@ public final class TrialSpawner {
             });
             if (!level.noCollision(((EntityType)entityType.get()).getSpawnAABB(spawnPos.x, spawnPos.y, spawnPos.z))) {
                return Optional.empty();
-            } else if (!inLineOfSight(level, spawnerPos.getCenter(), spawnPos)) {
+            } else if (!inLineOfSight(level, Vec3.atCenterOf(spawnerPos), spawnPos)) {
                return Optional.empty();
             } else {
                BlockPos spawnBlockPos = BlockPos.containing(spawnPos);

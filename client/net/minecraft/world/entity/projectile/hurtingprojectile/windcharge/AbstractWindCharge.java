@@ -41,7 +41,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       this.accelerationPower = 0.0;
    }
 
-   AbstractWindCharge(final EntityType<? extends AbstractWindCharge> type, final double x, final double y, final double z, final Vec3 direction, final Level level) {
+   protected AbstractWindCharge(final EntityType<? extends AbstractWindCharge> type, final double x, final double y, final double z, final Vec3 direction, final Level level) {
       super(type, x, y, z, direction, level);
       this.accelerationPower = 0.0;
    }

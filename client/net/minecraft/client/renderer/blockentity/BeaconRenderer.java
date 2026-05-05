@@ -43,7 +43,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
    public static <T extends BlockEntity & BeaconBeamOwner> void extract(final T blockEntity, final BeaconRenderState state, final float partialTicks, final Vec3 cameraPosition) {
       state.animationTime = blockEntity.getLevel() != null ? (float)Math.floorMod(blockEntity.getLevel().getGameTime(), 40) + partialTicks : 0.0F;
       state.sections = ((BeaconBeamOwner)blockEntity).getBeamSections().stream().map((section) -> new BeaconRenderState.Section(section.getColor(), section.getHeight())).toList();
-      float distanceToBeacon = (float)cameraPosition.subtract(state.blockPos.getCenter()).horizontalDistance();
+      float distanceToBeacon = (float)cameraPosition.subtract(Vec3.atCenterOf(state.blockPos)).horizontalDistance();
       LocalPlayer player = Minecraft.getInstance().player;
       state.beamRadiusScale = player != null && player.isScoping() ? 1.0F : Math.max(1.0F, distanceToBeacon / 96.0F);
    }

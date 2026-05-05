@@ -197,6 +197,10 @@ public class ARGB {
       return new Vector4f(redFloat(color), greenFloat(color), blueFloat(color), alphaFloat(color));
    }
 
+   public static Vector4f setVector4fFromARGB32(final Vector4f dest, final int color) {
+      return dest.set(redFloat(color), greenFloat(color), blueFloat(color), alphaFloat(color));
+   }
+
    public static int average(final int lhs, final int rhs) {
       return color((alpha(lhs) + alpha(rhs)) / 2, (red(lhs) + red(rhs)) / 2, (green(lhs) + green(rhs)) / 2, (blue(lhs) + blue(rhs)) / 2);
    }

@@ -339,11 +339,11 @@ public sealed interface CubicSpline<I> {
       private final List<CubicSpline<I>> values;
       private final FloatList derivatives;
 
-      protected Builder(final I coordinate) {
+      private Builder(final I coordinate) {
          this(coordinate, Float2FloatFunction.identity());
       }
 
-      protected Builder(final I coordinate, final Float2FloatFunction valueTransformer) {
+      private Builder(final I coordinate, final Float2FloatFunction valueTransformer) {
          super();
          this.locations = new FloatArrayList();
          this.values = Lists.newArrayList();

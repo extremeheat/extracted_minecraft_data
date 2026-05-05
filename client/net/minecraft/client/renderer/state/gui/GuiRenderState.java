@@ -13,6 +13,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.joml.Matrix3x2f;
+import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
 public class GuiRenderState {
@@ -23,7 +24,7 @@ public class GuiRenderState {
    private final Set<Object> itemModelIdentities = new HashSet();
    private @Nullable ScreenRectangle lastElementBounds;
    public @Nullable PanoramaRenderState panoramaRenderState;
-   public int clearColorOverride;
+   public Vector4f clearColorOverride = new Vector4f(0.0F);
    public boolean isHudHidden;
 
    public GuiRenderState() {
@@ -260,7 +261,7 @@ public class GuiRenderState {
       this.firstStratumAfterBlur = 2147483647;
       this.nextStratum();
       this.panoramaRenderState = null;
-      this.clearColorOverride = 0;
+      this.clearColorOverride.set(0.0F);
    }
 
    private static class Node {

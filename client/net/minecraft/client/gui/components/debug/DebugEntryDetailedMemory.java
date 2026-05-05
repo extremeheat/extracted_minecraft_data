@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 public class DebugEntryDetailedMemory implements DebugScreenEntry {
    private static final Identifier GROUP = Identifier.withDefaultNamespace("memory");
-   final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+   private final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
 
    public DebugEntryDetailedMemory() {
       super();

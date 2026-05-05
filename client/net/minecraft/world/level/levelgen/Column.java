@@ -91,7 +91,7 @@ public abstract class Column {
       private final int floor;
       private final int ceiling;
 
-      protected Range(final int floor, final int ceiling) {
+      public Range(final int floor, final int ceiling) {
          super();
          this.floor = floor;
          this.ceiling = ceiling;

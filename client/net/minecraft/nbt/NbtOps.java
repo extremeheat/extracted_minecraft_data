@@ -250,6 +250,10 @@ public class NbtOps implements DynamicOps<Tag> {
       return DoubleTag.valueOf(value);
    }
 
+   public DataResult<Boolean> getBooleanValue(final Tag input) {
+      return this.getNumberValue(input).map((value) -> value.doubleValue() != 0.0);
+   }
+
    public Tag createBoolean(final boolean value) {
       return ByteTag.valueOf(value);
    }

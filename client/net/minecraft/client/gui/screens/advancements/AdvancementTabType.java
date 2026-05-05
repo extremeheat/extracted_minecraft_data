@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-enum AdvancementTabType {
+public enum AdvancementTabType {
    ABOVE(new Sprites(Identifier.withDefaultNamespace("advancements/tab_above_left_selected"), Identifier.withDefaultNamespace("advancements/tab_above_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_above_right_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_above_left"), Identifier.withDefaultNamespace("advancements/tab_above_middle"), Identifier.withDefaultNamespace("advancements/tab_above_right")), 28, 32, 8),
    BELOW(new Sprites(Identifier.withDefaultNamespace("advancements/tab_below_left_selected"), Identifier.withDefaultNamespace("advancements/tab_below_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_below_right_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_below_left"), Identifier.withDefaultNamespace("advancements/tab_below_middle"), Identifier.withDefaultNamespace("advancements/tab_below_right")), 28, 32, 8),
    LEFT(new Sprites(Identifier.withDefaultNamespace("advancements/tab_left_top_selected"), Identifier.withDefaultNamespace("advancements/tab_left_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_left_bottom_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_left_top"), Identifier.withDefaultNamespace("advancements/tab_left_middle"), Identifier.withDefaultNamespace("advancements/tab_left_bottom")), 32, 28, 5),

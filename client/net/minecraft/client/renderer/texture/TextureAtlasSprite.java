@@ -99,7 +99,7 @@ public class TextureAtlasSprite implements AutoCloseable {
       return new SpriteCoordinateExpander(buffer, this);
    }
 
-   boolean isAnimated() {
+   public boolean isAnimated() {
       return this.contents.isAnimated();
    }
 

@@ -73,7 +73,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          this.height = height;
       }
 
-      @Nullable Node insert(final GlyphBitmap glyph) {
+      public @Nullable Node insert(final GlyphBitmap glyph) {
          if (this.left != null && this.right != null) {
             Node newNode = this.left.insert(glyph);
             if (newNode == null) {

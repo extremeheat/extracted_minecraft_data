@@ -1231,7 +1231,7 @@ public class Fox extends Animal {
    }
 
    private class FaceplantGoal extends Goal {
-      int countdown;
+      private int countdown;
 
       public FaceplantGoal() {
          Objects.requireNonNull(Fox.this);

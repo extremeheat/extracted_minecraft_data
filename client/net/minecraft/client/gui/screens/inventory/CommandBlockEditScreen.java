@@ -22,11 +22,11 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
       this.autoCommandBlock = commandBlock;
    }
 
-   BaseCommandBlock getCommandBlock() {
+   protected BaseCommandBlock getCommandBlock() {
       return this.autoCommandBlock.getCommandBlock();
    }
 
-   int getPreviousY() {
+   protected int getPreviousY() {
       return 135;
    }
 

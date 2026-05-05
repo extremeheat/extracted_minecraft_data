@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.Passthrough;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifier;
@@ -36,8 +37,8 @@ public class ProcessorRule {
       this.blockEntityModifier = blockEntityModifier;
    }
 
-   public boolean test(final BlockState inputState, final BlockState locState, final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos reference, final RandomSource random) {
-      return this.inputPredicate.test(inputState, random) && this.locPredicate.test(locState, random) && this.posPredicate.test(inTemplatePos, worldPos, reference, random);
+   public boolean test(final LevelReader level, final BlockState inputState, final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos reference, final RandomSource random) {
+      return this.inputPredicate.test(inputState, random) && this.locPredicate.testAgainstWorldState(level, worldPos, random) && this.posPredicate.test(inTemplatePos, worldPos, reference, random);
    }
 
    public BlockState getOutputState() {

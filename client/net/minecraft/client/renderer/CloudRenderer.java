@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
@@ -10,14 +11,12 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
@@ -193,21 +192,21 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
             this.prevCloudStatus = cloudStatus;
             this.utb.rotate();
 
-            try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {
+            try (GpuBufferSlice.MappedView view = this.utb.currentBuffer().map(false, true)) {
                this.buildMesh(relativeCameraPos, view.data(), cellX, cellZ, fancyClouds, radiusCells);
                this.quadCount = view.data().position() / 3;
             }
          }
 
          if (this.quadCount != 0) {
-            try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
+            try (GpuBufferSlice.MappedView view = this.ubo.currentBuffer().map(false, true)) {
                Std140Builder.intoBuffer(view.data()).putVec4(ARGB.vector4fFromARGB32(color)).putVec3(-xInCell, relativeBottomY, -zInCell).putVec3(12.0F, 4.0F, 12.0F);
             }
 
             GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
             RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
             RenderTarget cloudTarget = Minecraft.getInstance().levelRenderer.cloudsTarget();
-            RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
             GpuBuffer indexBuffer = indices.getBuffer(6 * this.quadCount);
             GpuTextureView colorTexture;
             GpuTextureView depthTexture;
@@ -219,7 +218,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                depthTexture = mainRenderTarget.getDepthTextureView();
             }
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
                renderPass.setPipeline(renderPipeline);
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("DynamicTransforms", dynamicTransforms);

@@ -304,11 +304,11 @@ public class GameTestInfo {
       }
    }
 
-   int getTick() {
+   public int getTick() {
       return this.tickCount;
    }
 
-   GameTestSequence createSequence() {
+   public GameTestSequence createSequence() {
       GameTestSequence sequence = new GameTestSequence(this);
       this.sequences.add(sequence);
       return sequence;

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-class ReportGameListener implements GameTestListener {
+public class ReportGameListener implements GameTestListener {
    private int attempts = 0;
    private int successes = 0;
 

@@ -39,16 +39,18 @@ import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
 import org.lwjgl.vulkan.VkPhysicalDeviceSynchronization2Features;
+import org.lwjgl.vulkan.VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT;
 import org.lwjgl.vulkan.VkPhysicalDeviceVulkan12Features;
 import org.slf4j.Logger;
 
 public class VulkanBackend implements GpuBackend {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Set<String> REQUIRED_DEVICE_EXTENSIONS = Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_KHR_swapchain");
+   public static final Set<String> REQUIRED_DEVICE_EXTENSIONS = Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain");
    public static final VulkanPNextStruct VK10_FEATURES_STRUCT;
    public static final VulkanPNextStruct VK12_FEATURES_STRUCT;
    public static final VulkanPNextStruct SYNC2_FEATURES_STRUCT;
    public static final VulkanPNextStruct DYNAMIC_RENDERING_FEATURES_STURCT;
+   public static final VulkanPNextStruct VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT;
    public static final Set<VulkanFeature> REQUIRED_DEVICE_FEATURES;
 
    public VulkanBackend() {
@@ -480,6 +482,7 @@ public class VulkanBackend implements GpuBackend {
       VK12_FEATURES_STRUCT = new VulkanPNextStruct(51, VkPhysicalDeviceVulkan12Features.SIZEOF);
       SYNC2_FEATURES_STRUCT = new VulkanPNextStruct(1000314007, VkPhysicalDeviceSynchronization2Features.SIZEOF);
       DYNAMIC_RENDERING_FEATURES_STURCT = new VulkanPNextStruct(1000044003, VkPhysicalDeviceDynamicRenderingFeatures.SIZEOF);
-      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STURCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING));
+      VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT = new VulkanPNextStruct(1000190002, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.SIZEOF);
+      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STURCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT, "vertexAttributeInstanceRateDivisor", (long)VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.VERTEXATTRIBUTEINSTANCERATEDIVISOR));
    }
 }

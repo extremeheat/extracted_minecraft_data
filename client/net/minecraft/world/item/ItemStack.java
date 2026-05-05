@@ -15,7 +15,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -1099,8 +1098,10 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return this.getItem().canDestroyBlock(this, state, level, pos, player);
    }
 
-   public DamageSource getDamageSource(final LivingEntity attacker, final Supplier<DamageSource> defaultSource) {
-      return (DamageSource)Optional.ofNullable((Holder)this.get(DataComponents.DAMAGE_TYPE)).map((type) -> new DamageSource(type, attacker)).or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(attacker))).orElseGet(defaultSource);
+   public DamageSource getDamageSource(final LivingEntity attacker) {
+      Optional var10000 = Optional.ofNullable((Holder)this.get(DataComponents.DAMAGE_TYPE)).map((type) -> new DamageSource(type, attacker)).or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(attacker)));
+      Objects.requireNonNull(attacker);
+      return (DamageSource)var10000.orElseGet(attacker::createDamageSource);
    }
 
    static {

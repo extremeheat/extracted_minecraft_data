@@ -77,7 +77,7 @@ public final class Shapes {
    }
 
    @VisibleForTesting
-   protected static int findBits(final double min, final double max) {
+   static int findBits(final double min, final double max) {
       if (!(min < -1.0E-7) && !(max > 1.0000001)) {
          for(int bits = 0; bits <= 3; ++bits) {
             int intervals = 1 << bits;
@@ -96,7 +96,8 @@ public final class Shapes {
       }
    }
 
-   protected static long lcm(final int first, final int second) {
+   @VisibleForTesting
+   static long lcm(final int first, final int second) {
       return (long)first * (long)(second / IntMath.gcd(first, second));
    }
 
@@ -232,7 +233,7 @@ public final class Shapes {
    }
 
    @VisibleForTesting
-   protected static IndexMerger createIndexMerger(final int cost, final DoubleList first, final DoubleList second, final boolean firstOnlyMatters, final boolean secondOnlyMatters) {
+   static IndexMerger createIndexMerger(final int cost, final DoubleList first, final DoubleList second, final boolean firstOnlyMatters, final boolean secondOnlyMatters) {
       int firstSize = first.size() - 1;
       int secondSize = second.size() - 1;
       if (first instanceof CubePointRange && second instanceof CubePointRange) {

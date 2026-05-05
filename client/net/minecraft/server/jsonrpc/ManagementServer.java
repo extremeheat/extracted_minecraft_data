@@ -63,9 +63,12 @@ public class ManagementServer {
          LOGGER.warn("The existing heartbeat was not canceled and the new heartbeat of {} seconds has not been applied.", period);
          return false;
       } else {
-         NioEventLoopGroup var10001 = this.nioEventLoopGroup;
-         Objects.requireNonNull(notificationManager);
-         this.heartbeat = var10001.scheduleAtFixedRate(notificationManager::statusHeartbeat, period, period, TimeUnit.SECONDS);
+         if (period > 0L) {
+            NioEventLoopGroup var10001 = this.nioEventLoopGroup;
+            Objects.requireNonNull(notificationManager);
+            this.heartbeat = var10001.scheduleAtFixedRate(notificationManager::statusHeartbeat, period, period, TimeUnit.SECONDS);
+         }
+
          return true;
       }
    }

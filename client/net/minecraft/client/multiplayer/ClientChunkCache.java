@@ -297,7 +297,7 @@ public class ClientChunkCache extends ChunkSource {
          return Math.abs(chunkX - this.viewCenterX) <= this.chunkRadius && Math.abs(chunkZ - this.viewCenterZ) <= this.chunkRadius;
       }
 
-      protected @Nullable LevelChunk getChunk(final int index) {
+      public @Nullable LevelChunk getChunk(final int index) {
          return (LevelChunk)this.chunks.get(index);
       }
 

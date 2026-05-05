@@ -111,7 +111,7 @@ public record LongTag(long value) implements NumericTag {
    private static class Cache {
       private static final int HIGH = 1024;
       private static final int LOW = -128;
-      static final LongTag[] cache = new LongTag[1153];
+      private static final LongTag[] cache = new LongTag[1153];
 
       private Cache() {
          super();

@@ -324,7 +324,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    private Vec3 getPositionToReachTargetFrom(final @Nullable Path path, final PathfinderMob body) {
       boolean haveNoValidPath = path == null || path.getEndNode() == null;
-      Vec3 bottomCenter = haveNoValidPath ? body.position() : path.getEndNode().asBlockPos().getBottomCenter();
+      Vec3 bottomCenter = haveNoValidPath ? body.position() : Vec3.atBottomCenterOf(path.getEndNode().asBlockPos());
       return this.setMiddleYPosition(body, bottomCenter);
    }
 
@@ -422,7 +422,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    }
 
    private boolean canSeeAnyTargetSide(final TransportItemTarget target, final Level level, final PathfinderMob body, final Vec3 eyePosition) {
-      Vec3 center = target.pos.getCenter();
+      Vec3 center = Vec3.atCenterOf(target.pos);
       return Direction.stream().map((direction) -> center.add(0.5 * (double)direction.getStepX(), 0.5 * (double)direction.getStepY(), 0.5 * (double)direction.getStepZ())).map((hitTarget) -> level.clip(new ClipContext(eyePosition, hitTarget, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, body))).anyMatch((hitResult) -> hitResult.getType() == HitResult.Type.BLOCK && hitResult.getBlockPos().equals(target.pos));
    }
 

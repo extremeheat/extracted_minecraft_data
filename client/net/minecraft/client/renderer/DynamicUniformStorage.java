@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -66,7 +65,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
 
          int offset = this.nextBlock * this.blockSize;
 
-         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)offset, (long)this.blockSize), false, true)) {
+         try (GpuBufferSlice.MappedView view = this.ringBuffer.currentBuffer().slice((long)offset, (long)this.blockSize).map(false, true)) {
             uniform.write(view.data());
          }
 
@@ -89,7 +88,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
          int firstOffset = this.nextBlock * this.blockSize;
          GpuBufferSlice[] result = new GpuBufferSlice[uniforms.length];
 
-         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)firstOffset, (long)(uniforms.length * this.blockSize)), false, true)) {
+         try (GpuBufferSlice.MappedView view = this.ringBuffer.currentBuffer().slice((long)firstOffset, (long)(uniforms.length * this.blockSize)).map(false, true)) {
             ByteBuffer byteBuffer = view.data();
 
             for(int i = 0; i < uniforms.length; ++i) {

@@ -398,12 +398,8 @@ public class WorldBorder extends SavedData {
          --this.lerpProgress;
          this.previousSize = this.size;
          this.size = this.calculateSize();
-         if (this.lerpProgress <= 0L) {
-            WorldBorder.this.setDirty();
-            return WorldBorder.this.new StaticBorderExtent(this.to);
-         } else {
-            return this;
-         }
+         WorldBorder.this.setDirty();
+         return (BorderExtent)(this.lerpProgress <= 0L ? WorldBorder.this.new StaticBorderExtent(this.to) : this);
       }
 
       public VoxelShape getCollisionShape() {

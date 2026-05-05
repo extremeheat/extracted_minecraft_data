@@ -33,8 +33,8 @@ public class StonecutterMenu extends AbstractContainerMenu {
    private SelectableRecipe.SingleInputSet<StonecutterRecipe> recipesForInput;
    private ItemStack input;
    private long lastSoundTime;
-   final Slot inputSlot;
-   final Slot resultSlot;
+   private final Slot inputSlot;
+   private final Slot resultSlot;
    private Runnable slotUpdateListener;
    public final Container container;
    private final ResultContainer resultContainer;

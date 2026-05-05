@@ -157,7 +157,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       public void close() {
       }
 
-      abstract boolean matches(final Entry other);
+      protected abstract boolean matches(final Entry other);
 
       public abstract void join();
    }
@@ -180,7 +180,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          return ServerSelectionList.SCANNING_LABEL;
       }
 
-      boolean matches(final Entry other) {
+      protected boolean matches(final Entry other) {
          return other instanceof LANHeader;
       }
 
@@ -243,7 +243,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          return Component.empty().append(LAN_SERVER_HEADER).append(CommonComponents.SPACE).append(this.serverData.getMotd());
       }
 
-      boolean matches(final Entry other) {
+      protected boolean matches(final Entry other) {
          boolean var10000;
          if (other instanceof NetworkServerEntry networkServerEntry) {
             if (networkServerEntry.serverData == this.serverData) {
@@ -555,7 +555,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.icon.close();
       }
 
-      boolean matches(final Entry other) {
+      protected boolean matches(final Entry other) {
          boolean var10000;
          if (other instanceof OnlineServerEntry onlineServerEntry) {
             if (onlineServerEntry.serverData == this.serverData) {

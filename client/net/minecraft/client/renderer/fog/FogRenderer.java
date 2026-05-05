@@ -145,12 +145,12 @@ public class FogRenderer implements AutoCloseable {
                brightenFactor = 1.0F;
             }
          } else {
-            label57: {
+            label72: {
                if (entity instanceof LivingEntity) {
                   LivingEntity livingEntity = (LivingEntity)entity;
                   if (livingEntity.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity.hasEffect(MobEffects.DARKNESS)) {
                      brightenFactor = GameRenderer.nightVisionScale(livingEntity, partialTicks);
-                     break label57;
+                     break label72;
                   }
                }
 
@@ -159,10 +159,15 @@ public class FogRenderer implements AutoCloseable {
          }
 
          if (fogRed != 0.0F && fogGreen != 0.0F && fogBlue != 0.0F) {
-            float targetScale = 1.0F / Math.max(fogRed, Math.max(fogGreen, fogBlue));
-            fogRed = Mth.lerp(brightenFactor, fogRed, fogRed * targetScale);
-            fogGreen = Mth.lerp(brightenFactor, fogGreen, fogGreen * targetScale);
-            fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * targetScale);
+            float maxColor = Math.max(fogRed, Math.max(fogGreen, fogBlue));
+            float targetScale = 1.0F / Math.clamp(maxColor, 0.07F, 1.0F);
+            float targetScaleMax = 1.0F / maxColor;
+            float scale = maxColor != fogRed ? targetScale : targetScaleMax;
+            fogRed = Mth.lerp(brightenFactor, fogRed, fogRed * scale);
+            scale = maxColor != fogGreen ? targetScale : targetScaleMax;
+            fogGreen = Mth.lerp(brightenFactor, fogGreen, fogGreen * scale);
+            scale = maxColor != fogBlue ? targetScale : targetScaleMax;
+            fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * scale);
          }
 
          dest.set(fogRed, fogGreen, fogBlue, 1.0F);
@@ -195,7 +200,7 @@ public class FogRenderer implements AutoCloseable {
    }
 
    public void updateBuffer(final FogData fog) {
-      try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.regularBuffer.currentBuffer(), false, true)) {
+      try (GpuBufferSlice.MappedView view = this.regularBuffer.currentBuffer().map(false, true)) {
          this.updateBuffer(view.data(), 0, fog.color, fog.environmentalStart, fog.environmentalEnd, fog.renderDistanceStart, fog.renderDistanceEnd, fog.skyEnd, fog.cloudEnd);
       }
 

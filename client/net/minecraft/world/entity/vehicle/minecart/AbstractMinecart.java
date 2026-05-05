@@ -309,9 +309,13 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
       this.move(MoverType.SELF, this.getDeltaMovement());
       if (!this.onGround()) {
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.95));
+         this.setDeltaMovement(this.getDeltaMovement().scale((double)this.getAirDrag()));
       }
 
+   }
+
+   protected float getAirDrag() {
+      return 0.95F;
    }
 
    protected double makeStepAlongTrack(final BlockPos pos, final RailShape shape, final double movementLeft) {

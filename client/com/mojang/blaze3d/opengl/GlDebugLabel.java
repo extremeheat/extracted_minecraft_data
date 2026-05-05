@@ -94,7 +94,7 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
-         KHRDebug.glObjectLabel(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.format.toString(), this.maxLabelLength, true));
+         KHRDebug.glObjectLabel(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.formatName, this.maxLabelLength, true));
       }
 
       public void pushDebugGroup(final Supplier<String> label) {
@@ -136,7 +136,7 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
-         EXTDebugLabel.glLabelObjectEXT(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.format.toString(), 256, true));
+         EXTDebugLabel.glLabelObjectEXT(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.formatName, 256, true));
       }
 
       public boolean exists() {

@@ -313,12 +313,12 @@ public class TlsfAllocator {
 
    private static class Block {
       private long size = 0L;
-      final Heap heap;
-      long offsetFromHeap;
-      @Nullable Block nextFreeBlock;
-      @Nullable Block previousFreeBlock;
-      @Nullable Block nextPhysicalBlock;
-      @Nullable Block previousPhysicalBlock;
+      public final Heap heap;
+      public long offsetFromHeap;
+      public @Nullable Block nextFreeBlock;
+      public @Nullable Block previousFreeBlock;
+      public @Nullable Block nextPhysicalBlock;
+      public @Nullable Block previousPhysicalBlock;
       private static final int BLOCK_HEADER_FREE_BIT = 1;
 
       private Block(final long size, final Heap heap, final long offsetFromHeap, final @Nullable Block nextFreeBlock, final @Nullable Block previousFreeBlock, final @Nullable Block nextPhysicalBlock, final @Nullable Block previousPhysicalBlock) {
@@ -357,7 +357,7 @@ public class TlsfAllocator {
    public static class Heap {
       private final long size;
 
-      Heap(final long size) {
+      public Heap(final long size) {
          super();
          this.size = size;
       }

@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.rendertype;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -60,11 +61,11 @@ public class RenderType {
    }
 
    public VertexFormat format() {
-      return this.state.pipeline.getVertexFormat();
+      return this.state.pipeline.getVertexFormatBinding(0);
    }
 
-   public VertexFormat.Mode mode() {
-      return this.state.pipeline.getVertexFormatMode();
+   public PrimitiveTopology primitiveTopology() {
+      return this.state.pipeline.getPrimitiveTopology();
    }
 
    public Optional<RenderType> outline() {
@@ -84,7 +85,7 @@ public class RenderType {
    }
 
    public boolean canConsolidateConsecutiveGeometry() {
-      return !this.mode().connectedPrimitives;
+      return !this.primitiveTopology().connectedPrimitives;
    }
 
    public boolean sortOnUpload() {

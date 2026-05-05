@@ -20,15 +20,14 @@ public class LeashFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    }
 
    protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
-      VertexConsumer builder = this.getVertexBuilder(RenderTypes.leash());
-
       for(Submit submit : submits) {
-         prepare(submit, builder);
+         this.prepare(submit);
       }
 
    }
 
-   private static void prepare(final Submit submit, final VertexConsumer builder) {
+   private void prepare(final Submit submit) {
+      VertexConsumer builder = this.getVertexBuilder(RenderTypes.leash());
       Matrix4f pose = submit.pose();
       EntityRenderState.LeashState leashState = submit.leashState();
       float dx = (float)(leashState.end.x - leashState.start.x);

@@ -44,6 +44,16 @@ public final class WeightedList<E> {
       return new WeightedList<E>(List.of(new Weighted(value, 1)));
    }
 
+   public static <E> WeightedList<E> of(final E... items) {
+      Builder<E> builder = builder();
+
+      for(E item : items) {
+         builder.add(item);
+      }
+
+      return builder.build();
+   }
+
    @SafeVarargs
    public static <E> WeightedList<E> of(final Weighted<E>... items) {
       return new WeightedList<E>(List.of(items));

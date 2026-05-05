@@ -48,7 +48,7 @@ public class GuiItemAtlas implements AutoCloseable {
       this.depthTexture = device.createTexture("UI items atlas depth", 9, GpuFormat.D32_FLOAT, textureSize, textureSize, 1, 1);
       this.depthTextureView = device.createTextureView(this.depthTexture);
       this.allocator = new DynamicAtlasAllocator<Object>(storageSize, storageSize);
-      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0);
+      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0);
    }
 
    public static int computeTextureSizeFor(final int slotTextureSize, final int requiredSlotCount) {
@@ -92,7 +92,7 @@ public class GuiItemAtlas implements AutoCloseable {
       int bottom = top + this.slotTextureSize;
       GpuDevice device = RenderSystem.getDevice();
       if (clear) {
-         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
+         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       }
 
       this.poseStack.pushPose();

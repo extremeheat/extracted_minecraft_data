@@ -58,6 +58,7 @@ class GlDevice implements GpuDeviceBackend {
    private final ShaderSource defaultShaderSource;
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
+   private final FrameBufferCache frameBufferCache = new FrameBufferCache();
    private final VertexArrayCache vertexArrayCache;
    private final BufferStorage bufferStorage;
    private final DeviceInfo deviceInfo;
@@ -159,7 +160,7 @@ class GlDevice implements GpuDeviceBackend {
          } else if (error != 0) {
             throw new IllegalStateException("OpenGL error " + error);
          } else {
-            GlTexture texture = new GlTexture(usage, label, format, width, height, depthOrLayers, mipLevels, id);
+            GlTexture texture = new GlTexture(usage, label, format, width, height, depthOrLayers, mipLevels, id, this.frameBufferCache);
             this.debugLabels.applyLabel(texture);
             return texture;
          }
@@ -173,7 +174,7 @@ class GlDevice implements GpuDeviceBackend {
    }
 
    public GpuTextureView createTextureView(final GpuTexture texture, final int baseMipLevel, final int mipLevels) {
-      return new GlTextureView((GlTexture)texture, baseMipLevel, mipLevels);
+      return new GlTextureView((GlTexture)texture, baseMipLevel, mipLevels, this.frameBufferCache);
    }
 
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final long size) {
@@ -299,7 +300,7 @@ class GlDevice implements GpuDeviceBackend {
          return GlProgram.INVALID_PROGRAM;
       } else {
          try {
-            GlProgram compiled = GlProgram.link(vertexShader, fragmentShader, pipeline.getVertexFormat(), pipeline.getLocation().toString());
+            GlProgram compiled = GlProgram.link(vertexShader, fragmentShader, pipeline.getVertexFormatBindings(), pipeline.getLocation().toString());
             compiled.setupBindGroupLayouts(pipeline.getBindGroupLayouts());
             this.debugLabels.applyLabel(compiled);
             return compiled;
@@ -323,6 +324,10 @@ class GlDevice implements GpuDeviceBackend {
 
    public BufferStorage getBufferStorage() {
       return this.bufferStorage;
+   }
+
+   public FrameBufferCache frameBufferCache() {
+      return this.frameBufferCache;
    }
 
    public GpuQueryPool createTimestampQueryPool(final int size) {

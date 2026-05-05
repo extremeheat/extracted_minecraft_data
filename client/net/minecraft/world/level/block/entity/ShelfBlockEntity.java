@@ -116,7 +116,7 @@ public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer
    }
 
    public Vec3 position() {
-      return this.getBlockPos().getCenter();
+      return Vec3.atCenterOf(this.getBlockPos());
    }
 
    public float getVisualRotationYInDegrees() {

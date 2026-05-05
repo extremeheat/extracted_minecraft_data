@@ -121,7 +121,7 @@ public final class GameRuleMap extends SavedData {
    }
 
    public static class Builder {
-      final Reference2ObjectMap<GameRule<?>, Object> map = new Reference2ObjectOpenHashMap();
+      private final Reference2ObjectMap<GameRule<?>, Object> map = new Reference2ObjectOpenHashMap();
 
       public Builder() {
          super();

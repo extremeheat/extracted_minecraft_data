@@ -48,7 +48,7 @@ public enum ChunkSectionLayer {
    }
 
    public VertexFormat vertexFormat() {
-      return this.pipeline.getVertexFormat();
+      return this.pipeline.getVertexFormatBinding(0);
    }
 
    // $FF: synthetic method

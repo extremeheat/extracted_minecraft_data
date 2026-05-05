@@ -23,7 +23,7 @@ public class AdultPiglinModel extends PiglinModel {
       return LayerDefinition.create(mesh, 64, 64);
    }
 
-   float getDefaultEarAngleInDegrees() {
+   protected float getDefaultEarAngleInDegrees() {
       return 30.0F;
    }
 }

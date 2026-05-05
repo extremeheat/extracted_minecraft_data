@@ -463,7 +463,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.minecraft.gameMode.handleContainerInput(this.menu.containerId, slotId, buttonNum, containerInput, this.minecraft.player);
    }
 
-   void onMouseClickAction(final @Nullable Slot slot, final ContainerInput containerInput) {
+   protected void onMouseClickAction(final @Nullable Slot slot, final ContainerInput containerInput) {
       if (slot != null && slot.hasItem()) {
          for(ItemSlotMouseAction itemMouseAction : this.itemSlotMouseActions) {
             if (itemMouseAction.matches(slot)) {

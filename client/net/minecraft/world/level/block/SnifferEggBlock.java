@@ -68,7 +68,7 @@ public class SnifferEggBlock extends Block {
          level.destroyBlock(position, false);
          Sniffer sniffer = EntityTypes.SNIFFER.create(level, EntitySpawnReason.BREEDING);
          if (sniffer != null) {
-            Vec3 spawnAt = position.getCenter();
+            Vec3 spawnAt = Vec3.atCenterOf(position);
             sniffer.setBaby(true);
             sniffer.snapTo(spawnAt.x(), spawnAt.y(), spawnAt.z(), Mth.wrapDegrees(level.getRandom().nextFloat() * 360.0F), 0.0F);
             level.addFreshEntity(sniffer);

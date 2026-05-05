@@ -8,7 +8,7 @@ public class AdultZombifiedPiglinModel extends ZombifiedPiglinModel {
       super(root);
    }
 
-   float getDefaultEarAngleInDegrees() {
+   protected float getDefaultEarAngleInDegrees() {
       return 30.0F;
    }
 

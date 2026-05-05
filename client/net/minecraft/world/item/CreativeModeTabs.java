@@ -352,6 +352,7 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.CINNABAR_STAIRS);
          buildingBlocks.accept((ItemLike)Items.CINNABAR_SLAB);
          buildingBlocks.accept((ItemLike)Items.CINNABAR_WALL);
+         buildingBlocks.accept((ItemLike)Items.CHISELED_CINNABAR);
          buildingBlocks.accept((ItemLike)Items.POLISHED_CINNABAR);
          buildingBlocks.accept((ItemLike)Items.POLISHED_CINNABAR_STAIRS);
          buildingBlocks.accept((ItemLike)Items.POLISHED_CINNABAR_SLAB);
@@ -360,11 +361,11 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.CINNABAR_BRICK_STAIRS);
          buildingBlocks.accept((ItemLike)Items.CINNABAR_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.CINNABAR_BRICK_WALL);
-         buildingBlocks.accept((ItemLike)Items.CHISELED_CINNABAR);
          buildingBlocks.accept((ItemLike)Items.SULFUR);
          buildingBlocks.accept((ItemLike)Items.SULFUR_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SULFUR_SLAB);
          buildingBlocks.accept((ItemLike)Items.SULFUR_WALL);
+         buildingBlocks.accept((ItemLike)Items.CHISELED_SULFUR);
          buildingBlocks.accept((ItemLike)Items.POLISHED_SULFUR);
          buildingBlocks.accept((ItemLike)Items.POLISHED_SULFUR_STAIRS);
          buildingBlocks.accept((ItemLike)Items.POLISHED_SULFUR_SLAB);
@@ -373,7 +374,6 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_WALL);
-         buildingBlocks.accept((ItemLike)Items.CHISELED_SULFUR);
          buildingBlocks.accept((ItemLike)Items.SEA_LANTERN);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE_STAIRS);
@@ -517,10 +517,10 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.TUFF);
          naturalBlocks.accept((ItemLike)Items.DRIPSTONE_BLOCK);
          naturalBlocks.accept((ItemLike)Items.POINTED_DRIPSTONE);
-         naturalBlocks.accept((ItemLike)Items.SULFUR_SPIKE);
          naturalBlocks.accept((ItemLike)Items.PRISMARINE);
          naturalBlocks.accept((ItemLike)Items.CINNABAR);
          naturalBlocks.accept((ItemLike)Items.SULFUR);
+         naturalBlocks.accept((ItemLike)Items.SULFUR_SPIKE);
          naturalBlocks.accept((ItemLike)Items.POTENT_SULFUR);
          naturalBlocks.accept((ItemLike)Items.MAGMA_BLOCK);
          naturalBlocks.accept((ItemLike)Items.OBSIDIAN);

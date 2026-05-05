@@ -153,7 +153,7 @@ public class ChatComponent {
          }
 
          this.forEachLine(alphaCalculator, new LineConsumer() {
-            boolean hoveredOverCurrentMessage;
+            private boolean hoveredOverCurrentMessage;
 
             {
                Objects.requireNonNull(ChatComponent.this);

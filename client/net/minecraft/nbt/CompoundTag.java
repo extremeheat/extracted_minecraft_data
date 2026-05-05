@@ -324,7 +324,7 @@ public final class CompoundTag implements Tag {
       return this.tags.isEmpty();
    }
 
-   protected CompoundTag shallowCopy() {
+   CompoundTag shallowCopy() {
       return new CompoundTag(new HashMap(this.tags));
    }
 

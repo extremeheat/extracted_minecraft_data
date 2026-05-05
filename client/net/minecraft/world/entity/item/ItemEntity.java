@@ -139,12 +139,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
          } else {
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.applyEffectsFromBlocks();
-            float friction = 0.98F;
+            float airDrag = this.getAirDrag();
+            float groundFriction = airDrag;
             if (this.onGround()) {
-               friction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+               groundFriction = airDrag * this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
             }
 
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)friction, 0.98, (double)friction));
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)groundFriction, (double)airDrag, (double)groundFriction));
             if (this.onGround()) {
                Vec3 movement = this.getDeltaMovement();
                if (movement.y < 0.0) {

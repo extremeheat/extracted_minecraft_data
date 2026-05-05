@@ -18,13 +18,13 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import org.jspecify.annotations.Nullable;
 
-class SectionCopy {
+public class SectionCopy {
    private final Map<BlockPos, BlockEntity> blockEntities;
    private final @Nullable PalettedContainer<BlockState> section;
    private final boolean debug;
    private final LevelHeightAccessor levelHeightAccessor;
 
-   SectionCopy(final LevelChunk levelChunk, final int sectionIndex) {
+   public SectionCopy(final LevelChunk levelChunk, final int sectionIndex) {
       super();
       this.levelHeightAccessor = levelChunk;
       this.debug = levelChunk.getLevel().isDebug();

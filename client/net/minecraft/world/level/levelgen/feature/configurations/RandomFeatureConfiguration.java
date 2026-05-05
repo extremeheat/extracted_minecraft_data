@@ -9,18 +9,16 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class RandomFeatureConfiguration implements FeatureConfiguration {
+/** @deprecated */
+@Deprecated
+public record RandomFeatureConfiguration(List<WeightedPlacedFeature> features, Holder<PlacedFeature> defaultFeature) implements FeatureConfiguration {
    public static final Codec<RandomFeatureConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.apply2(RandomFeatureConfiguration::new, WeightedPlacedFeature.CODEC.listOf().fieldOf("features").forGetter((c) -> c.features), PlacedFeature.CODEC.fieldOf("default").forGetter((c) -> c.defaultFeature)));
-   public final List<WeightedPlacedFeature> features;
-   public final Holder<PlacedFeature> defaultFeature;
 
-   public RandomFeatureConfiguration(final List<WeightedPlacedFeature> features, final Holder<PlacedFeature> defaultFeature) {
+   public RandomFeatureConfiguration {
       super();
-      this.features = features;
-      this.defaultFeature = defaultFeature;
    }
 
    public Stream<Holder<ConfiguredFeature<?, ?>>> getSubFeatures() {
-      return Stream.concat(this.features.stream().flatMap((weighted) -> (weighted.feature.value()).getFeatures()), (this.defaultFeature.value()).getFeatures());
+      return Stream.concat(this.features.stream().flatMap((weighted) -> ((PlacedFeature)weighted.feature().value()).getFeatures()), (this.defaultFeature.value()).getFeatures());
    }
 }

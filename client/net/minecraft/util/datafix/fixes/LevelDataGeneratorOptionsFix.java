@@ -25,7 +25,7 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
-   static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (map) -> {
+   private static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (map) -> {
       map.put("0", "minecraft:ocean");
       map.put("1", "minecraft:plains");
       map.put("2", "minecraft:desert");

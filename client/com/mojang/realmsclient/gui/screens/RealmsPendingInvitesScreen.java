@@ -128,7 +128,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       private final StringWidget realmOwnerName;
       private final StringWidget inviteDate;
 
-      Entry(final PendingInvite pendingInvite) {
+      public Entry(final PendingInvite pendingInvite) {
          Objects.requireNonNull(RealmsPendingInvitesScreen.this);
          super();
          this.children = new ArrayList();

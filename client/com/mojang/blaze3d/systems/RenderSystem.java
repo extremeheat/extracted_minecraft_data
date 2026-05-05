@@ -1,5 +1,7 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -7,7 +9,6 @@ import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.util.Locale;
@@ -215,10 +216,10 @@ public class RenderSystem {
       return modelViewStack;
    }
 
-   public static AutoStorageIndexBuffer getSequentialBuffer(final VertexFormat.Mode primitiveMode) {
+   public static AutoStorageIndexBuffer getSequentialBuffer(final PrimitiveTopology primitiveTopology) {
       assertOnRenderThread();
       AutoStorageIndexBuffer var10000;
-      switch (primitiveMode) {
+      switch (primitiveTopology) {
          case QUADS -> var10000 = sharedSequentialQuad;
          case LINES -> var10000 = sharedSequentialLines;
          default -> var10000 = sharedSequential;
@@ -321,12 +322,12 @@ public class RenderSystem {
       private final int indexStride;
       private final IndexGenerator generator;
       private @Nullable GpuBuffer buffer;
-      private VertexFormat.IndexType type;
+      private IndexType type;
       private int indexCount;
 
       private AutoStorageIndexBuffer(final int vertexStride, final int indexStride, final IndexGenerator generator) {
          super();
-         this.type = VertexFormat.IndexType.SHORT;
+         this.type = IndexType.SHORT;
          this.vertexStride = vertexStride;
          this.indexStride = indexStride;
          this.generator = generator;
@@ -354,7 +355,7 @@ public class RenderSystem {
             RenderSystem.LOGGER.debug("Growing IndexBuffer: Old limit {}, new limit {}.", this.indexCount, indexCount);
             int primitiveCount = indexCount / this.indexStride;
             int vertexCount = primitiveCount * this.vertexStride;
-            VertexFormat.IndexType type = VertexFormat.IndexType.least(vertexCount);
+            IndexType type = IndexType.least(vertexCount);
             int bufferSize = Mth.roundToward(indexCount * type.bytes, 4);
             ByteBuffer data = MemoryUtil.memAlloc(bufferSize);
 
@@ -391,7 +392,7 @@ public class RenderSystem {
          }
       }
 
-      public VertexFormat.IndexType type() {
+      public IndexType type() {
          return this.type;
       }
 
@@ -400,8 +401,8 @@ public class RenderSystem {
       }
    }
 
-   static record GpuAsyncTask(Runnable callback, GpuFence fence) {
-      GpuAsyncTask {
+   private static record GpuAsyncTask(Runnable callback, GpuFence fence) {
+      private GpuAsyncTask {
          super();
       }
    }

@@ -65,7 +65,7 @@ public class SectionRenderDispatcher {
       GpuDevice gpuDevice = RenderSystem.getDevice();
       this.stagingBuffer = StagingBuffer.create("Chunk", gpuDevice, 102760448);
       this.chunkUberBuffers = Util.<ChunkSectionLayer, SectionUberBuffers>makeEnumMap(ChunkSectionLayer.class, (layer) -> {
-         VertexFormat vertexFormat = layer.pipeline().getVertexFormat();
+         VertexFormat vertexFormat = layer.pipeline().getVertexFormatBinding(0);
          UberGpuBuffer<SectionMesh> vertexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 32, 134217728, vertexFormat.getVertexSize(), this.stagingBuffer);
          UberGpuBuffer<SectionMesh> indexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 64, 33554432, 8, this.stagingBuffer);
          return new SectionUberBuffers(vertexUberBuffer, indexUberBuffer);

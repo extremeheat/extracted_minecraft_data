@@ -10,6 +10,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
@@ -81,7 +82,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.depthTextureView = device.createTextureView(this.depthTexture);
       }
 
-      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0);
+      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0);
       this.projection.setupOrtho(-1000.0F, 1000.0F, (float)width, (float)height, true);
       RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
    }

@@ -11,7 +11,7 @@ public class ArrayVoxelShape extends VoxelShape {
    private final DoubleList ys;
    private final DoubleList zs;
 
-   protected ArrayVoxelShape(final DiscreteVoxelShape shape, final double[] xs, final double[] ys, final double[] zs) {
+   ArrayVoxelShape(final DiscreteVoxelShape shape, final double[] xs, final double[] ys, final double[] zs) {
       this(shape, (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(xs, shape.getXSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(ys, shape.getYSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(zs, shape.getZSize() + 1)));
    }
 

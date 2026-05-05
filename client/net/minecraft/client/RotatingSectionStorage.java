@@ -130,7 +130,7 @@ public class RotatingSectionStorage<T extends RotatingSectionStorage.Value> impl
 
    public Iterator<T> iterator() {
       return new Iterator<T>() {
-         int i;
+         private int i;
 
          {
             Objects.requireNonNull(RotatingSectionStorage.this);

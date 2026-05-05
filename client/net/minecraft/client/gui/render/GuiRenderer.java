@@ -16,8 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
@@ -49,6 +49,8 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -60,7 +62,7 @@ public class GuiRenderer implements AutoCloseable {
    public static final int GUI_3D_Z_FAR = 1000;
    public static final int GUI_3D_Z_NEAR = -1000;
    public static final int DEFAULT_ITEM_SIZE = 16;
-   public static final int CLEAR_COLOR = 0;
+   public static final Vector4fc CLEAR_COLOR = new Vector4f(0.0F);
    private static final Comparator<ScreenRectangle> SCISSOR_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(ScreenRectangle::top).thenComparing(ScreenRectangle::bottom).thenComparing(ScreenRectangle::left).thenComparing(ScreenRectangle::right));
    private static final Comparator<TextureSetup> TEXTURE_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(TextureSetup::getSortKey));
    private static final Comparator<GuiElementRenderState> ELEMENT_SORT_COMPARATOR;
@@ -183,7 +185,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final int startIndex, final int endIndex) {
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), OptionalInt.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
@@ -203,7 +205,7 @@ public class GuiRenderer implements AutoCloseable {
          this.previousPipeline = pipeline;
          this.previousTextureSetup = textureSetup;
          this.previousScissorArea = scissorArea;
-         this.previousDraw = this.vertexBuffer.appendDraw(pipeline.getVertexFormat(), pipeline.getVertexFormatMode());
+         this.previousDraw = this.vertexBuffer.appendDraw(pipeline.getVertexFormatBinding(0), pipeline.getPrimitiveTopology());
          this.draws.add(new Draw(this.previousDraw, pipeline, textureSetup, scissorArea));
       }
 
@@ -323,7 +325,7 @@ public class GuiRenderer implements AutoCloseable {
       if (executeInfo != null) {
          RenderPipeline pipeline = draw.pipeline();
          renderPass.setPipeline(pipeline);
-         renderPass.setVertexBuffer(0, executeInfo.vertexBuffer());
+         renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          ScreenRectangle scissorArea = draw.scissorArea();
          if (scissorArea != null) {
             this.enableScissor(scissorArea, renderPass);

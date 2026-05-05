@@ -405,17 +405,29 @@ public class StructureTemplate {
    public static List<StructureBlockInfo> processBlockInfos(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final StructurePlaceSettings settings, final List<StructureBlockInfo> blockInfoList) {
       List<StructureBlockInfo> originalBlockInfoList = new ArrayList();
       List<StructureBlockInfo> processedBlockInfoList = new ArrayList();
+      boolean processOnlyInCurrentChunk = true;
+
+      for(StructureProcessor processor : settings.getProcessors()) {
+         if (processor.evaluatesEntirePieceState()) {
+            processOnlyInCurrentChunk = false;
+            break;
+         }
+      }
+
+      BoundingBox chunkBb = settings.getBoundingBox();
 
       for(StructureBlockInfo blockInfo : blockInfoList) {
          BlockPos blockPos = calculateRelativePosition(settings, blockInfo.pos).offset(position);
-         StructureBlockInfo processedBlockInfo = new StructureBlockInfo(blockPos, blockInfo.state, blockInfo.nbt != null ? blockInfo.nbt.copy() : null);
+         if (!processOnlyInCurrentChunk || chunkBb == null || chunkBb.isInside(blockPos)) {
+            StructureBlockInfo processedBlockInfo = new StructureBlockInfo(blockPos, blockInfo.state, blockInfo.nbt != null ? blockInfo.nbt.copy() : null);
 
-         for(Iterator<StructureProcessor> iterator = settings.getProcessors().iterator(); processedBlockInfo != null && iterator.hasNext(); processedBlockInfo = ((StructureProcessor)iterator.next()).processBlock(level, position, referencePos, blockInfo, processedBlockInfo, settings)) {
-         }
+            for(Iterator<StructureProcessor> iterator = settings.getProcessors().iterator(); processedBlockInfo != null && iterator.hasNext(); processedBlockInfo = ((StructureProcessor)iterator.next()).processBlock(level, position, referencePos, blockInfo.pos, processedBlockInfo, settings)) {
+            }
 
-         if (processedBlockInfo != null) {
-            processedBlockInfoList.add(processedBlockInfo);
-            originalBlockInfoList.add(blockInfo);
+            if (processedBlockInfo != null) {
+               processedBlockInfoList.add(processedBlockInfo);
+               originalBlockInfoList.add(blockInfo);
+            }
          }
       }
 

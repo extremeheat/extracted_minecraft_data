@@ -12,7 +12,7 @@ public class GameTestSequence {
    private final List<GameTestEvent> events = Lists.newArrayList();
    private int lastTick;
 
-   GameTestSequence(final GameTestInfo parent) {
+   public GameTestSequence(final GameTestInfo parent) {
       super();
       this.parent = parent;
       this.lastTick = parent.getTick();
@@ -140,7 +140,7 @@ public class GameTestSequence {
          this.triggerTime = -1;
       }
 
-      void trigger(final int time) {
+      public void trigger(final int time) {
          if (this.triggerTime != -1) {
             throw new IllegalStateException("Condition already triggered at " + this.triggerTime);
          } else {

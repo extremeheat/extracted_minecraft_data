@@ -60,7 +60,7 @@ public class Ping {
       return ping(Ping.Region.values());
    }
 
-   static enum Region {
+   private static enum Region {
       US_EAST_1("us-east-1", "ec2.us-east-1.amazonaws.com"),
       US_WEST_2("us-west-2", "ec2.us-west-2.amazonaws.com"),
       US_WEST_1("us-west-1", "ec2.us-west-1.amazonaws.com"),

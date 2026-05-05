@@ -63,7 +63,7 @@ public class TagNetworkSerialization {
       public static final NetworkPayload EMPTY = new NetworkPayload(Map.of());
       private final Map<Identifier, IntList> tags;
 
-      NetworkPayload(final Map<Identifier, IntList> tags) {
+      public NetworkPayload(final Map<Identifier, IntList> tags) {
          super();
          this.tags = tags;
       }

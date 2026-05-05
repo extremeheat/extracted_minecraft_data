@@ -267,7 +267,7 @@ public class TrialSpawnerStateData {
       return this.oSpin;
    }
 
-   WeightedList<ItemStack> getDispensingItems(final ServerLevel level, final TrialSpawnerConfig config, final BlockPos pos) {
+   public WeightedList<ItemStack> getDispensingItems(final ServerLevel level, final TrialSpawnerConfig config, final BlockPos pos) {
       if (this.dispensing != null) {
          return this.dispensing;
       } else {

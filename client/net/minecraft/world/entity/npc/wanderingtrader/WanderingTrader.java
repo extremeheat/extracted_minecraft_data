@@ -196,11 +196,11 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
    }
 
    private class WanderToPositionGoal extends Goal {
-      final WanderingTrader trader;
-      final double stopDistance;
-      final double speedModifier;
+      private final WanderingTrader trader;
+      private final double stopDistance;
+      private final double speedModifier;
 
-      WanderToPositionGoal(final WanderingTrader trader, final double stopDistance, final double speedModifier) {
+      public WanderToPositionGoal(final WanderingTrader trader, final double stopDistance, final double speedModifier) {
          Objects.requireNonNull(WanderingTrader.this);
          super();
          this.trader = trader;

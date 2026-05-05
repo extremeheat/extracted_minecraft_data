@@ -60,7 +60,7 @@ public final class ServerAddress {
       return false;
    }
 
-   static int parsePort(final String str) {
+   public static int parsePort(final String str) {
       try {
          return Integer.parseInt(str.trim());
       } catch (Exception var2) {

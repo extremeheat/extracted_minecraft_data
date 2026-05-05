@@ -121,6 +121,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    public static final String TAG_LEFT_HANDED = "LeftHanded";
    public static final String TAG_CAN_PICK_UP_LOOT = "CanPickUpLoot";
    public static final String TAG_NO_AI = "NoAI";
+   public static final String TAG_PERSISTENCE_REQUIRED = "PersistenceRequired";
    public int ambientSoundTime;
    protected int xpReward;
    protected LookControl lookControl;
@@ -1396,13 +1397,13 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       float dmg = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
       ItemStack weaponItem = this.getWeaponItem();
-      DamageSource damageSource = weaponItem.getDamageSource(this, () -> this.damageSources().mobAttack(this));
+      DamageSource damageSource = weaponItem.getDamageSource(this);
       dmg = EnchantmentHelper.modifyDamage(level, weaponItem, target, damageSource, dmg);
       dmg += weaponItem.getItem().getAttackDamageBonus(target, dmg, damageSource);
       Vec3 oldMovement = target.getDeltaMovement();
       boolean wasHurt = target.hurtServer(level, damageSource, dmg);
       if (wasHurt) {
-         this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement);
+         this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, dmg);
          if (target instanceof LivingEntity) {
             LivingEntity livingTarget = (LivingEntity)target;
             weaponItem.hurtEnemy(livingTarget, this);

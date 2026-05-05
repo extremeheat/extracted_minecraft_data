@@ -31,7 +31,7 @@ public class BlockStateDefinitions {
       return (BlockState)((BlockState)(isGlowing ? GLOW_ITEM_FRAME_FAKE_DEFINITION : ITEM_FRAME_FAKE_DEFINITION).any()).setValue(BlockStateProperties.MAP, map);
    }
 
-   static Function<Identifier, StateDefinition<Block, BlockState>> definitionLocationToBlockStateMapper() {
+   public static Function<Identifier, StateDefinition<Block, BlockState>> definitionLocationToBlockStateMapper() {
       Map<Identifier, StateDefinition<Block, BlockState>> result = new HashMap(STATIC_DEFINITIONS);
 
       for(Block block : BuiltInRegistries.BLOCK) {

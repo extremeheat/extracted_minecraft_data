@@ -823,7 +823,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                try (Profiler.Scope ignored = Profiler.use(this.constructProfiler(shouldCollectFrameProfile, tickProfiler))) {
                   this.metricsRecorder.startTick();
                   tickFrame.start();
-                  this.window.resetIsResized();
                   RenderSystem.pollEvents();
                   this.runTick(!oomRecovery);
                   tickFrame.end();
@@ -2298,6 +2297,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          systemReport.setDetail("Graphics Drivers", deviceInfo.driverInfo());
          systemReport.setDetail("Graphics Device Extensions", String.join(", ", deviceInfo.underlyingExtensions()));
          systemReport.setDetail("Graphics Device Type", deviceInfo.type().toString());
+         systemReport.setDetail("Graphics Device Features", deviceInfo.features().toString());
       } else {
          systemReport.setDetail("Graphics Device", "<none>");
       }

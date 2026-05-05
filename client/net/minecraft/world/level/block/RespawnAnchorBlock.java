@@ -138,7 +138,7 @@ public class RespawnAnchorBlock extends Block {
             return testPos.equals(pos) && inWater ? Optional.of(Blocks.WATER.getExplosionResistance()) : super.getBlockExplosionResistance(explosion, level, testPos, block, fluid);
          }
       };
-      Vec3 boomPos = pos.getCenter();
+      Vec3 boomPos = Vec3.atCenterOf(pos);
       level.explode((Entity)null, level.damageSources().badRespawnPointExplosion(boomPos), damageCalculator, boomPos, 5.0F, true, Level.ExplosionInteraction.BLOCK);
    }
 

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vulkan;
 
 import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.platform.BlendFactor;
@@ -11,7 +12,6 @@ import com.mojang.blaze3d.systems.GpuSurface;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 public final class VulkanConst {
    public VulkanConst() {
@@ -244,9 +244,9 @@ public final class VulkanConst {
       return var10000;
    }
 
-   public static int toVk(final VertexFormat.Mode vertexFormatMode) {
+   public static int toVk(final PrimitiveTopology primitiveTopology) {
       byte var10000;
-      switch (vertexFormatMode) {
+      switch (primitiveTopology) {
          case LINES -> var10000 = 3;
          case DEBUG_LINES -> var10000 = 1;
          case DEBUG_LINE_STRIP -> var10000 = 2;
@@ -261,7 +261,7 @@ public final class VulkanConst {
       return var10000;
    }
 
-   static int toVk(final ColorTargetState colorTargetState) {
+   public static int toVk(final ColorTargetState colorTargetState) {
       int result = 0;
       if (colorTargetState.writeAlpha()) {
          result |= 8;
@@ -282,7 +282,7 @@ public final class VulkanConst {
       return result;
    }
 
-   static int toVk(final GpuSurface.PresentMode mode) {
+   public static int toVk(final GpuSurface.PresentMode mode) {
       byte var10000;
       switch (mode) {
          case IMMEDIATE -> var10000 = 0;

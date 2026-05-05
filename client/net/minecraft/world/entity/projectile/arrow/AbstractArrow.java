@@ -243,7 +243,7 @@ public abstract class AbstractArrow extends Projectile {
          }
 
          if (!this.isInWater()) {
-            this.applyInertia(0.99F);
+            this.applyInertia(this.getAirDrag());
          }
 
          if (physicsEnabled && !this.isInGround()) {
@@ -252,6 +252,10 @@ public abstract class AbstractArrow extends Projectile {
 
          super.tick();
       }
+   }
+
+   protected float getAirDrag() {
+      return 0.99F;
    }
 
    private void stepMoveAndHit(final BlockHitResult blockHitResult) {

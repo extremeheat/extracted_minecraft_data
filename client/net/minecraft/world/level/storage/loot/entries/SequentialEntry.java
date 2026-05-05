@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class SequentialEntry extends CompositeEntryBase {
    public static final MapCodec<SequentialEntry> MAP_CODEC = createCodec(SequentialEntry::new);
 
-   SequentialEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+   public SequentialEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
       super(children, conditions);
    }
 

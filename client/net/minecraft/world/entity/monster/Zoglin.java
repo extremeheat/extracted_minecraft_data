@@ -151,7 +151,7 @@ public class Zoglin extends Monster implements HoglinBase {
       return true;
    }
 
-   protected void blockedByItem(final LivingEntity defender) {
+   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage) {
       if (!this.isBaby()) {
          HoglinBase.throwTarget(this, defender);
       }

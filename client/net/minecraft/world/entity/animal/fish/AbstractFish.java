@@ -159,7 +159,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    }
 
    private static class FishMoveControl<T extends AbstractFish> extends MoveControl<T> {
-      FishMoveControl(final T fish) {
+      public FishMoveControl(final T fish) {
          super(fish);
       }
 

@@ -78,6 +78,9 @@ public class WorldGenRegion implements WorldGenLevel {
    private @Nullable Supplier<String> currentlyGenerating;
    private final AtomicLong subTickCount = new AtomicLong();
    private static final Identifier WORLDGEN_REGION_RANDOM = Identifier.withDefaultNamespace("worldgen_region_random");
+   private final int centerChunkX;
+   private final int centerChunkZ;
+   private final int writeRadius;
 
    public WorldGenRegion(final ServerLevel level, final StaticCache2D<GenerationChunkHolder> cache, final ChunkStep generatingStep, final ChunkAccess center) {
       super();
@@ -90,6 +93,10 @@ public class WorldGenRegion implements WorldGenLevel {
       this.random = level.getChunkSource().randomState().getOrCreateRandomFactory(WORLDGEN_REGION_RANDOM).at(this.center.getPos().getWorldPosition());
       this.dimensionType = level.dimensionType();
       this.biomeManager = new BiomeManager(this, BiomeManager.obfuscateSeed(this.seed));
+      ChunkPos centerPos = center.getPos();
+      this.centerChunkX = centerPos.x();
+      this.centerChunkZ = centerPos.z();
+      this.writeRadius = generatingStep.blockStateWriteRadius();
    }
 
    public boolean isOldChunkAround(final ChunkPos pos, final int range) {
@@ -148,11 +155,17 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    public BlockState getBlockState(final BlockPos pos) {
-      return this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockState(pos);
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      this.warnIfReadOutsideWriteZone(chunkX, chunkZ);
+      return this.getChunk(chunkX, chunkZ).getBlockState(pos);
    }
 
    public FluidState getFluidState(final BlockPos pos) {
-      return this.getChunk(pos).getFluidState(pos);
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      this.warnIfReadOutsideWriteZone(chunkX, chunkZ);
+      return this.getChunk(chunkX, chunkZ).getFluidState(pos);
    }
 
    public @Nullable Player getNearestPlayer(final double x, final double y, final double z, final double maxDist, final @Nullable Predicate<Entity> predicate) {
@@ -213,24 +226,38 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   public boolean ensureCanWrite(final BlockPos pos) {
-      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
-      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
-      ChunkPos centerPos = this.getCenter();
-      int distanceX = Math.abs(centerPos.x() - chunkX);
-      int distanceZ = Math.abs(centerPos.z() - chunkZ);
-      if (distanceX <= this.generatingStep.blockStateWriteRadius() && distanceZ <= this.generatingStep.blockStateWriteRadius()) {
-         if (this.center.isUpgrading()) {
-            LevelHeightAccessor levelHeightAccessor = this.center.getHeightAccessorForGeneration();
-            if (levelHeightAccessor.isOutsideBuildHeight(pos.getY())) {
-               return false;
-            }
+   private void warnIfReadOutsideWriteZone(final int chunkX, final int chunkZ) {
+      if (this.centerChunkX != chunkX || this.centerChunkZ != chunkZ) {
+         if (!this.isWithinWriteZone(chunkX, chunkZ)) {
+            int readDistance = Math.max(Math.abs(this.centerChunkX - chunkX), Math.abs(this.centerChunkZ - chunkZ));
+            String warning = "Detected unsafe terrain read during worldgen: reading from chunk [" + chunkX + ", " + chunkZ + "] while generating chunk [" + this.centerChunkX + ", " + this.centerChunkZ + "] (distance: " + readDistance + ", write radius: " + this.writeRadius + "), step: " + this.generatingStep.targetStatus().getName() + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get());
+            Util.logAndPauseIfInIde(warning);
          }
 
-         return true;
-      } else {
+      }
+   }
+
+   public boolean isWithinWriteZone(final BlockPos pos) {
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      return this.isWithinWriteZone(chunkX, chunkZ);
+   }
+
+   private boolean isWithinWriteZone(final int chunkX, final int chunkZ) {
+      return Math.abs(this.centerChunkX - chunkX) <= this.writeRadius && Math.abs(this.centerChunkZ - chunkZ) <= this.writeRadius;
+   }
+
+   public boolean ensureCanWrite(final BlockPos pos) {
+      if (!this.isWithinWriteZone(pos)) {
+         int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+         int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
          Util.logAndPauseIfInIde("Detected setBlock in a far chunk [" + chunkX + ", " + chunkZ + "], pos: " + String.valueOf(pos) + ", status: " + String.valueOf(this.generatingStep.targetStatus()) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
          return false;
+      } else if (this.center.isUpgrading()) {
+         LevelHeightAccessor levelHeightAccessor = this.center.getHeightAccessorForGeneration();
+         return !levelHeightAccessor.isOutsideBuildHeight(pos.getY());
+      } else {
+         return true;
       }
    }
 
@@ -353,7 +380,10 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    public int getHeight(final Heightmap.Types type, final int x, final int z) {
-      return this.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)).getHeight(type, x & 15, z & 15) + 1;
+      int chunkX = SectionPos.blockToSectionCoord(x);
+      int chunkZ = SectionPos.blockToSectionCoord(z);
+      this.warnIfReadOutsideWriteZone(chunkX, chunkZ);
+      return this.getChunk(chunkX, chunkZ).getHeight(type, x & 15, z & 15) + 1;
    }
 
    public void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {

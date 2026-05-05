@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 
 public class PostChain implements AutoCloseable {
@@ -225,7 +227,7 @@ public class PostChain implements AutoCloseable {
       for(Map.Entry<Identifier, PostChainConfig.InternalTarget> entry : this.internalTargets.entrySet()) {
          Identifier id = (Identifier)entry.getKey();
          PostChainConfig.InternalTarget target = (PostChainConfig.InternalTarget)entry.getValue();
-         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), true, target.clearColor());
+         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), true, ARGB.vector4fFromARGB32(target.clearColor()), GpuFormat.RGBA8_UNORM);
          if (target.persistent()) {
             RenderTarget persistentTarget = this.getOrCreatePersistentTarget(id, descriptor);
             targets.put(id, frame.importExternal(id.toString(), persistentTarget));

@@ -45,7 +45,7 @@ public class Stray extends AbstractSkeleton {
       return SoundEvents.STRAY_DEATH;
    }
 
-   SoundEvent getStepSound() {
+   protected SoundEvent getStepSound() {
       return SoundEvents.STRAY_STEP;
    }
 

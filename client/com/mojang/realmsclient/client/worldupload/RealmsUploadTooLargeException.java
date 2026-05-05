@@ -4,7 +4,7 @@ import com.mojang.realmsclient.Unit;
 import net.minecraft.network.chat.Component;
 
 public class RealmsUploadTooLargeException extends RealmsUploadException {
-   final long sizeLimit;
+   private final long sizeLimit;
 
    public RealmsUploadTooLargeException(final long sizeLimit) {
       super();

@@ -48,7 +48,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private final @Nullable RealmCreationTask realmCreationTask;
    private final long realmId;
    private final int slotId;
-   final AtomicReference<@Nullable RealmsWorldUpload> currentUpload = new AtomicReference();
+   private final AtomicReference<@Nullable RealmsWorldUpload> currentUpload = new AtomicReference();
    private final UploadStatus uploadStatus;
    private final RateLimiter narrationRateLimiter;
    private volatile Component @Nullable [] errorMessage;

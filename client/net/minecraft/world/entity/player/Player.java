@@ -683,8 +683,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker) {
-      super.blockUsingItem(level, attacker);
+   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker, final DamageSource source, final float damage) {
+      super.blockUsingItem(level, attacker, source, damage);
       ItemStack itemBlockingWith = this.getItemBlockingWith();
       BlocksAttacks blocksAttacks = itemBlockingWith != null ? (BlocksAttacks)itemBlockingWith.get(DataComponents.BLOCKS_ATTACKS) : null;
       float secondsToDisableBlocking = attacker.getSecondsToDisableBlocking();
@@ -930,7 +930,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                Vec3 oldMovement = entity.getDeltaMovement();
                boolean wasHurt = entity.hurtOrSimulate(damageSource, totalDamage);
                if (wasHurt) {
-                  this.causeExtraKnockback(entity, this.getKnockback(entity, damageSource) + (knockbackAttack ? 0.5F : 0.0F), oldMovement);
+                  this.causeExtraKnockback(entity, this.getKnockback(entity, damageSource) + (knockbackAttack ? 0.5F : 0.0F), oldMovement, damageSource, totalDamage);
                   if (sweepAttack) {
                      this.doSweepAttack(entity, baseDamage, damageSource, attackStrengthScale);
                   }
@@ -955,7 +955,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    private DamageSource createAttackSource(final ItemStack attackingItemStack) {
-      return attackingItemStack.getDamageSource(this, () -> this.damageSources().playerAttack(this));
+      return attackingItemStack.getDamageSource(this);
    }
 
    private boolean cannotAttack(final Entity entity) {
@@ -1051,11 +1051,11 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   public void causeExtraKnockback(final Entity entity, final float knockbackAmount, final Vec3 oldMovement) {
+   public void causeExtraKnockback(final Entity entity, final float knockbackAmount, final Vec3 oldMovement, final DamageSource damageSource, final float damage) {
       if (knockbackAmount > 0.0F) {
          if (entity instanceof LivingEntity) {
             LivingEntity livingTarget = (LivingEntity)entity;
-            livingTarget.knockback((double)knockbackAmount, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
+            livingTarget.knockback((double)knockbackAmount, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, damage);
          } else {
             entity.push((double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)) * knockbackAmount), 0.1, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * knockbackAmount));
          }
@@ -1096,7 +1096,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                if (this.distanceToSqr(nearby) < 9.0) {
                   float enchantedDamage = this.getEnchantedDamage(nearby, var12, damageSource) * attackStrengthScale;
                   if (nearby.hurtServer(serverLevel, damageSource, enchantedDamage)) {
-                     nearby.knockback(0.4000000059604645, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
+                     nearby.knockback(0.4000000059604645, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, enchantedDamage);
                      EnchantmentHelper.doPostAttackEffects(serverLevel, nearby, damageSource);
                   }
                }
@@ -1150,7 +1150,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             Vec3 oldMovement = target.getDeltaMovement();
             boolean wasHurt = dealsDamage && target.hurtOrSimulate(damageSource, totalDamage);
             if (dealsKnockback) {
-               this.causeExtraKnockback(target, 0.4F + this.getKnockback(target, damageSource), oldMovement);
+               this.causeExtraKnockback(target, 0.4F + this.getKnockback(target, damageSource), oldMovement, damageSource, totalDamage);
             }
 
             boolean dismounted = false;
@@ -1913,6 +1913,10 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public ResolvableProfile getProfile() {
       return ResolvableProfile.createResolved(this.gameProfile);
+   }
+
+   public DamageSource createDamageSource() {
+      return this.damageSources().playerAttack(this);
    }
 
    static {

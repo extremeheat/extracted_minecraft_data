@@ -176,7 +176,7 @@ public enum TrialSpawnerState implements StringRepresentable {
    private static Optional<Vec3> calculatePositionToSpawnSpawner(final ServerLevel level, final BlockPos trialSpawnerPos, final TrialSpawner trialSpawner, final TrialSpawnerStateData data) {
       Stream var10000 = data.detectedPlayers.stream();
       Objects.requireNonNull(level);
-      List<Player> nearbyPlayers = var10000.map(level::getPlayerByUUID).filter(Objects::nonNull).filter((player) -> !player.isCreative() && !player.isSpectator() && player.isAlive() && player.distanceToSqr(trialSpawnerPos.getCenter()) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange())).toList();
+      List<Player> nearbyPlayers = var10000.map(level::getPlayerByUUID).filter(Objects::nonNull).filter((player) -> !player.isCreative() && !player.isSpectator() && player.isAlive() && player.distanceToSqr(Vec3.atCenterOf(trialSpawnerPos)) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange())).toList();
       if (nearbyPlayers.isEmpty()) {
          return Optional.empty();
       } else {
@@ -189,7 +189,7 @@ public enum TrialSpawnerState implements StringRepresentable {
       Vec3 entityPos = entityToSpawnItemAbove.position();
       Vec3 trySpawnPos = entityPos.relative(Direction.UP, (double)(entityToSpawnItemAbove.getBbHeight() + 2.0F + (float)level.getRandom().nextInt(4)));
       BlockHitResult hitResult = level.clip(new ClipContext(entityPos, trySpawnPos, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
-      Vec3 down = hitResult.getBlockPos().getCenter().relative(Direction.DOWN, 1.0);
+      Vec3 down = Vec3.atCenterOf(hitResult.getBlockPos()).relative(Direction.DOWN, 1.0);
       BlockPos blockPosDown = BlockPos.containing(down);
       return !level.getBlockState(blockPosDown).getCollisionShape(level, blockPosDown).isEmpty() ? Optional.empty() : Optional.of(down);
    }
@@ -197,7 +197,7 @@ public enum TrialSpawnerState implements StringRepresentable {
    private static @Nullable Entity selectEntityToSpawnItemAbove(final List<Player> nearbyPlayers, final Set<UUID> mobIds, final TrialSpawner trialSpawner, final BlockPos spawnerPos, final ServerLevel level) {
       Stream var10000 = mobIds.stream();
       Objects.requireNonNull(level);
-      Stream<Entity> nearbyMobs = var10000.map(level::getEntity).filter(Objects::nonNull).filter((target) -> target.isAlive() && target.distanceToSqr(spawnerPos.getCenter()) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange()));
+      Stream<Entity> nearbyMobs = var10000.map(level::getEntity).filter(Objects::nonNull).filter((target) -> target.isAlive() && target.distanceToSqr(Vec3.atCenterOf(spawnerPos)) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange()));
       RandomSource random = level.getRandom();
       List<? extends Entity> eligibleEntities = random.nextBoolean() ? nearbyMobs.toList() : nearbyPlayers;
       if (eligibleEntities.isEmpty()) {
@@ -265,24 +265,24 @@ public enum TrialSpawnerState implements StringRepresentable {
       };
       ParticleEmission SMALL_FLAMES = (level, random, pos, isOminous) -> {
          if (random.nextInt(2) == 0) {
-            Vec3 vec = pos.getCenter().offsetRandom(random, 0.9F);
+            Vec3 vec = Vec3.atCenterOf(pos).offsetRandom(random, 0.9F);
             addParticle(isOminous ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME, vec, level);
          }
 
       };
       ParticleEmission FLAMES_AND_SMOKE = (level, random, pos, isOminous) -> {
-         Vec3 vec = pos.getCenter().offsetRandom(random, 1.0F);
+         Vec3 vec = Vec3.atCenterOf(pos).offsetRandom(random, 1.0F);
          addParticle(ParticleTypes.SMOKE, vec, level);
          addParticle(isOminous ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME, vec, level);
       };
       ParticleEmission SMOKE_INSIDE_AND_TOP_FACE = (level, random, pos, isOminous) -> {
-         Vec3 vec = pos.getCenter().offsetRandom(random, 0.9F);
+         Vec3 vec = Vec3.atCenterOf(pos).offsetRandom(random, 0.9F);
          if (random.nextInt(3) == 0) {
             addParticle(ParticleTypes.SMOKE, vec, level);
          }
 
          if (level.getGameTime() % 20L == 0L) {
-            Vec3 topFaceVec = pos.getCenter().add(0.0, 0.5, 0.0);
+            Vec3 topFaceVec = Vec3.atCenterOf(pos).add(0.0, 0.5, 0.0);
             int smokeCount = level.getRandom().nextInt(4) + 20;
 
             for(int i = 0; i < smokeCount; ++i) {

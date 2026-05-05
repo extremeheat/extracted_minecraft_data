@@ -22,7 +22,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
-class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
+public class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    static final Component TITLE = Component.translatable("mco.configure.worlds.title");
    private final RealmsConfigureWorldScreen configurationScreen;
    private final Minecraft minecraft;
@@ -32,7 +32,7 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    private final Button resetWorldButton;
    private final List<RealmsWorldSlotButton> slotButtonList = Lists.newArrayList();
 
-   RealmsWorldsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
+   public RealmsWorldsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
       super(TITLE);
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;

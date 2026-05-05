@@ -13,11 +13,13 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.PotentSulfurBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.PotentSulfurState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -93,9 +95,9 @@ public class PotentSulfurBlockEntity extends BlockEntity {
       return level.getEntitiesOfClass(LivingEntity.class, aabb, EFFECT_PREDICATE);
    }
 
-   private static void spawnGeyserParticle(final Level level, final Vec3 sulfurPos, final Vec3 sourcePos) {
-      int waterBlocks = (int)Math.floor(sourcePos.y - sulfurPos.y);
-      level.addParticle(new GeyserParticleOptions(ParticleTypes.GEYSER, waterBlocks), sourcePos.x, sourcePos.y, sourcePos.z, 0.0, 0.0, 0.0);
+   private static void spawnGeyserParticle(final Level level, final BlockPos sulfurPos, final BlockPos sourcePos) {
+      int waterBlocks = sourcePos.getY() - sulfurPos.getY() - 1;
+      level.addParticle(new GeyserParticleOptions(ParticleTypes.GEYSER, waterBlocks), (double)sourcePos.getX() + 0.5, (double)sourcePos.getY(), (double)sourcePos.getZ() + 0.5, 0.0, 0.0, 0.0);
    }
 
    private static void spawnNoxiousGasCloudParticle(final Level level, final Vec3 pos) {
@@ -123,10 +125,10 @@ public class PotentSulfurBlockEntity extends BlockEntity {
    public static boolean canBeReachedByNoxiousGas(final Level level, final BlockPos sourceBlock, final Vec3 pos) {
       if (!isAir(level, pos)) {
          return false;
-      } else if (pos.distanceToSqr(sourceBlock.getCenter()) > 9.0) {
+      } else if (pos.distanceToSqr(Vec3.atCenterOf(sourceBlock)) > 9.0) {
          return false;
       } else {
-         Vec3 belowSource = sourceBlock.below().getCenter();
+         Vec3 belowSource = Vec3.atCenterOf(sourceBlock.below());
          Vec3 belowPos = pos.with(Direction.Axis.Y, pos.y - 1.0);
          return isWater(level, belowPos) && haveLineOfSight(level, belowSource, belowPos);
       }
@@ -168,7 +170,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
          if (level.getGameTime() % 20L == 0L) {
             BlockPos sourceBlock = findNoxiousGasSourceBlock(level, pos);
             if (sourceBlock != null) {
-               spawnNoxiousGasCloudParticle(level, sourceBlock.getCenter());
+               spawnNoxiousGasCloudParticle(level, Vec3.atCenterOf(sourceBlock));
             }
 
          }
@@ -177,7 +179,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
          BlockPos sourceBlock = findNoxiousGasSourceBlock(level, pos);
          if (sourceBlock != null) {
             if ((level.getGameTime() - entity.eruptionTick) % 20L == 0L) {
-               spawnGeyserParticle(level, pos.getCenter(), sourceBlock.getBottomCenter());
+               spawnGeyserParticle(level, pos, sourceBlock);
             }
 
          }
@@ -187,7 +189,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
             BlockPos sourceBlock = findNoxiousGasSourceBlock(level, pos);
             if (sourceBlock != null) {
                if (entity.waitingCountdown <= 0) {
-                  int waterBlocks = (int)Math.floor(sourceBlock.getBottomCenter().y - pos.getCenter().y);
+                  int waterBlocks = sourceBlock.getY() - pos.getY() - 1;
                   if (state.getValue(PotentSulfurBlock.STATE) == PotentSulfurState.DORMANT) {
                      entity.waitingCountdown = 10 * (waterBlocks - 1) + entity.dormantGeyserTime;
                   } else {
@@ -200,7 +202,11 @@ public class PotentSulfurBlockEntity extends BlockEntity {
                }
 
                if (entity.waitingCountdown == 0) {
-                  level.setBlock(pos, (BlockState)state.setValue(PotentSulfurBlock.STATE, state.getValue(PotentSulfurBlock.STATE) == PotentSulfurState.DORMANT ? PotentSulfurState.ERUPTING : PotentSulfurState.DORMANT), 3);
+                  PotentSulfurState stateToSet = state.getValue(PotentSulfurBlock.STATE) == PotentSulfurState.DORMANT ? PotentSulfurState.ERUPTING : PotentSulfurState.DORMANT;
+                  level.setBlock(pos, (BlockState)state.setValue(PotentSulfurBlock.STATE, stateToSet), 3);
+                  if (stateToSet == PotentSulfurState.DORMANT) {
+                     level.gameEvent(GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(state));
+                  }
                }
 
             }
@@ -209,12 +215,20 @@ public class PotentSulfurBlockEntity extends BlockEntity {
       SERVER_LAUNCH_ENTITY_TICKER = (level, pos, state, entity) -> {
          BlockPos sourceBlock = findNoxiousGasSourceBlock(level, pos);
          if (sourceBlock != null) {
-            int waterBlocks = (int)Math.floor(sourceBlock.getBottomCenter().y - pos.getCenter().y);
-            AABB aabb = (new AABB(pos)).inflate(0.0, (double)(waterBlocks * 5), 0.0).move(0.0, (double)waterBlocks, 0.0);
+            int waterBlocks = sourceBlock.getY() - pos.getY() - 1;
+            int geyserForceHeight = waterBlocks * 6;
+            AABB aabb = (new AABB(pos.above())).expandTowards(0.0, (double)(geyserForceHeight - 1), 0.0);
 
             for(Entity entityToBeLaunched : level.getEntitiesOfClass(Entity.class, aabb, EFFECT_PREDICATE)) {
                Vec3 entityVelocity = entityToBeLaunched.getDeltaMovement();
-               if (entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1 && haveLineOfSight(level, sourceBlock.below().getCenter(), entityToBeLaunched.getEyePosition())) {
+               if (entityToBeLaunched instanceof Player) {
+                  Player player = (Player)entityToBeLaunched;
+                  if (player.getAbilities().flying) {
+                     continue;
+                  }
+               }
+
+               if (entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1 && haveLineOfSight(level, Vec3.atCenterOf(sourceBlock.below()), entityToBeLaunched.getEyePosition())) {
                   entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
                   entityToBeLaunched.hurtMarked = true;
                   entityToBeLaunched.needsSync = true;

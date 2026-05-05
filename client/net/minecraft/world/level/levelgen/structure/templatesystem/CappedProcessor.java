@@ -28,6 +28,10 @@ public class CappedProcessor implements StructureProcessor {
       return MAP_CODEC;
    }
 
+   public boolean evaluatesEntirePieceState() {
+      return true;
+   }
+
    public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final List<StructureTemplate.StructureBlockInfo> originalBlockInfoList, final List<StructureTemplate.StructureBlockInfo> processedBlockInfoList, final StructurePlaceSettings settings) {
       if (this.limit.maxInclusive() != 0 && !processedBlockInfoList.isEmpty()) {
          if (originalBlockInfoList.size() != processedBlockInfoList.size()) {
@@ -48,7 +52,7 @@ public class CappedProcessor implements StructureProcessor {
                   int index = indexIterator.nextInt();
                   StructureTemplate.StructureBlockInfo originalBlockInfo = (StructureTemplate.StructureBlockInfo)originalBlockInfoList.get(index);
                   StructureTemplate.StructureBlockInfo processedBlockInfo = (StructureTemplate.StructureBlockInfo)processedBlockInfoList.get(index);
-                  StructureTemplate.StructureBlockInfo maybeAltered = this.delegate.processBlock(level, position, referencePos, originalBlockInfo, processedBlockInfo, settings);
+                  StructureTemplate.StructureBlockInfo maybeAltered = this.delegate.processBlock(level, position, referencePos, originalBlockInfo.pos(), processedBlockInfo, settings);
                   if (maybeAltered != null && !processedBlockInfo.equals(maybeAltered)) {
                      ++replaced;
                      processedBlockInfoList.set(index, maybeAltered);

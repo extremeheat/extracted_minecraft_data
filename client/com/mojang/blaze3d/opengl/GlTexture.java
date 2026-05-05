@@ -2,23 +2,21 @@ package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.textures.GpuTexture;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import org.jspecify.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GlTexture extends GpuTexture {
+public class GlTexture extends GpuTexture implements FrameBufferAttachment {
    private static final int EMPTY = -1;
    protected final int id;
-   private int firstFboId = -1;
-   private int firstFboDepthId = -1;
-   private @Nullable Int2IntMap fboCache;
+   private final FrameBufferCache frameBufferCache;
+   private final List<FrameBufferCache.CacheKey> fboKeys = new ArrayList();
    protected boolean closed;
    private int views;
 
-   protected GlTexture(final @GpuTexture.Usage int usage, final String label, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels, final int id) {
+   protected GlTexture(final @GpuTexture.Usage int usage, final String label, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels, final int id, final FrameBufferCache frameBufferCache) {
       super(usage, label, format, width, height, depthOrLayers, mipLevels);
       this.id = id;
+      this.frameBufferCache = frameBufferCache;
    }
 
    public void close() {
@@ -32,51 +30,31 @@ public class GlTexture extends GpuTexture {
    }
 
    private void destroyImmediately() {
+      while(!this.fboKeys.isEmpty()) {
+         this.frameBufferCache.destroyFbo((FrameBufferCache.CacheKey)this.fboKeys.getLast());
+      }
+
       GlStateManager._deleteTexture(this.id);
-      if (this.firstFboId != -1) {
-         GlStateManager._glDeleteFramebuffers(this.firstFboId);
-      }
-
-      if (this.fboCache != null) {
-         IntIterator var1 = this.fboCache.values().iterator();
-
-         while(var1.hasNext()) {
-            int fbo = (Integer)var1.next();
-            GlStateManager._glDeleteFramebuffers(fbo);
-         }
-      }
-
    }
 
    public boolean isClosed() {
       return this.closed;
    }
 
-   public int getFbo(final DirectStateAccess dsa, final @Nullable GpuTexture depth) {
-      int depthId = depth == null ? 0 : ((GlTexture)depth).id;
-      if (this.firstFboDepthId == depthId) {
-         return this.firstFboId;
-      } else if (this.firstFboId == -1) {
-         this.firstFboId = this.createFbo(dsa, depthId);
-         this.firstFboDepthId = depthId;
-         return this.firstFboId;
-      } else {
-         if (this.fboCache == null) {
-            this.fboCache = new Int2IntArrayMap();
-         }
-
-         return this.fboCache.computeIfAbsent(depthId, (_depthId) -> this.createFbo(dsa, _depthId));
-      }
-   }
-
-   private int createFbo(final DirectStateAccess dsa, final int depthid) {
-      int fbo = dsa.createFrameBufferObject();
-      dsa.bindFrameBufferTextures(fbo, this.id, depthid, 0, 0);
-      return fbo;
-   }
-
    public int glId() {
       return this.id;
+   }
+
+   public int fboMipLevel() {
+      return 0;
+   }
+
+   public void addAssociatedFbo(final FrameBufferCache.CacheKey fboKey) {
+      this.fboKeys.add(fboKey);
+   }
+
+   public void removeAssociatedFbo(final FrameBufferCache.CacheKey fboKey) {
+      this.fboKeys.remove(fboKey);
    }
 
    public void addViews() {

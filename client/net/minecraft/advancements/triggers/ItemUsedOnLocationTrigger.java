@@ -27,6 +27,7 @@ import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
+import net.minecraft.world.phys.Vec3;
 
 public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public ItemUsedOnLocationTrigger() {
@@ -40,7 +41,7 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
    public void trigger(final ServerPlayer player, final BlockPos pos, final ItemInstance tool) {
       ServerLevel level = player.level();
       BlockState state = level.getBlockState(pos);
-      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, pos.getCenter()).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.ADVANCEMENT_LOCATION);
+      LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.ADVANCEMENT_LOCATION);
       LootContext context = (new LootContext.Builder(params)).create(Optional.empty());
       this.trigger(player, (t) -> t.matches(context));
    }

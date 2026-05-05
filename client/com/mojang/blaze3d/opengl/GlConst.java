@@ -1,6 +1,8 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.BlendOp;
@@ -9,7 +11,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 public class GlConst {
    public static final int GL_READ_FRAMEBUFFER = 36008;
@@ -206,9 +207,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(final VertexFormat.Mode mode) {
+   public static int toGl(final PrimitiveTopology primitiveTopology) {
       byte var10000;
-      switch (mode) {
+      switch (primitiveTopology) {
          case LINES -> var10000 = 4;
          case DEBUG_LINES -> var10000 = 1;
          case DEBUG_LINE_STRIP -> var10000 = 3;
@@ -223,7 +224,7 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(final VertexFormat.IndexType indexType) {
+   public static int toGl(final IndexType indexType) {
       short var10000;
       switch (indexType) {
          case SHORT -> var10000 = 5123;

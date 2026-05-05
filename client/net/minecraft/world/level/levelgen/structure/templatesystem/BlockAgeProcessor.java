@@ -29,7 +29,7 @@ public class BlockAgeProcessor implements StructureProcessor {
       this.mossiness = mossiness;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final BlockPos templateRelativePos, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
       RandomSource random = settings.getRandom(processedBlockInfo.pos());
       BlockState state = processedBlockInfo.state();
       BlockPos pos = processedBlockInfo.pos();

@@ -66,7 +66,7 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       this.zMax = voxelShape.lastFull(Direction.Axis.Z);
    }
 
-   protected int getIndex(final int x, final int y, final int z) {
+   private int getIndex(final int x, final int y, final int z) {
       return (x * this.ySize + y) * this.zSize + z;
    }
 
@@ -103,7 +103,7 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       return axis.choose(this.xMax, this.yMax, this.zMax);
    }
 
-   static BitSetDiscreteVoxelShape join(final DiscreteVoxelShape first, final DiscreteVoxelShape second, final IndexMerger xMerger, final IndexMerger yMerger, final IndexMerger zMerger, final BooleanOp op) {
+   public static BitSetDiscreteVoxelShape join(final DiscreteVoxelShape first, final DiscreteVoxelShape second, final IndexMerger xMerger, final IndexMerger yMerger, final IndexMerger zMerger, final BooleanOp op) {
       BitSetDiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(xMerger.size() - 1, yMerger.size() - 1, zMerger.size() - 1);
       int[] bounds = new int[]{2147483647, 2147483647, 2147483647, -2147483648, -2147483648, -2147483648};
       xMerger.forMergedIndexes((x1, x2, xr) -> {
@@ -144,7 +144,7 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       return shape;
    }
 
-   protected static void forAllBoxes(final DiscreteVoxelShape voxelShape, final DiscreteVoxelShape.IntLineConsumer consumer, final boolean mergeNeighbors) {
+   static void forAllBoxes(final DiscreteVoxelShape voxelShape, final DiscreteVoxelShape.IntLineConsumer consumer, final boolean mergeNeighbors) {
       BitSetDiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(voxelShape);
 
       for(int y = 0; y < shape.ySize; ++y) {

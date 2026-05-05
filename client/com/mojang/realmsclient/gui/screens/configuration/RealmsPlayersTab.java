@@ -30,9 +30,9 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
-class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
+public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final Component TITLE = Component.translatable("mco.configure.world.players.title");
+   public static final Component TITLE = Component.translatable("mco.configure.world.players.title");
    private static final Component QUESTION_TITLE = Component.translatable("mco.question");
    private static final int PADDING = 8;
    private final RealmsConfigureWorldScreen configurationScreen;
@@ -41,7 +41,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    private RealmsServer serverData;
    private final InvitedObjectSelectionList invitedList;
 
-   RealmsPlayersTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
+   public RealmsPlayersTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
       super(TITLE);
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;

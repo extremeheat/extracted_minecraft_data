@@ -327,7 +327,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          if (!this.level().loadedAndEntityCanStandOnFace(target.relative(face), this, oppositeFace)) {
             return false;
          } else {
-            AABB fullyOpened = getProgressAabb(this.getScale(), oppositeFace, 1.0F, target.getBottomCenter()).deflate(1.0E-6);
+            AABB fullyOpened = getProgressAabb(this.getScale(), oppositeFace, 1.0F, Vec3.atBottomCenterOf(target)).deflate(1.0E-6);
             return this.level().noCollision(this, fullyOpened);
          }
       }

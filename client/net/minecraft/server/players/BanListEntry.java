@@ -72,7 +72,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
 
    public abstract Component getDisplayName();
 
-   boolean hasExpired() {
+   public boolean hasExpired() {
       return this.expires == null ? false : this.expires.before(new Date());
    }
 

@@ -261,7 +261,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          return new Bounds<U>(this.min.map(mapper), this.max.map(mapper));
       }
 
-      static <T extends Number & Comparable<T>> Codec<Bounds<T>> createCodec(final Codec<T> numberCodec) {
+      public static <T extends Number & Comparable<T>> Codec<Bounds<T>> createCodec(final Codec<T> numberCodec) {
          Codec<Bounds<T>> rangeCodec = RecordCodecBuilder.create((i) -> i.group(numberCodec.optionalFieldOf("min").forGetter(Bounds::min), numberCodec.optionalFieldOf("max").forGetter(Bounds::max)).apply(i, Bounds::new));
          return Codec.either(rangeCodec, numberCodec).xmap((either) -> (Bounds)either.map((v) -> v, (x$0) -> exactly(x$0)), (bounds) -> {
             Optional<T> point = bounds.asPoint();
@@ -269,7 +269,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          });
       }
 
-      static <B extends ByteBuf, T extends Number & Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> numberCodec) {
+      public static <B extends ByteBuf, T extends Number & Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> numberCodec) {
          return new StreamCodec<B, Bounds<T>>() {
             private static final int MIN_FLAG = 1;
             private static final int MAX_FLAG = 2;

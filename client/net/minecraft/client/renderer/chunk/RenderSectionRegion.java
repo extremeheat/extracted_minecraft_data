@@ -23,7 +23,7 @@ public class RenderSectionRegion implements BlockAndTintGetter {
    private final CardinalLighting cardinalLighting;
    private final LevelLightEngine lightEngine;
 
-   RenderSectionRegion(final ClientLevel level, final int minSectionX, final int minSectionY, final int minSectionZ, final SectionCopy[] sections) {
+   public RenderSectionRegion(final ClientLevel level, final int minSectionX, final int minSectionY, final int minSectionZ, final SectionCopy[] sections) {
       super();
       this.level = level;
       this.minSectionX = minSectionX;

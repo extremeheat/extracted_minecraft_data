@@ -237,7 +237,7 @@ public class HashCache {
    }
 
    private static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
-      ProviderCacheBuilder(final String version) {
+      public ProviderCacheBuilder(final String version) {
          this(version, new ConcurrentHashMap());
       }
 
