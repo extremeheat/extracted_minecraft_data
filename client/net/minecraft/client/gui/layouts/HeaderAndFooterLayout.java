@@ -85,6 +85,12 @@ public class HeaderAndFooterLayout implements Layout {
       this.footerFrame.visitChildren(layoutElementVisitor);
    }
 
+   public void removeChildren() {
+      this.headerFrame.removeChildren();
+      this.contentsFrame.removeChildren();
+      this.footerFrame.removeChildren();
+   }
+
    public void arrangeElements() {
       int headerHeight = this.getHeaderHeight();
       int footerHeight = this.getFooterHeight();

@@ -184,7 +184,7 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundSetTestBlockPacket> SERVERBOUND_SET_TEST_BLOCK = createServerbound("set_test_block");
    public static final PacketType<ServerboundTestInstanceBlockActionPacket> SERVERBOUND_TEST_INSTANCE_BLOCK_ACTION = createServerbound("test_instance_block_action");
    public static final PacketType<ServerboundSignUpdatePacket> SERVERBOUND_SIGN_UPDATE = createServerbound("sign_update");
-   public static final PacketType<ServerboundSpectateEntityPacket> SERVERBOUND_SPECTATE_ENTITY = createServerbound("spectate_entity");
+   public static final PacketType<ServerboundSpectatorActionPacket> SERVERBOUND_SPECTATOR_ACTION = createServerbound("spectator_action");
    public static final PacketType<ServerboundSwingPacket> SERVERBOUND_SWING = createServerbound("swing");
    public static final PacketType<ServerboundTeleportToEntityPacket> SERVERBOUND_TELEPORT_TO_ENTITY = createServerbound("teleport_to_entity");
    public static final PacketType<ServerboundUseItemOnPacket> SERVERBOUND_USE_ITEM_ON = createServerbound("use_item_on");

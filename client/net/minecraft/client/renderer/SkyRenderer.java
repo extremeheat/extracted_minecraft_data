@@ -267,7 +267,7 @@ public class SkyRenderer implements AutoCloseable {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.setVertexBuffer(0, this.topSkyBuffer.slice());
-         renderPass.draw(0, 10);
+         renderPass.draw(10, 1, 0, 0);
       }
 
    }
@@ -314,7 +314,7 @@ public class SkyRenderer implements AutoCloseable {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.setVertexBuffer(0, this.bottomSkyBuffer.slice());
-         renderPass.draw(0, 10);
+         renderPass.draw(10, 1, 0, 0);
       }
 
       modelViewStack.popMatrix();
@@ -359,7 +359,7 @@ public class SkyRenderer implements AutoCloseable {
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
          renderPass.setVertexBuffer(0, this.sunBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
-         renderPass.drawIndexed(0, 0, 6, 1);
+         renderPass.drawIndexed(6, 1, 0, 0, 0);
       }
 
       modelViewStack.popMatrix();
@@ -384,7 +384,7 @@ public class SkyRenderer implements AutoCloseable {
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
          renderPass.setVertexBuffer(0, this.moonBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
-         renderPass.drawIndexed(baseVertex, 0, 6, 1);
+         renderPass.drawIndexed(6, 1, 0, baseVertex, 0);
       }
 
       modelViewStack.popMatrix();
@@ -406,7 +406,7 @@ public class SkyRenderer implements AutoCloseable {
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.setVertexBuffer(0, this.starBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
-         renderPass.drawIndexed(0, 0, this.starIndexCount, 1);
+         renderPass.drawIndexed(this.starIndexCount, 1, 0, 0, 0);
       }
 
       modelViewStack.popMatrix();
@@ -432,7 +432,7 @@ public class SkyRenderer implements AutoCloseable {
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
             renderPass.setVertexBuffer(0, this.sunriseBuffer.slice());
-            renderPass.draw(0, 18);
+            renderPass.draw(18, 1, 0, 0);
          }
 
          modelViewStack.popMatrix();
@@ -454,7 +454,7 @@ public class SkyRenderer implements AutoCloseable {
          renderPass.bindTexture("Sampler0", this.endSkyTexture.getTextureView(), this.endSkyTexture.getSampler());
          renderPass.setVertexBuffer(0, this.endSkyBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, autoIndices.type());
-         renderPass.drawIndexed(0, 0, 36, 1);
+         renderPass.drawIndexed(36, 1, 0, 0, 0);
       }
 
    }
@@ -479,7 +479,7 @@ public class SkyRenderer implements AutoCloseable {
          renderPass.bindTexture("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
          renderPass.setVertexBuffer(0, this.endFlashBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
-         renderPass.drawIndexed(0, 0, 6, 1);
+         renderPass.drawIndexed(6, 1, 0, 0, 0);
       }
 
       modelViewStack.popMatrix();

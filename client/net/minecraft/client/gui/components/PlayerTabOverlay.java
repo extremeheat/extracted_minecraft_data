@@ -139,7 +139,7 @@ public class PlayerTabOverlay {
          ++cols;
       }
 
-      boolean showHead = this.minecraft.isLocalServer() || this.minecraft.getConnection().getConnection().isEncrypted();
+      boolean showHead = this.minecraft.getConnection().onlineMode();
       int widthForScore;
       if (displayObjective != null) {
          if (displayObjective.getRenderType() == ObjectiveCriteria.RenderType.HEARTS) {

@@ -2,18 +2,24 @@ package net.minecraft.client.telemetry;
 
 import com.mojang.authlib.minecraft.TelemetryEvent;
 import com.mojang.authlib.minecraft.TelemetrySession;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
+import org.slf4j.Logger;
 
 public class TelemetryEventType {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<String, TelemetryEventType> REGISTRY = new Object2ObjectLinkedOpenHashMap();
    public static final Codec<TelemetryEventType> CODEC;
    private static final List<TelemetryProperty<?>> GLOBAL_PROPERTIES;
@@ -25,6 +31,7 @@ public class TelemetryEventType {
    public static final TelemetryEventType WORLD_UNLOADED;
    public static final TelemetryEventType ADVANCEMENT_MADE;
    public static final TelemetryEventType GAME_LOAD_TIMES;
+   public static final TelemetryEventType P2P_CONNECTION;
    private final String id;
    private final String exportKey;
    private final List<TelemetryProperty<?>> properties;
@@ -94,6 +101,30 @@ public class TelemetryEventType {
       return List.copyOf(REGISTRY.values());
    }
 
+   public static boolean selfTest() {
+      boolean hasErrors = false;
+      Set<TelemetryProperty<?>> allProperties = new HashSet();
+
+      for(Map.Entry<String, TelemetryEventType> entry : REGISTRY.entrySet()) {
+         TelemetryEventType type = (TelemetryEventType)entry.getValue();
+         if (!ComponentUtils.isTranslationResolvable(type.description()) || !ComponentUtils.isTranslationResolvable(type.title())) {
+            LOGGER.warn("Missing translations for telemetry event {}", entry.getKey());
+            hasErrors = true;
+         }
+
+         allProperties.addAll(type.properties);
+      }
+
+      for(TelemetryProperty<?> property : allProperties) {
+         if (!ComponentUtils.isTranslationResolvable(property.title())) {
+            LOGGER.warn("Missing translation for telemetry property {}", property.id());
+            hasErrors = true;
+         }
+      }
+
+      return hasErrors;
+   }
+
    static {
       CODEC = Codec.STRING.comapFlatMap((key) -> {
          TelemetryEventType type = (TelemetryEventType)REGISTRY.get(key);
@@ -108,6 +139,7 @@ public class TelemetryEventType {
       WORLD_UNLOADED = builder("world_unloaded", "WorldUnloaded").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.SECONDS_SINCE_LOAD).define(TelemetryProperty.TICKS_SINCE_LOAD).register();
       ADVANCEMENT_MADE = builder("advancement_made", "AdvancementMade").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.ADVANCEMENT_ID).define(TelemetryProperty.ADVANCEMENT_GAME_TIME).optIn().register();
       GAME_LOAD_TIMES = builder("game_load_times", "GameLoadTimes").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS).define(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS).define(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS).define(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS).optIn().register();
+      P2P_CONNECTION = builder("p2p_connection", "P2PConnection").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.P2P_CONNECTION_SUCCESSFUL).define(TelemetryProperty.P2P_CONNECTION_FAILURE_STAGE).define(TelemetryProperty.P2P_CONNECTION_LOCAL_CANDIDATE_TYPE).define(TelemetryProperty.P2P_CONNECTION_REMOTE_CANDIDATE_TYPE).define(TelemetryProperty.P2P_CONNECTION_ICE_PATH).define(TelemetryProperty.P2P_CONNECTION_SIGNALING_TIME_MS).define(TelemetryProperty.P2P_CONNECTION_ICE_CONNECT_TIME_MS).define(TelemetryProperty.P2P_CONNECTION_TOTAL_TIME_MS).optIn().register();
    }
 
    public static class Builder {

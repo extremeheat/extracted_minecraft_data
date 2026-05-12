@@ -1065,7 +1065,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.gameEventDispatcher.post(gameEvent, position, context);
    }
 
-   public void sendBlockUpdated(final BlockPos pos, final BlockState old, final BlockState current, final int updateFlags) {
+   public void sendBlockUpdated(final BlockPos pos, final BlockState old, final BlockState current, final @Block.UpdateFlags int updateFlags) {
       if (this.isUpdatingNavigations) {
          String message = "recursive call to sendBlockUpdated";
          Util.logAndPauseIfInIde("recursive call to sendBlockUpdated", new IllegalStateException("recursive call to sendBlockUpdated"));

@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.client.renderer.ShaderManager;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
 public class GlProgram implements AutoCloseable {
@@ -84,12 +84,12 @@ public class GlProgram implements AutoCloseable {
          Object var10000;
          switch (uniformDescription.type()) {
             case UNIFORM_BUFFER:
-               int index = GL31.glGetUniformBlockIndex(this.programId, uniformName);
+               int index = GL33C.glGetUniformBlockIndex(this.programId, uniformName);
                if (index == -1) {
                   var10000 = null;
                } else {
                   int uboBinding = nextUboBinding++;
-                  GL31.glUniformBlockBinding(this.programId, index, uboBinding);
+                  GL33C.glUniformBlockBinding(this.programId, index, uboBinding);
                   var10000 = new Uniform.Ubo(uboBinding);
                }
                break;
@@ -126,11 +126,11 @@ public class GlProgram implements AutoCloseable {
       int totalDefinedBlocks = GlStateManager.glGetProgrami(this.programId, 35382);
 
       for(int i = 0; i < totalDefinedBlocks; ++i) {
-         String name = GL31.glGetActiveUniformBlockName(this.programId, i);
+         String name = GL33C.glGetActiveUniformBlockName(this.programId, i);
          if (!this.uniformsByName.containsKey(name)) {
             if (!samplers.contains(name) && BUILT_IN_UNIFORMS.contains(name)) {
                int uboBinding = nextUboBinding++;
-               GL31.glUniformBlockBinding(this.programId, i, uboBinding);
+               GL33C.glUniformBlockBinding(this.programId, i, uboBinding);
                this.uniformsByName.put(name, new Uniform.Ubo(uboBinding));
             } else {
                LOGGER.warn("Found unknown and unsupported uniform {} in {}", name, this.debugLabel);

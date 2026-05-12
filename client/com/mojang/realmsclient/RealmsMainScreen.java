@@ -1171,7 +1171,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private int notificationCount;
 
       public NotificationButton(final Component title, final Identifier texture, final Button.OnPress onPress, final @Nullable Component tooltip) {
-         super(20, 20, title, 14, 14, new WidgetSprites(texture), onPress, tooltip, (Button.CreateNarration)null);
+         super(20, 20, title, 14, 14, 0, 0, new WidgetSprites(texture), onPress, tooltip, (Button.CreateNarration)null, false);
       }
 
       private int notificationCount() {
@@ -1184,7 +1184,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
          super.extractContents(graphics, mouseX, mouseY, a);
-         if (this.active && this.notificationCount != 0) {
+         if (this.isActive() && this.notificationCount != 0) {
             this.extractNotificationCounter(graphics);
          }
 

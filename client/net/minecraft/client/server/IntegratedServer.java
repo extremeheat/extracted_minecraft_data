@@ -19,6 +19,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -26,6 +27,7 @@ import net.minecraft.core.Position;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.gizmos.SimpleGizmoCollector;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -67,9 +69,11 @@ public class IntegratedServer extends MinecraftServer {
    private int previousSimulationDistance = 0;
    private volatile List<SimpleGizmoCollector.GizmoInstance> latestTicksGizmos = new ArrayList();
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
+   private MultiplayerScope multiplayerScope;
 
    public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
       super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false, new NotificationManager());
+      this.multiplayerScope = IntegratedServer.MultiplayerScope.OFF;
       this.setSingleplayerProfile(minecraft.getGameProfile());
       this.setDemo(minecraft.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
@@ -206,28 +210,76 @@ public class IntegratedServer extends MinecraftServer {
          this.lanPinger = new LanServerPinger(this.getMotd(), "" + port);
          this.lanPinger.start();
          this.publishedGameType = gameMode;
-         this.getPlayerList().setAllowCommandsForAllPlayers(allowCommands);
-         PermissionSet newProfilePermissions = this.getProfilePermissions(this.minecraft.player.nameAndId());
-         this.minecraft.player.setPermissions(newProfilePermissions);
-         this.minecraft.player.refreshChatAbilities();
-
-         for(ServerPlayer player : this.getPlayerList().getPlayers()) {
-            this.getCommands().sendCommands(player);
-         }
-
+         this.setCommandsAllowedForAllPlayers(allowCommands);
+         this.minecraft.p2pManager.onHostScopeChanged(this.multiplayerScope);
          return true;
-      } catch (IOException var7) {
+      } catch (IOException var5) {
          return false;
       }
    }
 
+   public void applyDefaultGameMode(final GameType gameMode) {
+      this.setDefaultGameType(gameMode);
+      this.enforceGameTypeForPlayers(this.getForcedGameType());
+   }
+
+   public void setCommandsAllowedForAllPlayers(final boolean allowCommands) {
+      this.getPlayerList().setAllowCommandsForAllPlayers(allowCommands);
+      PermissionSet newProfilePermissions = this.getProfilePermissions(this.minecraft.player.nameAndId());
+      this.minecraft.player.setPermissions(newProfilePermissions);
+      this.minecraft.player.refreshChatAbilities();
+
+      for(ServerPlayer player : this.getPlayerList().getPlayers()) {
+         this.getPlayerList().sendPlayerPermissionLevel(player);
+      }
+
+   }
+
+   public boolean unpublishServer() {
+      if (!this.isPublished()) {
+         return false;
+      } else {
+         LOGGER.info("Unpublishing integrated server (was on port {})", this.publishedPort);
+         this.getConnection().stopTcpServerListener();
+         if (this.lanPinger != null) {
+            this.lanPinger.interrupt();
+            this.lanPinger = null;
+         }
+
+         Component reason = Component.translatable("multiplayer.disconnect.server_shutdown");
+
+         for(ServerPlayer player : Lists.newArrayList(this.getPlayerList().getPlayers())) {
+            if (!player.getUUID().equals(this.uuid)) {
+               player.connection.disconnect(reason);
+            }
+         }
+
+         this.getPlayerList().setAllowCommandsForAllPlayers(false);
+         this.publishedPort = -1;
+         this.publishedGameType = null;
+         MultiplayerScope previousScope = this.multiplayerScope;
+         this.multiplayerScope = IntegratedServer.MultiplayerScope.OFF;
+         this.minecraft.p2pManager.onHostServerStopping();
+         if (previousScope != IntegratedServer.MultiplayerScope.OFF) {
+            this.minecraft.p2pManager.onHostScopeChanged(IntegratedServer.MultiplayerScope.OFF);
+         }
+
+         return true;
+      }
+   }
+
    public void stopServer() {
+      this.minecraft.p2pManager.onHostServerStopping();
       super.stopServer();
       if (this.lanPinger != null) {
          this.lanPinger.interrupt();
          this.lanPinger = null;
       }
 
+   }
+
+   public void onPlayerListChanged() {
+      this.minecraft.p2pManager.notifyJoinStateChanged();
    }
 
    public void halt(final boolean wait) {
@@ -333,5 +385,49 @@ public class IntegratedServer extends MinecraftServer {
 
    public Collection<SimpleGizmoCollector.GizmoInstance> getPerTickGizmos() {
       return this.latestTicksGizmos;
+   }
+
+   public void setMultiplayerScope(final MultiplayerScope multiplayerScope) {
+      this.multiplayerScope = multiplayerScope;
+      this.minecraft.p2pManager.onHostScopeChanged(multiplayerScope);
+   }
+
+   public MultiplayerScope getMultiplayerScope() {
+      return this.multiplayerScope;
+   }
+
+   public boolean enforceSecureProfile() {
+      return this.isPublishedOnline();
+   }
+
+   public boolean isPublishedOnline() {
+      return this.isRunning() && this.isPublished() && this.multiplayerScope == IntegratedServer.MultiplayerScope.ONLINE;
+   }
+
+   public static enum MultiplayerScope {
+      OFF("off"),
+      LAN("lan"),
+      ONLINE("online");
+
+      private final Component translatable;
+      private final Tooltip tooltip;
+
+      private MultiplayerScope(final String key) {
+         this.translatable = Component.translatable("menu.multiplayerOptions.network." + key);
+         this.tooltip = Tooltip.create(Component.translatable("menu.multiplayerOptions.network." + key + ".tooltip"));
+      }
+
+      public Component getDisplayName() {
+         return this.translatable;
+      }
+
+      public Tooltip getTooltip() {
+         return this.tooltip;
+      }
+
+      // $FF: synthetic method
+      private static MultiplayerScope[] $values() {
+         return new MultiplayerScope[]{OFF, LAN, ONLINE};
+      }
    }
 }

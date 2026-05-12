@@ -11,11 +11,11 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public record ClientboundLoginPacket(int playerId, boolean hardcore, Set<ResourceKey<Level>> levels, int maxPlayers, int chunkRadius, int simulationDistance, boolean reducedDebugInfo, boolean showDeathScreen, boolean doLimitedCrafting, CommonPlayerSpawnInfo commonPlayerSpawnInfo, boolean enforcesSecureChat) implements Packet<ClientGamePacketListener> {
+public record ClientboundLoginPacket(int playerId, boolean hardcore, Set<ResourceKey<Level>> levels, int maxPlayers, int chunkRadius, int simulationDistance, boolean reducedDebugInfo, boolean showDeathScreen, boolean doLimitedCrafting, CommonPlayerSpawnInfo commonPlayerSpawnInfo, boolean onlineMode, boolean enforcesSecureChat) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLoginPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundLoginPacket>codec(ClientboundLoginPacket::write, ClientboundLoginPacket::new);
 
    private ClientboundLoginPacket(final RegistryFriendlyByteBuf input) {
-      this(input.readInt(), input.readBoolean(), (Set)input.readCollection(Sets::newHashSetWithExpectedSize, (buf) -> buf.readResourceKey(Registries.DIMENSION)), input.readVarInt(), input.readVarInt(), input.readVarInt(), input.readBoolean(), input.readBoolean(), input.readBoolean(), new CommonPlayerSpawnInfo(input), input.readBoolean());
+      this(input.readInt(), input.readBoolean(), (Set)input.readCollection(Sets::newHashSetWithExpectedSize, (buf) -> buf.readResourceKey(Registries.DIMENSION)), input.readVarInt(), input.readVarInt(), input.readVarInt(), input.readBoolean(), input.readBoolean(), input.readBoolean(), new CommonPlayerSpawnInfo(input), input.readBoolean(), input.readBoolean());
    }
 
    public ClientboundLoginPacket {
@@ -33,6 +33,7 @@ public record ClientboundLoginPacket(int playerId, boolean hardcore, Set<Resourc
       output.writeBoolean(this.showDeathScreen);
       output.writeBoolean(this.doLimitedCrafting);
       this.commonPlayerSpawnInfo.write(output);
+      output.writeBoolean(this.onlineMode);
       output.writeBoolean(this.enforcesSecureChat);
    }
 

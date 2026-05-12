@@ -71,6 +71,10 @@ public final class VulkanConst {
          result |= 4;
       }
 
+      if ((usage & 512) != 0) {
+         result |= 256;
+      }
+
       return result;
    }
 

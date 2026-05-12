@@ -1127,6 +1127,7 @@ public class Items {
    public static final Item MUSIC_DISC_13;
    public static final Item MUSIC_DISC_CAT;
    public static final Item MUSIC_DISC_BLOCKS;
+   public static final Item MUSIC_DISC_BOUNCE;
    public static final Item MUSIC_DISC_CHIRP;
    public static final Item MUSIC_DISC_CREATOR;
    public static final Item MUSIC_DISC_CREATOR_MUSIC_BOX;
@@ -2406,6 +2407,7 @@ public class Items {
       MUSIC_DISC_13 = registerItem(ItemIds.MUSIC_DISC_13, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.THIRTEEN));
       MUSIC_DISC_CAT = registerItem(ItemIds.MUSIC_DISC_CAT, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.CAT));
       MUSIC_DISC_BLOCKS = registerItem(ItemIds.MUSIC_DISC_BLOCKS, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.BLOCKS));
+      MUSIC_DISC_BOUNCE = registerItem(ItemIds.MUSIC_DISC_BOUNCE, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.BOUNCE));
       MUSIC_DISC_CHIRP = registerItem(ItemIds.MUSIC_DISC_CHIRP, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.CHIRP));
       MUSIC_DISC_CREATOR = registerItem(ItemIds.MUSIC_DISC_CREATOR, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR));
       MUSIC_DISC_CREATOR_MUSIC_BOX = registerItem(ItemIds.MUSIC_DISC_CREATOR_MUSIC_BOX, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.CREATOR_MUSIC_BOX));

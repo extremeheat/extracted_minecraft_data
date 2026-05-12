@@ -99,7 +99,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
 
    private void renderWeather(final RenderPass renderPass, final AbstractTexture texture, final int startColumn, final int columnCount) {
       renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-      renderPass.drawIndexed(0, startColumn * 6, columnCount * 6, 1);
+      renderPass.drawIndexed(columnCount * 6, 1, startColumn * 6, 0, 0);
    }
 
    private GpuBuffer uploadVertexBuffer(final ByteBuffer buffer) {

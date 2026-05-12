@@ -67,6 +67,10 @@ public class EqualSpacingLayout extends AbstractLayout {
       this.children.forEach((wrapper) -> layoutElementVisitor.accept(wrapper.child));
    }
 
+   public void removeChildren() {
+      this.children.clear();
+   }
+
    public LayoutSettings newChildLayoutSettings() {
       return this.defaultChildLayoutSettings.copy();
    }

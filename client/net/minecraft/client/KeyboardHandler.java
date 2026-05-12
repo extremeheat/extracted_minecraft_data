@@ -21,8 +21,10 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
+import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -458,11 +460,11 @@ public class KeyboardHandler {
          }
 
          if (action == 1) {
-            label226: {
+            label240: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label226;
+                     break label240;
                   }
                }
 
@@ -488,6 +490,10 @@ public class KeyboardHandler {
                   }
 
                   return;
+               }
+
+               if (options.keyFriends.matches(event) && (screen == null || screen instanceof TitleScreen || screen instanceof PauseScreen) && this.minecraft.getPlayerSocialManager().isFriendListEnabled()) {
+                  this.minecraft.gui.setScreen(new FriendsOverlayScreen(screen));
                }
             }
          }
@@ -543,22 +549,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label186: {
+         label193: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label184: {
+               label191: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label184;
+                        break label191;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label186;
+                     break label193;
                   }
                }
             }

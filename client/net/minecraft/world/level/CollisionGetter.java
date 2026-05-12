@@ -102,7 +102,7 @@ public interface CollisionGetter extends BlockGetter {
       return this.getBlockCollisionsFromContext(source == null ? CollisionContext.emptyWithFluidCollisions() : CollisionContext.of(source, true), box);
    }
 
-   private Iterable<VoxelShape> getBlockCollisionsFromContext(final CollisionContext source, final AABB box) {
+   default Iterable<VoxelShape> getBlockCollisionsFromContext(final CollisionContext source, final AABB box) {
       return () -> new BlockCollisions(this, source, box, false, (p, shape) -> shape);
    }
 

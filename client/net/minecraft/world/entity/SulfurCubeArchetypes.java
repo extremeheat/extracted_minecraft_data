@@ -39,7 +39,7 @@ public class SulfurCubeArchetypes {
    public static void bootstrap(final BootstrapContext<SulfurCubeArchetype> context) {
       register(context, REGULAR, ItemTags.SULFUR_CUBE_ARCHETYPE_REGULAR, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
       register(context, BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_BOUNCY, archetype(2.0F, 0.9F, 0.3F, 0.01F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.07F));
-      register(context, SLOW_BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_BOUNCY, archetype(-0.4F, 0.6F, 0.3F, 0.05F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.16F));
+      register(context, SLOW_BOUNCY, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_BOUNCY, archetype(-0.4F, 0.6F, 0.3F, 0.05F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.16F));
       register(context, SLOW_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_SLOW_FLAT, archetype(-0.5F, 0.4F, 0.4F, 0.1F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.07F));
       register(context, FAST_FLAT, ItemTags.SULFUR_CUBE_ARCHETYPE_FAST_FLAT, archetype(1.0F, 0.5F, 0.2F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.73F, 0.06F));
       register(context, LIGHT, ItemTags.SULFUR_CUBE_ARCHETYPE_LIGHT, archetype(1.0F, 1.0F, 0.3F, 1.8F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.12F));

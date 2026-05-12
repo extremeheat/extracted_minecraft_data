@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.platform;
 
+import com.mojang.blaze3d.Blaze3D;
 import java.time.Duration;
 import net.minecraft.CrashReport;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,7 @@ public class ClientShutdownWatchdog {
             return;
          }
 
+         crashButDontWorryItsTemporary();
          CrashReport report = ServerWatchdog.createWatchdogCrashReport("Client shutdown from " + callsite, mainThreadId);
          if (minecraft != null) {
             minecraft.fillReport(report);
@@ -35,5 +37,9 @@ public class ClientShutdownWatchdog {
       }, "Client shutdown watchdog");
       thread.setDaemon(true);
       thread.start();
+   }
+
+   private static void crashButDontWorryItsTemporary() {
+      Blaze3D.youJustLostTheGame();
    }
 }

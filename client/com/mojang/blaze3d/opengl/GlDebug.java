@@ -12,7 +12,7 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.GLDebugMessageARBCallback;
 import org.lwjgl.opengl.GLDebugMessageCallback;
@@ -117,9 +117,9 @@ public class GlDebug {
          if (caps.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
             GlDebug debug = new GlDebug();
             enabledExtensions.add("GL_KHR_debug");
-            GL11.glEnable(37600);
+            GL33C.glEnable(37600);
             if (debugSynchronousGlLogs) {
-               GL11.glEnable(33346);
+               GL33C.glEnable(33346);
             }
 
             for(int i = 0; i < DEBUG_LEVELS.size(); ++i) {
@@ -134,7 +134,7 @@ public class GlDebug {
             GlDebug debug = new GlDebug();
             enabledExtensions.add("GL_ARB_debug_output");
             if (debugSynchronousGlLogs) {
-               GL11.glEnable(33346);
+               GL33C.glEnable(33346);
             }
 
             for(int i = 0; i < DEBUG_LEVELS_ARB.size(); ++i) {

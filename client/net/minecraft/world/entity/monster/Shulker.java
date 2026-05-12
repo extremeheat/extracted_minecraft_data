@@ -24,6 +24,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -197,6 +199,16 @@ public class Shulker extends AbstractGolem implements Enemy {
       return 0.5F - Mth.sin((double)((0.5F + amount) * 3.1415927F)) * 0.5F;
    }
 
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      EntityDimensions dimension = super.getDefaultDimensions(pose);
+      if (this.currentPeekAmount > 0.0F) {
+         float heightScaleFactor = 1.0F + this.currentPeekAmount;
+         return dimension.scale(1.0F, heightScaleFactor);
+      } else {
+         return dimension;
+      }
+   }
+
    private boolean updatePeekAmount() {
       this.currentPeekAmountO = this.currentPeekAmount;
       float targetPeekAmount = (float)this.getRawPeekAmount() * 0.01F;
@@ -215,6 +227,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    private void onPeekAmountChange() {
       this.reapplyPosition();
+      this.refreshDimensions();
       float physicalPeek = getPhysicalPeek(this.currentPeekAmount);
       float physicalPeekOld = getPhysicalPeek(this.currentPeekAmountO);
       Direction direction = this.getAttachFace().getOpposite();

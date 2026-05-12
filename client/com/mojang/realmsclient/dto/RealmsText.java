@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Objects;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -26,7 +26,7 @@ public class RealmsText {
    }
 
    public @Nullable Component createComponent() {
-      if (!I18n.exists(this.translationKey)) {
+      if (!Language.getInstance().has(this.translationKey)) {
          return null;
       } else {
          return this.args == null ? Component.translatable(this.translationKey) : Component.translatable(this.translationKey, (Object[])this.args);

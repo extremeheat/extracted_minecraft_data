@@ -120,6 +120,8 @@ public class ChatListener {
 
          if (this.minecraft.isBlocked(senderId)) {
             return false;
+         } else if (this.minecraft.isFriendOnlyRestricted(senderId)) {
+            return false;
          } else {
             LocalPlayer receiver = this.minecraft.player;
             if (receiver != null && receiver.chatAbilities().canReceivePlayerMessages()) {
@@ -157,27 +159,31 @@ public class ChatListener {
       if (onlyShowSecure && trustLevel.isNotSecure()) {
          return false;
       } else if (!this.minecraft.isBlocked(message.sender()) && !message.isFullyFiltered()) {
-         LocalPlayer receiver = this.minecraft.player;
-         if (receiver != null && receiver.chatAbilities().canReceivePlayerMessages()) {
-            GuiMessageTag tag = trustLevel.createTag(message);
-            MessageSignature signature = message.signature();
-            FilterMask filterMask = message.filterMask();
-            if (filterMask.isEmpty()) {
-               this.minecraft.gui.hud.getChat().addPlayerMessage(decoratedMessage, signature, tag);
-               this.narrateChatMessage(boundChatType, message.decoratedContent());
-            } else {
-               Component filteredContent = filterMask.applyWithFormatting(message.signedContent());
-               if (filteredContent != null) {
-                  this.minecraft.gui.hud.getChat().addPlayerMessage(boundChatType.decorate(filteredContent), signature, tag);
-                  this.narrateChatMessage(boundChatType, filteredContent);
-               }
-            }
-
-            this.logPlayerMessage(message, sender, trustLevel);
-            this.previousMessageTime = Util.getMillis();
-            return true;
-         } else {
+         if (this.minecraft.isFriendOnlyRestricted(message.sender())) {
             return false;
+         } else {
+            LocalPlayer receiver = this.minecraft.player;
+            if (receiver != null && receiver.chatAbilities().canReceivePlayerMessages()) {
+               GuiMessageTag tag = trustLevel.createTag(message);
+               MessageSignature signature = message.signature();
+               FilterMask filterMask = message.filterMask();
+               if (filterMask.isEmpty()) {
+                  this.minecraft.gui.hud.getChat().addPlayerMessage(decoratedMessage, signature, tag);
+                  this.narrateChatMessage(boundChatType, message.decoratedContent());
+               } else {
+                  Component filteredContent = filterMask.applyWithFormatting(message.signedContent());
+                  if (filteredContent != null) {
+                     this.minecraft.gui.hud.getChat().addPlayerMessage(boundChatType.decorate(filteredContent), signature, tag);
+                     this.narrateChatMessage(boundChatType, filteredContent);
+                  }
+               }
+
+               this.logPlayerMessage(message, sender, trustLevel);
+               this.previousMessageTime = Util.getMillis();
+               return true;
+            } else {
+               return false;
+            }
          }
       } else {
          return false;
@@ -203,17 +209,20 @@ public class ChatListener {
    }
 
    public void handleSystemMessage(final Component message, final boolean remote) {
-      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(message))) {
-         LocalPlayer receiver = this.minecraft.player;
-         if (receiver != null && receiver.chatAbilities().canReceiveSystemMessages()) {
-            if (remote) {
-               this.minecraft.gui.hud.getChat().addServerSystemMessage(message);
-               this.logSystemMessage(message, Instant.now());
-            } else {
-               this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
-            }
+      UUID guessedUUID = this.guessChatUUID(message);
+      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(guessedUUID)) {
+         if (guessedUUID == Util.NIL_UUID || !this.minecraft.isFriendOnlyRestricted(guessedUUID)) {
+            LocalPlayer receiver = this.minecraft.player;
+            if (receiver != null && receiver.chatAbilities().canReceiveSystemMessages()) {
+               if (remote) {
+                  this.minecraft.gui.hud.getChat().addServerSystemMessage(message);
+                  this.logSystemMessage(message, Instant.now());
+               } else {
+                  this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
+               }
 
-            this.minecraft.getNarrator().saySystemChatQueued(message);
+               this.minecraft.getNarrator().saySystemChatQueued(message);
+            }
          }
       }
    }

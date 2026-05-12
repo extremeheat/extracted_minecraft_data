@@ -12,6 +12,10 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
    private @Nullable GuiEventListener focused;
    private boolean isDragging;
 
+   public AbstractContainerWidget(final int x, final int y, final int width, final int height, final Component message) {
+      super(x, y, width, height, message, AbstractScrollArea.ScrollbarSettings.NO_SCROLL);
+   }
+
    public AbstractContainerWidget(final int x, final int y, final int width, final int height, final Component message, final AbstractScrollArea.ScrollbarSettings scrollbarSettings) {
       super(x, y, width, height, message, scrollbarSettings);
    }

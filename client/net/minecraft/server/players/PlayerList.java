@@ -157,7 +157,7 @@ public abstract class PlayerList {
       boolean immediateRespawn = (Boolean)gameRules.get(GameRules.IMMEDIATE_RESPAWN);
       boolean reducedDebugInfo = (Boolean)gameRules.get(GameRules.REDUCED_DEBUG_INFO);
       boolean doLimitedCrafting = (Boolean)gameRules.get(GameRules.LIMITED_CRAFTING);
-      playerConnection.send(new ClientboundLoginPacket(player.getId(), levelData.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.getViewDistance(), this.getSimulationDistance(), reducedDebugInfo, !immediateRespawn, doLimitedCrafting, player.createCommonSpawnInfo(level), this.server.enforceSecureProfile()));
+      playerConnection.send(new ClientboundLoginPacket(player.getId(), levelData.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.getViewDistance(), this.getSimulationDistance(), reducedDebugInfo, !immediateRespawn, doLimitedCrafting, player.createCommonSpawnInfo(level), this.server.usesAuthentication(), this.server.enforceSecureProfile()));
       playerConnection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
       playerConnection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
       playerConnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
@@ -781,6 +781,10 @@ public abstract class PlayerList {
 
    public List<ServerPlayer> getPlayers() {
       return this.players;
+   }
+
+   public Map<UUID, ServerPlayer> getPlayersByUUID() {
+      return this.playersByUUID;
    }
 
    public @Nullable ServerPlayer getPlayer(final UUID uuid) {

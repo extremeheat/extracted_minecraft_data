@@ -256,6 +256,8 @@ public class ServerPlayer extends Player {
    private @Nullable Vec3 startingToFallPosition;
    private @Nullable Vec3 enteredNetherPosition;
    private @Nullable Vec3 enteredLavaOnVehiclePosition;
+   private @Nullable Vec3 currentExplosionImpactPos;
+   private @Nullable Entity currentExplosionCause;
    private SectionPos lastSectionPos;
    private ChunkTrackingView chunkTrackingView;
    private @Nullable RespawnConfig respawnConfig;
@@ -414,6 +416,7 @@ public class ServerPlayer extends Player {
       super.readAdditionalSaveData(input);
       this.wardenSpawnTracker = (WardenSpawnTracker)input.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
       this.enteredNetherPosition = (Vec3)input.read("entered_nether_pos", Vec3.CODEC).orElse((Object)null);
+      this.currentExplosionImpactPos = (Vec3)input.read("last_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
       this.seenCredits = input.getBooleanOr("seenCredits", false);
       input.read("recipeBook", ServerRecipeBook.Packed.CODEC).ifPresent((p) -> this.recipeBook.loadUntrusted(p, (id) -> this.server.getRecipeManager().byKey(id).isPresent()));
       if (this.isSleeping()) {
@@ -434,6 +437,7 @@ public class ServerPlayer extends Player {
       this.storeGameTypes(output);
       output.putBoolean("seenCredits", this.seenCredits);
       output.storeNullable("entered_nether_pos", Vec3.CODEC, this.enteredNetherPosition);
+      output.storeNullable("last_explosion_impact_pos", Vec3.CODEC, this.currentExplosionImpactPos);
       this.saveParentVehicle(output);
       output.store("recipeBook", ServerRecipeBook.Packed.CODEC, this.recipeBook.pack());
       output.putString("Dimension", this.level().dimension().identifier().toString());
@@ -852,9 +856,12 @@ public class ServerPlayer extends Player {
    public void trackStartFallingPosition() {
       if (this.fallDistance > 0.0 && this.startingToFallPosition == null) {
          this.startingToFallPosition = this.position();
-         if (this.currentImpulseImpactPos != null && this.currentImpulseImpactPos.y <= this.startingToFallPosition.y) {
-            CriteriaTriggers.FALL_AFTER_EXPLOSION.trigger(this, this.currentImpulseImpactPos, this.currentExplosionCause);
+         if (this.currentExplosionImpactPos != null && this.currentExplosionImpactPos.y <= this.startingToFallPosition.y) {
+            CriteriaTriggers.FALL_AFTER_EXPLOSION.trigger(this, this.currentExplosionImpactPos, this.currentExplosionCause);
          }
+
+         this.currentExplosionImpactPos = null;
+         this.currentExplosionCause = null;
       }
 
    }
@@ -1266,6 +1273,7 @@ public class ServerPlayer extends Player {
 
    public void onExplosionHit(final @Nullable Entity explosionCausedBy) {
       super.onExplosionHit(explosionCausedBy);
+      this.currentExplosionImpactPos = this.position();
       this.currentExplosionCause = explosionCausedBy;
       this.setIgnoreFallDamageFromCurrentImpulse(explosionCausedBy != null && explosionCausedBy.is(EntityTypes.WIND_CHARGE), this.position());
    }
@@ -1569,6 +1577,8 @@ public class ServerPlayer extends Player {
       this.recipeBook.copyOverData(oldPlayer.recipeBook);
       this.seenCredits = oldPlayer.seenCredits;
       this.enteredNetherPosition = oldPlayer.enteredNetherPosition;
+      this.currentExplosionImpactPos = oldPlayer.currentExplosionImpactPos;
+      this.currentExplosionCause = oldPlayer.currentExplosionCause;
       this.chunkTrackingView = oldPlayer.chunkTrackingView;
       this.requestedDebugSubscriptions = oldPlayer.requestedDebugSubscriptions;
       this.setShoulderEntityLeft(oldPlayer.getShoulderEntityLeft());

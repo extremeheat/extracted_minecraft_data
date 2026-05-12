@@ -33,7 +33,7 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleInteract(ServerboundInteractPacket packet);
 
-   void handleSpectateEntity(ServerboundSpectateEntityPacket packet);
+   void handleSpectatorAction(ServerboundSpectatorActionPacket packet);
 
    void handleMovePlayer(ServerboundMovePlayerPacket packet);
 

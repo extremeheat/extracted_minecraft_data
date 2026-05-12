@@ -79,6 +79,8 @@ public class VanillaBlockTagsProvider extends TagsProvider<Block> {
       this.tag(BlockTags.UNSTABLE_BOTTOM_CENTER).addTag(BlockTags.FENCE_GATES);
       this.tag(BlockTags.EDIBLE_FOR_SHEEP).add(BlockItemIds.SHORT_GRASS).add(BlockItemIds.SHORT_DRY_GRASS).add(BlockItemIds.TALL_DRY_GRASS).add(BlockItemIds.FERN);
       this.tag(BlockTags.CAN_GLIDE_THROUGH).add(BlockItemIds.VINE).add(BlockItemIds.TWISTING_VINES).add(BlockIds.TWISTING_VINES_PLANT).add(BlockItemIds.WEEPING_VINES).add(BlockIds.WEEPING_VINES_PLANT).addTag(BlockTags.CAVE_VINES);
+      this.tag(BlockTags.CAUSES_PERIODIC_GEYSER_ERUPTIONS).add(BlockItemIds.MAGMA_BLOCK);
+      this.tag(BlockTags.CAUSES_CONTINUOUS_GEYSER_ERUPTIONS).add(BlockIds.LAVA);
       this.tag(BlockTags.INFINIBURN_OVERWORLD).add(BlockItemIds.NETHERRACK, BlockItemIds.MAGMA_BLOCK);
       this.tag(BlockTags.INFINIBURN_NETHER).addTag(BlockTags.INFINIBURN_OVERWORLD);
       this.tag(BlockTags.INFINIBURN_END).addTag(BlockTags.INFINIBURN_OVERWORLD).add(BlockItemIds.BEDROCK);

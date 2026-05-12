@@ -77,9 +77,9 @@ public class DebugCrosshairRenderer implements AutoCloseable {
          renderPass.setVertexBuffer(0, this.crosshairBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.crosshairIndicies.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransform);
-         renderPass.drawIndexed(0, 0, 18, 1);
+         renderPass.drawIndexed(18, 1, 0, 0, 0);
          renderPass.setPipeline(renderPipelineFill);
-         renderPass.drawIndexed(0, 18, 18, 1);
+         renderPass.drawIndexed(18, 1, 18, 0, 0);
       }
 
       modelViewStack.popMatrix();

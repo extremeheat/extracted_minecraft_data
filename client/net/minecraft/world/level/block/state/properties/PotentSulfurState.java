@@ -6,7 +6,8 @@ public enum PotentSulfurState implements StringRepresentable {
    DRY("dry"),
    WET("wet"),
    DORMANT("dormant"),
-   ERUPTING("erupting");
+   ERUPTING("erupting"),
+   CONTINUOUS("continuous");
 
    private final String name;
 
@@ -24,6 +25,6 @@ public enum PotentSulfurState implements StringRepresentable {
 
    // $FF: synthetic method
    private static PotentSulfurState[] $values() {
-      return new PotentSulfurState[]{DRY, WET, DORMANT, ERUPTING};
+      return new PotentSulfurState[]{DRY, WET, DORMANT, ERUPTING, CONTINUOUS};
    }
 }

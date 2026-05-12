@@ -1,13 +1,16 @@
 package net.minecraft.client.gui.components;
 
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.ARGB;
 
 public class FocusableTextWidget extends MultiLineTextWidget {
@@ -107,6 +110,17 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public void playDownSound(final SoundManager soundManager) {
+   }
+
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.isActive() && event.isSelection()) {
+         Optional<Style> clickableStyle = this.getMessage().<Style>visit((style, text) -> style.getClickEvent() != null ? Optional.of(style) : Optional.empty(), Style.EMPTY);
+         if (clickableStyle.isPresent() && this.handleStyleClick((Style)clickableStyle.get())) {
+            return true;
+         }
+      }
+
+      return super.keyPressed(event);
    }
 
    public static Builder builder(final Component message, final Font font) {

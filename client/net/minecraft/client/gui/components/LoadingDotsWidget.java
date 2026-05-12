@@ -14,28 +14,28 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class LoadingDotsWidget extends AbstractWidget {
+   private static final int Y_PADDING = 2;
    private final Font font;
 
    public LoadingDotsWidget(final Font font, final Component message) {
       int var10003 = font.width((FormattedText)message);
       Objects.requireNonNull(font);
-      super(0, 0, var10003, 9 * 3, message);
+      int var10004 = 2 + 9 + 6;
+      Objects.requireNonNull(font);
+      super(0, 0, var10003, var10004 + 9 + 2, message);
       this.font = font;
    }
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       int centerX = this.getX() + this.getWidth() / 2;
-      int centerY = this.getY() + this.getHeight() / 2;
       Component message = this.getMessage();
-      Font var10001 = this.font;
-      int var10003 = centerX - this.font.width((FormattedText)message) / 2;
-      Objects.requireNonNull(this.font);
-      graphics.text(var10001, (Component)message, var10003, centerY - 9, -1);
+      graphics.text(this.font, (Component)message, centerX - this.font.width((FormattedText)message) / 2, this.getY() + 2, -1);
       String dots = LoadingDotsText.get(Util.getMillis());
-      var10001 = this.font;
-      var10003 = centerX - this.font.width(dots) / 2;
+      Font var10001 = this.font;
+      int var10003 = centerX - this.font.width(dots) / 2;
+      int var10004 = this.getBottom();
       Objects.requireNonNull(this.font);
-      graphics.text(var10001, dots, var10003, centerY + 9, -8355712);
+      graphics.text(var10001, dots, var10003, var10004 - 9 - 2, -8355712);
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {

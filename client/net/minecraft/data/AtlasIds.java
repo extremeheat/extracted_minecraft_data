@@ -15,7 +15,6 @@ public class AtlasIds {
    public static final Identifier PARTICLES = Identifier.withDefaultNamespace("particles");
    public static final Identifier SHIELD_PATTERNS = Identifier.withDefaultNamespace("shield_patterns");
    public static final Identifier SHULKER_BOXES = Identifier.withDefaultNamespace("shulker_boxes");
-   public static final Identifier SIGNS = Identifier.withDefaultNamespace("signs");
    public static final Identifier CELESTIALS = Identifier.withDefaultNamespace("celestials");
 
    public AtlasIds() {

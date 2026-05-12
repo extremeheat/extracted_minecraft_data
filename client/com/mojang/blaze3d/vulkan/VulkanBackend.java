@@ -7,6 +7,10 @@ import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.systems.BackendCreationException;
 import com.mojang.blaze3d.systems.GpuBackend;
 import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.vulkan.checkpoints.AmdCheckpointExtension;
+import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
+import com.mojang.blaze3d.vulkan.checkpoints.NoopCheckpointExtension;
+import com.mojang.blaze3d.vulkan.checkpoints.NvidiaCheckpointExtension;
 import com.mojang.blaze3d.vulkan.init.VulkanFeature;
 import com.mojang.blaze3d.vulkan.init.VulkanPNextStruct;
 import com.mojang.logging.LogUtils;
@@ -40,6 +44,7 @@ import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
 import org.lwjgl.vulkan.VkPhysicalDeviceSynchronization2Features;
 import org.lwjgl.vulkan.VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT;
+import org.lwjgl.vulkan.VkPhysicalDeviceVulkan11Features;
 import org.lwjgl.vulkan.VkPhysicalDeviceVulkan12Features;
 import org.slf4j.Logger;
 
@@ -47,6 +52,7 @@ public class VulkanBackend implements GpuBackend {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Set<String> REQUIRED_DEVICE_EXTENSIONS = Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain");
    public static final VulkanPNextStruct VK10_FEATURES_STRUCT;
+   public static final VulkanPNextStruct VK11_FEATURES_STRUCT;
    public static final VulkanPNextStruct VK12_FEATURES_STRUCT;
    public static final VulkanPNextStruct SYNC2_FEATURES_STRUCT;
    public static final VulkanPNextStruct DYNAMIC_RENDERING_FEATURES_STURCT;
@@ -73,7 +79,7 @@ public class VulkanBackend implements GpuBackend {
       }
    }
 
-   public GpuDevice createDevice(final long window, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) throws BackendCreationException {
+   public GpuDevice createDevice(final long window, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions, final Runnable criticalShaderLoader) throws BackendCreationException {
       if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
          throw new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
       } else if (!GLFWVulkan.glfwVulkanSupported()) {
@@ -84,6 +90,7 @@ public class VulkanBackend implements GpuBackend {
          VulkanPhysicalDevice physicalDevice = null;
          VkDevice device = null;
          long vma = 0L;
+         CheckpointExtension checkpointExtension = NoopCheckpointExtension.INSTANCE;
 
          try {
             boolean renderdocAttached = "1".equals(System.getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE"));
@@ -91,6 +98,14 @@ public class VulkanBackend implements GpuBackend {
             physicalDevice = findPhysicalDevice(instance);
             if (physicalDevice.hasDeviceExtension("VK_KHR_portability_subset")) {
                deviceExtensions.add("VK_KHR_portability_subset");
+            }
+
+            if (physicalDevice.hasDeviceExtension("VK_AMD_buffer_marker")) {
+               deviceExtensions.add("VK_AMD_buffer_marker");
+               checkpointExtension = new AmdCheckpointExtension();
+            } else if (physicalDevice.hasDeviceExtension("VK_NV_device_diagnostic_checkpoints")) {
+               deviceExtensions.add("VK_NV_device_diagnostic_checkpoints");
+               checkpointExtension = new NvidiaCheckpointExtension();
             }
 
             device = createDevice(deviceExtensions, physicalDevice);
@@ -115,7 +130,7 @@ public class VulkanBackend implements GpuBackend {
             throw e;
          }
 
-         return new GpuDevice(new VulkanDevice(defaultShaderSource, instance, physicalDevice, deviceExtensions, device, vma));
+         return new GpuDevice(new VulkanDevice(defaultShaderSource, instance, physicalDevice, deviceExtensions, device, vma, checkpointExtension), criticalShaderLoader);
       }
    }
 
@@ -241,59 +256,75 @@ public class VulkanBackend implements GpuBackend {
       return var3;
    }
 
-   private static boolean isDeviceSuitable(final VkPhysicalDevice vkPhysicalDevice) {
-      boolean var15;
+   private static boolean isDeviceSuitable(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
+      boolean var17;
       try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
          MemoryStack stack = MemoryStack.stackPush();
 
-         try {
-            String deviceName = physicalDevice.deviceName();
-            Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
-            VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
+         label112: {
+            boolean var5;
+            try {
+               String deviceName = physicalDevice.deviceName();
+               VulkanUtils.DeviceUUID deviceUUID = new VulkanUtils.DeviceUUID(physicalDevice.vkPhysicalDeviceDriverProperties().driverID(), physicalDevice.vkPhysicalDeviceProperties().vendorID(), physicalDevice.vkPhysicalDeviceProperties().deviceID());
+               if (!VulkanUtils.KNOWN_PROBLEMATIC_DEVICES.contains(deviceUUID)) {
+                  Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
+                  VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
 
-            for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
-               requiredDeviceFeature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
-            }
+                  for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
+                     requiredDeviceFeature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
+                  }
 
-            VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
-            boolean isSuitableDevice = true;
-            if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK12.VK_API_VERSION_1_2) {
-               LOGGER.warn("Device [{}] does not support Vulkan 1.2", deviceName);
-               isSuitableDevice = false;
-            }
+                  VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
+                  boolean isSuitableDevice = true;
+                  if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK12.VK_API_VERSION_1_2) {
+                     LOGGER.warn("Device [{}] does not support Vulkan 1.2", deviceName);
+                     isSuitableDevice = false;
+                  }
 
-            if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
-               LOGGER.warn("Device [{}] does not have a graphics queue", deviceName);
-               isSuitableDevice = false;
-            }
+                  if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
+                     LOGGER.warn("Device [{}] does not have a graphics queue", deviceName);
+                     isSuitableDevice = false;
+                  }
 
-            if (!missingExtensions.isEmpty()) {
-               LOGGER.warn("Device [{}] does not support required extensions, missing: {}", deviceName, missingExtensions);
-               isSuitableDevice = false;
-            }
+                  if (!missingExtensions.isEmpty()) {
+                     LOGGER.warn("Device [{}] does not support required extensions, missing: {}", deviceName, missingExtensions);
+                     isSuitableDevice = false;
+                  }
 
-            for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
-               if (!requiredDeviceFeature.get(deviceFeatures)) {
-                  LOGGER.warn("Device [{}] does not have required feature [{}]", deviceName, requiredDeviceFeature.name());
-                  isSuitableDevice = false;
+                  for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
+                     if (!requiredDeviceFeature.get(deviceFeatures)) {
+                        LOGGER.warn("Device [{}] does not have required feature [{}]", deviceName, requiredDeviceFeature.name());
+                        isSuitableDevice = false;
+                     }
+                  }
+
+                  if (isSuitableDevice) {
+                     LOGGER.debug("Device [{}] is suitable", deviceName);
+                  }
+
+                  var17 = isSuitableDevice;
+                  break label112;
                }
+
+               LOGGER.warn("Device [{}] is known to be problematic, skipping", deviceName);
+               var5 = false;
+            } catch (Throwable var12) {
+               if (stack != null) {
+                  try {
+                     stack.close();
+                  } catch (Throwable var11) {
+                     var12.addSuppressed(var11);
+                  }
+               }
+
+               throw var12;
             }
 
-            if (isSuitableDevice) {
-               LOGGER.debug("Device [{}] is suitable", deviceName);
-            }
-
-            var15 = isSuitableDevice;
-         } catch (Throwable var11) {
             if (stack != null) {
-               try {
-                  stack.close();
-               } catch (Throwable var10) {
-                  var11.addSuppressed(var10);
-               }
+               stack.close();
             }
 
-            throw var11;
+            return var5;
          }
 
          if (stack != null) {
@@ -301,7 +332,7 @@ public class VulkanBackend implements GpuBackend {
          }
       }
 
-      return var15;
+      return var17;
    }
 
    private static boolean isDeviceDiscrete(final VkPhysicalDevice vkPhysicalDevice) {
@@ -479,10 +510,11 @@ public class VulkanBackend implements GpuBackend {
 
    static {
       VK10_FEATURES_STRUCT = new VulkanPNextStruct(1000059000, VkPhysicalDeviceProperties2.SIZEOF);
+      VK11_FEATURES_STRUCT = new VulkanPNextStruct(49, VkPhysicalDeviceVulkan11Features.SIZEOF);
       VK12_FEATURES_STRUCT = new VulkanPNextStruct(51, VkPhysicalDeviceVulkan12Features.SIZEOF);
       SYNC2_FEATURES_STRUCT = new VulkanPNextStruct(1000314007, VkPhysicalDeviceSynchronization2Features.SIZEOF);
       DYNAMIC_RENDERING_FEATURES_STURCT = new VulkanPNextStruct(1000044003, VkPhysicalDeviceDynamicRenderingFeatures.SIZEOF);
       VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT = new VulkanPNextStruct(1000190002, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.SIZEOF);
-      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STURCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT, "vertexAttributeInstanceRateDivisor", (long)VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.VERTEXATTRIBUTEINSTANCERATEDIVISOR));
+      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect", (long)VkPhysicalDeviceFeatures.MULTIDRAWINDIRECT), new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters", (long)VkPhysicalDeviceVulkan11Features.SHADERDRAWPARAMETERS), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STURCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT, "vertexAttributeInstanceRateDivisor", (long)VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.VERTEXATTRIBUTEINSTANCERATEDIVISOR));
    }
 }

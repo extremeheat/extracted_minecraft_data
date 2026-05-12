@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -62,7 +63,9 @@ public class PotentSulfurBlock extends BaseEntityBlock {
          return (BlockState)state.setValue(STATE, PotentSulfurState.DRY);
       } else {
          BlockState belowState = level.getBlockState(pos.below());
-         if (!belowState.is(Blocks.MAGMA_BLOCK)) {
+         if (belowState.is(BlockTags.CAUSES_CONTINUOUS_GEYSER_ERUPTIONS)) {
+            return (BlockState)state.setValue(STATE, PotentSulfurState.CONTINUOUS);
+         } else if (!belowState.is(BlockTags.CAUSES_PERIODIC_GEYSER_ERUPTIONS)) {
             return (BlockState)state.setValue(STATE, PotentSulfurState.WET);
          } else {
             boolean isGeyser = state.getValue(STATE) == PotentSulfurState.ERUPTING || state.getValue(STATE) == PotentSulfurState.DORMANT;
@@ -81,9 +84,9 @@ public class PotentSulfurBlock extends BaseEntityBlock {
 
    protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
       super.onPlace(state, level, pos, oldState, movedByPiston);
-      if (state.getValue(STATE) == PotentSulfurState.ERUPTING) {
+      if (state.getValue(STATE) == PotentSulfurState.ERUPTING || state.getValue(STATE) == PotentSulfurState.CONTINUOUS) {
          level.blockEvent(pos, this, 0, 0);
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.GEYSER_ERUPTION_START, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, state.getValue(STATE) == PotentSulfurState.CONTINUOUS ? SoundEvents.GEYSER_CONTINUOUS_START : SoundEvents.GEYSER_ERUPTION_START, SoundSource.BLOCKS, 1.0F, 1.0F);
          level.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(state));
       }
 
@@ -123,7 +126,8 @@ public class PotentSulfurBlock extends BaseEntityBlock {
          case DRY -> var10002 = null;
          case WET -> var10002 = client ? PotentSulfurBlockEntity.CLIENT_NOXIOUS_GAS_TICKER : PotentSulfurBlockEntity.SERVER_NAUSEA_EFFECT_TICKER;
          case DORMANT -> var10002 = client ? PotentSulfurBlockEntity.CLIENT_NOXIOUS_GAS_TICKER : PotentSulfurBlockEntity.SERVER_WAITING_COUNTDOWN_TICKER.andThen(PotentSulfurBlockEntity.SERVER_NAUSEA_EFFECT_TICKER);
-         case ERUPTING -> var10002 = client ? PotentSulfurBlockEntity.CLIENT_GEYSER_PLUME_TICKER : PotentSulfurBlockEntity.SERVER_LAUNCH_ENTITY_TICKER.andThen(PotentSulfurBlockEntity.SERVER_WAITING_COUNTDOWN_TICKER);
+         case ERUPTING -> var10002 = client ? (BlockEntityTicker)PotentSulfurBlockEntity.CLIENT_GEYSER_PLUME_TICKER.apply(SoundEvents.GEYSER_ERUPTION_ACTIVE) : PotentSulfurBlockEntity.SERVER_LAUNCH_ENTITY_TICKER.andThen(PotentSulfurBlockEntity.SERVER_WAITING_COUNTDOWN_TICKER);
+         case CONTINUOUS -> var10002 = client ? (BlockEntityTicker)PotentSulfurBlockEntity.CLIENT_GEYSER_PLUME_TICKER.apply(SoundEvents.GEYSER_CONTINUOUS_ACTIVE) : PotentSulfurBlockEntity.SERVER_LAUNCH_ENTITY_TICKER;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

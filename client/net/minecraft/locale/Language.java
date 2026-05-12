@@ -29,7 +29,8 @@ public abstract class Language {
    private static final Gson GSON = new Gson();
    private static final Pattern UNSUPPORTED_FORMAT_PATTERN = Pattern.compile("%(\\d+\\$)?[\\d.]*[df]");
    public static final String DEFAULT = "en_us";
-   private static volatile Language instance = loadDefault();
+   public static final Language DEFAULT_INSTANCE = loadDefault();
+   private static volatile Language instance;
 
    public Language() {
       super();
@@ -121,5 +122,9 @@ public abstract class Language {
 
    public List<FormattedCharSequence> getVisualOrder(final List<FormattedText> lines) {
       return (List)lines.stream().map(this::getVisualOrder).collect(ImmutableList.toImmutableList());
+   }
+
+   static {
+      instance = DEFAULT_INSTANCE;
    }
 }

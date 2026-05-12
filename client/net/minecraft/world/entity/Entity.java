@@ -786,7 +786,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          boolean xCollision = !Mth.equal(delta.x, movement.x);
          boolean zCollision = !Mth.equal(delta.z, movement.z);
          this.horizontalCollision = xCollision || zCollision;
-         if (Math.abs(delta.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
+         boolean movedVertically = Math.abs(delta.y) > 0.0;
+         if (movedVertically || this.isLocalInstanceAuthoritative()) {
             this.verticalCollision = delta.y != movement.y;
             this.verticalCollisionBelow = this.verticalCollision && delta.y < 0.0;
             this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, movement);
@@ -807,7 +808,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          if (this.isRemoved()) {
             profiler.pop();
          } else {
-            if (this.canSimulateMovement() && (this.verticalCollision || this.horizontalCollision)) {
+            if (this.canSimulateMovement() && (movedVertically && this.verticalCollision || this.horizontalCollision)) {
                this.restituteMovementAfterCollisions(effectState, xCollision, zCollision, movement);
             }
 
@@ -1160,7 +1161,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
             stepUpAABB = stepUpAABB.expandTowards(0.0, -9.999999747378752E-6, 0.0);
          }
 
-         List<VoxelShape> colliders = collectColliders(this, this.level, entityColliders, stepUpAABB);
+         List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(this, this.level, entityColliders, stepUpAABB);
          float stepHeightToSkip = (float)movementStep.y;
          float[] candidateStepUpHeights = collectCandidateStepUpHeights(groundedAABB, colliders, this.maxUpStep(), stepHeightToSkip);
 
@@ -1201,17 +1202,22 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return sortedCandidates;
    }
 
-   public static Vec3 collideBoundingBox(final @Nullable Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders) {
-      List<VoxelShape> colliders = collectColliders(source, level, entityColliders, boundingBox.expandTowards(movement));
+   public static Vec3 collideBoundingBox(final Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders) {
+      List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
+      return collideWithShapes(movement, boundingBox, colliders);
+   }
+
+   public static Vec3 collideBoundingBox(final CollisionContext source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders) {
+      List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
       return collideWithShapes(movement, boundingBox, colliders);
    }
 
    public static List<VoxelShape> collectAllColliders(final @Nullable Entity source, final Level level, final AABB boundingBox) {
       List<VoxelShape> entityColliders = level.getEntityCollisions(source, boundingBox);
-      return collectColliders(source, level, entityColliders, boundingBox);
+      return collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox);
    }
 
-   private static List<VoxelShape> collectColliders(final @Nullable Entity source, final Level level, final List<VoxelShape> entityColliders, final AABB boundingBox) {
+   private static List<VoxelShape> collectCollidersIgnoringWorldBorder(final @Nullable Entity source, final Level level, final List<VoxelShape> entityColliders, final AABB boundingBox) {
       ImmutableList.Builder<VoxelShape> colliders = ImmutableList.builderWithExpectedSize(entityColliders.size() + 1);
       if (!entityColliders.isEmpty()) {
          colliders.addAll(entityColliders);
@@ -1224,6 +1230,16 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
 
       colliders.addAll(level.getBlockCollisions(source, boundingBox));
+      return colliders.build();
+   }
+
+   private static List<VoxelShape> collectCollidersIgnoringWorldBorder(final CollisionContext source, final Level level, final List<VoxelShape> entityColliders, final AABB boundingBox) {
+      ImmutableList.Builder<VoxelShape> colliders = ImmutableList.builderWithExpectedSize(entityColliders.size() + 1);
+      if (!entityColliders.isEmpty()) {
+         colliders.addAll(entityColliders);
+      }
+
+      colliders.addAll(level.getBlockCollisionsFromContext(source, boundingBox));
       return colliders.build();
    }
 
@@ -4173,7 +4189,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface Flags {
    }
 

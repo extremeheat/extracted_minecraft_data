@@ -136,7 +136,7 @@ import net.minecraft.network.protocol.game.ServerboundSetJigsawBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSetStructureBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSetTestBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
-import net.minecraft.network.protocol.game.ServerboundSpectateEntityPacket;
+import net.minecraft.network.protocol.game.ServerboundSpectatorActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
@@ -1833,16 +1833,18 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   public void handleSpectateEntity(final ServerboundSpectateEntityPacket packet) {
+   public void handleSpectatorAction(final ServerboundSpectatorActionPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       if (this.hasClientLoaded() && this.player.isSpectator()) {
          this.player.resetLastActionTime();
-         ServerLevel level = this.player.level();
-         Entity target = level.getEntityOrPart(packet.entityId());
-         if (target != null && level.getWorldBorder().isWithinBounds(target.blockPosition())) {
-            if (this.player.isWithinEntityInteractionRange(target.getBoundingBox(), 3.0)) {
-               if (target.isPickable()) {
-                  this.player.setCamera(target);
+         if (packet.spectateEntityId().isPresent()) {
+            ServerLevel level = this.player.level();
+            Entity target = level.getEntityOrPart(packet.spectateEntityId().getAsInt());
+            if (target != null && level.getWorldBorder().isWithinBounds(target.blockPosition())) {
+               if (this.player.isWithinEntityInteractionRange(target.getBoundingBox(), 3.0)) {
+                  if (target.isPickable()) {
+                     this.player.setCamera(target);
+                  }
                }
             }
          }

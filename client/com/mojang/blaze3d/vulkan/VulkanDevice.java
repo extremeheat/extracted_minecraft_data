@@ -19,6 +19,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
 import com.mojang.blaze3d.vulkan.glsl.GlslCompiler;
 import com.mojang.blaze3d.vulkan.glsl.IntermediaryShaderModule;
 import com.mojang.blaze3d.vulkan.glsl.ShaderCompileException;
@@ -42,6 +43,7 @@ import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceLimits;
+import org.lwjgl.vulkan.VkPhysicalDeviceVulkan11Properties;
 import org.slf4j.Logger;
 
 public class VulkanDevice implements GpuDeviceBackend {
@@ -59,13 +61,15 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final VulkanQueue transferQueue;
    private final boolean isIntegratedIntelMoltenVK;
    private final VulkanCommandEncoder commandEncoder;
+   private final CheckpointExtension checkpointExtension;
 
-   public VulkanDevice(final ShaderSource defaultShaderSource, final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final Set<String> enabledDeviceExtensions, final VkDevice vkDevice, final long vma) {
+   public VulkanDevice(final ShaderSource defaultShaderSource, final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final Set<String> enabledDeviceExtensions, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
       super();
       this.defaultShaderSource = defaultShaderSource;
       this.instance = instance;
       this.vkDevice = vkDevice;
       this.vma = vma;
+      this.checkpointExtension = checkpointExtension;
       Set<String> extensionNames = new HashSet();
 
       for(String name : instance.getEnabledExtensions()) {
@@ -77,7 +81,8 @@ public class VulkanDevice implements GpuDeviceBackend {
       }
 
       VkPhysicalDeviceLimits limits = physicalDevice.vkPhysicalDeviceProperties().limits();
-      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), limits.maxColorAttachments()), new DeviceFeatures(true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false), physicalDevice.deviceType());
+      VkPhysicalDeviceVulkan11Properties vk11Properties = physicalDevice.vkPhysicalDeviceVulkan11Properties();
+      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), limits.maxColorAttachments()), new DeviceFeatures(true, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false), physicalDevice.deviceType());
       IntIntPair graphicsQueueFamily = physicalDevice.graphicsQueueFamilyAndIndex();
 
       assert graphicsQueueFamily != null;
@@ -103,6 +108,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    }
 
    public void close() {
+      this.checkpointExtension.close();
       this.commandEncoder.destroy();
       this.clearPipelineCache();
       Vma.vmaDestroyAllocator(this.vma);
@@ -151,11 +157,11 @@ public class VulkanDevice implements GpuDeviceBackend {
       return new VulkanGpuSampler(this, addressModeU, addressModeV, minFilter, magFilter, maxAnisotropy, maxLod);
    }
 
-   public GpuTexture createTexture(final @Nullable Supplier<String> label, final int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       return new VulkanGpuTexture(this, usage, this.isDebuggingEnabled() && label != null ? (String)label.get() : "", format, width, height, depthOrLayers, mipLevels);
    }
 
-   public GpuTexture createTexture(final @Nullable String label, final int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(final @Nullable String label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       return new VulkanGpuTexture(this, usage, this.isDebuggingEnabled() && label != null ? label : "", format, width, height, depthOrLayers, mipLevels);
    }
 
@@ -167,11 +173,11 @@ public class VulkanDevice implements GpuDeviceBackend {
       return new VulkanGpuTextureView(this, (VulkanGpuTexture)texture, baseMipLevel, mipLevels);
    }
 
-   public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final int usage, final long size) {
+   public VulkanGpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final long size) {
       return new VulkanGpuBuffer(this, label, usage, size, this.isIntegratedIntelMoltenVK);
    }
 
-   public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final int usage, final ByteBuffer data) {
+   public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final ByteBuffer data) {
       GpuBuffer buffer = this.createBuffer(label, usage | 8, (long)data.remaining());
       this.createCommandEncoder().writeToBuffer(buffer.slice(), data);
       return buffer;
@@ -250,6 +256,10 @@ public class VulkanDevice implements GpuDeviceBackend {
 
    public long getTimestampNow() {
       return this.commandEncoder.getTimestampNow();
+   }
+
+   public CheckpointExtension checkpointExtension() {
+      return this.checkpointExtension;
    }
 
    private static record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {

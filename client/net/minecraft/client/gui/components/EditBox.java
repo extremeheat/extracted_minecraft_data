@@ -57,6 +57,10 @@ public class EditBox extends AbstractWidget {
    private int textX;
    private int textY;
 
+   public EditBox(final Font font, final Component narration) {
+      this(font, 150, 20, narration);
+   }
+
    public EditBox(final Font font, final int width, final int height, final Component narration) {
       this(font, 0, 0, width, height, narration);
    }

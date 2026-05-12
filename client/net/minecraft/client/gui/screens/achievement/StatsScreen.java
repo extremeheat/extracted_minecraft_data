@@ -24,8 +24,8 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.components.tabs.LoadingTab;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -67,7 +67,7 @@ public class StatsScreen extends Screen {
    private static final int LIST_WIDTH = 280;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final TabManager tabManager = new TabManager((x$0) -> this.addRenderableWidget(x$0), (x$0) -> this.removeWidget(x$0));
-   private @Nullable TabNavigationBar tabNavigationBar;
+   private @Nullable MenuTabBar tabNavigationBar;
    private final StatsCounter stats;
    private boolean isLoading = true;
 
@@ -79,7 +79,7 @@ public class StatsScreen extends Screen {
 
    protected void init() {
       Component loadingTitle = PENDING_TEXT;
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), GENERAL_BUTTON, loadingTitle), new LoadingTab(this.getFont(), ITEMS_BUTTON, loadingTitle), new LoadingTab(this.getFont(), MOBS_BUTTON, loadingTitle)).build();
+      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), GENERAL_BUTTON, loadingTitle), new LoadingTab(this.getFont(), ITEMS_BUTTON, loadingTitle), new LoadingTab(this.getFont(), MOBS_BUTTON, loadingTitle)).build();
       this.addRenderableWidget(this.tabNavigationBar);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
       this.tabNavigationBar.setTabActiveState(0, true);
@@ -100,7 +100,7 @@ public class StatsScreen extends Screen {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new StatisticsTab(GENERAL_BUTTON, new GeneralStatisticsList(this.minecraft)), new StatisticsTab(ITEMS_BUTTON, new ItemStatisticsList(this.minecraft)), new StatisticsTab(MOBS_BUTTON, new MobsStatisticsList(this.minecraft))).build();
+         this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new StatisticsTab(GENERAL_BUTTON, new GeneralStatisticsList(this.minecraft)), new StatisticsTab(ITEMS_BUTTON, new ItemStatisticsList(this.minecraft)), new StatisticsTab(MOBS_BUTTON, new MobsStatisticsList(this.minecraft))).build();
          this.setFocused(this.tabNavigationBar);
          this.addRenderableWidget(this.tabNavigationBar);
          this.setTabActiveStateAndTooltip(1);
@@ -141,7 +141,7 @@ public class StatsScreen extends Screen {
 
    protected void repositionElements() {
       if (this.tabNavigationBar != null) {
-         this.tabNavigationBar.updateWidth(this.width);
+         this.tabNavigationBar.arrangeElements(this.width);
          int tabAreaTop = this.tabNavigationBar.getRectangle().bottom();
          ScreenRectangle tabArea = new ScreenRectangle(0, tabAreaTop, this.width, this.height - this.layout.getFooterHeight() - tabAreaTop);
          this.tabNavigationBar.getTabs().forEach((tab) -> tab.visitChildren((child) -> child.setHeight(tabArea.height())));

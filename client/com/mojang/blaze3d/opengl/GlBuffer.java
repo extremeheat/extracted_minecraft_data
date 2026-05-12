@@ -94,7 +94,10 @@ public class GlBuffer extends GpuBuffer {
                public void run() {
                   if (!this.closed) {
                      this.closed = true;
-                     GlBuffer.this.dsa.flushMappedBufferRange(GlBuffer.this.handle, GlBuffer.this.slice().offset(), GlBuffer.this.slice().length(), GlBuffer.this.usage());
+                     if ((GlBuffer.this.mappingFlags & 16) != 0) {
+                        GlBuffer.this.dsa.flushMappedBufferRange(GlBuffer.this.handle, GlBuffer.this.slice().offset(), GlBuffer.this.slice().length(), GlBuffer.this.usage());
+                     }
+
                      GlBuffer.this.unmap();
                   }
                }

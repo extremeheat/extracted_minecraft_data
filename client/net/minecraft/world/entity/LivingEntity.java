@@ -251,7 +251,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected final EntityEquipment equipment;
    private Waypoint.Icon locatorBarIcon;
    public @Nullable Vec3 currentImpulseImpactPos;
-   public @Nullable Entity currentExplosionCause;
 
    protected LivingEntity(final EntityType<? extends LivingEntity> type, final Level level) {
       super(type, level);
@@ -1748,7 +1747,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void resetCurrentImpulseContext() {
       this.currentImpulseContextResetGraceTime = 0;
-      this.currentExplosionCause = null;
       this.currentImpulseImpactPos = null;
    }
 

@@ -30,6 +30,16 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
       boolean hasAmbientOcclusion = model.getTopAmbientOcclusion();
       Material.Baked particleMaterial = model.resolveParticleMaterial(textureSlots, modelBakery);
       QuadCollection geometry = model.bakeTopGeometry(textureSlots, modelBakery, state);
+      Multimap<Identifier, Identifier> forbiddenSprites = findNonBlockSprites(geometry);
+      if (forbiddenSprites != null) {
+         LOGGER.warn("Rejecting block model {}, since it contains sprites from outside of supported atlas: {}", location, forbiddenSprites);
+         return modelBakery.missingBlockModelPart();
+      } else {
+         return new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial);
+      }
+   }
+
+   public static @Nullable Multimap<Identifier, Identifier> findNonBlockSprites(final QuadCollection geometry) {
       Multimap<Identifier, Identifier> forbiddenSprites = null;
 
       for(BakedQuad bakedQuad : geometry.getAll()) {
@@ -43,12 +53,7 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
          }
       }
 
-      if (forbiddenSprites != null) {
-         LOGGER.warn("Rejecting block model {}, since it contains sprites from outside of supported atlas: {}", location, forbiddenSprites);
-         return modelBakery.missingBlockModelPart();
-      } else {
-         return new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial);
-      }
+      return forbiddenSprites;
    }
 
    public List<BakedQuad> getQuads(final @Nullable Direction direction) {

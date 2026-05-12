@@ -38,7 +38,6 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.ARBClipControl;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
@@ -51,6 +50,10 @@ class GlDevice implements GpuDeviceBackend {
    protected static boolean USE_GL_ARB_debug_output = true;
    protected static boolean USE_GL_ARB_direct_state_access = true;
    protected static boolean USE_GL_ARB_buffer_storage = true;
+   protected static boolean USE_GL_ARB_base_instance = true;
+   protected static boolean USE_GL_ARB_draw_indirect = true;
+   protected static boolean USE_GL_ARB_multi_draw_indirect = true;
+   protected static boolean USE_GL_ARB_shader_draw_parameters = true;
    private final CommandEncoderBackend encoder;
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
@@ -70,7 +73,7 @@ class GlDevice implements GpuDeviceBackend {
       Set<String> enabledExtensions = new HashSet();
       int maxSupportedAnisotropy;
       if (capabilities.GL_EXT_texture_filter_anisotropic) {
-         maxSupportedAnisotropy = Mth.floor(GL11.glGetFloat(34047));
+         maxSupportedAnisotropy = Mth.floor(GL33C.glGetFloat(34047));
          enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
       } else {
          maxSupportedAnisotropy = 1;
@@ -84,11 +87,26 @@ class GlDevice implements GpuDeviceBackend {
       this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
       this.defaultShaderSource = defaultShaderSource;
       this.encoder = new GlCommandEncoder(this);
-      GL11.glEnable(34895);
-      GL11.glEnable(34370);
+      GL33C.glEnable(34895);
+      GL33C.glEnable(34370);
       if (capabilities.GL_ARB_clip_control) {
          ARBClipControl.glClipControl(36001, 37727);
          enabledExtensions.add("GL_ARB_clip_control");
+      }
+
+      if (capabilities.GL_ARB_shader_draw_parameters && USE_GL_ARB_shader_draw_parameters) {
+         enabledExtensions.add("GL_ARB_shader_draw_parameters");
+      }
+
+      if (capabilities.GL_ARB_draw_indirect && USE_GL_ARB_draw_indirect) {
+         enabledExtensions.add("GL_ARB_draw_indirect");
+         if (capabilities.GL_ARB_multi_draw_indirect && USE_GL_ARB_multi_draw_indirect) {
+            enabledExtensions.add("GL_ARB_multi_draw_indirect");
+         }
+      }
+
+      if (capabilities.GL_ARB_base_instance && USE_GL_ARB_base_instance) {
+         enabledExtensions.add("GL_ARB_base_instance");
       }
 
       this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
@@ -124,7 +142,7 @@ class GlDevice implements GpuDeviceBackend {
       boolean isCubemap = (usage & 16) != 0;
       int target;
       if (isCubemap) {
-         GL11.glBindTexture(34067, id);
+         GL33C.glBindTexture(34067, id);
          target = 34067;
       } else {
          GlStateManager._bindTexture(id);

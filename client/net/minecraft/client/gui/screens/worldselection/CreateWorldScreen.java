@@ -32,8 +32,8 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -110,7 +110,7 @@ public class CreateWorldScreen extends Screen {
    private final Runnable onClose;
    private @Nullable Path tempDataPackDir;
    private @Nullable PackRepository tempDataPackRepository;
-   private @Nullable TabNavigationBar tabNavigationBar;
+   private @Nullable MenuTabBar tabNavigationBar;
 
    public static void openFresh(final Minecraft minecraft, final Runnable onClose) {
       openFresh(minecraft, onClose, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
@@ -177,7 +177,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    protected void init() {
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new GameTab(), new WorldTab(), new MoreTab()).build();
+      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new GameTab(), new WorldTab(), new MoreTab()).build();
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       footer.addChild(Button.builder(Component.translatable("selectWorld.create"), (button) -> this.onCreate()).build());
@@ -196,7 +196,7 @@ public class CreateWorldScreen extends Screen {
 
    public void repositionElements() {
       if (this.tabNavigationBar != null) {
-         this.tabNavigationBar.updateWidth(this.width);
+         this.tabNavigationBar.arrangeElements(this.width);
          int tabAreaTop = this.tabNavigationBar.getRectangle().bottom();
          ScreenRectangle tabArea = new ScreenRectangle(0, tabAreaTop, this.width, this.height - this.layout.getFooterHeight() - tabAreaTop);
          this.tabManager.setTabArea(tabArea);

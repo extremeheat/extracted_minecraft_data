@@ -60,7 +60,7 @@ public class Lightmap implements AutoCloseable {
             renderPass.setPipeline(RenderPipelines.LIGHTMAP);
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("LightmapInfo", this.ubo.currentBuffer());
-            renderPass.draw(0, 3);
+            renderPass.draw(3, 1, 0, 0);
          }
 
          this.ubo.rotate();

@@ -11,11 +11,11 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
 import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import org.jspecify.annotations.Nullable;
@@ -28,6 +28,8 @@ import org.lwjgl.vulkan.VkBufferViewCreateInfo;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDescriptorBufferInfo;
 import org.lwjgl.vulkan.VkDescriptorImageInfo;
+import org.lwjgl.vulkan.VkDrawIndexedIndirectCommand;
+import org.lwjgl.vulkan.VkDrawIndirectCommand;
 import org.lwjgl.vulkan.VkRect2D;
 import org.lwjgl.vulkan.VkViewport;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
@@ -35,93 +37,70 @@ import org.lwjgl.vulkan.VkWriteDescriptorSet;
 public class VulkanRenderPass implements RenderPassBackend {
    public static final boolean VALIDATION;
    private final VulkanDevice device;
-   private final Consumer<Destroyable> garbageQueue;
-   private final VkCommandBuffer primaryCommandBuffer;
-   private final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier;
+   private final VulkanCommandEncoder encoder;
+   private final CheckpointExtension.CheckpointStorage checkpointStorage;
    private final RenderPass.@Nullable RenderArea renderArea;
    private final int outputWidth;
    private final int outputHeight;
    private final boolean hasDepth;
+   private final Supplier<String> label;
    protected int pushedDebugGroups = 0;
-   private @Nullable VkCommandBuffer currentSecondaryCommandBuffer;
+   private final VkCommandBuffer commandBuffer;
    protected @Nullable VulkanRenderPipeline pipeline;
    private boolean anyDescriptorDirty = false;
    protected final HashMap<String, GpuBufferSlice> uniforms = new HashMap();
    protected final HashMap<String, TextureViewAndSampler> textures = new HashMap();
 
-   public VulkanRenderPass(final VulkanDevice device, final Consumer<Destroyable> garbageQueue, final VkCommandBuffer primaryCommandBuffer, final Supplier<VkCommandBuffer> secondaryCommandBufferSupplier, final RenderPass.@Nullable RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth) {
+   public VulkanRenderPass(final VulkanDevice device, final VulkanCommandEncoder encoder, final VkCommandBuffer commandBuffer, final CheckpointExtension.CheckpointStorage checkpointStorage, final RenderPass.@Nullable RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth, final Supplier<String> label) {
       super();
       this.device = device;
-      this.garbageQueue = garbageQueue;
-      this.primaryCommandBuffer = primaryCommandBuffer;
-      this.secondaryCommandBufferSupplier = secondaryCommandBufferSupplier;
+      this.encoder = encoder;
+      this.commandBuffer = commandBuffer;
+      this.checkpointStorage = checkpointStorage;
       this.renderArea = renderArea;
       this.outputWidth = outputWidth;
       this.outputHeight = outputHeight;
       this.hasDepth = hasDepth;
-   }
+      this.label = label;
+      MemoryStack stack = MemoryStack.stackPush();
 
-   public void end() {
-      this.endSecondaryCommandBuffer();
-   }
-
-   public VkCommandBuffer allocateTransientRenderpassCommandBuffer() {
-      return (VkCommandBuffer)this.secondaryCommandBufferSupplier.get();
-   }
-
-   private VkCommandBuffer secondaryCommandBuffer() {
-      if (this.currentSecondaryCommandBuffer == null) {
-         this.currentSecondaryCommandBuffer = this.allocateTransientRenderpassCommandBuffer();
-         MemoryStack stack = MemoryStack.stackPush();
-
-         try {
-            VkViewport.Buffer viewport = VkViewport.calloc(1, stack);
-            viewport.x(0.0F);
-            viewport.y(0.0F);
-            viewport.width((float)this.outputWidth);
-            viewport.height((float)this.outputHeight);
-            viewport.minDepth(0.0F);
-            viewport.maxDepth(1.0F);
-            VK12.vkCmdSetViewport(this.currentSecondaryCommandBuffer, 0, viewport);
-            if (this.renderArea != null) {
-               setScissor(stack, this.currentSecondaryCommandBuffer, this.renderArea.x(), this.renderArea.y(), this.renderArea.width(), this.renderArea.height());
-            }
-         } catch (Throwable var5) {
-            if (stack != null) {
-               try {
-                  stack.close();
-               } catch (Throwable var4) {
-                  var5.addSuppressed(var4);
-               }
-            }
-
-            throw var5;
+      try {
+         VkViewport.Buffer viewport = VkViewport.calloc(1, stack);
+         viewport.x(0.0F);
+         viewport.y(0.0F);
+         viewport.width((float)outputWidth);
+         viewport.height((float)outputHeight);
+         viewport.minDepth(0.0F);
+         viewport.maxDepth(1.0F);
+         VK12.vkCmdSetViewport(this.commandBuffer(), 0, viewport);
+         if (renderArea != null) {
+            setScissor(stack, this.commandBuffer(), renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
          }
-
+      } catch (Throwable var14) {
          if (stack != null) {
-            stack.close();
+            try {
+               stack.close();
+            } catch (Throwable var13) {
+               var14.addSuppressed(var13);
+            }
          }
+
+         throw var14;
       }
 
-      return this.currentSecondaryCommandBuffer;
-   }
-
-   private void endSecondaryCommandBuffer() {
-      if (this.currentSecondaryCommandBuffer != null) {
-         VulkanUtils.crashIfFailure(VK12.vkEndCommandBuffer(this.currentSecondaryCommandBuffer), "Failed to end VkCommandBuffer");
-         VK12.vkCmdExecuteCommands(this.primaryCommandBuffer, this.currentSecondaryCommandBuffer);
-         this.currentSecondaryCommandBuffer = null;
+      if (stack != null) {
+         stack.close();
       }
+
    }
 
-   public void executeCommandBuffer(final VkCommandBuffer commandBuffer) {
-      this.endSecondaryCommandBuffer();
-      VK12.vkCmdExecuteCommands(this.primaryCommandBuffer, commandBuffer);
+   private VkCommandBuffer commandBuffer() {
+      return this.commandBuffer;
    }
 
    public void pushDebugGroup(final Supplier<String> label) {
       ++this.pushedDebugGroups;
-      this.device.instance().debug().beginDebugGroup(this.secondaryCommandBuffer(), label);
+      this.device.instance().debug().beginDebugGroup(this.commandBuffer(), label);
    }
 
    public void popDebugGroup() {
@@ -129,7 +108,7 @@ public class VulkanRenderPass implements RenderPassBackend {
          throw new IllegalStateException("Can't pop more debug groups than was pushed!");
       } else {
          --this.pushedDebugGroups;
-         this.device.instance().debug().endDebugGroup(this.secondaryCommandBuffer());
+         this.device.instance().debug().endDebugGroup(this.commandBuffer());
       }
    }
 
@@ -139,7 +118,7 @@ public class VulkanRenderPass implements RenderPassBackend {
          throw new IllegalStateException("Pipeline is not valid (may contain invalid shaders?)");
       } else {
          this.anyDescriptorDirty = true;
-         VK12.vkCmdBindPipeline(this.secondaryCommandBuffer(), 0, this.hasDepth ? this.pipeline.withDepthPipeline() : this.pipeline.withoutDepthPipeline());
+         VK12.vkCmdBindPipeline(this.commandBuffer(), 0, this.hasDepth ? this.pipeline.withDepthPipeline() : this.pipeline.withoutDepthPipeline());
       }
    }
 
@@ -168,7 +147,7 @@ public class VulkanRenderPass implements RenderPassBackend {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         setScissor(stack, this.secondaryCommandBuffer(), x, y, width, height);
+         setScissor(stack, this.commandBuffer(), x, y, width, height);
       } catch (Throwable var9) {
          if (stack != null) {
             try {
@@ -209,7 +188,7 @@ public class VulkanRenderPass implements RenderPassBackend {
       try {
          long buffer = vertexBuffer != null ? ((VulkanGpuBuffer)vertexBuffer.buffer()).vkBuffer() : 0L;
          long offset = vertexBuffer != null ? vertexBuffer.offset() : 0L;
-         VK12.vkCmdBindVertexBuffers(this.secondaryCommandBuffer(), slot, stack.longs(buffer), stack.longs(offset));
+         VK12.vkCmdBindVertexBuffers(this.commandBuffer(), slot, stack.longs(buffer), stack.longs(offset));
       } catch (Throwable var9) {
          if (stack != null) {
             try {
@@ -237,13 +216,22 @@ public class VulkanRenderPass implements RenderPassBackend {
       }
 
       int type = var10000;
-      VK12.vkCmdBindIndexBuffer(this.secondaryCommandBuffer(), ((VulkanGpuBuffer)indexBuffer).vkBuffer(), 0L, type);
+      VK12.vkCmdBindIndexBuffer(this.commandBuffer(), ((VulkanGpuBuffer)indexBuffer).vkBuffer(), 0L, type);
    }
 
-   public void drawIndexed(final int baseVertex, final int firstIndex, final int indexCount, final int instanceCount) {
+   public void drawIndexed(final int indexCount, final int instanceCount, final int firstIndex, final int vertexOffset, final int firstInstance) {
       if (this.pipeline != null && this.pipeline.isValid()) {
          this.pushDescriptors();
-         VK12.vkCmdDrawIndexed(this.secondaryCommandBuffer(), indexCount, instanceCount, firstIndex, baseVertex, 0);
+         VK12.vkCmdDrawIndexed(this.commandBuffer(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+      } else {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      }
+   }
+
+   public void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount) {
+      if (this.pipeline != null && this.pipeline.isValid()) {
+         this.pushDescriptors();
+         VK12.vkCmdDrawIndexedIndirect(this.commandBuffer(), ((VulkanGpuBuffer)commands.buffer()).vkBuffer(), commands.offset(), drawCount, VkDrawIndexedIndirectCommand.SIZEOF);
       } else {
          throw new IllegalStateException("Pipeline is missing or not valid");
       }
@@ -262,15 +250,24 @@ public class VulkanRenderPass implements RenderPassBackend {
 
          this.setIndexBuffer(draw.indexBuffer() == null ? defaultIndexBuffer : draw.indexBuffer(), draw.indexType() == null ? defaultIndexType : draw.indexType());
          this.setVertexBuffer(0, draw.vertexBuffer().slice());
-         this.drawIndexed(draw.baseVertex(), draw.firstIndex(), draw.indexCount(), 1);
+         this.drawIndexed(draw.indexCount(), 1, draw.firstIndex(), draw.baseVertex(), 0);
       }
 
    }
 
-   public void draw(final int firstVertex, final int vertexCount) {
+   public void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance) {
       if (this.pipeline != null && this.pipeline.isValid()) {
          this.pushDescriptors();
-         VK12.vkCmdDraw(this.secondaryCommandBuffer(), vertexCount, 1, firstVertex, vertexCount);
+         VK12.vkCmdDraw(this.commandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
+      }
+   }
+
+   public void drawIndirect(final GpuBufferSlice commands, final int drawCount) {
+      if (this.pipeline != null && this.pipeline.isValid()) {
+         this.pushDescriptors();
+         VK12.vkCmdDrawIndirect(this.commandBuffer(), ((VulkanGpuBuffer)commands.buffer()).vkBuffer(), commands.offset(), drawCount, VkDrawIndirectCommand.SIZEOF);
+      } else {
+         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 
@@ -367,9 +364,9 @@ public class VulkanRenderPass implements RenderPassBackend {
                      viewCreateInfo.offset(value.offset());
                      viewCreateInfo.range(value.length());
                      viewCreateInfo.format(VulkanConst.toVk(entry.texelBufferFormat()));
-                     VulkanUtils.crashIfFailure(VK12.vkCreateBufferView(this.device.vkDevice(), viewCreateInfo, (VkAllocationCallbacks)null, bufferViewPtr), "Couldn't create buffer view for texel buffer");
+                     VulkanUtils.crashIfFailure(this.device, VK12.vkCreateBufferView(this.device.vkDevice(), viewCreateInfo, (VkAllocationCallbacks)null, bufferViewPtr), "Couldn't create buffer view for texel buffer");
                      long bufferViewHandle = bufferViewPtr.get(0);
-                     this.garbageQueue.accept((Destroyable)() -> VK12.vkDestroyBufferView(this.device.vkDevice(), bufferViewHandle, (VkAllocationCallbacks)null));
+                     this.encoder.queueForDestroy(() -> VK12.vkDestroyBufferView(this.device.vkDevice(), bufferViewHandle, (VkAllocationCallbacks)null));
                   } catch (Throwable var15) {
                      if (var9 != null) {
                         try {
@@ -391,7 +388,7 @@ public class VulkanRenderPass implements RenderPassBackend {
                }
             }
 
-            KHRPushDescriptor.vkCmdPushDescriptorSetKHR(this.secondaryCommandBuffer(), 0, this.pipeline.pipelineLayout(), 0, (VkWriteDescriptorSet.Buffer)writes.flip());
+            KHRPushDescriptor.vkCmdPushDescriptorSetKHR(this.commandBuffer(), 0, this.pipeline.pipelineLayout(), 0, (VkWriteDescriptorSet.Buffer)writes.flip());
          } catch (Throwable var16) {
             if (stack != null) {
                try {
@@ -415,7 +412,11 @@ public class VulkanRenderPass implements RenderPassBackend {
    public void writeTimestamp(final GpuQueryPool pool, final int index) {
       long queryPool = ((VulkanQueryPool)pool).vkQueryPool();
       VK12.vkResetQueryPool(this.device.vkDevice(), queryPool, index, 1);
-      KHRSynchronization2.vkCmdWriteTimestamp2KHR(this.secondaryCommandBuffer(), 65536L, queryPool, index);
+      KHRSynchronization2.vkCmdWriteTimestamp2KHR(this.commandBuffer(), 65536L, queryPool, index);
+   }
+
+   public Supplier<String> getLabel() {
+      return this.label;
    }
 
    static {

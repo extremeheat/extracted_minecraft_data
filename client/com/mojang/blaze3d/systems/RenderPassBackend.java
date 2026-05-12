@@ -31,11 +31,15 @@ public interface RenderPassBackend {
 
    void setIndexBuffer(final GpuBuffer indexBuffer, final IndexType indexType);
 
-   void drawIndexed(final int baseVertex, final int firstIndex, final int indexCount, final int instanceCount);
+   void drawIndexed(final int indexCount, final int instanceCount, final int firstIndex, final int vertexOffset, final int firstInstance);
+
+   void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount);
 
    <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument);
 
-   void draw(final int firstVertex, final int vertexCount);
+   void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance);
+
+   void drawIndirect(final GpuBufferSlice commands, final int drawCount);
 
    void writeTimestamp(GpuQueryPool pool, int index);
 }

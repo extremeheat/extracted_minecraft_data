@@ -141,6 +141,10 @@ public class GridLayout extends AbstractLayout {
       this.children.forEach((child) -> layoutElementVisitor.accept(child.child));
    }
 
+   public void removeChildren() {
+      this.children.clear();
+   }
+
    public LayoutSettings newCellSettings() {
       return this.defaultCellSettings.copy();
    }

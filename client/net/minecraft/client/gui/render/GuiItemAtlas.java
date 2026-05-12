@@ -22,7 +22,6 @@ import org.jspecify.annotations.Nullable;
 
 public class GuiItemAtlas implements AutoCloseable {
    private static final int MINIMUM_TEXTURE_SIZE = 512;
-   private static final int MAXIMUM_TEXTURE_SIZE = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final int textureSize;
@@ -54,7 +53,7 @@ public class GuiItemAtlas implements AutoCloseable {
    public static int computeTextureSizeFor(final int slotTextureSize, final int requiredSlotCount) {
       int preferredSlotCount = requiredSlotCount + requiredSlotCount / 2;
       int atlasSize = Mth.smallestSquareSide(preferredSlotCount);
-      return Math.clamp((long)Mth.smallestEncompassingPowerOfTwo(atlasSize * slotTextureSize), 512, MAXIMUM_TEXTURE_SIZE);
+      return Math.clamp((long)Mth.smallestEncompassingPowerOfTwo(atlasSize * slotTextureSize), 512, RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM));
    }
 
    public void endFrame() {

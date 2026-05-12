@@ -11,18 +11,15 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderPassDescriptor;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.function.Supplier;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MathUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRDynamicRendering;
@@ -37,11 +34,7 @@ import org.lwjgl.vulkan.VkClearDepthStencilValue;
 import org.lwjgl.vulkan.VkClearRect;
 import org.lwjgl.vulkan.VkClearValue;
 import org.lwjgl.vulkan.VkCommandBuffer;
-import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
 import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
-import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo;
-import org.lwjgl.vulkan.VkCommandBufferInheritanceRenderingInfo;
-import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 import org.lwjgl.vulkan.VkDependencyInfo;
 import org.lwjgl.vulkan.VkImageCopy;
 import org.lwjgl.vulkan.VkImageSubresourceLayers;
@@ -60,10 +53,10 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
    private final long submitSemaphore;
    private long currentSubmitIndex = 2L;
    private long completedSubmitIndex = 0L;
+   private final CheckpointExtension.CheckpointStorage checkpointStorage;
    private VulkanQueue.Submission submissionBuilder;
    private final DestructionQueue<Destroyable> destroyQueue = new DestructionQueue<Destroyable>(2, Destroyable::destroy);
-   private final DestructionQueue<VkCommandBuffer> commandBufferDestroyQueue;
-   private final long commandPool;
+   private final VulkanCommandPool[] commandPools = new VulkanCommandPool[2];
    private @Nullable VkCommandBuffer currentCommandBuffer;
    private @Nullable VulkanRenderPass currentRenderPass;
 
@@ -80,122 +73,8 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          VkSemaphoreCreateInfo semaphoreCreateInfo = VkSemaphoreCreateInfo.calloc(stack).sType$Default();
          semaphoreCreateInfo.pNext(semaphoreTypeCreateInfo);
          LongBuffer semaphoreHandlePtr = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateSemaphore(device.vkDevice(), semaphoreCreateInfo, (VkAllocationCallbacks)null, semaphoreHandlePtr), "Failed to create submit VkSemaphore");
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateSemaphore(device.vkDevice(), semaphoreCreateInfo, (VkAllocationCallbacks)null, semaphoreHandlePtr), "Failed to create submit VkSemaphore");
          this.submitSemaphore = semaphoreHandlePtr.get(0);
-      } catch (Throwable var10) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var8) {
-               var10.addSuppressed(var8);
-            }
-         }
-
-         throw var10;
-      }
-
-      if (stack != null) {
-         stack.close();
-      }
-
-      stack = baseStack.push();
-
-      try {
-         VkCommandPoolCreateInfo commandPoolCreateInfo = VkCommandPoolCreateInfo.calloc(stack).sType$Default();
-         commandPoolCreateInfo.flags(1);
-         commandPoolCreateInfo.queueFamilyIndex(device.graphicsQueue().queueFamilyIndex());
-         LongBuffer commandPoolHandlePtr = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateCommandPool(device.vkDevice(), commandPoolCreateInfo, (VkAllocationCallbacks)null, commandPoolHandlePtr), "Failed to create VkCommandPool");
-         this.commandPool = commandPoolHandlePtr.get(0);
-      } catch (Throwable var9) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var7) {
-               var9.addSuppressed(var7);
-            }
-         }
-
-         throw var9;
-      }
-
-      if (stack != null) {
-         stack.close();
-      }
-
-      this.submissionBuilder = device.graphicsQueue().beginSubmit();
-      this.commandBufferDestroyQueue = new DestructionQueue<VkCommandBuffer>(2, new DestructionQueue.Destroyer<VkCommandBuffer>() {
-         private PointerBuffer commandBuffers;
-
-         {
-            Objects.requireNonNull(VulkanCommandEncoder.this);
-            this.commandBuffers = PointerBuffer.allocateDirect(64);
-         }
-
-         public void begin(final int count) {
-            if (this.commandBuffers.capacity() < count) {
-               this.commandBuffers = PointerBuffer.allocateDirect(MathUtil.mathRoundPoT(count));
-            }
-
-            this.commandBuffers.clear();
-         }
-
-         public void destroy(final VkCommandBuffer commandBuffer) {
-            this.commandBuffers.put(commandBuffer);
-         }
-
-         public void end() {
-            this.commandBuffers.flip();
-            if (this.commandBuffers.limit() != 0) {
-               VK12.vkFreeCommandBuffers(device.vkDevice(), VulkanCommandEncoder.this.commandPool, this.commandBuffers);
-            }
-
-         }
-      });
-   }
-
-   public void destroy() {
-      this.submissionBuilder.close();
-      this.device.graphicsQueue().waitIdle();
-      this.commandBufferDestroyQueue.close();
-      this.destroyQueue.close();
-      VK12.vkDestroyCommandPool(this.device.vkDevice(), this.commandPool, (VkAllocationCallbacks)null);
-      VK12.vkDestroySemaphore(this.device.vkDevice(), this.submitSemaphore, (VkAllocationCallbacks)null);
-   }
-
-   public void queueForDestroy(final Destroyable destroyable) {
-      this.destroyQueue.add(destroyable);
-   }
-
-   public void queueForDestroy(final VkCommandBuffer commandBuffer) {
-      this.commandBufferDestroyQueue.add(commandBuffer);
-   }
-
-   private VulkanGpuBuffer createStagingBuffer(final ByteBuffer data) {
-      int size = data.remaining();
-      VulkanGpuBuffer stagingBuffer = new VulkanGpuBuffer(this.device, () -> "Staging buffer", 22, (long)size, false);
-
-      try (GpuBufferSlice.MappedView mappedMemory = stagingBuffer.map(0L, (long)data.remaining(), false, true)) {
-         MemoryUtil.memCopy(data, mappedMemory.data());
-      }
-
-      return stagingBuffer;
-   }
-
-   public VkCommandBuffer allocateTransientCommandBuffer(final boolean primary) {
-      MemoryStack stack = MemoryStack.stackPush();
-
-      VkCommandBuffer var6;
-      try {
-         VkCommandBufferAllocateInfo allocateInfo = VkCommandBufferAllocateInfo.calloc(stack).sType$Default();
-         allocateInfo.commandPool(this.commandPool);
-         allocateInfo.level(primary ? 0 : 1);
-         allocateInfo.commandBufferCount(1);
-         PointerBuffer bufferPtr = stack.callocPointer(1);
-         VulkanUtils.crashIfFailure(VK12.vkAllocateCommandBuffers(this.device.vkDevice(), allocateInfo, bufferPtr), "Failed to allocated VkCommandBuffer");
-         VkCommandBuffer commandBuffer = new VkCommandBuffer(bufferPtr.get(0), this.device.vkDevice());
-         this.queueForDestroy(commandBuffer);
-         var6 = commandBuffer;
       } catch (Throwable var8) {
          if (stack != null) {
             try {
@@ -212,77 +91,84 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          stack.close();
       }
 
-      return var6;
-   }
-
-   private VkCommandBuffer commandBuffer() {
-      if (this.currentCommandBuffer != null) {
-         return this.currentCommandBuffer;
-      } else {
-         MemoryStack stack = MemoryStack.stackPush();
-
-         VkCommandBuffer var3;
-         try {
-            this.currentCommandBuffer = this.allocateTransientCommandBuffer(true);
-            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack).sType$Default();
-            beginInfo.flags(1);
-            VulkanUtils.crashIfFailure(VK12.vkBeginCommandBuffer(this.currentCommandBuffer, beginInfo), "Failed to begin VkCommandBuffer");
-            this.submissionBuilder.executeCommands(this.currentCommandBuffer);
-            var3 = this.currentCommandBuffer;
-         } catch (Throwable var5) {
-            if (stack != null) {
-               try {
-                  stack.close();
-               } catch (Throwable var4) {
-                  var5.addSuppressed(var4);
-               }
-            }
-
-            throw var5;
-         }
-
-         if (stack != null) {
-            stack.close();
-         }
-
-         return var3;
+      for(int i = 0; i < 2; ++i) {
+         this.commandPools[i] = new VulkanCommandPool(device, device.graphicsQueue());
       }
+
+      this.checkpointStorage = device.checkpointExtension().createStorage(device, device.graphicsQueue(), 2);
+      this.submissionBuilder = device.graphicsQueue().beginSubmit();
    }
 
-   private VkCommandBuffer renderpassCommandBuffer(final IntBuffer colorAttachmentFormats, final int depthFormat) {
+   public void destroy() {
+      this.submissionBuilder.close();
+      this.device.graphicsQueue().waitIdle();
+      this.destroyQueue.close();
+
+      for(int i = 0; i < 2; ++i) {
+         this.commandPools[i].destroy();
+      }
+
+      VK12.vkDestroySemaphore(this.device.vkDevice(), this.submitSemaphore, (VkAllocationCallbacks)null);
+   }
+
+   public void queueForDestroy(final Destroyable destroyable) {
+      this.destroyQueue.add(destroyable);
+   }
+
+   private VulkanCommandPool currentCommandPool() {
+      return this.commandPools[(int)(this.currentSubmitIndex % 2L)];
+   }
+
+   private VulkanGpuBuffer createStagingBuffer(final ByteBuffer data) {
+      int size = data.remaining();
+      VulkanGpuBuffer stagingBuffer = new VulkanGpuBuffer(this.device, () -> "Staging buffer", 22, (long)size, false);
+
+      try (GpuBufferSlice.MappedView mappedMemory = stagingBuffer.map(0L, (long)data.remaining(), false, true)) {
+         MemoryUtil.memCopy(data, mappedMemory.data());
+      }
+
+      return stagingBuffer;
+   }
+
+   public VkCommandBuffer allocateAndBeginTransientCommandBuffer() {
       MemoryStack stack = MemoryStack.stackPush();
 
-      VkCommandBuffer var8;
+      VkCommandBuffer var4;
       try {
-         VkCommandBuffer renderpassCommandBuffer = this.allocateTransientCommandBuffer(false);
-         VkCommandBufferInheritanceRenderingInfo dynamicRenderinginheritanceInfo = VkCommandBufferInheritanceRenderingInfo.calloc(stack).sType$Default();
-         dynamicRenderinginheritanceInfo.pColorAttachmentFormats(colorAttachmentFormats);
-         dynamicRenderinginheritanceInfo.depthAttachmentFormat(depthFormat);
-         dynamicRenderinginheritanceInfo.rasterizationSamples(1);
-         VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.calloc(stack).sType$Default();
-         inheritanceInfo.pNext(dynamicRenderinginheritanceInfo);
+         VkCommandBuffer commandBuffer = this.currentCommandPool().allocateBuffer();
          VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack).sType$Default();
-         beginInfo.flags(3);
-         beginInfo.pInheritanceInfo(inheritanceInfo);
-         VulkanUtils.crashIfFailure(VK12.vkBeginCommandBuffer(renderpassCommandBuffer, beginInfo), "Failed to begin VkCommandBuffer");
-         var8 = renderpassCommandBuffer;
-      } catch (Throwable var10) {
+         beginInfo.flags(1);
+         VulkanUtils.crashIfFailure(this.device, VK12.vkBeginCommandBuffer(commandBuffer, beginInfo), "Failed to begin VkCommandBuffer");
+         var4 = commandBuffer;
+      } catch (Throwable var6) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var9) {
-               var10.addSuppressed(var9);
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
             }
          }
 
-         throw var10;
+         throw var6;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var8;
+      return var4;
+   }
+
+   private VkCommandBuffer commandBuffer() {
+      if (this.currentCommandBuffer != null) {
+         return this.currentCommandBuffer;
+      } else if (this.currentRenderPass != null) {
+         throw new IllegalStateException("Cannot start command buffer while inside RenderPass");
+      } else {
+         this.currentCommandBuffer = this.allocateAndBeginTransientCommandBuffer();
+         this.submissionBuilder.executeCommands(this.currentCommandBuffer);
+         return this.currentCommandBuffer;
+      }
    }
 
    VkCommandBuffer textureInitCommandBuffer() {
@@ -291,24 +177,40 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    private void endCommandBuffer() {
       if (this.currentCommandBuffer != null) {
-         VulkanUtils.crashIfFailure(VK12.vkEndCommandBuffer(this.currentCommandBuffer), "Failed to end VkCommandBuffer");
-         this.currentCommandBuffer = null;
+         if (this.currentRenderPass != null) {
+            throw new IllegalStateException("Cannot end command buffer while inside RenderPass");
+         } else {
+            VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(this.currentCommandBuffer), "Failed to end VkCommandBuffer");
+            this.currentCommandBuffer = null;
+         }
       }
    }
 
    public void waitSemaphore(final long vkSemaphore, final long value, final long stageMask) {
-      this.endCommandBuffer();
-      this.submissionBuilder.waitSemaphore(vkSemaphore, value, stageMask);
+      if (this.currentRenderPass != null) {
+         throw new IllegalStateException("Cannot add semaphore operation while inside RenderPass");
+      } else {
+         this.endCommandBuffer();
+         this.submissionBuilder.waitSemaphore(vkSemaphore, value, stageMask);
+      }
    }
 
    public void execute(final VkCommandBuffer commandBuffer) {
-      this.endCommandBuffer();
-      this.submissionBuilder.executeCommands(commandBuffer);
+      if (this.currentRenderPass != null) {
+         throw new IllegalStateException("Cannot execute command buffer while inside RenderPass");
+      } else {
+         this.endCommandBuffer();
+         this.submissionBuilder.executeCommands(commandBuffer);
+      }
    }
 
    public void signalSemaphore(final long vkSemaphore, final long value, final long stageMask) {
-      this.endCommandBuffer();
-      this.submissionBuilder.signalSemaphore(vkSemaphore, value, stageMask);
+      if (this.currentRenderPass != null) {
+         throw new IllegalStateException("Cannot add semaphore operation while inside RenderPass");
+      } else {
+         this.endCommandBuffer();
+         this.submissionBuilder.signalSemaphore(vkSemaphore, value, stageMask);
+      }
    }
 
    private void memoryBarrier(final MemoryStack stack) {
@@ -329,10 +231,12 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       this.submissionBuilder = this.device.graphicsQueue().beginSubmit();
       ++this.currentSubmitIndex;
       if (!this.awaitSubmitCompletion(this.currentSubmitIndex - 2L, 5000L)) {
-         throw new IllegalStateException("5s timeout reached when waiting for VK semaphore");
+         List<CheckpointExtension.QueueCheckpoints> checkpoints = this.device.checkpointExtension().retrieveCheckpoints(false);
+         throw new IllegalStateException("5s timeout reached when waiting for VK semaphore: " + VulkanUtils.formatCheckpoints(checkpoints));
       } else {
-         this.commandBufferDestroyQueue.rotate();
+         this.currentCommandPool().reset();
          this.destroyQueue.rotate();
+         this.checkpointStorage.rotate();
       }
    }
 
@@ -347,6 +251,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
       RenderPassDescriptor.Attachment<OptionalDouble> depthAttachment = descriptor.depthAttachment();
       this.device.instance().debug().beginDebugGroup(this.commandBuffer(), descriptor.label());
+      this.checkpointStorage.recordCheckpoint(this.commandBuffer(), CheckpointExtension.CheckpointType.BEGIN_RENDER_PASS, descriptor.label());
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
@@ -404,7 +309,6 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          colorAttachmentInfo.position(0);
          VkRenderingInfo renderingInfo = VkRenderingInfo.calloc(stack).sType$Default();
          renderingInfo.renderArea(vkRenderArea);
-         renderingInfo.flags(1);
          renderingInfo.layerCount(1);
          renderingInfo.viewMask(0);
          renderingInfo.pColorAttachments(colorAttachmentInfo);
@@ -428,37 +332,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          KHRDynamicRendering.vkCmdBeginRenderingKHR(this.commandBuffer(), renderingInfo);
-         Supplier<VkCommandBuffer> secondaryCommandBufferSupplier = () -> {
-            MemoryStack memStack = MemoryStack.stackPush();
-
-            VkCommandBuffer var8;
-            try {
-               IntBuffer colorFormats = memStack.mallocInt(colorTextures.length);
-
-               for(int i = 0; i < colorTextures.length; ++i) {
-                  colorFormats.put(i, colorTextures[i] != null ? VulkanConst.toVk(colorTextures[i].texture().getFormat()) : 0);
-               }
-
-               var8 = this.renderpassCommandBuffer(colorFormats, depthAttachment == null ? 0 : VulkanConst.toVk(depthAttachment.textureView().texture().getFormat()));
-            } catch (Throwable var7) {
-               if (memStack != null) {
-                  try {
-                     memStack.close();
-                  } catch (Throwable x2) {
-                     var7.addSuppressed(x2);
-                  }
-               }
-
-               throw var7;
-            }
-
-            if (memStack != null) {
-               memStack.close();
-            }
-
-            return var8;
-         };
-         this.currentRenderPass = new VulkanRenderPass(this.device, this::queueForDestroy, this.commandBuffer(), secondaryCommandBufferSupplier, descriptor.renderArea, width, height, depthAttachment != null);
+         this.currentRenderPass = new VulkanRenderPass(this.device, this, this.commandBuffer(), this.checkpointStorage, descriptor.renderArea, width, height, depthAttachment != null, descriptor.label());
       } catch (Throwable var18) {
          if (stack != null) {
             try {
@@ -482,9 +356,10 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       if (this.currentRenderPass == null) {
          throw new IllegalStateException("Cannot submit a renderpass if one hasn't been started!");
       } else {
-         this.currentRenderPass.end();
          KHRDynamicRendering.vkCmdEndRenderingKHR(this.commandBuffer());
          this.device.instance().debug().endDebugGroup(this.commandBuffer());
+         this.checkpointStorage.recordCheckpoint(this.commandBuffer(), CheckpointExtension.CheckpointType.END_RENDER_PASS, this.currentRenderPass.getLabel());
+         this.currentRenderPass = null;
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
@@ -608,21 +483,18 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
             attachments.aspectMask(2);
             attachments.clearValue(depthClearValue);
             attachments.position(0);
-            VkCommandBuffer secondaryCommandBuffer = this.currentRenderPass.allocateTransientRenderpassCommandBuffer();
-            VK12.vkCmdClearAttachments(secondaryCommandBuffer, attachments, rects);
-            VulkanUtils.crashIfFailure(VK12.vkEndCommandBuffer(secondaryCommandBuffer), "Failed to end VkCommandBuffer");
-            this.currentRenderPass.executeCommandBuffer(secondaryCommandBuffer);
+            VK12.vkCmdClearAttachments(this.commandBuffer(), attachments, rects);
             this.submitRenderPass();
-         } catch (Throwable var22) {
+         } catch (Throwable var21) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var21) {
-                  var22.addSuppressed(var21);
+               } catch (Throwable var20) {
+                  var21.addSuppressed(var20);
                }
             }
 
-            throw var22;
+            throw var21;
          }
 
          if (stack != null) {
@@ -860,7 +732,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
             waitInfo.pValues(stack.longs(submitIndex));
             waitInfo.semaphoreCount(1);
             int result = VK12.vkWaitSemaphores(this.device.vkDevice(), waitInfo, timeoutMs * 1000000L);
-            VulkanUtils.crashIfFailure(result, "Failed to wait for semaphore");
+            VulkanUtils.crashIfFailure(this.device, result, "Failed to wait for semaphore");
             boolean completed = result == 0;
             if (completed) {
                this.completedSubmitIndex = submitIndex;
@@ -922,30 +794,27 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       MemoryStack stack = MemoryStack.stackPush();
 
       try (VulkanQueryPool queryPool = (VulkanQueryPool)this.device.createTimestampQueryPool(1)) {
-         VkCommandBuffer commandBuffer = this.allocateTransientCommandBuffer(true);
-         VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack).sType$Default();
-         beginInfo.flags(1);
-         VulkanUtils.crashIfFailure(VK12.vkBeginCommandBuffer(commandBuffer, beginInfo), "Failed to begin VkCommandBuffer");
+         VkCommandBuffer commandBuffer = this.allocateAndBeginTransientCommandBuffer();
          KHRSynchronization2.vkCmdWriteTimestamp2KHR(commandBuffer, 0L, queryPool.vkQueryPool(), 0);
-         VulkanUtils.crashIfFailure(VK12.vkEndCommandBuffer(commandBuffer), "Failed to end VkCommandBuffer");
+         VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(commandBuffer), "Failed to end VkCommandBuffer");
 
          try (VulkanQueue.Submission submit = this.device.graphicsQueue().beginSubmit()) {
             submit.executeCommands(commandBuffer);
          }
 
          LongBuffer timestampPtr = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkGetQueryPoolResults(this.device.vkDevice(), queryPool.vkQueryPool(), 0, 1, timestampPtr, 0L, 3), "Cannot fetch current timestamp");
+         VulkanUtils.crashIfFailure(this.device, VK12.vkGetQueryPoolResults(this.device.vkDevice(), queryPool.vkQueryPool(), 0, 1, timestampPtr, 0L, 3), "Cannot fetch current timestamp");
          return timestampPtr.get(0);
-      } catch (Throwable var13) {
+      } catch (Throwable var12) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var8) {
-               var13.addSuppressed(var8);
+            } catch (Throwable var7) {
+               var12.addSuppressed(var7);
             }
          }
 
-         throw var13;
+         throw var12;
       }
 
       if (stack != null) {

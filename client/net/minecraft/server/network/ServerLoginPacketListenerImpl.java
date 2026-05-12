@@ -23,6 +23,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
@@ -144,6 +145,8 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       Component error = playerList.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));
       if (error != null) {
          this.disconnect(error);
+      } else if (this.connection.getIntendedProfileId() != null && !profile.id().equals(this.connection.getIntendedProfileId())) {
+         this.disconnect(CommonComponents.CONNECT_FAILED);
       } else {
          if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
             this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
@@ -175,11 +178,13 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          }
 
          SecretKey secretKey = packet.getSecretKey(serverPrivateKey);
-         Cipher decryptCipher = Crypt.getCipher(2, secretKey);
-         Cipher encryptCipher = Crypt.getCipher(1, secretKey);
          digest = (new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), secretKey))).toString(16);
          this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
-         this.connection.setEncryptionKey(decryptCipher, encryptCipher);
+         if (!this.connection.isSecureTransport()) {
+            Cipher decryptCipher = Crypt.getCipher(2, secretKey);
+            Cipher encryptCipher = Crypt.getCipher(1, secretKey);
+            this.connection.setEncryptionKey(decryptCipher, encryptCipher);
+         }
       } catch (CryptException e) {
          throw new IllegalStateException("Protocol error", e);
       }
@@ -199,7 +204,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                   ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", profile.name(), profile.id());
                   ServerLoginPacketListenerImpl.this.serverActivityMonitor.reportLoginActivity();
                   ServerLoginPacketListenerImpl.this.startClientVerification(profile);
-               } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
+               } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer() && !ServerLoginPacketListenerImpl.this.connection.isSecureTransport()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");
                   ServerLoginPacketListenerImpl.this.startClientVerification(UUIDUtil.createOfflineProfile(name));
                } else {
@@ -207,7 +212,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                   ServerLoginPacketListenerImpl.LOGGER.error("Username '{}' tried to join with an invalid session", name);
                }
             } catch (AuthenticationUnavailableException var4) {
-               if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
+               if (ServerLoginPacketListenerImpl.this.server.isSingleplayer() && !ServerLoginPacketListenerImpl.this.connection.isSecureTransport()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Authentication servers are down but will let them in anyway!");
                   ServerLoginPacketListenerImpl.this.startClientVerification(UUIDUtil.createOfflineProfile(name));
                } else {

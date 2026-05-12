@@ -19,6 +19,10 @@ public abstract class AbstractTexture implements AutoCloseable {
    }
 
    public void close() {
+      this.releaseTextures();
+   }
+
+   protected void releaseTextures() {
       if (this.texture != null) {
          this.texture.close();
          this.texture = null;

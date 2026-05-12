@@ -152,12 +152,8 @@ import net.minecraft.client.model.player.PlayerEarsModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
-import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
-import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.WitherSkullRenderer;
-import net.minecraft.world.level.block.HangingSignBlock;
-import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class LayerDefinitions {
    private static final CubeDeformation FISH_PATTERN_DEFORMATION = new CubeDeformation(0.008F);
@@ -542,18 +538,6 @@ public class LayerDefinitions {
       result.put(ModelLayers.PALE_OAK_CHEST_BOAT, chestBoatModel);
       result.put(ModelLayers.MANGROVE_BOAT, boatModel);
       result.put(ModelLayers.MANGROVE_CHEST_BOAT, chestBoatModel);
-      LayerDefinition standingSignModel = StandingSignRenderer.createSignLayer(true);
-      LayerDefinition wallSignModel = StandingSignRenderer.createSignLayer(false);
-      WoodType.values().forEach((woodType) -> {
-         result.put(ModelLayers.createStandingSignModelName(woodType), standingSignModel);
-         result.put(ModelLayers.createWallSignModelName(woodType), wallSignModel);
-
-         for(HangingSignBlock.Attachment attachmentType : HangingSignBlock.Attachment.values()) {
-            LayerDefinition hangingSignModel = HangingSignRenderer.createHangingSignLayer(attachmentType);
-            result.put(ModelLayers.createHangingSignModelName(woodType, attachmentType), hangingSignModel);
-         }
-
-      });
       ImmutableMap<ModelLayerLocation, LayerDefinition> definitions = result.build();
       List<ModelLayerLocation> missingDefinitions = ModelLayers.getKnownLocations().filter((l) -> !definitions.containsKey(l)).toList();
       if (!missingDefinitions.isEmpty()) {

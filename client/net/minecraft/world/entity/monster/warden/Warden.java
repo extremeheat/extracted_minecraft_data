@@ -344,6 +344,10 @@ public class Warden extends Monster implements VibrationSystem {
 
    }
 
+   public boolean canAttack(final LivingEntity target) {
+      return this.canTargetEntity(target);
+   }
+
    @Contract("null->false")
    public boolean canTargetEntity(final @Nullable Entity entity) {
       boolean var10000;

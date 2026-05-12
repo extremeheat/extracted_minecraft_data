@@ -28,10 +28,14 @@ public class ScrollableLayout implements Layout {
    private int maxHeight;
 
    public ScrollableLayout(final Minecraft minecraft, final Layout content, final int maxHeight) {
+      this(minecraft, content, maxHeight, ScrollableLayout.ReserveStrategy.BOTH);
+   }
+
+   public ScrollableLayout(final Minecraft minecraft, final Layout content, final int maxHeight, final ReserveStrategy reserveStrategy) {
       super();
       this.content = content;
       this.maxHeight = maxHeight;
-      this.reserveStrategy = ScrollableLayout.ReserveStrategy.BOTH;
+      this.reserveStrategy = reserveStrategy;
       this.scrollbarSpacing = 4;
       this.container = new Container(minecraft, 0, maxHeight, AbstractScrollArea.defaultSettings(10));
    }
@@ -65,11 +69,17 @@ public class ScrollableLayout implements Layout {
       int scrollbarReserve = var10000;
       this.container.setWidth(Math.max(contentWidth, this.minWidth) + scrollbarReserve);
       this.container.setHeight(Math.clamp((long)this.container.getHeight(), this.minHeight, this.maxHeight));
+      this.container.refreshChildren();
       this.container.refreshScrollAmount();
    }
 
    public void visitChildren(final Consumer<LayoutElement> layoutElementVisitor) {
       layoutElementVisitor.accept(this.container);
+   }
+
+   public void removeChildren() {
+      this.container.children().clear();
+      this.content.removeChildren();
    }
 
    public void setX(final int x) {
@@ -105,6 +115,11 @@ public class ScrollableLayout implements Layout {
          super(0, 0, width, height, CommonComponents.EMPTY, scrollbarSettings);
          this.children = new ArrayList();
          this.minecraft = minecraft;
+         this.refreshChildren();
+      }
+
+      public void refreshChildren() {
+         this.children.clear();
          Layout var10000 = ScrollableLayout.this.content;
          List var10001 = this.children;
          Objects.requireNonNull(var10001);

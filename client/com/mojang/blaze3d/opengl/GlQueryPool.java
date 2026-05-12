@@ -2,7 +2,6 @@ package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.systems.GpuQueryPool;
 import java.util.OptionalLong;
-import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
 
 public class GlQueryPool implements GpuQueryPool {
@@ -12,7 +11,7 @@ public class GlQueryPool implements GpuQueryPool {
    public GlQueryPool(final int size) {
       super();
       this.handles = new int[size];
-      GL32C.glGenQueries(this.handles);
+      GL33C.glGenQueries(this.handles);
    }
 
    public int size() {
@@ -45,7 +44,7 @@ public class GlQueryPool implements GpuQueryPool {
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         GL32C.glDeleteQueries(this.handles);
+         GL33C.glDeleteQueries(this.handles);
       }
 
    }

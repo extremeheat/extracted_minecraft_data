@@ -15,6 +15,7 @@ public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_INDEX = 64;
    public static final int USAGE_UNIFORM = 128;
    public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
+   public static final int USAGE_INDIRECT_PARAMETERS = 512;
    private final @GpuBuffer.Usage int usage;
    private final long size;
    private final GpuBufferSlice defaultSlice;
@@ -57,7 +58,7 @@ public abstract class GpuBuffer implements AutoCloseable {
    public abstract GpuBufferSlice.MappedView map(final long offset, final long length, final boolean read, final boolean write);
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface Usage {
    }
 }

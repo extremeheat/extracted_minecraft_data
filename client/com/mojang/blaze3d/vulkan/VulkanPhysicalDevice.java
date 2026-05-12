@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.vulkan;
 
+import com.mojang.blaze3d.systems.BackendCreationException;
 import com.mojang.blaze3d.systems.DeviceType;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -21,6 +22,7 @@ import org.lwjgl.vulkan.VkPhysicalDeviceDriverProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
+import org.lwjgl.vulkan.VkPhysicalDeviceVulkan11Properties;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 public class VulkanPhysicalDevice implements AutoCloseable {
@@ -28,13 +30,14 @@ public class VulkanPhysicalDevice implements AutoCloseable {
    private final VkExtensionProperties.Buffer vkDeviceExtensions;
    private final VkPhysicalDeviceFeatures2 vkPhysicalDeviceFeatures;
    private final VkPhysicalDeviceProperties2 vkPhysicalDeviceProperties;
+   private final VkPhysicalDeviceVulkan11Properties vkPhysicalDeviceVulkan11Properties;
    private final VkPhysicalDeviceDriverProperties vkPhysicalDeviceDriverProperties;
    private final Int2IntMap queueFamilyCreateInfoMap;
    private final @Nullable IntIntPair graphicsQueueFamilyAndIndex;
    private final @Nullable IntIntPair computeQueueFamilyAndIndex;
    private final @Nullable IntIntPair transferQueueFamilyAndIndex;
 
-   public VulkanPhysicalDevice(final VkPhysicalDevice vkPhysicalDevice) {
+   public VulkanPhysicalDevice(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
       super();
       MemoryStack stack = MemoryStack.stackPush();
 
@@ -42,12 +45,14 @@ public class VulkanPhysicalDevice implements AutoCloseable {
          this.vkPhysicalDevice = vkPhysicalDevice;
          IntBuffer intBuffer = stack.callocInt(1);
          this.vkPhysicalDeviceProperties = VkPhysicalDeviceProperties2.calloc().sType$Default();
+         this.vkPhysicalDeviceVulkan11Properties = VkPhysicalDeviceVulkan11Properties.calloc().sType$Default();
          this.vkPhysicalDeviceDriverProperties = VkPhysicalDeviceDriverProperties.calloc().sType$Default();
          this.vkPhysicalDeviceProperties.pNext(this.vkPhysicalDeviceDriverProperties);
+         this.vkPhysicalDeviceProperties.pNext(this.vkPhysicalDeviceVulkan11Properties);
          VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, this.vkPhysicalDeviceProperties);
-         VulkanUtils.crashIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, intBuffer, (VkExtensionProperties.Buffer)null), "Failed to get number of device extension properties");
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, intBuffer, (VkExtensionProperties.Buffer)null), "Failed to get number of device extension properties", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          this.vkDeviceExtensions = VkExtensionProperties.calloc(intBuffer.get(0));
-         VulkanUtils.crashIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, intBuffer, this.vkDeviceExtensions), "Failed to get extension properties");
+         VulkanUtils.throwIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, intBuffer, this.vkDeviceExtensions), "Failed to get extension properties", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          VK12.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, intBuffer, (VkQueueFamilyProperties.Buffer)null);
          VkQueueFamilyProperties.Buffer vkQueueFamilyProps = VkQueueFamilyProperties.calloc(intBuffer.get(0), stack);
          VK12.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, intBuffer, vkQueueFamilyProps);
@@ -113,6 +118,7 @@ public class VulkanPhysicalDevice implements AutoCloseable {
    public void close() {
       this.vkPhysicalDeviceFeatures.free();
       this.vkDeviceExtensions.free();
+      this.vkPhysicalDeviceVulkan11Properties.free();
       this.vkPhysicalDeviceDriverProperties.free();
       this.vkPhysicalDeviceProperties.free();
    }
@@ -170,6 +176,10 @@ public class VulkanPhysicalDevice implements AutoCloseable {
 
    public VkPhysicalDeviceProperties vkPhysicalDeviceProperties() {
       return this.vkPhysicalDeviceProperties.properties();
+   }
+
+   public VkPhysicalDeviceVulkan11Properties vkPhysicalDeviceVulkan11Properties() {
+      return this.vkPhysicalDeviceVulkan11Properties;
    }
 
    public VkPhysicalDeviceDriverProperties vkPhysicalDeviceDriverProperties() {

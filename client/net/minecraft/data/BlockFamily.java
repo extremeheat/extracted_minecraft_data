@@ -55,7 +55,11 @@ public class BlockFamily {
 
    public static enum Variant {
       BUTTON("button"),
-      CHISELED("chiseled"),
+      CHISELED("chiseled") {
+         public Variant getBaseVariantForCrafting() {
+            return SLAB;
+         }
+      },
       CRACKED("cracked"),
       CUT("cut"),
       DOOR("door"),
@@ -63,6 +67,18 @@ public class BlockFamily {
       FENCE("fence"),
       CUSTOM_FENCE_GATE("fence_gate"),
       FENCE_GATE("fence_gate"),
+      CUSTOM_HANGING_SIGN("hanging_sign") {
+         public Variant getBaseVariantForCrafting() {
+            return STRIPPED_LOG;
+         }
+      },
+      HANGING_SIGN("hanging_sign") {
+         public Variant getBaseVariantForCrafting() {
+            return STRIPPED_LOG;
+         }
+      },
+      LOG("log"),
+      STRIPPED_LOG("stripped_log"),
       MOSAIC("mosaic"),
       SIGN("sign"),
       SLAB("slab"),
@@ -72,6 +88,8 @@ public class BlockFamily {
       TRAPDOOR("trapdoor"),
       WALL("wall"),
       WALL_SIGN("wall_sign"),
+      CUSTOM_WALL_HANGING_SIGN("wall_hanging_sign"),
+      WALL_HANGING_SIGN("wall_hanging_sign"),
       BRICKS("bricks"),
       COBBLED("cobbled"),
       TILES("tiles");
@@ -86,9 +104,13 @@ public class BlockFamily {
          return this.recipeGroup;
       }
 
+      public @Nullable Variant getBaseVariantForCrafting() {
+         return null;
+      }
+
       // $FF: synthetic method
       private static Variant[] $values() {
-         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, BRICKS, COBBLED, TILES};
+         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, CUSTOM_HANGING_SIGN, HANGING_SIGN, LOG, STRIPPED_LOG, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, CUSTOM_WALL_HANGING_SIGN, WALL_HANGING_SIGN, BRICKS, COBBLED, TILES};
       }
    }
 
@@ -162,6 +184,28 @@ public class BlockFamily {
       public Builder sign(final Block sign, final Block wallSign) {
          this.family.variants.put(BlockFamily.Variant.SIGN, sign);
          this.family.variants.put(BlockFamily.Variant.WALL_SIGN, wallSign);
+         return this;
+      }
+
+      public Builder customHangingSign(final Block sign, final Block wallSign) {
+         this.family.variants.put(BlockFamily.Variant.CUSTOM_HANGING_SIGN, sign);
+         this.family.variants.put(BlockFamily.Variant.CUSTOM_WALL_HANGING_SIGN, wallSign);
+         return this;
+      }
+
+      public Builder hangingSign(final Block sign, final Block wallSign) {
+         this.family.variants.put(BlockFamily.Variant.HANGING_SIGN, sign);
+         this.family.variants.put(BlockFamily.Variant.WALL_HANGING_SIGN, wallSign);
+         return this;
+      }
+
+      public Builder log(final Block log) {
+         this.family.variants.put(BlockFamily.Variant.LOG, log);
+         return this;
+      }
+
+      public Builder strippedLog(final Block strippedLog) {
+         this.family.variants.put(BlockFamily.Variant.STRIPPED_LOG, strippedLog);
          return this;
       }
 

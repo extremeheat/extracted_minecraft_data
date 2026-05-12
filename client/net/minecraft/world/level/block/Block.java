@@ -578,7 +578,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface UpdateFlags {
    }
 }

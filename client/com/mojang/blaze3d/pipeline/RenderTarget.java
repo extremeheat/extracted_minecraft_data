@@ -99,7 +99,7 @@ public abstract class RenderTarget {
          renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-         renderPass.draw(0, 3);
+         renderPass.draw(3, 1, 0, 0);
       }
 
    }

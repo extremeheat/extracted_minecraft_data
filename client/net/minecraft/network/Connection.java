@@ -22,11 +22,13 @@ import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.flow.FlowControlHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
+import io.netty.util.AttributeKey;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import javax.crypto.Cipher;
@@ -62,6 +64,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static final Marker PACKET_MARKER = (Marker)Util.make(MarkerFactory.getMarker("NETWORK_PACKETS"), (m) -> m.add(ROOT_MARKER));
    public static final Marker PACKET_RECEIVED_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_RECEIVED"), (m) -> m.add(PACKET_MARKER));
    public static final Marker PACKET_SENT_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_SENT"), (m) -> m.add(PACKET_MARKER));
+   public static final AttributeKey<Boolean> SECURE_TRANSPORT = AttributeKey.valueOf("secure_transport");
    private static final ProtocolInfo<ServerHandshakePacketListener> INITIAL_PROTOCOL;
    private final PacketFlow receiving;
    private volatile boolean sendLoginDisconnect = true;
@@ -71,7 +74,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private volatile @Nullable PacketListener disconnectListener;
    private volatile @Nullable PacketListener packetListener;
    private @Nullable DisconnectionDetails disconnectionDetails;
-   private boolean encrypted;
    private boolean disconnectionHandled;
    private int receivedPackets;
    private int sentPackets;
@@ -81,6 +83,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private boolean handlingFault;
    private volatile @Nullable DisconnectionDetails delayedDisconnect;
    private @Nullable BandwidthDebugMonitor bandwidthDebugMonitor;
+   private @Nullable UUID intendedProfileId;
 
    public Connection(final PacketFlow receiving) {
       super();
@@ -409,6 +412,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return this.channel instanceof LocalChannel || this.channel instanceof LocalServerChannel;
    }
 
+   public boolean isSecureTransport() {
+      return this.channel.hasAttr(SECURE_TRANSPORT) ? (Boolean)this.channel.attr(SECURE_TRANSPORT).get() : false;
+   }
+
    public PacketFlow getReceiving() {
       return this.receiving;
    }
@@ -498,14 +505,22 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return connection;
    }
 
-   public void setEncryptionKey(final Cipher decryptCipher, final Cipher encryptCipher) {
-      this.encrypted = true;
-      this.channel.pipeline().addBefore("splitter", "decrypt", new CipherDecoder(decryptCipher));
-      this.channel.pipeline().addBefore("prepender", "encrypt", new CipherEncoder(encryptCipher));
+   public static Connection fromChannel(final Channel channel, final PacketFlow flow, final @Nullable LocalSampleLogger bandwidthLogger) {
+      Connection connection = new Connection(flow);
+      if (bandwidthLogger != null) {
+         connection.setBandwidthLogger(bandwidthLogger);
+      }
+
+      ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
+      configureSerialization(pipeline, flow, false, connection.bandwidthDebugMonitor);
+      connection.configurePacketHandler(pipeline);
+      EventLoopGroupHolder.local().eventLoopGroup().register(channel).syncUninterruptibly();
+      return connection;
    }
 
-   public boolean isEncrypted() {
-      return this.encrypted;
+   public void setEncryptionKey(final Cipher decryptCipher, final Cipher encryptCipher) {
+      this.channel.pipeline().addBefore("splitter", "decrypt", new CipherDecoder(decryptCipher));
+      this.channel.pipeline().addBefore("prepender", "encrypt", new CipherEncoder(encryptCipher));
    }
 
    public boolean isConnected() {
@@ -587,6 +602,14 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public void setBandwidthLogger(final LocalSampleLogger bandwidthLogger) {
       this.bandwidthDebugMonitor = new BandwidthDebugMonitor(bandwidthLogger);
+   }
+
+   public void setIntendedProfileId(final UUID profileId) {
+      this.intendedProfileId = profileId;
+   }
+
+   public @Nullable UUID getIntendedProfileId() {
+      return this.intendedProfileId;
    }
 
    static {

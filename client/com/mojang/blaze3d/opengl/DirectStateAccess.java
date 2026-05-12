@@ -6,8 +6,7 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBDirectStateAccess;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 
 public abstract class DirectStateAccess {
@@ -88,7 +87,7 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glMapNamedBufferRange(buffer, offset, length, flags);
       }
 
-      public void unmapBuffer(final int buffer, final int usage) {
+      public void unmapBuffer(final int buffer, final @GpuBuffer.Usage int usage) {
          ARBDirectStateAccess.glUnmapNamedBuffer(buffer);
       }
 
@@ -96,7 +95,7 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glCreateFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final @GpuBuffer.Usage int bindSlot) {
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int bindSlot) {
          for(int i = 0; i < color.length; ++i) {
             ARBDirectStateAccess.glNamedFramebufferTexture(fbo, '\u8ce0' + i, color[i], colorMipLevels[i]);
          }
@@ -193,14 +192,14 @@ public abstract class DirectStateAccess {
       public void flushMappedBufferRange(final int buffer, final long offset, final long length, final @GpuBuffer.Usage int usage) {
          int target = selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
-         GL30.glFlushMappedBufferRange(target, offset, length);
+         GL33C.glFlushMappedBufferRange(target, offset, length);
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void copyBufferSubData(final int source, final int target, final long sourceOffset, final long targetOffset, final long length) {
          GlStateManager._glBindBuffer(36662, source);
          GlStateManager._glBindBuffer(36663, target);
-         GL31.glCopyBufferSubData(36662, 36663, sourceOffset, targetOffset, length);
+         GL33C.glCopyBufferSubData(36662, 36663, sourceOffset, targetOffset, length);
          GlStateManager._glBindBuffer(36662, 0);
          GlStateManager._glBindBuffer(36663, 0);
       }

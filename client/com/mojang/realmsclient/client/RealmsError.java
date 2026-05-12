@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsHttpException;
 import java.util.Locale;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
@@ -55,12 +55,12 @@ public interface RealmsError {
 
       public Component errorMessage() {
          String codeTranslationKey = "mco.errorMessage." + this.code;
-         if (I18n.exists(codeTranslationKey)) {
+         if (Language.getInstance().has(codeTranslationKey)) {
             return Component.translatable(codeTranslationKey);
          } else {
             if (this.reason != null) {
                String reasonTranslationKey = "mco.errorReason." + this.reason;
-               if (I18n.exists(reasonTranslationKey)) {
+               if (Language.getInstance().has(reasonTranslationKey)) {
                   return Component.translatable(reasonTranslationKey);
                }
             }

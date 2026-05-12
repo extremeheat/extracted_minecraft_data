@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import net.minecraft.util.FileUtil;
 import net.minecraft.util.MemoryReserve;
@@ -52,11 +53,11 @@ public class CrashReport {
    }
 
    public void getDetails(final StringBuilder builder) {
-      if ((this.uncategorizedStackTrace == null || this.uncategorizedStackTrace.length <= 0) && !this.details.isEmpty()) {
+      if (this.uncategorizedStackTrace.length <= 0 && !this.details.isEmpty()) {
          this.uncategorizedStackTrace = (StackTraceElement[])ArrayUtils.subarray(((CrashReportCategory)this.details.get(0)).getStacktrace(), 0, 1);
       }
 
-      if (this.uncategorizedStackTrace != null && this.uncategorizedStackTrace.length > 0) {
+      if (this.uncategorizedStackTrace.length > 0) {
          builder.append("-- Head --\n");
          builder.append("Thread: ").append(Thread.currentThread().getName()).append("\n");
          builder.append("Stacktrace:\n");
@@ -82,15 +83,7 @@ public class CrashReport {
       PrintWriter printWriter = null;
       Throwable exception = this.exception;
       if (exception.getMessage() == null) {
-         if (exception instanceof NullPointerException) {
-            exception = new NullPointerException(this.title);
-         } else if (exception instanceof StackOverflowError) {
-            exception = new StackOverflowError(this.title);
-         } else if (exception instanceof OutOfMemoryError) {
-            exception = new OutOfMemoryError(this.title);
-         }
-
-         exception.setStackTrace(this.exception.getStackTrace());
+         exception = replaceMessage(exception, this.title);
       }
 
       String var4;
@@ -105,6 +98,44 @@ public class CrashReport {
       }
 
       return var4;
+   }
+
+   private static Throwable copyProperties(final Throwable original, final Throwable copy) {
+      try {
+         Throwable cause = original.getCause();
+         if (cause != null) {
+            copy.initCause(cause);
+         }
+
+         Throwable[] suppressed = original.getSuppressed();
+
+         for(Throwable throwable : suppressed) {
+            copy.addSuppressed(throwable);
+         }
+
+         copy.setStackTrace(original.getStackTrace());
+         return copy;
+      } catch (Throwable var8) {
+         return original;
+      }
+   }
+
+   private static Throwable replaceMessage(final Throwable original, final String title) {
+      Objects.requireNonNull(original);
+      byte var3 = 0;
+      Throwable var10000;
+      //$FF: var3->value
+      //0->java/lang/NullPointerException
+      //1->java/lang/StackOverflowError
+      //2->java/lang/OutOfMemoryError
+      switch (original.typeSwitch<invokedynamic>(original, var3)) {
+         case 0 -> var10000 = copyProperties(original, new NullPointerException(title));
+         case 1 -> var10000 = copyProperties(original, new StackOverflowError(title));
+         case 2 -> var10000 = copyProperties(original, new OutOfMemoryError(title));
+         default -> var10000 = original;
+      }
+
+      return var10000;
    }
 
    public String getFriendlyReport(final ReportType reportType, final List<String> extraComments) {
@@ -198,7 +229,7 @@ public class CrashReport {
             LOGGER.error("Negative index in crash report handler ({}/{})", fullTrace.length, size);
          }
 
-         if (fullTrace != null && 0 <= traceIndex && traceIndex < fullTrace.length) {
+         if (0 <= traceIndex && traceIndex < fullTrace.length) {
             source = fullTrace[traceIndex];
             if (fullTrace.length + 1 - size < fullTrace.length) {
                next = fullTrace[fullTrace.length + 1 - size];
@@ -206,7 +237,7 @@ public class CrashReport {
          }
 
          this.trackingStackTrace = category.validateStackTrace(source, next);
-         if (fullTrace != null && fullTrace.length >= size && 0 <= traceIndex && traceIndex < fullTrace.length) {
+         if (fullTrace.length >= size && 0 <= traceIndex && traceIndex < fullTrace.length) {
             this.uncategorizedStackTrace = new StackTraceElement[traceIndex];
             System.arraycopy(fullTrace, 0, this.uncategorizedStackTrace, 0, this.uncategorizedStackTrace.length);
          } else {

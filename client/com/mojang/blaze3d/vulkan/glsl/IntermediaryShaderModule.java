@@ -217,7 +217,7 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
       try {
          VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(this.spirv);
          LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer), "Can't compile " + this.name);
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer), "Can't compile " + this.name);
          device.instance().debug().setObjectName(device.vkDevice(), 15, pointer.get(0), (Supplier)(() -> this.name));
          var5 = pointer.get(0);
       } catch (Throwable var8) {

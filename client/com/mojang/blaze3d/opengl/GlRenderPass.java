@@ -133,16 +133,24 @@ class GlRenderPass implements RenderPassBackend {
       this.indexType = indexType;
    }
 
-   public void drawIndexed(final int baseVertex, final int firstIndex, final int indexCount, final int instanceCount) {
-      this.encoder.executeDraw(this, baseVertex, firstIndex, indexCount, this.indexType, instanceCount);
+   public void drawIndexed(final int indexCount, final int instanceCount, final int firstIndex, final int vertexOffset, final int firstInstance) {
+      this.encoder.executeDraw(this, vertexOffset, firstIndex, indexCount, this.indexType, instanceCount, firstInstance);
+   }
+
+   public void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount) {
+      this.encoder.executeDrawIndirect(this, this.indexType, (GlBuffer)commands.buffer(), commands.offset(), drawCount);
    }
 
    public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
       this.encoder.executeDrawMultiple(this, draws, defaultIndexBuffer, defaultIndexType, dynamicUniforms, uniformArgument);
    }
 
-   public void draw(final int firstVertex, final int vertexCount) {
-      this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (IndexType)null, 1);
+   public void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance) {
+      this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (IndexType)null, instanceCount, firstInstance);
+   }
+
+   public void drawIndirect(final GpuBufferSlice commands, final int drawCount) {
+      this.encoder.executeDrawIndirect(this, (IndexType)null, (GlBuffer)commands.buffer(), commands.offset(), drawCount);
    }
 
    public void writeTimestamp(final GpuQueryPool pool, final int index) {

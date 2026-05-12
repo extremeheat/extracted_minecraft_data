@@ -44,7 +44,7 @@ public class VulkanGpuSampler extends GpuSampler implements Destroyable {
          createInfo.anisotropyEnable(maxAnisotropy > 1);
          createInfo.maxAnisotropy((float)maxAnisotropy);
          LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateSampler(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create sampler");
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateSampler(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create sampler");
          this.vkSampler = pointer.get(0);
       } catch (Throwable var12) {
          if (stack != null) {
@@ -71,7 +71,7 @@ public class VulkanGpuSampler extends GpuSampler implements Destroyable {
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+         this.device.createCommandEncoder().queueForDestroy(this);
       }
    }
 

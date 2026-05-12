@@ -464,6 +464,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.MUSIC_DISC_11, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_13, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_BLOCKS, ModelTemplates.MUSIC_DISC);
+      this.generateFlatItem(Items.MUSIC_DISC_BOUNCE, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_CAT, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_CHIRP, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_CREATOR, ModelTemplates.MUSIC_DISC);

@@ -5,8 +5,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.HangingSignBlock;
-import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class ModelLayers {
    private static final String DEFAULT_LAYER = "main";
@@ -322,18 +320,6 @@ public class ModelLayers {
 
    private static ArmorModelSet<ModelLayerLocation> registerArmorSet(final String modelId) {
       return new ArmorModelSet<ModelLayerLocation>(register(modelId, "helmet"), register(modelId, "chestplate"), register(modelId, "leggings"), register(modelId, "boots"));
-   }
-
-   public static ModelLayerLocation createStandingSignModelName(final WoodType type) {
-      return createLocation("sign/standing/" + type.name(), "main");
-   }
-
-   public static ModelLayerLocation createWallSignModelName(final WoodType type) {
-      return createLocation("sign/wall/" + type.name(), "main");
-   }
-
-   public static ModelLayerLocation createHangingSignModelName(final WoodType type, final HangingSignBlock.Attachment attachmentType) {
-      return createLocation("hanging_sign/" + type.name() + "/" + attachmentType.getSerializedName(), "main");
    }
 
    public static Stream<ModelLayerLocation> getKnownLocations() {

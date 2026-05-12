@@ -44,6 +44,10 @@ public interface CollisionContext {
       return new EntityCollisionContext(entity, alwaysCollideWithFluid, false);
    }
 
+   static CollisionContext positionContext(final double y) {
+      return new PositionCollisionContext(y);
+   }
+
    static CollisionContext placementContext(final @Nullable Player player) {
       return new EntityCollisionContext(player != null ? player.isDescending() : false, true, player != null ? player.getY() : -1.7976931348623157E308, player != null ? player.getMainHandItem() : ItemStack.EMPTY, false, player);
    }

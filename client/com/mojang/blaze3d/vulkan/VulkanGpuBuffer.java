@@ -57,7 +57,7 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
          LongBuffer bufferPtr = stack.callocLong(1);
          PointerBuffer allocPtr = stack.callocPointer(1);
          int result = Vma.vmaCreateBuffer(device.vma(), bufferCreateInfo, allocCreateInfo, bufferPtr, allocPtr, (VmaAllocationInfo)null);
-         VulkanUtils.crashIfFailure(result, "Failed to allocate VkBuffer");
+         VulkanUtils.crashIfFailure(device, result, "Failed to allocate VkBuffer");
          this.vkBuffer = bufferPtr.get(0);
          this.vmaAllocation = allocPtr.get(0);
          if (label != null) {
@@ -95,7 +95,7 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
          if (this.mappingRefCount != 0) {
             throw new IllegalStateException("Attempt to close a mapped buffer");
          } else {
-            this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+            this.device.createCommandEncoder().queueForDestroy(this);
          }
       }
    }
@@ -124,7 +124,7 @@ public class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
          GpuBufferSlice.MappedView var10;
          try {
             PointerBuffer pointer = stack.callocPointer(1);
-            VulkanUtils.crashIfFailure(Vma.vmaMapMemory(this.device.vma(), this.vmaAllocation, pointer), "Failed to map buffer");
+            VulkanUtils.crashIfFailure(this.device, Vma.vmaMapMemory(this.device.vma(), this.vmaAllocation, pointer), "Failed to map buffer");
             ByteBuffer byteBuffer = MemoryUtil.memByteBuffer(pointer.get(0) + offset, (int)length);
             var10 = new GpuBufferSlice.MappedView(this.slice(offset, length), byteBuffer, new Runnable() {
                private boolean closed;

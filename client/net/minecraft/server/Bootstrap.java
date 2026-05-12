@@ -70,8 +70,7 @@ public class Bootstrap {
       }
    }
 
-   private static <T> void checkTranslations(final Iterable<T> registry, final Function<T, String> descriptionGetter, final Set<String> output) {
-      Language language = Language.getInstance();
+   private static <T> void checkTranslations(final Language language, final Iterable<T> registry, final Function<T, String> descriptionGetter, final Set<String> output) {
       registry.forEach((t) -> {
          String id = (String)descriptionGetter.apply(t);
          if (!language.has(id)) {
@@ -81,8 +80,7 @@ public class Bootstrap {
       });
    }
 
-   private static void checkGameruleTranslations(final Set<String> missing) {
-      final Language language = Language.getInstance();
+   private static void checkGameruleTranslations(final Language language, final Set<String> missing) {
       GameRules rules = new GameRules(FeatureFlags.REGISTRY.allFlags());
       rules.visitGameRuleTypes(new GameRuleTypeVisitor() {
          public <T> void visit(final GameRule<T> gameRule) {
@@ -94,18 +92,18 @@ public class Bootstrap {
       });
    }
 
-   public static Set<String> getMissingTranslations() {
+   public static Set<String> getMissingTranslations(final Language language) {
       Set<String> missing = new TreeSet();
-      checkTranslations(BuiltInRegistries.ATTRIBUTE, Attribute::getDescriptionId, missing);
-      checkTranslations(BuiltInRegistries.ENTITY_TYPE, EntityType::getDescriptionId, missing);
-      checkTranslations(BuiltInRegistries.MOB_EFFECT, MobEffect::getDescriptionId, missing);
-      checkTranslations(BuiltInRegistries.ITEM, Item::getDescriptionId, missing);
-      checkTranslations(BuiltInRegistries.BLOCK, BlockBehaviour::getDescriptionId, missing);
-      checkTranslations(BuiltInRegistries.CUSTOM_STAT, (id) -> {
+      checkTranslations(language, BuiltInRegistries.ATTRIBUTE, Attribute::getDescriptionId, missing);
+      checkTranslations(language, BuiltInRegistries.ENTITY_TYPE, EntityType::getDescriptionId, missing);
+      checkTranslations(language, BuiltInRegistries.MOB_EFFECT, MobEffect::getDescriptionId, missing);
+      checkTranslations(language, BuiltInRegistries.ITEM, Item::getDescriptionId, missing);
+      checkTranslations(language, BuiltInRegistries.BLOCK, BlockBehaviour::getDescriptionId, missing);
+      checkTranslations(language, BuiltInRegistries.CUSTOM_STAT, (id) -> {
          String var10000 = id.toString();
          return "stat." + var10000.replace(':', '.');
       }, missing);
-      checkGameruleTranslations(missing);
+      checkGameruleTranslations(language, missing);
       return missing;
    }
 
@@ -129,7 +127,7 @@ public class Bootstrap {
    public static void validate() {
       checkBootstrapCalled(() -> "validate");
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         getMissingTranslations().forEach((key) -> LOGGER.error("Missing translations: {}", key));
+         getMissingTranslations(Language.DEFAULT_INSTANCE).forEach((key) -> LOGGER.error("Missing translations: {}", key));
          Commands.validate();
       }
 

@@ -1,43 +1,92 @@
 package net.minecraft.commands.arguments.selector.options;
 
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.resources.Identifier;
+
 public class InvertableSetOptionState {
-   private boolean hasPositiveValue;
-   private boolean hasNegativeValue;
+   private Limitation state;
+   private final Set<Identifier> tags;
 
    public InvertableSetOptionState() {
       super();
+      this.state = InvertableSetOptionState.Limitation.NONE;
+      this.tags = new HashSet();
    }
 
-   public boolean canParsePositive() {
-      return !this.hasPositiveValue && !this.hasNegativeValue;
+   private boolean canLimitToSingle() {
+      return this.state == InvertableSetOptionState.Limitation.NONE;
    }
 
-   public boolean canParseNegative() {
-      return !this.hasPositiveValue;
+   private boolean canLimitToMultiple() {
+      return this.state != InvertableSetOptionState.Limitation.SINGLE;
+   }
+
+   public boolean canParsePositiveElement() {
+      return this.canLimitToSingle();
+   }
+
+   public boolean canParseNegativeElement() {
+      return this.canLimitToMultiple();
+   }
+
+   public boolean canParseAnyTag() {
+      return this.canLimitToMultiple();
+   }
+
+   public boolean canParseTag(final Identifier tag) {
+      return this.canParseAnyTag() && !this.tags.contains(tag);
    }
 
    public boolean canParseAny() {
-      return this.canParsePositive() || this.canParseNegative();
+      return this.state != InvertableSetOptionState.Limitation.SINGLE;
    }
 
-   public boolean canParse(final boolean inverted) {
-      return inverted ? this.canParseNegative() : this.canParsePositive();
+   public boolean canParseElement(final boolean inverted) {
+      return inverted ? this.canParseNegativeElement() : this.canParsePositiveElement();
    }
 
-   public void markParsedPositive() {
-      this.hasPositiveValue = true;
+   private void markParsedSingle() {
+      this.state = InvertableSetOptionState.Limitation.SINGLE;
    }
 
-   public void markParsedNegative() {
-      this.hasNegativeValue = true;
+   private void markParsedMultiple() {
+      this.state = InvertableSetOptionState.Limitation.MULTIPLE;
    }
 
-   public void markParsed(final boolean inverted) {
+   public void markParsedPositiveElement() {
+      this.markParsedSingle();
+   }
+
+   public void markParsedNegativeElement() {
+      this.markParsedMultiple();
+   }
+
+   public void markParsedTag(final Identifier tag) {
+      this.markParsedMultiple();
+      this.tags.add(tag);
+   }
+
+   public void markParsedElement(final boolean inverted) {
       if (inverted) {
-         this.markParsedNegative();
+         this.markParsedNegativeElement();
       } else {
-         this.markParsedPositive();
+         this.markParsedPositiveElement();
       }
 
+   }
+
+   private static enum Limitation {
+      NONE,
+      SINGLE,
+      MULTIPLE;
+
+      private Limitation() {
+      }
+
+      // $FF: synthetic method
+      private static Limitation[] $values() {
+         return new Limitation[]{NONE, SINGLE, MULTIPLE};
+      }
    }
 }

@@ -20,10 +20,6 @@ public class CrashReportCategory {
       this.title = title;
    }
 
-   public static String formatLocation(final double x, final double y, final double z) {
-      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f", x, y, z);
-   }
-
    public static String formatLocation(final LevelHeightAccessor levelHeightAccessor, final double x, final double y, final double z) {
       return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", x, y, z, formatLocation(levelHeightAccessor, BlockPos.containing(x, y, z)));
    }
@@ -114,10 +110,10 @@ public class CrashReportCategory {
       }
    }
 
-   public boolean validateStackTrace(final StackTraceElement source, final StackTraceElement next) {
+   public boolean validateStackTrace(final @Nullable StackTraceElement source, final @Nullable StackTraceElement next) {
       if (this.stackTrace.length != 0 && source != null) {
          StackTraceElement current = this.stackTrace[0];
-         if (current.isNativeMethod() == source.isNativeMethod() && current.getClassName().equals(source.getClassName()) && current.getFileName().equals(source.getFileName()) && current.getMethodName().equals(source.getMethodName())) {
+         if (current.isNativeMethod() == source.isNativeMethod() && Objects.equals(current.getClassName(), source.getClassName()) && Objects.equals(current.getFileName(), source.getFileName()) && Objects.equals(current.getMethodName(), source.getMethodName())) {
             if (next != null != this.stackTrace.length > 1) {
                return false;
             } else if (next != null && !this.stackTrace[1].equals(next)) {
@@ -134,12 +130,6 @@ public class CrashReportCategory {
       }
    }
 
-   public void trimStacktrace(final int length) {
-      StackTraceElement[] swap = new StackTraceElement[this.stackTrace.length - length];
-      System.arraycopy(this.stackTrace, 0, swap, 0, swap.length);
-      this.stackTrace = swap;
-   }
-
    public void getDetails(final StringBuilder builder) {
       builder.append("-- ").append(this.title).append(" --\n");
       builder.append("Details:");
@@ -151,7 +141,7 @@ public class CrashReportCategory {
          builder.append(entry.value());
       }
 
-      if (this.stackTrace != null && this.stackTrace.length > 0) {
+      if (this.stackTrace.length > 0) {
          builder.append("\nStacktrace:");
 
          for(StackTraceElement element : this.stackTrace) {

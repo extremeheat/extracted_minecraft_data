@@ -20,11 +20,13 @@ import org.jspecify.annotations.Nullable;
 
 public class GpuDevice {
    private final GpuDeviceBackend backend;
+   private final Runnable criticalShaderLoader;
    private final @Nullable TracyGpuProfiler profiler;
 
-   public GpuDevice(final GpuDeviceBackend backend) {
+   public GpuDevice(final GpuDeviceBackend backend, final Runnable criticalShaderLoader) {
       super();
       this.backend = backend;
+      this.criticalShaderLoader = criticalShaderLoader;
       if (TracyClient.isAvailable()) {
          this.profiler = new TracyGpuProfiler(this);
       } else {
@@ -144,6 +146,10 @@ public class GpuDevice {
 
    public void clearPipelineCache() {
       this.backend.clearPipelineCache();
+   }
+
+   public void loadCriticalShaders() {
+      this.criticalShaderLoader.run();
    }
 
    public void close() {

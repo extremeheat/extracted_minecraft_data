@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.function.UnaryOperator;
 import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
@@ -153,7 +154,14 @@ public final class Identifier implements Comparable<Identifier> {
    }
 
    public Path resolveAgainst(final Path root) {
-      return root.resolve(this.getNamespace(), new String[]{this.getPath()});
+      Path resultingPath = root.resolve(this.getNamespace(), new String[]{this.getPath()});
+      Path normalizedPath = resultingPath.normalize();
+      Path normalizedRoot = root.normalize();
+      if (!normalizedPath.startsWith(normalizedRoot)) {
+         throw new IllegalStateException(String.format(Locale.ROOT, "Identifier \"%s\" tried to access path \"%s\" from root \"%s\"", this, normalizedPath, normalizedRoot));
+      } else {
+         return resultingPath;
+      }
    }
 
    public String toDebugFileName() {

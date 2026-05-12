@@ -44,7 +44,7 @@ public class VulkanGpuTexture extends GpuTexture implements Destroyable {
          allocationCreateInfo.usage(8);
          LongBuffer imageHandlePtr = stack.callocLong(1);
          PointerBuffer allocationHandlePtr = stack.callocPointer(1);
-         VulkanUtils.crashIfFailure(Vma.vmaCreateImage(device.vma(), imageCreateInfo, allocationCreateInfo, imageHandlePtr, allocationHandlePtr, (VmaAllocationInfo)null), "Failed to create image");
+         VulkanUtils.crashIfFailure(device, Vma.vmaCreateImage(device.vma(), imageCreateInfo, allocationCreateInfo, imageHandlePtr, allocationHandlePtr, (VmaAllocationInfo)null), "Failed to create image");
          this.vkImage = imageHandlePtr.get(0);
          this.vmaAllocation = allocationHandlePtr.get(0);
          VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack).sType$Default();
@@ -107,7 +107,7 @@ public class VulkanGpuTexture extends GpuTexture implements Destroyable {
          throw new IllegalStateException("Too many views removed from texture");
       } else {
          if (this.closed && this.views == 0) {
-            this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+            this.device.createCommandEncoder().queueForDestroy(this);
          }
 
       }

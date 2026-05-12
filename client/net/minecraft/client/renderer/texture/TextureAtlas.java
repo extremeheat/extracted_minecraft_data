@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.texture;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.TextureUtil;
@@ -59,13 +60,13 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    public TextureAtlas(final Identifier location) {
       super();
       this.location = location;
-      this.maxSupportedTextureSize = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize();
+      this.maxSupportedTextureSize = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
    }
 
    private void createTexture(final int newWidth, final int newHeight, final int newMipLevel) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{newWidth, newHeight, newMipLevel, this.location});
       GpuDevice device = RenderSystem.getDevice();
-      this.close();
+      this.releaseTextures();
       Identifier var10002 = this.location;
       Objects.requireNonNull(var10002);
       this.texture = device.createTexture(var10002::toString, 15, GpuFormat.RGBA8_UNORM, newWidth, newHeight, 1, newMipLevel + 1);
@@ -92,38 +93,49 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
          String var10002 = String.valueOf(this.location);
          throw new IllegalStateException("Atlas '" + var10002 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
       } else {
-         List<TextureAtlasSprite> sprites = new ArrayList();
-         List<SpriteContents.AnimationState> animationStates = new ArrayList();
-         int animatedSpriteCount = (int)preparations.regions().values().stream().filter(TextureAtlasSprite::isAnimated).count();
-         int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getDeviceInfo().limits().minUniformOffsetAlignment());
-         int uboBlockSize = spriteUboSize * this.mipLevelCount;
-         ByteBuffer spriteUboBuffer = MemoryUtil.memAlloc(animatedSpriteCount * uboBlockSize);
-         int animationIndex = 0;
+         ImmutableList.Builder<TextureAtlasSprite> spritesBuilder = ImmutableList.builder();
+         int animatedSpriteCount = 0;
 
          for(TextureAtlasSprite sprite : preparations.regions().values()) {
+            spritesBuilder.add(sprite);
             if (sprite.isAnimated()) {
-               sprite.uploadSpriteUbo(spriteUboBuffer, animationIndex * uboBlockSize, this.maxMipLevel, this.width, this.height, spriteUboSize);
-               ++animationIndex;
+               ++animatedSpriteCount;
             }
          }
 
-         GpuBuffer spriteUbos = animationIndex > 0 ? RenderSystem.getDevice().createBuffer(() -> String.valueOf(this.location) + " sprite UBOs", 128, spriteUboBuffer) : null;
-         animationIndex = 0;
+         this.sprites = spritesBuilder.build();
+         if (animatedSpriteCount > 0) {
+            ImmutableList.Builder<SpriteContents.AnimationState> animationStates = ImmutableList.builder();
+            int spriteUboSize = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getDeviceInfo().limits().minUniformOffsetAlignment());
+            int uboBlockSize = spriteUboSize * this.mipLevelCount;
+            ByteBuffer spriteUboBuffer = MemoryUtil.memAlloc(animatedSpriteCount * uboBlockSize);
+            int animationIndex = 0;
 
-         for(TextureAtlasSprite sprite : preparations.regions().values()) {
-            sprites.add(sprite);
-            if (sprite.isAnimated() && spriteUbos != null) {
-               SpriteContents.AnimationState animationState = sprite.createAnimationState(spriteUbos.slice((long)(animationIndex * uboBlockSize), (long)uboBlockSize), spriteUboSize);
-               ++animationIndex;
-               if (animationState != null) {
-                  animationStates.add(animationState);
+            for(TextureAtlasSprite sprite : this.sprites) {
+               if (sprite.isAnimated()) {
+                  sprite.uploadSpriteUbo(spriteUboBuffer, animationIndex * uboBlockSize, this.maxMipLevel, this.width, this.height, spriteUboSize);
+                  ++animationIndex;
                }
             }
+
+            GpuBuffer spriteUbos = RenderSystem.getDevice().createBuffer(() -> String.valueOf(this.location) + " sprite UBOs", 128, spriteUboBuffer);
+            animationIndex = 0;
+
+            for(TextureAtlasSprite sprite : this.sprites) {
+               if (sprite.isAnimated()) {
+                  SpriteContents.AnimationState animationState = sprite.createAnimationState(spriteUbos.slice((long)(animationIndex * uboBlockSize), (long)uboBlockSize), spriteUboSize);
+                  ++animationIndex;
+                  if (animationState != null) {
+                     animationStates.add(animationState);
+                  }
+               }
+            }
+
+            this.spriteUbos = spriteUbos;
+            this.animatedTexturesStates = animationStates.build();
+            MemoryUtil.memFree(spriteUboBuffer);
          }
 
-         this.spriteUbos = spriteUbos;
-         this.sprites = sprites;
-         this.animatedTexturesStates = List.copyOf(animationStates);
          this.uploadInitialContents();
          if (SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS) {
             Path dumpDir = TextureUtil.getDebugTexturePath();
@@ -165,12 +177,13 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       try (GpuBuffer ubo = device.createBuffer(() -> "SpriteAnimationInfo", 128, buffer)) {
          for(int level = 0; level < this.mipLevelCount; ++level) {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
+               RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
 
                for(int i = 0; i < staticSprites.size(); ++i) {
                   renderPass.bindTexture("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
                   renderPass.setUniform("SpriteAnimationInfo", ubo.slice((long)(i * uboBlockSize + level * spriteUboSize), (long)SpriteContents.UBO_SIZE));
-                  renderPass.draw(0, 6);
+                  renderPass.draw(6, 1, 0, 0);
                }
             }
          }
@@ -239,6 +252,8 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
          for(int level = 0; level <= this.maxMipLevel; ++level) {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
+               RenderSystem.bindDefaultUniforms(renderPass);
+
                for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
                   if (animationState.needsToDraw()) {
                      animationState.drawToAtlas(renderPass, animationState.getDrawUbo(level));
@@ -274,24 +289,25 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       this.animatedTexturesStates = List.of();
       this.texturesByName = Map.of();
       this.missingSprite = null;
-   }
-
-   public void close() {
-      super.close();
-
-      for(GpuTextureView view : this.mipViews) {
-         view.close();
-      }
-
-      for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {
-         animationState.close();
-      }
-
       if (this.spriteUbos != null) {
          this.spriteUbos.close();
          this.spriteUbos = null;
       }
 
+   }
+
+   protected void releaseTextures() {
+      super.releaseTextures();
+
+      for(GpuTextureView view : this.mipViews) {
+         view.close();
+      }
+
+   }
+
+   public void close() {
+      this.clearTextureData();
+      super.close();
    }
 
    public Identifier location() {

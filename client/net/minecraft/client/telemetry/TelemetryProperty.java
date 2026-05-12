@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.client.telemetry.events.GameLoadTimesEvent;
+import net.minecraft.client.telemetry.events.P2PTelemetryEvent;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -55,6 +56,14 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
    public static final TelemetryProperty<GameLoadTimesEvent.Measurement> LOAD_TIME_LOADING_OVERLAY_MS;
    public static final TelemetryProperty<String> ADVANCEMENT_ID;
    public static final TelemetryProperty<Long> ADVANCEMENT_GAME_TIME;
+   public static final TelemetryProperty<Boolean> P2P_CONNECTION_SUCCESSFUL;
+   public static final TelemetryProperty<P2PTelemetryEvent.IcePath> P2P_CONNECTION_ICE_PATH;
+   public static final TelemetryProperty<P2PTelemetryEvent.IceCandidateType> P2P_CONNECTION_LOCAL_CANDIDATE_TYPE;
+   public static final TelemetryProperty<P2PTelemetryEvent.IceCandidateType> P2P_CONNECTION_REMOTE_CANDIDATE_TYPE;
+   public static final TelemetryProperty<Long> P2P_CONNECTION_TOTAL_TIME_MS;
+   public static final TelemetryProperty<Long> P2P_CONNECTION_SIGNALING_TIME_MS;
+   public static final TelemetryProperty<Long> P2P_CONNECTION_ICE_CONNECT_TIME_MS;
+   public static final TelemetryProperty<P2PTelemetryEvent.FailureStage> P2P_CONNECTION_FAILURE_STAGE;
 
    public TelemetryProperty {
       super();
@@ -147,6 +156,14 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       LOAD_TIME_LOADING_OVERLAY_MS = gameLoadMeasurement("load_time_loading_overlay_ms", "loadTimeLoadingOverlayMs");
       ADVANCEMENT_ID = string("advancement_id", "advancementId");
       ADVANCEMENT_GAME_TIME = makeLong("advancement_game_time", "advancementGameTime");
+      P2P_CONNECTION_SUCCESSFUL = bool("p2p_connection_successful", "p2pConnectionSuccessful");
+      P2P_CONNECTION_ICE_PATH = create("p2p_connection_ice_path", "p2pConnectionIcePath", P2PTelemetryEvent.IcePath.CODEC, (output, key, value) -> output.addProperty(key, value.getSerializedName()));
+      P2P_CONNECTION_LOCAL_CANDIDATE_TYPE = create("p2p_connection_local_candidate_type", "p2pConnectionLocalCandidateType", P2PTelemetryEvent.IceCandidateType.CODEC, (output, key, value) -> output.addProperty(key, value.getSerializedName()));
+      P2P_CONNECTION_REMOTE_CANDIDATE_TYPE = create("p2p_connection_remote_candidate_type", "p2pConnectionRemoteCandidateType", P2PTelemetryEvent.IceCandidateType.CODEC, (output, key, value) -> output.addProperty(key, value.getSerializedName()));
+      P2P_CONNECTION_TOTAL_TIME_MS = makeLong("p2p_connection_total_time_ms", "p2pConnectionTotalTimeMs");
+      P2P_CONNECTION_SIGNALING_TIME_MS = makeLong("p2p_connection_signaling_time_ms", "p2pConnectionSignalingTimeMs");
+      P2P_CONNECTION_ICE_CONNECT_TIME_MS = makeLong("p2p_connection_ice_connect_time_ms", "p2pConnectionIceConnectTimeMs");
+      P2P_CONNECTION_FAILURE_STAGE = create("p2p_connection_failure_stage", "p2pConnectionFailureStage", P2PTelemetryEvent.FailureStage.CODEC, (output, key, value) -> output.addProperty(key, value.getSerializedName()));
    }
 
    public static enum ServerType implements StringRepresentable {

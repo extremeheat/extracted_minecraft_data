@@ -2,6 +2,7 @@ package net.minecraft.client.resources.model;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
 import java.util.List;
@@ -146,12 +147,17 @@ public class ModelBakery {
          boolean usesBlockLight = unbaked.getTopGuiLight().lightLikeBlock();
          ItemTransforms transforms = unbaked.getTopTransforms();
          QuadCollection geometry = unbaked.bakeTopGeometry(textureSlots, missingModelBakery, BlockModelRotation.IDENTITY);
-         Material.Baked particleMaterial = unbaked.resolveParticleMaterial(textureSlots, missingModelBakery);
-         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial);
-         BlockStateModel bakedBlockModel = new SingleVariant(missingModelPart);
-         MissingItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleMaterial, transforms));
-         FluidModel bakedFluidModel = new FluidModel(ChunkSectionLayer.SOLID, particleMaterial, particleMaterial, (Material.Baked)null, (BlockTintSource)null);
-         return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel, bakedFluidModel);
+         Multimap<Identifier, Identifier> forbiddenSprites = SimpleModelWrapper.findNonBlockSprites(geometry);
+         if (forbiddenSprites != null) {
+            throw new IllegalStateException("Missing block contains sprites from outside of block atlas: " + String.valueOf(forbiddenSprites));
+         } else {
+            Material.Baked particleMaterial = unbaked.resolveParticleMaterial(textureSlots, missingModelBakery);
+            SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial);
+            BlockStateModel bakedBlockModel = new SingleVariant(missingModelPart);
+            MissingItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleMaterial, transforms));
+            FluidModel bakedFluidModel = new FluidModel(ChunkSectionLayer.SOLID, particleMaterial, particleMaterial, (Material.Baked)null, (BlockTintSource)null);
+            return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel, bakedFluidModel);
+         }
       }
    }
 

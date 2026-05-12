@@ -79,7 +79,7 @@ public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc posi
    }
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface MaterialFlags {
    }
 }

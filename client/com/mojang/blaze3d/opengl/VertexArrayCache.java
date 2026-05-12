@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import net.minecraft.util.VisibleForDebug;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBVertexAttribBinding;
-import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 
 public abstract class VertexArrayCache {
@@ -89,7 +89,7 @@ public abstract class VertexArrayCache {
                      GlStateManager._vertexAttribPointer(attributeIndex, channelCount, glType, isNormalizedFormat, vertexSize, totalOffset);
                   }
 
-                  GL33.glVertexAttribDivisor(attributeIndex, vertexBinding.getStepRate());
+                  GL33C.glVertexAttribDivisor(attributeIndex, vertexBinding.getStepRate());
                   ++attributeIndex;
                }
             }

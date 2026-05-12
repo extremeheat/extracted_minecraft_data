@@ -49,7 +49,7 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
       try {
          VkPipelineLayoutCreateInfo createInfo = VkPipelineLayoutCreateInfo.calloc(stack).sType$Default().pSetLayouts(stack.longs(layout.handle()));
          LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreatePipelineLayout(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create pipeline for " + String.valueOf(pipeline.getLocation()));
+         VulkanUtils.crashIfFailure(device, VK12.vkCreatePipelineLayout(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create pipeline for " + String.valueOf(pipeline.getLocation()));
          pipelineLayout = pointer.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 17, pipelineLayout, (Supplier)(() -> "Pipeline layout for " + String.valueOf(pipeline.getLocation())));
       } catch (Throwable var41) {
@@ -151,13 +151,13 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
          renderingInfo.depthAttachmentFormat(126);
          VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(depthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).pNext(renderingInfo);
          LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + String.valueOf(pipeline.getLocation()));
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + String.valueOf(pipeline.getLocation()));
          long withDepthPipeline = pointer.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 19, withDepthPipeline, (Supplier)(() -> "Pipeline " + String.valueOf(pipeline.getLocation())));
          long withoutDepthPipeline;
          if (pipeline.getDepthStencilState() == null) {
             renderingInfo.depthAttachmentFormat(0);
-            VulkanUtils.crashIfFailure(VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + String.valueOf(pipeline.getLocation()));
+            VulkanUtils.crashIfFailure(device, VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + String.valueOf(pipeline.getLocation()));
             withoutDepthPipeline = pointer.get(0);
             device.instance().debug().setObjectName(device.vkDevice(), 19, withoutDepthPipeline, (Supplier)(() -> "Pipeline " + String.valueOf(pipeline.getLocation())));
          } else {

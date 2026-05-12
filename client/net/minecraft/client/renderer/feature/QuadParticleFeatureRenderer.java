@@ -72,8 +72,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
       GpuTextureView depthTextureView = useParticleTarget ? particleTarget.getDepthTextureView() : mainTarget.getDepthTextureView();
 
       try (RenderPass renderPass = device.createCommandEncoder().createRenderPass(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"), colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
-         renderPass.setUniform("Projection", RenderSystem.getProjectionMatrixBuffer());
-         renderPass.setUniform("Fog", RenderSystem.getShaderFog());
+         RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", (GpuBufferSlice)Objects.requireNonNull(this.dynamicTransforms));
          renderPass.bindTexture("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
          drawLayers(context.stagedVertexBuffer(), group.layers, renderPass, context.textureManager());
@@ -90,7 +89,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             AbstractTexture texture = textureManager.getTexture(((SingleQuadParticle.Layer)entry.getKey()).textureAtlasLocation());
             renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-            renderPass.drawIndexed(executeInfo.baseVertex(), executeInfo.firstIndex(), executeInfo.indexCount(), 1);
+            renderPass.drawIndexed(executeInfo.indexCount(), 1, executeInfo.firstIndex(), executeInfo.baseVertex(), 0);
          }
       }
 

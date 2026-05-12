@@ -177,6 +177,7 @@ public class SystemToast implements Toast {
       public static final SystemToastId CHUNK_LOAD_FAILURE = new SystemToastId();
       public static final SystemToastId CHUNK_SAVE_FAILURE = new SystemToastId();
       public static final SystemToastId UNSECURE_SERVER_WARNING = new SystemToastId(10000L);
+      public static final SystemToastId FRIEND_SYSTEM_NOTIFICATION = new SystemToastId();
       private final long displayTime;
 
       public SystemToastId(final long displayTime) {

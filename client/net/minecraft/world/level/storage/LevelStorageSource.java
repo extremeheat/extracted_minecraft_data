@@ -186,7 +186,7 @@ public class LevelStorageSource {
 
       CompoundTag fileContents;
       try {
-         fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.defaultQuota());
+         fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.unlimitedHeap());
       } catch (IOException e) {
          Objects.requireNonNull(e);
          return DataResult.error(e::getMessage);

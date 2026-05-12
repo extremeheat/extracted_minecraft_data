@@ -29,9 +29,9 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.LoadingTab;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -57,7 +57,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private boolean stateChanged;
    private final TabManager tabManager;
    private @Nullable Button playButton;
-   private @Nullable TabNavigationBar tabNavigationBar;
+   private @Nullable MenuTabBar tabNavigationBar;
    final HeaderAndFooterLayout layout;
 
    public RealmsConfigureWorldScreen(final RealmsMainScreen lastScreen, final long serverId, final @Nullable RealmsServer serverData, final @Nullable PreferredRegionsDto regions) {
@@ -85,7 +85,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
 
       Component loadingTitle = Component.translatable("mco.configure.world.loading");
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), RealmsWorldsTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsPlayersTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSubscriptionTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSettingsTab.TITLE, loadingTitle)).build();
+      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), RealmsWorldsTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsPlayersTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSubscriptionTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSettingsTab.TITLE, loadingTitle)).build();
       this.tabNavigationBar.setTabActiveState(3, false);
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
@@ -139,7 +139,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    public void repositionElements() {
       if (this.tabNavigationBar != null) {
-         this.tabNavigationBar.updateWidth(this.width);
+         this.tabNavigationBar.arrangeElements(this.width);
          int tabAreaTop = this.tabNavigationBar.getRectangle().bottom();
          ScreenRectangle tabArea = new ScreenRectangle(0, tabAreaTop, this.width, this.height - this.layout.getFooterHeight() - tabAreaTop);
          this.tabManager.setTabArea(tabArea);
@@ -221,7 +221,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = (TabNavigationBar)this.addRenderableWidget(TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
+         this.tabNavigationBar = (MenuTabBar)this.addRenderableWidget(MenuTabBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
          this.setFocused(this.tabNavigationBar);
          if (focusedTabIndex != -1) {
             this.tabNavigationBar.selectTab(focusedTabIndex, false);

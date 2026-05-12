@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 public abstract class Particle {
    private static final AABB INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -158,7 +159,7 @@ public abstract class Particle {
          double originalYa = ya;
          double originalZa = za;
          if (this.hasPhysics && (xa != 0.0 || ya != 0.0 || za != 0.0) && xa * xa + ya * ya + za * za < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
-            Vec3 movement = Entity.collideBoundingBox((Entity)null, new Vec3(xa, ya, za), this.getBoundingBox(), this.level, List.of());
+            Vec3 movement = Entity.collideBoundingBox((CollisionContext)CollisionContext.positionContext(this.y), new Vec3(xa, ya, za), this.getBoundingBox(), this.level, List.of());
             xa = movement.x;
             ya = movement.y;
             za = movement.z;

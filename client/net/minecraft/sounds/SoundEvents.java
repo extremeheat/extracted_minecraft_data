@@ -1019,6 +1019,7 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_11 = registerForHolder("music_disc.11");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_13 = registerForHolder("music_disc.13");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_BLOCKS = registerForHolder("music_disc.blocks");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_BOUNCE = registerForHolder("music_disc.bounce");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CAT = registerForHolder("music_disc.cat");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CHIRP = registerForHolder("music_disc.chirp");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_FAR = registerForHolder("music_disc.far");
@@ -1064,6 +1065,7 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> MUSIC_BIOME_JUNGLE = registerForHolder("music.overworld.jungle");
    public static final Holder.Reference<SoundEvent> MUSIC_BIOME_SPARSE_JUNGLE = registerForHolder("music.overworld.sparse_jungle");
    public static final Holder.Reference<SoundEvent> MUSIC_BIOME_BAMBOO_JUNGLE = registerForHolder("music.overworld.bamboo_jungle");
+   public static final Holder.Reference<SoundEvent> MUSIC_BIOME_SULFUR_CAVES = registerForHolder("music.overworld.sulfur_caves");
    public static final Holder.Reference<SoundEvent> MUSIC_UNDER_WATER = registerForHolder("music.under_water");
    public static final SoundEvent NAUTILUS_AMBIENT = register("entity.nautilus.ambient");
    public static final SoundEvent NAUTILUS_AMBIENT_ON_LAND = register("entity.nautilus.ambient_land");
@@ -1856,6 +1858,8 @@ public class SoundEvents {
    public static final SoundEvent POTENT_SULFUR_FALL = register("block.potent_sulfur.fall");
    public static final SoundEvent GEYSER_ERUPTION_START = register("block.potent_sulfur.geyser_eruption");
    public static final SoundEvent GEYSER_ERUPTION_ACTIVE = register("block.potent_sulfur.geyser_eruption_active");
+   public static final SoundEvent GEYSER_CONTINUOUS_START = register("block.potent_sulfur.geyser_continuous_eruption");
+   public static final SoundEvent GEYSER_CONTINUOUS_ACTIVE = register("block.potent_sulfur.geyser_continuous_eruption_active");
    public static final SoundEvent CINNABAR_BREAK = register("block.cinnabar.break");
    public static final SoundEvent CINNABAR_STEP = register("block.cinnabar.step");
    public static final SoundEvent CINNABAR_PLACE = register("block.cinnabar.place");

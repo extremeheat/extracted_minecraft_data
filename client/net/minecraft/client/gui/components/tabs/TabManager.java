@@ -42,6 +42,10 @@ public class TabManager {
    }
 
    public void setCurrentTab(final Tab tab, final boolean playSound) {
+      this.setCurrentTab(tab, playSound, true);
+   }
+
+   public void setCurrentTab(final Tab tab, final boolean playSound, final boolean addWidget) {
       if (!Objects.equals(this.currentTab, tab)) {
          if (this.currentTab != null) {
             this.currentTab.visitChildren(this.removeWidget);
@@ -49,7 +53,10 @@ public class TabManager {
 
          Tab oldTab = this.currentTab;
          this.currentTab = tab;
-         tab.visitChildren(this.addWidget);
+         if (addWidget) {
+            tab.visitChildren(this.addWidget);
+         }
+
          if (this.tabArea != null) {
             tab.doLayout(this.tabArea);
          }

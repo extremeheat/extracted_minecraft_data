@@ -18,4 +18,6 @@ public interface Layout extends LayoutElement {
 
       });
    }
+
+   void removeChildren();
 }

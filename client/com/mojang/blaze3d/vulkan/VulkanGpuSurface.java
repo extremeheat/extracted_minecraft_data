@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.GpuSurface;
 import com.mojang.blaze3d.systems.GpuSurfaceBackend;
 import com.mojang.blaze3d.systems.SurfaceException;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -13,18 +14,19 @@ import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.KHRSynchronization2;
 import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkCommandBuffer;
-import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
 import org.lwjgl.vulkan.VkDependencyInfo;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkImageBlit;
@@ -70,24 +72,25 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
 
       try {
          LongBuffer handlePtr = stack.longs(0L);
-         VulkanUtils.crashIfFailure(GLFWVulkan.glfwCreateWindowSurface(device.vkDevice().getPhysicalDevice().getInstance(), windowHandle, (VkAllocationCallbacks)null, handlePtr), "Failed to create window surface");
+         VulkanUtils.crashIfFailure(device, GLFWVulkan.glfwCreateWindowSurface(device.vkDevice().getPhysicalDevice().getInstance(), windowHandle, (VkAllocationCallbacks)null, handlePtr), "Failed to create window surface");
          this.surface = handlePtr.get(0);
          IntBuffer countPtr = stack.callocInt(1);
-         VulkanUtils.crashIfFailure(KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(device.vkDevice().getPhysicalDevice(), this.surface, countPtr, (IntBuffer)null), "Failed to enumerate surface present modes");
+         VulkanUtils.crashIfFailure(device, KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(device.vkDevice().getPhysicalDevice(), this.surface, countPtr, (IntBuffer)null), "Failed to enumerate surface present modes");
          int presentModeCount = countPtr.get(0);
          IntBuffer presentModes = stack.callocInt(presentModeCount);
-         VulkanUtils.crashIfFailure(KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(device.vkDevice().getPhysicalDevice(), this.surface, countPtr, presentModes), "Failed to enumerate surface present modes");
+         VulkanUtils.crashIfFailure(device, KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(device.vkDevice().getPhysicalDevice(), this.surface, countPtr, presentModes), "Failed to enumerate surface present modes");
          this.supportedPresentModes = Collections.unmodifiableSet(this.convertPresentModes(presentModes));
          IntBuffer formatCount = stack.callocInt(1);
          KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(device.vkDevice().getPhysicalDevice(), this.surface, formatCount, (VkSurfaceFormatKHR.Buffer)null);
          VkSurfaceFormatKHR.Buffer formatsBuffer = VkSurfaceFormatKHR.calloc(formatCount.get(0));
          KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(device.vkDevice().getPhysicalDevice(), this.surface, formatCount, formatsBuffer);
          this.swapchainImageFormat = this.pickSwapchainSurfaceFormat(formatsBuffer).format();
+         MemoryUtil.memFree(formatsBuffer);
          VkSemaphoreCreateInfo semaphoreCreateInfo = VkSemaphoreCreateInfo.calloc(stack).sType$Default();
          LongBuffer semaphoreHandlePtr = stack.callocLong(1);
 
          for(int i = 0; i < this.acquireSemaphores.length; ++i) {
-            VulkanUtils.crashIfFailure(VK12.vkCreateSemaphore(device.vkDevice(), semaphoreCreateInfo, (VkAllocationCallbacks)null, semaphoreHandlePtr), "Failed to create VkSemaphore(binary)");
+            VulkanUtils.crashIfFailure(device, VK12.vkCreateSemaphore(device.vkDevice(), semaphoreCreateInfo, (VkAllocationCallbacks)null, semaphoreHandlePtr), "Failed to create VkSemaphore(binary)");
             this.acquireSemaphores[i] = semaphoreHandlePtr.get(0);
          }
       } catch (Throwable var15) {
@@ -278,7 +281,8 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             long acquireSemaphore = this.acquireSemaphores[this.currentAcquireSemaphore];
             int result = KHRSwapchain.vkAcquireNextImageKHR(this.device.vkDevice(), this.swapchain, 5000000000L, acquireSemaphore, 0L, frameIndexPtr);
             if (result == 2) {
-               throw new IllegalStateException("GPU timeout attempting to acquire next frame");
+               List<CheckpointExtension.QueueCheckpoints> checkpoints = this.device.checkpointExtension().retrieveCheckpoints(false);
+               throw new IllegalStateException("GPU timeout attempting to acquire next frame: " + VulkanUtils.formatCheckpoints(checkpoints));
             }
 
             this.currentImageIndex = frameIndexPtr.get(0);
@@ -291,18 +295,18 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             if (result == 1000001003) {
                this.swapchainSuboptimal = true;
             } else {
-               VulkanUtils.crashIfFailure(result, "Failed to acquire image");
+               VulkanUtils.crashIfFailure(this.device, result, "Failed to acquire image");
             }
-         } catch (Throwable var7) {
+         } catch (Throwable var8) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
+               } catch (Throwable var7) {
+                  var8.addSuppressed(var7);
                }
             }
 
-            throw var7;
+            throw var8;
          }
 
          if (stack != null) {
@@ -319,32 +323,10 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
          assert this.currentImageIndex != -1;
 
          VulkanCommandEncoder vulkanCommandEncoder = (VulkanCommandEncoder)commandEncoder;
-         VkCommandBuffer blitCommandBuffer = vulkanCommandEncoder.allocateTransientCommandBuffer(true);
+         VkCommandBuffer blitCommandBuffer = vulkanCommandEncoder.allocateAndBeginTransientCommandBuffer();
          long swapchainImage = this.swapchainImages.getLong(this.currentImageIndex);
          MemoryStack stack = MemoryStack.stackGet();
          MemoryStack var8 = stack.push();
-
-         try {
-            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack).sType$Default();
-            beginInfo.flags(1);
-            VulkanUtils.crashIfFailure(VK12.vkBeginCommandBuffer(blitCommandBuffer, beginInfo), "Failed to begin VkCommandBuffer");
-         } catch (Throwable var21) {
-            if (var8 != null) {
-               try {
-                  var8.close();
-               } catch (Throwable var17) {
-                  var21.addSuppressed(var17);
-               }
-            }
-
-            throw var21;
-         }
-
-         if (var8 != null) {
-            var8.close();
-         }
-
-         var8 = stack.push();
 
          try {
             VkImageMemoryBarrier2.Buffer imageBarrier = VkImageMemoryBarrier2.calloc(1, stack).sType$Default();
@@ -366,16 +348,16 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             VkDependencyInfo depinfo = VkDependencyInfo.calloc(stack).sType$Default();
             depinfo.pImageMemoryBarriers(imageBarrier);
             KHRSynchronization2.vkCmdPipelineBarrier2KHR(blitCommandBuffer, depinfo);
-         } catch (Throwable var20) {
+         } catch (Throwable var19) {
             if (var8 != null) {
                try {
                   var8.close();
                } catch (Throwable var16) {
-                  var20.addSuppressed(var16);
+                  var19.addSuppressed(var16);
                }
             }
 
-            throw var20;
+            throw var19;
          }
 
          if (var8 != null) {
@@ -406,21 +388,21 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             dstSubresource.baseArrayLayer(0);
             dstSubresource.layerCount(1);
             VkImageBlit.Buffer blitRegion = VkImageBlit.calloc(1, stack);
-            blitRegion.srcSubresource(dstSubresource);
+            blitRegion.srcSubresource(srcSubresource);
             blitRegion.srcOffsets(srcOffsets);
             blitRegion.dstSubresource(dstSubresource);
             blitRegion.dstOffsets(dstOffsets);
             VK12.vkCmdBlitImage(blitCommandBuffer, ((VulkanGpuTexture)textureView.texture()).vkImage(), 1, swapchainImage, 7, blitRegion, 0);
-         } catch (Throwable var19) {
+         } catch (Throwable var18) {
             if (var8 != null) {
                try {
                   var8.close();
                } catch (Throwable var15) {
-                  var19.addSuppressed(var15);
+                  var18.addSuppressed(var15);
                }
             }
 
-            throw var19;
+            throw var18;
          }
 
          if (var8 != null) {
@@ -455,23 +437,23 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             depinfo.pMemoryBarriers(memoryBarrier);
             depinfo.pImageMemoryBarriers(imageBarrier);
             KHRSynchronization2.vkCmdPipelineBarrier2KHR(blitCommandBuffer, depinfo);
-         } catch (Throwable var18) {
+         } catch (Throwable var17) {
             if (var8 != null) {
                try {
                   var8.close();
                } catch (Throwable var14) {
-                  var18.addSuppressed(var14);
+                  var17.addSuppressed(var14);
                }
             }
 
-            throw var18;
+            throw var17;
          }
 
          if (var8 != null) {
             var8.close();
          }
 
-         VulkanUtils.crashIfFailure(VK12.vkEndCommandBuffer(blitCommandBuffer), "Failed to end VkCommandBuffer");
+         VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(blitCommandBuffer), "Failed to end VkCommandBuffer");
          vulkanCommandEncoder.waitSemaphore(this.acquireSemaphores[this.currentAcquireSemaphore], 0L, 65536L);
          vulkanCommandEncoder.execute(blitCommandBuffer);
          vulkanCommandEncoder.signalSemaphore(this.presentSemaphores[this.currentImageIndex], 0L, 4096L);
@@ -499,7 +481,7 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             } else if (result == 1000001003) {
                this.swapchainSuboptimal = true;
             } else {
-               VulkanUtils.crashIfFailure(result, "Failed to present image");
+               VulkanUtils.crashIfFailure(this.device, result, "Failed to present image");
             }
          } catch (Throwable var5) {
             if (stack != null) {

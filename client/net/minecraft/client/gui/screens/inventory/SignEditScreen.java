@@ -1,28 +1,23 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
-import net.minecraft.world.level.block.PlainSignBlock;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.Nullable;
 
 public class SignEditScreen extends AbstractSignEditScreen {
-   public static final float MAGIC_SCALE_NUMBER = 62.500004F;
+   public static final float MAGIC_BACKGROUND_SCALE = 3.9F;
    public static final float MAGIC_TEXT_SCALE = 0.9765628F;
+   private static final int TEXTURE_WIDTH = 24;
+   private static final int TEXTURE_HEIGHT = 26;
    private static final Vector3fc TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
-   private Model.@Nullable Simple signModel;
+   private Identifier texture;
 
    public SignEditScreen(final SignBlockEntity sign, final boolean isFrontText, final boolean shouldFilter) {
       super(sign, isFrontText, shouldFilter);
-   }
-
-   protected void init() {
-      super.init();
-      PlainSignBlock.Attachment attachment = PlainSignBlock.getAttachmentPoint(this.sign.getBlockState());
-      this.signModel = StandingSignRenderer.createSignModel(this.minecraft.getEntityModels(), this.woodType, attachment);
+      this.texture = Identifier.withDefaultNamespace("textures/gui/signs/" + this.woodType.name() + ".png");
    }
 
    protected float getSignYOffset() {
@@ -30,14 +25,9 @@ public class SignEditScreen extends AbstractSignEditScreen {
    }
 
    protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
-      if (this.signModel != null) {
-         int centerX = this.width / 2;
-         int x0 = centerX - 48;
-         int y0 = 66;
-         int x1 = centerX + 48;
-         int y1 = 168;
-         graphics.sign(this.signModel, 62.500004F, this.woodType, x0, 66, x1, 168);
-      }
+      graphics.pose().translate(0.0F, 27.0F);
+      graphics.pose().scale(3.9F, 3.9F);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -12, -13, 0.0F, 0.0F, 24, 26, 24, 26);
    }
 
    protected Vector3fc getSignTextScale() {

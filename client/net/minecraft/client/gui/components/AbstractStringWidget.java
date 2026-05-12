@@ -66,4 +66,13 @@ public abstract class AbstractStringWidget extends AbstractWidget {
       this.componentClickHandler = clickEventConsumer;
       return this;
    }
+
+   protected boolean handleStyleClick(final Style style) {
+      if (this.componentClickHandler != null && style.getClickEvent() != null) {
+         this.componentClickHandler.accept(style);
+         return true;
+      } else {
+         return false;
+      }
+   }
 }

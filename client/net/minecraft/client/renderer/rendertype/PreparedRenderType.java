@@ -44,7 +44,7 @@ public record PreparedRenderType(RenderPipeline pipeline, OutputTarget outputTar
          }
 
          renderPass.setIndexBuffer(indexBuffer, indexType);
-         renderPass.drawIndexed(baseVertex, firstIndex, indexCount, 1);
+         renderPass.drawIndexed(indexCount, 1, firstIndex, baseVertex, 0);
       }
 
    }

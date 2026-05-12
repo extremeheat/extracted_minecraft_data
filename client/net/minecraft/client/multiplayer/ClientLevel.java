@@ -519,6 +519,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public void disconnect(final Component message) {
       this.connection.getConnection().disconnect(message);
+      this.minecraft.getPlayerSocialManager().getPresenceHandler().tryUpdatePresence();
    }
 
    public void animateTick(final int xt, final int yt, final int zt) {

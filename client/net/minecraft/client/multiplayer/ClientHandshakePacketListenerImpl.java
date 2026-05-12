@@ -143,7 +143,12 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
    private void setEncryption(final ServerboundKeyPacket setKeyPacket, final Cipher decryptCipher, final Cipher encryptCipher) {
       this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-      this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
+      if (this.connection.isSecureTransport()) {
+         this.connection.send(setKeyPacket);
+      } else {
+         this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
+      }
+
    }
 
    private @Nullable Component authenticateServer(final String digest) {

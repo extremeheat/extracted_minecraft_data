@@ -22,6 +22,7 @@ public class CommonLinks {
    public static final URI SUSPENSION_HELP = URI.create("https://aka.ms/mcjavamoderation");
    public static final URI BLOCKING_HELP = URI.create("https://aka.ms/javablocking");
    public static final URI SYMLINK_HELP = URI.create("https://aka.ms/MinecraftSymLinks");
+   public static final URI PRIVACY_AND_ONLINE_SETTINGS = URI.create("https://aka.ms/MinecraftJavaXboxPrivacyAndSafety");
    public static final URI START_REALMS_TRIAL = URI.create("https://aka.ms/startjavarealmstrial");
    public static final URI BUY_REALMS = URI.create("https://aka.ms/BuyJavaRealms");
    public static final URI REALMS_TERMS = URI.create("https://aka.ms/MinecraftRealmsTerms");

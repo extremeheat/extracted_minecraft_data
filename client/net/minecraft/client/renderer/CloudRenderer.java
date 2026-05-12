@@ -225,7 +225,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                renderPass.setIndexBuffer(indexBuffer, indices.type());
                renderPass.setUniform("CloudInfo", this.ubo.currentBuffer());
                renderPass.setUniform("CloudFaces", this.utb.currentBuffer());
-               renderPass.drawIndexed(0, 0, 6 * this.quadCount, 1);
+               renderPass.drawIndexed(6 * this.quadCount, 1, 0, 0, 0);
             }
 
          }

@@ -65,7 +65,6 @@ public class LanguageManager implements ResourceManagerReloadListener {
       }
 
       ClientLanguage locale = ClientLanguage.loadFrom(resourceManager, languageStack, defaultRightToLeft);
-      I18n.setLanguage(locale);
       Language.inject(locale);
       this.reloadCallback.accept(locale);
    }

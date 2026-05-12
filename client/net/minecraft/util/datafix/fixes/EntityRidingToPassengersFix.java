@@ -1,9 +1,7 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
@@ -12,9 +10,11 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
+import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class EntityRidingToPassengersFix extends DataFix {
    public EntityRidingToPassengersFix(final Schema outputSchema, final boolean changesType) {
@@ -40,30 +40,46 @@ public class EntityRidingToPassengersFix extends DataFix {
       } else if (!newEntityType.equals(newType, true, true)) {
          throw new IllegalStateException("New entity type is not what was expected.");
       } else {
-         OpticFinder<Pair<String, Pair<Either<OldEntityTree, Unit>, Entity>>> entityTreeFinder = DSL.typeFinder(oldType);
+         Type<?> patchedEntityTreeType = ExtraDataFixUtils.patchSubType(oldType, oldType, newType);
+         OpticFinder<Entity> entityFinder = DSL.typeFinder(entityType);
          OpticFinder<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> newEntityTreeValueFinder = DSL.typeFinder(newType);
-         OpticFinder<NewEntityTree> newEntityTreeFinder = DSL.typeFinder(newEntityTreeType);
+         OpticFinder<NewEntityTree> ridingFinder = DSL.fieldFinder("Riding", newEntityTreeType);
          Type<?> oldPlayerType = inputSchema.getType(References.PLAYER);
          Type<?> newPlayerType = outputType.getType(References.PLAYER);
-         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", oldType, newType, (ops) -> (input) -> {
-               Optional<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> passenger = Optional.empty();
-               Pair<String, Pair<Either<OldEntityTree, Unit>, Entity>> updating = input;
-
-               while(true) {
-                  Either<List<NewEntityTree>, Unit> passengersValue = (Either)DataFixUtils.orElse(passenger.map((p) -> {
-                     Typed<NewEntityTree> newEntity = (Typed)newEntityTreeType.pointTyped(ops).orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
-                     NewEntityTree newEntityTree = (NewEntityTree)newEntity.set(newEntityTreeValueFinder, p).getOptional(newEntityTreeFinder).orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
-                     return Either.left(ImmutableList.of(newEntityTree));
-                  }), Either.right(DSL.unit()));
-                  passenger = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(passengersValue, ((Pair)updating.getSecond()).getSecond())));
-                  Optional<OldEntityTree> riding = ((Either)((Pair)updating.getSecond()).getFirst()).left();
-                  if (riding.isEmpty()) {
-                     return (Pair)passenger.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
-                  }
-
-                  updating = (Pair)(new Typed(oldEntityTreeType, ops, riding.get())).getOptional(entityTreeFinder).orElseThrow(() -> new IllegalStateException("Should always have an entity here"));
+         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", oldType, newType, (ops) -> (badlyTypedInput) -> {
+               Typed<?> input = ExtraDataFixUtils.cast(patchedEntityTreeType, badlyTypedInput, ops);
+               Optional<Pair<String, Pair<Either<List<NewEntityTree>, Unit>, Entity>>> maybeRiding = input.getOptionalTyped(ridingFinder).flatMap((t) -> t.getOptional(newEntityTreeValueFinder));
+               Entity entity = (Entity)input.getOptional(entityFinder).orElseThrow();
+               if (maybeRiding.isEmpty()) {
+                  Either<List<NewEntityTree>, Unit> passengers = Either.right(Unit.INSTANCE);
+                  return Pair.of(References.ENTITY_TREE.typeName(), Pair.of(passengers, entity));
+               } else {
+                  return addPassengerToTop((Pair)maybeRiding.get(), entity, ops, newEntityTreeType, newEntityTreeValueFinder);
                }
             }), this.writeAndRead("player RootVehicle injecter", oldPlayerType, newPlayerType));
       }
+   }
+
+   private static <Entity, EntityTree> Pair<String, Pair<Either<List<EntityTree>, Unit>, Entity>> addPassengerToTop(final Pair<String, Pair<Either<List<EntityTree>, Unit>, Entity>> root, final Entity passengerEntity, final DynamicOps<?> ops, final Type<EntityTree> rawEntityTreeType, final OpticFinder<Pair<String, Pair<Either<List<EntityTree>, Unit>, Entity>>> entityTreeFinder) {
+      Entity rootEntity = (Entity)((Pair)root.getSecond()).getSecond();
+      Optional<List<EntityTree>> passengers = ((Either)((Pair)root.getSecond()).getFirst()).left();
+      Pair<String, Pair<Either<List<EntityTree>, Unit>, Entity>> newPassenger;
+      if (passengers.isPresent() && !((List)passengers.get()).isEmpty()) {
+         Pair<String, Pair<Either<List<EntityTree>, Unit>, Entity>> unwrappedPassenger = (Pair)unwrapRecursiveValue(((List)passengers.get()).getFirst(), ops, rawEntityTreeType, entityTreeFinder);
+         newPassenger = addPassengerToTop(unwrappedPassenger, passengerEntity, ops, rawEntityTreeType, entityTreeFinder);
+      } else {
+         newPassenger = Pair.of(References.ENTITY_TREE.typeName(), Pair.of(Either.right(Unit.INSTANCE), passengerEntity));
+      }
+
+      List<EntityTree> newPassengers = List.of(wrapRecursiveValue(newPassenger, ops, rawEntityTreeType, entityTreeFinder));
+      return Pair.of(References.ENTITY_TREE.typeName(), Pair.of(Either.left(newPassengers), rootEntity));
+   }
+
+   private static <Raw, Value> Value unwrapRecursiveValue(final Raw raw, final DynamicOps<?> ops, final Type<Raw> rawType, final OpticFinder<Value> valueFinder) {
+      return (Value)(new Typed(rawType, ops, raw)).getOptional(valueFinder).orElseThrow();
+   }
+
+   private static <Raw, Value> Raw wrapRecursiveValue(final Value value, final DynamicOps<?> ops, final Type<Raw> rawType, final OpticFinder<Value> valueFinder) {
+      return (Raw)((Typed)rawType.pointTyped(ops).orElseThrow()).set(valueFinder, value).getValue();
    }
 }

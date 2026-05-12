@@ -1,8 +1,5 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
@@ -17,9 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.minecraft.client.color.block.BlockColors;
@@ -36,7 +31,6 @@ import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.texture.SpriteLoader;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.cuboid.CuboidModel;
 import net.minecraft.client.resources.model.cuboid.ItemModelGenerator;
 import net.minecraft.client.resources.model.cuboid.MissingCuboidModel;
@@ -189,15 +183,17 @@ public class ModelManager implements PreparableReloadListener {
    }
 
    private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas, final ModelBakery bakery, final LoadedBlockModels blockModels, final Object2IntMap<BlockState> modelGroups, final EntityModelSet entityModelSet, final Executor taskExecutor) {
-      MaterialBakerImpl materialBaker = new MaterialBakerImpl(blockAtlas, itemAtlas);
-      CompletableFuture<ModelBakery.BakingResult> bakedStateResults = bakery.bakeModels(materialBaker, taskExecutor);
+      MaterialBaker blockItemMaterialBaker = new CombinedBlockItemMaterialBaker(blockAtlas, itemAtlas);
+      MaterialBaker blockOnlyMaterialBaker = new BlockOnlyMaterialBaker(blockAtlas);
+      CompletableFuture<ModelBakery.BakingResult> bakedStateResults = bakery.bakeModels(blockItemMaterialBaker, taskExecutor);
       CompletableFuture<Map<BlockState, BlockModel>> bakedModelsFuture = bakedStateResults.thenCompose((bakingResult) -> {
          Objects.requireNonNull(bakingResult);
          return blockModels.bake(bakingResult::getBlockStateModel, bakingResult.missingModels().block(), taskExecutor);
       });
       return bakedStateResults.thenCombine(bakedModelsFuture, (bakingResult, bakedModels) -> {
-         Map<Fluid, FluidModel> fluidModels = FluidStateModelSet.bake(materialBaker);
-         materialBaker.logMissingTextures();
+         blockItemMaterialBaker.logMissingTextures();
+         Map<Fluid, FluidModel> fluidModels = FluidStateModelSet.bake(blockOnlyMaterialBaker);
+         blockOnlyMaterialBaker.logMissingTextures();
          Map<BlockState, BlockStateModel> modelByStateCache = createBlockStateToModelDispatch(bakingResult.blockStateModels(), bakingResult.missingModels().block());
          return new ReloadState(bakingResult, modelGroups, modelByStateCache, bakedModels, fluidModels, entityModelSet);
       });
@@ -272,50 +268,32 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   private static class MaterialBakerImpl implements MaterialBaker {
+   private static class BlockOnlyMaterialBaker extends MaterialBaker {
+      private final SpriteLoader.Preparations blockAtlas;
+
+      public BlockOnlyMaterialBaker(final SpriteLoader.Preparations blockAtlas) {
+         super(blockAtlas.missing());
+         this.blockAtlas = blockAtlas;
+      }
+
+      protected Material.@Nullable Baked bake(final Material material) {
+         return bakeForAtlas(material, this.blockAtlas);
+      }
+   }
+
+   private static class CombinedBlockItemMaterialBaker extends MaterialBaker {
       private final SpriteLoader.Preparations blockAtlas;
       private final SpriteLoader.Preparations itemAtlas;
-      private final Material.Baked blockMissing;
-      private final Multimap<String, Identifier> missingSprites = Multimaps.synchronizedMultimap(HashMultimap.create());
-      private final Multimap<String, String> missingReferences = Multimaps.synchronizedMultimap(HashMultimap.create());
-      private final Map<Material, @Nullable Material.Baked> bakedMaterials = new ConcurrentHashMap();
-      private final Function<Material, @Nullable Material.Baked> bakerFunction = this::bake;
 
-      public MaterialBakerImpl(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas) {
-         super();
+      public CombinedBlockItemMaterialBaker(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas) {
+         super(blockAtlas.missing());
          this.blockAtlas = blockAtlas;
          this.itemAtlas = itemAtlas;
-         this.blockMissing = new Material.Baked(blockAtlas.missing(), false);
       }
 
-      public Material.Baked get(final Material material, final ModelDebugName name) {
-         Material.Baked baked = (Material.Baked)this.bakedMaterials.computeIfAbsent(material, this.bakerFunction);
-         if (baked == null) {
-            this.missingSprites.put(name.debugName(), material.sprite());
-            return this.blockMissing;
-         } else {
-            return baked;
-         }
-      }
-
-      private Material.@Nullable Baked bake(final Material material) {
-         Material.Baked itemMaterial = this.bakeForAtlas(material, this.itemAtlas);
-         return itemMaterial != null ? itemMaterial : this.bakeForAtlas(material, this.blockAtlas);
-      }
-
-      private Material.@Nullable Baked bakeForAtlas(final Material material, final SpriteLoader.Preparations atlas) {
-         TextureAtlasSprite sprite = atlas.getSprite(material.sprite());
-         return sprite != null ? new Material.Baked(sprite, material.forceTranslucent()) : null;
-      }
-
-      public Material.Baked reportMissingReference(final String reference, final ModelDebugName responsibleModel) {
-         this.missingReferences.put(responsibleModel.debugName(), reference);
-         return this.blockMissing;
-      }
-
-      public void logMissingTextures() {
-         this.missingSprites.asMap().forEach((location, sprites) -> ModelManager.LOGGER.warn("Missing textures in model {}:\n{}", location, sprites.stream().sorted().map((sprite) -> "    " + String.valueOf(sprite)).collect(Collectors.joining("\n"))));
-         this.missingReferences.asMap().forEach((location, references) -> ModelManager.LOGGER.warn("Missing texture references in model {}:\n{}", location, references.stream().sorted().map((reference) -> "    " + reference).collect(Collectors.joining("\n"))));
+      protected Material.@Nullable Baked bake(final Material material) {
+         Material.Baked itemMaterial = bakeForAtlas(material, this.itemAtlas);
+         return itemMaterial != null ? itemMaterial : bakeForAtlas(material, this.blockAtlas);
       }
    }
 }

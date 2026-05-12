@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4890;
+   public static final int WORLD_VERSION = 4891;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,22 +26,22 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 775;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 312;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 313;
    public static final int SNBT_NAG_VERSION = 4882;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 86;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 87;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 2;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MAJOR = 105;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final int DATA_PACK_FORMAT_MINOR = 1;
    public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "3.0.0";
    /** @deprecated */
    @Deprecated
@@ -90,6 +90,7 @@ public class SharedConstants {
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = debugFlag("BYPASS_REALMS_VERSION_CHECK");
    public static final boolean DEBUG_SOCIAL_INTERACTIONS = debugFlag("SOCIAL_INTERACTIONS");
    public static final boolean DEBUG_CHAT_DISABLED = debugFlag("CHAT_DISABLED");
+   public static final boolean DEBUG_CHAT_FRIENDS_ONLY = debugFlag("DEBUG_CHAT_FRIENDS_ONLY");
    public static final boolean DEBUG_VALIDATE_RESOURCE_PATH_CASE = debugFlag("VALIDATE_RESOURCE_PATH_CASE");
    public static final boolean DEBUG_UNLOCK_ALL_TRADES = debugFlag("UNLOCK_ALL_TRADES");
    public static final boolean DEBUG_BREEZE_MOB = debugFlag("BREEZE_MOB");
@@ -105,6 +106,7 @@ public class SharedConstants {
    public static final boolean DEBUG_ACTIVE_TEXT_AREAS = debugFlag("ACTIVE_TEXT_AREAS");
    public static final boolean DEBUG_PREFER_WAYLAND = debugFlag("PREFER_WAYLAND");
    public static final boolean DEBUG_SIMULATE_LIBRARY_LOAD_FAILURE = debugFlag("SIMULATE_LIBRARY_LOAD_FAILURE");
+   public static final boolean DEBUG_NATIVE_WEBRTC_LOGS = debugFlag("NATIVE_WEBRTC_LOGS");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
    public static final boolean DEBUG_AQUIFERS = debugFlag("AQUIFERS");
@@ -221,7 +223,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742136;
+      return 1073742137;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

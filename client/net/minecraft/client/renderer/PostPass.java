@@ -127,7 +127,7 @@ public class PostPass implements AutoCloseable {
                   renderPass.bindTexture(input.samplerName() + "Sampler", input.view(), input.sampler());
                }
 
-               renderPass.draw(0, 3);
+               renderPass.draw(3, 1, 0, 0);
             }
 
             this.infoUbo.rotate();

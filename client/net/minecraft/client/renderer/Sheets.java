@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -21,13 +19,11 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class Sheets {
    public static final Identifier SHULKER_SHEET = Identifier.withDefaultNamespace("textures/atlas/shulker_boxes.png");
    public static final Identifier BANNER_SHEET = Identifier.withDefaultNamespace("textures/atlas/banner_patterns.png");
    public static final Identifier SHIELD_SHEET = Identifier.withDefaultNamespace("textures/atlas/shield_patterns.png");
-   public static final Identifier SIGN_SHEET = Identifier.withDefaultNamespace("textures/atlas/signs.png");
    public static final Identifier CHEST_SHEET = Identifier.withDefaultNamespace("textures/atlas/chest.png");
    public static final Identifier ARMOR_TRIMS_SHEET = Identifier.withDefaultNamespace("textures/atlas/armor_trims.png");
    public static final Identifier DECORATED_POT_SHEET = Identifier.withDefaultNamespace("textures/atlas/decorated_pot.png");
@@ -49,12 +45,8 @@ public class Sheets {
    public static final SpriteMapper CHEST_MAPPER;
    public static final SpriteMapper DECORATED_POT_MAPPER;
    public static final SpriteMapper SHULKER_MAPPER;
-   public static final SpriteMapper SIGN_MAPPER;
-   public static final SpriteMapper HANGING_SIGN_MAPPER;
    public static final SpriteId DEFAULT_SHULKER_TEXTURE_LOCATION;
    public static final List<SpriteId> SHULKER_TEXTURE_LOCATION;
-   public static final Map<WoodType, SpriteId> SIGN_SPRITES;
-   public static final Map<WoodType, SpriteId> HANGING_SIGN_SPRITES;
    public static final SpriteId BANNER_BASE;
    public static final SpriteId SHIELD_BASE;
    public static final SpriteId SHIELD_BASE_NO_PATTERN;
@@ -106,22 +98,6 @@ public class Sheets {
       return SHULKER_MAPPER.apply(colorToShulkerSprite(color));
    }
 
-   private static SpriteId createSignSprite(final WoodType type) {
-      return SIGN_MAPPER.defaultNamespaceApply(type.name());
-   }
-
-   private static SpriteId createHangingSignSprite(final WoodType type) {
-      return HANGING_SIGN_MAPPER.defaultNamespaceApply(type.name());
-   }
-
-   public static SpriteId getSignSprite(final WoodType type) {
-      return (SpriteId)SIGN_SPRITES.get(type);
-   }
-
-   public static SpriteId getHangingSignSprite(final WoodType type) {
-      return (SpriteId)HANGING_SIGN_SPRITES.get(type);
-   }
-
    public static SpriteId getBannerSprite(final Holder<BannerPattern> pattern) {
       Map var10000 = BANNER_SPRITES;
       Identifier var10001 = ((BannerPattern)pattern.value()).assetId();
@@ -170,12 +146,8 @@ public class Sheets {
       CHEST_MAPPER = new SpriteMapper(CHEST_SHEET, "entity/chest");
       DECORATED_POT_MAPPER = new SpriteMapper(DECORATED_POT_SHEET, "entity/decorated_pot");
       SHULKER_MAPPER = new SpriteMapper(SHULKER_SHEET, "entity/shulker");
-      SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs");
-      HANGING_SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs/hanging");
       DEFAULT_SHULKER_TEXTURE_LOCATION = SHULKER_MAPPER.defaultNamespaceApply("shulker");
       SHULKER_TEXTURE_LOCATION = (List)Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createShulkerSprite).collect(ImmutableList.toImmutableList());
-      SIGN_SPRITES = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignSprite));
-      HANGING_SIGN_SPRITES = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignSprite));
       BANNER_BASE = BANNER_MAPPER.defaultNamespaceApply("banner_base");
       SHIELD_BASE = SHIELD_MAPPER.defaultNamespaceApply("shield_base");
       SHIELD_BASE_NO_PATTERN = SHIELD_MAPPER.defaultNamespaceApply("shield_base_nopattern");

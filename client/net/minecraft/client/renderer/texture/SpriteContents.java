@@ -364,7 +364,7 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
          }
 
          renderPass.setUniform("SpriteAnimationInfo", ubo);
-         renderPass.draw(frameProgressAsInt << 3, 6);
+         renderPass.draw(6, 1, frameProgressAsInt << 3, 0);
       }
 
       public void close() {

@@ -394,6 +394,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final ClientDebugSubscriber debugSubscriber;
    private @Nullable LevelLoadTracker levelLoadTracker;
    private boolean serverEnforcesSecureChat;
+   private boolean onlineMode;
    private volatile boolean closed;
    private final Scoreboard scoreboard;
    private final ClientWaypointManager waypointManager;
@@ -518,7 +519,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.nextChatIndex = 0;
       this.lastSeenMessages = new LastSeenMessagesTracker(20);
       this.messageSignatureCache = MessageSignatureCache.createDefault();
-      if (this.connection.isEncrypted()) {
+      this.onlineMode = packet.onlineMode();
+      if (packet.onlineMode()) {
          this.prepareKeyPair();
       }
 
@@ -1897,6 +1899,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    private boolean enforcesSecureChat() {
       return this.minecraft.services().canValidateProfileKeys() && this.serverEnforcesSecureChat;
+   }
+
+   public boolean onlineMode() {
+      return this.onlineMode;
    }
 
    public void handlePlayerAbilities(final ClientboundPlayerAbilitiesPacket packet) {

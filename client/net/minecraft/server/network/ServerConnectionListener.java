@@ -7,12 +7,14 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.local.LocalAddress;
+import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -24,6 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -109,6 +112,26 @@ public class ServerConnectionListener {
       return newChannel.channel().localAddress();
    }
 
+   public void acceptChannel(final Channel channel, final UUID profileId) {
+      channel.pipeline().addLast(new ChannelHandler[]{new ChannelInitializer<Channel>() {
+         {
+            Objects.requireNonNull(ServerConnectionListener.this);
+         }
+
+         protected void initChannel(final Channel ch) {
+            int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
+            Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
+            ChannelPipeline pipeline = ch.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
+            Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
+            connection.configurePacketHandler(pipeline);
+            connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
+            connection.setIntendedProfileId(profileId);
+            ServerConnectionListener.this.connections.add(connection);
+         }
+      }});
+      EventLoopGroupHolder.local().eventLoopGroup().register(channel).syncUninterruptibly();
+   }
+
    public void stop() {
       this.running = false;
 
@@ -120,6 +143,26 @@ public class ServerConnectionListener {
          }
       }
 
+   }
+
+   public void stopTcpServerListener() {
+      synchronized(this.channels) {
+         Iterator<ChannelFuture> iterator = this.channels.iterator();
+
+         while(iterator.hasNext()) {
+            ChannelFuture future = (ChannelFuture)iterator.next();
+            if (!(future.channel() instanceof LocalServerChannel)) {
+               try {
+                  future.channel().close().sync();
+               } catch (InterruptedException var6) {
+                  LOGGER.error("Interrupted whilst closing TCP listener");
+               }
+
+               iterator.remove();
+            }
+         }
+
+      }
    }
 
    public void tick() {
@@ -187,14 +230,9 @@ public class ServerConnectionListener {
          next.ctx.fireChannelRead(next.msg);
       }
 
-      private static class DelayedMessage {
-         public final ChannelHandlerContext ctx;
-         public final Object msg;
-
-         public DelayedMessage(final ChannelHandlerContext ctx, final Object msg) {
+      private static record DelayedMessage(ChannelHandlerContext ctx, Object msg) {
+         private DelayedMessage {
             super();
-            this.ctx = ctx;
-            this.msg = msg;
          }
       }
    }

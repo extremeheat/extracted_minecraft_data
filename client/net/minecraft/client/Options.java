@@ -105,6 +105,7 @@ public class Options {
    public static final int UNLIMITED_FRAMERATE_CUTOFF = 260;
    private final OptionInstance<Integer> framerateLimit;
    private PreferredGraphicsApi preferredGraphicsBackendFromStartup;
+   private static final Component GRAPHICS_API_TOOLTIP = Component.translatable("options.graphicsApi.tooltip");
    private final OptionInstance<PreferredGraphicsApi> preferredGraphicsBackend;
    private boolean isApplyingGraphicsPreset;
    private final OptionInstance<GraphicsPreset> graphicsPreset;
@@ -195,6 +196,9 @@ public class Options {
    private static final Component ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
    private final OptionInstance<Boolean> allowServerListing;
    private final OptionInstance<Boolean> reducedDebugInfo;
+   private static final Component IN_GAME_NOTIFICATION_TOOLTIP = Component.translatable("options.inGameNotification.tooltip");
+   private final OptionInstance<Boolean> inGameNotification;
+   private final OptionInstance<PresenceSharing> sharePresence;
    private final Map<SoundSource, OptionInstance<Double>> soundSourceVolumes;
    private static final Component CLOSED_CAPTIONS_TOOLTIP = Component.translatable("options.showSubtitles.tooltip");
    private final OptionInstance<Boolean> showSubtitles;
@@ -203,7 +207,7 @@ public class Options {
    private final OptionInstance<Boolean> directionalAudio;
    private final OptionInstance<Boolean> backgroundForChatOnly;
    private final OptionInstance<Boolean> fullscreen;
-   private boolean initialExclusiveFullscreen;
+   private boolean exclusiveFullscreenFromStartup;
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING = Component.translatable("options.exclusiveFullscreen.warningTooltip");
    private final OptionInstance<Boolean> exclusiveFullscreen;
    private final OptionInstance<Boolean> bobView;
@@ -216,6 +220,7 @@ public class Options {
    private static final Component SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
    private final OptionInstance<Integer> sprintWindow;
    public boolean skipMultiplayerWarning;
+   public boolean skipFriendsListPromo;
    private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
    private final OptionInstance<Boolean> hideMatchedNames;
    private final OptionInstance<Boolean> showAutosaveIndicator;
@@ -239,6 +244,7 @@ public class Options {
    public final KeyMapping keyChat;
    public final KeyMapping keyPlayerList;
    public final KeyMapping keyCommand;
+   public final KeyMapping keyFriends;
    public final KeyMapping keySocialInteractions;
    public final KeyMapping keyScreenshot;
    public final KeyMapping keyTogglePerspective;
@@ -360,8 +366,8 @@ public class Options {
       return this.preferredGraphicsBackend;
    }
 
-   public boolean hasPreferredGraphicsBackendChanged() {
-      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup;
+   public boolean isRestartRequiredToApplyVideoSettings() {
+      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup || (Boolean)this.exclusiveFullscreen.get() != this.exclusiveFullscreenFromStartup;
    }
 
    public void applyGraphicsPreset(final GraphicsPreset value) {
@@ -629,6 +635,14 @@ public class Options {
       return this.reducedDebugInfo;
    }
 
+   public OptionInstance<Boolean> inGameNotification() {
+      return this.inGameNotification;
+   }
+
+   public OptionInstance<PresenceSharing> sharePresence() {
+      return this.sharePresence;
+   }
+
    public final float getFinalSoundSourceVolume(final SoundSource source) {
       return source == SoundSource.MASTER ? this.getSoundSourceVolume(source) : this.getSoundSourceVolume(source) * this.getSoundSourceVolume(SoundSource.MASTER);
    }
@@ -810,7 +824,16 @@ public class Options {
       this.entityDistanceScaling = new OptionInstance<Double>("options.entityDistanceScaling", OptionInstance.noTooltip(), Options::percentValueLabel, (new OptionInstance.IntRange(2, 20)).xmap((value) -> (double)value / 4.0, (value) -> (int)(value * 4.0), true), Codec.doubleRange(0.5, 5.0), 1.0, (var1) -> this.setGraphicsPresetToCustom());
       this.framerateLimit = new OptionInstance<Integer>("options.framerateLimit", OptionInstance.noTooltip(), (caption, value) -> value == 260 ? genericValueLabel(caption, Component.translatable("options.framerateLimit.max")) : genericValueLabel(caption, Component.translatable("options.framerate", value)), (new OptionInstance.IntRange(1, 26)).xmap((value) -> value * 10, (value) -> value / 10, true), Codec.intRange(10, 260), 120, (value) -> Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(value));
       this.preferredGraphicsBackendFromStartup = PreferredGraphicsApi.DEFAULT;
-      this.preferredGraphicsBackend = new OptionInstance<PreferredGraphicsApi>("options.graphicsApi", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphicsApi.tooltip")), (caption, value) -> value.caption(), new OptionInstance.Enum(List.of(PreferredGraphicsApi.values()), PreferredGraphicsApi.CODEC), PreferredGraphicsApi.CODEC, PreferredGraphicsApi.DEFAULT, OptionInstance.NO_ACTION);
+      this.preferredGraphicsBackend = new OptionInstance<PreferredGraphicsApi>("options.graphicsApi", (value) -> {
+         List<Component> tooltipLines = new ArrayList();
+         if (value != this.preferredGraphicsBackendFromStartup) {
+            tooltipLines.add(TOOLTIP_NEEDS_RESTART);
+            tooltipLines.add(CommonComponents.EMPTY);
+         }
+
+         tooltipLines.add(GRAPHICS_API_TOOLTIP);
+         return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
+      }, (caption, value) -> value.caption(), new OptionInstance.Enum(List.of(PreferredGraphicsApi.values()), PreferredGraphicsApi.CODEC), PreferredGraphicsApi.CODEC, PreferredGraphicsApi.DEFAULT, OptionInstance.NO_ACTION);
       this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (caption, value) -> genericValueLabel(caption, Component.translatable(value.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
       this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (value) -> {
          Tooltip var10000;
@@ -959,6 +982,9 @@ public class Options {
       this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, OptionInstance.NO_ACTION);
       this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (var0) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
+      this.inGameNotification = OptionInstance.createBoolean("options.inGameNotification", OptionInstance.cachedConstantTooltip(IN_GAME_NOTIFICATION_TOOLTIP), false);
+      this.sharePresence = new OptionInstance<PresenceSharing>("options.sharePresence", (value) -> Tooltip.create(value.getTooltip()), (var0, value) -> value.getTranslation(), new OptionInstance.Enum(List.of(PresenceSharing.values()), PresenceSharing.CODEC), PresenceSharing.CODEC, PresenceSharing.ALL, (var0) -> {
+      });
       this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (source) -> this.createSoundSliderOptionInstance("soundCategory." + source.getName(), source));
       this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", OptionInstance.cachedConstantTooltip(CLOSED_CAPTIONS_TOOLTIP), false);
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (value) -> value ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
@@ -977,7 +1003,7 @@ public class Options {
       });
       this.exclusiveFullscreen = OptionInstance.createBoolean("options.exclusiveFullscreen", (value) -> {
          List<Component> tooltipLines = new ArrayList();
-         if (value != this.initialExclusiveFullscreen) {
+         if (value != this.exclusiveFullscreenFromStartup) {
             tooltipLines.add(TOOLTIP_NEEDS_RESTART);
          }
 
@@ -1031,6 +1057,7 @@ public class Options {
       this.keyChat = new KeyMapping("key.chat", 84, KeyMapping.Category.MULTIPLAYER);
       this.keyPlayerList = new KeyMapping("key.playerlist", 258, KeyMapping.Category.MULTIPLAYER);
       this.keyCommand = new KeyMapping("key.command", 47, KeyMapping.Category.MULTIPLAYER);
+      this.keyFriends = new KeyMapping("key.friends", 79, KeyMapping.Category.MULTIPLAYER);
       this.keySocialInteractions = new KeyMapping("key.socialInteractions", 80, KeyMapping.Category.MULTIPLAYER);
       this.keyScreenshot = new KeyMapping("key.screenshot", 291, KeyMapping.Category.MISC);
       this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, KeyMapping.Category.MISC);
@@ -1068,7 +1095,7 @@ public class Options {
       this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYSYM, 51, KeyMapping.Category.DEBUG, 3);
       this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYSYM, 52, KeyMapping.Category.DEBUG, 4);
       this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture};
-      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
+      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (caption, value) -> {
@@ -1134,7 +1161,6 @@ public class Options {
       this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.translatable("options.chunks", value)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, largeDistances ? 32 : 16, false), 12, (var1) -> this.setGraphicsPresetToCustom());
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
-      this.initialExclusiveFullscreen = (Boolean)this.exclusiveFullscreen.get();
    }
 
    public float getBackgroundOpacity(final float defaultOpacity) {
@@ -1256,11 +1282,14 @@ public class Options {
       access.process("allowCursorChanges", this.allowCursorChanges);
       this.glDebugVerbosity = access.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = access.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
+      this.skipFriendsListPromo = access.process("skipFriendsListPromo", this.skipFriendsListPromo);
       access.process("hideMatchedNames", this.hideMatchedNames);
       this.joinedFirstServer = access.process("joinedFirstServer", this.joinedFirstServer);
       this.syncWrites = access.process("syncChunkWrites", this.syncWrites);
       access.process("showAutosaveIndicator", this.showAutosaveIndicator);
       access.process("allowServerListing", this.allowServerListing);
+      access.process("inGameNotification", this.inGameNotification);
+      access.process("sharePresence", this.sharePresence);
       access.process("onlyShowSecureChat", this.onlyShowSecureChat);
       access.process("saveChatDrafts", this.saveChatDrafts);
       access.process("panoramaScrollSpeed", this.panoramaSpeed);
@@ -1421,6 +1450,7 @@ public class Options {
       }
 
       this.preferredGraphicsBackendFromStartup = this.preferredGraphicsBackend.get();
+      this.exclusiveFullscreenFromStartup = (Boolean)this.exclusiveFullscreen.get();
    }
 
    private static boolean isTrue(final String value) {

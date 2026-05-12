@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
@@ -35,7 +36,7 @@ import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
-import net.minecraft.network.protocol.game.ServerboundSpectateEntityPacket;
+import net.minecraft.network.protocol.game.ServerboundSpectatorActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.sounds.SoundSource;
@@ -417,7 +418,11 @@ public class MultiPlayerGameMode {
    }
 
    public void spectate(final Entity entity) {
-      this.connection.send(new ServerboundSpectateEntityPacket(entity.getId()));
+      this.connection.send(new ServerboundSpectatorActionPacket(OptionalInt.of(entity.getId())));
+   }
+
+   public void spectatorNoAction() {
+      this.connection.send(new ServerboundSpectatorActionPacket(OptionalInt.empty()));
    }
 
    public InteractionResult interact(final Player player, final Entity entity, final EntityHitResult hitResult, final InteractionHand hand) {

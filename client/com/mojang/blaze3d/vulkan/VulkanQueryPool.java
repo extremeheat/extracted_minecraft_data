@@ -24,7 +24,7 @@ public class VulkanQueryPool implements GpuQueryPool, Destroyable {
          createInfo.queryType(2);
          createInfo.queryCount(size);
          LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateQueryPool(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Cannot create query pool");
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateQueryPool(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Cannot create query pool");
          this.vkQueryPool = pointer.get(0);
          VK12.vkResetQueryPool(device.vkDevice(), this.vkQueryPool, 0, size);
       } catch (Throwable var7) {
@@ -62,7 +62,7 @@ public class VulkanQueryPool implements GpuQueryPool, Destroyable {
 
          try {
             LongBuffer values = stack.callocLong(2 * count);
-            VulkanUtils.crashIfFailure(VK12.vkGetQueryPoolResults(this.device.vkDevice(), this.vkQueryPool, index, count, values, 16L, 5), "Cannot fetch query results");
+            VulkanUtils.crashIfFailure(this.device, VK12.vkGetQueryPoolResults(this.device.vkDevice(), this.vkQueryPool, index, count, values, 16L, 5), "Cannot fetch query results");
 
             for(int i = 0; i < count; ++i) {
                if (values.get(i * 2 + 1) != 0L) {
@@ -96,7 +96,7 @@ public class VulkanQueryPool implements GpuQueryPool, Destroyable {
    }
 
    public void close() {
-      this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+      this.device.createCommandEncoder().queueForDestroy(this);
    }
 
    public void destroy() {

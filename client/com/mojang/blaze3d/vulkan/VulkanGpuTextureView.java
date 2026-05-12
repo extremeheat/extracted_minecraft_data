@@ -31,7 +31,7 @@ public class VulkanGpuTextureView extends GpuTextureView implements Destroyable 
          subresourceRange.baseArrayLayer(0);
          subresourceRange.layerCount(isCubemap ? 6 : 1);
          LongBuffer handlePtr = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(VK12.vkCreateImageView(device.vkDevice(), imageViewCreateInfo, (VkAllocationCallbacks)null, handlePtr), "Failed to create VkImageView");
+         VulkanUtils.crashIfFailure(device, VK12.vkCreateImageView(device.vkDevice(), imageViewCreateInfo, (VkAllocationCallbacks)null, handlePtr), "Failed to create VkImageView");
          this.vkImageView = handlePtr.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 14, this.vkImageView, texture.getLabel());
       } catch (Throwable var11) {
@@ -60,7 +60,7 @@ public class VulkanGpuTextureView extends GpuTextureView implements Destroyable 
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         this.device.createCommandEncoder().queueForDestroy((Destroyable)this);
+         this.device.createCommandEncoder().queueForDestroy(this);
          this.texture().removeViews();
       }
 

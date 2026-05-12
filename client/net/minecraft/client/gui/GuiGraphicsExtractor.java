@@ -45,7 +45,6 @@ import net.minecraft.client.renderer.state.gui.pip.GuiBannerResultRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiBookModelRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiEntityRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiProfilerChartRenderState;
-import net.minecraft.client.renderer.state.gui.pip.GuiSignRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiSkinRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -77,7 +76,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Quaternionfc;
@@ -587,10 +585,6 @@ public class GuiGraphicsExtractor {
 
    public void bannerPattern(final BannerFlagModel flag, final DyeColor baseColor, final BannerPatternLayers resultBannerPatterns, final int x0, final int y0, final int x1, final int y1) {
       this.guiRenderState.addPicturesInPictureState(new GuiBannerResultRenderState(flag, baseColor, resultBannerPatterns, x0, y0, x1, y1, this.scissorStack.peek()));
-   }
-
-   public void sign(final Model.Simple signModel, final float scale, final WoodType woodType, final int x0, final int y0, final int x1, final int y1) {
-      this.guiRenderState.addPicturesInPictureState(new GuiSignRenderState(signModel, woodType, x0, y0, x1, y1, scale, this.scissorStack.peek()));
    }
 
    public void profilerChart(final List<ResultField> chartData, final int x0, final int y0, final int x1, final int y1) {

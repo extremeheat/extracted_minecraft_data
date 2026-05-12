@@ -11,5 +11,5 @@ public interface GpuBackend {
 
    void handleWindowCreationErrors(final GLFWErrorCapture.Error error) throws BackendCreationException;
 
-   GpuDevice createDevice(long window, ShaderSource defaultShaderSource, GpuDebugOptions debugOptions) throws BackendCreationException;
+   GpuDevice createDevice(long window, ShaderSource defaultShaderSource, GpuDebugOptions debugOptions, final Runnable criticalShaderLoader) throws BackendCreationException;
 }

@@ -32,7 +32,11 @@ public class MacosUtil {
    }
 
    private static Optional<NSObject> getNsWindow(final Window window) {
-      long nsWindow = GLFWNativeCocoa.glfwGetCocoaWindow(window.handle());
+      return getNsWindow(window.handle());
+   }
+
+   private static Optional<NSObject> getNsWindow(final long windowHandle) {
+      long nsWindow = GLFWNativeCocoa.glfwGetCocoaWindow(windowHandle);
       return nsWindow != 0L ? Optional.of(new NSObject(new Pointer(nsWindow))) : Optional.empty();
    }
 
@@ -73,6 +77,13 @@ public class MacosUtil {
          iconStream.close();
       }
 
+   }
+
+   public static void setWindowColorSpaceForOpenGLBecauseGLFWDoesnt(final long glfwWindowHandle) {
+      getNsWindow(glfwWindowHandle).ifPresent((nsWindow) -> {
+         Object sRGBColorSpace = nsWindow.getClient().send("NSColorSpace", "sRGBColorSpace", new Object[0]);
+         nsWindow.send("setColorSpace:", new Object[]{sRGBColorSpace});
+      });
    }
 
    static {

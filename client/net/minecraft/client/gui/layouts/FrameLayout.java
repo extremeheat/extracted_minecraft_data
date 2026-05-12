@@ -87,6 +87,10 @@ public class FrameLayout extends AbstractLayout {
       this.children.forEach((wrapper) -> layoutElementVisitor.accept(wrapper.child));
    }
 
+   public void removeChildren() {
+      this.children.clear();
+   }
+
    public static void centerInRectangle(final LayoutElement widget, final int x, final int y, final int width, final int height) {
       alignInRectangle(widget, x, y, width, height, 0.5F, 0.5F);
    }

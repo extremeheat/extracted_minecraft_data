@@ -198,7 +198,7 @@ public class PlayerTeam extends Team {
    }
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface OptionFlags {
    }
 }

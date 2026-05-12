@@ -25,12 +25,9 @@ import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.blockentity.CopperGolemStatueBlockRenderer;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
-import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.renderer.blockentity.ShulkerBoxRenderer;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
-import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
 import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
-import net.minecraft.client.renderer.blockentity.state.SignRenderState;
 import net.minecraft.client.renderer.entity.CopperGolemRenderer;
 import net.minecraft.client.renderer.special.BannerSpecialRenderer;
 import net.minecraft.client.renderer.special.BellSpecialRenderer;
@@ -40,39 +37,30 @@ import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
 import net.minecraft.client.renderer.special.CopperGolemStatueSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
 import net.minecraft.client.renderer.special.EndCubeSpecialRenderer;
-import net.minecraft.client.renderer.special.HangingSignSpecialRenderer;
 import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
 import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.special.StandingSignSpecialRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.DecoratedPotBlock;
-import net.minecraft.world.level.block.HangingSignBlock;
-import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.PlayerHeadBlock;
 import net.minecraft.world.level.block.PlayerWallHeadBlock;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
-import net.minecraft.world.level.block.WallHangingSignBlock;
-import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -98,18 +86,6 @@ public class BuiltInBlockModels {
       ColorCollection.zipApply(ColorCollection.VALUES, Blocks.WALL_BANNER, (color, wallBanner) -> builder.put((ModelFactory)createWallBanner(color), wallBanner));
       builder.put((ModelFactory)createShulkerBox(), Blocks.SHULKER_BOX);
       ColorCollection.zipApply(ColorCollection.VALUES, Blocks.DYED_SHULKER_BOX, (color, box) -> builder.put((ModelFactory)createDyedShulkerBox(color), box));
-      createSigns(builder, WoodType.OAK, Blocks.OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.SPRUCE, Blocks.SPRUCE_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.BIRCH, Blocks.BIRCH_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.ACACIA, Blocks.ACACIA_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.CHERRY, Blocks.CHERRY_SIGN, Blocks.CHERRY_WALL_SIGN, Blocks.CHERRY_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.JUNGLE, Blocks.JUNGLE_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.DARK_OAK, Blocks.DARK_OAK_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.PALE_OAK, Blocks.PALE_OAK_SIGN, Blocks.PALE_OAK_WALL_SIGN, Blocks.PALE_OAK_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.MANGROVE, Blocks.MANGROVE_SIGN, Blocks.MANGROVE_WALL_SIGN, Blocks.MANGROVE_HANGING_SIGN, Blocks.MANGROVE_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.BAMBOO, Blocks.BAMBOO_SIGN, Blocks.BAMBOO_WALL_SIGN, Blocks.BAMBOO_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.CRIMSON, Blocks.CRIMSON_SIGN, Blocks.CRIMSON_WALL_SIGN, Blocks.CRIMSON_HANGING_SIGN, Blocks.CRIMSON_WALL_HANGING_SIGN);
-      createSigns(builder, WoodType.WARPED, Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN, Blocks.WARPED_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN);
       builder.put((ModelFactory)createSingletonChest(ChestSpecialRenderer.ENDER_CHEST), Blocks.ENDER_CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.REGULAR), Blocks.CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.TRAPPED), Blocks.TRAPPED_CHEST);
@@ -173,29 +149,6 @@ public class BuiltInBlockModels {
 
    private static SpecialModelFactory createDyedShulkerBox(final DyeColor color) {
       return specialModelWithPropertyDispatch(ShulkerBoxBlock.FACING, (facing) -> special(new ShulkerBoxSpecialRenderer.Unbaked(color), ShulkerBoxRenderer.modelTransform(facing)));
-   }
-
-   private static SpecialModelFactory createStandingSign(final WoodType type) {
-      return specialModelWithPropertyDispatch(StandingSignBlock.ROTATION, (rotation) -> special(new StandingSignSpecialRenderer.Unbaked(type, PlainSignBlock.Attachment.GROUND), ((SignRenderState.SignTransformations)StandingSignRenderer.TRANSFORMATIONS.freeTransformations(rotation)).body()));
-   }
-
-   private static SpecialModelFactory createWallSign(final WoodType type) {
-      return specialModelWithPropertyDispatch(WallSignBlock.FACING, (facing) -> special(new StandingSignSpecialRenderer.Unbaked(type, PlainSignBlock.Attachment.WALL), ((SignRenderState.SignTransformations)StandingSignRenderer.TRANSFORMATIONS.wallTransformation(facing)).body()));
-   }
-
-   private static SpecialModelFactory createCeilingHangingSign(final WoodType type) {
-      return specialModelWithPropertyDispatch(CeilingHangingSignBlock.ROTATION, CeilingHangingSignBlock.ATTACHED, (rotation, attached) -> special(new HangingSignSpecialRenderer.Unbaked(type, CeilingHangingSignBlock.getAttachmentPoint(attached)), ((SignRenderState.SignTransformations)HangingSignRenderer.TRANSFORMATIONS.freeTransformations(rotation)).body()));
-   }
-
-   private static SpecialModelFactory createWallHangingSign(final WoodType type) {
-      return specialModelWithPropertyDispatch(WallHangingSignBlock.FACING, (facing) -> special(new HangingSignSpecialRenderer.Unbaked(type, HangingSignBlock.Attachment.WALL), ((SignRenderState.SignTransformations)HangingSignRenderer.TRANSFORMATIONS.wallTransformation(facing)).body()));
-   }
-
-   private static void createSigns(final Builder builder, final WoodType woodType, final Block standing, final Block wall, final Block hanging, final Block wallHanging) {
-      builder.put((ModelFactory)createStandingSign(woodType), standing);
-      builder.put((ModelFactory)createWallSign(woodType), wall);
-      builder.put((ModelFactory)createCeilingHangingSign(woodType), hanging);
-      builder.put((ModelFactory)createWallHangingSign(woodType), wallHanging);
    }
 
    private static BlockModel.Unbaked createChest(final Identifier texture, final ChestType chestType, final Direction facing) {

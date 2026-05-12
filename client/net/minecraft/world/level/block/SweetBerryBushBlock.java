@@ -128,7 +128,7 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      return (Integer)state.getValue(AGE) < 3 && level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
+      return (Integer)state.getValue(AGE) < 3;
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {

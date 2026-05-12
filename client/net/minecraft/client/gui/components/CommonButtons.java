@@ -9,11 +9,19 @@ public class CommonButtons {
    }
 
    public static SpriteIconButton language(final int width, final Button.OnPress onPress, final boolean iconOnly) {
-      return SpriteIconButton.builder(Component.translatable("options.language"), onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/language"), 15, 15).build();
+      SpriteIconButton button = SpriteIconButton.builder(Component.translatable("options.language"), onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/language"), 15, 15).narration((var0) -> Component.translatable("options.language.narration")).build();
+      button.setTooltip(Tooltip.create(Component.translatable("options.language.tooltip")));
+      return button;
    }
 
    public static SpriteIconButton accessibility(final int width, final Button.OnPress onPress, final boolean iconOnly) {
       Component text = iconOnly ? Component.translatable("options.accessibility") : Component.translatable("accessibility.onboarding.accessibility.button");
-      return SpriteIconButton.builder(text, onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/accessibility"), 15, 15).build();
+      SpriteIconButton button = SpriteIconButton.builder(text, onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/accessibility"), 15, 15).narration((var0) -> Component.translatable("accessibility.onboarding.accessibility.button.narration")).build();
+      button.setTooltip(Tooltip.create(Component.translatable("options.accessibility.tooltip")));
+      return button;
+   }
+
+   public static FriendsButton friends(final int width, final Button.OnPress onPress) {
+      return new FriendsButton(width, onPress);
    }
 }

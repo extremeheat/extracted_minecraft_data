@@ -360,6 +360,7 @@ public class ItemIds {
    public static final ResourceKey<Item> MUSIC_DISC_13;
    public static final ResourceKey<Item> MUSIC_DISC_CAT;
    public static final ResourceKey<Item> MUSIC_DISC_BLOCKS;
+   public static final ResourceKey<Item> MUSIC_DISC_BOUNCE;
    public static final ResourceKey<Item> MUSIC_DISC_CHIRP;
    public static final ResourceKey<Item> MUSIC_DISC_CREATOR;
    public static final ResourceKey<Item> MUSIC_DISC_CREATOR_MUSIC_BOX;
@@ -637,6 +638,7 @@ public class ItemIds {
       MUSIC_DISC_13 = createMusicDisc(JukeboxSongs.THIRTEEN);
       MUSIC_DISC_CAT = createMusicDisc(JukeboxSongs.CAT);
       MUSIC_DISC_BLOCKS = createMusicDisc(JukeboxSongs.BLOCKS);
+      MUSIC_DISC_BOUNCE = createMusicDisc(JukeboxSongs.BOUNCE);
       MUSIC_DISC_CHIRP = createMusicDisc(JukeboxSongs.CHIRP);
       MUSIC_DISC_CREATOR = createMusicDisc(JukeboxSongs.CREATOR);
       MUSIC_DISC_CREATOR_MUSIC_BOX = createMusicDisc(JukeboxSongs.CREATOR_MUSIC_BOX);

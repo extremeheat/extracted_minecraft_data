@@ -1089,6 +1089,7 @@ public class CreativeModeTabs {
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_PIGSTEP);
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_TEARS);
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_LAVA_CHICKEN);
+         toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_BOUNCE);
       }).build());
       Registry.register(registry, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> new ItemStack(Items.NETHERITE_SWORD)).displayItems((parameters, combat) -> {
          combat.accept((ItemLike)Items.WOODEN_SWORD);

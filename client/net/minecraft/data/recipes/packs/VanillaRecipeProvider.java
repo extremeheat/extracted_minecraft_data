@@ -601,18 +601,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.mosaicBuilder(RecipeCategory.DECORATIONS, Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_SLAB);
       this.woodenBoat(Items.BAMBOO_RAFT, Blocks.BAMBOO_PLANKS);
       this.chestBoat(Items.BAMBOO_CHEST_RAFT, Items.BAMBOO_RAFT);
-      this.hangingSign(Items.OAK_HANGING_SIGN, Blocks.STRIPPED_OAK_LOG);
-      this.hangingSign(Items.SPRUCE_HANGING_SIGN, Blocks.STRIPPED_SPRUCE_LOG);
-      this.hangingSign(Items.BIRCH_HANGING_SIGN, Blocks.STRIPPED_BIRCH_LOG);
-      this.hangingSign(Items.JUNGLE_HANGING_SIGN, Blocks.STRIPPED_JUNGLE_LOG);
-      this.hangingSign(Items.ACACIA_HANGING_SIGN, Blocks.STRIPPED_ACACIA_LOG);
-      this.hangingSign(Items.CHERRY_HANGING_SIGN, Blocks.STRIPPED_CHERRY_LOG);
-      this.hangingSign(Items.DARK_OAK_HANGING_SIGN, Blocks.STRIPPED_DARK_OAK_LOG);
-      this.hangingSign(Items.PALE_OAK_HANGING_SIGN, Blocks.STRIPPED_PALE_OAK_LOG);
-      this.hangingSign(Items.MANGROVE_HANGING_SIGN, Blocks.STRIPPED_MANGROVE_LOG);
-      this.hangingSign(Items.BAMBOO_HANGING_SIGN, Items.STRIPPED_BAMBOO_BLOCK);
-      this.hangingSign(Items.CRIMSON_HANGING_SIGN, Blocks.STRIPPED_CRIMSON_STEM);
-      this.hangingSign(Items.WARPED_HANGING_SIGN, Blocks.STRIPPED_WARPED_STEM);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_BOOKSHELF).define('#', ItemTags.PLANKS).define('X', ItemTags.WOODEN_SLABS).pattern("###").pattern("XXX").pattern("###").unlockedBy("has_book", this.has(Items.BOOK)).save(this.output);
       this.oneToOneConversionRecipe(Items.DYE.orange(), Blocks.TORCHFLOWER, "orange_dye");
       this.oneToOneConversionRecipe(Items.DYE.cyan(), Blocks.PITCHER_PLANT, "cyan_dye", 2);

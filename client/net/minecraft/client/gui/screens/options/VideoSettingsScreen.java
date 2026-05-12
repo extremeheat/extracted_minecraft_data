@@ -35,7 +35,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private static final Component DISPLAY_HEADER;
    private static final Component QUALITY_HEADER;
    private static final Component PREFERENCES_HEADER;
-   private static final Component GRAPHICS_API_REQUIRES_RESTART;
+   private static final Component RESTART_REQUIRED;
    private final GpuWarnlistManager gpuWarnlistManager;
    private final int oldMipmaps;
    private final int oldAnisotropyBit;
@@ -108,8 +108,8 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    protected void addTitle() {
       this.header.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
       this.header.addChild(new StringWidget(this.title, this.font));
-      if (this.options.hasPreferredGraphicsBackendChanged()) {
-         this.restartWarning = new StringWidget(GRAPHICS_API_REQUIRES_RESTART, this.font);
+      if (this.options.isRestartRequiredToApplyVideoSettings()) {
+         this.restartWarning = new StringWidget(RESTART_REQUIRED, this.font);
          this.header.addChild(this.restartWarning);
       }
 
@@ -125,17 +125,17 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          }
       }
 
-      boolean needsRestart = this.options.hasPreferredGraphicsBackendChanged();
-      if (needsRestart && (this.restartWarning == null || !this.restartWarning.visible)) {
+      boolean restartRequired = this.options.isRestartRequiredToApplyVideoSettings();
+      if (restartRequired && (this.restartWarning == null || !this.restartWarning.visible)) {
          if (this.restartWarning == null) {
-            this.restartWarning = new StringWidget(GRAPHICS_API_REQUIRES_RESTART, this.font);
+            this.restartWarning = new StringWidget(RESTART_REQUIRED, this.font);
             this.header.addChild(this.restartWarning);
             this.addRenderableWidget(this.restartWarning);
          }
 
          this.restartWarning.visible = true;
          this.repositionElements();
-      } else if (!needsRestart && this.restartWarning != null && this.restartWarning.visible) {
+      } else if (!restartRequired && this.restartWarning != null && this.restartWarning.visible) {
          this.restartWarning.visible = false;
          this.repositionElements();
       }
@@ -256,6 +256,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       DISPLAY_HEADER = Component.translatable("options.video.display.header");
       QUALITY_HEADER = Component.translatable("options.video.quality.header");
       PREFERENCES_HEADER = Component.translatable("options.video.preferences.header");
-      GRAPHICS_API_REQUIRES_RESTART = Component.translatable("options.graphicsApi.restart").withColor(-2142128);
+      RESTART_REQUIRED = Component.translatable("options.restartRequired").withColor(-2142128);
    }
 }

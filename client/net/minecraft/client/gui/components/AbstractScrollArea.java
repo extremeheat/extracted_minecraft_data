@@ -133,6 +133,8 @@ public abstract class AbstractScrollArea extends AbstractWidget {
    }
 
    public static record ScrollbarSettings(Identifier scrollerSprite, @Nullable Identifier disabledScrollerSprite, Identifier backgroundSprite, int scrollbarWidth, int scrollbarMinHeight, int scrollRate, boolean resizingScrollbar) {
+      public static final ScrollbarSettings NO_SCROLL = AbstractScrollArea.defaultSettings(0);
+
       public ScrollbarSettings {
          super();
       }

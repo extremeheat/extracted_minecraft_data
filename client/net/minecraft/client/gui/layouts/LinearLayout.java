@@ -48,6 +48,11 @@ public class LinearLayout implements Layout {
       this.wrapped.visitChildren(layoutElementVisitor);
    }
 
+   public void removeChildren() {
+      this.wrapped.removeChildren();
+      this.nextChildIndex = 0;
+   }
+
    public void arrangeElements() {
       this.wrapped.arrangeElements();
    }

@@ -25,13 +25,17 @@ public class JsonRPCUtils {
    }
 
    public static JsonObject createRequest(final @Nullable Integer id, final Identifier method, final List<JsonElement> params) {
+      return createRequest(id, method.toString(), params);
+   }
+
+   public static JsonObject createRequest(final @Nullable Integer id, final String method, final List<JsonElement> params) {
       JsonObject request = new JsonObject();
       request.addProperty("jsonrpc", "2.0");
       if (id != null) {
          request.addProperty("id", id);
       }
 
-      request.addProperty("method", method.toString());
+      request.addProperty("method", method);
       if (!params.isEmpty()) {
          JsonArray jsonArray = new JsonArray(params.size());
 

@@ -346,7 +346,7 @@ public class GuiRenderer implements AutoCloseable {
          }
 
          renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
-         renderPass.drawIndexed(executeInfo.baseVertex(), executeInfo.firstIndex(), executeInfo.indexCount(), 1);
+         renderPass.drawIndexed(executeInfo.indexCount(), 1, executeInfo.firstIndex(), executeInfo.baseVertex(), 0);
       }
    }
 

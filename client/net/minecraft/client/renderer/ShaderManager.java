@@ -219,6 +219,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
       if (!failedLoads.isEmpty()) {
          device.clearPipelineCache();
+         device.loadCriticalShaders();
          Stream var10002 = failedLoads.stream().map((entry) -> " - " + String.valueOf(entry));
          throw new RuntimeException("Failed to load required shader programs:\n" + (String)var10002.collect(Collectors.joining("\n")));
       } else {

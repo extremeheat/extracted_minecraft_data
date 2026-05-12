@@ -153,7 +153,7 @@ public class InputConstants {
    public static final int MOUSE_BUTTON_5 = 4;
    public static final int MOUSE_BUTTON_6 = 5;
    public static final int MOUSE_BUTTON_7 = 6;
-   public static final int MOUSE_BUTTON_8 = 0;
+   public static final int MOUSE_BUTTON_8 = 7;
    public static final int MOD_SHIFT = 1;
    public static final int MOD_CONTROL = 2;
    public static final int MOD_ALT = 4;
@@ -472,7 +472,7 @@ public class InputConstants {
    }
 
    @Retention(RetentionPolicy.CLASS)
-   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   @Target({ElementType.TYPE_USE})
    public @interface Value {
    }
 }

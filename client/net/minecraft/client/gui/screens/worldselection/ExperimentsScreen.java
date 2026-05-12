@@ -14,7 +14,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.Pack;
@@ -67,7 +67,7 @@ public class ExperimentsScreen extends Screen {
 
    private static Component getHumanReadableTitle(final Pack pack) {
       String translationKey = "dataPack." + pack.getId() + ".name";
-      return (Component)(I18n.exists(translationKey) ? Component.translatable(translationKey) : pack.getTitle());
+      return (Component)(Language.getInstance().has(translationKey) ? Component.translatable(translationKey) : pack.getTitle());
    }
 
    protected void repositionElements() {

@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.util.StringUtil;
 import org.lwjgl.opengl.EXTDebugLabel;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public abstract class GlDebugLabel {
    }
 
    private static class Core extends GlDebugLabel {
-      private final int maxLabelLength = GL11.glGetInteger(33512);
+      private final int maxLabelLength = GL33C.glGetInteger(33512);
 
       private Core() {
          super();

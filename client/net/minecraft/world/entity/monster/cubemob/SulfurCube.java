@@ -209,7 +209,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public boolean requiresCustomPersistence() {
-      return super.requiresCustomPersistence() || this.hasBodyItem();
+      return super.requiresCustomPersistence() || this.hasBodyItem() || this.fromBucket();
    }
 
    public boolean canBeLeashed() {
@@ -583,6 +583,18 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
    private static boolean isSwallowableItem(final ItemStack itemStack) {
       return itemStack.is(ItemTags.SULFUR_CUBE_SWALLOWABLE);
+   }
+
+   public boolean canUseSlot(final EquipmentSlot slot) {
+      if (slot != EquipmentSlot.BODY) {
+         return super.canUseSlot(slot);
+      } else {
+         return this.isAlive() && !this.isBaby();
+      }
+   }
+
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return slot == EquipmentSlot.BODY;
    }
 
    public boolean canHoldItem(final ItemStack itemStack) {

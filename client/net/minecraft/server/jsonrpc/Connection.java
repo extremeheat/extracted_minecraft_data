@@ -146,7 +146,7 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
             this.channel.writeAndFlush(JsonRPCUtils.createRequest(id, methodHolder.key().identifier(), jsonParams));
             return future;
          } else {
-            this.channel.writeAndFlush(JsonRPCUtils.createRequest((Integer)null, methodHolder.key().identifier(), jsonParams));
+            this.channel.writeAndFlush(JsonRPCUtils.createRequest((Integer)null, (Identifier)methodHolder.key().identifier(), jsonParams));
             return null;
          }
       }

@@ -109,6 +109,8 @@ public final class BlockTags {
    public static final TagKey<Block> UNSTABLE_BOTTOM_CENTER;
    public static final TagKey<Block> EDIBLE_FOR_SHEEP;
    public static final TagKey<Block> CAN_GLIDE_THROUGH;
+   public static final TagKey<Block> CAUSES_PERIODIC_GEYSER_ERUPTIONS;
+   public static final TagKey<Block> CAUSES_CONTINUOUS_GEYSER_ERUPTIONS;
    public static final TagKey<Block> INFINIBURN_OVERWORLD;
    public static final TagKey<Block> INFINIBURN_NETHER;
    public static final TagKey<Block> INFINIBURN_END;
@@ -365,6 +367,8 @@ public final class BlockTags {
       UNSTABLE_BOTTOM_CENTER = create("unstable_bottom_center");
       EDIBLE_FOR_SHEEP = create("edible_for_sheep");
       CAN_GLIDE_THROUGH = create("can_glide_through");
+      CAUSES_PERIODIC_GEYSER_ERUPTIONS = create("causes_periodic_geyser_eruptions");
+      CAUSES_CONTINUOUS_GEYSER_ERUPTIONS = create("causes_continuous_geyser_eruptions");
       INFINIBURN_OVERWORLD = create("infiniburn_overworld");
       INFINIBURN_NETHER = create("infiniburn_nether");
       INFINIBURN_END = create("infiniburn_end");
