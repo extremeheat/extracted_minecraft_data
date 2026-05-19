@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public class FocusableTextWidget extends MultiLineTextWidget {
    public static final int DEFAULT_PADDING = 4;
@@ -19,6 +20,9 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    private final int maxWidth;
    private final boolean alwaysShowBorder;
    private final BackgroundFill backgroundFill;
+   private boolean narrateMessage = true;
+   private @Nullable Component focusedUsageNarration;
+   private @Nullable Component hoveredUsageNarration;
 
    private FocusableTextWidget(final Component message, final Font font, final int padding, final int maxWidth, final BackgroundFill backgroundFill, final boolean alwaysShowBorder) {
       super(message, font);
@@ -33,7 +37,26 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {
-      output.add(NarratedElementType.TITLE, this.getMessage());
+      if (this.narrateMessage) {
+         output.add(NarratedElementType.TITLE, this.getMessage());
+      }
+
+      if (this.active) {
+         Component usage = this.isFocused() ? this.focusedUsageNarration : this.hoveredUsageNarration;
+         if (usage != null) {
+            output.add(NarratedElementType.USAGE, usage);
+         }
+      }
+
+   }
+
+   public void setNarrateMessage(final boolean narrateMessage) {
+      this.narrateMessage = narrateMessage;
+   }
+
+   public void setUsageNarration(final @Nullable Component focused, final @Nullable Component hovered) {
+      this.focusedUsageNarration = focused;
+      this.hoveredUsageNarration = hovered;
    }
 
    public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

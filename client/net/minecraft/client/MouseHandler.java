@@ -77,6 +77,11 @@ public class MouseHandler {
          }
 
          if (this.minecraft.gui.overlay() == null) {
+            if (pressed && this.minecraft.options.keyScreenshot.matchesMouse(new MouseButtonEvent(this.getScaledXPos(window), this.getScaledYPos(window), buttonInfo))) {
+               Screenshot.grab(this.minecraft, buttonInfo.hasControlDownWithQuirk());
+               return;
+            }
+
             if (this.minecraft.gui.screen() == null) {
                if (!this.mouseGrabbed && pressed) {
                   this.grabMouse();

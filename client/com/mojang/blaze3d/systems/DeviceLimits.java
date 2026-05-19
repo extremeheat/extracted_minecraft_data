@@ -2,7 +2,7 @@ package com.mojang.blaze3d.systems;
 
 import com.mojang.blaze3d.GpuFormat;
 
-public record DeviceLimits(int maxAnisotropy, int minUniformOffsetAlignment, int maxTextureSize, long maxMemoryAllocationSize, int maxColorAttachments) {
+public record DeviceLimits(int maxAnisotropy, int minUniformOffsetAlignment, int maxTextureSize, long maxMemoryAllocationSize, int maxMultiDrawDirectInterleavedDrawCount, int maxColorAttachments) {
    public DeviceLimits {
       super();
    }

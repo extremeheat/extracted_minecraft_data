@@ -88,10 +88,10 @@ public final class RtcHandshake {
             try {
                dc.unregisterObserver();
             } catch (RuntimeException e) {
-               LOGGER.warn("[P2P][{}] dataChannel.unregisterObserver at handoff threw: {}", this.id, e.getMessage());
+               LOGGER.debug("[{}] DataChannel unregisterObserver at handoff threw", this.id, e);
             }
 
-            LOGGER.info("[P2P][{}] handshake complete; peerConnection + dataChannel handed off", this.id);
+            LOGGER.info("[{}] Handshake complete", this.id);
          }
       }
    }
@@ -99,7 +99,7 @@ public final class RtcHandshake {
    private void failHandshake(final String reason) {
       Throwable failure = new CancellationException("Handshake " + this.id + " aborted: " + reason);
       if (this.result.completeExceptionally(failure)) {
-         LOGGER.info("[P2P][{}] handshake aborted: {}", this.id, reason);
+         LOGGER.info("[{}] Handshake aborted: {}", this.id, reason);
          CompletableFuture<String> pending = this.sdpResult;
          if (pending != null) {
             pending.completeExceptionally(failure);
@@ -120,11 +120,11 @@ public final class RtcHandshake {
 
          public void onStateChange() {
             RTCDataChannelState state = dc.getState();
-            RtcHandshake.LOGGER.info("[P2P][{}] DataChannel \u2192 {}", RtcHandshake.this.id, state);
+            RtcHandshake.LOGGER.debug("[{}] DataChannel state={}", RtcHandshake.this.id, state);
             if (state == RTCDataChannelState.OPEN) {
                RtcHandshake.this.markOpen(dc);
             } else if (state == RTCDataChannelState.CLOSING || state == RTCDataChannelState.CLOSED) {
-               RtcHandshake.this.failHandshake("Data channel " + String.valueOf(state));
+               RtcHandshake.this.failHandshake("DataChannel " + String.valueOf(state));
             }
 
          }
@@ -157,7 +157,7 @@ public final class RtcHandshake {
          }
 
          if (signalingState == RTCSignalingState.STABLE) {
-            LOGGER.debug("[P2P][{}] ignoring duplicate answer", this.id);
+            LOGGER.debug("[{}] Ignoring duplicate SDP answer", this.id);
             return CompletableFuture.completedFuture((Object)null);
          } else {
             return this.setRemoteDescription(new RTCSessionDescription(RTCSdpType.ANSWER, answerSdp));
@@ -281,7 +281,7 @@ public final class RtcHandshake {
       return sdpFuture.whenComplete((var1, err) -> {
          this.sdpResult = null;
          if (err != null) {
-            LOGGER.warn("[P2P][{}] SDP exchange failed: {}", this.id, err.getMessage());
+            LOGGER.warn("[{}] SDP exchange failed", this.id, err);
          }
 
       });
@@ -300,7 +300,7 @@ public final class RtcHandshake {
       try {
          this.onLocalCandidate.accept(candidate);
       } catch (RuntimeException e) {
-         LOGGER.warn("[P2P][{}] onLocalCandidate threw", this.id, e);
+         LOGGER.warn("[{}] onLocalCandidate threw", this.id, e);
       }
 
    }
@@ -312,7 +312,7 @@ public final class RtcHandshake {
             try {
                cb.accept(info);
             } catch (RuntimeException e) {
-               LOGGER.warn("[P2P][{}] onIceInfo threw", this.id, e);
+               LOGGER.warn("[{}] onIceInfo threw", this.id, e);
             }
 
          }
@@ -325,13 +325,13 @@ public final class RtcHandshake {
             Map<String, RTCStats> all = report.getStats();
             Optional<RTCStats> nominatedPair = all.values().stream().filter((s) -> s.getType() == RTCStatsType.CANDIDATE_PAIR && Boolean.TRUE.equals(s.getAttributes().get("nominated"))).findFirst();
             if (nominatedPair.isEmpty()) {
-               LOGGER.debug("[P2P][{}] selected ICE pair missing from stats", this.id);
+               LOGGER.trace("[{}] Selected ICE pair missing from stats", this.id);
             } else {
                Optional<IceInfo> info = this.extractIceInfo((RTCStats)nominatedPair.get(), all);
                if (info.isEmpty()) {
-                  LOGGER.debug("[P2P][{}] selected ICE pair missing candidate details", this.id);
+                  LOGGER.trace("[{}] Selected ICE pair missing candidate details", this.id);
                } else {
-                  LOGGER.info("[P2P][{}] selected ICE pair: {}/{}", new Object[]{this.id, ((IceInfo)info.get()).local(), ((IceInfo)info.get()).remote()});
+                  LOGGER.debug("[{}] Selected ICE candidate-type pair: {}/{}", new Object[]{this.id, ((IceInfo)info.get()).local(), ((IceInfo)info.get()).remote()});
                   this.fireIceInfo((IceInfo)info.get());
                }
             }
@@ -352,7 +352,7 @@ public final class RtcHandshake {
             if (!localType.isEmpty() && !remoteType.isEmpty()) {
                return Optional.of(new IceInfo((P2PTelemetryEvent.IceCandidateType)localType.get(), (P2PTelemetryEvent.IceCandidateType)remoteType.get()));
             } else {
-               LOGGER.debug("[P2P][{}] unknown ICE candidate type local={} remote={}", new Object[]{this.id, localTypeObj, remoteTypeObj});
+               LOGGER.debug("[{}] Unknown ICE candidate type local={} remote={}", new Object[]{this.id, localTypeObj, remoteTypeObj});
                return Optional.empty();
             }
          } else {
@@ -382,11 +382,11 @@ public final class RtcHandshake {
       }
 
       public void onSignalingChange(final RTCSignalingState s) {
-         RtcHandshake.LOGGER.debug("[P2P][{}] signaling \u2192 {}", RtcHandshake.this.id, s);
+         RtcHandshake.LOGGER.debug("[{}] Signaling state={}", RtcHandshake.this.id, s);
       }
 
       public void onIceConnectionChange(final RTCIceConnectionState s) {
-         RtcHandshake.LOGGER.debug("[P2P][{}] ICE \u2192 {}", RtcHandshake.this.id, s);
+         RtcHandshake.LOGGER.debug("[{}] ICE state={}", RtcHandshake.this.id, s);
       }
 
       public void onIceCandidate(final RTCIceCandidate c) {
@@ -399,11 +399,11 @@ public final class RtcHandshake {
       }
 
       public void onIceCandidateError(final RTCPeerConnectionIceErrorEvent e) {
-         RtcHandshake.LOGGER.warn("[P2P][{}] ICE error: url={} code={} text={}", new Object[]{RtcHandshake.this.id, e.getUrl(), e.getErrorCode(), e.getErrorText()});
+         RtcHandshake.LOGGER.debug("[{}] ICE error url={} code={} text={}", new Object[]{RtcHandshake.this.id, e.getUrl(), e.getErrorCode(), e.getErrorText()});
       }
 
       public void onConnectionChange(final RTCPeerConnectionState state) {
-         RtcHandshake.LOGGER.info("[P2P][{}] connection \u2192 {}", RtcHandshake.this.id, state);
+         RtcHandshake.LOGGER.debug("[{}] Peer connection state={}", RtcHandshake.this.id, state);
          switch (state) {
             case CONNECTED -> RtcHandshake.this.reportIceInfo();
             case FAILED -> RtcHandshake.this.failHandshake("connection FAILED");
@@ -423,7 +423,7 @@ public final class RtcHandshake {
       }
 
       public void onDataChannel(final RTCDataChannel dc) {
-         RtcHandshake.LOGGER.info("[P2P][{}] DataChannel received (state={})", RtcHandshake.this.id, dc.getState());
+         RtcHandshake.LOGGER.debug("[{}] DataChannel received (state={})", RtcHandshake.this.id, dc.getState());
          RtcHandshake.this.wireDataChannel(dc);
       }
    }

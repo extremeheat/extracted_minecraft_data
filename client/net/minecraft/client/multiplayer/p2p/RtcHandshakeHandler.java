@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 
 final class RtcHandshakeHandler {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final long PENDING_HANDSHAKE_TIMEOUT_SECONDS = 10L;
+   private static final long HANDSHAKE_TIMEOUT_MS;
    private final Minecraft minecraft;
    private final SignalingServiceClient signaling;
    private final P2PManager manager;
@@ -51,7 +51,7 @@ final class RtcHandshakeHandler {
 
       public void onSignalingError(final @Nullable UUID peerPmid, final SignalingException cause) {
          if (peerPmid == null) {
-            RtcHandshakeHandler.LOGGER.debug("Signaling error: {}", cause.getClass().getSimpleName());
+            RtcHandshakeHandler.LOGGER.debug("Signaling error", cause);
          } else {
             RtcHandshake handshake = RtcHandshakeHandler.this.getHandshake(peerPmid);
             if (handshake != null) {
@@ -151,12 +151,12 @@ final class RtcHandshakeHandler {
    }
 
    private void handleOffer(final UUID fromPmid, final SignalingMessage.WebRtc.Offer msg) {
-      if (!this.manager.isHostingP2P()) {
-         LOGGER.debug("Ignoring offer (not hosting)");
+      if (!this.manager.isHostingOnline()) {
+         LOGGER.debug("Ignoring WebRTC offer (not hosting)");
       } else if (!this.minecraft.getPlayerSocialManager().isFriendsPmid(fromPmid)) {
-         LOGGER.debug("Ignoring offer (not a friend)");
+         LOGGER.debug("Ignoring WebRTC offer (not a friend)");
       } else if (!this.manager.consumeAcceptedJoinRequest(fromPmid, msg.sessionId())) {
-         LOGGER.debug("Ignoring offer for session {} (join request was not accepted)", msg.sessionId());
+         LOGGER.debug("Ignoring WebRTC offer for session={} (join request was not accepted)", msg.sessionId());
       } else {
          this.startHandshake(fromPmid, msg.sessionId(), false, (handshake) -> handshake.acceptOffer(msg.sdp()).thenApply((sdp) -> SignalingMessage.answer(handshake.id(), sdp))).exceptionally((var0) -> null);
       }
@@ -166,7 +166,7 @@ final class RtcHandshakeHandler {
       RtcHandshake existing = this.getHandshake(fromPmid);
       if (existing != null && existing.isInitiator()) {
          if (!existing.id().equals(msg.sessionId())) {
-            LOGGER.debug("Ignoring stale answer for session {} (current={})", msg.sessionId(), existing.id());
+            LOGGER.debug("Ignoring stale WebRTC answer for session={} (current={})", msg.sessionId(), existing.id());
          } else {
             existing.applyAnswer(msg.sdp()).exceptionally((err) -> {
                existing.abort("answer failed: " + err.getMessage());
@@ -174,20 +174,20 @@ final class RtcHandshakeHandler {
             });
          }
       } else {
-         LOGGER.debug("Ignoring answer for session {} (no initiator handshake)", msg.sessionId());
+         LOGGER.debug("Ignoring WebRTC answer for session={} (no initiator handshake)", msg.sessionId());
       }
    }
 
    private void handleIceCandidate(final UUID fromPmid, final SignalingMessage.WebRtc.IceCandidate msg) {
       RtcHandshake handshake = this.getHandshake(fromPmid);
       if (handshake == null) {
-         LOGGER.trace("Dropping ICE candidate for session {} (no handshake)", msg.sessionId());
+         LOGGER.trace("Dropping ICE candidate for session={} (no handshake)", msg.sessionId());
       } else if (!handshake.id().equals(msg.sessionId())) {
-         LOGGER.trace("Dropping stale ICE candidate for session {} (current={})", msg.sessionId(), handshake.id());
+         LOGGER.trace("Dropping stale ICE candidate for session={} (current={})", msg.sessionId(), handshake.id());
       } else {
-         RTCIceCandidate candidate = msg.candidate().toRtcIceCandidate();
+         RTCIceCandidate candidate = msg.toRtcIceCandidate();
          handshake.addRemoteIceCandidate(candidate).exceptionally((err) -> {
-            LOGGER.warn("Failed to add remote ICE candidate for session {}: {}", msg.sessionId(), err.getMessage());
+            LOGGER.warn("Failed to add remote ICE candidate for session={}", msg.sessionId(), err);
             return null;
          });
       }
@@ -224,7 +224,7 @@ final class RtcHandshakeHandler {
             }
          }).whenComplete((var3, error) -> {
             if (error != null) {
-               LOGGER.warn("P2P handshake failed for session {}: {}", sessionId, error.toString());
+               LOGGER.warn("WebRTC handshake failed for session={}", sessionId, error);
                telemetry.setFailureStage(P2PTelemetryEvent.FailureStage.SIGNALING);
                result.completeExceptionally(error);
             }
@@ -237,11 +237,11 @@ final class RtcHandshakeHandler {
    private @Nullable RtcHandshake createHandshake(final UUID peerPmid, final String sessionId, final boolean initiator, final RTCIceServer turnAuth, final CompletableFuture<@Nullable Void> result, final P2PTelemetryEvent.State telemetry) {
       RTCConfiguration config = new RTCConfiguration();
       config.iceServers.add(turnAuth);
-      config.portAllocatorConfig.setDisableTcp(true).setEnableIpv6(true).setEnableIpv6OnWifi(true);
+      config.portAllocatorConfig.setEnableIpv6(true).setEnableIpv6OnWifi(true);
       RtcHandshake handshake;
       synchronized(this) {
          handshake = new RtcHandshake(this.getPeerConnectionFactory(), config, sessionId, initiator, (candidate) -> this.signaling.sendClientMessage(peerPmid, SignalingMessage.iceCandidate(sessionId, candidate)).exceptionally((err) -> {
-               LOGGER.warn("Failed to send ICE candidate for session {}: {}", sessionId, err.getMessage());
+               LOGGER.debug("Failed to send ICE candidate for session={}", sessionId, err);
                return null;
             }));
          if (this.handshakes.putIfAbsent(peerPmid, handshake) != null) {
@@ -250,7 +250,7 @@ final class RtcHandshakeHandler {
          }
       }
 
-      CompletableFuture.delayedExecutor(10L, TimeUnit.SECONDS).execute(() -> {
+      CompletableFuture.delayedExecutor(HANDSHAKE_TIMEOUT_MS, TimeUnit.MILLISECONDS).execute(() -> {
          if (!result.isDone()) {
             telemetry.setFailureStage(P2PTelemetryEvent.FailureStage.TIMEOUT);
             handshake.abort("Handshake timeout");
@@ -314,6 +314,10 @@ final class RtcHandshakeHandler {
 
          });
       }
+   }
+
+   static {
+      HANDSHAKE_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(30L);
    }
 
    private static final class WebRtcLogSink implements LogSink {

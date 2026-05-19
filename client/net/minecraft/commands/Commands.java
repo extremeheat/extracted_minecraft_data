@@ -133,6 +133,7 @@ import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.commands.TitleCommand;
 import net.minecraft.server.commands.TransferCommand;
 import net.minecraft.server.commands.TriggerCommand;
+import net.minecraft.server.commands.UnpublishCommand;
 import net.minecraft.server.commands.VersionCommand;
 import net.minecraft.server.commands.WardenSpawnTrackerCommand;
 import net.minecraft.server.commands.WaypointCommand;
@@ -283,6 +284,7 @@ public class Commands {
 
       if (commandSelection.includeIntegrated) {
          PublishCommand.register(this.dispatcher);
+         UnpublishCommand.register(this.dispatcher);
       }
 
       this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());

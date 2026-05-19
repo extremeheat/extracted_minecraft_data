@@ -1430,7 +1430,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.isReady;
    }
 
-   public boolean publishServer(final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
+   public boolean publishServer(final MultiplayerScope scope, final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
+      return false;
+   }
+
+   public boolean unpublishServer() {
       return false;
    }
 
@@ -2318,6 +2322,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");
+   }
+
+   public static enum MultiplayerScope {
+      OFF("off"),
+      LAN("lan"),
+      ONLINE("online");
+
+      private final Component translatable;
+      private final Component tooltip;
+
+      private MultiplayerScope(final String key) {
+         this.translatable = Component.translatable("menu.multiplayerOptions.network." + key);
+         this.tooltip = Component.translatable("menu.multiplayerOptions.network." + key + ".tooltip");
+      }
+
+      public Component getDisplayName() {
+         return this.translatable;
+      }
+
+      public Component getTooltip() {
+         return this.tooltip;
+      }
+
+      // $FF: synthetic method
+      private static MultiplayerScope[] $values() {
+         return new MultiplayerScope[]{OFF, LAN, ONLINE};
+      }
    }
 
    public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {

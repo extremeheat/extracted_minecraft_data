@@ -12,6 +12,7 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
+import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,7 +20,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.EXTMultiDraw;
 import org.lwjgl.vulkan.KHRPushDescriptor;
 import org.lwjgl.vulkan.KHRSynchronization2;
 import org.lwjgl.vulkan.VK12;
@@ -30,6 +34,8 @@ import org.lwjgl.vulkan.VkDescriptorBufferInfo;
 import org.lwjgl.vulkan.VkDescriptorImageInfo;
 import org.lwjgl.vulkan.VkDrawIndexedIndirectCommand;
 import org.lwjgl.vulkan.VkDrawIndirectCommand;
+import org.lwjgl.vulkan.VkMultiDrawIndexedInfoEXT;
+import org.lwjgl.vulkan.VkMultiDrawInfoEXT;
 import org.lwjgl.vulkan.VkRect2D;
 import org.lwjgl.vulkan.VkViewport;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
@@ -228,6 +234,19 @@ public class VulkanRenderPass implements RenderPassBackend {
       }
    }
 
+   public void multiDrawIndexed(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      if (this.pipeline != null && this.pipeline.isValid()) {
+         this.pushDescriptors();
+         EXTMultiDraw.nvkCmdDrawMultiIndexedEXT(this.commandBuffer(), drawCount, MemoryUtil.memAddress(drawParameters), instanceCount, firstInstance, VkMultiDrawIndexedInfoEXT.SIZEOF, 0L);
+      } else {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      }
+   }
+
+   public void multiDrawIndexed(final PointerBuffer firstIndexOffsets, final IntBuffer indexCounts, final IntBuffer vertexOffsets, final int drawCount) {
+      throw new UnsupportedOperationException("Vulkan does not support the multiDrawDirectSeparate device feature");
+   }
+
    public void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount) {
       if (this.pipeline != null && this.pipeline.isValid()) {
          this.pushDescriptors();
@@ -260,6 +279,19 @@ public class VulkanRenderPass implements RenderPassBackend {
          this.pushDescriptors();
          VK12.vkCmdDraw(this.commandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
       }
+   }
+
+   public void multiDraw(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      if (this.pipeline != null && this.pipeline.isValid()) {
+         this.pushDescriptors();
+         EXTMultiDraw.nvkCmdDrawMultiEXT(this.commandBuffer(), drawCount, MemoryUtil.memAddress(drawParameters), instanceCount, firstInstance, VkMultiDrawInfoEXT.SIZEOF);
+      } else {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      }
+   }
+
+   public void multiDraw(final IntBuffer firstVertices, final IntBuffer vertexCounts, final int drawCount) {
+      throw new UnsupportedOperationException("Vulkan does not support the multiDrawDirectSeparate device feature");
    }
 
    public void drawIndirect(final GpuBufferSlice commands, final int drawCount) {

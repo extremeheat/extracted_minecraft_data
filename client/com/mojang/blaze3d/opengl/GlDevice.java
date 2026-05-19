@@ -54,7 +54,7 @@ class GlDevice implements GpuDeviceBackend {
    protected static boolean USE_GL_ARB_draw_indirect = true;
    protected static boolean USE_GL_ARB_multi_draw_indirect = true;
    protected static boolean USE_GL_ARB_shader_draw_parameters = true;
-   private final CommandEncoderBackend encoder;
+   private final GlCommandEncoder encoder;
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
    private final DirectStateAccess directStateAccess;
@@ -86,7 +86,6 @@ class GlDevice implements GpuDeviceBackend {
       this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions);
       this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
       this.defaultShaderSource = defaultShaderSource;
-      this.encoder = new GlCommandEncoder(this);
       GL33C.glEnable(34895);
       GL33C.glEnable(34370);
       if (capabilities.GL_ARB_clip_control) {
@@ -110,6 +109,7 @@ class GlDevice implements GpuDeviceBackend {
       }
 
       this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
+      this.encoder = new GlCommandEncoder(this);
    }
 
    public GlDebugLabel debugLabels() {
@@ -197,14 +197,14 @@ class GlDevice implements GpuDeviceBackend {
 
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final long size) {
       GlStateManager.clearGlErrors();
-      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, label, usage, size);
+      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, usage, size);
       int error = GlStateManager._getError();
       if (error == 1285) {
          throw new GpuOutOfMemoryException("Could not allocate buffer of " + size + " for " + String.valueOf(label));
       } else if (error != 0) {
          throw new IllegalStateException("OpenGL error " + error);
       } else {
-         this.debugLabels.applyLabel(buffer);
+         this.debugLabels.applyLabel(buffer, label);
          return buffer;
       }
    }
@@ -212,14 +212,14 @@ class GlDevice implements GpuDeviceBackend {
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final ByteBuffer data) {
       GlStateManager.clearGlErrors();
       long size = (long)data.remaining();
-      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, label, usage, data);
+      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, usage, data);
       int error = GlStateManager._getError();
       if (error == 1285) {
          throw new GpuOutOfMemoryException("Could not allocate buffer of " + size + " for " + String.valueOf(label));
       } else if (error != 0) {
          throw new IllegalStateException("OpenGL error " + error);
       } else {
-         this.debugLabels.applyLabel(buffer);
+         this.debugLabels.applyLabel(buffer, label);
          return buffer;
       }
    }
@@ -265,6 +265,7 @@ class GlDevice implements GpuDeviceBackend {
 
    public void close() {
       this.clearPipelineCache();
+      this.encoder.close();
    }
 
    public DirectStateAccess directStateAccess() {

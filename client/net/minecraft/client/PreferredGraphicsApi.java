@@ -32,7 +32,7 @@ public enum PreferredGraphicsApi implements StringRepresentable {
    public GpuBackend[] getBackendsToTry() {
       GlBackend gl = new GlBackend();
       VulkanBackend vulkan = new VulkanBackend();
-      return this == OPENGL ? new GpuBackend[]{gl, vulkan} : new GpuBackend[]{vulkan, gl};
+      return this == VULKAN ? new GpuBackend[]{vulkan, gl} : new GpuBackend[]{gl, vulkan};
    }
 
    // $FF: synthetic method

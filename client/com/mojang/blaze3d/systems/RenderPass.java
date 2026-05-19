@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.vulkan.VkDrawIndexedIndirectCommand;
 import org.lwjgl.vulkan.VkDrawIndirectCommand;
 
@@ -22,6 +24,7 @@ public class RenderPass implements AutoCloseable {
    private final RenderPassBackend backend;
    private final GpuDeviceBackend device;
    private final DeviceFeatures deviceFeatures;
+   private final DeviceLimits deviceLimits;
    private final Runnable onFinish;
    private final @Nullable RenderArea renderArea;
    private boolean isClosed;
@@ -33,6 +36,7 @@ public class RenderPass implements AutoCloseable {
       this.backend = backend;
       this.device = device;
       this.deviceFeatures = device.getDeviceInfo().features();
+      this.deviceLimits = device.getDeviceInfo().limits();
       this.colorAttachments = colorAttachments;
       this.onFinish = onFinish;
       this.renderArea = renderArea;
@@ -140,9 +144,41 @@ public class RenderPass implements AutoCloseable {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else if (firstInstance != 0 && !this.deviceFeatures.nonZeroFirstInstance()) {
-         throw new IllegalArgumentException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
+         throw new UnsupportedOperationException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
       } else {
          this.backend.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+      }
+   }
+
+   public void multiDrawIndexed(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      if (this.isClosed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (!this.deviceFeatures.multiDrawDirectInterleaved()) {
+         throw new UnsupportedOperationException("device does not support multiDrawDirectInterleaved");
+      } else if (firstInstance != 0 && !this.deviceFeatures.nonZeroFirstInstance()) {
+         throw new UnsupportedOperationException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
+      } else if (drawCount > this.deviceLimits.maxMultiDrawDirectInterleavedDrawCount()) {
+         throw new IllegalArgumentException("May not exceed maxMultiDrawDirectInterleavedDrawCount draws in a single multiDrawDirectInterleaved call");
+      } else if (drawParameters.remaining() < drawCount * 3) {
+         throw new IllegalArgumentException("Not enough elements in drawParameters for drawCount draws");
+      } else {
+         this.backend.multiDrawIndexed(drawParameters, instanceCount, firstInstance, drawCount);
+      }
+   }
+
+   public void multiDrawIndexed(final PointerBuffer firstIndexOffsets, final IntBuffer indexCounts, final IntBuffer vertexOffsets, final int drawCount) {
+      if (this.isClosed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (!this.deviceFeatures.multiDrawDirectSeparate()) {
+         throw new UnsupportedOperationException("device does not support multiDrawDirectSeparate");
+      } else if (firstIndexOffsets.remaining() < drawCount) {
+         throw new IllegalArgumentException("firstIndexOffsets does not contain enough elements for drawCount draws");
+      } else if (indexCounts.remaining() < drawCount) {
+         throw new IllegalArgumentException("indexCounts does not contain enough elements for drawCount draws");
+      } else if (vertexOffsets.remaining() < drawCount) {
+         throw new IllegalArgumentException("vertexOffsets does not contain enough elements for drawCount draws");
+      } else {
+         this.backend.multiDrawIndexed(firstIndexOffsets, indexCounts, vertexOffsets, drawCount);
       }
    }
 
@@ -150,9 +186,9 @@ public class RenderPass implements AutoCloseable {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else if (!this.deviceFeatures.drawIndirect()) {
-         throw new IllegalArgumentException("device does not support drawIndirect");
+         throw new UnsupportedOperationException("device does not support drawIndirect");
       } else if (drawCount > 1 && !this.deviceFeatures.multiDrawIndirect()) {
-         throw new IllegalArgumentException("drawCount must be one when device does not support multiDrawIndirect");
+         throw new UnsupportedOperationException("drawCount must be one when device does not support multiDrawIndirect");
       } else if ((commands.buffer().usage() & 512) == 0) {
          throw new IllegalArgumentException("Indirect commands buffer must have GpuBuffer.USAGE_INDIRECT_PARAMETERS flag");
       } else if (commands.length() < (long)drawCount * (long)VkDrawIndexedIndirectCommand.SIZEOF) {
@@ -176,9 +212,39 @@ public class RenderPass implements AutoCloseable {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else if (firstInstance != 0 && !this.deviceFeatures.nonZeroFirstInstance()) {
-         throw new IllegalArgumentException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
+         throw new UnsupportedOperationException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
       } else {
          this.backend.draw(vertexCount, instanceCount, firstVertex, firstInstance);
+      }
+   }
+
+   public void multiDraw(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      if (this.isClosed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (!this.deviceFeatures.multiDrawDirectInterleaved()) {
+         throw new UnsupportedOperationException("device does not support multiDrawDirectInterleaved");
+      } else if (firstInstance != 0 && !this.deviceFeatures.nonZeroFirstInstance()) {
+         throw new UnsupportedOperationException("firstInstance must be zero on when device does not support nonZeroFirstInstance");
+      } else if (drawCount > this.deviceLimits.maxMultiDrawDirectInterleavedDrawCount()) {
+         throw new IllegalArgumentException("May not exceed maxMultiDrawDirectInterleavedDrawCount draws in a single multiDrawDirectInterleaved call");
+      } else if (drawParameters.remaining() < drawCount * 2) {
+         throw new IllegalArgumentException("Not enough elements in drawParameters for drawCount draws");
+      } else {
+         this.backend.multiDraw(drawParameters, instanceCount, firstInstance, drawCount);
+      }
+   }
+
+   public void multiDraw(final IntBuffer firstVertices, final IntBuffer vertexCounts, final int drawCount) {
+      if (this.isClosed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (!this.deviceFeatures.multiDrawDirectSeparate()) {
+         throw new UnsupportedOperationException("device does not support multiDrawDirectSeparate");
+      } else if (firstVertices.remaining() < drawCount) {
+         throw new IllegalArgumentException("firstVertices does not contain enough elements for drawCount draws");
+      } else if (vertexCounts.remaining() < drawCount) {
+         throw new IllegalArgumentException("vertexCounts does not contain enough elements for drawCount draws");
+      } else {
+         this.backend.multiDraw(firstVertices, vertexCounts, drawCount);
       }
    }
 
@@ -186,9 +252,9 @@ public class RenderPass implements AutoCloseable {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else if (!this.deviceFeatures.drawIndirect()) {
-         throw new IllegalArgumentException("device does not support drawIndirect");
+         throw new UnsupportedOperationException("device does not support drawIndirect");
       } else if (drawCount > 1 && !this.deviceFeatures.multiDrawIndirect()) {
-         throw new IllegalArgumentException("drawCount must be one when device does not support multiDrawIndirect");
+         throw new UnsupportedOperationException("drawCount must be one when device does not support multiDrawIndirect");
       } else if ((commands.buffer().usage() & 512) == 0) {
          throw new IllegalArgumentException("Indirect commands buffer must have GpuBuffer.USAGE_INDIRECT_PARAMETERS flag");
       } else if (commands.length() < (long)drawCount * (long)VkDrawIndirectCommand.SIZEOF) {

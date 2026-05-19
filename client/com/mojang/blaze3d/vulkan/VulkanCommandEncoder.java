@@ -9,6 +9,7 @@ import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderPassDescriptor;
+import com.mojang.blaze3d.systems.TransientMemory;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
@@ -50,6 +51,7 @@ import org.lwjgl.vulkan.VkSemaphoreWaitInfo;
 public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable {
    public static final int MAX_SUBMITS_IN_FLIGHT = 2;
    private final VulkanDevice device;
+   private final VulkanTransientMemory transientMemory;
    private final long submitSemaphore;
    private long currentSubmitIndex = 2L;
    private long completedSubmitIndex = 0L;
@@ -63,6 +65,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
    public VulkanCommandEncoder(final VulkanDevice device) {
       super();
       this.device = device;
+      this.transientMemory = new VulkanTransientMemory(device, this);
       MemoryStack baseStack = MemoryStack.stackGet();
       MemoryStack stack = baseStack.push();
 
@@ -97,11 +100,15 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
       this.checkpointStorage = device.checkpointExtension().createStorage(device, device.graphicsQueue(), 2);
       this.submissionBuilder = device.graphicsQueue().beginSubmit();
+      this.transientMemory.beginSubmit();
    }
 
    public void destroy() {
+      this.transientMemory.endSubmit();
       this.submissionBuilder.close();
       this.device.graphicsQueue().waitIdle();
+      this.destroyQueue.close();
+      this.transientMemory.destroy();
       this.destroyQueue.close();
 
       for(int i = 0; i < 2; ++i) {
@@ -117,17 +124,6 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    private VulkanCommandPool currentCommandPool() {
       return this.commandPools[(int)(this.currentSubmitIndex % 2L)];
-   }
-
-   private VulkanGpuBuffer createStagingBuffer(final ByteBuffer data) {
-      int size = data.remaining();
-      VulkanGpuBuffer stagingBuffer = new VulkanGpuBuffer(this.device, () -> "Staging buffer", 22, (long)size, false);
-
-      try (GpuBufferSlice.MappedView mappedMemory = stagingBuffer.map(0L, (long)data.remaining(), false, true)) {
-         MemoryUtil.memCopy(data, mappedMemory.data());
-      }
-
-      return stagingBuffer;
    }
 
    public VkCommandBuffer allocateAndBeginTransientCommandBuffer() {
@@ -214,6 +210,10 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
    }
 
    private void memoryBarrier(final MemoryStack stack) {
+      memoryBarrier(this.commandBuffer(), stack);
+   }
+
+   public static void memoryBarrier(final VkCommandBuffer commandBuffer, final MemoryStack stack) {
       VkMemoryBarrier2.Buffer memoryBarrier = VkMemoryBarrier2.calloc(1, stack).sType$Default();
       memoryBarrier.srcStageMask(65536L);
       memoryBarrier.srcAccessMask(98304L);
@@ -221,11 +221,12 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       memoryBarrier.dstAccessMask(98304L);
       VkDependencyInfo depInfo = VkDependencyInfo.calloc(stack).sType$Default();
       depInfo.pMemoryBarriers(memoryBarrier);
-      KHRSynchronization2.vkCmdPipelineBarrier2KHR(this.commandBuffer(), depInfo);
+      KHRSynchronization2.vkCmdPipelineBarrier2KHR(commandBuffer, depInfo);
    }
 
    public void submit() {
       this.endCommandBuffer();
+      this.transientMemory.endSubmit();
       this.signalSemaphore(this.submitSemaphore, this.currentSubmitIndex, 65536L);
       this.submissionBuilder.close();
       this.submissionBuilder = this.device.graphicsQueue().beginSubmit();
@@ -237,7 +238,12 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          this.currentCommandPool().reset();
          this.destroyQueue.rotate();
          this.checkpointStorage.rotate();
+         this.transientMemory.beginSubmit();
       }
+   }
+
+   public TransientMemory transientMemory() {
+      return this.transientMemory;
    }
 
    public RenderPassBackend createRenderPass(final RenderPassDescriptor descriptor) {
@@ -530,29 +536,27 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    public void writeToBuffer(final GpuBufferSlice destination, final ByteBuffer data) {
       VulkanGpuBuffer destBuffer = (VulkanGpuBuffer)destination.buffer();
+      GpuBufferSlice stagingBuffer = this.transientMemory.uploadStaging(data, 1L, 16);
+      MemoryStack stack = MemoryStack.stackPush();
 
-      try (VulkanGpuBuffer stagingBuffer = this.createStagingBuffer(data)) {
-         MemoryStack stack = MemoryStack.stackPush();
-
-         try {
-            VkBufferCopy.Buffer regions = VkBufferCopy.calloc(1, stack).srcOffset(0L).dstOffset(destination.offset()).size((long)data.remaining());
-            VK12.vkCmdCopyBuffer(this.commandBuffer(), stagingBuffer.vkBuffer(), destBuffer.vkBuffer(), regions);
-            this.memoryBarrier(stack);
-         } catch (Throwable var10) {
-            if (stack != null) {
-               try {
-                  stack.close();
-               } catch (Throwable var9) {
-                  var10.addSuppressed(var9);
-               }
-            }
-
-            throw var10;
-         }
-
+      try {
+         VkBufferCopy.Buffer regions = VkBufferCopy.calloc(1, stack).srcOffset(stagingBuffer.offset()).dstOffset(destination.offset()).size((long)data.remaining());
+         VK12.vkCmdCopyBuffer(this.commandBuffer(), ((VulkanGpuBuffer)stagingBuffer.buffer()).vkBuffer(), destBuffer.vkBuffer(), regions);
+         this.memoryBarrier(stack);
+      } catch (Throwable var9) {
          if (stack != null) {
-            stack.close();
+            try {
+               stack.close();
+            } catch (Throwable var8) {
+               var9.addSuppressed(var8);
+            }
          }
+
+         throw var9;
+      }
+
+      if (stack != null) {
+         stack.close();
       }
 
    }
@@ -590,18 +594,13 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       int texelSize = destination.getFormat().pixelSize();
       int skipTexels = sourceX + sourceY * source.getWidth();
       long skipBytes = (long)skipTexels * (long)texelSize;
-
-      try (VulkanGpuBuffer stagingBuffer = this.createStagingBuffer(MemoryUtil.memByteBuffer(source.getPointer(), stagingBufferSize))) {
-         this.writeToTexture((VulkanGpuTexture)destination, stagingBuffer, skipBytes, mipLevel, depthOrLayer, destX, destY, width, height, source.getWidth(), source.getHeight());
-      }
-
+      GpuBufferSlice stagingBuffer = this.transientMemory.uploadStaging(MemoryUtil.memByteBuffer(source.getPointer(), stagingBufferSize), 1L, 16);
+      this.writeToTexture((VulkanGpuTexture)destination, (VulkanGpuBuffer)stagingBuffer.buffer(), skipBytes + stagingBuffer.offset(), mipLevel, depthOrLayer, destX, destY, width, height, source.getWidth(), source.getHeight());
    }
 
    public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final NativeImage.Format format, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
-      try (VulkanGpuBuffer stagingBuffer = this.createStagingBuffer(source)) {
-         this.writeToTexture((VulkanGpuTexture)destination, stagingBuffer, 0L, mipLevel, depthOrLayer, destX, destY, width, height, width, height);
-      }
-
+      GpuBufferSlice stagingBuffer = this.transientMemory.uploadStaging(source, 1L, 16);
+      this.writeToTexture((VulkanGpuTexture)destination, (VulkanGpuBuffer)stagingBuffer.buffer(), stagingBuffer.offset(), mipLevel, depthOrLayer, destX, destY, width, height, width, height);
    }
 
    private void writeToTexture(final VulkanGpuTexture destination, final VulkanGpuBuffer stagingBuffer, final long bufferOffset, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int srcWidth, final int srcHeight) {

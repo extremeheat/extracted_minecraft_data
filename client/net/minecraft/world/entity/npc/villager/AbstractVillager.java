@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.npc.villager;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.List;
@@ -228,17 +229,18 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
       }
    }
 
-   private static void addOffersFromItemListings(final LootContext lootContext, final MerchantOffers merchantOffers, final HolderSet<VillagerTrade> potentialOffers, final int numberOfOffers) {
+   @VisibleForTesting
+   static void addOffersFromItemListings(final LootContext lootContext, final MerchantOffers merchantOffers, final HolderSet<VillagerTrade> potentialOffers, final int numberOfOffers) {
+      List<Holder<VillagerTrade>> potentialOffersList = Lists.newArrayList(potentialOffers);
       int offersFound = 0;
 
-      while(offersFound < numberOfOffers) {
-         Optional<Holder<VillagerTrade>> villagerTrade = potentialOffers.getRandomElement(lootContext.getRandom());
-         if (villagerTrade.isEmpty()) {
-            break;
-         }
-
-         MerchantOffer offer = ((VillagerTrade)((Holder)villagerTrade.get()).value()).getOffer(lootContext);
-         if (offer != null) {
+      while(offersFound < numberOfOffers && !potentialOffersList.isEmpty()) {
+         int roll = lootContext.getRandom().nextInt(potentialOffersList.size());
+         Holder<VillagerTrade> villagerTrade = (Holder)potentialOffersList.get(roll);
+         MerchantOffer offer = ((VillagerTrade)villagerTrade.value()).getOffer(lootContext);
+         if (offer == null) {
+            potentialOffersList.remove(roll);
+         } else {
             merchantOffers.add(offer);
             ++offersFound;
          }

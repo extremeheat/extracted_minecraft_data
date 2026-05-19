@@ -46,10 +46,10 @@ public class PresenceHandler {
    private void updatePresence() {
       this.updatePresence = false;
       this.lastPresencePost = Instant.now();
-      PresenceStatus presenceStatus = this.getPresenceStatus();
-      JoinInfoUpdate joinInfo = this.getJoinInfoUpdate(presenceStatus);
+      PresenceStatus publicPresenceStatus = this.getPublicPresenceStatus();
+      JoinInfoUpdate joinInfo = this.getJoinInfoUpdate(publicPresenceStatus);
       CompletableFuture.runAsync(() -> {
-         PresenceResponse newPresence = this.friendsService.presence(presenceStatus.name(), joinInfo);
+         PresenceResponse newPresence = this.friendsService.presence(publicPresenceStatus.name(), joinInfo);
          this.minecraft.execute(() -> {
             boolean refreshList = this.latestPresence != newPresence;
             this.latestPresence = newPresence;
@@ -155,72 +155,78 @@ public class PresenceHandler {
       this.locallyDismissedInvitePmids.removeIf((pmid) -> this.latestPresence.presence().stream().noneMatch((presence) -> pmid.equals(presence.pmid()) && presence.joinInfo() != null && presence.joinInfo().invited()));
    }
 
-   private PresenceStatus getPresenceStatus() {
+   private PresenceStatus getPublicPresenceStatus() {
       PresenceStatus var10000;
       switch ((PresenceSharing)this.minecraft.options.sharePresence().get()) {
-         case NONE:
-            var10000 = PresenceStatus.OFFLINE;
-            break;
-         case LIMITED:
-            var10000 = PresenceStatus.ONLINE;
-            break;
-         case ALL:
-            IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
-            if (singleplayerServer != null) {
-               switch (singleplayerServer.getMultiplayerScope()) {
-                  case OFF:
-                  case LAN:
-                     var10000 = PresenceStatus.PLAYING_OFFLINE;
-                     return var10000;
-                  case ONLINE:
-                     var10000 = PresenceStatus.PLAYING_HOSTED_SERVER;
-                     return var10000;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
-               }
-            } else {
-               var10000 = PresenceStatus.ONLINE;
-               break;
-            }
-         default:
-            throw new MatchException((String)null, (Throwable)null);
+         case NONE -> var10000 = PresenceStatus.OFFLINE;
+         case LIMITED -> var10000 = PresenceStatus.ONLINE;
+         case ALL -> var10000 = this.getPresenceStatus();
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private @Nullable JoinInfoUpdate getJoinInfoUpdate(final @Nullable PresenceStatus presenceStatus) {
-      if (presenceStatus == null) {
-         return null;
-      } else {
-         JoinInfoUpdate var10000;
-         switch ((PresenceSharing)this.minecraft.options.sharePresence().get()) {
-            case NONE:
-               var10000 = null;
+   private PresenceStatus getPresenceStatus() {
+      IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
+      if (singleplayerServer != null) {
+         PresenceStatus var10000;
+         switch (singleplayerServer.getMultiplayerScope()) {
+            case OFF:
+            case LAN:
+               var10000 = PresenceStatus.PLAYING_OFFLINE;
                break;
-            case LIMITED:
-               var10000 = new JoinInfoUpdate((String)null, Set.copyOf(this.invitedPlayersBatch));
+            case ONLINE:
+               var10000 = PresenceStatus.PLAYING_HOSTED_SERVER;
                break;
-            case ALL:
-               switch (presenceStatus) {
-                  case PLAYING_HOSTED_SERVER:
-                     var10000 = new JoinInfoUpdate((String)null, Set.copyOf(this.invitedPlayersBatch));
-                     return var10000;
-                  case ONLINE:
-                  case PLAYING_OFFLINE:
-                  case OFFLINE:
-                  case PLAYING_REALMS:
-                  case PLAYING_SERVER:
-                     var10000 = null;
-                     return var10000;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
-               }
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
 
          return var10000;
+      } else {
+         return PresenceStatus.ONLINE;
+      }
+   }
+
+   private @Nullable JoinInfoUpdate getJoinInfoUpdate(final PresenceStatus publicPresenceStatus) {
+      JoinInfoUpdate var10000;
+      switch ((PresenceSharing)this.minecraft.options.sharePresence().get()) {
+         case NONE:
+            var10000 = null;
+            return var10000;
+         case LIMITED:
+            switch (this.getPresenceStatus()) {
+               case PLAYING_HOSTED_SERVER:
+                  var10000 = new JoinInfoUpdate((String)null, Set.copyOf(this.invitedPlayersBatch));
+                  return var10000;
+               case ONLINE:
+               case PLAYING_OFFLINE:
+               case OFFLINE:
+               case PLAYING_REALMS:
+               case PLAYING_SERVER:
+                  var10000 = null;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
+         case ALL:
+            switch (publicPresenceStatus) {
+               case PLAYING_HOSTED_SERVER:
+                  var10000 = new JoinInfoUpdate((String)null, Set.copyOf(this.invitedPlayersBatch));
+                  return var10000;
+               case ONLINE:
+               case PLAYING_OFFLINE:
+               case OFFLINE:
+               case PLAYING_REALMS:
+               case PLAYING_SERVER:
+                  var10000 = null;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
    }
 

@@ -21,6 +21,7 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import org.joml.Matrix4fStack;
 import org.jspecify.annotations.Nullable;
 
 public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderState> implements AutoCloseable {
@@ -46,12 +47,15 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.prepareTexturesAndProjection(needsAResize, width, height);
          RenderSystem.outputColorTextureOverride = this.textureView;
          RenderSystem.outputDepthTextureOverride = this.depthTextureView;
+         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+         modelViewStack.pushMatrix();
          PoseStack poseStack = new PoseStack();
          poseStack.translate((float)width / 2.0F, this.getTranslateY(height, guiScale), 0.0F);
          float scale = (float)guiScale * renderState.scale();
          poseStack.scale(scale, scale, -scale);
          this.renderToTexture(renderState, poseStack, this.submitNodeStorage);
          featureRenderDispatcher.renderAllFeatures(this.submitNodeStorage);
+         modelViewStack.popMatrix();
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
          this.blitTexture(renderState, guiRenderState);

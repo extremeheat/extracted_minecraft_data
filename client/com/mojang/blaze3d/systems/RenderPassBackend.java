@@ -6,9 +6,11 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 
 public interface RenderPassBackend {
    void pushDebugGroup(final Supplier<String> label);
@@ -33,11 +35,19 @@ public interface RenderPassBackend {
 
    void drawIndexed(final int indexCount, final int instanceCount, final int firstIndex, final int vertexOffset, final int firstInstance);
 
+   void multiDrawIndexed(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount);
+
+   void multiDrawIndexed(final PointerBuffer firstIndexOffsets, final IntBuffer indexCounts, final IntBuffer vertexOffsets, final int drawCount);
+
    void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount);
 
    <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument);
 
    void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance);
+
+   void multiDraw(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount);
+
+   void multiDraw(final IntBuffer firstVertices, final IntBuffer vertexCounts, final int drawCount);
 
    void drawIndirect(final GpuBufferSlice commands, final int drawCount);
 

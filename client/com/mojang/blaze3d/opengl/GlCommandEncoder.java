@@ -19,10 +19,12 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.RenderPassDescriptor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
+import com.mojang.blaze3d.systems.TransientMemory;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,15 +36,18 @@ import java.util.OptionalDouble;
 import java.util.function.BiConsumer;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.ARBBaseInstance;
 import org.lwjgl.opengl.ARBDrawIndirect;
 import org.lwjgl.opengl.ARBMultiDrawIndirect;
 import org.lwjgl.opengl.GL33C;
+import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
-class GlCommandEncoder implements CommandEncoderBackend {
+class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final GlDevice device;
+   private final GlTransientMemory transientMemory;
    private final int readFbo;
    private final int drawFbo;
    private @Nullable RenderPipeline lastPipeline;
@@ -53,11 +58,21 @@ class GlCommandEncoder implements CommandEncoderBackend {
    protected GlCommandEncoder(final GlDevice device) {
       super();
       this.device = device;
+      this.transientMemory = (GlTransientMemory)(device.getDeviceInfo().features().persistentMapping() ? new GlTransientMemory.PersistentMapping(device) : new GlTransientMemory.Fallback(device));
       this.readFbo = device.directStateAccess().createFrameBufferObject();
       this.drawFbo = device.directStateAccess().createFrameBufferObject();
    }
 
+   public void close() {
+      this.transientMemory.close();
+   }
+
    public void submit() {
+      this.transientMemory.rotate();
+   }
+
+   public TransientMemory transientMemory() {
+      return this.transientMemory;
    }
 
    public RenderPassBackend createRenderPass(final RenderPassDescriptor descriptor) {
@@ -182,7 +197,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
    public void writeToBuffer(final GpuBufferSlice slice, final ByteBuffer data) {
       GlBuffer buffer = (GlBuffer)slice.buffer();
       buffer.checkCanBeUsed();
-      this.device.directStateAccess().bufferSubData(buffer.handle, slice.offset(), data, buffer.usage());
+      this.device.directStateAccess().bufferSubData(buffer.handle(), slice.offset(), data, buffer.usage());
    }
 
    public void copyToBuffer(final GpuBufferSlice source, final GpuBufferSlice target) {
@@ -190,7 +205,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       GlBuffer targetBuffer = (GlBuffer)target.buffer();
       sourceBuffer.checkCanBeUsed();
       targetBuffer.checkCanBeUsed();
-      this.device.directStateAccess().copyBufferSubData(sourceBuffer.handle, targetBuffer.handle, source.offset(), target.offset(), source.length());
+      this.device.directStateAccess().copyBufferSubData(sourceBuffer.handle(), targetBuffer.handle(), source.offset(), target.offset(), source.length());
    }
 
    public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int sourceX, final int sourceY) {
@@ -235,7 +250,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       ((GlBuffer)destination).checkCanBeUsed();
       GlStateManager.clearGlErrors();
       this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)source).glId(), 0, mipLevel, 36008);
-      GlStateManager._glBindBuffer(35051, ((GlBuffer)destination).handle);
+      GlStateManager._glBindBuffer(35051, ((GlBuffer)destination).handle());
       GlStateManager._pixelStore(3330, width);
       GlStateManager._readPixels(x, y, width, height, GlConst.toGlExternalId(source.getFormat()), GlConst.toGlType(source.getFormat()), offset);
       RenderSystem.queueFencedTask(callback);
@@ -331,7 +346,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
 
                      int patt2$temp = var9;
                      if (true) {
-                        GL33C.glBindBufferRange(35345, patt2$temp, ((GlBuffer)buffer.buffer()).handle, buffer.offset(), buffer.length());
+                        GL33C.glBindBufferRange(35345, patt2$temp, ((GlBuffer)buffer.buffer()).handle(), buffer.offset(), buffer.length());
                      }
                   }
 
@@ -390,12 +405,28 @@ class GlCommandEncoder implements CommandEncoderBackend {
       }
    }
 
+   public void executeDraws(final GlRenderPass renderPass, final @Nullable IndexType indexType, final @Nullable PointerBuffer firstIndexOffsets, final IntBuffer indexCounts, final IntBuffer vertexOffsets, final int drawCount) {
+      if (this.trySetup(renderPass, Collections.emptyList())) {
+         this.validateDraw(renderPass, indexType);
+         this.lastVertexArray = this.device.vertexArrayCache().bindVertexArray(renderPass.pipeline.info().getVertexFormatBindings(), renderPass.vertexBuffers, renderPass.vertexBufferDirty ? null : this.lastVertexArray);
+         renderPass.vertexBufferDirty = false;
+         if (indexType == null) {
+            GL33C.nglMultiDrawArrays(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), MemoryUtil.memAddress(vertexOffsets), MemoryUtil.memAddress(indexCounts), drawCount);
+         } else {
+            assert firstIndexOffsets != null;
+
+            GL33C.nglMultiDrawElementsBaseVertex(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), MemoryUtil.memAddress(indexCounts), GlConst.toGl(indexType), MemoryUtil.memAddress(firstIndexOffsets), drawCount, MemoryUtil.memAddress(vertexOffsets));
+         }
+
+      }
+   }
+
    protected void executeDrawIndirect(final GlRenderPass renderPass, final @Nullable IndexType indexType, final GlBuffer commands, final long offset, final int drawCount) {
       if (this.trySetup(renderPass, Collections.emptyList())) {
          this.validateDraw(renderPass, indexType);
          this.lastVertexArray = this.device.vertexArrayCache().bindVertexArray(renderPass.pipeline.info().getVertexFormatBindings(), renderPass.vertexBuffers, renderPass.vertexBufferDirty ? null : this.lastVertexArray);
          renderPass.vertexBufferDirty = false;
-         GlStateManager._glBindBuffer(36671, commands.handle);
+         GlStateManager._glBindBuffer(36671, commands.handle());
          if (indexType == null) {
             if (drawCount > 1) {
                ARBMultiDrawIndirect.glMultiDrawArraysIndirect(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), offset, drawCount, 0);
@@ -403,7 +434,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                ARBDrawIndirect.glDrawArraysIndirect(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), offset);
             }
          } else {
-            GlStateManager._glBindBuffer(34963, ((GlBuffer)renderPass.indexBuffer).handle);
+            GlStateManager._glBindBuffer(34963, ((GlBuffer)renderPass.indexBuffer).handle());
             if (drawCount > 1) {
                ARBMultiDrawIndirect.glMultiDrawElementsIndirect(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), GlConst.toGl(indexType), offset, drawCount, 0);
             } else {
@@ -416,7 +447,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
 
    private void drawFromBuffers(final GlRenderPass renderPass, final int baseVertex, final int firstIndex, final int drawCount, final @Nullable IndexType indexType, final GlRenderPipeline pipeline, final int instanceCount, final int firstInstance) {
       if (indexType != null) {
-         GlStateManager._glBindBuffer(34963, ((GlBuffer)renderPass.indexBuffer).handle);
+         GlStateManager._glBindBuffer(34963, ((GlBuffer)renderPass.indexBuffer).handle());
          if (firstInstance > 0) {
             ARBBaseInstance.glDrawElementsInstancedBaseVertexBaseInstance(GlConst.toGl(pipeline.info().getPrimitiveTopology()), drawCount, GlConst.toGl(indexType), (long)firstIndex * (long)indexType.bytes, instanceCount, baseVertex, firstInstance);
          } else {
@@ -545,7 +576,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                   if (true) {
                      if (isDirty) {
                         GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
-                        GL33C.glBindBufferRange(35345, blockBinding, ((GlBuffer)bufferView.buffer()).handle, bufferView.offset(), bufferView.length());
+                        GL33C.glBindBufferRange(35345, blockBinding, ((GlBuffer)bufferView.buffer()).handle(), bufferView.offset(), bufferView.length());
                      }
                      continue label216;
                   }
@@ -601,7 +632,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
                            GL33C.glBindTexture(35882, texture);
                            if (isDirty) {
                               GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
-                              GL33C.glTexBuffer(35882, GlConst.toGlInternalId(texture), ((GlBuffer)bufferView.buffer()).handle);
+                              GL33C.glTexBuffer(35882, GlConst.toGlInternalId(texture), ((GlBuffer)bufferView.buffer()).handle());
                            }
                            continue label216;
                         }

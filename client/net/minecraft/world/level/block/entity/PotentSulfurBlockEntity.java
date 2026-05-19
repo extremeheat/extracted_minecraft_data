@@ -254,6 +254,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
                   entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
                   entityToBeLaunched.hurtMarked = true;
                   entityToBeLaunched.needsSync = true;
+                  entityToBeLaunched.checkFallDistanceAccumulation();
                }
             }
 

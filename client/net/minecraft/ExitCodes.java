@@ -8,6 +8,7 @@ public class ExitCodes {
    public static final int EXIT_CODE_CRASH_EARLY_ARGUMENT_PARSE = -5;
    public static final int EXIT_CODE_CRASH_SHUTDOWN = -6;
    public static final int EXIT_CODE_VERSION_PARSING_FAIL = -7;
+   public static final int EXIT_CODE_CLIENT_WATCHDOG = -8;
 
    public ExitCodes() {
       super();

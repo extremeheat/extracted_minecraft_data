@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
@@ -28,6 +29,15 @@ public class Screenshot {
 
    public static void grab(final File workDir, final RenderTarget target, final Consumer<Component> callback) {
       grab(workDir, (String)null, target, 1, callback);
+   }
+
+   public static void grab(final Minecraft minecraft, final boolean debugPanoramaRequested) {
+      if (debugPanoramaRequested && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
+         minecraft.showDebugChat(minecraft.grabPanoramixScreenshot(minecraft.gameDirectory));
+      } else {
+         grab(minecraft.gameDirectory, minecraft.gameRenderer.mainRenderTarget(), (message) -> minecraft.execute(() -> minecraft.showDebugChat(message)));
+      }
+
    }
 
    public static void grab(final File workDir, final @Nullable String forceName, final RenderTarget target, final int downscaleFactor, final Consumer<Component> callback) {

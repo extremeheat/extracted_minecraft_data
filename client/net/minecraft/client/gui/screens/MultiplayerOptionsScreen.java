@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -17,6 +16,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
 import org.jspecify.annotations.Nullable;
@@ -36,24 +36,26 @@ public class MultiplayerOptionsScreen extends Screen {
    private static final Identifier INWORLD_MENU_LIST_BACKGROUND;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Screen lastScreen;
-   private IntegratedServer.MultiplayerScope wantedMultiplayerScope;
+   private MinecraftServer.MultiplayerScope wantedMultiplayerScope;
    private GameType gameMode;
    private boolean commands;
    private int port;
    private boolean portValid;
    private @Nullable Button applyChanges;
    private @Nullable EditBox portEdit;
-   private IntegratedServer.MultiplayerScope initialMultiplayerScope;
+   private @Nullable StringWidget portLabel;
+   private MinecraftServer.MultiplayerScope initialMultiplayerScope;
    private GameType initialGameMode;
    private boolean initialCommands;
+   private int initialPort;
 
    public MultiplayerOptionsScreen(final Screen lastScreen) {
       super(TITLE);
-      this.wantedMultiplayerScope = IntegratedServer.MultiplayerScope.OFF;
+      this.wantedMultiplayerScope = MinecraftServer.MultiplayerScope.OFF;
       this.gameMode = GameType.SURVIVAL;
       this.port = HttpUtil.getAvailablePort();
       this.portValid = true;
-      this.initialMultiplayerScope = IntegratedServer.MultiplayerScope.OFF;
+      this.initialMultiplayerScope = MinecraftServer.MultiplayerScope.OFF;
       this.initialGameMode = GameType.SURVIVAL;
       this.lastScreen = lastScreen;
    }
@@ -67,12 +69,18 @@ public class MultiplayerOptionsScreen extends Screen {
          LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
          content.defaultCellSetting().alignHorizontallyCenter();
          content.addChild(new StringWidget(NETWORK_HEADER, this.font));
-         content.addChild(CycleButton.builder(IntegratedServer.MultiplayerScope::getDisplayName, singleplayerServer.getMultiplayerScope()).withValues(this.minecraft.getPlayerSocialManager().isFriendListEnabled() ? IntegratedServer.MultiplayerScope.values() : (IntegratedServer.MultiplayerScope[])Arrays.stream(IntegratedServer.MultiplayerScope.values()).filter((scope) -> scope != IntegratedServer.MultiplayerScope.ONLINE).toArray((x$0) -> new IntegratedServer.MultiplayerScope[x$0])).withTooltip(IntegratedServer.MultiplayerScope::getTooltip).create(Component.translatable("menu.multiplayerOptions.network"), (var1, value) -> {
+         content.addChild(CycleButton.builder(MinecraftServer.MultiplayerScope::getDisplayName, singleplayerServer.getMultiplayerScope()).withValues(this.minecraft.getPlayerSocialManager().isFriendListEnabled() ? MinecraftServer.MultiplayerScope.values() : (MinecraftServer.MultiplayerScope[])Arrays.stream(MinecraftServer.MultiplayerScope.values()).filter((scope) -> scope != MinecraftServer.MultiplayerScope.ONLINE).toArray((x$0) -> new MinecraftServer.MultiplayerScope[x$0])).withTooltip((scope) -> Tooltip.create(scope.getTooltip())).create(Component.translatable("menu.multiplayerOptions.network"), (var1, value) -> {
             this.wantedMultiplayerScope = value;
+            this.updatePortControlsState();
             this.updateApplyChangesActiveState();
          }));
          this.initialMultiplayerScope = singleplayerServer.getMultiplayerScope();
          this.wantedMultiplayerScope = this.initialMultiplayerScope;
+         if (this.initialMultiplayerScope == MinecraftServer.MultiplayerScope.LAN) {
+            this.port = singleplayerServer.getPort();
+            this.initialPort = this.port;
+         }
+
          this.applyChanges = Button.builder(APPLY_CHANGES, (var2) -> {
             this.minecraft.gui.setScreen((Screen)null);
             if (this.gameMode != this.initialGameMode) {
@@ -83,7 +91,7 @@ public class MultiplayerOptionsScreen extends Screen {
                singleplayerServer.setCommandsAllowedForAllPlayers(this.commands);
             }
 
-            if (this.wantedMultiplayerScope != this.initialMultiplayerScope) {
+            if (this.wantedMultiplayerScope != this.initialMultiplayerScope || this.lanPortChanged()) {
                this.changeMultiplayerScope(singleplayerServer);
             }
 
@@ -91,22 +99,18 @@ public class MultiplayerOptionsScreen extends Screen {
          this.applyChanges.active = false;
          this.portEdit = new EditBox(this.font, PORT_INFO_TEXT);
          this.portEdit.setResponder((value) -> {
-            Component errorMessage = this.tryParsePort(value);
-            this.portEdit.setHint(Component.literal("" + this.port));
-            if (errorMessage == null) {
-               this.portValid = true;
-               this.portEdit.setTextColor(-2039584);
-               this.portEdit.setTooltip((Tooltip)null);
-            } else {
-               this.portValid = false;
-               this.portEdit.setTextColor(-2142128);
-               this.portEdit.setTooltip(Tooltip.create(errorMessage));
-            }
-
+            this.setPortError(this.tryParsePort(value));
+            this.portEdit.setHint(Component.literal(String.valueOf(this.port)));
             this.updateApplyChangesActiveState();
          });
-         this.portEdit.setHint(Component.literal("" + this.port));
-         content.addChild(CommonLayouts.labeledElement(this.font, this.portEdit, PORT_INFO_TEXT));
+         if (this.initialMultiplayerScope == MinecraftServer.MultiplayerScope.LAN) {
+            this.portEdit.setValue(String.valueOf(this.port));
+         }
+
+         LinearLayout portRow = LinearLayout.vertical().spacing(4);
+         this.portLabel = (StringWidget)portRow.addChild(new StringWidget(PORT_INFO_TEXT, this.font));
+         portRow.addChild(this.portEdit);
+         content.addChild(portRow);
          content.addChild(new StringWidget(OTHER_PLAYERS_HEADER, this.font));
          LinearLayout otherPlayerSettings = (LinearLayout)content.addChild(LinearLayout.horizontal().spacing(8));
          otherPlayerSettings.defaultCellSetting().alignHorizontallyCenter();
@@ -127,33 +131,56 @@ public class MultiplayerOptionsScreen extends Screen {
          footer.addChild(this.applyChanges);
          footer.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onClose()).build());
          this.layout.visitWidgets(this::addRenderableWidget);
+         this.updatePortControlsState();
          this.repositionElements();
       }
    }
 
+   private void updatePortControlsState() {
+      boolean lanWanted = this.wantedMultiplayerScope == MinecraftServer.MultiplayerScope.LAN;
+      if (this.portEdit != null) {
+         String desired = lanWanted ? (this.initialMultiplayerScope == MinecraftServer.MultiplayerScope.LAN ? String.valueOf(this.initialPort) : "") : "";
+         if (!this.portEdit.getValue().equals(desired)) {
+            this.portEdit.setValue(desired);
+         }
+
+         this.portEdit.setEditable(lanWanted);
+         this.portEdit.active = lanWanted;
+         this.portEdit.setHint(lanWanted ? Component.literal(String.valueOf(this.port)) : Component.empty());
+         if (!lanWanted) {
+            this.portEdit.setFocused(false);
+            this.setPortError((Component)null);
+         }
+      }
+
+      if (this.portLabel != null) {
+         this.portLabel.setMessage((Component)(lanWanted ? PORT_INFO_TEXT : PORT_INFO_TEXT.copy().withStyle(ChatFormatting.GRAY)));
+      }
+
+   }
+
+   private void setPortError(final @Nullable Component errorMessage) {
+      if (this.portEdit != null) {
+         this.portValid = errorMessage == null;
+         if (errorMessage == null) {
+            this.portEdit.setTextColor(-2039584);
+            this.portEdit.setTooltip((Tooltip)null);
+         } else {
+            this.portEdit.setTextColor(-2142128);
+            this.portEdit.setTooltip(Tooltip.create(errorMessage));
+         }
+
+      }
+   }
+
    private void changeMultiplayerScope(final IntegratedServer singleplayerServer) {
-      switch (this.wantedMultiplayerScope) {
-         case OFF:
-            if (singleplayerServer.unpublishServer()) {
-               this.sendPublishMessage(Component.translatable("menu.multiplayerOptions.publish.stopped"));
-               this.minecraft.getPlayerSocialManager().getPresenceHandler().clearInvites();
-            }
-            break;
-         case LAN:
-            if (singleplayerServer.unpublishServer()) {
-               this.sendPublishMessage(Component.translatable("menu.multiplayerOptions.publish.stopped"));
-               this.minecraft.getPlayerSocialManager().getPresenceHandler().clearInvites();
-            }
+      if (singleplayerServer.unpublishServer()) {
+         this.sendPublishMessage(Component.translatable("menu.multiplayerOptions.publish.stopped"));
+         this.minecraft.getPlayerSocialManager().getPresenceHandler().clearInvites();
+      }
 
-            this.publish(singleplayerServer, IntegratedServer.MultiplayerScope.LAN);
-            break;
-         case ONLINE:
-            if (singleplayerServer.unpublishServer()) {
-               this.sendPublishMessage(Component.translatable("menu.multiplayerOptions.publish.stopped"));
-               this.minecraft.getPlayerSocialManager().getPresenceHandler().clearInvites();
-            }
-
-            this.publish(singleplayerServer, IntegratedServer.MultiplayerScope.ONLINE);
+      if (this.wantedMultiplayerScope != MinecraftServer.MultiplayerScope.OFF) {
+         this.publish(singleplayerServer, this.wantedMultiplayerScope);
       }
 
       this.minecraft.getPlayerSocialManager().getPresenceHandler().tryUpdatePresence();
@@ -161,30 +188,31 @@ public class MultiplayerOptionsScreen extends Screen {
 
    private void updateApplyChangesActiveState() {
       if (this.applyChanges != null) {
-         this.applyChanges.active = this.portValid && this.hasSettingsChanges();
+         this.applyChanges.active = (!this.portIsRequired() || this.portValid) && this.hasSettingsChanges();
       }
 
+   }
+
+   private boolean portIsRequired() {
+      return this.wantedMultiplayerScope == MinecraftServer.MultiplayerScope.LAN;
+   }
+
+   private boolean lanPortChanged() {
+      return this.wantedMultiplayerScope == MinecraftServer.MultiplayerScope.LAN && this.initialMultiplayerScope == MinecraftServer.MultiplayerScope.LAN && this.port != this.initialPort;
    }
 
    private boolean hasSettingsChanges() {
-      return this.wantedMultiplayerScope != this.initialMultiplayerScope || this.gameMode != this.initialGameMode || this.commands != this.initialCommands;
+      return this.wantedMultiplayerScope != this.initialMultiplayerScope || this.gameMode != this.initialGameMode || this.commands != this.initialCommands || this.lanPortChanged();
    }
 
-   private void publish(final IntegratedServer singleplayerServer, final IntegratedServer.MultiplayerScope scope) {
-      String key = scope == IntegratedServer.MultiplayerScope.LAN ? "menu.multiplayerOptions.publish.started.lan" : "menu.multiplayerOptions.publish.started.online";
-      if (singleplayerServer.isPublished()) {
-         singleplayerServer.setMultiplayerScope(scope);
-         this.sendPublishMessage(Component.translatable(key, ComponentUtils.copyOnClickText(String.valueOf(singleplayerServer.getPort()))));
+   private void publish(final IntegratedServer singleplayerServer, final MinecraftServer.MultiplayerScope scope) {
+      boolean published = singleplayerServer.publishServer(scope, this.gameMode, this.commands, this.port);
+      if (!published) {
+         this.sendPublishMessage(Component.translatable("commands.publish.failed"));
       } else {
-         boolean published = singleplayerServer.publishServer(this.gameMode, this.commands, this.port);
-         Component message = published ? Component.translatable(key, ComponentUtils.copyOnClickText(String.valueOf(this.port))) : Component.translatable("commands.publish.failed");
-         if (published) {
-            singleplayerServer.setMultiplayerScope(scope);
-         }
-
+         Component message = scope == MinecraftServer.MultiplayerScope.LAN ? Component.translatable("menu.multiplayerOptions.publish.started.lan", ComponentUtils.copyOnClickText(String.valueOf(this.port))) : Component.translatable("menu.multiplayerOptions.publish.started.online");
          this.sendPublishMessage(message);
       }
-
    }
 
    private void sendPublishMessage(final Component message) {
@@ -207,9 +235,14 @@ public class MultiplayerOptionsScreen extends Screen {
          return null;
       } else {
          try {
-            this.port = Integer.parseInt(value);
-            if (this.port >= 1024 && this.port <= 65535) {
-               return !HttpUtil.isPortAvailable(this.port) ? PORT_UNAVAILABLE : null;
+            int parsed = Integer.parseInt(value);
+            if (parsed >= 1024 && parsed <= 65535) {
+               if (parsed != this.initialPort && !HttpUtil.isPortAvailable(parsed)) {
+                  return PORT_UNAVAILABLE;
+               } else {
+                  this.port = parsed;
+                  return null;
+               }
             } else {
                return INVALID_PORT;
             }

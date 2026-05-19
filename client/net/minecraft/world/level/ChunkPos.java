@@ -68,6 +68,10 @@ public record ChunkPos(int x, int z) {
       return (long)x & 4294967295L | ((long)z & 4294967295L) << 32;
    }
 
+   public static long fromSectionNode(final long sectionNode) {
+      return pack(SectionPos.x(sectionNode), SectionPos.z(sectionNode));
+   }
+
    public static long pack(final BlockPos pos) {
       return pack(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }

@@ -166,6 +166,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public static final float BASE_JUMP_POWER = 0.42F;
    protected static final float DEFAULT_KNOCKBACK = 0.4F;
    protected static final int INVULNERABLE_DURATION = 20;
+   protected static final int HURT_DURATION_TICKS = 10;
+   private static final double CLIMBING_VERTICAL_SPEED = 0.2;
+   private static final float SWIM_AMOUNT_PER_TICK = 0.09F;
    private static final double MAX_LINE_OF_SIGHT_TEST_RANGE = 128.0;
    protected static final int LIVING_ENTITY_FLAG_IS_USING = 1;
    protected static final int LIVING_ENTITY_FLAG_OFF_HAND = 2;
@@ -181,11 +184,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected static final EntityDimensions SLEEPING_DIMENSIONS;
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
-   protected static final float LIQUID_FLOAT_IMPULSE = 0.04F;
+   protected static final float SWIMMING_VERTICAL_SPEED = 0.04F;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
-   public static final float BASE_AIR_DRAG = 0.91F;
-   public static final float BASE_VERTICAL_DRAG_FOR_NON_FLYERS = 0.98F;
+   public static final float BASE_HORIZONTAL_AIR_DRAG = 0.91F;
+   public static final float BASE_VERTICAL_AIR_DRAG = 0.98F;
+   public static final float WATER_DRAG = 0.8F;
+   public static final float SPRINTING_WATER_DRAG = 0.9F;
+   public static final float LAVA_DRAG = 0.5F;
+   public static final float LAVA_SHALLOW_VERTICAL_DRAG = 0.8F;
+   public static final float DOLPHINS_GRACE_WATER_DRAG = 0.96F;
+   public static final float FLYING_AIR_DRAG = 0.91F;
+   public static final float FLYING_VERTICAL_AIR_DRAG = 0.91F;
+   public static final float FLYING_LAVA_DRAG = 0.5F;
+   public static final float FLYING_WATER_DRAG = 0.8F;
+   public static final float ELYTRA_HORIZONTAL_AIR_DRAG = 0.99F;
+   public static final float ELYTRA_VERTICAL_AIR_DRAG = 0.98F;
+   public static final float BASE_SWIM_SPEED = 0.02F;
    private int currentImpulseContextResetGraceTime = 0;
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
    private final AttributeMap attributes;
@@ -2386,22 +2401,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          float entityAirDragModifier = (float)this.getAttributeValue(Attributes.AIR_DRAG_MODIFIER);
          float airDrag = computeModifiedFriction(0.91F, entityAirDragModifier);
          float friction = blockFriction * airDrag;
-         float verticalFriction = this.omnidirectionalAirMover() ? friction : computeModifiedFriction(0.98F, entityAirDragModifier);
+         float verticalFriction = this.omnidirectionalAirMover() ? airDrag : computeModifiedFriction(0.98F, entityAirDragModifier);
          this.setDeltaMovement(movement.x * (double)friction, movementY * (double)verticalFriction, movement.z * (double)friction);
       }
 
    }
 
    protected float getAirDrag() {
-      float entityAirDragModifier = (float)this.getAttributeValue(Attributes.AIR_DRAG_MODIFIER);
-      if (!this.omnidirectionalAirMover()) {
-         return computeModifiedFriction(0.98F, entityAirDragModifier);
-      } else {
-         BlockPos posBelow = this.getBlockPosBelowThatAffectsMyMovement();
-         float blockFriction = this.onGround() ? computeModifiedFriction(this.level().getBlockState(posBelow).getBlock().getFriction(), (float)this.getAttributeValue(Attributes.FRICTION_MODIFIER)) : 1.0F;
-         float airDrag = computeModifiedFriction(0.91F, entityAirDragModifier);
-         return blockFriction * airDrag;
-      }
+      return computeModifiedFriction(this.omnidirectionalAirMover() ? 0.91F : 0.98F, (float)this.getAttributeValue(Attributes.AIR_DRAG_MODIFIER));
    }
 
    protected void travelInFluid(final Vec3 input) {
@@ -2436,20 +2443,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       this.moveRelative(speed, input);
       this.move(MoverType.SELF, this.getDeltaMovement());
-      Vec3 ladderMovement = this.getDeltaMovement();
+      Vec3 movement = this.getDeltaMovement();
       if (this.horizontalCollision && this.onClimbable()) {
-         ladderMovement = new Vec3(ladderMovement.x, 0.2, ladderMovement.z);
+         movement = new Vec3(movement.x, 0.2, movement.z);
       }
 
-      ladderMovement = ladderMovement.multiply((double)slowDown, 0.800000011920929, (double)slowDown);
-      this.setDeltaMovement(this.getFluidFallingAdjustedMovement(baseGravity, isFalling, ladderMovement));
+      movement = movement.multiply((double)slowDown, 0.800000011920929, (double)slowDown);
+      this.setDeltaMovement(this.getFluidFallingAdjustedMovement(baseGravity, isFalling, movement));
       this.jumpOutOfFluid(oldY);
+   }
+
+   protected boolean isInShallowFluid(final TagKey<Fluid> fluidTag) {
+      return this.getFluidHeight(fluidTag) <= this.getFluidJumpThreshold();
    }
 
    private void travelInLava(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
       this.moveRelative(0.02F, input);
       this.move(MoverType.SELF, this.getDeltaMovement());
-      if (this.getFluidHeight(FluidTags.LAVA) <= this.getFluidJumpThreshold()) {
+      if (this.isInShallowFluid(FluidTags.LAVA)) {
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0.800000011920929, 0.5));
          Vec3 movement = this.getFluidFallingAdjustedMovement(baseGravity, isFalling, this.getDeltaMovement());
          this.setDeltaMovement(movement);
@@ -3001,7 +3012,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          boolean inWaterAndHasFluidHeight = this.isInWater() && fluidHeight > 0.0;
          double fluidJumpThreshold = this.getFluidJumpThreshold();
          if (!inWaterAndHasFluidHeight || this.onGround() && !(fluidHeight > fluidJumpThreshold)) {
-            if (!this.isInLava() || this.onGround() && !(fluidHeight > fluidJumpThreshold)) {
+            if (!this.isInLava() || this.onGround() && this.isInShallowFluid(FluidTags.LAVA)) {
                if ((this.onGround() || inWaterAndHasFluidHeight && fluidHeight <= fluidJumpThreshold) && this.noJumpDelay == 0) {
                   this.jumpFromGround();
                   this.noJumpDelay = 10;

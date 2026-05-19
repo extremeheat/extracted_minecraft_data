@@ -41,6 +41,10 @@ public class CommandEncoder {
 
    }
 
+   public TransientMemory transientMemory() {
+      return this.backend.transientMemory();
+   }
+
    protected boolean isInRenderPass() {
       return this.isInRenderPass;
    }

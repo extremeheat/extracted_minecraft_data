@@ -106,6 +106,7 @@ public class Options {
    private final OptionInstance<Integer> framerateLimit;
    private PreferredGraphicsApi preferredGraphicsBackendFromStartup;
    private static final Component GRAPHICS_API_TOOLTIP = Component.translatable("options.graphicsApi.tooltip");
+   private static final Component GRAPHICS_API_TOOLTIP_VULKAN = Component.translatable("options.graphicsApi.tooltip.vulkan");
    private final OptionInstance<PreferredGraphicsApi> preferredGraphicsBackend;
    private boolean isApplyingGraphicsPreset;
    private final OptionInstance<GraphicsPreset> graphicsPreset;
@@ -832,6 +833,11 @@ public class Options {
          }
 
          tooltipLines.add(GRAPHICS_API_TOOLTIP);
+         if (value == PreferredGraphicsApi.VULKAN) {
+            tooltipLines.add(CommonComponents.EMPTY);
+            tooltipLines.add(GRAPHICS_API_TOOLTIP_VULKAN);
+         }
+
          return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
       }, (caption, value) -> value.caption(), new OptionInstance.Enum(List.of(PreferredGraphicsApi.values()), PreferredGraphicsApi.CODEC), PreferredGraphicsApi.CODEC, PreferredGraphicsApi.DEFAULT, OptionInstance.NO_ACTION);
       this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (caption, value) -> genericValueLabel(caption, Component.translatable(value.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
@@ -979,7 +985,7 @@ public class Options {
       this.invertXMouse = OptionInstance.createBoolean("options.invertMouseX", false);
       this.invertYMouse = OptionInstance.createBoolean("options.invertMouseY", false);
       this.discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
-      this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
+      this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications.button", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, OptionInstance.NO_ACTION);
       this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (var0) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
       this.inGameNotification = OptionInstance.createBoolean("options.inGameNotification", OptionInstance.cachedConstantTooltip(IN_GAME_NOTIFICATION_TOOLTIP), false);

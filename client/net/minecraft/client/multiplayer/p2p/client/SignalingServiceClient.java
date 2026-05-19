@@ -157,11 +157,14 @@ public final class SignalingServiceClient {
             if (err != null) {
                Throwable cause = err instanceof CompletionException && err.getCause() != null ? err.getCause() : err;
                if (!this.isSameHttpClientSession(client)) {
-                  LOGGER.debug("Stale signaling connect attempt failed: {}", cause.toString());
+                  LOGGER.debug("Stale signaling connect attempt failed", cause);
                } else {
-                  LOGGER.warn("Signaling websocket connect failed: {}", cause.toString());
+                  LOGGER.warn("Signaling WebSocket connect failed", cause);
                   this.cachedSignalingUri = null;
-                  this.teardown("websocket connect failed: " + cause.getMessage());
+                  if (this.teardown("websocket connect failed: " + cause.getMessage())) {
+                     this.fireListeners(ConnectionListener::onSignalingConnectFailed);
+                  }
+
                }
             }
          }, this.executor);
@@ -225,6 +228,7 @@ public final class SignalingServiceClient {
       return !this.isSameHttpClientSession(client) ? CompletableFuture.failedFuture(new IllegalStateException("Signaling torn down before WebSocket open")) : client.newWebSocketBuilder().header("x-mojangauth", this.user.getAccessToken()).header("Session-Id", this.sessionId).header("Request-Id", requestId).buildAsync(URI.create(wsUrl), rpc).thenComposeAsync((webSocket) -> {
          if (this.isSameHttpClientSession(client)) {
             this.schedulePing(rpc);
+            this.fireListeners(ConnectionListener::onSignalingConnected);
             return CompletableFuture.completedFuture(rpc);
          } else {
             webSocket.abort();
@@ -238,7 +242,7 @@ public final class SignalingServiceClient {
          try {
             rpc.sendNotification("System_Ping_v1_0");
          } catch (RuntimeException e) {
-            LOGGER.warn("Signaling ping failed", e);
+            LOGGER.debug("Signaling ping failed", e);
          }
 
       }, PING_INTERVAL.toMillis(), PING_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
@@ -294,9 +298,9 @@ public final class SignalingServiceClient {
             rpc.sendResponse(id, new JsonObject());
          }
 
-         ClientWebRtcMessage msg;
+         SignalingServiceMessage msg;
          try {
-            msg = (ClientWebRtcMessage)SignalingServiceClient.ClientWebRtcMessage.CODEC.parse(JsonOps.INSTANCE, first).getOrThrow(IllegalStateException::new);
+            msg = (SignalingServiceMessage)SignalingServiceClient.SignalingServiceMessage.CODEC.parse(JsonOps.INSTANCE, first).getOrThrow(IllegalStateException::new);
          } catch (RuntimeException e) {
             LOGGER.warn("Malformed ReceiveMessage envelope: {}", e.getMessage());
             return;
@@ -312,9 +316,8 @@ public final class SignalingServiceClient {
 
          SignalingException serviceError = SignalingErrorMapper.fromServiceEnvelope(inner);
          if (serviceError != null) {
-            LOGGER.debug("Signaling service reported error: {}", serviceError.getMessage());
-            UUID errorPmid = serviceError.peerPmid() != null ? serviceError.peerPmid() : UUID.fromString(msg.from());
-            this.fireListeners((l) -> l.onSignalingError(errorPmid, serviceError));
+            LOGGER.debug("Signaling service reported error from {}: {}", msg.from(), serviceError.getMessage());
+            this.fireListeners((l) -> l.onSignalingError(serviceError.peerPmid(), serviceError));
          } else {
             SignalingMessage parsed;
             try {
@@ -324,35 +327,43 @@ public final class SignalingServiceClient {
                return;
             }
 
-            UUID fromPmid = UUID.fromString(msg.from());
-            SignalingMessage.Payload var11 = parsed.decode();
-            byte var12 = 0;
-            //$FF: var12->value
-            //0->net/minecraft/client/multiplayer/p2p/SignalingMessage$FriendJoin
-            //1->net/minecraft/client/multiplayer/p2p/SignalingMessage$WebRtc
-            switch (var11.typeSwitch<invokedynamic>(var11, var12)) {
-               case -1:
-                  LOGGER.debug("Ignoring malformed signaling message of type {}", parsed.type());
-                  break;
-               case 0:
-                  SignalingMessage.FriendJoin friendJoin = (SignalingMessage.FriendJoin)var11;
-                  this.dispatchFriendJoinMessage(fromPmid, friendJoin);
-                  break;
-               case 1:
-                  SignalingMessage.WebRtc webRtc = (SignalingMessage.WebRtc)var11;
-                  this.dispatchWebRtcMessage(fromPmid, webRtc);
-                  break;
-               default:
-                  throw new MatchException((String)null, (Throwable)null);
-            }
+            UUID fromPmid = parsePmid(msg.from());
+            if (fromPmid != null) {
+               Objects.requireNonNull(parsed);
+               byte var12 = 0;
+               //$FF: var12->value
+               //0->net/minecraft/client/multiplayer/p2p/SignalingMessage$FriendJoin
+               //1->net/minecraft/client/multiplayer/p2p/SignalingMessage$WebRtc
+               switch (parsed.typeSwitch<invokedynamic>(parsed, var12)) {
+                  case 0:
+                     SignalingMessage.FriendJoin friendJoin = (SignalingMessage.FriendJoin)parsed;
+                     this.dispatchFriendJoinMessage(fromPmid, friendJoin);
+                     break;
+                  case 1:
+                     SignalingMessage.WebRtc webRtc = (SignalingMessage.WebRtc)parsed;
+                     this.dispatchWebRtcMessage(fromPmid, webRtc);
+                     break;
+                  default:
+                     throw new MatchException((String)null, (Throwable)null);
+               }
 
+            }
          }
       } else {
-         LOGGER.warn("Malformed ReceiveMessage params: {}", params);
+         LOGGER.warn("Malformed ReceiveMessage params (type={}, size={})", params == null ? "null" : params.getClass().getSimpleName(), params == null ? 0 : params.toString().length());
          if (id != null) {
             rpc.sendError(id, JsonRPCErrors.INVALID_PARAMS, "Expected [object] params");
          }
 
+      }
+   }
+
+   private static @Nullable UUID parsePmid(final String raw) {
+      try {
+         return UUID.fromString(raw);
+      } catch (IllegalArgumentException var2) {
+         LOGGER.warn("Dropping peer signaling message with non-PMID sender: {}", raw);
+         return null;
       }
    }
 
@@ -362,7 +373,7 @@ public final class SignalingServiceClient {
          try {
             handler.handle(fromPmid, message);
          } catch (RuntimeException e) {
-            LOGGER.error("Failed to dispatch FriendJoin", e);
+            LOGGER.error("Failed to dispatch FriendJoin message", e);
          }
 
       }
@@ -374,7 +385,7 @@ public final class SignalingServiceClient {
          try {
             handler.handle(fromPmid, message);
          } catch (RuntimeException e) {
-            LOGGER.error("Failed to dispatch WebRtc", e);
+            LOGGER.error("Failed to dispatch WebRTC signaling message", e);
          }
 
       }
@@ -390,7 +401,13 @@ public final class SignalingServiceClient {
       default void onSignalingError(final @Nullable UUID peerPmid, final SignalingException cause) {
       }
 
+      default void onSignalingConnected() {
+      }
+
       default void onSignalingDisconnected() {
+      }
+
+      default void onSignalingConnectFailed() {
       }
    }
 
@@ -453,12 +470,17 @@ public final class SignalingServiceClient {
       private TurnAuthServer {
          super();
       }
+
+      public String toString() {
+         String var10000 = this.username;
+         return "TurnAuthServer[username=" + var10000 + ", password=<hidden>, urls=" + String.valueOf(this.urls) + "]";
+      }
    }
 
-   private static record ClientWebRtcMessage(String from, String message, @Nullable UUID id) {
-      private static final Codec<ClientWebRtcMessage> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("From").forGetter(ClientWebRtcMessage::from), Codec.STRING.fieldOf("Message").forGetter(ClientWebRtcMessage::message), UUIDUtil.STRING_CODEC.optionalFieldOf("Id").forGetter((c) -> Optional.ofNullable(c.id()))).apply(i, (from, msg, id) -> new ClientWebRtcMessage(from, msg, (UUID)id.orElse((Object)null))));
+   private static record SignalingServiceMessage(String from, String message, @Nullable UUID id) {
+      private static final Codec<SignalingServiceMessage> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("From").forGetter(SignalingServiceMessage::from), Codec.STRING.fieldOf("Message").forGetter(SignalingServiceMessage::message), UUIDUtil.STRING_CODEC.optionalFieldOf("Id").forGetter((c) -> Optional.ofNullable(c.id()))).apply(i, (from, msg, id) -> new SignalingServiceMessage(from, msg, (UUID)id.orElse((Object)null))));
 
-      private ClientWebRtcMessage {
+      private SignalingServiceMessage {
          super();
       }
    }

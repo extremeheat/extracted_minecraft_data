@@ -503,7 +503,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             public void run() {
                if (!this.threadStarted) {
                   this.threadStarted = true;
-                  ClientShutdownWatchdog.startShutdownWatchdog("window close callback", Minecraft.this, gameConfig, Minecraft.this.gameThread.threadId());
+                  ClientShutdownWatchdog.startShutdownWatchdog("window close callback", false, Minecraft.this, gameConfig, Minecraft.this.gameThread.threadId());
                }
 
             }
@@ -2190,7 +2190,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       if (!this.allowChatOnlyWithFriend()) {
          return false;
       } else {
-         return !this.getPlayerSocialManager().isFriendListEnabled() || !this.getPlayerSocialManager().isFriend(uuid);
+         ClientPacketListener conn = this.getConnection();
+         if (conn != null && conn.getLocalGameProfile().id().equals(uuid)) {
+            return false;
+         } else {
+            return !this.getPlayerSocialManager().isFriendListEnabled() || !this.getPlayerSocialManager().isFriend(uuid);
+         }
       }
    }
 
@@ -2832,6 +2837,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             Profiler.get().pop();
          }
       }
+   }
+
+   public void showDebugChat(final Component message) {
+      this.gui.hud.getChat().addClientSystemMessage(message);
+      this.getNarrator().saySystemQueued(message);
    }
 
    static {

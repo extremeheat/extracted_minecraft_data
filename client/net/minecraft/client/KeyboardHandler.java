@@ -9,6 +9,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
@@ -159,21 +160,16 @@ public class KeyboardHandler {
       this.debugFeedback(prefix + (isEnabled ? "enabled" : "disabled"));
    }
 
-   private void showDebugChat(final Component message) {
-      this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
-      this.minecraft.getNarrator().saySystemQueued(message);
-   }
-
    private static Component decorateDebugComponent(final ChatFormatting formatting, final Component component) {
       return Component.empty().append((Component)Component.translatable("debug.prefix").withStyle(formatting, ChatFormatting.BOLD)).append(CommonComponents.SPACE).append(component);
    }
 
    private void debugWarningComponent(final Component component) {
-      this.showDebugChat(decorateDebugComponent(ChatFormatting.RED, component));
+      this.minecraft.showDebugChat(decorateDebugComponent(ChatFormatting.RED, component));
    }
 
    private void debugFeedbackComponent(final Component component) {
-      this.showDebugChat(decorateDebugComponent(ChatFormatting.YELLOW, component));
+      this.minecraft.showDebugChat(decorateDebugComponent(ChatFormatting.YELLOW, component));
    }
 
    private void debugFeedbackTranslated(final String pattern, final Object... args) {
@@ -318,7 +314,9 @@ public class KeyboardHandler {
 
          if (options.keyDebugDumpVersion.matches(event)) {
             this.debugFeedbackTranslated("debug.version.header");
-            VersionCommand.dumpVersion(this::showDebugChat);
+            Minecraft var10000 = this.minecraft;
+            Objects.requireNonNull(var10000);
+            VersionCommand.dumpVersion(var10000::showDebugChat);
             debugAction = true;
          }
 
@@ -460,11 +458,11 @@ public class KeyboardHandler {
          }
 
          if (action == 1) {
-            label240: {
+            label231: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label240;
+                     break label231;
                   }
                }
 
@@ -483,12 +481,7 @@ public class KeyboardHandler {
                }
 
                if (options.keyScreenshot.matches(event)) {
-                  if (event.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
-                     this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
-                  } else {
-                     Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.gameRenderer.mainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
-                  }
-
+                  Screenshot.grab(this.minecraft, event.hasControlDownWithQuirk());
                   return;
                }
 
@@ -549,22 +542,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label193: {
+         label182: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label191: {
+               label180: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label191;
+                        break label180;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label193;
+                     break label182;
                   }
                }
             }

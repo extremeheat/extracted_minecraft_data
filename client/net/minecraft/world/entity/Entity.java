@@ -269,6 +269,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    private EntityInLevelCallback levelCallback;
    private final VecDeltaCodec packetPositionCodec;
    public boolean needsSync;
+   public boolean syncPosition;
    public @Nullable PortalProcessor portalProcess;
    private int portalCooldown;
    private boolean invulnerable;
@@ -861,6 +862,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
       if (bounced) {
          this.gameEvent(GameEvent.BOUNCE);
+         this.syncPosition = true;
       }
 
       this.setDeltaMovement(movementAfterBounce);

@@ -246,7 +246,6 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
                this.dealDefaultKnockback(source, damage, true);
             }
 
-            this.playSound(this.getHitSound());
             return true;
          }
       }
@@ -772,6 +771,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          horizontalPower *= 0.4F;
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
          this.setDeltaMovement(deltaMovement.x - horizontalKnockback.x, deltaMovement.y + (double)verticalPower * 1.2, deltaMovement.z - horizontalKnockback.z);
+         this.playSound(this.getHitSound());
       } else {
          super.knockback(power, xd, zd, source, damage);
       }

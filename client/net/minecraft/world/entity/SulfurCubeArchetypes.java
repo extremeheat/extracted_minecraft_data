@@ -48,7 +48,7 @@ public class SulfurCubeArchetypes {
       register(context, STICKY, ItemTags.SULFUR_CUBE_ARCHETYPE_STICKY, archetype(2.0F, 0.0F, 2.0F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
       register(context, HIGH_RESISTANCE, ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE, archetype(-0.7F, 0.2F, 1.0F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
       register(context, EXPLOSIVE, ItemTags.SULFUR_CUBE_ARCHETYPE_EXPLOSIVE, archetype(1.0F, 0.5F, 0.3F, 0.3F), true, Optional.of(new SulfurCubeArchetype.ExplosionData(3, false, 120)), Optional.empty(), knockBackHitScale(0.33F, 0.06F));
-      register(context, HOT, ItemTags.SULFUR_CUBE_ARCHETYPE_HOT, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.of(contactDamage(context, DamageTypes.HOT_FLOOR, ConstantFloat.of(1.0F), false)), knockBackHitScale(0.33F, 0.06F));
+      register(context, HOT, ItemTags.SULFUR_CUBE_ARCHETYPE_HOT, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.of(contactDamage(context, DamageTypes.SULFUR_CUBE_HOT, ConstantFloat.of(1.0F), false)), knockBackHitScale(0.33F, 0.06F));
    }
 
    private static ResourceKey<SulfurCubeArchetype> createKey(final Identifier id) {

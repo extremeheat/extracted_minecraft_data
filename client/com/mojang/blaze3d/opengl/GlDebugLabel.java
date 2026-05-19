@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.EXTDebugLabel;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
@@ -17,7 +18,7 @@ public abstract class GlDebugLabel {
       super();
    }
 
-   public void applyLabel(final GlBuffer buffer) {
+   public void applyLabel(final GlBuffer buffer, final @Nullable Supplier<String> label) {
    }
 
    public void applyLabel(final GlTexture texture) {
@@ -73,10 +74,9 @@ public abstract class GlDebugLabel {
          super();
       }
 
-      public void applyLabel(final GlBuffer buffer) {
-         Supplier<String> label = buffer.label;
+      public void applyLabel(final GlBuffer buffer, final @Nullable Supplier<String> label) {
          if (label != null) {
-            KHRDebug.glObjectLabel(33504, buffer.handle, StringUtil.truncateStringIfNecessary((String)label.get(), this.maxLabelLength, true));
+            KHRDebug.glObjectLabel(33504, buffer.handle(), StringUtil.truncateStringIfNecessary((String)label.get(), this.maxLabelLength, true));
          }
 
       }
@@ -115,10 +115,9 @@ public abstract class GlDebugLabel {
          super();
       }
 
-      public void applyLabel(final GlBuffer buffer) {
-         Supplier<String> label = buffer.label;
+      public void applyLabel(final GlBuffer buffer, final @Nullable Supplier<String> label) {
          if (label != null) {
-            EXTDebugLabel.glLabelObjectEXT(37201, buffer.handle, StringUtil.truncateStringIfNecessary((String)label.get(), 256, true));
+            EXTDebugLabel.glLabelObjectEXT(37201, buffer.handle(), StringUtil.truncateStringIfNecessary((String)label.get(), 256, true));
          }
 
       }

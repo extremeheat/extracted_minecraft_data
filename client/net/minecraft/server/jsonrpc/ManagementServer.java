@@ -12,7 +12,9 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -40,7 +42,7 @@ public class ManagementServer {
    private final HostAndPort hostAndPort;
    private final AuthenticationHandler authenticationHandler;
    private @Nullable Channel serverChannel;
-   private final NioEventLoopGroup nioEventLoopGroup;
+   private final EventLoopGroup eventLoopGroup;
    private @Nullable ScheduledFuture<?> heartbeat;
    private final Set<Connection> connections = Sets.newIdentityHashSet();
 
@@ -48,14 +50,14 @@ public class ManagementServer {
       super();
       this.hostAndPort = hostAndPort;
       this.authenticationHandler = authenticationHandler;
-      this.nioEventLoopGroup = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Management server IO #%d").setDaemon(true).build());
+      this.eventLoopGroup = new MultiThreadIoEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Management server IO #%d").setDaemon(true).build(), NioIoHandler.newFactory());
    }
 
-   public ManagementServer(final HostAndPort hostAndPort, final AuthenticationHandler authenticationHandler, final NioEventLoopGroup nioEventLoopGroup) {
+   public ManagementServer(final HostAndPort hostAndPort, final AuthenticationHandler authenticationHandler, final EventLoopGroup eventLoopGroup) {
       super();
       this.hostAndPort = hostAndPort;
       this.authenticationHandler = authenticationHandler;
-      this.nioEventLoopGroup = nioEventLoopGroup;
+      this.eventLoopGroup = eventLoopGroup;
    }
 
    public boolean scheduleHeartbeat(final NotificationManager notificationManager, final long period) {
@@ -64,7 +66,7 @@ public class ManagementServer {
          return false;
       } else {
          if (period > 0L) {
-            NioEventLoopGroup var10001 = this.nioEventLoopGroup;
+            EventLoopGroup var10001 = this.eventLoopGroup;
             Objects.requireNonNull(notificationManager);
             this.heartbeat = var10001.scheduleAtFixedRate(notificationManager::statusHeartbeat, period, period, TimeUnit.SECONDS);
          }
@@ -113,7 +115,7 @@ public class ManagementServer {
 
             pipeline.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketFrameAggregator(65536)}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(channel, ManagementServer.this, minecraftApi, jsonrpcLogger)});
          }
-      }).group(this.nioEventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
+      }).group(this.eventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
       this.serverChannel = channel.channel();
       channel.syncUninterruptibly();
       LOGGER.info("Json-RPC Management connection listening on {}:{}", this.hostAndPort.getHost(), this.getPort());
@@ -127,7 +129,7 @@ public class ManagementServer {
 
       this.connections.clear();
       if (closeNioEventLoopGroup) {
-         this.nioEventLoopGroup.shutdownGracefully().sync();
+         this.eventLoopGroup.shutdownGracefully().sync();
       }
 
    }

@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.extract;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -134,15 +136,24 @@ public class LevelExtractor implements ResourceManagerReloadListener {
 
       if (this.sectionUpdateTracker != null && this.level != null) {
          ClientChunkCache chunkCache = this.level.getChunkSource();
-         this.levelRenderState.addedEmptySections = chunkCache.addedEmptySections();
-         this.levelRenderState.removedEmptySections = chunkCache.removedEmptySections();
-         chunkCache.flipEmptySectionUpdates();
+         this.levelRenderState.chunkLoadingRenderState.addedEmptySections = chunkCache.addedEmptySections();
+         this.levelRenderState.chunkLoadingRenderState.removedEmptySections = chunkCache.removedEmptySections();
+         this.levelRenderState.chunkLoadingRenderState.addedLoadedChunks = chunkCache.addedLoadedChunks();
+         this.levelRenderState.chunkLoadingRenderState.removedLoadedChunks = chunkCache.removedLoadedChunks();
+         chunkCache.flipUpdateTrackingSets();
+         LongCollection expectedChunks = this.levelRenderer.expectedChunks();
+         expectedChunks.forEach((expectedChunk) -> {
+            if (chunkCache.hasChunk(ChunkPos.getX(expectedChunk), ChunkPos.getZ(expectedChunk))) {
+               this.levelRenderState.chunkLoadingRenderState.loadedExpectedChunks.add(expectedChunk);
+            }
+
+         });
          profiler.popPush("sectionUpdates");
          RenderRegionCache cache = new RenderRegionCache();
-         ObjectListIterator var15 = this.levelRenderer.visibleSections().iterator();
+         ObjectListIterator var10 = this.levelRenderer.visibleSections().iterator();
 
-         while(var15.hasNext()) {
-            SectionRenderDispatcher.RenderSection section = (SectionRenderDispatcher.RenderSection)var15.next();
+         while(var10.hasNext()) {
+            SectionRenderDispatcher.RenderSection section = (SectionRenderDispatcher.RenderSection)var10.next();
             SectionUpdateTracker.SectionDirtyState dirtyState = this.sectionUpdateTracker.getDirtyState(section.getSectionNode());
             if (dirtyState != null && dirtyState.isDirty() && (section.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED || this.sectionUpdateTracker.hasAllNeighbors(this.level, section.getSectionNode()))) {
                this.levelRenderState.sectionUpdateRenderStates.add(new SectionUpdateRenderState(section.getSectionNode(), dirtyState.isDirtyFromPlayer(), cache.createRegion(this.level, section.getSectionNode())));

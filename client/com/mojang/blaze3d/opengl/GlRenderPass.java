@@ -10,6 +10,7 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 
 class GlRenderPass implements RenderPassBackend {
    public static final boolean VALIDATION;
@@ -137,6 +139,14 @@ class GlRenderPass implements RenderPassBackend {
       this.encoder.executeDraw(this, vertexOffset, firstIndex, indexCount, this.indexType, instanceCount, firstInstance);
    }
 
+   public void multiDrawIndexed(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      throw new UnsupportedOperationException("OpenGL does not support the multiDrawDirectInterleaved device feature");
+   }
+
+   public void multiDrawIndexed(final PointerBuffer firstIndexOffsets, final IntBuffer indexCounts, final IntBuffer vertexOffsets, final int drawCount) {
+      this.encoder.executeDraws(this, this.indexType, firstIndexOffsets, indexCounts, vertexOffsets, drawCount);
+   }
+
    public void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount) {
       this.encoder.executeDrawIndirect(this, this.indexType, (GlBuffer)commands.buffer(), commands.offset(), drawCount);
    }
@@ -147,6 +157,14 @@ class GlRenderPass implements RenderPassBackend {
 
    public void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance) {
       this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (IndexType)null, instanceCount, firstInstance);
+   }
+
+   public void multiDraw(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
+      throw new UnsupportedOperationException("OpenGL does not support the multiDrawDirectInterleaved device feature");
+   }
+
+   public void multiDraw(final IntBuffer firstVertices, final IntBuffer vertexCounts, final int drawCount) {
+      this.encoder.executeDraws(this, (IndexType)null, (PointerBuffer)null, vertexCounts, firstVertices, drawCount);
    }
 
    public void drawIndirect(final GpuBufferSlice commands, final int drawCount) {

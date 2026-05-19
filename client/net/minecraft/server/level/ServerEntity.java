@@ -118,6 +118,11 @@ public class ServerEntity {
          }
       }
 
+      if (this.entity.syncPosition) {
+         this.tickCount = this.tickCount / this.updateInterval * this.updateInterval + this.updateInterval;
+         this.entity.syncPosition = false;
+      }
+
       if (this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) {
          byte yRotn = Mth.packDegrees(this.entity.getYRot());
          byte xRotn = Mth.packDegrees(this.entity.getXRot());
@@ -133,7 +138,7 @@ public class ServerEntity {
             this.sendDirtyEntityData();
             this.wasRiding = true;
          } else {
-            label196: {
+            label200: {
                Entity currentPosition = this.entity;
                if (currentPosition instanceof AbstractMinecart) {
                   AbstractMinecart minecart = (AbstractMinecart)currentPosition;
@@ -141,7 +146,7 @@ public class ServerEntity {
                   if (var34 instanceof NewMinecartBehavior) {
                      NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var34;
                      this.handleMinecartPosRot(newMinecartBehavior, yRotn, xRotn, shouldSendRotation);
-                     break label196;
+                     break label200;
                   }
                }
 
@@ -178,16 +183,16 @@ public class ServerEntity {
                   sentRotation = true;
                }
 
-               label180: {
+               label184: {
                   if (!this.entity.needsSync && !this.trackDelta) {
                      Entity var21 = this.entity;
                      if (!(var21 instanceof LivingEntity)) {
-                        break label180;
+                        break label184;
                      }
 
                      LivingEntity livingEntity = (LivingEntity)var21;
                      if (!livingEntity.isFallFlying()) {
-                        break label180;
+                        break label184;
                      }
                   }
 

@@ -69,7 +69,7 @@ public abstract class VertexArrayCache {
             VertexFormat vertexBinding = vertexBindings[i];
             if (vertexBinding != null) {
                GlBuffer buffer = (GlBuffer)vertexBuffers[i].buffer();
-               GlStateManager._glBindBuffer(34962, buffer.handle);
+               GlStateManager._glBindBuffer(34962, buffer.handle());
                int vertexSize = vertexBinding.getVertexSize();
 
                for(VertexFormatElement element : vertexBinding.getElements()) {
@@ -153,7 +153,7 @@ public abstract class VertexArrayCache {
                GpuBufferSlice vertexBufferSlice = vertexBuffers[i];
                if (vertexBufferSlice != null) {
                   GlBuffer vertexBuffer = (GlBuffer)vertexBufferSlice.buffer();
-                  ARBVertexAttribBinding.glBindVertexBuffer(i, vertexBuffer.handle, vertexBufferSlice.offset(), vertexBindings[i].getVertexSize());
+                  ARBVertexAttribBinding.glBindVertexBuffer(i, vertexBuffer.handle(), vertexBufferSlice.offset(), vertexBindings[i].getVertexSize());
                }
             }
 
@@ -172,7 +172,7 @@ public abstract class VertexArrayCache {
                         ARBVertexAttribBinding.glBindVertexBuffer(i, 0, 0L, 0);
                      }
 
-                     ARBVertexAttribBinding.glBindVertexBuffer(i, vertexBuffer.handle, vertexBufferSlice.offset(), vertexBindings[i].getVertexSize());
+                     ARBVertexAttribBinding.glBindVertexBuffer(i, vertexBuffer.handle(), vertexBufferSlice.offset(), vertexBindings[i].getVertexSize());
                   }
                }
             }

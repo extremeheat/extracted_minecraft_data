@@ -11,6 +11,8 @@ import org.joml.Vector4fc;
 public interface CommandEncoderBackend {
    void submit();
 
+   TransientMemory transientMemory();
+
    RenderPassBackend createRenderPass(RenderPassDescriptor descriptor);
 
    void submitRenderPass();

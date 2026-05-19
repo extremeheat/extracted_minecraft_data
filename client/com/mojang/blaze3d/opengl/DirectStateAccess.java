@@ -125,57 +125,47 @@ public abstract class DirectStateAccess {
          super();
       }
 
-      private static int selectBufferBindTarget(final @GpuBuffer.Usage int usage) {
-         if ((usage & 32) != 0) {
-            return 34962;
-         } else if ((usage & 64) != 0) {
-            return 34963;
-         } else {
-            return (usage & 128) != 0 ? '\u8a11' : '\u8f37';
-         }
-      }
-
       public int createBuffer() {
          return GlStateManager._glGenBuffers();
       }
 
       public void bufferData(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferData(target, size, GlConst.bufferUsageToGlEnum(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void bufferData(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferData(target, data, GlConst.bufferUsageToGlEnum(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void bufferSubData(final int buffer, final long offset, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glBufferSubData(target, offset, data);
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void bufferStorage(final int buffer, final long size, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ARBBufferStorage.glBufferStorage(target, size, GlConst.bufferUsageToGlFlag(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void bufferStorage(final int buffer, final ByteBuffer data, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ARBBufferStorage.glBufferStorage(target, data, GlConst.bufferUsageToGlFlag(usage));
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public @Nullable ByteBuffer mapBufferRange(final int buffer, final long offset, final long length, final int access, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          ByteBuffer byteBuffer = GlStateManager._glMapBufferRange(target, offset, length, access);
          GlStateManager._glBindBuffer(target, 0);
@@ -183,14 +173,14 @@ public abstract class DirectStateAccess {
       }
 
       public void unmapBuffer(final int buffer, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GlStateManager._glUnmapBuffer(target);
          GlStateManager._glBindBuffer(target, 0);
       }
 
       public void flushMappedBufferRange(final int buffer, final long offset, final long length, final @GpuBuffer.Usage int usage) {
-         int target = selectBufferBindTarget(usage);
+         int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, buffer);
          GL33C.glFlushMappedBufferRange(target, offset, length);
          GlStateManager._glBindBuffer(target, 0);

@@ -1,12 +1,10 @@
 package net.minecraft.client.gui.screens.options;
 
 import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
-import com.mojang.datafixers.util.Unit;
-import com.mojang.serialization.Codec;
 import java.net.URI;
-import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.Optionull;
+import java.util.function.UnaryOperator;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -14,30 +12,31 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.friends.FriendsListConfirmScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.world.Difficulty;
 import org.jspecify.annotations.Nullable;
 
 public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.online.title");
+   private static final Component SERVERS_HEADER = Component.translatable("options.online.servers.header");
    private static final Component REALMS_HEADER = Component.translatable("options.online.realms.header");
    private static final Component FRIENDS_HEADER = Component.translatable("options.online.friends.header");
    private static final Component XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
-   private static final Component FRIENDS_CONFIRM_TITLE = Component.translatable("options.friendsList.confirm.title");
-   private static final Component FRIENDS_CONFIRM_MESSAGE = Component.translatable("options.friendsList.confirm.message");
-   private static final Component FRIENDS_CONFIRM_TURN_ON = Component.translatable("options.friendsList.confirm.turnOn");
-   private static final Component FRIENDS_CONFIRM_TURN_OFF = Component.translatable("options.friendsList.confirm.turnOff");
-   private static final Component FRIENDS_LIST_LABEL = Component.translatable("options.friendsList");
-   private static final Component ALLOW_FRIEND_REQUESTS_LABEL = Component.translatable("options.allowFriendRequests");
-   private static final Tooltip ALLOW_FRIEND_REQUESTS_TOOLTIP = Tooltip.create(Component.translatable("options.allowFriendRequests.tooltip"));
-   private static final Component IN_GAME_NOTIFICATIONS_LABEL = Component.translatable("options.inGameNotification");
-   private static final Tooltip IN_GAME_NOTIFICATIONS_TOOLTIP = Tooltip.create(Component.translatable("options.inGameNotification.tooltip"));
-   private @Nullable OptionInstance<Unit> difficultyDisplay;
+   private static final Component FRIENDS_CONFIRM_TITLE;
+   private static final Component MICROSOFT_ACCOUNT_LINK;
+   private static final Component FRIENDS_CONFIRM_MESSAGE;
+   private static final Component FRIENDS_CONFIRM_TURN_ON;
+   private static final Component FRIENDS_CONFIRM_TURN_OFF;
+   private static final Component FRIENDS_LIST_LABEL;
+   private static final Component ALLOW_FRIEND_REQUESTS_LABEL;
+   private static final Tooltip ALLOW_FRIEND_REQUESTS_TOOLTIP;
+   private static final Component IN_GAME_NOTIFICATIONS_LABEL;
+   private static final Tooltip IN_GAME_NOTIFICATIONS_TOOLTIP;
    private @Nullable CycleButton<Boolean> friendsListButton;
    private @Nullable CycleButton<Boolean> allowFriendRequestsButton;
    private @Nullable CycleButton<Boolean> inGameNotificationButton;
@@ -51,11 +50,11 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       if (playerSocialManager.isFriendListEnabled()) {
          onEnabled.run();
       } else {
-         minecraft.setScreenAndShow(new ConfirmScreen((accepted) -> {
+         minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
             minecraft.options.skipFriendsListPromo = true;
             minecraft.options.save();
             if (accepted) {
-               applyFriendSettings(minecraft, accepted, playerSocialManager.isAllowFriendRequests(), (successful) -> {
+               applyFriendSettings(minecraft, true, true, (successful) -> {
                   if (successful) {
                      onEnabled.run();
                   }
@@ -82,29 +81,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       }, minecraft);
    }
 
-   protected void init() {
-      super.init();
-      if (this.difficultyDisplay != null) {
-         AbstractWidget difficultyButton = this.list.findOption(this.difficultyDisplay);
-         if (difficultyButton != null) {
-            difficultyButton.active = false;
-         }
-      }
-
-   }
-
    protected void addOptions() {
-      this.list.addHeader(REALMS_HEADER);
-      this.list.addSmall(this.options.realmsNotifications(), this.options.allowServerListing());
-      OptionInstance<Unit> difficultyDisplay = (OptionInstance)Optionull.map(this.minecraft.level, (level) -> {
-         Difficulty difficulty = level.getDifficulty();
-         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (var1, var2) -> difficulty.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, OptionInstance.NO_ACTION);
-      });
-      if (difficultyDisplay != null) {
-         this.difficultyDisplay = difficultyDisplay;
-         this.list.addSmall(difficultyDisplay);
-      }
-
       this.list.addHeader(FRIENDS_HEADER);
       PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
       OptionInstance<Boolean> inGameNotificationOpt = this.options.inGameNotification();
@@ -116,13 +93,17 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       this.list.addSmall(this.inGameNotificationButton, xboxSettingsButton);
       this.list.addSmall(this.options.sharePresence());
       this.updateFriendListDependentButtons();
+      this.list.addHeader(SERVERS_HEADER);
+      this.list.addBig(this.options.allowServerListing());
+      this.list.addHeader(REALMS_HEADER);
+      this.list.addBig(this.options.realmsNotifications());
    }
 
    private void onFriendsListToggled(final Boolean newValue, final PlayerSocialManager playerSocialManager, final OptionInstance<Boolean> inGameNotificationOpt) {
       this.minecraft.options.skipFriendsListPromo = true;
       this.minecraft.options.save();
       if (newValue) {
-         this.minecraft.setScreenAndShow(new ConfirmScreen((accepted) -> {
+         this.minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
             this.minecraft.setScreenAndShow(this);
             if (accepted) {
                playerSocialManager.setFriendListEnabled(true);
@@ -168,5 +149,18 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
          this.inGameNotificationButton.active = enabled;
       }
 
+   }
+
+   static {
+      FRIENDS_CONFIRM_TITLE = Component.translatable("options.friendsList.confirm.title").withStyle(ChatFormatting.UNDERLINE);
+      MICROSOFT_ACCOUNT_LINK = Component.translatable("options.friendsList.confirm.message.link").withStyle((UnaryOperator)((style) -> style.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent.OpenUrl(CommonLinks.PRIVACY_AND_ONLINE_SETTINGS))));
+      FRIENDS_CONFIRM_MESSAGE = Component.translatable("options.friendsList.confirm.message", MICROSOFT_ACCOUNT_LINK);
+      FRIENDS_CONFIRM_TURN_ON = Component.translatable("options.friendsList.confirm.turnOn");
+      FRIENDS_CONFIRM_TURN_OFF = Component.translatable("options.friendsList.confirm.turnOff");
+      FRIENDS_LIST_LABEL = Component.translatable("options.friendsList");
+      ALLOW_FRIEND_REQUESTS_LABEL = Component.translatable("options.allowFriendRequests");
+      ALLOW_FRIEND_REQUESTS_TOOLTIP = Tooltip.create(Component.translatable("options.allowFriendRequests.tooltip"));
+      IN_GAME_NOTIFICATIONS_LABEL = Component.translatable("options.inGameNotification");
+      IN_GAME_NOTIFICATIONS_TOOLTIP = Tooltip.create(Component.translatable("options.inGameNotification.tooltip"));
    }
 }

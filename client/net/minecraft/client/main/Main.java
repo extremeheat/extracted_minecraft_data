@@ -269,7 +269,7 @@ public class Main {
          return;
       }
 
-      ClientShutdownWatchdog.startShutdownWatchdog("post-main", (Minecraft)null, gameConfig, Thread.currentThread().threadId());
+      ClientShutdownWatchdog.startShutdownWatchdog("post-main", true, (Minecraft)null, gameConfig, Thread.currentThread().threadId());
    }
 
    @SuppressForbidden(

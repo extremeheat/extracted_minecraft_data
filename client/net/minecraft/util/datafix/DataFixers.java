@@ -206,6 +206,7 @@ import net.minecraft.util.datafix.fixes.OptionsAccessibilityOnboardFix;
 import net.minecraft.util.datafix.fixes.OptionsAddTextBackgroundFix;
 import net.minecraft.util.datafix.fixes.OptionsAmbientOcclusionFix;
 import net.minecraft.util.datafix.fixes.OptionsFancyGraphicsToGraphicsModeFix;
+import net.minecraft.util.datafix.fixes.OptionsForceDefaultGraphicsApiFix;
 import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
 import net.minecraft.util.datafix.fixes.OptionsGraphicsModeSplitFix;
 import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
@@ -900,9 +901,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var308 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var308);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var308::contains));
+      Set var309 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var309);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var309::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1201,6 +1202,8 @@ public class DataFixers {
       fixerUpper.addFixer(new RemoveBlockEntityTagFix(v4885, Set.of("minecraft:bed")));
       Schema v4888 = fixerUpper.addSchema(4888, SAME_NAMESPACED);
       fixerUpper.addFixer(new RenameNameplateToNameTagFix(v4888));
+      Schema v4892 = fixerUpper.addSchema(4892, SAME_NAMESPACED);
+      fixerUpper.addFixer(new OptionsForceDefaultGraphicsApiFix(v4892));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

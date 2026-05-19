@@ -5,6 +5,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -12,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 public class ConfirmScreen extends Screen {
-   private final Component message;
+   protected final Component message;
    protected final LinearLayout layout;
    protected Component yesButtonComponent;
    protected Component noButtonComponent;
@@ -42,7 +43,7 @@ public class ConfirmScreen extends Screen {
       super.init();
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild(new StringWidget(this.title, this.font));
-      this.layout.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setMaxRows(15).setCentered(true));
+      this.layout.addChild(this.addMessage());
       this.addAdditionalText();
       LinearLayout buttonLayout = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(4));
       buttonLayout.defaultCellSetting().paddingTop(16);
@@ -57,6 +58,10 @@ public class ConfirmScreen extends Screen {
    }
 
    protected void addAdditionalText() {
+   }
+
+   protected LayoutElement addMessage() {
+      return (new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setMaxRows(15).setCentered(true);
    }
 
    protected void addButtons(final LinearLayout buttonLayout) {

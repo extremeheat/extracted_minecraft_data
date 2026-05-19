@@ -91,6 +91,7 @@ public class SectionRenderDispatcher {
                }
 
                this.bufferPool.release(buffer);
+               this.executor.execute(this::runTask);
             } catch (NullPointerException var4) {
                this.queue.add(task);
             } catch (Exception e) {

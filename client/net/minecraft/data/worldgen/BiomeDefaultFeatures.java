@@ -179,12 +179,9 @@ public class BiomeDefaultFeatures {
       builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, CavePlacements.CLASSIC_VINES);
    }
 
-   public static void addSulfurCavesVegetationFeatures(final BiomeGenerationSettings.Builder builder) {
+   public static void addSulfurCavesFeatures(final BiomeGenerationSettings.Builder builder) {
+      builder.addFeature(GenerationStep.Decoration.LAKES, CavePlacements.ROOTED_SULFUR_SPRING);
       builder.addFeature(GenerationStep.Decoration.LAKES, MiscOverworldPlacements.SULFUR_POOL);
-      builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, CavePlacements.ROOTED_SULFUR_SPRING);
-   }
-
-   public static void addSulfurSpikeFeatures(final BiomeGenerationSettings.Builder builder) {
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.SULFUR_SPIKE_CLUSTER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.SULFUR_SPIKE);
    }

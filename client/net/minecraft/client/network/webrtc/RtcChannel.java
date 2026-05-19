@@ -77,7 +77,7 @@ public final class RtcChannel extends AbstractChannel {
    }
 
    protected void doRegister(final ChannelPromise promise) {
-      LOGGER.debug("doRegister, DataChannel state={}", this.handshakeResult.dataChannel().getState());
+      LOGGER.debug("RtcChannel registered (DataChannel state={})", this.handshakeResult.dataChannel().getState());
       RTCDataChannelState initial = this.handshakeResult.dataChannel().getState();
       this.eventLoop().execute(() -> {
          this.handleStateChange(initial);
@@ -93,7 +93,7 @@ public final class RtcChannel extends AbstractChannel {
 
             public void onStateChange() {
                RTCDataChannelState state = RtcChannel.this.handshakeResult.dataChannel().getState();
-               RtcChannel.LOGGER.debug("DataChannel state -> {}", state);
+               RtcChannel.LOGGER.debug("DataChannel state={}", state);
                RtcChannel.this.eventLoop().execute(() -> RtcChannel.this.handleStateChange(state));
             }
 
@@ -132,26 +132,26 @@ public final class RtcChannel extends AbstractChannel {
          try {
             dataChannel.unregisterObserver();
          } catch (RuntimeException e) {
-            LOGGER.warn("RtcChannel.unregisterObserver threw", e);
+            LOGGER.debug("DataChannel unregisterObserver threw", e);
          }
 
          try {
             dataChannel.close();
          } catch (RuntimeException e) {
-            LOGGER.warn("RtcChannel.close threw", e);
+            LOGGER.debug("DataChannel close threw", e);
          }
 
          try {
             dataChannel.dispose();
          } catch (RuntimeException e) {
-            LOGGER.warn("RtcChannel.dispose threw", e);
+            LOGGER.debug("DataChannel dispose threw", e);
          }
       }
 
       try {
          peerConnection.close();
       } catch (RuntimeException e) {
-         LOGGER.warn("RtcChannel.peerConnection.close threw", e);
+         LOGGER.debug("Peer connection close threw", e);
       }
 
    }
@@ -193,7 +193,7 @@ public final class RtcChannel extends AbstractChannel {
          try {
             this.handshakeResult.dataChannel().send(new RTCDataChannelBuffer(ByteBuffer.wrap(bytes), true));
          } catch (Exception e) {
-            LOGGER.error("[P2P-Netty] Failed to send DataChannel message", e);
+            LOGGER.debug("Failed to send DataChannel message", e);
             throw e;
          }
 
@@ -231,7 +231,7 @@ public final class RtcChannel extends AbstractChannel {
          switch (state) {
             case OPEN:
                if (!this.activated) {
-                  LOGGER.info("DataChannel OPEN, activating channel");
+                  LOGGER.debug("DataChannel OPEN, activating channel");
                   this.activated = true;
                   this.pipeline().fireChannelActive();
                }

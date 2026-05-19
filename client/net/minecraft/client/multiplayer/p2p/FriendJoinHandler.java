@@ -62,7 +62,7 @@ public final class FriendJoinHandler {
       try {
          parsed = UUID.fromString(peerPmid);
       } catch (IllegalArgumentException e) {
-         LOGGER.warn("[P2P][join] supplied PMID is not a valid UUID");
+         LOGGER.debug("Invalid peer PMID");
          return CompletableFuture.failedFuture(e);
       }
 
@@ -90,12 +90,14 @@ public final class FriendJoinHandler {
             this.manager.ensureSignalingConnected();
             CompletableFuture.delayedExecutor(1L, TimeUnit.MINUTES).execute(() -> {
                if (!request.sdpStarted().get() && result.completeExceptionally(new TimeoutException("Join request timed out"))) {
+                  LOGGER.debug("Join request timed out (session={})", signalingSessionId);
                   this.showJoinInviteExpiredToast(parsed);
                }
 
             });
-            this.signaling.sendClientMessage(parsed, SignalingMessage.joinRequest(signalingSessionId)).whenComplete((var1, error) -> {
+            this.signaling.sendClientMessage(parsed, SignalingMessage.joinRequest(signalingSessionId)).whenComplete((var2, error) -> {
                if (error != null) {
+                  LOGGER.debug("Failed to send join request (session={})", signalingSessionId, error);
                   result.completeExceptionally(error);
                }
 
@@ -195,11 +197,11 @@ public final class FriendJoinHandler {
       String sessionId = (String)this.incomingJoinRequests.remove(peerPmid);
       if (sessionId != null) {
          this.notifyJoinStateChanged();
-         if (this.manager.isHostingP2P() && this.minecraft.getPlayerSocialManager().isFriendsPmid(peerPmid)) {
+         if (this.manager.isHostingOnline() && this.minecraft.getPlayerSocialManager().isFriendsPmid(peerPmid)) {
             this.sendJoinAccepted(peerPmid, sessionId).exceptionally((var0) -> null);
          } else {
             this.signaling.sendClientMessage(peerPmid, SignalingMessage.joinRejected(sessionId)).exceptionally((err) -> {
-               LOGGER.warn("[P2P][host] Failed to reject pending join request for session {}: {}", sessionId, err.getMessage());
+               LOGGER.debug("Failed to reject pending join request (session={})", sessionId, err);
                return null;
             });
          }
@@ -211,7 +213,7 @@ public final class FriendJoinHandler {
       if (sessionId != null) {
          this.acceptedAwaitingOffer.remove(peerPmid, sessionId);
          this.signaling.sendClientMessage(peerPmid, SignalingMessage.joinRejected(sessionId)).exceptionally((err) -> {
-            LOGGER.warn("[P2P][host] Failed to send join rejection for session {}: {}", sessionId, err.getMessage());
+            LOGGER.debug("Failed to send join rejection (session={})", sessionId, err);
             return null;
          });
          this.notifyJoinStateChanged();
@@ -227,7 +229,7 @@ public final class FriendJoinHandler {
    public CompletableFuture<@Nullable Void> declineInvite(final UUID hostPmid) {
       this.manager.ensureSignalingConnected();
       return this.signaling.sendClientMessage(hostPmid, SignalingMessage.inviteDeclined()).whenComplete((var1, var2) -> this.manager.maybeDisconnectSignaling()).exceptionallyCompose((err) -> {
-         LOGGER.warn("[P2P][join] Failed to decline invite: {}", err.getMessage());
+         LOGGER.debug("Failed to decline invite", err);
          return CompletableFuture.failedFuture(err);
       });
    }
@@ -245,18 +247,19 @@ public final class FriendJoinHandler {
    }
 
    private void handleJoinRequest(final UUID fromPmid, final String sessionId) {
-      if (!this.manager.isHostingP2P()) {
+      if (!this.manager.isHostingOnline()) {
          this.signaling.sendClientMessage(fromPmid, SignalingMessage.joinRejected(sessionId)).exceptionally((err) -> {
-            LOGGER.warn("[P2P][host] Failed to reject join request for session {}: {}", sessionId, err.getMessage());
+            LOGGER.debug("Failed to reject join request (session={})", sessionId, err);
             return null;
          });
       } else if (!this.minecraft.getPlayerSocialManager().isFriendsPmid(fromPmid)) {
-         LOGGER.debug("[P2P][host] Ignoring join request (not a friend)");
+         LOGGER.debug("Ignoring join request from non-friend");
       } else if (this.minecraft.getPlayerSocialManager().getPresenceHandler().isInvitedPmid(fromPmid)) {
          this.sendJoinAccepted(fromPmid, sessionId).thenRun(() -> this.clearHostInvite(fromPmid)).exceptionally((var0) -> null);
       } else {
          this.incomingJoinRequests.put(fromPmid, sessionId);
          this.notifyJoinStateChanged();
+         LOGGER.debug("Awaiting user response to join request (session={})", sessionId);
          UUID peerProfileId = this.minecraft.getPlayerSocialManager().getPresenceHandler().getProfileIdFromPmid(fromPmid);
          Optional<PlayerSocialManager.PlayerData> friendData = this.minecraft.getPlayerSocialManager().getFriends().stream().filter((playerData) -> playerData.id().equals(peerProfileId)).findAny();
          friendData.ifPresent((friend) -> this.minecraft.execute(() -> {
@@ -269,11 +272,11 @@ public final class FriendJoinHandler {
    private void handleJoinAccepted(final UUID fromPmid, final String sessionId) {
       OutgoingJoinRequest request = (OutgoingJoinRequest)this.outgoingJoinRequests.get(fromPmid);
       if (request == null) {
-         LOGGER.debug("[P2P][join] Ignoring join acceptance for session {} (no pending join request)", sessionId);
+         LOGGER.debug("Ignoring join acceptance for session={} (no pending join request)", sessionId);
       } else if (!request.sessionId().equals(sessionId)) {
-         LOGGER.debug("[P2P][join] Ignoring stale join acceptance for session {} (pending={})", sessionId, request.sessionId());
+         LOGGER.debug("Ignoring stale join acceptance for session={} (pending={})", sessionId, request.sessionId());
       } else if (!request.sdpStarted().compareAndSet(false, true)) {
-         LOGGER.debug("[P2P][join] Ignoring duplicate join acceptance for session {}", sessionId);
+         LOGGER.trace("Ignoring duplicate join acceptance for session={}", sessionId);
       } else {
          this.notifyJoinStateChanged();
          if (this.manager.hasHandshake(fromPmid)) {
@@ -295,15 +298,16 @@ public final class FriendJoinHandler {
    private void handleJoinRejected(final UUID fromPmid, final String sessionId) {
       OutgoingJoinRequest request = (OutgoingJoinRequest)this.outgoingJoinRequests.get(fromPmid);
       if (request != null && request.sessionId().equals(sessionId)) {
+         LOGGER.debug("Join request rejected by peer (session={})", sessionId);
          request.result().completeExceptionally(new RuntimeException("Join request rejected"));
       } else {
-         LOGGER.debug("[P2P][join] Ignoring join rejection for session {} (no matching pending join request)", sessionId);
+         LOGGER.debug("Ignoring join rejection for session={} (no matching pending request)", sessionId);
       }
    }
 
    private void handleInviteDeclined(final UUID fromPmid) {
       if (!this.minecraft.getPlayerSocialManager().isFriendsPmid(fromPmid)) {
-         LOGGER.debug("[P2P][host] Ignoring invite decline (not a friend)");
+         LOGGER.debug("Ignoring invite decline from non-friend");
       } else {
          this.clearHostInvite(fromPmid);
       }
@@ -317,7 +321,7 @@ public final class FriendJoinHandler {
       this.acceptedAwaitingOffer.put(peerPmid, sessionId);
       return this.signaling.sendClientMessage(peerPmid, SignalingMessage.joinAccepted(sessionId)).exceptionallyCompose((err) -> {
          this.acceptedAwaitingOffer.remove(peerPmid, sessionId);
-         LOGGER.warn("[P2P][host] Failed to send join acceptance for session {}: {}", sessionId, err.getMessage());
+         LOGGER.debug("Failed to send join acceptance (session={})", sessionId, err);
          return CompletableFuture.failedFuture(err);
       });
    }

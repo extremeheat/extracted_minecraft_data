@@ -305,6 +305,10 @@ public class Mth {
       return input != 0 && (input & input - 1) == 0;
    }
 
+   public static boolean isPowerOfTwo(final long input) {
+      return input != 0L && (input & input - 1L) == 0L;
+   }
+
    public static int ceillog2(int input) {
       input = isPowerOfTwo(input) ? input : smallestEncompassingPowerOfTwo(input);
       return MULTIPLY_DE_BRUIJN_BIT_POSITION[(int)((long)input * 125613361L >> 27) & 31];
@@ -660,7 +664,15 @@ public class Mth {
       return positiveCeilDiv(input, multiple) * multiple;
    }
 
+   public static long roundToward(final long input, final long multiple) {
+      return positiveCeilDiv(input, multiple) * multiple;
+   }
+
    public static int positiveCeilDiv(final int input, final int divisor) {
+      return -Math.floorDiv(-input, divisor);
+   }
+
+   public static long positiveCeilDiv(final long input, final long divisor) {
       return -Math.floorDiv(-input, divisor);
    }
 

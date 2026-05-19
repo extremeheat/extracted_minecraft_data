@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.state.level;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -24,8 +23,7 @@ public class LevelRenderState {
    public float cloudHeight;
    public boolean render3dCrosshair;
    public @Nullable Runnable playerCompiledSectionCallback;
-   public LongOpenHashSet addedEmptySections = new LongOpenHashSet();
-   public LongOpenHashSet removedEmptySections = new LongOpenHashSet();
+   public ChunkLoadingRenderState chunkLoadingRenderState = new ChunkLoadingRenderState();
    public boolean shouldResetChunkLayerSampler;
    public boolean shouldShowEntityOutlines;
    public boolean shouldResetSkyRenderer;
@@ -44,6 +42,7 @@ public class LevelRenderState {
       this.worldBorderRenderState.reset();
       this.skyRenderState.reset();
       this.particlesRenderState.reset();
+      this.chunkLoadingRenderState.reset();
       this.gameTime = 0L;
    }
 }

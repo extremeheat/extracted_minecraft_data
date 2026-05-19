@@ -16,6 +16,7 @@ import com.mojang.blaze3d.vulkan.init.VulkanPNextStruct;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.IntBuffer;
 import java.util.Collection;
@@ -40,6 +41,7 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceDynamicRenderingFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
+import org.lwjgl.vulkan.VkPhysicalDeviceMultiDrawFeaturesEXT;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
 import org.lwjgl.vulkan.VkPhysicalDeviceSynchronization2Features;
@@ -55,9 +57,11 @@ public class VulkanBackend implements GpuBackend {
    public static final VulkanPNextStruct VK11_FEATURES_STRUCT;
    public static final VulkanPNextStruct VK12_FEATURES_STRUCT;
    public static final VulkanPNextStruct SYNC2_FEATURES_STRUCT;
-   public static final VulkanPNextStruct DYNAMIC_RENDERING_FEATURES_STURCT;
-   public static final VulkanPNextStruct VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT;
+   public static final VulkanPNextStruct DYNAMIC_RENDERING_FEATURES_STRUCT;
+   public static final VulkanPNextStruct VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT;
+   public static final VulkanPNextStruct MULTI_DRAW_FEATURES_STRUCT;
    public static final Set<VulkanFeature> REQUIRED_DEVICE_FEATURES;
+   private static final VulkanFeature MULTI_DRAW_FEATURE;
 
    public VulkanBackend() {
       super();
@@ -96,6 +100,7 @@ public class VulkanBackend implements GpuBackend {
             boolean renderdocAttached = "1".equals(System.getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE"));
             instance = new VulkanInstance(debugOptions.logLevel(), debugOptions.useLabels() || renderdocAttached, debugOptions.useValidationLayers());
             physicalDevice = findPhysicalDevice(instance);
+            Set<VulkanFeature> enabledFeatures = new ObjectOpenHashSet(REQUIRED_DEVICE_FEATURES);
             if (physicalDevice.hasDeviceExtension("VK_KHR_portability_subset")) {
                deviceExtensions.add("VK_KHR_portability_subset");
             }
@@ -108,7 +113,12 @@ public class VulkanBackend implements GpuBackend {
                checkpointExtension = new NvidiaCheckpointExtension();
             }
 
-            device = createDevice(deviceExtensions, physicalDevice);
+            if (physicalDevice.hasDeviceExtension("VK_EXT_multi_draw") && isFeatureSupported(physicalDevice.vkPhysicalDevice(), MULTI_DRAW_FEATURE)) {
+               deviceExtensions.add("VK_EXT_multi_draw");
+               enabledFeatures.add(MULTI_DRAW_FEATURE);
+            }
+
+            device = createDevice(deviceExtensions, physicalDevice, enabledFeatures);
             vma = createVma(device);
          } catch (BackendCreationException e) {
             if (vma != 0L) {
@@ -389,6 +399,34 @@ public class VulkanBackend implements GpuBackend {
       return var3;
    }
 
+   private static boolean isFeatureSupported(final VkPhysicalDevice vkPhysicalDevice, final VulkanFeature feature) {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      boolean var4;
+      try {
+         VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
+         feature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
+         VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
+         var4 = feature.get(deviceFeatures);
+      } catch (Throwable var6) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return var4;
+   }
+
    private static void throwForMissingRequrements(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
       List<String> missingCapabilities = new ReferenceArrayList();
       BackendCreationException.Reason mostProminentReason = BackendCreationException.Reason.OTHER;
@@ -450,23 +488,23 @@ public class VulkanBackend implements GpuBackend {
       }
    }
 
-   private static VkDevice createDevice(final Collection<String> deviceExtensions, final VulkanPhysicalDevice physicalDevice) throws BackendCreationException {
+   private static VkDevice createDevice(final Collection<String> deviceExtensions, final VulkanPhysicalDevice physicalDevice, final Set<VulkanFeature> vulkanFeatures) throws BackendCreationException {
       MemoryStack stack = MemoryStack.stackPush();
 
-      VkDevice var9;
+      VkDevice var10;
       try {
          VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
 
-         for(VulkanFeature requiredDeviceFeature : REQUIRED_DEVICE_FEATURES) {
+         for(VulkanFeature requiredDeviceFeature : vulkanFeatures) {
             requiredDeviceFeature.set(deviceFeatures, true, stack);
          }
 
          Int2IntMap queuesToCreate = physicalDevice.queueFamilyCreateInfoMap();
          VkDeviceQueueCreateInfo.Buffer queueCreationInfo = VkDeviceQueueCreateInfo.calloc(queuesToCreate.size(), stack);
-         ObjectIterator var6 = queuesToCreate.int2IntEntrySet().iterator();
+         ObjectIterator var7 = queuesToCreate.int2IntEntrySet().iterator();
 
-         while(var6.hasNext()) {
-            Int2IntMap.Entry familyCount = (Int2IntMap.Entry)var6.next();
+         while(var7.hasNext()) {
+            Int2IntMap.Entry familyCount = (Int2IntMap.Entry)var7.next();
             queueCreationInfo.sType$Default();
             queueCreationInfo.queueFamilyIndex(familyCount.getIntKey());
             queueCreationInfo.pQueuePriorities(stack.callocFloat(familyCount.getIntValue()));
@@ -488,24 +526,24 @@ public class VulkanBackend implements GpuBackend {
          deviceCreateInfo.pEnabledFeatures(deviceFeatures.features());
          PointerBuffer pointer = stack.callocPointer(1);
          VulkanUtils.throwIfFailure(VK12.vkCreateDevice(physicalDevice.vkPhysicalDevice(), deviceCreateInfo, (VkAllocationCallbacks)null, pointer), "Failed to create device", BackendCreationException.Reason.VULKAN_NO_DEVICE);
-         var9 = new VkDevice(pointer.get(0), physicalDevice.vkPhysicalDevice(), deviceCreateInfo);
-      } catch (Throwable var11) {
+         var10 = new VkDevice(pointer.get(0), physicalDevice.vkPhysicalDevice(), deviceCreateInfo);
+      } catch (Throwable var12) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var10) {
-               var11.addSuppressed(var10);
+            } catch (Throwable var11) {
+               var12.addSuppressed(var11);
             }
          }
 
-         throw var11;
+         throw var12;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var9;
+      return var10;
    }
 
    static {
@@ -513,8 +551,10 @@ public class VulkanBackend implements GpuBackend {
       VK11_FEATURES_STRUCT = new VulkanPNextStruct(49, VkPhysicalDeviceVulkan11Features.SIZEOF);
       VK12_FEATURES_STRUCT = new VulkanPNextStruct(51, VkPhysicalDeviceVulkan12Features.SIZEOF);
       SYNC2_FEATURES_STRUCT = new VulkanPNextStruct(1000314007, VkPhysicalDeviceSynchronization2Features.SIZEOF);
-      DYNAMIC_RENDERING_FEATURES_STURCT = new VulkanPNextStruct(1000044003, VkPhysicalDeviceDynamicRenderingFeatures.SIZEOF);
-      VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT = new VulkanPNextStruct(1000190002, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.SIZEOF);
-      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect", (long)VkPhysicalDeviceFeatures.MULTIDRAWINDIRECT), new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters", (long)VkPhysicalDeviceVulkan11Features.SHADERDRAWPARAMETERS), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STURCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STURCT, "vertexAttributeInstanceRateDivisor", (long)VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.VERTEXATTRIBUTEINSTANCERATEDIVISOR));
+      DYNAMIC_RENDERING_FEATURES_STRUCT = new VulkanPNextStruct(1000044003, VkPhysicalDeviceDynamicRenderingFeatures.SIZEOF);
+      VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT = new VulkanPNextStruct(1000190002, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.SIZEOF);
+      MULTI_DRAW_FEATURES_STRUCT = new VulkanPNextStruct(1000392000, VkPhysicalDeviceMultiDrawFeaturesEXT.SIZEOF);
+      REQUIRED_DEVICE_FEATURES = Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect", (long)VkPhysicalDeviceFeatures.MULTIDRAWINDIRECT), new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid", (long)VkPhysicalDeviceFeatures.FILLMODENONSOLID), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy", (long)VkPhysicalDeviceFeatures.SAMPLERANISOTROPY), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters", (long)VkPhysicalDeviceVulkan11Features.SHADERDRAWPARAMETERS), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore", (long)VkPhysicalDeviceVulkan12Features.TIMELINESEMAPHORE), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset", (long)VkPhysicalDeviceVulkan12Features.HOSTQUERYRESET), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2", (long)VkPhysicalDeviceSynchronization2Features.SYNCHRONIZATION2), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STRUCT, "dynamicRendering", (long)VkPhysicalDeviceDynamicRenderingFeatures.DYNAMICRENDERING), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT, "vertexAttributeInstanceRateDivisor", (long)VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.VERTEXATTRIBUTEINSTANCERATEDIVISOR));
+      MULTI_DRAW_FEATURE = new VulkanFeature(MULTI_DRAW_FEATURES_STRUCT, "multiDraw", (long)VkPhysicalDeviceMultiDrawFeaturesEXT.MULTIDRAW);
    }
 }

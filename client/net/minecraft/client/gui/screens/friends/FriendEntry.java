@@ -21,6 +21,7 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.apache.commons.lang3.function.TriConsumer;
@@ -41,6 +42,8 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
    private static final Component REJECT_JOIN_REQUEST = Component.translatable("gui.friends.multiplayer.join_request_reject");
    private static final Component CONFIRM_TITLE = Component.translatable("gui.friends.confirm_title");
    private static final Component CONFIRM_UNFRIEND = Component.translatable("gui.friends.confirm_unfriend");
+   private static final Tooltip PENDING_JOIN_REQUEST_TOOLTIP = Tooltip.create(Component.translatable("gui.friends.button.loading.join_request_pending"));
+   private static final Tooltip PENDING_INVITE_REQUEST_TOOLTIP = Tooltip.create(Component.translatable("gui.friends.button.loading.invite_request_pending"));
    private final SpriteIconButton removeButton;
    private final StringWidget statusWidget;
    private final @Nullable PresenceStatusDto presence;
@@ -78,7 +81,7 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
          if (outgoingJoinState == FriendJoinHandler.OutgoingJoinState.AWAITING_HOST_ACCEPT) {
             SpriteIconButton pendingJoinButton = SpriteIconButton.builder(JOIN_REQUEST, (var0) -> {
             }, true).size(20, 20).sprite((WidgetSprites)JOIN_REQUEST_SPRITE, 7, 11).tooltip(JOIN_REQUEST).build();
-            pendingJoinButton.setLoading(true, Tooltip.create(Component.translatable("gui.friends.button.loading.join_request_pending", playerData.name())));
+            pendingJoinButton.setLoading(true, PENDING_JOIN_REQUEST_TOOLTIP);
             this.rightAction = pendingJoinButton;
             this.addChild(this.rightAction);
          } else {
@@ -97,10 +100,10 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
                boolean hasOutgoingJoinRequest = minecraft.p2pManager.hasOutgoingJoinRequest();
                boolean canRequestJoin = hasJoinInfo && outgoingJoinState == FriendJoinHandler.OutgoingJoinState.NONE && !friendInCurrentWorld && !hasOutgoingJoinRequest && presence.status() == PresenceStatus.PLAYING_HOSTED_SERVER;
                IntegratedServer singleplayerServer = minecraft.getSingleplayerServer();
-               boolean canInvite = presence.status() != PresenceStatus.OFFLINE && singleplayerServer != null && singleplayerServer.getMultiplayerScope() == IntegratedServer.MultiplayerScope.ONLINE && !hasOutgoingJoinRequest && singleplayerServer.getPlayerList().getPlayersByUUID().entrySet().stream().noneMatch((entry) -> ((UUID)entry.getKey()).equals(playerData.id()));
+               boolean canInvite = presence.status() != PresenceStatus.OFFLINE && singleplayerServer != null && singleplayerServer.getMultiplayerScope() == MinecraftServer.MultiplayerScope.ONLINE && !hasOutgoingJoinRequest && singleplayerServer.getPlayerList().getPlayersByUUID().entrySet().stream().noneMatch((entry) -> ((UUID)entry.getKey()).equals(playerData.id()));
                if (canInvite && canRequestJoin) {
                   this.leftAction = SpriteIconButton.builder(INVITE, (var3) -> this.invitePlayer(minecraft, playerData.id()), true).size(20, 20).sprite((WidgetSprites)INVITE_SPRITE, 7, 11).tooltip(INVITE).switchToLoadingAfterPress().build();
-                  this.leftAction.setLoading(minecraft.getPlayerSocialManager().getPresenceHandler().getInvitedPlayersBatch().contains(playerData.id()));
+                  this.leftAction.setLoading(minecraft.getPlayerSocialManager().getPresenceHandler().getInvitedPlayersBatch().contains(playerData.id()), PENDING_INVITE_REQUEST_TOOLTIP);
                   this.addChild(this.leftAction);
                   this.rightAction = SpriteIconButton.builder(JOIN_REQUEST, (var3) -> this.requestToJoinPlayer(peerPmid, presence.profileId()), true).size(20, 20).sprite((WidgetSprites)JOIN_REQUEST_SPRITE, 7, 11).tooltip(JOIN_REQUEST).switchToLoadingAfterPress().build();
                   this.addChild(this.rightAction);
@@ -109,7 +112,7 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
                   this.addChild(this.rightAction);
                } else if (canInvite) {
                   this.rightAction = SpriteIconButton.builder(INVITE, (var3) -> this.invitePlayer(minecraft, playerData.id()), true).size(20, 20).sprite((WidgetSprites)INVITE_SPRITE, 7, 11).tooltip(INVITE).switchToLoadingAfterPress().build();
-                  this.rightAction.setLoading(minecraft.getPlayerSocialManager().getPresenceHandler().getInvitedPlayersBatch().contains(playerData.id()));
+                  this.rightAction.setLoading(minecraft.getPlayerSocialManager().getPresenceHandler().getInvitedPlayersBatch().contains(playerData.id()), PENDING_INVITE_REQUEST_TOOLTIP);
                   this.addChild(this.rightAction);
                }
 

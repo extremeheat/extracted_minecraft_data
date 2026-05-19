@@ -97,7 +97,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
       WebSocket ws = this.webSocket;
       if (ws != null) {
          this.sendChain = this.sendChain.thenCompose((var2) -> ws.sendText(payload, true).thenApply((var0) -> (Void)null)).exceptionally((err) -> {
-            LOGGER.warn("WebSocket send failed", err);
+            LOGGER.debug("WebSocket send failed", err);
             return null;
          });
       }
@@ -129,7 +129,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
             String payload = JsonRPCUtils.createRequest(id, method, params).toString();
             this.pendingRequests.put(id, future);
             this.sendChain = this.sendChain.thenCompose((var2) -> ws.sendText(payload, true).thenApply((var0) -> (Void)null)).exceptionally((err) -> {
-               LOGGER.warn("WebSocket send failed", err);
+               LOGGER.debug("WebSocket send failed", err);
                this.executor.execute(() -> {
                   CompletableFuture<JsonElement> pending = (CompletableFuture)this.pendingRequests.remove(id);
                   if (pending != null) {
@@ -157,7 +157,8 @@ public final class JsonRpcClient implements WebSocket.Listener {
             try {
                this.dispatch(full);
             } catch (RuntimeException e) {
-               LOGGER.error("Failed to handle JSON-RPC message: {}", full, e);
+               LOGGER.error("Failed to handle JSON-RPC message ({} bytes)", full.length(), e);
+               LOGGER.trace("Offending JSON-RPC payload: {}", full);
             }
 
          }
@@ -205,7 +206,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
       if (pending != null) {
          pending.complete(result);
       } else {
-         LOGGER.warn("Received result for unknown request id={}", id);
+         LOGGER.warn("Received JSON-RPC result for unknown request id={}", id);
       }
 
    }
@@ -215,7 +216,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
       String message = error.has("message") ? error.get("message").getAsString() : "";
       JsonElement data = error.get("data");
       if (id == null) {
-         LOGGER.error("JSON-RPC error (no id): code={} message={}", code, message);
+         LOGGER.warn("JSON-RPC error (no id): code={} message={}", code, message);
       } else if (!isValidResponseId(id)) {
          LOGGER.warn("Ignoring JSON-RPC error with non-numeric id: {}", id);
       } else {
@@ -223,7 +224,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
          if (pending != null) {
             pending.completeExceptionally(new JsonRpcException(code, message, data));
          } else {
-            LOGGER.warn("Received error for unknown request id={}: code={} message={}", new Object[]{id, code, message});
+            LOGGER.warn("Received JSON-RPC error for unknown request id={}: code={} message={}", new Object[]{id, code, message});
          }
 
       }
@@ -233,7 +234,7 @@ public final class JsonRpcClient implements WebSocket.Listener {
       try {
          this.methodHandler.onMethod(this, id, method, params);
       } catch (RuntimeException e) {
-         LOGGER.error("Handler threw for method {}", method, e);
+         LOGGER.error("JSON-RPC handler threw for method {}", method, e);
          if (id != null) {
             this.sendError(id, JsonRPCErrors.INTERNAL_ERROR);
          }

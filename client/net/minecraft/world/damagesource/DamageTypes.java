@@ -12,6 +12,7 @@ public interface DamageTypes {
    ResourceKey<DamageType> ON_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("on_fire"));
    ResourceKey<DamageType> LAVA = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("lava"));
    ResourceKey<DamageType> HOT_FLOOR = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("hot_floor"));
+   ResourceKey<DamageType> SULFUR_CUBE_HOT = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("sulfur_cube_hot"));
    ResourceKey<DamageType> IN_WALL = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("in_wall"));
    ResourceKey<DamageType> CRAMMING = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("cramming"));
    ResourceKey<DamageType> DROWN = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace("drown"));
@@ -64,6 +65,7 @@ public interface DamageTypes {
       context.register(ON_FIRE, new DamageType("onFire", 0.0F, DamageEffects.BURNING));
       context.register(LAVA, new DamageType("lava", 0.1F, DamageEffects.BURNING));
       context.register(HOT_FLOOR, new DamageType("hotFloor", 0.1F, DamageEffects.BURNING));
+      context.register(SULFUR_CUBE_HOT, new DamageType("sulfurCubeHot", 0.1F, DamageEffects.BURNING));
       context.register(IN_WALL, new DamageType("inWall", 0.0F));
       context.register(CRAMMING, new DamageType("cramming", 0.0F));
       context.register(DROWN, new DamageType("drown", 0.0F, DamageEffects.DROWNING));

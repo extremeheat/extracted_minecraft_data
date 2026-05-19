@@ -21,6 +21,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -235,7 +236,7 @@ public class LevelRenderer implements AutoCloseable {
       }
 
       profiler.push("updateSectionOcclusion");
-      this.sectionOcclusionGraph.update(cameraState, this.optionsRenderState.fov, this.levelRenderState.addedEmptySections, this.levelRenderState.removedEmptySections);
+      this.sectionOcclusionGraph.update(cameraState, this.optionsRenderState.fov, this.levelRenderState.chunkLoadingRenderState);
       profiler.pop();
       Runnable playerCompiledSectionCallback = this.levelRenderState.playerCompiledSectionCallback;
       if (playerCompiledSectionCallback != null && this.isSectionCompiledAndVisible(this.levelRenderState.cameraRenderState.blockPos)) {
@@ -853,6 +854,10 @@ public class LevelRenderer implements AutoCloseable {
 
    public ObjectArrayList<SectionRenderDispatcher.RenderSection> nearbyVisibleSections() {
       return this.nearbyVisibleSections;
+   }
+
+   public LongCollection expectedChunks() {
+      return this.sectionOcclusionGraph.expectedChunks();
    }
 
    public SectionOcclusionGraph sectionOcclusionGraph() {
