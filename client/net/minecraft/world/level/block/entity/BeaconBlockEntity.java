@@ -54,6 +54,7 @@ import org.jspecify.annotations.Nullable;
 
 public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable, BeaconBeamOwner {
    private static final int MAX_LEVELS = 4;
+   private static final int LEVELS_NEEDED_FOR_SECONDARY = 4;
    public static final List<List<Holder<MobEffect>>> BEACON_EFFECTS;
    private static final Set<Holder<MobEffect>> VALID_EFFECTS;
    public static final int DATA_LEVELS = 0;
@@ -231,6 +232,39 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    public void setRemoved() {
       playSound(this.level, this.worldPosition, SoundEvents.BEACON_DEACTIVATE);
       super.setRemoved();
+   }
+
+   public static boolean validateEffects(final @Nullable Holder<MobEffect> primary, final @Nullable Holder<MobEffect> secondary, final int levels) {
+      if (secondary != null && levels < 4) {
+         return false;
+      } else {
+         int primaryLevel = getRequiredLevelsFor(primary);
+         int secondaryLevel = getRequiredLevelsFor(secondary);
+         if (primaryLevel <= levels && secondaryLevel <= levels) {
+            if (primaryLevel >= 4) {
+               return false;
+            } else {
+               return secondaryLevel == 0 || secondaryLevel >= 4 || primary.equals(secondary);
+            }
+         } else {
+            return false;
+         }
+      }
+   }
+
+   private static int getRequiredLevelsFor(final @Nullable Holder<MobEffect> effect) {
+      if (effect == null) {
+         return 0;
+      } else {
+         for(int i = 0; i < BEACON_EFFECTS.size(); ++i) {
+            List<Holder<MobEffect>> effectsForLevel = (List)BEACON_EFFECTS.get(i);
+            if (effectsForLevel.contains(effect)) {
+               return i + 1;
+            }
+         }
+
+         return 2147483647;
+      }
    }
 
    private static void applyEffects(final Level level, final BlockPos worldPosition, final int levels, final @Nullable Holder<MobEffect> primaryPower, final @Nullable Holder<MobEffect> secondaryPower) {

@@ -32,6 +32,11 @@ import org.slf4j.Logger;
 
 public abstract class BaseSpawner {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int SPAWNER_ENTITY_ID = -1;
+   public static final EntityProcessor SET_DISPLAY_ENTITY_ID = (e) -> {
+      e.setId(-1);
+      return e;
+   };
    public static final String SPAWN_DATA_TAG = "SpawnData";
    private static final int EVENT_SPAWN = 1;
    private static final int DEFAULT_SPAWN_DELAY = 20;
@@ -225,7 +230,7 @@ public abstract class BaseSpawner {
             return null;
          }
 
-         this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, EntitySpawnReason.SPAWNER, EntityProcessor.NOP);
+         this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, EntitySpawnReason.SPAWNER, SET_DISPLAY_ENTITY_ID);
          if (entityToSpawn.size() == 1 && this.displayEntity instanceof Mob) {
          }
       }

@@ -196,6 +196,9 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          if (!this.isSelected()) {
             if (this.isPrimary) {
                BeaconScreen.this.primary = this.effect;
+               if (!Objects.equals(BeaconScreen.this.secondary, this.effect)) {
+                  BeaconScreen.this.secondary = null;
+               }
             } else {
                BeaconScreen.this.secondary = this.effect;
             }

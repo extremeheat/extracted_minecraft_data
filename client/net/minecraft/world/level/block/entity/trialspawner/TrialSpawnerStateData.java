@@ -27,12 +27,12 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -241,7 +241,7 @@ public class TrialSpawnerStateData {
          if (this.displayEntity == null) {
             CompoundTag entityToSpawn = this.getOrCreateNextSpawnData(trialSpawner, level.getRandom()).getEntityToSpawn();
             if (entityToSpawn.getString("id").isPresent()) {
-               this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, EntitySpawnReason.TRIAL_SPAWNER, EntityProcessor.NOP);
+               this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, EntitySpawnReason.TRIAL_SPAWNER, BaseSpawner.SET_DISPLAY_ENTITY_ID);
             }
          }
 

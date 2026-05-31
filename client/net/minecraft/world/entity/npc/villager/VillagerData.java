@@ -13,10 +13,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 
 public record VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {
+   public static final ResourceKey<VillagerType> DEFAULT_TYPE;
    public static final int MIN_VILLAGER_LEVEL = 1;
    public static final int MAX_VILLAGER_LEVEL = 5;
-   private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((d) -> d.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((d) -> d.profession), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.INT, "level", 1).forGetter((d) -> d.level)).apply(i, VillagerData::new));
+   private static final int[] NEXT_LEVEL_XP_THRESHOLDS;
+   public static final Codec<VillagerData> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC;
 
    public VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {
@@ -60,6 +61,9 @@ public record VillagerData(Holder<VillagerType> type, Holder<VillagerProfession>
    }
 
    static {
+      DEFAULT_TYPE = VillagerType.PLAINS;
+      NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
+      CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(DEFAULT_TYPE)).forGetter((d) -> d.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((d) -> d.profession), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.INT, "level", 1).forGetter((d) -> d.level)).apply(i, VillagerData::new));
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.VILLAGER_TYPE), VillagerData::type, ByteBufCodecs.holderRegistry(Registries.VILLAGER_PROFESSION), VillagerData::profession, ByteBufCodecs.VAR_INT, VillagerData::level, VillagerData::new);
    }
 }

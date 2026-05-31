@@ -221,7 +221,6 @@ public class Options {
    private static final Component SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
    private final OptionInstance<Integer> sprintWindow;
    public boolean skipMultiplayerWarning;
-   public boolean skipFriendsListPromo;
    private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
    private final OptionInstance<Boolean> hideMatchedNames;
    private final OptionInstance<Boolean> showAutosaveIndicator;
@@ -1288,7 +1287,6 @@ public class Options {
       access.process("allowCursorChanges", this.allowCursorChanges);
       this.glDebugVerbosity = access.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = access.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
-      this.skipFriendsListPromo = access.process("skipFriendsListPromo", this.skipFriendsListPromo);
       access.process("hideMatchedNames", this.hideMatchedNames);
       this.joinedFirstServer = access.process("joinedFirstServer", this.joinedFirstServer);
       this.syncWrites = access.process("syncChunkWrites", this.syncWrites);

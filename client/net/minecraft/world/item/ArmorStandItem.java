@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.PostSpawnProcessor;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -39,7 +39,7 @@ public class ArmorStandItem extends Item {
          if (level.noCollision((Entity)null, box) && level.getEntities((Entity)null, box).isEmpty()) {
             if (level instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)level;
-               Consumer<ArmorStand> entityConfig = EntityType.<ArmorStand>createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
+               PostSpawnProcessor<ArmorStand> entityConfig = EntityType.<ArmorStand>createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
                ArmorStand entity = EntityTypes.ARMOR_STAND.create(serverLevel, entityConfig, blockPos, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
                if (entity == null) {
                   return InteractionResult.FAIL;

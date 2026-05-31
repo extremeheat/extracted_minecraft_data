@@ -1105,6 +1105,10 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return result.build();
    }
 
+   public boolean hasEntityWithId(final int id) {
+      return this.entityMap.containsKey(id);
+   }
+
    protected void addEntity(final Entity entity) {
       if (!(entity instanceof EnderDragonPart)) {
          EntityType<?> type = entity.getType();

@@ -58,8 +58,8 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
    }
 
    public void doLayout(final ScreenRectangle screenRectangle) {
-      this.invitedList.updateSizeAndPosition(this.configurationScreen.width, this.calculateListHeight(), this.configurationScreen.layout.getHeaderHeight());
       super.doLayout(screenRectangle);
+      this.invitedList.updateSizeAndPosition(this.configurationScreen.width, this.calculateListHeight(), this.invitedList.getX(), this.invitedList.getY());
    }
 
    public void updateData(final RealmsServer serverData) {

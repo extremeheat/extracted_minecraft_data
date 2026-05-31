@@ -59,7 +59,7 @@ public class HangingEntityItem extends Item {
             entity = new GlowItemFrame(level, blockPos, clickedFace);
          }
 
-         EntityType.createDefaultStackConfig(level, itemInHand, player).accept(entity);
+         EntityType.createDefaultStackConfig(level, itemInHand, player).apply(entity);
          if (entity.survives()) {
             if (!level.isClientSide()) {
                entity.playPlacementSound();

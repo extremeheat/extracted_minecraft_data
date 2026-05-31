@@ -318,7 +318,6 @@ public class ItemInHandRenderer {
    }
 
    public void submitHandsWithItems(final float frameInterp, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LocalPlayer player, final int lightCoords) {
-      this.synchronizeVisibleHandItems(player.getMainHandItem(), player.getOffhandItem());
       float attackValue = player.getAttackAnim(frameInterp);
       InteractionHand attackHand = (InteractionHand)MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND);
       float xRot = player.getXRot(frameInterp);

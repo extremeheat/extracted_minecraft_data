@@ -87,7 +87,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       T entity = type.create(level, reason);
       if (entity != null) {
          entity.setInitialPos(x, y, z);
-         EntityType.createDefaultStackConfig(level, itemStack, player).accept(entity);
+         EntityType.createDefaultStackConfig(level, itemStack, player).apply(entity);
          MinecartBehavior var13 = entity.getBehavior();
          if (var13 instanceof NewMinecartBehavior) {
             NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var13;

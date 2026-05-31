@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -84,14 +85,14 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    public static final int PICKUP_TIMER_DURATION = 100;
    public static final double PUSH_DISTANCE_THRESHOLD = 1.2999999523162842;
    private int pickupTimer = 0;
+   private int pushSoundCooldown = 0;
    private boolean floatsInLiquids = false;
    private static final double MAX_PLAYER_PUSH_SPEED = 0.5;
    private static final float PLAYER_PUSH_SPEED_SCALE_MULTIPLIER = 0.3F;
    private static final float VERTICAL_PUSH_MULTIPLIER = 0.3F;
-   private static final float DAMAGE_MULTIPLIER_SCALE = 0.6F;
-   private static final float PUSH_SOUND_THRESHOLD = 0.5F;
    private Optional<SulfurCubeArchetype.ExplosionData> explosionData = Optional.empty();
    private SulfurCubeArchetype.KnockbackModifiers knockbackModifier;
+   private SulfurCubeArchetype.SoundSettings soundSettings;
    private int fuse;
    private List<SulfurCubeArchetype.ContactDamage> contactDamages;
    private static final EntityDataAccessor<Integer> MAX_FUSE;
@@ -105,6 +106,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    public SulfurCube(final EntityType<? extends SulfurCube> type, final Level level) {
       super(type, level);
       this.knockbackModifier = SulfurCubeArchetype.DEFAULT_KNOCKBACK_MODIFIERS;
+      this.soundSettings = SulfurCubeArchetype.DEFAULT_SOUND_SETTINGS;
       this.fuse = -1;
       this.contactDamages = new ArrayList();
       this.lookControl = new SulfurCubeLookControl();
@@ -337,6 +339,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          --this.pickupTimer;
       }
 
+      if (this.pushSoundCooldown > 0) {
+         --this.pushSoundCooldown;
+      }
+
    }
 
    protected @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges(final Map<EquipmentSlot, ItemStack> lastEquipmentItems) {
@@ -363,6 +369,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          this.explosionData = Optional.empty();
          this.contactDamages.clear();
          this.knockbackModifier = SulfurCubeArchetype.DEFAULT_KNOCKBACK_MODIFIERS;
+         this.soundSettings = SulfurCubeArchetype.DEFAULT_SOUND_SETTINGS;
 
          for(SulfurCubeArchetype archetype : this.matchingArchetypes(current)) {
             if (archetype.buoyant()) {
@@ -378,6 +385,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             }
 
             this.knockbackModifier = archetype.knockbackModifiers();
+            this.soundSettings = archetype.soundSettings();
 
             for(SulfurCubeArchetype.AttributeEntry mod : archetype.attributeModifiers()) {
                AttributeInstance attr = this.getAttribute(mod.attribute());
@@ -410,6 +418,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             int age = this.getAge();
             this.usePlayerItem(player, hand, heldItem);
             this.ageUp(getSpeedUpSecondsWhenFeeding(-age), true);
+            this.playEatingSound();
             return InteractionResult.SUCCESS;
          } else {
             return super.mobInteract(player, hand);
@@ -436,7 +445,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
                this.gameEvent(GameEvent.ENTITY_INTERACT);
             }
 
-            return (InteractionResult)(itWorked ? InteractionResult.SUCCESS : InteractionResult.PASS);
+            return (InteractionResult)(itWorked ? InteractionResult.SUCCESS_SERVER : InteractionResult.PASS);
          } else {
             return (InteractionResult)Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
          }
@@ -480,7 +489,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             }
          }
 
-         this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, heldItem.copyWithCount(1));
+         if (!this.level().isClientSide()) {
+            this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, heldItem.copyWithCount(1));
+         }
+
          this.playSound(this.getAbsorbSound());
          return true;
       }
@@ -494,6 +506,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          }
       }
 
+   }
+
+   protected void playEatingSound() {
+      this.makeSound(SoundEvents.SULFUR_CUBE_SMALL_EAT);
    }
 
    public boolean canBePickedUpWithBucket(final ItemStack itemStack) {
@@ -530,14 +546,6 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
    protected SoundEvent getJumpSound() {
       return this.isTiny() ? SoundEvents.SULFUR_CUBE_SMALL_JUMP : SoundEvents.SULFUR_CUBE_JUMP;
-   }
-
-   private SoundEvent getHitSound() {
-      return SoundEvents.SULFUR_CUBE_HIT;
-   }
-
-   private SoundEvent getPushSound() {
-      return SoundEvents.SULFUR_CUBE_PUSH;
    }
 
    private SoundEvent getAbsorbSound() {
@@ -703,8 +711,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             playerSpeed = Mth.clamp(playerSpeed, 0.0, 0.5);
             Vec3 pushVelocity = (new Vec3(pushDirection.x, this.onGround() ? knockback * 0.30000001192092896 : 0.0, pushDirection.z)).scale(playerSpeed);
             this.needsSync = true;
-            if (pushVelocity.lengthSqr() > 0.25) {
-               this.playSound(this.getPushSound());
+            float push_sound_threshold = this.soundSettings.pushSoundImpulseThreshold();
+            if (pushVelocity.lengthSqr() > (double)(push_sound_threshold * push_sound_threshold) && this.pushSoundCooldown <= 0) {
+               this.pushSoundCooldown = (int)(this.soundSettings.pushSoundCooldown() * 20.0F);
+               this.playSound((SoundEvent)this.soundSettings.pushSound().value());
             }
 
             this.addDeltaMovement(pushVelocity);
@@ -751,6 +761,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          float verticalPositionAngleScale = 0.8F;
          float horizontalPower = this.knockbackModifier.horizontalPower();
          float verticalPower = this.knockbackModifier.verticalPower();
+         Holder<SoundEvent> hitSound = this.soundSettings.hitSound();
          Vec2 originalAngle = new Vec2((float)xd, (float)zd);
          Vec2 newAngle = this.applyHorizontalHitAngleScale(1.6F, originalAngle, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter());
          Vec2 newPower = this.applyVerticalHitAnglePowerTransfer(0.5F, horizontalPower, verticalPower, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter(), this.getBbHeight());
@@ -769,9 +780,11 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          this.needsSync = true;
          Vec3 deltaMovement = this.getDeltaMovement();
          horizontalPower *= 0.4F;
+         horizontalPower = Mth.clamp(horizontalPower, -128.0F, 128.0F);
+         verticalPower = Mth.clamp(verticalPower, -128.0F, 128.0F);
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
          this.setDeltaMovement(deltaMovement.x - horizontalKnockback.x, deltaMovement.y + (double)verticalPower * 1.2, deltaMovement.z - horizontalKnockback.z);
-         this.playSound(this.getHitSound());
+         this.playSound(hitSound.value());
       } else {
          super.knockback(power, xd, zd, source, damage);
       }

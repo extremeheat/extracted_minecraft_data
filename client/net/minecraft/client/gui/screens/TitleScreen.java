@@ -68,6 +68,7 @@ public class TitleScreen extends Screen {
       super(TITLE);
       this.fading = fading;
       this.logoRenderer = (LogoRenderer)Objects.requireNonNullElseGet(logoRenderer, () -> new LogoRenderer(false));
+      this.minecraft.gameRenderer.panorama().startSpin();
    }
 
    private boolean realmsNotificationsEnabled() {
@@ -114,24 +115,19 @@ public class TitleScreen extends Screen {
          topPos = this.createNormalMenuOptions(topPos, 24);
       }
 
-      topPos = this.createTestWorldButton(topPos, 24);
       boolean friendsListEnabled = this.minecraft.getPlayerSocialManager().isFriendListEnabled();
-      boolean showFriendsListButton = this.showFriendsListButton(friendsListEnabled);
-      int numberOfButtons = showFriendsListButton ? 3 : 2;
+      int numberOfButtons = 3;
       int currentButton = 0;
       topPos += 24;
-      if (showFriendsListButton) {
-         this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this)));
-         ++currentButton;
-         this.friends.setPosition(this.getHorizontalPosition(currentButton, numberOfButtons, 20), topPos);
-      }
-
+      this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this)));
+      ++currentButton;
+      this.friends.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
       SpriteIconButton language = (SpriteIconButton)this.addRenderableWidget(CommonButtons.language(20, (var1) -> this.minecraft.gui.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true));
       ++currentButton;
-      language.setPosition(this.getHorizontalPosition(currentButton, numberOfButtons, 20), topPos);
+      language.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
       SpriteIconButton accessibility = (SpriteIconButton)this.addRenderableWidget(CommonButtons.accessibility(20, (var1) -> this.minecraft.gui.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true));
       ++currentButton;
-      accessibility.setPosition(this.getHorizontalPosition(currentButton, numberOfButtons, 20), topPos);
+      accessibility.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
       Button.Builder var10001 = Button.builder(Component.translatable("menu.options"), (var1) -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options, false)));
       int var10002 = this.width / 2 - 100;
       topPos += 24;
@@ -148,34 +144,26 @@ public class TitleScreen extends Screen {
 
    }
 
-   private boolean showFriendsListButton(final boolean friendsListEnabled) {
-      return friendsListEnabled || !this.minecraft.options.skipFriendsListPromo;
-   }
-
    private int getHorizontalPosition(final int currentButton, final int numberOfButtons, final int buttonWidth) {
       int totalWidth = numberOfButtons * buttonWidth + (numberOfButtons - 1) * 4;
       return this.width / 2 - totalWidth / 2 + (currentButton - 1) * (buttonWidth + 4);
    }
 
-   private int createTestWorldButton(int topPos, final int spacing) {
+   private int createNormalMenuOptions(int topPos, final int spacing) {
+      Button singleplayerButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.singleplayer"), (var1) -> this.minecraft.gui.setScreen(new SelectWorldScreen(this))).bounds(this.width / 2 - 100, topPos, 200, 20).build());
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.gui.setScreen(this))).bounds(this.width / 2 - 100, topPos += spacing, 200, 20).build());
+         this.addRenderableWidget(Button.builder(Component.literal("TW"), (var1) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.gui.setScreen(this))).bounds(singleplayerButton.getX() + singleplayerButton.getWidth() + 2, topPos, 20, 20).build());
       }
 
-      return topPos;
-   }
-
-   private int createNormalMenuOptions(int topPos, final int spacing) {
-      this.addRenderableWidget(Button.builder(Component.translatable("menu.singleplayer"), (var1) -> this.minecraft.gui.setScreen(new SelectWorldScreen(this))).bounds(this.width / 2 - 100, topPos, 200, 20).build());
       Component multiplayerDisabledReason = this.getMultiplayerDisabledReason();
       boolean multiplayerAllowed = multiplayerDisabledReason == null;
       Tooltip tooltip = multiplayerDisabledReason != null ? Tooltip.create(multiplayerDisabledReason) : null;
-      int var6;
+      int var7;
       ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), (button) -> {
          Screen screen = (Screen)(this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this));
          this.minecraft.gui.setScreen(screen);
-      }).bounds(this.width / 2 - 100, var6 = topPos + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
-      ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.online"), (var1) -> this.minecraft.gui.setScreen(new RealmsMainScreen(this))).bounds(this.width / 2 - 100, topPos = var6 + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
+      }).bounds(this.width / 2 - 100, var7 = topPos + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
+      ((Button)this.addRenderableWidget(Button.builder(Component.translatable("menu.online"), (var1) -> this.minecraft.gui.setScreen(new RealmsMainScreen(this))).bounds(this.width / 2 - 100, topPos = var7 + spacing, 200, 20).tooltip(tooltip).build())).active = multiplayerAllowed;
       return topPos;
    }
 

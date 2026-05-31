@@ -122,6 +122,11 @@ public class Slot {
       return (ItemStack)result.orElse(ItemStack.EMPTY);
    }
 
+   public ItemStack safeClone(final Player player) {
+      ItemStack item = this.getItem();
+      return item.copyWithCount(item.getMaxStackSize());
+   }
+
    public ItemStack safeInsert(final ItemStack stack) {
       return this.safeInsert(stack, stack.getCount());
    }

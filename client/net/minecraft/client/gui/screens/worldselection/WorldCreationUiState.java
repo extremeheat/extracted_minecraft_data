@@ -1,6 +1,8 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraft.world.level.storage.LevelStorageException;
 import org.jspecify.annotations.Nullable;
 
 public class WorldCreationUiState {
@@ -95,6 +98,14 @@ public class WorldCreationUiState {
    }
 
    private String findResultFolder(final String name) {
+      if (!Files.exists(this.savesFolder, new LinkOption[0])) {
+         try {
+            Files.createDirectory(this.savesFolder);
+         } catch (IOException e) {
+            throw new LevelStorageException(Component.literal("Could not create save folder"), e);
+         }
+      }
+
       String trimmedName = name.trim();
 
       try {
@@ -103,7 +114,7 @@ public class WorldCreationUiState {
          try {
             return FileUtil.findAvailableName(this.savesFolder, "World", "");
          } catch (IOException e) {
-            throw new RuntimeException("Could not create save folder", e);
+            throw new LevelStorageException(Component.literal("Could not create world folder"), e);
          }
       }
    }

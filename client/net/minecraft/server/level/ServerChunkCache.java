@@ -498,6 +498,10 @@ public class ServerChunkCache extends ChunkSource {
 
    }
 
+   public boolean hasEntityWithId(final int id) {
+      return this.chunkMap.hasEntityWithId(id);
+   }
+
    public void removeEntity(final Entity entity) {
       this.chunkMap.removeEntity(entity);
    }

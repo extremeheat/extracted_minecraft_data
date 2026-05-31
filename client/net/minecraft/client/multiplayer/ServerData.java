@@ -84,10 +84,6 @@ public class ServerData {
       return this.type == ServerData.Type.LAN;
    }
 
-   public boolean isOnline() {
-      return this.type == ServerData.Type.ONLINE;
-   }
-
    public boolean isRealm() {
       return this.type == ServerData.Type.REALM;
    }
@@ -178,7 +174,6 @@ public class ServerData {
    public static enum Type {
       LAN,
       REALM,
-      ONLINE,
       OTHER;
 
       private Type() {
@@ -186,7 +181,7 @@ public class ServerData {
 
       // $FF: synthetic method
       private static Type[] $values() {
-         return new Type[]{LAN, REALM, ONLINE, OTHER};
+         return new Type[]{LAN, REALM, OTHER};
       }
    }
 

@@ -51,6 +51,7 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.onClose = onClose;
       this.logoRenderer = new LogoRenderer(true);
       this.narratorAvailable = Minecraft.getInstance().getNarrator().isActive();
+      this.minecraft.gameRenderer.panorama().holdSpin();
    }
 
    public void init() {
@@ -152,10 +153,6 @@ public class AccessibilityOnboardingScreen extends Screen {
       }
 
       this.logoRenderer.extractRenderState(graphics, this.width, 1.0F);
-   }
-
-   protected boolean panoramaShouldSpin() {
-      return false;
    }
 
    private void handleInitialNarrationDelay() {

@@ -98,6 +98,12 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             });
             super.onTake(player, carried);
          }
+
+         public ItemStack safeClone(final Player player) {
+            ItemStack result = super.safeClone(player);
+            result.getItem().onCraftedBy(result, player);
+            return result;
+         }
       });
       this.addStandardInventorySlots(inventory, 8, 84);
    }

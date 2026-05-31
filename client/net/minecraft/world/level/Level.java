@@ -148,6 +148,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.damageSources = new DamageSources(registryAccess);
    }
 
+   public int getNextEntityId() {
+      return 0;
+   }
+
    public boolean isClientSide() {
       return this.isClientSide;
    }

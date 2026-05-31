@@ -143,12 +143,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
    private void setEncryption(final ServerboundKeyPacket setKeyPacket, final Cipher decryptCipher, final Cipher encryptCipher) {
       this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-      if (this.connection.isSecureTransport()) {
-         this.connection.send(setKeyPacket);
-      } else {
-         this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
-      }
-
+      this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
    }
 
    private @Nullable Component authenticateServer(final String digest) {
@@ -171,7 +166,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void handleLoginFinished(final ClientboundLoginFinishedPacket packet) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
       GameProfile localGameProfile = packet.gameProfile();
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, localGameProfile, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY, this.seenPlayers, false)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, localGameProfile, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName, packet.sessionId()), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY, this.seenPlayers, false)));
       this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));

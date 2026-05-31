@@ -164,7 +164,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
    private void finishLoginAndWaitForClient(final GameProfile gameProfile) {
       this.state = ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING;
-      this.connection.send(new ClientboundLoginFinishedPacket(gameProfile));
+      this.connection.send(new ClientboundLoginFinishedPacket(gameProfile, this.server.getConnection().getSessionId()));
    }
 
    public void handleKey(final ServerboundKeyPacket packet) {
@@ -180,11 +180,9 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          SecretKey secretKey = packet.getSecretKey(serverPrivateKey);
          digest = (new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), secretKey))).toString(16);
          this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
-         if (!this.connection.isSecureTransport()) {
-            Cipher decryptCipher = Crypt.getCipher(2, secretKey);
-            Cipher encryptCipher = Crypt.getCipher(1, secretKey);
-            this.connection.setEncryptionKey(decryptCipher, encryptCipher);
-         }
+         Cipher decryptCipher = Crypt.getCipher(2, secretKey);
+         Cipher encryptCipher = Crypt.getCipher(1, secretKey);
+         this.connection.setEncryptionKey(decryptCipher, encryptCipher);
       } catch (CryptException e) {
          throw new IllegalStateException("Protocol error", e);
       }
@@ -204,7 +202,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                   ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", profile.name(), profile.id());
                   ServerLoginPacketListenerImpl.this.serverActivityMonitor.reportLoginActivity();
                   ServerLoginPacketListenerImpl.this.startClientVerification(profile);
-               } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer() && !ServerLoginPacketListenerImpl.this.connection.isSecureTransport()) {
+               } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");
                   ServerLoginPacketListenerImpl.this.startClientVerification(UUIDUtil.createOfflineProfile(name));
                } else {
@@ -212,7 +210,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                   ServerLoginPacketListenerImpl.LOGGER.error("Username '{}' tried to join with an invalid session", name);
                }
             } catch (AuthenticationUnavailableException var4) {
-               if (ServerLoginPacketListenerImpl.this.server.isSingleplayer() && !ServerLoginPacketListenerImpl.this.connection.isSecureTransport()) {
+               if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Authentication servers are down but will let them in anyway!");
                   ServerLoginPacketListenerImpl.this.startClientVerification(UUIDUtil.createOfflineProfile(name));
                } else {

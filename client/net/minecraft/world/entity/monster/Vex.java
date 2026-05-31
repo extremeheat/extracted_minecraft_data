@@ -19,8 +19,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.Targeting;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,12 +45,12 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class Vex extends Monster implements TraceableEntity {
+public class Vex extends Monster implements TraceableEntity, OwnableEntity {
    public static final float FLAP_DEGREES_PER_TICK = 45.836624F;
    public static final int TICKS_PER_FLAP = Mth.ceil(3.9269907F);
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int FLAG_IS_CHARGING = 1;
-   private @Nullable EntityReference<Mob> owner;
+   private @Nullable EntityReference<LivingEntity> owner;
    private @Nullable BlockPos boundOrigin;
    private boolean hasLimitedLife;
    private int limitedLifeTicks;
@@ -104,7 +106,7 @@ public class Vex extends Monster implements TraceableEntity {
       super.readAdditionalSaveData(input);
       this.boundOrigin = (BlockPos)input.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
       input.getInt("life_ticks").ifPresentOrElse(this::setLimitedLife, () -> this.hasLimitedLife = false);
-      this.owner = EntityReference.<Mob>read(input, "owner");
+      this.owner = EntityReference.<LivingEntity>read(input, "owner");
    }
 
    public void restoreFrom(final Entity oldEntity) {
@@ -125,8 +127,12 @@ public class Vex extends Monster implements TraceableEntity {
       EntityReference.store(this.owner, output, "owner");
    }
 
-   public @Nullable Mob getOwner() {
-      return (Mob)EntityReference.get(this.owner, this.level(), Mob.class);
+   public @Nullable LivingEntity getOwner() {
+      return OwnableEntity.super.getOwner();
+   }
+
+   public @Nullable EntityReference<LivingEntity> getOwnerReference() {
+      return this.owner;
    }
 
    public @Nullable BlockPos getBoundOrigin() {
@@ -335,13 +341,30 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public boolean canUse() {
-         Mob owner = Vex.this.getOwner();
-         return owner != null && owner.getTarget() != null && this.canAttack(owner.getTarget(), this.copyOwnerTargeting);
+         LivingEntity var2 = Vex.this.getOwner();
+         boolean var10000;
+         if (var2 instanceof Targeting owner) {
+            if (owner.getTarget() != null && this.canAttack(owner.getTarget(), this.copyOwnerTargeting)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
 
       public void start() {
-         Mob owner = Vex.this.getOwner();
-         Vex.this.setTarget(owner != null ? owner.getTarget() : null);
+         Vex var10000 = Vex.this;
+         LivingEntity var2 = Vex.this.getOwner();
+         LivingEntity var10001;
+         if (var2 instanceof Targeting owner) {
+            var10001 = owner.getTarget();
+         } else {
+            var10001 = null;
+         }
+
+         var10000.setTarget(var10001);
          super.start();
       }
    }

@@ -10,6 +10,11 @@ public class LevelStorageException extends RuntimeException {
       this.messageComponent = message;
    }
 
+   public LevelStorageException(final Component message, final Exception e) {
+      super(message.getString(), e);
+      this.messageComponent = message;
+   }
+
    public Component getMessageComponent() {
       return this.messageComponent;
    }

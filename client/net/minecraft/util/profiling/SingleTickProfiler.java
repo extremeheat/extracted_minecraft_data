@@ -44,7 +44,7 @@ public class SingleTickProfiler {
    }
 
    public static @Nullable SingleTickProfiler createTickProfiler(final String name) {
-      return SharedConstants.DEBUG_MONITOR_TICK_TIMES ? new SingleTickProfiler(Util.timeSource, name, SharedConstants.MAXIMUM_TICK_TIME_NANOS) : null;
+      return SharedConstants.DEBUG_MONITOR_TICK_TIMES ? new SingleTickProfiler(Util.timeSource(), name, SharedConstants.MAXIMUM_TICK_TIME_NANOS) : null;
    }
 
    public static ProfilerFiller decorateFiller(final ProfilerFiller filler, final @Nullable SingleTickProfiler tickProfiler) {

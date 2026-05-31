@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components.toasts;
 
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -10,7 +11,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.jspecify.annotations.Nullable;
 
 public class FriendToast implements Toast {
@@ -22,20 +23,20 @@ public class FriendToast implements Toast {
    private static final int PADDING_BOTTOM = 3;
    private static final int LINE_SPACING = 11;
    private static final long DEFAULT_DISPLAY_TIME_MS = 5000L;
-   private final @Nullable PlayerSkin skin;
+   private final @Nullable ResolvableProfile skinProfile;
    private final List<FormattedCharSequence> messageLines;
    private final long displayTimeMs;
    private Toast.Visibility visibility;
 
-   public FriendToast(final Font font, final @Nullable PlayerSkin skin, final Component message) {
-      this(font, skin, message, 5000L);
+   public FriendToast(final Font font, final @Nullable ResolvableProfile skinProfile, final Component message) {
+      this(font, skinProfile, message, 5000L);
    }
 
-   public FriendToast(final Font font, final @Nullable PlayerSkin skin, final Component message, final long displayTimeMs) {
+   public FriendToast(final Font font, final @Nullable ResolvableProfile skinProfile, final Component message, final long displayTimeMs) {
       super();
       this.visibility = Toast.Visibility.SHOW;
-      this.skin = skin;
-      int textLeft = skin != null ? 30 : 7;
+      this.skinProfile = skinProfile;
+      int textLeft = skinProfile != null ? 30 : 7;
       this.messageLines = font.split(message, 160 - textLeft - 4);
       this.displayTimeMs = displayTimeMs;
    }
@@ -63,8 +64,8 @@ public class FriendToast implements Toast {
       int height = this.height();
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE.get(true, false), 0, 0, this.width(), height);
       int textLeft;
-      if (this.skin != null) {
-         PlayerFaceExtractor.extractRenderState(graphics, this.skin, 6, 6, 20);
+      if (this.skinProfile != null) {
+         PlayerFaceExtractor.extractRenderState(graphics, (ResolvableProfile)this.skinProfile, 6, 6, 20);
          textLeft = 30;
       } else {
          textLeft = 7;
@@ -83,47 +84,37 @@ public class FriendToast implements Toast {
       this.visibility = Toast.Visibility.HIDE;
    }
 
-   public static void add(final ToastManager toastManager, final Font font, final @Nullable PlayerSkin skin, final Component message) {
-      toastManager.addToast(new FriendToast(font, skin, message));
+   public static void add(final ToastManager toastManager, final Font font, final @Nullable ResolvableProfile skinProfile, final Component message) {
+      toastManager.addToast(new FriendToast(font, skinProfile, message));
+   }
+
+   private static void add(final Minecraft minecraft, final @Nullable ResolvableProfile skinProfile, final Component message) {
+      add(minecraft.gui.toastManager(), minecraft.font, skinProfile, message);
+   }
+
+   private static void addWithSkin(final Minecraft minecraft, final UUID playerId, final Component message) {
+      ResolvableProfile skinProfile = ResolvableProfile.createUnresolved(playerId);
+      add(minecraft, skinProfile, message);
    }
 
    public static void showFriendRequestSent(final Minecraft minecraft, final String nickname) {
-      add(minecraft.gui.toastManager(), minecraft.font, (PlayerSkin)null, Component.translatable("gui.friends.toast.request_sent.message", nickname));
+      add(minecraft, (ResolvableProfile)null, Component.translatable("gui.friends.toast.request_sent.message", nickname));
    }
 
-   public static void showFriendRequestReceived(final Minecraft minecraft, final String nickname, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.request_received.message", nickname));
+   public static void showFriendRequestReceived(final Minecraft minecraft, final String nickname, final UUID playerId) {
+      addWithSkin(minecraft, playerId, Component.translatable("gui.friends.toast.request_received.message", nickname));
    }
 
-   public static void showFriendRequestAccepted(final Minecraft minecraft, final String nickname, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.request_accepted.message", nickname));
+   public static void showFriendRequestAccepted(final Minecraft minecraft, final String nickname, final UUID playerId) {
+      addWithSkin(minecraft, playerId, Component.translatable("gui.friends.toast.request_accepted.message", nickname));
    }
 
-   public static void showFriendAdded(final Minecraft minecraft, final String nickname, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.friend_added.message", nickname));
+   public static void showFriendAdded(final Minecraft minecraft, final String nickname, final UUID playerId) {
+      addWithSkin(minecraft, playerId, Component.translatable("gui.friends.toast.friend_added.message", nickname));
    }
 
-   public static void showFriendJoinRequest(final Minecraft minecraft, final String profileName, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.join_request.message", profileName, minecraft.options.keyFriends.getTranslatedKeyMessage()));
-   }
-
-   public static void showFriendInvited(final Minecraft minecraft, final String profileName, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.friend_invited.message", profileName));
-   }
-
-   public static void showInviteFromFriend(final Minecraft minecraft, final String profileName, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.invite_from_friend.message", profileName, minecraft.options.keyFriends.getTranslatedKeyMessage()));
-   }
-
-   public static void showRequestToJoinFriend(final Minecraft minecraft, final String profileName, final PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.request_to_join_friend.message", profileName));
-   }
-
-   public static void showHostInviteExpired(final Minecraft minecraft, final String profileName, final @Nullable PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.host_invite_expired.message", profileName));
-   }
-
-   public static void showJoinInviteExpired(final Minecraft minecraft, final String profileName, final @Nullable PlayerSkin skin) {
-      add(minecraft.gui.toastManager(), minecraft.font, skin, Component.translatable("gui.friends.toast.join_invite_expired.message", profileName));
+   @FunctionalInterface
+   public interface SkinToastEmitter {
+      void emit(Minecraft minecraft, String playerName, UUID playerId);
    }
 }

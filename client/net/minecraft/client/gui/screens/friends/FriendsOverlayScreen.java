@@ -18,7 +18,6 @@ import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.screens.P2PConnectScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
@@ -27,8 +26,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.PlayerSkin;
-import net.minecraft.world.item.component.ResolvableProfile;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -45,8 +42,8 @@ public class FriendsOverlayScreen extends Screen {
    private static final Component ERROR_GENERIC = Component.translatable("gui.friends.error.generic");
    private static final Component ERROR_TOAST_GENERIC = Component.translatable("gui.friends.toast.generic_error");
    private static final int BG_BORDER_WIDTH = 8;
-   private static final int OVERLAY_WIDTH = 180;
-   public static final int TAB_BUTTON_WIDTH = 90;
+   private static final int OVERLAY_WIDTH = 220;
+   public static final int TAB_BUTTON_WIDTH = 110;
    private static final int TAB_BUTTON_HEIGHT = 20;
    private final @Nullable Screen backgroundScreen;
    private @Nullable FriendsTab friendsTab;
@@ -58,8 +55,6 @@ public class FriendsOverlayScreen extends Screen {
    private final TabManager tabManager;
    private final Runnable friendListUpdateListener = this::onFriendListUpdate;
    private final Set<UUID> pendingFriendRemovals = new HashSet();
-   private final Runnable p2pJoinStateListener = this::onP2PJoinStateChanged;
-   private boolean openingP2PConnectScreen;
 
    public FriendsOverlayScreen(final @Nullable Screen backgroundScreen) {
       super(TITLE);
@@ -74,39 +69,16 @@ public class FriendsOverlayScreen extends Screen {
       }
 
       this.minecraft.getPlayerSocialManager().addFriendListUpdateListener(this.friendListUpdateListener);
-      this.minecraft.p2pManager.addJoinStateListener(this.p2pJoinStateListener);
    }
 
    public void removed() {
-      this.minecraft.p2pManager.removeJoinStateListener(this.p2pJoinStateListener);
       this.minecraft.getPlayerSocialManager().removeFriendListUpdateListener(this.friendListUpdateListener);
       super.removed();
    }
 
    private void onFriendListUpdate() {
-      if (this.minecraft.gui.screen() == this && !this.tryOpenP2PConnectScreenForAcceptedJoin()) {
+      if (this.minecraft.gui.screen() == this) {
          this.refreshLists();
-      }
-   }
-
-   private void onP2PJoinStateChanged() {
-      if (this.minecraft.gui.screen() == this && !this.tryOpenP2PConnectScreenForAcceptedJoin()) {
-         this.refreshLists();
-      }
-   }
-
-   private boolean tryOpenP2PConnectScreenForAcceptedJoin() {
-      if (this.openingP2PConnectScreen) {
-         return true;
-      } else {
-         UUID connectingPmid = this.minecraft.p2pManager.connectingOutgoingJoinPmid();
-         if (connectingPmid == null) {
-            return false;
-         } else {
-            this.openingP2PConnectScreen = true;
-            P2PConnectScreen.startConnecting(this, this.minecraft, connectingPmid);
-            return true;
-         }
       }
    }
 
@@ -117,10 +89,10 @@ public class FriendsOverlayScreen extends Screen {
 
       this.layout = LinearLayout.vertical();
       int scrollableMaxHeight = this.height - 80;
-      this.friendsTab = new FriendsTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_FRIENDS), this, 180, scrollableMaxHeight);
-      this.pendingTab = new PendingTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_REQUESTS), this, 180, scrollableMaxHeight);
-      this.pendingTabButton = new FriendsOverlayTabButton(this.tabManager, this.pendingTab, 90, 20);
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, 0, 0, 180, 20).addTab(new FriendsOverlayTabButton(this.tabManager, this.friendsTab, 90, 20), this.friendsTab).addTab(this.pendingTabButton, this.pendingTab).build();
+      this.friendsTab = new FriendsTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_FRIENDS), this, 220, scrollableMaxHeight);
+      this.pendingTab = new PendingTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_REQUESTS), this, 220, scrollableMaxHeight);
+      this.pendingTabButton = new FriendsOverlayTabButton(this.tabManager, this.pendingTab, 110, 20);
+      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, 0, 0, 220, 20).addTab(new FriendsOverlayTabButton(this.tabManager, this.friendsTab, 110, 20), this.friendsTab).addTab(this.pendingTabButton, this.pendingTab).build();
       this.addRenderableWidget(this.tabNavigationBar);
       this.contentLayout = (LinearLayout)this.layout.addChild(LinearLayout.vertical());
       this.tabManager.setCurrentTab(this.friendsTab, false, false);
@@ -129,7 +101,7 @@ public class FriendsOverlayScreen extends Screen {
    }
 
    public int getOverlayWidth() {
-      return 180;
+      return 220;
    }
 
    protected void repositionElements() {
@@ -277,10 +249,9 @@ public class FriendsOverlayScreen extends Screen {
                }
             }
 
-            PlayerSkin playerSkin = this.minecraft.playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(friend.id())).playerSkin();
             UUID friendId = friend.id();
             boolean removalPending = this.pendingFriendRemovals.contains(friendId);
-            entries.add(new FriendEntry(this.minecraft, this, friend, playerSkin, presence, removalPending, () -> {
+            entries.add(new FriendEntry(this.minecraft, this, friend, presence, removalPending, () -> {
                this.pendingFriendRemovals.add(friendId);
                this.minecraft.getPlayerSocialManager().removeFriend(friendId).whenCompleteAsync((var2, var3) -> this.pendingFriendRemovals.remove(friendId), this.minecraft).thenAcceptAsync((var1) -> this.refreshLists(), this.minecraft).exceptionally(this::onActionFailed);
             }));
@@ -302,15 +273,14 @@ public class FriendsOverlayScreen extends Screen {
          List<IncomingEntry> incomingEntries = new ArrayList(incomingRequests.size());
          if (!incomingRequests.isEmpty()) {
             for(PlayerSocialManager.PlayerData incomingRequest : incomingRequests) {
-               PlayerSkin incomingSkin = this.minecraft.playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(incomingRequest.id())).playerSkin();
-               incomingEntries.add(new IncomingEntry(this.minecraft, this, incomingRequest, incomingSkin, () -> this.minecraft.getPlayerSocialManager().acceptIncomingFriendRequest(incomingRequest.id()).thenAcceptAsync((var1) -> this.refreshLists(), this.minecraft).exceptionally(this::onActionFailed), () -> this.minecraft.getPlayerSocialManager().declineIncomingFriendRequest(incomingRequest.id()).thenRunAsync(this::refreshLists, this.minecraft).exceptionally(this::onActionFailed)));
+               incomingEntries.add(new IncomingEntry(this.minecraft, this, incomingRequest, () -> this.minecraft.getPlayerSocialManager().acceptIncomingFriendRequest(incomingRequest.id()).thenAcceptAsync((var1) -> this.refreshLists(), this.minecraft).exceptionally(this::onActionFailed), () -> this.minecraft.getPlayerSocialManager().declineIncomingFriendRequest(incomingRequest.id()).thenRunAsync(this::refreshLists, this.minecraft).exceptionally(this::onActionFailed)));
             }
          }
 
          List<OutgoingEntry> outgoingEntries = new ArrayList(outgoingRequests.size());
          if (!outgoingRequests.isEmpty()) {
             for(PlayerSocialManager.PlayerData outgoingRequest : outgoingRequests) {
-               outgoingEntries.add(new OutgoingEntry(this.minecraft, this, outgoingRequest, this.minecraft.playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(outgoingRequest.id())).playerSkin(), () -> this.minecraft.getPlayerSocialManager().revokeOutgoingFriendRequest(outgoingRequest.id()).thenRunAsync(this::refreshLists, this.minecraft).exceptionally(this::onActionFailed)));
+               outgoingEntries.add(new OutgoingEntry(this.minecraft, this, outgoingRequest, () -> this.minecraft.getPlayerSocialManager().revokeOutgoingFriendRequest(outgoingRequest.id()).thenRunAsync(this::refreshLists, this.minecraft).exceptionally(this::onActionFailed)));
             }
          }
 

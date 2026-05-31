@@ -52,7 +52,9 @@ public class PlayerSpawnFinder {
    }
 
    public static CompletableFuture<Vec3> findSpawn(final ServerLevel level, final BlockPos spawnSuggestion) {
-      if (level.dimensionType().hasSkyLight() && level.getServer().getWorldData().getGameType() != GameType.ADVENTURE) {
+      if (level.getServer().getWorldData().getGameType() == GameType.ADVENTURE) {
+         return CompletableFuture.completedFuture(fixupSpawnHeight(level, spawnSuggestion));
+      } else {
          int radius = Math.max(0, (Integer)level.getGameRules().get(GameRules.RESPAWN_RADIUS));
          int distToBorder = Mth.floor(level.getWorldBorder().getDistanceToBorder((double)spawnSuggestion.getX(), (double)spawnSuggestion.getZ()));
          if (distToBorder < radius) {
@@ -66,8 +68,6 @@ public class PlayerSpawnFinder {
          PlayerSpawnFinder finder = new PlayerSpawnFinder(level, spawnSuggestion, radius);
          finder.scheduleNext();
          return finder.finishedFuture;
-      } else {
-         return CompletableFuture.completedFuture(fixupSpawnHeight(level, spawnSuggestion));
       }
    }
 
@@ -80,7 +80,7 @@ public class PlayerSpawnFinder {
          int targetX = this.spawnSuggestion.getX() + deltaX - this.radius;
          int targetZ = this.spawnSuggestion.getZ() + deltaZ - this.radius;
          this.scheduleCandidate(targetX, targetZ, candidateIndex, () -> {
-            BlockPos spawnPos = getOverworldRespawnPos(this.level, targetX, targetZ);
+            BlockPos spawnPos = getLevelRespawnPos(this.level, targetX, targetZ);
             return spawnPos != null && noCollisionNoLiquid(this.level, spawnPos) ? Optional.of(Vec3.atBottomCenterOf(spawnPos)) : Optional.empty();
          });
       } else {
@@ -148,7 +148,7 @@ public class PlayerSpawnFinder {
       }
    }
 
-   protected static @Nullable BlockPos getOverworldRespawnPos(final ServerLevel level, final int x, final int z) {
+   protected static @Nullable BlockPos getLevelRespawnPos(final ServerLevel level, final int x, final int z) {
       boolean caveWorld = level.dimensionType().hasCeiling();
       LevelChunk chunk = level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z));
       int topY = caveWorld ? level.getChunkSource().getGenerator().getSpawnHeight(level) : chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, x & 15, z & 15);
@@ -184,7 +184,7 @@ public class PlayerSpawnFinder {
       } else {
          for(int x = chunkPos.getMinBlockX(); x <= chunkPos.getMaxBlockX(); ++x) {
             for(int z = chunkPos.getMinBlockZ(); z <= chunkPos.getMaxBlockZ(); ++z) {
-               BlockPos validSpawnPosition = getOverworldRespawnPos(level, x, z);
+               BlockPos validSpawnPosition = getLevelRespawnPos(level, x, z);
                if (validSpawnPosition != null) {
                   return validSpawnPosition;
                }

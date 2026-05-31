@@ -20,11 +20,14 @@ import org.joml.Quaternionfc;
 
 public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, SulfurCubeModel> {
    private static final Identifier SULFUR_CUBE_INNER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_inner.png");
-   private final SulfurCubeModel model;
+   private static final Identifier SULFUR_CUBE_SMALL_INNER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_inner_small.png");
+   private final SulfurCubeModel normalModel;
+   private final SulfurCubeModel smallModel;
 
    public SulfurCubeInnerLayer(final RenderLayerParent<SulfurCubeRenderState, SulfurCubeModel> renderer, final EntityModelSet modelSet) {
       super(renderer);
-      this.model = new SulfurCubeModel(modelSet.bakeLayer(ModelLayers.SULFUR_CUBE_INNER));
+      this.normalModel = new SulfurCubeModel(modelSet.bakeLayer(ModelLayers.SULFUR_CUBE_INNER));
+      this.smallModel = new SulfurCubeModel(modelSet.bakeLayer(ModelLayers.SULFUR_CUBE_SMALL_INNER));
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SulfurCubeRenderState state, final float yRot, final float xRot) {
@@ -36,8 +39,10 @@ public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, Sul
          state.containedBlock.submit(poseStack, submitNodeCollector, state.lightCoords, overlayCoords, state.outlineColor);
          poseStack.popPose();
       } else if (!state.isInvisible) {
-         RenderType renderType = RenderTypes.entityTranslucent(SULFUR_CUBE_INNER_LOCATION);
-         submitNodeCollector.order(-1).submitModel(this.model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         Identifier location = state.isBaby ? SULFUR_CUBE_SMALL_INNER_LOCATION : SULFUR_CUBE_INNER_LOCATION;
+         SulfurCubeModel model = state.isBaby ? this.smallModel : this.normalModel;
+         RenderType renderType = RenderTypes.entityTranslucent(location);
+         submitNodeCollector.order(-1).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }

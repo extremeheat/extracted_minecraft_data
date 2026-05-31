@@ -119,41 +119,24 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private int updateMerchantTimer;
    private boolean increaseProfessionLevelOnUpdate;
    private @Nullable Player lastTradedPlayer;
-   private boolean chasing;
-   private int foodLevel;
-   private final GossipContainer gossips;
+   private int foodLevel = 0;
+   private final GossipContainer gossips = new GossipContainer();
    private long lastGossipTime;
-   private long lastGossipDecayTime;
-   private int villagerXp;
-   private long lastRestockGameTime;
-   private int numberOfRestocksToday;
+   private long lastGossipDecayTime = 0L;
+   private int villagerXp = 0;
+   private long lastRestockGameTime = 0L;
+   private int numberOfRestocksToday = 0;
    private long lastRestockCheckDay;
-   private boolean assignProfessionWhenSpawned;
+   private boolean assignProfessionWhenSpawned = false;
    private static final Brain.Provider<Villager> BRAIN_PROVIDER;
    public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES;
 
-   public Villager(final EntityType<? extends Villager> type, final Level level) {
-      this(type, level, VillagerType.PLAINS);
-   }
-
-   public Villager(final EntityType<? extends Villager> entityType, final Level level, final ResourceKey<VillagerType> type) {
-      this(entityType, level, level.registryAccess().getOrThrow(type));
-   }
-
-   public Villager(final EntityType<? extends Villager> entityType, final Level level, final Holder<VillagerType> type) {
+   public Villager(final EntityType<? extends Villager> entityType, final Level level) {
       super(entityType, level);
-      this.foodLevel = 0;
-      this.gossips = new GossipContainer();
-      this.lastGossipDecayTime = 0L;
-      this.villagerXp = 0;
-      this.lastRestockGameTime = 0L;
-      this.numberOfRestocksToday = 0;
-      this.assignProfessionWhenSpawned = false;
       this.getNavigation().setCanOpenDoors(true);
       this.getNavigation().setCanFloat(true);
       this.getNavigation().setRequiredPathLength(48.0F);
       this.setCanPickUpLoot(true);
-      this.setVillagerData(this.getVillagerData().withType(type).withProfession(level.registryAccess(), VillagerProfession.NONE));
    }
 
    public Brain<Villager> getBrain() {
@@ -425,13 +408,13 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    }
 
    public static VillagerData createDefaultVillagerData() {
-      return new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1);
+      return new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerData.DEFAULT_TYPE), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1);
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
       output.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      output.putBoolean("VillagerDataFinalized", (Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED));
+      output.putBoolean("VillagerDataFinalized", this.getVillagerDataFinalized());
       output.putByte("FoodLevel", (byte)this.foodLevel);
       output.store("Gossips", GossipContainer.CODEC, this.gossips);
       output.putInt("Xp", this.villagerXp);
@@ -448,7 +431,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       super.readAdditionalSaveData(input);
       Optional<VillagerData> villagerDataOptional = input.<VillagerData>read("VillagerData", VillagerData.CODEC);
       if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
-         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
+         this.setVillagerDataFinalized(true);
          VillagerData villagerData = (VillagerData)villagerDataOptional.orElseGet(Villager::createDefaultVillagerData);
          this.entityData.set(DATA_VILLAGER_DATA, villagerData);
       }
@@ -673,11 +656,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          this.setVillagerData(this.getVillagerData().withProfession(level.registryAccess(), VillagerProfession.NONE));
       }
 
-      if (!(Boolean)this.entityData.get(DATA_VILLAGER_DATA_FINALIZED)) {
-         this.setVillagerData(this.getVillagerData().withType(level.registryAccess(), VillagerType.byBiome(level.getBiome(this.blockPosition()))));
-         this.entityData.set(DATA_VILLAGER_DATA_FINALIZED, true);
-      }
-
+      this.finalizeVillagerType(level, this.blockPosition());
       if (spawnReason == EntitySpawnReason.STRUCTURE) {
          this.assignProfessionWhenSpawned = true;
       }
@@ -696,7 +675,10 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          type = ((Villager)partner).getVillagerData().type();
       }
 
-      return new Villager(EntityTypes.VILLAGER, level, type);
+      Villager baby = new Villager(EntityTypes.VILLAGER, level);
+      baby.setVillagerData(baby.getVillagerData().withType(type).withProfession(level.registryAccess(), VillagerProfession.NONE));
+      baby.setVillagerDataFinalized(true);
+      return baby;
    }
 
    public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
@@ -853,6 +835,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       if (type == DataComponents.VILLAGER_VARIANT) {
          Holder<VillagerType> variant = (Holder)castComponentValue(DataComponents.VILLAGER_VARIANT, value);
          this.setVillagerData(this.getVillagerData().withType(variant));
+         this.setVillagerDataFinalized(true);
          return true;
       } else {
          return super.applyImplicitComponent(type, value);

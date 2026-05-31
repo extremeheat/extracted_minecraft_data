@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import org.jspecify.annotations.Nullable;
 
 public class BeaconMenu extends AbstractContainerMenu {
@@ -140,14 +141,23 @@ public class BeaconMenu extends AbstractContainerMenu {
       return decodeEffect(this.beaconData.get(2));
    }
 
-   public void updateEffects(final Optional<Holder<MobEffect>> primary, final Optional<Holder<MobEffect>> secondary) {
+   public boolean updateEffects(final Optional<Holder<MobEffect>> primary, final Optional<Holder<MobEffect>> secondary) {
       if (this.paymentSlot.hasItem()) {
-         this.beaconData.set(1, encodeEffect((Holder)primary.orElse((Object)null)));
-         this.beaconData.set(2, encodeEffect((Holder)secondary.orElse((Object)null)));
-         this.paymentSlot.remove(1);
-         this.access.execute(Level::blockEntityChanged);
+         int levels = this.getLevels();
+         Holder<MobEffect> primaryEffect = (Holder)primary.orElse((Object)null);
+         Holder<MobEffect> secondaryEffect = (Holder)secondary.orElse((Object)null);
+         if (!BeaconBlockEntity.validateEffects(primaryEffect, secondaryEffect, levels)) {
+            return false;
+         } else {
+            this.beaconData.set(1, encodeEffect(primaryEffect));
+            this.beaconData.set(2, encodeEffect(secondaryEffect));
+            this.paymentSlot.remove(1);
+            this.access.execute(Level::blockEntityChanged);
+            return true;
+         }
+      } else {
+         return false;
       }
-
    }
 
    public boolean hasPayment() {

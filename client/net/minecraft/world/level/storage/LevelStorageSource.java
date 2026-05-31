@@ -95,6 +95,7 @@ public class LevelStorageSource {
    private static final PathMatcher NO_SYMLINKS_ALLOWED = (path) -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
    private static final int DISK_SPACE_WARNING_THRESHOLD = 67108864;
+   private static final Component LOAD_FOLDER_ACCESS_MESSAGE = Component.translatable("selectWorld.load_folder_access");
    private final Path baseDir;
    private final Path backupDir;
    private final DataFixer fixerUpper;
@@ -220,36 +221,42 @@ public class LevelStorageSource {
    }
 
    public LevelCandidates findLevelCandidates() throws LevelStorageException {
-      if (!Files.isDirectory(this.baseDir, new LinkOption[0])) {
-         throw new LevelStorageException(Component.translatable("selectWorld.load_folder_access"));
-      } else {
+      if (!Files.exists(this.baseDir, new LinkOption[0])) {
          try {
-            Stream<Path> paths = Files.list(this.baseDir);
-
-            LevelCandidates var3;
-            try {
-               List<LevelDirectory> candidates = paths.filter((x$0) -> Files.isDirectory(x$0, new LinkOption[0])).map(LevelDirectory::new).filter((directory) -> Files.isRegularFile(directory.dataFile(), new LinkOption[0]) || Files.isRegularFile(directory.oldDataFile(), new LinkOption[0])).toList();
-               var3 = new LevelCandidates(candidates);
-            } catch (Throwable var5) {
-               if (paths != null) {
-                  try {
-                     paths.close();
-                  } catch (Throwable var4) {
-                     var5.addSuppressed(var4);
-                  }
-               }
-
-               throw var5;
-            }
-
-            if (paths != null) {
-               paths.close();
-            }
-
-            return var3;
-         } catch (IOException var6) {
-            throw new LevelStorageException(Component.translatable("selectWorld.load_folder_access"));
+            Files.createDirectory(this.baseDir);
+         } catch (IOException e) {
+            throw new LevelStorageException(LOAD_FOLDER_ACCESS_MESSAGE, e);
          }
+      } else if (!Files.isDirectory(this.baseDir, new LinkOption[0])) {
+         throw new LevelStorageException(LOAD_FOLDER_ACCESS_MESSAGE);
+      }
+
+      try {
+         Stream<Path> paths = Files.list(this.baseDir);
+
+         LevelCandidates var3;
+         try {
+            List<LevelDirectory> candidates = paths.filter((x$0) -> Files.isDirectory(x$0, new LinkOption[0])).map(LevelDirectory::new).filter((directory) -> Files.isRegularFile(directory.dataFile(), new LinkOption[0]) || Files.isRegularFile(directory.oldDataFile(), new LinkOption[0])).toList();
+            var3 = new LevelCandidates(candidates);
+         } catch (Throwable var6) {
+            if (paths != null) {
+               try {
+                  paths.close();
+               } catch (Throwable var4) {
+                  var6.addSuppressed(var4);
+               }
+            }
+
+            throw var6;
+         }
+
+         if (paths != null) {
+            paths.close();
+         }
+
+         return var3;
+      } catch (IOException var7) {
+         throw new LevelStorageException(LOAD_FOLDER_ACCESS_MESSAGE);
       }
    }
 

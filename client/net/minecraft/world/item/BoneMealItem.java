@@ -43,7 +43,7 @@ public class BoneMealItem extends Item {
             level.levelEvent(1505, pos, 15);
             return InteractionResult.SUCCESS_SERVER;
          } else {
-            return InteractionResult.PASS;
+            return InteractionResult.SUCCESS;
          }
       } else {
          BlockState clickedState = level.getBlockState(pos);

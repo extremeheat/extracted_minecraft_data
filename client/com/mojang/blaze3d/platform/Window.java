@@ -26,6 +26,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.system.MemoryStack;
@@ -298,6 +299,7 @@ public final class Window implements AutoCloseable {
       RenderSystem.assertOnRenderThread();
       this.screenManager.shutdown();
       Callbacks.glfwFreeCallbacks(this.handle);
+      GLFW.glfwSetErrorCallback((GLFWErrorCallbackI)null);
       this.defaultErrorCallback.close();
       GLFW.glfwDestroyWindow(this.handle);
    }

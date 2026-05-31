@@ -531,16 +531,13 @@ public class VanillaRecipeProvider extends RecipeProvider {
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Items.RESIN_CLUMP), RecipeCategory.MISC, CookingBookCategory.MISC, Items.RESIN_BRICK, 0.1F, 200).unlockedBy("has_resin_clump", this.has(Blocks.RESIN_CLUMP)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.NETHER_QUARTZ_ORE), RecipeCategory.MISC, CookingBookCategory.MISC, Items.QUARTZ, 0.2F, 200).unlockedBy("has_nether_quartz_ore", this.has(Blocks.NETHER_QUARTZ_ORE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.WET_SPONGE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SPONGE, 0.15F, 200).unlockedBy("has_wet_sponge", this.has(Blocks.WET_SPONGE)).save(this.output);
-      SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.COBBLESTONE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.STONE, 0.1F, 200).unlockedBy("has_cobblestone", this.has(Blocks.COBBLESTONE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.STONE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SMOOTH_STONE, 0.1F, 200).unlockedBy("has_stone", this.has(Blocks.STONE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.SANDSTONE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SMOOTH_SANDSTONE, 0.1F, 200).unlockedBy("has_sandstone", this.has(Blocks.SANDSTONE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.RED_SANDSTONE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SMOOTH_RED_SANDSTONE, 0.1F, 200).unlockedBy("has_red_sandstone", this.has(Blocks.RED_SANDSTONE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.QUARTZ_BLOCK), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SMOOTH_QUARTZ, 0.1F, 200).unlockedBy("has_quartz_block", this.has(Blocks.QUARTZ_BLOCK)).save(this.output);
-      SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.STONE_BRICKS), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.CRACKED_STONE_BRICKS, 0.1F, 200).unlockedBy("has_stone_bricks", this.has(Blocks.STONE_BRICKS)).save(this.output);
       DyeColor.VALUES.forEach((dyeColor) -> SimpleCookingRecipeBuilder.smelting(Ingredient.of(Blocks.DYED_TERRACOTTA.pick(dyeColor)), RecipeCategory.DECORATIONS, CookingBookCategory.BLOCKS, Items.GLAZED_TERRACOTTA.pick(dyeColor), 0.1F, 200).unlockedBy("has_" + dyeColor.getName() + "_terracotta", this.has(Blocks.DYED_TERRACOTTA.pick(dyeColor))).save(this.output));
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.ANCIENT_DEBRIS), RecipeCategory.MISC, CookingBookCategory.MISC, Items.NETHERITE_SCRAP, 2.0F, 200).unlockedBy("has_ancient_debris", this.has(Blocks.ANCIENT_DEBRIS)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.BASALT), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.SMOOTH_BASALT, 0.1F, 200).unlockedBy("has_basalt", this.has(Blocks.BASALT)).save(this.output);
-      SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.COBBLED_DEEPSLATE), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, Items.DEEPSLATE, 0.1F, 200).unlockedBy("has_cobbled_deepslate", this.has(Blocks.COBBLED_DEEPSLATE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(this.tag(ItemTags.LEAVES), RecipeCategory.MISC, CookingBookCategory.BLOCKS, Items.LEAF_LITTER, 0.1F, 200).unlockedBy("has_leaves", this.has(ItemTags.LEAVES)).save(this.output);
       this.oreBlasting(COAL_SMELTABLES, RecipeCategory.MISC, CookingBookCategory.MISC, Items.COAL, 0.1F, 100, "coal");
       this.oreBlasting(IRON_SMELTABLES, RecipeCategory.MISC, CookingBookCategory.MISC, Items.IRON_INGOT, 0.7F, 100, "iron_ingot");
@@ -557,8 +554,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
       SimpleCookingRecipeBuilder.blasting(Ingredient.of((ItemLike)Blocks.ANCIENT_DEBRIS), RecipeCategory.MISC, CookingBookCategory.MISC, Items.NETHERITE_SCRAP, 2.0F, 100).unlockedBy("has_ancient_debris", this.has(Blocks.ANCIENT_DEBRIS)).save(this.output, getBlastingRecipeName(Items.NETHERITE_SCRAP));
       this.cookRecipes("smoking", SmokingRecipe::new, 100);
       this.cookRecipes("campfire_cooking", CampfireCookingRecipe::new, 600);
-      this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.QUARTZ_PILLAR, Blocks.QUARTZ_BLOCK);
-      this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.PURPUR_PILLAR, Blocks.PURPUR_BLOCK);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.POLISHED_BASALT, Blocks.BASALT);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.SMOOTH_STONE_SLAB, Blocks.SMOOTH_STONE, 2);
       WeatheringCopperCollection.zipApply(Blocks.CUT_COPPER, Blocks.COPPER_BLOCK, (cutBlock, material) -> this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, cutBlock, material, 4));

@@ -90,6 +90,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final long maxTickTime;
    public final int maxChainedNeighborUpdates;
    public final int rateLimitPacketsPerSecond;
+   public final int commandSpamThresholdSeconds;
+   public final int chatSpamThresholdSeconds;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> viewDistance;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> simulationDistance;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> maxPlayers;
@@ -145,6 +147,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.maxTickTime = this.get("max-tick-time", TimeUnit.MINUTES.toMillis(1L));
       this.maxChainedNeighborUpdates = this.get("max-chained-neighbor-updates", 1000000);
       this.rateLimitPacketsPerSecond = this.get("rate-limit", 0);
+      this.commandSpamThresholdSeconds = this.get("command-spam-threshold-seconds", 10);
+      this.chatSpamThresholdSeconds = this.get("chat-spam-threshold-seconds", 10);
       this.viewDistance = this.getMutable("view-distance", 10);
       this.simulationDistance = this.getMutable("simulation-distance", 10);
       this.maxPlayers = this.getMutable("max-players", 20);

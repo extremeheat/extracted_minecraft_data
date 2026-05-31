@@ -241,8 +241,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public final PlayerChunkSender chunkSender;
    private int tickCount;
    private int ackBlockChangesUpTo = -1;
-   private final TickThrottler chatSpamThrottler = new TickThrottler(20, 200);
    private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1480);
+   private final TickThrottler chatSpamThrottler;
+   private final TickThrottler commandSpamThrottler;
    private double firstGoodX;
    private double firstGoodY;
    private double firstGoodZ;
@@ -278,6 +279,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public ServerGamePacketListenerImpl(final MinecraftServer server, final Connection connection, final ServerPlayer player, final CommonListenerCookie cookie) {
       super(server, connection, cookie);
+      this.commandSpamThrottler = new TickThrottler(20, 20 * server.getCommandSpamThresholdSeconds());
+      this.chatSpamThrottler = new TickThrottler(20, 20 * server.getChatSpamThresholdSeconds());
       this.restartClientLoadTimerAfterRespawn();
       this.chunkSender = new PlayerChunkSender(connection.isMemoryConnection());
       this.player = player;
@@ -298,6 +301,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (this.server.isPaused() || !this.tickPlayer()) {
          this.keepConnectionAlive();
          this.chatSpamThrottler.tick();
+         this.commandSpamThrottler.tick();
          this.dropSpamThrottler.tick();
          if (this.player.getLastActionTime() > 0L && this.server.playerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.playerIdleTimeout()) && !this.player.wonGame) {
             this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
@@ -764,7 +768,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             return;
          }
 
-         menu.updateEffects(packet.primary(), packet.secondary());
+         if (!menu.updateEffects(packet.primary(), packet.secondary())) {
+            this.disconnect(Component.translatable("multiplayer.disconnect.generic"));
+            LOGGER.warn("Player {} tried to set invalid beacon effects", this.player);
+         }
       }
 
    }
@@ -1501,7 +1508,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleChatCommand(final ServerboundChatCommandPacket packet) {
       this.tryHandleChat(packet.command(), true, () -> {
          this.performUnsignedChatCommand(packet.command());
-         this.detectRateSpam();
+         this.detectCommandRateSpam();
       });
    }
 
@@ -1520,7 +1527,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (!unpackedLastSeen.isEmpty()) {
          this.tryHandleChat(packet.command(), true, () -> {
             this.performSignedChatCommand(packet, (LastSeenMessages)unpackedLastSeen.get());
-            this.detectRateSpam();
+            this.detectCommandRateSpam();
          });
       }
    }
@@ -1642,15 +1649,23 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private void broadcastChatMessage(final PlayerChatMessage message) {
       this.server.getPlayerList().broadcastChatMessage(message, this.player, ChatType.bind(ChatType.CHAT, (Entity)this.player));
-      this.detectRateSpam();
+      this.detectChatRateSpam();
    }
 
-   private void detectRateSpam() {
-      this.chatSpamThrottler.increment();
-      if (!this.chatSpamThrottler.isUnderThreshold() && !this.server.getPlayerList().isOp(this.player.nameAndId()) && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
+   private void detectRateSpam(final TickThrottler throttler) {
+      throttler.increment();
+      if (!throttler.isUnderThreshold() && !this.server.getPlayerList().isOp(this.player.nameAndId()) && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
          this.disconnect(Component.translatable("disconnect.spam"));
       }
 
+   }
+
+   private void detectCommandRateSpam() {
+      this.detectRateSpam(this.commandSpamThrottler);
+   }
+
+   private void detectChatRateSpam() {
+      this.detectRateSpam(this.chatSpamThrottler);
    }
 
    public void handleChatAck(final ServerboundChatAckPacket packet) {
@@ -1910,34 +1925,36 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       this.player.resetLastActionTime();
       if (this.player.containerMenu.containerId == packet.containerId()) {
-         if (this.player.isSpectator()) {
-            this.player.containerMenu.sendAllDataToRemote();
-         } else if (!this.player.containerMenu.stillValid(this.player)) {
-            LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
-         } else {
-            int slotIndex = packet.slotNum();
-            if (!this.player.containerMenu.isValidSlotIndex(slotIndex)) {
-               LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getPlainTextName(), slotIndex, this.player.containerMenu.slots.size()});
+         if (!this.player.isSpectator() && !this.player.isDeadOrDying()) {
+            if (!this.player.containerMenu.stillValid(this.player)) {
+               LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
             } else {
-               boolean fullResyncNeeded = packet.stateId() != this.player.containerMenu.getStateId();
-               this.player.containerMenu.suppressRemoteUpdates();
-               this.player.containerMenu.clicked(slotIndex, packet.buttonNum(), packet.containerInput(), this.player);
-               ObjectIterator var4 = Int2ObjectMaps.fastIterable(packet.changedSlots()).iterator();
-
-               while(var4.hasNext()) {
-                  Int2ObjectMap.Entry<HashedStack> e = (Int2ObjectMap.Entry)var4.next();
-                  this.player.containerMenu.setRemoteSlotUnsafe(e.getIntKey(), (HashedStack)e.getValue());
-               }
-
-               this.player.containerMenu.setRemoteCarried(packet.carriedItem());
-               this.player.containerMenu.resumeRemoteUpdates();
-               if (fullResyncNeeded) {
-                  this.player.containerMenu.broadcastFullState();
+               int slotIndex = packet.slotNum();
+               if (!this.player.containerMenu.isValidSlotIndex(slotIndex)) {
+                  LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getPlainTextName(), slotIndex, this.player.containerMenu.slots.size()});
                } else {
-                  this.player.containerMenu.broadcastChanges();
-               }
+                  boolean fullResyncNeeded = packet.stateId() != this.player.containerMenu.getStateId();
+                  this.player.containerMenu.suppressRemoteUpdates();
+                  this.player.containerMenu.clicked(slotIndex, packet.buttonNum(), packet.containerInput(), this.player);
+                  ObjectIterator var4 = Int2ObjectMaps.fastIterable(packet.changedSlots()).iterator();
 
+                  while(var4.hasNext()) {
+                     Int2ObjectMap.Entry<HashedStack> e = (Int2ObjectMap.Entry)var4.next();
+                     this.player.containerMenu.setRemoteSlotUnsafe(e.getIntKey(), (HashedStack)e.getValue());
+                  }
+
+                  this.player.containerMenu.setRemoteCarried(packet.carriedItem());
+                  this.player.containerMenu.resumeRemoteUpdates();
+                  if (fullResyncNeeded) {
+                     this.player.containerMenu.broadcastFullState();
+                  } else {
+                     this.player.containerMenu.broadcastChanges();
+                  }
+
+               }
             }
+         } else {
+            this.player.containerMenu.sendAllDataToRemote();
          }
       }
    }

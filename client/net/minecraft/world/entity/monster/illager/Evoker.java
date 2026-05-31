@@ -86,8 +86,9 @@ public class Evoker extends SpellcasterIllager {
       } else {
          if (other instanceof Vex) {
             Vex vex = (Vex)other;
-            if (vex.getOwner() != null) {
-               return this.considersEntityAsAlly(vex.getOwner());
+            LivingEntity rootOwner = vex.getRootOwner();
+            if (rootOwner != null && (rootOwner == this || super.considersEntityAsAlly(rootOwner))) {
+               return true;
             }
          }
 

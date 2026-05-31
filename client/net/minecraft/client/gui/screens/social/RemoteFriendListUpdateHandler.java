@@ -21,8 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.FriendToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
-import net.minecraft.world.entity.player.PlayerSkin;
-import net.minecraft.world.item.component.ResolvableProfile;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -226,11 +224,8 @@ public final class RemoteFriendListUpdateHandler {
       return this.minecraft.level != null && !(Boolean)this.minecraft.options.inGameNotification().get();
    }
 
-   private void emitToastWithSkin(final UUID playerId, final String playerName, final SkinToastEmitter emitter) {
-      this.minecraft.execute(() -> {
-         PlayerSkin skin = this.minecraft.playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(playerId)).playerSkin();
-         emitter.emit(this.minecraft, playerName, skin);
-      });
+   private void emitToastWithSkin(final UUID playerId, final String playerName, final FriendToast.SkinToastEmitter emitter) {
+      this.minecraft.execute(() -> emitter.emit(this.minecraft, playerName, playerId));
    }
 
    public CompletableFuture<Void> forceUpdate() {
@@ -303,10 +298,5 @@ public final class RemoteFriendListUpdateHandler {
       private static State[] $values() {
          return new State[]{LOADING, UPGRADE_NEEDED, CONNECTION_ISSUE, USER_MAY_LACK_ACTIVE_PROFILE, TEMPORARY_UNAVAILABLE, GENERIC_ERROR, SUCCESS};
       }
-   }
-
-   @FunctionalInterface
-   private interface SkinToastEmitter {
-      void emit(Minecraft minecraft, String playerName, PlayerSkin skin);
    }
 }

@@ -76,7 +76,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
@@ -123,9 +122,9 @@ public class CreateWorldScreen extends Screen {
    }
 
    public static void testWorld(final Minecraft minecraft, final Runnable onClose) {
-      WorldCreationContextMapper worldCreationContext = (managers, registries, cookie) -> new WorldCreationContext(cookie.worldGenSettings().options(), cookie.worldGenSettings().dimensions(), registries, managers, cookie.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, (new GameRuleMap.Builder()).set(GameRules.ADVANCE_TIME, false).set(GameRules.ADVANCE_WEATHER, false).set(GameRules.SPAWN_MOBS, false).build(), FlatLevelGeneratorPresets.REDSTONE_READY));
-      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(context.datapackWorldgen()));
-      openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.FLAT, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
+      WorldCreationContextMapper worldCreationContext = (managers, registries, cookie) -> new WorldCreationContext(cookie.worldGenSettings().options(), cookie.worldGenSettings().dimensions(), registries, managers, cookie.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, (new GameRuleMap.Builder()).set(GameRules.ADVANCE_TIME, false).set(GameRules.ADVANCE_WEATHER, false).set(GameRules.SPAWN_MOBS, false).build(), (ResourceKey)null));
+      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createTestWorldDimensions(context.datapackWorldgen()));
+      openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.FLAT_ALL_DIMENSIONS, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
    }
 
    private static void openCreateWorldScreen(final Minecraft minecraft, final Runnable onClose, final Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings, final WorldCreationContextMapper worldCreationContext, final ResourceKey<WorldPreset> worldPreset, final CreateWorldCallback createWorld) {

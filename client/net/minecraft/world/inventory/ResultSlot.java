@@ -42,6 +42,12 @@ public class ResultSlot extends Slot {
       this.removeCount += count;
    }
 
+   public ItemStack safeClone(final Player player) {
+      ItemStack result = super.safeClone(player);
+      result.getItem().onCraftedBy(result, player);
+      return result;
+   }
+
    protected void checkTakeAchievements(final ItemStack carried) {
       if (this.removeCount > 0) {
          carried.onCraftedBy(this.player, this.removeCount);

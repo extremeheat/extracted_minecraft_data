@@ -52,8 +52,8 @@ public class ClientTelemetryManager implements AutoCloseable {
       this.logManager = TelemetryLogManager.open(this.logDirectory);
    }
 
-   public WorldSessionTelemetryManager createWorldSessionManager(final boolean newWorld, final @Nullable Duration worldLoadDuration, final @Nullable String minigameName) {
-      return new WorldSessionTelemetryManager(this.createEventSender(), newWorld, worldLoadDuration, minigameName);
+   public WorldSessionTelemetryManager createWorldSessionManager(final boolean newWorld, final @Nullable Duration worldLoadDuration, final @Nullable String minigameName, final UUID sessionId) {
+      return new WorldSessionTelemetryManager(this.createEventSender(), newWorld, worldLoadDuration, minigameName, sessionId);
    }
 
    public TelemetryEventSender getOutsideSessionSender() {

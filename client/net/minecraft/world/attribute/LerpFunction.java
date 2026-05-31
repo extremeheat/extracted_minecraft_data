@@ -4,6 +4,8 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public interface LerpFunction<T> {
+   LerpFunction<?> CONSTANT = ofStep(1.0F);
+
    static LerpFunction<Float> ofFloat() {
       return Mth::lerp;
    }
@@ -20,7 +22,7 @@ public interface LerpFunction<T> {
    }
 
    static <T> LerpFunction<T> ofConstant() {
-      return (alpha, from, to) -> from;
+      return CONSTANT;
    }
 
    static <T> LerpFunction<T> ofStep(final float threshold) {

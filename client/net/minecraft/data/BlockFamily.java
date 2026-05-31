@@ -12,6 +12,7 @@ public class BlockFamily {
    private final Map<Variant, Block> variants = Maps.newHashMap();
    private boolean generateModel = true;
    private boolean generateCraftingRecipe = true;
+   private boolean generateSmeltingRecipe = true;
    private boolean generateStonecutterRecipe = false;
    private @Nullable String recipeGroupPrefix;
    private @Nullable String recipeUnlockedBy;
@@ -41,6 +42,10 @@ public class BlockFamily {
       return this.generateCraftingRecipe;
    }
 
+   public boolean shouldGenerateSmeltingRecipe() {
+      return this.generateSmeltingRecipe;
+   }
+
    public boolean shouldGenerateStonecutterRecipe() {
       return this.generateStonecutterRecipe;
    }
@@ -61,7 +66,11 @@ public class BlockFamily {
          }
       },
       CRACKED("cracked"),
-      CUT("cut"),
+      CUT("cut") {
+         public String getPrefixedRecipeGroup(final String prefix) {
+            return prefix;
+         }
+      },
       DOOR("door"),
       CUSTOM_FENCE("fence"),
       FENCE("fence"),
@@ -92,7 +101,8 @@ public class BlockFamily {
       WALL_HANGING_SIGN("wall_hanging_sign"),
       BRICKS("bricks"),
       COBBLED("cobbled"),
-      TILES("tiles");
+      TILES("tiles"),
+      PILLAR("pillar");
 
       private final String recipeGroup;
 
@@ -104,13 +114,17 @@ public class BlockFamily {
          return this.recipeGroup;
       }
 
+      public String getPrefixedRecipeGroup(final String prefix) {
+         return prefix + "_" + this.getRecipeGroup();
+      }
+
       public @Nullable Variant getBaseVariantForCrafting() {
          return null;
       }
 
       // $FF: synthetic method
       private static Variant[] $values() {
-         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, CUSTOM_HANGING_SIGN, HANGING_SIGN, LOG, STRIPPED_LOG, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, CUSTOM_WALL_HANGING_SIGN, WALL_HANGING_SIGN, BRICKS, COBBLED, TILES};
+         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, CUSTOM_HANGING_SIGN, HANGING_SIGN, LOG, STRIPPED_LOG, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, CUSTOM_WALL_HANGING_SIGN, WALL_HANGING_SIGN, BRICKS, COBBLED, TILES, PILLAR};
       }
    }
 
@@ -148,6 +162,11 @@ public class BlockFamily {
 
       public Builder tiles(final Block tiles) {
          this.family.variants.put(BlockFamily.Variant.TILES, tiles);
+         return this;
+      }
+
+      public Builder pillar(final Block pillar) {
+         this.family.variants.put(BlockFamily.Variant.PILLAR, pillar);
          return this;
       }
 
@@ -256,6 +275,11 @@ public class BlockFamily {
 
       public Builder dontGenerateCraftingRecipe() {
          this.family.generateCraftingRecipe = false;
+         return this;
+      }
+
+      public Builder dontGenerateSmeltingRecipe() {
+         this.family.generateSmeltingRecipe = false;
          return this;
       }
 

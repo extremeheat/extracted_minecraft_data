@@ -178,6 +178,14 @@ public class IntegratedServer extends MinecraftServer {
       return 0;
    }
 
+   public int getCommandSpamThresholdSeconds() {
+      return 0;
+   }
+
+   public int getChatSpamThresholdSeconds() {
+      return 0;
+   }
+
    public boolean useNativeTransport() {
       return this.minecraft.options.useNativeTransport();
    }
@@ -204,18 +212,11 @@ public class IntegratedServer extends MinecraftServer {
          try {
             this.minecraft.prepareForMultiplayer();
             this.minecraft.getConnection().prepareKeyPair();
-            switch (scope) {
-               case LAN:
-                  this.getConnection().startTcpServerListener((InetAddress)null, port);
-                  LOGGER.info("Published LAN server on port {}", port);
-                  this.publishedPort = port;
-                  this.lanPinger = new LanServerPinger(this.getMotd(), Integer.toString(port));
-                  this.lanPinger.start();
-                  break;
-               case ONLINE:
-                  LOGGER.info("Published online server");
-            }
-
+            this.getConnection().startTcpServerListener((InetAddress)null, port);
+            LOGGER.info("Published LAN server on port {}", port);
+            this.publishedPort = port;
+            this.lanPinger = new LanServerPinger(this.getMotd(), Integer.toString(port));
+            this.lanPinger.start();
             this.publishedGameType = gameMode;
             this.setCommandsAllowedForAllPlayers(allowCommands);
             this.setMultiplayerScope(scope);
@@ -266,8 +267,6 @@ public class IntegratedServer extends MinecraftServer {
       } else {
          if (this.multiplayerScope == MinecraftServer.MultiplayerScope.LAN) {
             LOGGER.info("Unpublishing integrated server (was on port {})", this.publishedPort);
-         } else {
-            LOGGER.info("Unpublishing integrated server (was online)");
          }
 
          this.getConnection().stopTcpServerListener();
@@ -288,13 +287,6 @@ public class IntegratedServer extends MinecraftServer {
    public void stopServer() {
       this.teardownPublishedState();
       super.stopServer();
-   }
-
-   public void onPlayerListChanged() {
-      if (this.multiplayerScope == MinecraftServer.MultiplayerScope.ONLINE) {
-         this.minecraft.p2pManager.notifyJoinStateChanged();
-      }
-
    }
 
    public void halt(final boolean wait) {
@@ -401,19 +393,10 @@ public class IntegratedServer extends MinecraftServer {
    private void setMultiplayerScope(final MinecraftServer.MultiplayerScope multiplayerScope) {
       if (this.multiplayerScope != multiplayerScope) {
          this.multiplayerScope = multiplayerScope;
-         this.minecraft.p2pManager.onHostScopeChanged(multiplayerScope);
       }
    }
 
    public MinecraftServer.MultiplayerScope getMultiplayerScope() {
       return this.multiplayerScope;
-   }
-
-   public boolean enforceSecureProfile() {
-      return this.isPublishedOnline();
-   }
-
-   public boolean isPublishedOnline() {
-      return this.isRunning() && this.multiplayerScope == MinecraftServer.MultiplayerScope.ONLINE;
    }
 }

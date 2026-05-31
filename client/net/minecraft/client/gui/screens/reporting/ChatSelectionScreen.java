@@ -382,7 +382,7 @@ public class ChatSelectionScreen extends Screen {
          public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             int faceX = this.getContentX() - 12 + 4;
             int faceY = this.getContentY() + (this.getContentHeight() - 12) / 2;
-            PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.skin.get(), faceX, faceY, 12);
+            PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)((PlayerSkin)this.skin.get()), faceX, faceY, 12);
             int var10000 = this.getContentY() + 1;
             int var10001 = this.getContentHeight();
             Objects.requireNonNull(ChatSelectionScreen.this.font);

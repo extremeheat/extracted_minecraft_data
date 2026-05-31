@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import java.util.Arrays;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -69,7 +68,7 @@ public class MultiplayerOptionsScreen extends Screen {
          LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
          content.defaultCellSetting().alignHorizontallyCenter();
          content.addChild(new StringWidget(NETWORK_HEADER, this.font));
-         content.addChild(CycleButton.builder(MinecraftServer.MultiplayerScope::getDisplayName, singleplayerServer.getMultiplayerScope()).withValues(this.minecraft.getPlayerSocialManager().isFriendListEnabled() ? MinecraftServer.MultiplayerScope.values() : (MinecraftServer.MultiplayerScope[])Arrays.stream(MinecraftServer.MultiplayerScope.values()).filter((scope) -> scope != MinecraftServer.MultiplayerScope.ONLINE).toArray((x$0) -> new MinecraftServer.MultiplayerScope[x$0])).withTooltip((scope) -> Tooltip.create(scope.getTooltip())).create(Component.translatable("menu.multiplayerOptions.network"), (var1, value) -> {
+         content.addChild(CycleButton.builder(MinecraftServer.MultiplayerScope::getDisplayName, singleplayerServer.getMultiplayerScope()).withValues(MinecraftServer.MultiplayerScope.values()).withTooltip((scope) -> Tooltip.create(scope.getTooltip())).create(Component.translatable("menu.multiplayerOptions.network"), (var1, value) -> {
             this.wantedMultiplayerScope = value;
             this.updatePortControlsState();
             this.updateApplyChangesActiveState();
@@ -176,7 +175,6 @@ public class MultiplayerOptionsScreen extends Screen {
    private void changeMultiplayerScope(final IntegratedServer singleplayerServer) {
       if (singleplayerServer.unpublishServer()) {
          this.sendPublishMessage(Component.translatable("menu.multiplayerOptions.publish.stopped"));
-         this.minecraft.getPlayerSocialManager().getPresenceHandler().clearInvites();
       }
 
       if (this.wantedMultiplayerScope != MinecraftServer.MultiplayerScope.OFF) {

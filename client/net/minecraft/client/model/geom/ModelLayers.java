@@ -238,6 +238,8 @@ public class ModelLayers {
    public static final ModelLayerLocation STRIDER_BABY = register("strider_baby");
    public static final ModelLayerLocation SULFUR_CUBE = register("sulfur_cube");
    public static final ModelLayerLocation SULFUR_CUBE_INNER = register("sulfur_cube", "inner");
+   public static final ModelLayerLocation SULFUR_CUBE_SMALL = register("sulfur_cube_small");
+   public static final ModelLayerLocation SULFUR_CUBE_SMALL_INNER = register("sulfur_cube_small", "inner");
    public static final ModelLayerLocation TADPOLE = register("tadpole");
    public static final ModelLayerLocation TNT_MINECART = register("tnt_minecart");
    public static final ModelLayerLocation TRADER_LLAMA = register("trader_llama");

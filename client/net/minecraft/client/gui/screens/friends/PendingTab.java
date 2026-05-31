@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
@@ -33,7 +33,8 @@ class PendingTab extends AbstractFriendsTab {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.loadingDotsWidget = loadingDotsWidget;
       this.pendingScrollableContent = LinearLayout.vertical();
-      this.scrollableLayout = new ScrollableLayout(minecraft, this.pendingScrollableContent, height, ScrollableLayout.ReserveStrategy.RIGHT);
+      this.scrollableLayout = new ScrollableLayout(minecraft, this.pendingScrollableContent, height, ScrollableLayout.ReserveStrategy.BOTH);
+      this.scrollableLayout.setScrollbarSpacing(2);
       this.scrollableLayout.setMaxHeight(height);
       this.layout.addChild(this.scrollableLayout);
       this.rearrangeElements();
@@ -67,27 +68,27 @@ class PendingTab extends AbstractFriendsTab {
 
    public void showLoading() {
       this.pendingScrollableContent.removeChildren();
-      this.pendingScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.width - 10, this.height));
+      this.pendingScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height));
    }
 
    public void showError(final Component message) {
       this.pendingScrollableContent.removeChildren();
-      FocusableTextWidget text = FocusableTextWidget.builder(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont()).maxWidth(this.width - 16 - 4).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
-      text.setCentered(true);
-      this.pendingScrollableContent.addChild(this.createCenteredFrame(text, this.width - 10, this.height));
+      int maxWidth = this.getListContentWidth();
+      MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), maxWidth);
+      this.pendingScrollableContent.addChild(this.createCenteredFrame(text, maxWidth, this.height));
    }
 
    public void updateEntries(final List<IncomingEntry> incomingEntries, final List<OutgoingEntry> outgoingEntries) {
       this.pendingScrollableContent.removeChildren();
       if (!incomingEntries.isEmpty()) {
-         this.pendingScrollableContent.addChild(FocusableTextWidget.builder(RECEIVED_HEADER, this.screen.getFont()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+         this.pendingScrollableContent.addChild(this.createText(RECEIVED_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
          LinearLayout var10001 = this.pendingScrollableContent;
          Objects.requireNonNull(var10001);
          incomingEntries.forEach(var10001::addChild);
       }
 
       if (!outgoingEntries.isEmpty()) {
-         this.pendingScrollableContent.addChild(FocusableTextWidget.builder(SENT_HEADER, this.screen.getFont()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+         this.pendingScrollableContent.addChild(this.createText(SENT_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
          LinearLayout var3 = this.pendingScrollableContent;
          Objects.requireNonNull(var3);
          outgoingEntries.forEach(var3::addChild);
@@ -102,12 +103,10 @@ class PendingTab extends AbstractFriendsTab {
    public void showEmpty() {
       this.pendingScrollableContent.removeChildren();
       LinearLayout content = (new LinearLayout(0, 0, LinearLayout.Orientation.VERTICAL)).spacing(8);
-      content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle().paddingLeft(8);
-      FocusableTextWidget text = FocusableTextWidget.builder(EMPTY_STATE, this.screen.getFont()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
-      text.setCentered(true);
-      content.addChild(text);
-      FrameLayout linearLayout = (FrameLayout)this.pendingScrollableContent.addChild(this.createCenteredFrame(content, this.width - 10, this.height));
-      linearLayout.defaultChildLayoutSetting().paddingLeft(8).paddingTop(0).alignHorizontallyCenter().alignVerticallyMiddle();
+      content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
+      int maxWidth = this.getListContentWidth();
+      content.addChild(this.createCenteredText(EMPTY_STATE, this.screen.getFont(), maxWidth));
+      this.pendingScrollableContent.addChild(this.createCenteredFrame(content, maxWidth, this.height));
    }
 
    static {

@@ -21,14 +21,15 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
    private static final long BLOCK_SIZE = 524288L;
    private static final long MAX_CPU_ALIGNMENT = 16L;
    private static final long MAX_GPU_ALIGNMENT = Long.highestOneBit(9223372036854775807L);
+   final GlCommandEncoder encoder;
    protected final DirectStateAccess dsa;
    protected final BufferStorage bufferStorage;
    protected final GlDebugLabel debugLabels;
    private final TransientBlockAllocator<Long> cpuBlockAllocator = new TransientBlockAllocator<Long>(524288L, 16L, TransientBlockAllocator.Allocator.create(MemoryUtil::nmemAlloc, MemoryUtil::nmemFree));
-   private long submitIndex = 0L;
 
-   GlTransientMemory(final GlDevice device) {
+   GlTransientMemory(final GlDevice device, final GlCommandEncoder encoder) {
       super();
+      this.encoder = encoder;
       this.dsa = device.directStateAccess();
       this.bufferStorage = device.getBufferStorage();
       this.debugLabels = device.debugLabels();
@@ -46,18 +47,13 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
 
    public void rotate() {
       this.cpuBlockAllocator.rotate().run();
-      ++this.submitIndex;
-   }
-
-   protected long submitIndex() {
-      return this.submitIndex;
    }
 
    static class Fallback extends GlTransientMemory {
       private final TransientBlockAllocator<GlAllocation> blockAllocator;
 
-      Fallback(final GlDevice device) {
-         super(device);
+      Fallback(final GlDevice device, final GlCommandEncoder encoder) {
+         super(device, encoder);
          this.blockAllocator = new TransientBlockAllocator<GlAllocation>(524288L, GlTransientMemory.MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create(this::allocateGlBlock, this::freeGlBlock));
       }
 
@@ -70,9 +66,9 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
       }
 
       private GlAllocation allocateGlBlock(final long size) {
-         GlBuffer buffer = this.bufferStorage.createBuffer(this.dsa, 32, size);
+         GlBuffer buffer = this.bufferStorage.createBuffer(this.dsa, 40, size);
          this.debugLabels.applyLabel(buffer, () -> "OpenGL Transient Buffer");
-         long hostPtr = MemoryUtil.nmemAlignedAlloc(size, 4096L);
+         long hostPtr = MemoryUtil.nmemAlloc(size);
          return new GlAllocation(buffer, hostPtr);
       }
 
@@ -114,7 +110,7 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
          GpuBufferSlice bufferSlice = this.allocateGpu(totalSize, alignment, usage);
          int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, ((GlBuffer)bufferSlice.buffer()).handle());
-         long offset = 0L;
+         long offset = bufferSlice.offset();
 
          for(int i = 0; i < data.size(); ++i) {
             ByteBuffer buffer = (ByteBuffer)data.get(i);
@@ -177,14 +173,13 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
    }
 
    static class PersistentMapping extends GlTransientMemory {
-      private static final int MAX_FRAMES_IN_FLIGHT = 2;
       private final TransientBlockAllocator<GlAllocation> stagingBlockAllocator;
       private final TransientBlockAllocator<GlAllocation> gpuBlockAllocator;
       private final TransientBlockAllocator<GlAllocation> gpuMappedBlockAllocator;
       private final @Nullable GlTransientMemory.Rotation[] rotations = new Rotation[2];
 
-      PersistentMapping(final GlDevice device) {
-         super(device);
+      PersistentMapping(final GlDevice device, final GlCommandEncoder encoder) {
+         super(device, encoder);
          this.stagingBlockAllocator = new TransientBlockAllocator<GlAllocation>(524288L, GlTransientMemory.MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create((size) -> this.allocateGlBlock(size, true, true), this::freeGlBlock));
          this.gpuBlockAllocator = new TransientBlockAllocator<GlAllocation>(524288L, GlTransientMemory.MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create((size) -> this.allocateGlBlock(size, false, false), this::freeGlBlock));
          this.gpuMappedBlockAllocator = new TransientBlockAllocator<GlAllocation>(524288L, GlTransientMemory.MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create((size) -> this.allocateGlBlock(size, false, true), this::freeGlBlock));
@@ -202,12 +197,12 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
       }
 
       public void rotate() {
-         Rotation previousRotation = this.rotations[(int)(this.submitIndex() % 2L)];
+         Rotation previousRotation = this.rotations[this.encoder.currentSubmitSlot()];
          if (previousRotation != null) {
             previousRotation.run();
          }
 
-         this.rotations[(int)(this.submitIndex() % 2L)] = new Rotation(new GlFence(), this.stagingBlockAllocator.rotate(), this.gpuBlockAllocator.rotate(), this.gpuMappedBlockAllocator.rotate());
+         this.rotations[this.encoder.currentSubmitSlot()] = new Rotation(this.stagingBlockAllocator.rotate(), this.gpuBlockAllocator.rotate(), this.gpuMappedBlockAllocator.rotate());
          super.rotate();
       }
 
@@ -357,13 +352,12 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
          }
       }
 
-      private static record Rotation(GlFence fence, Runnable staging, Runnable gpu, Runnable gpuMapped) implements Runnable {
+      private static record Rotation(Runnable staging, Runnable gpu, Runnable gpuMapped) implements Runnable {
          private Rotation {
             super();
          }
 
          public void run() {
-            this.fence.awaitCompletion(9223372036854775807L);
             this.staging.run();
             this.gpu.run();
             this.gpuMapped.run();
@@ -379,14 +373,14 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
          Objects.requireNonNull(GlTransientMemory.this);
          super(usage, size, handle, true);
          this.closed = false;
-         this.bufferSubmitIndex = GlTransientMemory.this.submitIndex;
+         this.bufferSubmitIndex = GlTransientMemory.this.encoder.currentSubmitIndex();
       }
 
       public boolean isClosed() {
          if (this.closed) {
             return true;
          } else {
-            this.closed = this.bufferSubmitIndex < GlTransientMemory.this.submitIndex;
+            this.closed = this.bufferSubmitIndex < GlTransientMemory.this.encoder.currentSubmitIndex();
             return this.closed;
          }
       }

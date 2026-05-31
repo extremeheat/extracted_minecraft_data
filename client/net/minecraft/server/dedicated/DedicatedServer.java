@@ -366,6 +366,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          output.write(String.format(Locale.ROOT, "generate-structures=%s%n", serverProperties.worldOptions.generateStructures()));
          output.write(String.format(Locale.ROOT, "use-native=%s%n", serverProperties.useNativeTransport));
          output.write(String.format(Locale.ROOT, "rate-limit=%d%n", serverProperties.rateLimitPacketsPerSecond));
+         output.write(String.format(Locale.ROOT, "command-spam-threshold-seconds=%d%n", serverProperties.commandSpamThresholdSeconds));
+         output.write(String.format(Locale.ROOT, "chat-spam-threshold-seconds=%d%n", serverProperties.chatSpamThresholdSeconds));
       } catch (Throwable var7) {
          if (output != null) {
             try {
@@ -434,6 +436,14 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public int getRateLimitPacketsPerSecond() {
       return this.getProperties().rateLimitPacketsPerSecond;
+   }
+
+   public int getCommandSpamThresholdSeconds() {
+      return this.getProperties().commandSpamThresholdSeconds;
+   }
+
+   public int getChatSpamThresholdSeconds() {
+      return this.getProperties().chatSpamThresholdSeconds;
    }
 
    public boolean useNativeTransport() {

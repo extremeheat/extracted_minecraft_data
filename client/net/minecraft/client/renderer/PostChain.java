@@ -12,6 +12,7 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,140 +80,144 @@ public class PostChain implements AutoCloseable {
 
       pipelineBuilder.withBindGroupLayout(bindGroupLayoutBuilder.build());
       RenderPipeline pipeline = pipelineBuilder.build();
-      List<PostPass.Input> inputs = new ArrayList();
+      if (!RenderSystem.getDevice().precompilePipeline(pipeline).isValid()) {
+         throw new ShaderManager.CompilationException("Failed to compile post processing pipeline " + String.valueOf(pipeline.getLocation()));
+      } else {
+         List<PostPass.Input> inputs = new ArrayList();
 
-      label113:
-      for(PostChainConfig.Input input : config.inputs()) {
-         Objects.requireNonNull(input);
-         PostChainConfig.Input var9 = input;
-         byte var10 = 0;
+         label117:
+         for(PostChainConfig.Input input : config.inputs()) {
+            Objects.requireNonNull(input);
+            PostChainConfig.Input var9 = input;
+            byte var10 = 0;
 
-         while(true) {
-            //$FF: var10->value
-            //0->net/minecraft/client/renderer/PostChainConfig$TextureInput
-            //1->net/minecraft/client/renderer/PostChainConfig$TargetInput
-            switch (var9.typeSwitch<invokedynamic>(var9, var10)) {
-               case 0:
-                  PostChainConfig.TextureInput var11 = (PostChainConfig.TextureInput)var9;
-                  PostChainConfig.TextureInput var53 = var11;
+            while(true) {
+               //$FF: var10->value
+               //0->net/minecraft/client/renderer/PostChainConfig$TextureInput
+               //1->net/minecraft/client/renderer/PostChainConfig$TargetInput
+               switch (var9.typeSwitch<invokedynamic>(var9, var10)) {
+                  case 0:
+                     PostChainConfig.TextureInput var11 = (PostChainConfig.TextureInput)var9;
+                     PostChainConfig.TextureInput var53 = var11;
 
-                  try {
-                     var54 = var53.samplerName();
-                  } catch (Throwable var32) {
-                     throw new MatchException(var32.toString(), var32);
-                  }
+                     try {
+                        var54 = var53.samplerName();
+                     } catch (Throwable var32) {
+                        throw new MatchException(var32.toString(), var32);
+                     }
 
-                  String var37 = var54;
-                  String samplerName = var37;
-                  var53 = var11;
-
-                  try {
-                     var56 = var53.location();
-                  } catch (Throwable var31) {
-                     throw new MatchException(var31.toString(), var31);
-                  }
-
-                  Identifier var38 = var56;
-                  Identifier location = var38;
-                  var53 = var11;
-
-                  try {
-                     var58 = var53.width();
-                  } catch (Throwable var30) {
-                     throw new MatchException(var30.toString(), var30);
-                  }
-
-                  int var39 = var58;
-                  if (true) {
-                     int width = var39;
+                     String var37 = var54;
+                     String samplerName = var37;
                      var53 = var11;
 
                      try {
-                        var60 = var53.height();
-                     } catch (Throwable var29) {
-                        throw new MatchException(var29.toString(), var29);
+                        var56 = var53.location();
+                     } catch (Throwable var31) {
+                        throw new MatchException(var31.toString(), var31);
                      }
 
-                     var39 = var60;
+                     Identifier var38 = var56;
+                     Identifier location = var38;
+                     var53 = var11;
+
+                     try {
+                        var58 = var53.width();
+                     } catch (Throwable var30) {
+                        throw new MatchException(var30.toString(), var30);
+                     }
+
+                     int var39 = var58;
                      if (true) {
-                        int height = var39;
+                        int width = var39;
                         var53 = var11;
 
                         try {
-                           var62 = var53.bilinear();
-                        } catch (Throwable var28) {
-                           throw new MatchException(var28.toString(), var28);
+                           var60 = var53.height();
+                        } catch (Throwable var29) {
+                           throw new MatchException(var29.toString(), var29);
                         }
 
-                        var39 = var62;
+                        var39 = var60;
                         if (true) {
-                           boolean bilinear = (boolean)var39;
-                           AbstractTexture var42 = textureManager.getTexture(location.withPath((UnaryOperator)((path) -> "textures/effect/" + path + ".png")));
-                           inputs.add(new PostPass.TextureInput(samplerName, var42, width, height, bilinear));
-                           continue label113;
+                           int height = var39;
+                           var53 = var11;
+
+                           try {
+                              var62 = var53.bilinear();
+                           } catch (Throwable var28) {
+                              throw new MatchException(var28.toString(), var28);
+                           }
+
+                           var39 = var62;
+                           if (true) {
+                              boolean bilinear = (boolean)var39;
+                              AbstractTexture var42 = textureManager.getTexture(location.withPath((UnaryOperator)((path) -> "textures/effect/" + path + ".png")));
+                              inputs.add(new PostPass.TextureInput(samplerName, var42, width, height, bilinear));
+                              continue label117;
+                           }
                         }
                      }
-                  }
 
-                  var10 = 1;
-                  break;
-               case 1:
-                  PostChainConfig.TargetInput texture = (PostChainConfig.TargetInput)var9;
-                  PostChainConfig.TargetInput var10000 = texture;
+                     var10 = 1;
+                     break;
+                  case 1:
+                     PostChainConfig.TargetInput texture = (PostChainConfig.TargetInput)var9;
+                     PostChainConfig.TargetInput var10000 = texture;
 
-                  try {
-                     var46 = var10000.samplerName();
-                  } catch (Throwable var27) {
-                     throw new MatchException(var27.toString(), var27);
-                  }
+                     try {
+                        var46 = var10000.samplerName();
+                     } catch (Throwable var27) {
+                        throw new MatchException(var27.toString(), var27);
+                     }
 
-                  String bilinear = var46;
-                  String samplerName = bilinear;
-                  var10000 = texture;
-
-                  try {
-                     var48 = var10000.targetId();
-                  } catch (Throwable var26) {
-                     throw new MatchException(var26.toString(), var26);
-                  }
-
-                  Identifier bilinear = var48;
-                  Identifier targetId = bilinear;
-                  var10000 = texture;
-
-                  try {
-                     var50 = var10000.useDepthBuffer();
-                  } catch (Throwable var25) {
-                     throw new MatchException(var25.toString(), var25);
-                  }
-
-                  boolean bilinear = var50;
-                  if (true) {
-                     boolean useDepthBuffer = bilinear;
+                     String bilinear = var46;
+                     String samplerName = bilinear;
                      var10000 = texture;
 
                      try {
-                        var52 = var10000.bilinear();
-                     } catch (Throwable var24) {
-                        throw new MatchException(var24.toString(), var24);
+                        var48 = var10000.targetId();
+                     } catch (Throwable var26) {
+                        throw new MatchException(var26.toString(), var26);
                      }
 
-                     bilinear = var52;
+                     Identifier bilinear = var48;
+                     Identifier targetId = bilinear;
+                     var10000 = texture;
+
+                     try {
+                        var50 = var10000.useDepthBuffer();
+                     } catch (Throwable var25) {
+                        throw new MatchException(var25.toString(), var25);
+                     }
+
+                     boolean bilinear = var50;
                      if (true) {
-                        inputs.add(new PostPass.TargetInput(samplerName, targetId, useDepthBuffer, bilinear));
-                        continue label113;
-                     }
-                  }
+                        boolean useDepthBuffer = bilinear;
+                        var10000 = texture;
 
-                  var10 = 2;
-                  break;
-               default:
-                  throw new MatchException((String)null, (Throwable)null);
+                        try {
+                           var52 = var10000.bilinear();
+                        } catch (Throwable var24) {
+                           throw new MatchException(var24.toString(), var24);
+                        }
+
+                        bilinear = var52;
+                        if (true) {
+                           inputs.add(new PostPass.TargetInput(samplerName, targetId, useDepthBuffer, bilinear));
+                           continue label117;
+                        }
+                     }
+
+                     var10 = 2;
+                     break;
+                  default:
+                     throw new MatchException((String)null, (Throwable)null);
+               }
             }
          }
-      }
 
-      return new PostPass(pipeline, config.outputTarget(), config.uniforms(), inputs);
+         return new PostPass(pipeline, config.outputTarget(), config.uniforms(), inputs);
+      }
    }
 
    public void addToFrame(final FrameGraphBuilder frame, final int screenWidth, final int screenHeight, final TargetBundle providedTargets) {

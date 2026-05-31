@@ -110,7 +110,8 @@ public class Util {
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
    private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS;
    public static final long NANOS_PER_MILLI = 1000000L;
-   public static TimeSource.NanoTimeSource timeSource;
+   private static TimeSource.NanoTimeSource timeSource;
+   private static final TimeSource.NanoTimeSource INDIRECT_TIME_SOURCE;
    public static final Ticker TICKER;
    public static final UUID NIL_UUID;
    public static final FileSystemProvider ZIP_FILE_SYSTEM_PROVIDER;
@@ -135,6 +136,19 @@ public class Util {
 
    public static String makeDescriptionId(final String prefix, final @Nullable Identifier location) {
       return location == null ? prefix + ".unregistered_sadface" : prefix + "." + location.getNamespace() + "." + location.getPath().replace('/', '.');
+   }
+
+   public static TimeSource.NanoTimeSource timeSource() {
+      return INDIRECT_TIME_SOURCE;
+   }
+
+   public static void setTimeSource(final TimeSource.NanoTimeSource timeSource) {
+      Util.timeSource = timeSource;
+   }
+
+   public static void shutdownTimeSource() {
+      long currentTime = timeSource.getAsLong();
+      timeSource = TimeSource.constant(currentTime);
    }
 
    public static long getMillis() {
@@ -1165,6 +1179,7 @@ public class Util {
       FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
       ALLOWED_UNTRUSTED_LINK_PROTOCOLS = Set.of("http", "https");
       timeSource = System::nanoTime;
+      INDIRECT_TIME_SOURCE = () -> timeSource.getAsLong();
       TICKER = new Ticker() {
          public long read() {
             return Util.timeSource.getAsLong();

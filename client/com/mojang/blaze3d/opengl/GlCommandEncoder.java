@@ -46,8 +46,12 @@ import org.slf4j.Logger;
 
 class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int MAX_SUBMITS_IN_FLIGHT = 2;
+   private static final long NO_FENCE = 0L;
    private final GlDevice device;
    private final GlTransientMemory transientMemory;
+   private final long[] fences = new long[2];
+   private long currentSubmitIndex = 2L;
    private final int readFbo;
    private final int drawFbo;
    private @Nullable RenderPipeline lastPipeline;
@@ -58,7 +62,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
    protected GlCommandEncoder(final GlDevice device) {
       super();
       this.device = device;
-      this.transientMemory = (GlTransientMemory)(device.getDeviceInfo().features().persistentMapping() ? new GlTransientMemory.PersistentMapping(device) : new GlTransientMemory.Fallback(device));
+      this.transientMemory = (GlTransientMemory)(device.getDeviceInfo().features().persistentMapping() ? new GlTransientMemory.PersistentMapping(device, this) : new GlTransientMemory.Fallback(device, this));
       this.readFbo = device.directStateAccess().createFrameBufferObject();
       this.drawFbo = device.directStateAccess().createFrameBufferObject();
    }
@@ -67,8 +71,51 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       this.transientMemory.close();
    }
 
+   public long currentSubmitIndex() {
+      return this.currentSubmitIndex;
+   }
+
+   public int currentSubmitSlot() {
+      return (int)(this.currentSubmitIndex % 2L);
+   }
+
    public void submit() {
-      this.transientMemory.rotate();
+      this.fences[this.currentSubmitSlot()] = GL33C.glFenceSync(37143, 0);
+      ++this.currentSubmitIndex;
+      if (!this.awaitSubmit(this.currentSubmitIndex - 2L, 9223372036854775807L)) {
+         throw new IllegalStateException("Failed to wait for frame completion");
+      } else {
+         this.transientMemory.rotate();
+      }
+   }
+
+   public boolean awaitSubmit(final long index, final long timeoutMs) {
+      if (this.currentSubmitIndex > index + 2L) {
+         return true;
+      } else if (index == this.currentSubmitIndex) {
+         if (timeoutMs == 0L) {
+            return false;
+         } else {
+            throw new IllegalStateException("Cannot wait on a fence for the current submit");
+         }
+      } else {
+         int submitSlot = (int)(index % 2L);
+         long fence = this.fences[submitSlot];
+         if (fence == 0L) {
+            return true;
+         } else {
+            int result = GlStateManager._glClientWaitSync(fence, 1, timeoutMs);
+            if (result == 37147) {
+               return false;
+            } else if (result == 37149) {
+               throw new IllegalStateException("Failed to complete GPU fence: " + GlStateManager._getError());
+            } else {
+               GL33C.glDeleteSync(this.fences[submitSlot]);
+               this.fences[submitSlot] = 0L;
+               return true;
+            }
+         }
+      }
    }
 
    public TransientMemory transientMemory() {
@@ -290,7 +337,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
    }
 
    public GpuFence createFence() {
-      return new GlFence();
+      return new GlFence(this);
    }
 
    protected <T> void executeDrawMultiple(final GlRenderPass renderPass, final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
@@ -413,6 +460,8 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
          if (indexType == null) {
             GL33C.nglMultiDrawArrays(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), MemoryUtil.memAddress(vertexOffsets), MemoryUtil.memAddress(indexCounts), drawCount);
          } else {
+            GlStateManager._glBindBuffer(34963, ((GlBuffer)renderPass.indexBuffer).handle());
+
             assert firstIndexOffsets != null;
 
             GL33C.nglMultiDrawElementsBaseVertex(GlConst.toGl(renderPass.pipeline.info().getPrimitiveTopology()), MemoryUtil.memAddress(indexCounts), GlConst.toGl(indexType), MemoryUtil.memAddress(firstIndexOffsets), drawCount, MemoryUtil.memAddress(vertexOffsets));

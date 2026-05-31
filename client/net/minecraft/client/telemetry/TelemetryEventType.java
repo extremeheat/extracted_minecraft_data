@@ -31,7 +31,6 @@ public class TelemetryEventType {
    public static final TelemetryEventType WORLD_UNLOADED;
    public static final TelemetryEventType ADVANCEMENT_MADE;
    public static final TelemetryEventType GAME_LOAD_TIMES;
-   public static final TelemetryEventType P2P_CONNECTION;
    private final String id;
    private final String exportKey;
    private final List<TelemetryProperty<?>> properties;
@@ -131,7 +130,7 @@ public class TelemetryEventType {
          return type != null ? DataResult.success(type) : DataResult.error(() -> "No TelemetryEventType with key: '" + key + "'");
       }, TelemetryEventType::id);
       GLOBAL_PROPERTIES = List.of(TelemetryProperty.USER_ID, TelemetryProperty.CLIENT_ID, TelemetryProperty.MINECRAFT_SESSION_ID, TelemetryProperty.GAME_VERSION, TelemetryProperty.OPERATING_SYSTEM, TelemetryProperty.PLATFORM, TelemetryProperty.CLIENT_MODDED, TelemetryProperty.LAUNCHER_NAME, TelemetryProperty.EVENT_TIMESTAMP_UTC, TelemetryProperty.OPT_IN);
-      WORLD_SESSION_PROPERTIES = Stream.concat(GLOBAL_PROPERTIES.stream(), Stream.of(TelemetryProperty.WORLD_SESSION_ID, TelemetryProperty.SERVER_MODDED, TelemetryProperty.SERVER_TYPE)).toList();
+      WORLD_SESSION_PROPERTIES = Stream.concat(GLOBAL_PROPERTIES.stream(), Stream.of(TelemetryProperty.WORLD_SESSION_ID, TelemetryProperty.SERVER_MODDED, TelemetryProperty.SERVER_TYPE, TelemetryProperty.SERVER_SESSION_ID)).toList();
       GRAPHICS_CAPABILITIES = builder("graphics_capabilities", "GraphicsCapabilities").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.BACKEND_NAME).define(TelemetryProperty.BACKEND_FAILURE_MESSAGE).define(TelemetryProperty.BACKEND_FAILURE_REASON).define(TelemetryProperty.BACKEND_FAILURE_MISSING_CAPABILITIES).register();
       WORLD_LOADED = builder("world_loaded", "WorldLoaded").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.GAME_MODE).define(TelemetryProperty.REALMS_MAP_CONTENT).register();
       PERFORMANCE_METRICS = builder("performance_metrics", "PerformanceMetrics").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.FRAME_RATE_SAMPLES).define(TelemetryProperty.RENDER_TIME_SAMPLES).define(TelemetryProperty.USED_MEMORY_SAMPLES).define(TelemetryProperty.NUMBER_OF_SAMPLES).define(TelemetryProperty.RENDER_DISTANCE).define(TelemetryProperty.DEDICATED_MEMORY_KB).optIn().register();
@@ -139,7 +138,6 @@ public class TelemetryEventType {
       WORLD_UNLOADED = builder("world_unloaded", "WorldUnloaded").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.SECONDS_SINCE_LOAD).define(TelemetryProperty.TICKS_SINCE_LOAD).register();
       ADVANCEMENT_MADE = builder("advancement_made", "AdvancementMade").defineAll(WORLD_SESSION_PROPERTIES).define(TelemetryProperty.ADVANCEMENT_ID).define(TelemetryProperty.ADVANCEMENT_GAME_TIME).optIn().register();
       GAME_LOAD_TIMES = builder("game_load_times", "GameLoadTimes").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS).define(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS).define(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS).define(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS).optIn().register();
-      P2P_CONNECTION = builder("p2p_connection", "P2PConnection").defineAll(GLOBAL_PROPERTIES).define(TelemetryProperty.P2P_CONNECTION_SUCCESSFUL).define(TelemetryProperty.P2P_CONNECTION_FAILURE_STAGE).define(TelemetryProperty.P2P_CONNECTION_LOCAL_CANDIDATE_TYPE).define(TelemetryProperty.P2P_CONNECTION_REMOTE_CANDIDATE_TYPE).define(TelemetryProperty.P2P_CONNECTION_ICE_PATH).define(TelemetryProperty.P2P_CONNECTION_SIGNALING_TIME_MS).define(TelemetryProperty.P2P_CONNECTION_ICE_CONNECT_TIME_MS).define(TelemetryProperty.P2P_CONNECTION_TOTAL_TIME_MS).optIn().register();
    }
 
    public static class Builder {

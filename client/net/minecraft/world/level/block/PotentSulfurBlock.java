@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.PotentSulfurState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
@@ -63,11 +64,9 @@ public class PotentSulfurBlock extends BaseEntityBlock {
          return (BlockState)state.setValue(STATE, PotentSulfurState.DRY);
       } else {
          BlockState belowState = level.getBlockState(pos.below());
-         if (belowState.is(BlockTags.CAUSES_CONTINUOUS_GEYSER_ERUPTIONS)) {
+         if (belowState.is(BlockTags.CAUSES_CONTINUOUS_GEYSER_ERUPTIONS) && isSourceIfFluid(belowState)) {
             return (BlockState)state.setValue(STATE, PotentSulfurState.CONTINUOUS);
-         } else if (!belowState.is(BlockTags.CAUSES_PERIODIC_GEYSER_ERUPTIONS)) {
-            return (BlockState)state.setValue(STATE, PotentSulfurState.WET);
-         } else {
+         } else if (belowState.is(BlockTags.CAUSES_PERIODIC_GEYSER_ERUPTIONS) && isSourceIfFluid(belowState)) {
             boolean isGeyser = state.getValue(STATE) == PotentSulfurState.ERUPTING || state.getValue(STATE) == PotentSulfurState.DORMANT;
             if (!isGeyser) {
                BlockEntity var6 = level.getBlockEntity(pos);
@@ -78,8 +77,15 @@ public class PotentSulfurBlock extends BaseEntityBlock {
             }
 
             return state.getValue(STATE) == PotentSulfurState.ERUPTING ? state : (BlockState)state.setValue(STATE, PotentSulfurState.DORMANT);
+         } else {
+            return (BlockState)state.setValue(STATE, PotentSulfurState.WET);
          }
       }
+   }
+
+   private static boolean isSourceIfFluid(final BlockState belowState) {
+      FluidState fluidState = belowState.getFluidState();
+      return fluidState.isEmpty() || fluidState.isSource();
    }
 
    protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {

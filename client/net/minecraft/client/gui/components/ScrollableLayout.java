@@ -22,7 +22,7 @@ public class ScrollableLayout implements Layout {
    private final Layout content;
    private final Container container;
    private final ReserveStrategy reserveStrategy;
-   private final int scrollbarSpacing;
+   private int scrollbarSpacing;
    private int minWidth;
    private int minHeight;
    private int maxHeight;
@@ -33,11 +33,15 @@ public class ScrollableLayout implements Layout {
 
    public ScrollableLayout(final Minecraft minecraft, final Layout content, final int maxHeight, final ReserveStrategy reserveStrategy) {
       super();
+      this.scrollbarSpacing = 4;
       this.content = content;
       this.maxHeight = maxHeight;
       this.reserveStrategy = reserveStrategy;
-      this.scrollbarSpacing = 4;
       this.container = new Container(minecraft, 0, maxHeight, AbstractScrollArea.defaultSettings(10));
+   }
+
+   public void setScrollbarSpacing(final int scrollbarSpacing) {
+      this.scrollbarSpacing = scrollbarSpacing;
    }
 
    public void setMinWidth(final int minWidth) {

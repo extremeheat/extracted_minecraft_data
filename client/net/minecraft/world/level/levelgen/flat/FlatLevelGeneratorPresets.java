@@ -31,6 +31,7 @@ public class FlatLevelGeneratorPresets {
    public static final ResourceKey<FlatLevelGeneratorPreset> BOTTOMLESS_PIT = register("bottomless_pit");
    public static final ResourceKey<FlatLevelGeneratorPreset> DESERT = register("desert");
    public static final ResourceKey<FlatLevelGeneratorPreset> REDSTONE_READY = register("redstone_ready");
+   public static final ResourceKey<FlatLevelGeneratorPreset> TEST_WORLD = register("test_world");
    public static final ResourceKey<FlatLevelGeneratorPreset> THE_VOID = register("the_void");
 
    public FlatLevelGeneratorPresets() {

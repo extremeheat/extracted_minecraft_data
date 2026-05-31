@@ -8,9 +8,9 @@ import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
@@ -48,43 +48,52 @@ class FriendsTab extends AbstractFriendsTab {
       this.layout.addChild(this.addFriendWidget);
       this.friendScrollableContent = LinearLayout.vertical();
       this.friendScrollableContent.defaultCellSetting();
-      this.scrollableLayout = new ScrollableLayout(minecraft, this.friendScrollableContent, height - this.addFriendWidget.contentHeight(), ScrollableLayout.ReserveStrategy.RIGHT);
+      this.scrollableLayout = new ScrollableLayout(minecraft, this.friendScrollableContent, height - this.addFriendWidget.contentHeight(), ScrollableLayout.ReserveStrategy.BOTH);
+      this.scrollableLayout.setScrollbarSpacing(2);
       this.layout.addChild(this.scrollableLayout);
       this.rearrangeElements();
    }
 
    public void showLoading() {
       this.friendScrollableContent.removeChildren();
-      this.friendScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.width - 18, this.height - this.addFriendWidget.contentHeight()));
+      this.friendScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height - this.addFriendWidget.contentHeight()));
       this.addFriendWidget.applyState(AddFriendWidget.State.SENDING);
    }
 
    public void showError(final Component message) {
       this.friendScrollableContent.removeChildren();
-      FocusableTextWidget text = FocusableTextWidget.builder(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont()).maxWidth(this.width - 16 - 4).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
-      text.setCentered(true);
-      this.friendScrollableContent.addChild(this.createCenteredFrame(text, this.width, this.height - this.addFriendWidget.contentHeight()));
+      int maxWidth = this.getListContentWidth();
+      MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), maxWidth);
+      this.friendScrollableContent.addChild(this.createCenteredFrame(text, maxWidth, this.height - this.addFriendWidget.contentHeight()));
       this.addFriendWidget.applyState(AddFriendWidget.State.DISABLED);
    }
 
    public void showEmpty() {
       this.friendScrollableContent.removeChildren();
       LinearLayout content = (new LinearLayout(0, 0, LinearLayout.Orientation.VERTICAL)).spacing(8);
-      content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle().paddingLeft(8);
+      content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
       content.addChild(ImageWidget.sprite(128, 48, ILLUSTRATION));
-      FocusableTextWidget textWidget = FocusableTextWidget.builder(EMPTY_STATE, this.screen.getFont()).maxWidth(this.width - 16 - 4).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
-      textWidget.setCentered(true);
+      int maxWidth = this.getListContentWidth();
+      MultiLineTextWidget textWidget = this.createCenteredText(EMPTY_STATE, this.screen.getFont(), maxWidth);
       textWidget.setComponentClickHandler((style) -> {
-         ClickEvent patt0$temp = style.getClickEvent();
-         if (patt0$temp instanceof ClickEvent.OpenUrl openUrl) {
-            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)openUrl.uri());
+         ClickEvent patt1$temp = style.getClickEvent();
+         if (patt1$temp instanceof ClickEvent.OpenUrl $b$0) {
+            ClickEvent.OpenUrl var10000 = $b$0;
+
+            try {
+               var7 = var10000.uri();
+            } catch (Throwable var6) {
+               throw new MatchException(var6.toString(), var6);
+            }
+
+            URI patt2$temp = var7;
+            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)patt2$temp);
          }
 
       });
       content.addChild(textWidget);
       int frameHeight = this.scrollableLayout.getHeight();
-      FrameLayout linearLayout = (FrameLayout)this.friendScrollableContent.addChild(this.createCenteredFrame(content, this.width - 10, frameHeight));
-      linearLayout.defaultChildLayoutSetting().paddingLeft(8).paddingTop(0).alignHorizontallyCenter().alignVerticallyMiddle();
+      this.friendScrollableContent.addChild(this.createCenteredFrame(content, maxWidth, frameHeight));
       this.addFriendWidget.applyState(this.addFriendWidget.getValue().isEmpty() ? AddFriendWidget.State.EMPTY_INPUT : AddFriendWidget.State.READY);
    }
 
@@ -159,16 +168,26 @@ class FriendsTab extends AbstractFriendsTab {
    }
 
    private FrameLayout createManageAccountFooter() {
-      FocusableTextWidget textWidget = FocusableTextWidget.builder(MANAGE_ACCOUNT_FOOTER, this.screen.getFont()).maxWidth(this.width - 16 - 4).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
-      textWidget.setCentered(true);
+      int maxWidth = this.getListContentWidth();
+      MultiLineTextWidget textWidget = this.createCenteredText(MANAGE_ACCOUNT_FOOTER, this.screen.getFont(), maxWidth);
       textWidget.setComponentClickHandler((style) -> {
-         ClickEvent patt0$temp = style.getClickEvent();
-         if (patt0$temp instanceof ClickEvent.OpenUrl openUrl) {
-            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)openUrl.uri());
+         ClickEvent patt1$temp = style.getClickEvent();
+         if (patt1$temp instanceof ClickEvent.OpenUrl $b$0) {
+            ClickEvent.OpenUrl var10000 = $b$0;
+
+            try {
+               var7 = var10000.uri();
+            } catch (Throwable var6) {
+               throw new MatchException(var6.toString(), var6);
+            }
+
+            URI patt2$temp = var7;
+            AbstractWidget.playButtonClickSound(Minecraft.getInstance().getSoundManager());
+            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)patt2$temp);
          }
 
       });
-      FrameLayout frame = new FrameLayout(this.width - 10, textWidget.getHeight());
+      FrameLayout frame = new FrameLayout(maxWidth, textWidget.getHeight());
       frame.defaultChildLayoutSetting().alignHorizontallyCenter().alignVerticallyMiddle();
       frame.addChild(textWidget);
       return frame;

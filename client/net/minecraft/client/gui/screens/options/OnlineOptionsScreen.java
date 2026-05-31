@@ -51,8 +51,6 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
          onEnabled.run();
       } else {
          minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
-            minecraft.options.skipFriendsListPromo = true;
-            minecraft.options.save();
             if (accepted) {
                applyFriendSettings(minecraft, true, true, (successful) -> {
                   if (successful) {
@@ -100,8 +98,6 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
    }
 
    private void onFriendsListToggled(final Boolean newValue, final PlayerSocialManager playerSocialManager, final OptionInstance<Boolean> inGameNotificationOpt) {
-      this.minecraft.options.skipFriendsListPromo = true;
-      this.minecraft.options.save();
       if (newValue) {
          this.minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
             this.minecraft.setScreenAndShow(this);

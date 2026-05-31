@@ -20,7 +20,7 @@ public class WorldSessionTelemetryManager {
    private final PerformanceMetricsEvent performanceMetricsEvent;
    private final WorldLoadTimesEvent worldLoadTimesEvent;
 
-   public WorldSessionTelemetryManager(final TelemetryEventSender eventSender, final boolean newWorld, final @Nullable Duration worldLoadDuration, final @Nullable String minigameName) {
+   public WorldSessionTelemetryManager(final TelemetryEventSender eventSender, final boolean newWorld, final @Nullable Duration worldLoadDuration, final @Nullable String minigameName, final UUID sessionId) {
       super();
       this.worldLoadEvent = new WorldLoadEvent(minigameName);
       this.performanceMetricsEvent = new PerformanceMetricsEvent();
@@ -28,6 +28,7 @@ public class WorldSessionTelemetryManager {
       this.eventSender = eventSender.decorate((properties) -> {
          this.worldLoadEvent.addProperties(properties);
          properties.put(TelemetryProperty.WORLD_SESSION_ID, this.worldSessionId);
+         properties.put(TelemetryProperty.SERVER_SESSION_ID, sessionId);
       });
    }
 

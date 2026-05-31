@@ -79,7 +79,7 @@ public class BoatItem extends Item {
          boat.setInitialPos(location.x, location.y, location.z);
          if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
-            EntityType.createDefaultStackConfig(serverLevel, itemStack, player).accept(boat);
+            EntityType.createDefaultStackConfig(serverLevel, itemStack, player).apply(boat);
          }
       }
 

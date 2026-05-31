@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.PlayerSkin;
 
 class IncomingEntry extends AbstractFriendsEntryContainerWidget {
    private static final WidgetSprites ACCEPT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/accept"), Identifier.withDefaultNamespace("friends/accept_highlighted"));
@@ -18,8 +17,8 @@ class IncomingEntry extends AbstractFriendsEntryContainerWidget {
    private final SpriteIconButton acceptButton;
    private final SpriteIconButton rejectButton;
 
-   public IncomingEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final PlayerSkin playerSkin, final Runnable acceptAction, final Runnable declineAction) {
-      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 10, 28, playerData, playerSkin);
+   public IncomingEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final Runnable acceptAction, final Runnable declineAction) {
+      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 16, 28, playerData);
       Button.CreateNarration acceptNarration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.accept", playerData.name()));
       Button.CreateNarration rejectNarration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.decline", playerData.name()));
       this.acceptButton = SpriteIconButton.builder(ACCEPT_INVITE, (var2) -> {
@@ -45,7 +44,7 @@ class IncomingEntry extends AbstractFriendsEntryContainerWidget {
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
-      this.rejectButton.setPosition(this.getX() + this.getWidth() - this.rejectButton.getWidth() + 2, this.getY() + (this.getHeight() - this.rejectButton.getHeight()) / 2);
+      this.rejectButton.setPosition(this.getX() + this.getWidth() - this.rejectButton.getWidth(), this.getY() + (this.getHeight() - this.rejectButton.getHeight()) / 2);
       this.rejectButton.extractRenderState(graphics, mouseX, mouseY, a);
       this.acceptButton.setPosition(this.rejectButton.getX() - this.acceptButton.getWidth() - 4, this.getY() + (this.getHeight() - this.acceptButton.getHeight()) / 2);
       this.acceptButton.extractRenderState(graphics, mouseX, mouseY, a);

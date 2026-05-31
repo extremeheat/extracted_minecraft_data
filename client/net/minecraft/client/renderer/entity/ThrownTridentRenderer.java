@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionfc;
 
 public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownTridentRenderState> {
@@ -36,6 +37,10 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
 
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
+   }
+
+   protected AABB getBoundingBoxForCulling(final ThrownTrident entity) {
+      return super.getBoundingBoxForCulling(entity).inflate(1.5);
    }
 
    public ThrownTridentRenderState createRenderState() {

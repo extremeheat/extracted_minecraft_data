@@ -56,7 +56,7 @@ public final class VillagerType {
       Optional var10000 = biome.unwrapKey();
       Map var10001 = BY_BIOME;
       Objects.requireNonNull(var10001);
-      return (ResourceKey)var10000.map(var10001::get).orElse(PLAINS);
+      return (ResourceKey)var10000.map(var10001::get).orElse(VillagerData.DEFAULT_TYPE);
    }
 
    static {

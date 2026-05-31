@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -82,7 +83,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
       super.defineSynchedData(entityData);
       entityData.define(DATA_CONVERTING_ID, false);
-      entityData.define(DATA_VILLAGER_DATA, this.initializeVillagerData());
+      entityData.define(DATA_VILLAGER_DATA, initializeZombieVillagerData(this.random));
       entityData.define(DATA_VILLAGER_DATA_FINALIZED, false);
    }
 
@@ -102,7 +103,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       Optional<VillagerData> villagerDataOptional = input.<VillagerData>read("VillagerData", VillagerData.CODEC);
       if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
          this.setVillagerDataFinalized(true);
-         VillagerData villagerData = (VillagerData)villagerDataOptional.orElseGet(this::initializeVillagerData);
+         VillagerData villagerData = (VillagerData)villagerDataOptional.orElseGet(() -> initializeZombieVillagerData(this.random));
          this.entityData.set(DATA_VILLAGER_DATA, villagerData);
       }
 
@@ -121,18 +122,13 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
-      if (!this.getVillagerDataFinalized()) {
-         this.setVillagerData(this.getVillagerData().withType(level.registryAccess(), VillagerType.byBiome(level.getBiome(this.blockPosition()))));
-         this.setVillagerDataFinalized(true);
-      }
-
+      this.finalizeVillagerType(level, this.blockPosition());
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   private VillagerData initializeVillagerData() {
-      Level level = this.level();
-      Optional<Holder.Reference<VillagerProfession>> profession = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random);
-      VillagerData villagerData = Villager.createDefaultVillagerData().withType(level.registryAccess(), VillagerType.byBiome(level.getBiome(this.blockPosition())));
+   private static VillagerData initializeZombieVillagerData(final RandomSource random) {
+      VillagerData villagerData = Villager.createDefaultVillagerData();
+      Optional<Holder.Reference<VillagerProfession>> profession = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(random);
       if (profession.isPresent()) {
          villagerData = villagerData.withProfession((Holder)profession.get());
       }
@@ -345,6 +341,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       if (type == DataComponents.VILLAGER_VARIANT) {
          Holder<VillagerType> variant = (Holder)castComponentValue(DataComponents.VILLAGER_VARIANT, value);
          this.setVillagerData(this.getVillagerData().withType(variant));
+         this.setVillagerDataFinalized(true);
          return true;
       } else {
          return super.applyImplicitComponent(type, value);

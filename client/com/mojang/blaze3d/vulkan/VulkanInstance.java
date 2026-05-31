@@ -22,7 +22,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkLayerProperties;
 import org.slf4j.Logger;
 
-public class VulkanInstance {
+public class VulkanInstance implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String APPLICATION_NAME = "Minecraft Java Edition";
    private static final int APPLICATION_VERSION = SharedConstants.getCurrentVersion().dataVersion().version();

@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -194,6 +195,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int EMPTY_TIME_NO_TICK = 300;
    private static final int MAX_SCHEDULED_TICKS_PER_TICK = 65536;
+   private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
    private final List<ServerPlayer> players = Lists.newArrayList();
    private final ServerChunkCache chunkSource;
    private final MinecraftServer server;
@@ -267,6 +269,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.waypointManager = new ServerWaypointManager();
       this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
       this.updateSkyBrightness();
+   }
+
+   public int getNextEntityId() {
+      int id;
+      for(id = 0; id == 0 || this.chunkSource.hasEntityWithId(id); id = ENTITY_COUNTER.incrementAndGet()) {
+      }
+
+      return id;
    }
 
    /** @deprecated */

@@ -309,6 +309,14 @@ public class GameTestServer extends MinecraftServer {
       return 0;
    }
 
+   public int getCommandSpamThresholdSeconds() {
+      return 0;
+   }
+
+   public int getChatSpamThresholdSeconds() {
+      return 0;
+   }
+
    public boolean useNativeTransport() {
       return false;
    }

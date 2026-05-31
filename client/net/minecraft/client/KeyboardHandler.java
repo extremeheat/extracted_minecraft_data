@@ -172,8 +172,8 @@ public class KeyboardHandler {
       this.minecraft.showDebugChat(decorateDebugComponent(ChatFormatting.YELLOW, component));
    }
 
-   private void debugFeedbackTranslated(final String pattern, final Object... args) {
-      this.debugFeedbackComponent(Component.translatable(pattern, args));
+   private void debugFeedbackTranslated(final String pattern) {
+      this.debugFeedbackComponent(Component.translatable(pattern));
    }
 
    private void debugFeedback(final String message) {
@@ -712,7 +712,7 @@ public class KeyboardHandler {
 
          if (reportedTime >= 1000L) {
             if (this.debugCrashKeyReportedCount == 0L) {
-               this.debugFeedbackTranslated("debug.crash.message", this.minecraft.options.keyDebugModifier.getTranslatedKeyMessage().getString(), this.minecraft.options.keyDebugCrash.getTranslatedKeyMessage().getString());
+               this.debugFeedbackComponent(Component.translatable("debug.crash.message", this.minecraft.options.keyDebugModifier.getTranslatedKeyMessage(), this.minecraft.options.keyDebugCrash.getTranslatedKeyMessage()));
             } else {
                this.debugWarningComponent(Component.translatable("debug.crash.warning", Mth.ceil((float)remainingTime / 1000.0F)));
             }

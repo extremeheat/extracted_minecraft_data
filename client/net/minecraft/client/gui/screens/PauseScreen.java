@@ -25,6 +25,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
+import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
@@ -112,10 +113,10 @@ public class PauseScreen extends Screen {
       PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
       if (playerSocialManager.isFriendListEnabled()) {
          playerSocialManager.addFriendListUpdateListener(this.friendListUpdateListener);
-         this.friends = CommonButtons.friends(20, (var1) -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)));
-         iconButtonRow.addChild(this.friends);
       }
 
+      this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this));
+      iconButtonRow.addChild(this.friends);
       SpriteIconButton playerReportingButton = SpriteIconButton.builder(PLAYER_REPORTING, (var1) -> this.minecraft.gui.setScreen(new SocialInteractionsScreen(this)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/player_reporting"), 15, 15).withTootip().build();
       iconButtonRow.addChild(playerReportingButton);
       IntegratedServer integratedServer = this.minecraft.getSingleplayerServer();

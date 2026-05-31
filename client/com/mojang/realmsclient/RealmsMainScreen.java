@@ -82,6 +82,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Util;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
@@ -1102,7 +1103,7 @@ public class RealmsMainScreen extends RealmsScreen {
                ResolvableProfile profile = (ResolvableProfile)profileResults.get(i);
                PlayerSkinRenderCache.RenderInfo profileRenderInfo = skinCache.getOrDefault(profile);
                int xPos = playersOnlineXStart + 12 * i;
-               PlayerFaceExtractor.extractRenderState(graphics, profileRenderInfo.playerSkin(), xPos, playersOnlineY, 9);
+               PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)profileRenderInfo.playerSkin(), xPos, playersOnlineY, 9);
                if (tooltipEntries != null) {
                   tooltipEntries.add(profileRenderInfo);
                }

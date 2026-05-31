@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
@@ -55,10 +54,6 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       footer.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
       footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.gui.setScreen(this.lastScreen)).build());
-   }
-
-   protected boolean panoramaShouldSpin() {
-      return !(this.lastScreen instanceof AccessibilityOnboardingScreen);
    }
 
    private boolean isMinecartOptionEnabled() {

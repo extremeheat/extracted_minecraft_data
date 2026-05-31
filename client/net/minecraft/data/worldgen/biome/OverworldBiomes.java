@@ -666,7 +666,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(generation);
       BiomeDefaultFeatures.addDefaultSoftDisks(generation);
       BiomeDefaultFeatures.addSulfurCavesFeatures(generation);
-      return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SULFUR_CAVES)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -15248324).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).grassColorOverride(11249231).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.FOG_COLOR, -7555023).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SULFUR_CAVES)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -15248324).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).grassColorOverride(11249231).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome lushCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {

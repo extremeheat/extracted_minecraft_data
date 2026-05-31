@@ -273,7 +273,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    @VisibleForTesting
    public void growStalactiteOrStalagmiteIfPossible(final BlockState stalactiteStartState, final ServerLevel level, final BlockPos stalactiteStartPos, final RandomSource random) {
       if (this.canGrow(level, stalactiteStartPos)) {
-         BlockPos stalactiteTipPos = findTip(stalactiteStartState, level, stalactiteStartPos, 7, false);
+         BlockPos stalactiteTipPos = findTip(stalactiteStartState, level, stalactiteStartPos, this.getMaxGrowthLength(), false);
          if (stalactiteTipPos != null) {
             BlockState stalactiteTipState = level.getBlockState(stalactiteTipPos);
             if (isFreeHangingStalactite(stalactiteTipState) && this.canTipGrow(stalactiteTipState, level, stalactiteTipPos)) {
@@ -400,6 +400,10 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
 
    protected static boolean isFreeHangingStalactite(final BlockState state) {
       return isStalactite(state) && state.getValue(THICKNESS) == SpeleothemThickness.TIP && !(Boolean)state.getValue(WATERLOGGED);
+   }
+
+   protected int getMaxGrowthLength() {
+      return 7;
    }
 
    static {

@@ -6,6 +6,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -81,7 +82,10 @@ public abstract class AbstractPiglin extends Monster {
       }
 
       if (this.timeInOverworld > 300) {
-         this.playConvertedSound();
+         if (level.getDifficulty() != Difficulty.PEACEFUL) {
+            this.playConvertedSound();
+         }
+
          this.finishConversion(level);
       }
 

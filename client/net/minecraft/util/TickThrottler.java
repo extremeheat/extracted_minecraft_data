@@ -23,6 +23,6 @@ public class TickThrottler {
    }
 
    public boolean isUnderThreshold() {
-      return this.count < this.threshold;
+      return this.threshold <= 0 || this.count < this.threshold;
    }
 }

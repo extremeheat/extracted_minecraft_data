@@ -8,15 +8,14 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.PlayerSkin;
 
 class OutgoingEntry extends AbstractFriendsEntryContainerWidget {
    private static final WidgetSprites REVOKE_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/cancel"));
    private static final Component REVOKE_INVITE = Component.translatable("gui.friends.cancel_request");
    private final SpriteIconButton revokeButton;
 
-   public OutgoingEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final PlayerSkin playerSkin, final Runnable revokeAction) {
-      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 10, 28, playerData, playerSkin);
+   public OutgoingEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final Runnable revokeAction) {
+      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 16, 28, playerData);
       Button.CreateNarration narration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.cancel_request", playerData.name()));
       this.revokeButton = SpriteIconButton.builder(REVOKE_INVITE, (var2) -> {
          screen.startFriendAction();
@@ -35,7 +34,7 @@ class OutgoingEntry extends AbstractFriendsEntryContainerWidget {
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
-      this.revokeButton.setPosition(this.getX() + this.getWidth() - this.revokeButton.getWidth() + 2, this.getY() + (this.getHeight() - this.revokeButton.getHeight()) / 2);
+      this.revokeButton.setPosition(this.getX() + this.getWidth() - this.revokeButton.getWidth(), this.getY() + (this.getHeight() - this.revokeButton.getHeight()) / 2);
       this.revokeButton.extractRenderState(graphics, mouseX, mouseY, a);
    }
 }

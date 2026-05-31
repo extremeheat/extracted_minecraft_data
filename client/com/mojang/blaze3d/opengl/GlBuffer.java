@@ -58,6 +58,10 @@ public abstract class GlBuffer extends GpuBuffer {
 
          this.mappingFlags = mappingFlags;
          super(usage, size, handle, canPersistentMap);
+         if (canPersistentMap && (usage & 3) != 0) {
+            this.map(0L, size, (usage & 1) != 0, (usage & 2) != 0);
+         }
+
       }
 
       public boolean isClosed() {
@@ -67,6 +71,10 @@ public abstract class GlBuffer extends GpuBuffer {
       public void close() {
          if (!this.closed) {
             this.closed = true;
+            if (this.canPersistentMap && (this.usage() & 3) != 0) {
+               this.unmap();
+            }
+
             if (this.mappingRefCount != 0) {
                throw new IllegalStateException("Attempt to close a mapped buffer");
             } else {

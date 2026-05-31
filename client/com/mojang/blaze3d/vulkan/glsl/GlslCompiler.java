@@ -37,9 +37,12 @@ public class GlslCompiler implements AutoCloseable {
    public IntermediaryShaderModule createIntermediary(final String filename, String source, final ShaderType type) throws ShaderCompileException {
       source = GlslPreprocessor.injectDefines(source, this.globalDefines);
       int shaderType = type == ShaderType.FRAGMENT ? 1 : 0;
-      long result = Shaderc.shaderc_compile_into_spv(this.shaderCompiler, source, shaderType, filename, "main", this.shaderOptions);
+      ByteBuffer sourceBuffer = MemoryUtil.memUTF8(source, false);
+      ByteBuffer filenameBuffer = MemoryUtil.memUTF8(filename);
+      ByteBuffer entrypointBuffer = MemoryUtil.memUTF8("main");
+      long result = Shaderc.shaderc_compile_into_spv(this.shaderCompiler, sourceBuffer, shaderType, filenameBuffer, entrypointBuffer, this.shaderOptions);
 
-      IntermediaryShaderModule var10;
+      IntermediaryShaderModule var13;
       try {
          int status = Shaderc.shaderc_result_get_compilation_status(result);
          if (status != 0) {
@@ -49,12 +52,15 @@ public class GlslCompiler implements AutoCloseable {
          ByteBuffer spirv = Shaderc.shaderc_result_get_bytes(result);
          ByteBuffer copy = MemoryUtil.memCalloc(spirv.remaining());
          MemoryUtil.memCopy(spirv, copy);
-         var10 = IntermediaryShaderModule.createFromSpirv(filename, copy);
+         var13 = IntermediaryShaderModule.createFromSpirv(filename, copy);
       } finally {
          Shaderc.shaderc_result_release(result);
+         MemoryUtil.memFree(entrypointBuffer);
+         MemoryUtil.memFree(filenameBuffer);
+         MemoryUtil.memFree(sourceBuffer);
       }
 
-      return var10;
+      return var13;
    }
 
    public CompiledModules compile(final VulkanDevice device, final RenderPipeline pipeline, final IntermediaryShaderModule vertex, final IntermediaryShaderModule fragment) throws ShaderCompileException {

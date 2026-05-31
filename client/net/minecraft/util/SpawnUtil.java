@@ -1,7 +1,6 @@
 package net.minecraft.util;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -9,6 +8,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PostSpawnProcessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -30,7 +30,7 @@ public class SpawnUtil {
          int dz = Mth.randomBetweenInclusive(random, -spawnRangeXZ, spawnRangeXZ);
          searchPos.setWithOffset(start, dx, spawnRangeY, dz);
          if (level.getWorldBorder().isWithinBounds((BlockPos)searchPos) && moveToPossibleSpawnPosition(level, spawnRangeY, searchPos, strategy) && (!checkCollisions || level.noCollision(entityType.getSpawnAABB((double)searchPos.getX() + 0.5, (double)searchPos.getY(), (double)searchPos.getZ() + 0.5)))) {
-            T mob = entityType.create(level, (Consumer)null, searchPos, spawnReason, false, false);
+            T mob = entityType.create(level, (PostSpawnProcessor)null, searchPos, spawnReason, false, false);
             if (mob != null) {
                if (mob.checkSpawnRules(level, spawnReason) && mob.checkSpawnObstruction(level)) {
                   level.addFreshEntityWithPassengers(mob);

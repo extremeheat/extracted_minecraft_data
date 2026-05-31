@@ -52,7 +52,6 @@ public class Squid extends AgeableWaterCreature {
    public Squid(final EntityType<? extends Squid> type, final Level level) {
       super(type, level);
       this.movementVector = Vec3.ZERO;
-      this.random.setSeed((long)this.getId());
       this.tentacleSpeed = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
    }
 

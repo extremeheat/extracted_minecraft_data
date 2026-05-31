@@ -1,9 +1,12 @@
 package net.minecraft.client.gui.components;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class PlayerFaceExtractor {
    public static final int SKIN_HEAD_U = 8;
@@ -19,6 +22,12 @@ public class PlayerFaceExtractor {
 
    public PlayerFaceExtractor() {
       super();
+   }
+
+   public static void extractRenderState(final GuiGraphicsExtractor graphics, final ResolvableProfile skinProfile, final int x, final int y, final int size) {
+      PlayerSkinRenderCache skinCache = Minecraft.getInstance().playerSkinRenderCache();
+      PlayerSkinRenderCache.RenderInfo renderInfo = skinCache.getOrDefault(skinProfile);
+      extractRenderState(graphics, renderInfo.playerSkin(), x, y, size);
    }
 
    public static void extractRenderState(final GuiGraphicsExtractor graphics, final PlayerSkin skin, final int x, final int y, final int size) {

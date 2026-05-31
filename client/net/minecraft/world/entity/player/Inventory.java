@@ -38,6 +38,7 @@ public class Inventory implements Container, Nameable {
    public static final Int2ObjectMap<EquipmentSlot> EQUIPMENT_SLOT_MAPPING;
    private static final Component DEFAULT_NAME;
    private final NonNullList<ItemStack> items;
+   private int deferredSelection;
    private int selected;
    public final Player player;
    private final EntityEquipment equipment;
@@ -54,12 +55,29 @@ public class Inventory implements Container, Nameable {
       return this.selected;
    }
 
+   public int getSelectedSlotDeferred() {
+      return this.deferredSelection;
+   }
+
    public void setSelectedSlot(final int selected) {
       if (!isHotbarSlot(selected)) {
          throw new IllegalArgumentException("Invalid selected slot");
       } else {
          this.selected = selected;
+         this.deferredSelection = selected;
       }
+   }
+
+   public void setSelectedSlotDeferred(final int selected) {
+      if (!isHotbarSlot(selected)) {
+         throw new IllegalArgumentException("Invalid selected slot");
+      } else {
+         this.deferredSelection = selected;
+      }
+   }
+
+   public void applySelectedSlot() {
+      this.selected = this.deferredSelection;
    }
 
    public ItemStack getSelectedItem() {

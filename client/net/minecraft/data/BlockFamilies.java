@@ -145,8 +145,8 @@ public class BlockFamilies {
       PRISMARINE = familyBuilder(Blocks.PRISMARINE).wall(Blocks.PRISMARINE_WALL).stairs(Blocks.PRISMARINE_STAIRS).slab(Blocks.PRISMARINE_SLAB).generateStonecutterRecipe().getFamily();
       PRISMARINE_BRICKS = familyBuilder(Blocks.PRISMARINE_BRICKS).stairs(Blocks.PRISMARINE_BRICK_STAIRS).slab(Blocks.PRISMARINE_BRICK_SLAB).generateStonecutterRecipe().getFamily();
       DARK_PRISMARINE = familyBuilder(Blocks.DARK_PRISMARINE).stairs(Blocks.DARK_PRISMARINE_STAIRS).slab(Blocks.DARK_PRISMARINE_SLAB).generateStonecutterRecipe().getFamily();
-      PURPUR = familyBuilder(Blocks.PURPUR_BLOCK).stairs(Blocks.PURPUR_STAIRS).slab(Blocks.PURPUR_SLAB).dontGenerateCraftingRecipe().generateStonecutterRecipe().getFamily();
-      QUARTZ = familyBuilder(Blocks.QUARTZ_BLOCK).stairs(Blocks.QUARTZ_STAIRS).slab(Blocks.QUARTZ_SLAB).chiseled(Blocks.CHISELED_QUARTZ_BLOCK).bricks(Blocks.QUARTZ_BRICKS).dontGenerateCraftingRecipe().generateStonecutterRecipe().getFamily();
+      PURPUR = familyBuilder(Blocks.PURPUR_BLOCK).stairs(Blocks.PURPUR_STAIRS).slab(Blocks.PURPUR_SLAB).pillar(Blocks.PURPUR_PILLAR).dontGenerateCraftingRecipe().generateStonecutterRecipe().getFamily();
+      QUARTZ = familyBuilder(Blocks.QUARTZ_BLOCK).stairs(Blocks.QUARTZ_STAIRS).slab(Blocks.QUARTZ_SLAB).chiseled(Blocks.CHISELED_QUARTZ_BLOCK).bricks(Blocks.QUARTZ_BRICKS).pillar(Blocks.QUARTZ_PILLAR).dontGenerateCraftingRecipe().generateStonecutterRecipe().getFamily();
       SMOOTH_QUARTZ = familyBuilder(Blocks.SMOOTH_QUARTZ).stairs(Blocks.SMOOTH_QUARTZ_STAIRS).slab(Blocks.SMOOTH_QUARTZ_SLAB).generateStonecutterRecipe().getFamily();
       SANDSTONE = familyBuilder(Blocks.SANDSTONE).wall(Blocks.SANDSTONE_WALL).stairs(Blocks.SANDSTONE_STAIRS).slab(Blocks.SANDSTONE_SLAB).chiseled(Blocks.CHISELED_SANDSTONE).cut(Blocks.CUT_SANDSTONE).dontGenerateCraftingRecipe().generateStonecutterRecipe().getFamily();
       CUT_SANDSTONE = familyBuilder(Blocks.CUT_SANDSTONE).slab(Blocks.CUT_SANDSTONE_SLAB).generateStonecutterRecipe().getFamily();

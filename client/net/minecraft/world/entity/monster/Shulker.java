@@ -201,7 +201,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
       EntityDimensions dimension = super.getDefaultDimensions(pose);
-      if (this.currentPeekAmount > 0.0F) {
+      if (this.getAttachFace() == Direction.DOWN && this.currentPeekAmount > 0.0F) {
          float heightScaleFactor = 1.0F + this.currentPeekAmount;
          return dimension.scale(1.0F, heightScaleFactor);
       } else {

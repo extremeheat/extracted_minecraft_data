@@ -720,7 +720,11 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       if (this.completedSubmitIndex >= submitIndex) {
          return true;
       } else if (submitIndex == this.currentSubmitIndex) {
-         throw new IllegalStateException("Cannot wait on a fence for the current submit");
+         if (timeoutMs == 0L) {
+            return false;
+         } else {
+            throw new IllegalStateException("Cannot wait on a fence for the current submit");
+         }
       } else {
          MemoryStack stack = MemoryStack.stackPush();
 

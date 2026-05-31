@@ -9,14 +9,23 @@ import net.minecraft.util.Mth;
 public class Panorama {
    public static final Identifier PANORAMA_OVERLAY = Identifier.withDefaultNamespace("textures/gui/title/background/panorama_overlay.png");
    private float spin;
+   private boolean shouldSpin = true;
 
    public Panorama() {
       super();
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int width, final int height, final boolean shouldSpin) {
+   public void startSpin() {
+      this.shouldSpin = true;
+   }
+
+   public void holdSpin() {
+      this.shouldSpin = false;
+   }
+
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int width, final int height) {
       Minecraft minecraft = Minecraft.getInstance();
-      if (shouldSpin) {
+      if (this.shouldSpin) {
          float a = minecraft.getDeltaTracker().getRealtimeDeltaTicks();
          float delta = (float)((double)a * minecraft.gameRenderer.gameRenderState().optionsRenderState.panoramaSpeed);
          this.spin = Mth.wrapDegrees(this.spin + delta * 0.1F);

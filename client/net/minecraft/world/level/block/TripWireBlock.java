@@ -115,7 +115,7 @@ public class TripWireBlock extends Block {
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
       if (!level.isClientSide()) {
-         if (!(Boolean)state.getValue(POWERED)) {
+         if (!(Boolean)state.getValue(POWERED) && !level.getBlockTicks().hasScheduledTick(pos, this)) {
             this.checkPressed(level, pos, List.of(entity));
          }
       }
@@ -154,6 +154,8 @@ public class TripWireBlock extends Block {
 
       if (shouldBePressed) {
          level.scheduleTick(new BlockPos(pos), this, 10);
+      } else if (wasPressed) {
+         level.scheduleTick(new BlockPos(pos), this, 0);
       }
 
    }

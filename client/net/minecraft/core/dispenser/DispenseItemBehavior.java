@@ -3,7 +3,6 @@ package net.minecraft.core.dispenser;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -22,6 +21,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PostSpawnProcessor;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
@@ -83,7 +83,7 @@ public interface DispenseItemBehavior {
             Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos pos = source.pos().relative(direction);
             ServerLevel serverLevel = source.level();
-            Consumer<ArmorStand> postSpawnConfig = EntityType.<ArmorStand>appendDefaultStackConfig((armorStandx) -> armorStandx.setYRot(direction.toYRot()), serverLevel, dispensed, (LivingEntity)null);
+            PostSpawnProcessor<ArmorStand> postSpawnConfig = EntityType.<ArmorStand>appendDefaultStackConfig((armorStandx) -> armorStandx.setYRot(direction.toYRot()), serverLevel, dispensed, (LivingEntity)null);
             ArmorStand armorStand = EntityTypes.ARMOR_STAND.spawn(serverLevel, postSpawnConfig, pos, EntitySpawnReason.DISPENSER, false, false);
             if (armorStand != null) {
                dispensed.shrink(1);

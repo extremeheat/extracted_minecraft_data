@@ -196,7 +196,7 @@ public class MouseHandler {
                   }
                } else {
                   Inventory inventory = this.minecraft.player.getInventory();
-                  inventory.setSelectedSlot(ScrollWheelHandler.getNextScrollWheelSelection((double)wheel, inventory.getSelectedSlot(), Inventory.getSelectionSize()));
+                  inventory.setSelectedSlotDeferred(ScrollWheelHandler.getNextScrollWheelSelection((double)wheel, inventory.getSelectedSlotDeferred(), Inventory.getSelectionSize()));
                }
             }
          }

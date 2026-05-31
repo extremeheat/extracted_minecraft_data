@@ -182,7 +182,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public static final String TAG_GLOWING = "Glowing";
    public static final String TAG_INVULNERABLE = "Invulnerable";
    public static final String TAG_CUSTOM_NAME = "CustomName";
-   private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
+   public static final int INVALID_ENTITY_ID = 0;
    public static final int CONTENTS_SLOT_INDEX = 0;
    public static final int BOARDING_COOLDOWN = 60;
    public static final int TOTAL_AIR_SUPPLY = 300;
@@ -206,9 +206,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    private static double viewScale;
    private final EntityType<?> type;
    private boolean requiresPrecisePosition;
-   private int id;
+   private int id = 0;
    public boolean blocksBuilding;
-   private ImmutableList<Entity> passengers;
+   private ImmutableList<Entity> passengers = ImmutableList.of();
    protected int boardingCooldown;
    private @Nullable Entity vehicle;
    private Level level;
@@ -300,8 +300,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public Entity(final EntityType<?> type, final Level level) {
       super();
-      this.id = ENTITY_COUNTER.incrementAndGet();
-      this.passengers = ImmutableList.of();
       this.deltaMovement = Vec3.ZERO;
       this.bb = INITIAL_AABB;
       this.stuckSpeedMultiplier = Vec3.ZERO;
@@ -326,6 +324,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.customData = CustomData.EMPTY;
       this.type = type;
       this.level = level;
+      this.id = level.getNextEntityId();
       this.dimensions = type.getDimensions();
       this.position = Vec3.ZERO;
       this.blockPosition = BlockPos.ZERO;
@@ -399,7 +398,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public int getId() {
-      return this.id;
+      if (this.id == 0) {
+         throw new IllegalStateException("Tried to access entity ID before ID assignment");
+      } else {
+         return this.id;
+      }
    }
 
    public void setId(final int id) {
@@ -435,14 +438,14 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public boolean equals(final Object obj) {
       if (obj instanceof Entity entity) {
-         return entity.id == this.id;
+         return entity.getId() == this.getId();
       } else {
          return false;
       }
    }
 
    public int hashCode() {
-      return this.id;
+      return this.getId();
    }
 
    public void remove(final RemovalReason reason) {

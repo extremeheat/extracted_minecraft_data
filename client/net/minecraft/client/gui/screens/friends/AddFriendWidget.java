@@ -26,7 +26,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
 class AddFriendWidget extends AbstractContainerWidget {
-   private static final WidgetSprites ADD_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("icon/draft_report"));
+   private static final WidgetSprites ADD_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/send_request"));
    private static final Identifier LIST_SEPARATOR_TOP = Identifier.withDefaultNamespace("friends/list_separator_top");
    private static final Component ENTER_NICKNAME = Component.translatable("gui.friends.enter_nickname");
    private static final Component SEND_REQUEST = Component.translatable("gui.friends.send_request");
@@ -67,7 +67,7 @@ class AddFriendWidget extends AbstractContainerWidget {
       };
       this.editBox.setHint(ENTER_NICKNAME);
       this.editBox.setResponder(this::editBoxResponder);
-      this.addButton = SpriteIconButton.builder(SEND_REQUEST, (var1) -> onSend.run(), true).sprite((WidgetSprites)ADD_SPRITE, 15, 15).size(20, 20).spriteOffset(-1, 1).tooltip(SEND_REQUEST).switchToLoadingAfterPress().build();
+      this.addButton = SpriteIconButton.builder(SEND_REQUEST, (var1) -> onSend.run(), true).sprite((WidgetSprites)ADD_SPRITE, 15, 15).size(20, 20).tooltip(SEND_REQUEST).switchToLoadingAfterPress().build();
       this.applyState(AddFriendWidget.State.EMPTY_INPUT);
       String profileName = this.minecraft.getUser().getName();
       final Component profileNameComponent = Component.literal(profileName);
@@ -87,13 +87,24 @@ class AddFriendWidget extends AbstractContainerWidget {
       inputRow.addChild(this.editBox);
       inputRow.addChild(this.addButton);
       this.layout.addChild(inputRow, (Consumer)((settings) -> settings.paddingLeft(8).paddingTop(3)));
-      LinearLayout profileRow = LinearLayout.horizontal();
-      profileRow.addChild(new StringWidget(PROFILE_NAME_LABEL, this.minecraft.font));
-      profileRow.addChild(this.profileNameButton);
-      this.layout.addChild(profileRow, (Consumer)((settings) -> settings.paddingLeft(8).paddingTop(6)));
+      this.layout.addChild(this.createProfileRow(), (Consumer)((settings) -> settings.paddingLeft(8).paddingTop(6)));
       this.layout.addChild(ImageWidget.sprite(width, 2, LIST_SEPARATOR_TOP), (Consumer)((settings) -> settings.paddingTop(4)));
       this.layout.arrangeElements();
       this.setHeight(this.layout.getHeight());
+   }
+
+   private LinearLayout createProfileRow() {
+      LinearLayout profileRow = LinearLayout.horizontal();
+      StringWidget profileNameLabel = new StringWidget(PROFILE_NAME_LABEL, this.minecraft.font);
+      if (this.minecraft.font.isBidirectional()) {
+         profileRow.addChild(this.profileNameButton);
+         profileRow.addChild(profileNameLabel);
+      } else {
+         profileRow.addChild(profileNameLabel);
+         profileRow.addChild(this.profileNameButton);
+      }
+
+      return profileRow;
    }
 
    private void editBoxResponder(final String value) {

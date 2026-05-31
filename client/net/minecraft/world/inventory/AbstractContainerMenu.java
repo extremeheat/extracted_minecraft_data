@@ -521,8 +521,7 @@ public abstract class AbstractContainerMenu {
       } else if (containerInput == ContainerInput.CLONE && player.hasInfiniteMaterials() && this.getCarried().isEmpty() && slotIndex >= 0) {
          Slot slot = this.slots.get(slotIndex);
          if (slot.hasItem()) {
-            ItemStack item = slot.getItem();
-            this.setCarried(item.copyWithCount(item.getMaxStackSize()));
+            this.setCarried(slot.safeClone(player));
          }
       } else if (containerInput == ContainerInput.THROW && this.getCarried().isEmpty() && slotIndex >= 0) {
          Slot slot = this.slots.get(slotIndex);

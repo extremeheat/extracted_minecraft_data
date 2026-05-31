@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -100,40 +99,38 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public @Nullable T spawn(final ServerLevel level, final @Nullable ItemStack itemStack, final @Nullable LivingEntity user, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
-      Consumer<T> postSpawnConfig;
+      PostSpawnProcessor<T> postSpawnConfig;
       if (itemStack != null) {
          postSpawnConfig = createDefaultStackConfig(level, itemStack, user);
       } else {
-         postSpawnConfig = (entity) -> {
-         };
+         postSpawnConfig = PostSpawnProcessor.<T>nop();
       }
 
       return (T)this.spawn(level, postSpawnConfig, spawnPos, spawnReason, tryMoveDown, movedUp);
    }
 
-   public static <T extends Entity> Consumer<T> createDefaultStackConfig(final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
-      return appendDefaultStackConfig((entity) -> {
-      }, level, itemStack, user);
+   public static <T extends Entity> PostSpawnProcessor<T> createDefaultStackConfig(final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+      return appendDefaultStackConfig(PostSpawnProcessor.nop(), level, itemStack, user);
    }
 
-   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(final Consumer<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+   public static <T extends Entity> PostSpawnProcessor<T> appendDefaultStackConfig(final PostSpawnProcessor<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
       return appendCustomEntityStackConfig(appendComponentsConfig(initialConfig, itemStack), level, itemStack, user);
    }
 
-   public static <T extends Entity> Consumer<T> appendComponentsConfig(final Consumer<T> initialConfig, final ItemStack itemStack) {
+   public static <T extends Entity> PostSpawnProcessor<T> appendComponentsConfig(final PostSpawnProcessor<T> initialConfig, final ItemStack itemStack) {
       return initialConfig.andThen((entity) -> entity.applyComponentsFromItemStack(itemStack));
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(final Consumer<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
+   public static <T extends Entity> PostSpawnProcessor<T> appendCustomEntityStackConfig(final PostSpawnProcessor<T> initialConfig, final Level level, final ItemStack itemStack, final @Nullable LivingEntity user) {
       TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
       return entityData != null ? initialConfig.andThen((entity) -> updateCustomEntityTag(level, user, entity, entityData)) : initialConfig;
    }
 
    public @Nullable T spawn(final ServerLevel level, final BlockPos spawnPos, final EntitySpawnReason spawnReason) {
-      return (T)this.spawn(level, (Consumer)null, spawnPos, spawnReason, false, false);
+      return (T)this.spawn(level, (PostSpawnProcessor)null, spawnPos, spawnReason, false, false);
    }
 
-   public @Nullable T spawn(final ServerLevel level, final @Nullable Consumer<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
+   public @Nullable T spawn(final ServerLevel level, final @Nullable PostSpawnProcessor<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
       T entity = this.create(level, postSpawnConfig, spawnPos, spawnReason, tryMoveDown, movedUp);
       if (entity != null) {
          level.addFreshEntityWithPassengers(entity);
@@ -146,7 +143,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return entity;
    }
 
-   public @Nullable T create(final ServerLevel level, final @Nullable Consumer<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
+   public @Nullable T create(final ServerLevel level, final @Nullable PostSpawnProcessor<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
       T entity = this.create(level, spawnReason);
       if (entity == null) {
          return null;
@@ -168,7 +165,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
          }
 
          if (postSpawnConfig != null) {
-            postSpawnConfig.accept(entity);
+            postSpawnConfig.apply(entity);
          }
 
          return entity;

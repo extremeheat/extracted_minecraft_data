@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -55,8 +54,7 @@ public class RealmsUtil {
    }
 
    public static void extractPlayerFace(final GuiGraphicsExtractor graphics, final int x, final int y, final int size, final UUID playerId) {
-      PlayerSkinRenderCache.RenderInfo renderInfo = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(playerId));
-      PlayerFaceExtractor.extractRenderState(graphics, renderInfo.playerSkin(), x, y, size);
+      PlayerFaceExtractor.extractRenderState(graphics, ResolvableProfile.createUnresolved(playerId), x, y, size);
    }
 
    public static <T> CompletableFuture<T> supplyAsync(final RealmsIoFunction<T> function, final @Nullable Consumer<RealmsServiceException> onFailure) {

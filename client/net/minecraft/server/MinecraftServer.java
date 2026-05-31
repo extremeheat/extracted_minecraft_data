@@ -1358,6 +1358,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public abstract int getRateLimitPacketsPerSecond();
 
+   public abstract int getCommandSpamThresholdSeconds();
+
+   public abstract int getChatSpamThresholdSeconds();
+
    public boolean usesAuthentication() {
       return this.onlineMode;
    }
@@ -1974,7 +1978,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   break label50;
                }
 
-               modules.sort(Comparator.comparing((modulex) -> modulex.name()));
+               modules.sort(Comparator.comparing(NativeModuleLister.NativeModuleInfo::name, String.CASE_INSENSITIVE_ORDER));
                Iterator t = modules.iterator();
 
                while(true) {
@@ -2014,7 +2018,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    private ProfilerFiller createProfiler() {
       if (this.willStartRecordingMetrics) {
-         this.metricsRecorder = ActiveMetricsRecorder.createStarted(new ServerMetricsSamplersProvider(Util.timeSource, this.isDedicatedServer()), Util.timeSource, Util.ioPool(), new MetricsPersister("server"), this.onMetricsRecordingStopped, (reportPath) -> {
+         this.metricsRecorder = ActiveMetricsRecorder.createStarted(new ServerMetricsSamplersProvider(Util.timeSource(), this.isDedicatedServer()), Util.timeSource(), Util.ioPool(), new MetricsPersister("server"), this.onMetricsRecordingStopped, (reportPath) -> {
             this.executeBlocking(() -> this.saveDebugReport(reportPath.resolve("server")));
             this.onMetricsRecordingFinished.accept(reportPath);
          });
@@ -2326,8 +2330,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public static enum MultiplayerScope {
       OFF("off"),
-      LAN("lan"),
-      ONLINE("online");
+      LAN("lan");
 
       private final Component translatable;
       private final Component tooltip;
@@ -2347,7 +2350,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       // $FF: synthetic method
       private static MultiplayerScope[] $values() {
-         return new MultiplayerScope[]{OFF, LAN, ONLINE};
+         return new MultiplayerScope[]{OFF, LAN};
       }
    }
 

@@ -22,7 +22,6 @@ import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.flow.FlowControlHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
-import io.netty.util.AttributeKey;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
@@ -64,7 +63,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static final Marker PACKET_MARKER = (Marker)Util.make(MarkerFactory.getMarker("NETWORK_PACKETS"), (m) -> m.add(ROOT_MARKER));
    public static final Marker PACKET_RECEIVED_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_RECEIVED"), (m) -> m.add(PACKET_MARKER));
    public static final Marker PACKET_SENT_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_SENT"), (m) -> m.add(PACKET_MARKER));
-   public static final AttributeKey<Boolean> SECURE_TRANSPORT = AttributeKey.valueOf("secure_transport");
    private static final ProtocolInfo<ServerHandshakePacketListener> INITIAL_PROTOCOL;
    private final PacketFlow receiving;
    private volatile boolean sendLoginDisconnect = true;
@@ -410,10 +408,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public boolean isMemoryConnection() {
       return this.channel instanceof LocalChannel || this.channel instanceof LocalServerChannel;
-   }
-
-   public boolean isSecureTransport() {
-      return this.channel.hasAttr(SECURE_TRANSPORT) ? (Boolean)this.channel.attr(SECURE_TRANSPORT).get() : false;
    }
 
    public PacketFlow getReceiving() {

@@ -20,7 +20,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
-import org.jspecify.annotations.Nullable;
 
 public class PlayerSocialManager {
    private static final Component FRIEND_ACTION_FAILED_MESSAGE = Component.translatable("gui.friends.error.failed.message");
@@ -61,15 +60,6 @@ public class PlayerSocialManager {
 
    public List<PlayerData> getFriends() {
       return remap(this.remoteFriendListUpdateHandler.getLatestFriendData().friends());
-   }
-
-   public boolean isFriendsPmid(final @Nullable UUID pmid) {
-      if (pmid == null) {
-         return false;
-      } else {
-         UUID profileId = this.getPresenceHandler().getProfileIdFromPmid(pmid);
-         return this.getFriends().stream().anyMatch((friend) -> friend.id().equals(profileId));
-      }
    }
 
    public List<PlayerData> getIncomingRequests() {

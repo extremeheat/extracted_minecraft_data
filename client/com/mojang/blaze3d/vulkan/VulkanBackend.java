@@ -75,6 +75,28 @@ public class VulkanBackend implements GpuBackend {
       GLFW.glfwWindowHint(139265, 0);
    }
 
+   public static @Nullable BackendCreationException checkBackendAvailable() {
+      if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
+         return new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
+      } else if (!GLFWVulkan.glfwVulkanSupported()) {
+         return new BackendCreationException("Vulkan is not supported", BackendCreationException.Reason.GLFW_ERROR);
+      } else {
+         try {
+            Object var2;
+            try (
+               VulkanInstance instance = new VulkanInstance(0, false, false);
+               VulkanPhysicalDevice physicalDevice = findPhysicalDevice(instance);
+            ) {
+               var2 = null;
+            }
+
+            return (BackendCreationException)var2;
+         } catch (BackendCreationException e) {
+            return e;
+         }
+      }
+   }
+
    public void handleWindowCreationErrors(final GLFWErrorCapture.@Nullable Error error) throws BackendCreationException {
       if (error != null) {
          throw new BackendCreationException(String.format(Locale.ROOT, "GLFW_ERROR: 0x%X", error.error()), BackendCreationException.Reason.GLFW_ERROR);

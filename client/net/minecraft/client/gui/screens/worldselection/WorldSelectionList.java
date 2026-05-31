@@ -190,7 +190,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       } catch (LevelStorageException e) {
          LOGGER.error("Couldn't load level list", e);
          this.handleLevelLoadFailure(e.getMessageComponent());
-         return CompletableFuture.completedFuture(List.of());
+         return CompletableFuture.failedFuture(e);
       }
 
       return this.minecraft.getLevelSource().loadLevelSummaries(levelCandidates).exceptionally((throwable) -> {

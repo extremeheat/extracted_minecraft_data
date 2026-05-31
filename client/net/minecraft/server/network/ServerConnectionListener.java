@@ -46,6 +46,7 @@ public class ServerConnectionListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final MinecraftServer server;
    public volatile boolean running;
+   private volatile @Nullable UUID sessionId;
    private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
 
@@ -192,6 +193,12 @@ public class ServerConnectionListener {
             }
          }
 
+         if (this.connections.isEmpty()) {
+            synchronized(this) {
+               this.sessionId = null;
+            }
+         }
+
       }
    }
 
@@ -201,6 +208,23 @@ public class ServerConnectionListener {
 
    public List<Connection> getConnections() {
       return this.connections;
+   }
+
+   public UUID getSessionId() {
+      UUID uuid = this.sessionId;
+      if (uuid != null) {
+         return uuid;
+      } else {
+         synchronized(this) {
+            uuid = this.sessionId;
+            if (uuid == null) {
+               uuid = UUID.randomUUID();
+               this.sessionId = uuid;
+            }
+
+            return uuid;
+         }
+      }
    }
 
    private static class LatencySimulator extends ChannelInboundHandlerAdapter {

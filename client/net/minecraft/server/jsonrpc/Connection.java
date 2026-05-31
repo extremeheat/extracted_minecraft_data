@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -141,7 +140,7 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
          if (expectReply) {
             CompletableFuture<Result> future = new CompletableFuture();
             int id = this.transactionId.incrementAndGet();
-            long time = Util.timeSource.get(TimeUnit.MILLISECONDS);
+            long time = Util.getMillis();
             this.pendingRequests.put(id, new PendingRpcRequest(methodHolder, future, time + 5000L));
             this.channel.writeAndFlush(JsonRPCUtils.createRequest(id, methodHolder.key().identifier(), jsonParams));
             return future;

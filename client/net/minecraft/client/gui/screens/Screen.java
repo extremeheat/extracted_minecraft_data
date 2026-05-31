@@ -480,7 +480,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void extractPanorama(final GuiGraphicsExtractor graphics, final float a) {
-      this.minecraft.gameRenderer.panorama().extractRenderState(graphics, this.width, this.height, this.panoramaShouldSpin());
+      this.minecraft.gameRenderer.panorama().extractRenderState(graphics, this.width, this.height);
    }
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
@@ -506,10 +506,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public boolean isInGameUi() {
       return false;
-   }
-
-   protected boolean panoramaShouldSpin() {
-      return true;
    }
 
    public boolean isAllowedInPortal() {

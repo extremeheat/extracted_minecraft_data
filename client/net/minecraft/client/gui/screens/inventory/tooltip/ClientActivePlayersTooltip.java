@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 public class ClientActivePlayersTooltip implements ClientTooltipComponent {
@@ -42,7 +43,7 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
       for(int i = 0; i < this.activePlayers.size(); ++i) {
          PlayerSkinRenderCache.RenderInfo activePlayer = (PlayerSkinRenderCache.RenderInfo)this.activePlayers.get(i);
          int y1 = y + 2 + i * 12;
-         PlayerFaceExtractor.extractRenderState(graphics, activePlayer.playerSkin(), x + 2, y1, 10);
+         PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)activePlayer.playerSkin(), x + 2, y1, 10);
          graphics.text(font, (String)getName(activePlayer), x + 10 + 4, y1 + 2, -1);
       }
 

@@ -165,7 +165,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          graphics.text(this.minecraft.font, status, textStartX, textStartY + 12, PLAYER_STATUS_COLOR);
       }
 
-      PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.skinGetter.get(), skinX, skinY, 24);
+      PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)((PlayerSkin)this.skinGetter.get()), skinX, skinY, 24);
       graphics.text(this.minecraft.font, this.playerName, textStartX, textStartY, PLAYERNAME_COLOR);
       if (this.isRemoved) {
          graphics.fill(skinX, skinY, skinX + 24, skinY + 24, SKIN_SHADE);
