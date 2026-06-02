@@ -90,16 +90,16 @@ public class WoodlandMansionPieces {
             List<Mob> mobs = new ArrayList();
             switch (markerId) {
                case "Mage":
-                  mobs.add(EntityTypes.EVOKER.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                  mobs.add((Mob)EntityTypes.EVOKER.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE));
                   break;
                case "Warrior":
-                  mobs.add(EntityTypes.VINDICATOR.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                  mobs.add((Mob)EntityTypes.VINDICATOR.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE));
                   break;
                case "Group of Allays":
                   int numberOfAllays = level.getRandom().nextInt(3) + 1;
 
                   for(int i = 0; i < numberOfAllays; ++i) {
-                     mobs.add(EntityTypes.ALLAY.create(level.getLevel(), EntitySpawnReason.STRUCTURE));
+                     mobs.add((Mob)EntityTypes.ALLAY.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE));
                   }
                   break;
                default:

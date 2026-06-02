@@ -209,7 +209,8 @@ public class Options {
    private final OptionInstance<Boolean> backgroundForChatOnly;
    private final OptionInstance<Boolean> fullscreen;
    private boolean exclusiveFullscreenFromStartup;
-   private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING = Component.translatable("options.exclusiveFullscreen.warningTooltip");
+   private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_ON = Component.translatable("options.exclusiveFullscreen.on.tooltip");
+   private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF = Component.translatable("options.exclusiveFullscreen.off.tooltip");
    private final OptionInstance<Boolean> exclusiveFullscreen;
    private final OptionInstance<Boolean> bobView;
    private static final Component KEY_TOGGLE = Component.translatable("options.key.toggle");
@@ -1010,17 +1011,11 @@ public class Options {
          List<Component> tooltipLines = new ArrayList();
          if (value != this.exclusiveFullscreenFromStartup) {
             tooltipLines.add(TOOLTIP_NEEDS_RESTART);
+            tooltipLines.add(CommonComponents.EMPTY);
          }
 
-         if (value) {
-            if (!tooltipLines.isEmpty()) {
-               tooltipLines.add(CommonComponents.EMPTY);
-            }
-
-            tooltipLines.add(TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING);
-         }
-
-         return !tooltipLines.isEmpty() ? Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines)) : null;
+         tooltipLines.add(value ? TOOLTIP_EXCLUSIVE_FULLSCREEN_ON : TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF);
+         return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
       }, false);
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
       this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, OptionInstance.NO_ACTION);

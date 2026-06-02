@@ -26,7 +26,7 @@ public abstract class AbstractCubeMobRenderer<T extends AbstractCubeMob, S exten
       poseStack.translate(0.0F, 0.001F, 0.0F);
    }
 
-   private void applySizeAndSquish(final SlimeRenderState state, final PoseStack poseStack) {
+   protected void applySizeAndSquish(final S state, final PoseStack poseStack) {
       float size = (float)state.size;
       float ss = state.squish / (size * 0.5F + 1.0F);
       float w = 1.0F / (ss + 1.0F);

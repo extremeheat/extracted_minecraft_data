@@ -458,11 +458,11 @@ public class KeyboardHandler {
          }
 
          if (action == 1) {
-            label231: {
+            label239: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label231;
+                     break label239;
                   }
                }
 
@@ -542,22 +542,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label182: {
+         label190: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label180: {
+               label188: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label180;
+                        break label188;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label182;
+                     break label190;
                   }
                }
             }
@@ -605,13 +605,15 @@ public class KeyboardHandler {
                }
             }
 
-            if (handlesGameInput || key == options.keyDebugModifier.key) {
-               if (didDebugAction) {
+            if (handlesGameInput) {
+               if (didDebugAction && !KeyMapping.hasBindingOutsideCategory(key, KeyMapping.Category.DEBUG)) {
                   KeyMapping.set(key, false);
                } else {
                   KeyMapping.set(key, true);
                   KeyMapping.click(key);
                }
+            } else if (key == options.keyDebugModifier.key) {
+               options.keyDebugModifier.setDown(!didDebugAction);
             }
 
          }

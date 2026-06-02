@@ -110,15 +110,17 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
          GpuBufferSlice bufferSlice = this.allocateGpu(totalSize, alignment, usage);
          int target = GlUtil.selectBufferBindTarget(usage);
          GlStateManager._glBindBuffer(target, ((GlBuffer)bufferSlice.buffer()).handle());
-         long offset = bufferSlice.offset();
+         long ptr = GL33C.nglMapBufferRange(target, bufferSlice.offset(), totalSize, 38);
+         long offset = 0L;
 
          for(int i = 0; i < data.size(); ++i) {
             ByteBuffer buffer = (ByteBuffer)data.get(i);
-            GlStateManager._glBufferSubData(target, offset, buffer);
+            MemoryUtil.memCopy(MemoryUtil.memAddress(buffer), ptr + offset, (long)buffer.remaining());
             offset += (long)buffer.remaining();
             offset = Mth.roundToward(offset, alignment);
          }
 
+         GL33C.glUnmapBuffer(target);
          GlStateManager._glBindBuffer(target, 0);
          return bufferSlice;
       }
@@ -145,7 +147,9 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
                   GpuBufferSlice bufferSlice = this.allocateGpu((long)currentBuffer.remaining(), alignment, usage);
                   uploadedBuffers.set(bufferIndex, bufferSlice);
                   GlStateManager._glBindBuffer(target, ((GlBuffer)bufferSlice.buffer()).handle());
-                  GL33C.glBufferSubData(target, bufferSlice.offset(), currentBuffer);
+                  long ptr = GL33C.nglMapBufferRange(target, bufferSlice.offset(), bufferSlice.length(), 38);
+                  MemoryUtil.memCopy(MemoryUtil.memAddress(currentBuffer), ptr, bufferSlice.length());
+                  GL33C.glUnmapBuffer(target);
                   allocatedAnything = true;
                   break;
                }
@@ -157,7 +161,9 @@ public abstract class GlTransientMemory implements TransientMemory, AutoCloseabl
                GpuBufferSlice bufferSlice = this.allocateGpu((long)currentBuffer.remaining(), alignment, usage);
                uploadedBuffers.set(bufferIndex, bufferSlice);
                GlStateManager._glBindBuffer(target, ((GlBuffer)bufferSlice.buffer()).handle());
-               GL33C.glBufferSubData(target, bufferSlice.offset(), currentBuffer);
+               long ptr = GL33C.nglMapBufferRange(target, bufferSlice.offset(), bufferSlice.length(), 38);
+               MemoryUtil.memCopy(MemoryUtil.memAddress(currentBuffer), ptr, bufferSlice.length());
+               GL33C.glUnmapBuffer(target);
             }
          }
 

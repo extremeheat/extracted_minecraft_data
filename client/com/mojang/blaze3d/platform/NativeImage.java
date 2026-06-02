@@ -492,6 +492,10 @@ public final class NativeImage implements AutoCloseable {
       return this.pixels;
    }
 
+   public ByteBuffer getPixelBytes() {
+      return MemoryUtil.memByteBuffer(this.pixels, Math.toIntExact(this.size));
+   }
+
    public Transparency computeTransparency(final int x0, final int y0, final int x1, final int y1) {
       this.checkAllocated();
       if (this.format != NativeImage.Format.RGBA) {

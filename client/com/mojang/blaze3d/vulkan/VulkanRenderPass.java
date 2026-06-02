@@ -57,7 +57,7 @@ public class VulkanRenderPass implements RenderPassBackend {
    protected final HashMap<String, GpuBufferSlice> uniforms = new HashMap();
    protected final HashMap<String, TextureViewAndSampler> textures = new HashMap();
 
-   public VulkanRenderPass(final VulkanDevice device, final VulkanCommandEncoder encoder, final VkCommandBuffer commandBuffer, final CheckpointExtension.CheckpointStorage checkpointStorage, final RenderPass.@Nullable RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth, final Supplier<String> label) {
+   public VulkanRenderPass(final VulkanDevice device, final VulkanCommandEncoder encoder, final VkCommandBuffer commandBuffer, final CheckpointExtension.CheckpointStorage checkpointStorage, final RenderPass.RenderArea renderArea, final int outputWidth, final int outputHeight, final boolean hasDepth, final Supplier<String> label) {
       super();
       this.device = device;
       this.encoder = encoder;
@@ -79,9 +79,7 @@ public class VulkanRenderPass implements RenderPassBackend {
          viewport.minDepth(0.0F);
          viewport.maxDepth(1.0F);
          VK12.vkCmdSetViewport(this.commandBuffer(), 0, viewport);
-         if (renderArea != null) {
-            setScissor(stack, this.commandBuffer(), renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
-         }
+         setScissor(stack, this.commandBuffer(), renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
       } catch (Throwable var14) {
          if (stack != null) {
             try {
@@ -268,7 +266,7 @@ public class VulkanRenderPass implements RenderPassBackend {
          assert draw.indexType() != null || defaultIndexType != null;
 
          this.setIndexBuffer(draw.indexBuffer() == null ? defaultIndexBuffer : draw.indexBuffer(), draw.indexType() == null ? defaultIndexType : draw.indexType());
-         this.setVertexBuffer(0, draw.vertexBuffer().slice());
+         this.setVertexBuffer(draw.slot(), draw.vertexBuffer().slice());
          this.drawIndexed(draw.indexCount(), 1, draw.firstIndex(), draw.baseVertex(), 0);
       }
 

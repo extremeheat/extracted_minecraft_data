@@ -446,7 +446,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void pingRegions() {
-      (new Thread(() -> {
+      Thread pingThread = new Thread(() -> {
          List<RegionPingResult> regionPingResultList = Ping.pingAllRegions();
          RealmsClient client = RealmsClient.getOrCreate();
          PingResult pingResult = new PingResult(regionPingResultList, this.getOwnedNonExpiredRealmIds());
@@ -457,7 +457,9 @@ public class RealmsMainScreen extends RealmsScreen {
             LOGGER.warn("Could not send ping result to Realms: ", t);
          }
 
-      }, "Realms ping")).start();
+      }, "Realms ping");
+      pingThread.setDaemon(true);
+      pingThread.start();
    }
 
    private List<Long> getOwnedNonExpiredRealmIds() {

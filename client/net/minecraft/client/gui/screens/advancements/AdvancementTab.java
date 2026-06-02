@@ -37,6 +37,7 @@ public class AdvancementTab {
    private int maxY = -2147483648;
    private float fade;
    private boolean centered;
+   private @Nullable AdvancementWidget hovered;
 
    public AdvancementTab(final Minecraft minecraft, final AdvancementsScreen screen, final AdvancementTabType type, final int index, final AdvancementNode rootNode, final DisplayInfo display) {
       super();
@@ -70,6 +71,32 @@ public class AdvancementTab {
 
    public DisplayInfo getDisplay() {
       return this.display;
+   }
+
+   public void tick(final int relativeMouseX, final int relativeMouseY) {
+      boolean hovering = false;
+      if (relativeMouseX > 0 && relativeMouseX < 234 && relativeMouseY > 0 && relativeMouseY < 113) {
+         int intScrollX = Mth.floor(this.scrollX);
+         int intScrollY = Mth.floor(this.scrollY);
+
+         for(AdvancementWidget widget : this.widgets.values()) {
+            if (widget.isMouseOver(intScrollX, intScrollY, relativeMouseX, relativeMouseY)) {
+               hovering = true;
+               this.hovered = widget;
+               break;
+            }
+         }
+      }
+
+      if (hovering) {
+         this.fade = Mth.clamp(this.fade + 0.06F, 0.0F, 0.3F);
+      } else {
+         this.fade = Mth.clamp(this.fade - 0.12F, 0.0F, 1.0F);
+         if (this.hovered != null) {
+            this.hovered = null;
+         }
+      }
+
    }
 
    public void extractTab(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final boolean selected) {
@@ -115,25 +142,12 @@ public class AdvancementTab {
       graphics.disableScissor();
    }
 
-   public void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
+   public void extractTooltips(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       graphics.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
-      boolean hovering = false;
-      int intScrollX = Mth.floor(this.scrollX);
-      int intScrollY = Mth.floor(this.scrollY);
-      if (mouseX > 0 && mouseX < 234 && mouseY > 0 && mouseY < 113) {
-         for(AdvancementWidget widget : this.widgets.values()) {
-            if (widget.isMouseOver(intScrollX, intScrollY, mouseX, mouseY)) {
-               hovering = true;
-               widget.extractHover(graphics, intScrollX, intScrollY, this.fade, xo, yo);
-               break;
-            }
-         }
-      }
-
-      if (hovering) {
-         this.fade = Mth.clamp(this.fade + 0.02F, 0.0F, 0.3F);
-      } else {
-         this.fade = Mth.clamp(this.fade - 0.04F, 0.0F, 1.0F);
+      if (this.hovered != null) {
+         int intScrollX = Mth.floor(this.scrollX);
+         int intScrollY = Mth.floor(this.scrollY);
+         this.hovered.extractHover(graphics, intScrollX, intScrollY, this.fade, xo, yo);
       }
 
    }

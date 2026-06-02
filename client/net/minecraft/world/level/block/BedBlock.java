@@ -242,13 +242,8 @@ public class BedBlock extends HorizontalDirectionalBlock {
 
    public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
       super.setPlacedBy(level, pos, state, by, itemStack);
-      if (!level.isClientSide()) {
-         BlockPos otherPos = pos.relative((Direction)state.getValue(FACING));
-         level.setBlock(otherPos, (BlockState)state.setValue(PART, BedPart.HEAD), 3);
-         level.updateNeighborsAt(pos, Blocks.AIR);
-         state.updateNeighbourShapes(level, pos, 3);
-      }
-
+      BlockPos otherPos = pos.relative((Direction)state.getValue(FACING));
+      level.setBlockAndUpdate(otherPos, (BlockState)state.setValue(PART, BedPart.HEAD));
    }
 
    public DyeColor getColor() {

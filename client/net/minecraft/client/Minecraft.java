@@ -450,6 +450,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       PreferredGraphicsApi preferredGraphicsBackend = forcedGraphicsApi == null ? (PreferredGraphicsApi)this.options.preferredGraphicsBackend().get() : forcedGraphicsApi;
+      if (preferredGraphicsBackend == PreferredGraphicsApi.DEFAULT) {
+         this.backendCreationException = VulkanBackend.checkBackendAvailable();
+      }
 
       for(GpuBackend backend : preferredGraphicsBackend.getBackendsToTry()) {
          try {
@@ -484,10 +487,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          MessageBox.error(errorMsg);
          throw new Window.WindowInitFailed(errorMsg);
       } else {
-         if (this.backendCreationException == null && preferredGraphicsBackend == PreferredGraphicsApi.DEFAULT) {
-            this.backendCreationException = VulkanBackend.checkBackendAvailable();
-         }
-
          this.window = windowCandidate;
          this.windowSurface = device.createSurface(this.window.handle());
          this.textInputManager = new TextInputManager(this.window);
@@ -1734,10 +1733,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       if (this.level != null) {
          if (!this.pause) {
-            if (this.player != null) {
-               this.player.getInventory().applySelectedSlot();
-            }
-
             profiler.popPush("gameRenderer");
             this.gameRenderer.tick();
             profiler.popPush("entities");
@@ -1835,7 +1830,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (this.player.isSpectator()) {
                this.gui.hud.getSpectatorGui().onHotbarSelected(i);
             } else if (!this.player.hasInfiniteMaterials() || this.gui.screen() != null || !loadPressed && !savePressed) {
-               this.player.getInventory().setSelectedSlotDeferred(i);
+               this.player.getInventory().setSelectedSlot(i);
             } else {
                CreativeModeInventoryScreen.handleHotbarLoadOrSave(this, i, loadPressed, savePressed);
             }

@@ -39,7 +39,7 @@ public class Nautilus extends AbstractNautilus {
    }
 
    public @Nullable Nautilus getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Nautilus baby = EntityTypes.NAUTILUS.create(level, EntitySpawnReason.BREEDING);
+      Nautilus baby = (Nautilus)EntityTypes.NAUTILUS.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null && this.isTame()) {
          baby.setOwnerReference(this.getOwnerReference());
          baby.setTame(true, true);

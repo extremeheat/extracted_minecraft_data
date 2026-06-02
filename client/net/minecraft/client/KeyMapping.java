@@ -36,6 +36,21 @@ public class KeyMapping implements Comparable<KeyMapping> {
       forAllKeyMappings(key, (keyMapping) -> keyMapping.setDown(state));
    }
 
+   public static boolean hasBindingOutsideCategory(final InputConstants.Key key, final Category category) {
+      List<KeyMapping> keyMappings = (List)MAP.get(key);
+      if (keyMappings == null) {
+         return false;
+      } else {
+         for(KeyMapping keyMapping : keyMappings) {
+            if (keyMapping.category != category) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+   }
+
    private static void forAllKeyMappings(final InputConstants.Key key, final Consumer<KeyMapping> operation) {
       List<KeyMapping> keyMappings = (List)MAP.get(key);
       if (keyMappings != null && !keyMappings.isEmpty()) {

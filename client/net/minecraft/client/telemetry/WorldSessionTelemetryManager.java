@@ -52,7 +52,7 @@ public class WorldSessionTelemetryManager {
    }
 
    public void worldSessionStart() {
-      if (this.worldLoadEvent.send(this.eventSender)) {
+      if (this.worldLoadEvent.send(this.eventSender, false)) {
          this.worldLoadTimesEvent.send(this.eventSender);
          this.performanceMetricsEvent.start();
       }
@@ -60,9 +60,12 @@ public class WorldSessionTelemetryManager {
    }
 
    public void onDisconnect() {
-      this.worldLoadEvent.send(this.eventSender);
+      this.worldLoadEvent.send(this.eventSender, true);
       this.performanceMetricsEvent.stop();
-      this.worldUnloadEvent.send(this.eventSender);
+      if (this.worldLoadEvent.wasSent()) {
+         this.worldUnloadEvent.send(this.eventSender);
+      }
+
    }
 
    public void onAdvancementDone(final Level level, final AdvancementHolder holder) {

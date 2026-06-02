@@ -411,7 +411,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void duplicateAllay() {
-      Allay allay = EntityTypes.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
+      Allay allay = (Allay)EntityTypes.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
       if (allay != null) {
          allay.snapTo(this.position());
          allay.setPersistenceRequired();

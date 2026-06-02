@@ -231,7 +231,7 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    public @Nullable Pig getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Pig baby = EntityTypes.PIG.create(level, EntitySpawnReason.BREEDING);
+      Pig baby = (Pig)EntityTypes.PIG.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Pig partnerPig) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerPig.getVariant());
       }

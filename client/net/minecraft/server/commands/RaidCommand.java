@@ -68,7 +68,7 @@ public class RaidCommand {
 
    private static int spawnLeader(final CommandSourceStack source) {
       source.sendSuccess(() -> Component.literal("Spawned a raid captain"), false);
-      Raider raider = EntityTypes.PILLAGER.create(source.getLevel(), EntitySpawnReason.COMMAND);
+      Raider raider = (Raider)EntityTypes.PILLAGER.create(source.getLevel(), (EntitySpawnReason)EntitySpawnReason.COMMAND);
       if (raider == null) {
          source.sendFailure(Component.literal("Pillager failed to spawn"));
          return 0;

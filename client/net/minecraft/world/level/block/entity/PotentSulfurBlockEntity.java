@@ -51,7 +51,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
    public static Function<SoundEvent, BlockEntityTicker<PotentSulfurBlockEntity>> CLIENT_GEYSER_PLUME_TICKER;
    public static BlockEntityTicker<PotentSulfurBlockEntity> SERVER_WAITING_COUNTDOWN_TICKER;
    public static final long GEYSER_SALT = -904011478L;
-   public static BlockEntityTicker<PotentSulfurBlockEntity> SERVER_LAUNCH_ENTITY_TICKER;
+   public static BlockEntityTicker<PotentSulfurBlockEntity> LAUNCH_ENTITY_TICKER;
 
    public PotentSulfurBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       super(BlockEntityTypes.POTENT_SULFUR, worldPosition, blockState);
@@ -234,7 +234,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
             }
          }
       };
-      SERVER_LAUNCH_ENTITY_TICKER = (level, pos, state, entity) -> {
+      LAUNCH_ENTITY_TICKER = (level, pos, state, entity) -> {
          BlockPos sourceBlock = findNoxiousGasSourceBlock(level, pos);
          if (sourceBlock != null) {
             int waterBlocks = sourceBlock.getY() - pos.getY() - 1;
@@ -243,18 +243,18 @@ public class PotentSulfurBlockEntity extends BlockEntity {
 
             for(Entity entityToBeLaunched : level.getEntitiesOfClass(Entity.class, aabb, EFFECT_PREDICATE)) {
                Vec3 entityVelocity = entityToBeLaunched.getDeltaMovement();
-               if (entityToBeLaunched instanceof Player) {
-                  Player player = (Player)entityToBeLaunched;
-                  if (player.getAbilities().flying) {
-                     continue;
+               entityToBeLaunched.checkFallDistanceAccumulation();
+               if (entityToBeLaunched.isLocalInstanceAuthoritative()) {
+                  if (entityToBeLaunched instanceof Player) {
+                     Player player = (Player)entityToBeLaunched;
+                     if (player.getAbilities().flying) {
+                        continue;
+                     }
                   }
-               }
 
-               if (entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
-                  entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
-                  entityToBeLaunched.hurtMarked = true;
-                  entityToBeLaunched.needsSync = true;
-                  entityToBeLaunched.checkFallDistanceAccumulation();
+                  if (!entityToBeLaunched.isPassenger() && entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
+                     entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
+                  }
                }
             }
 

@@ -48,7 +48,7 @@ public class PresenceHandler {
             }
 
          });
-      }, Util.backgroundExecutor());
+      }, Util.nonCriticalIoPool());
    }
 
    private boolean shouldRefreshPresence() {

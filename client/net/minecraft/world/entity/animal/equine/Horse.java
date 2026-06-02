@@ -178,7 +178,7 @@ public class Horse extends AbstractHorse {
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       if (partner instanceof Donkey) {
-         Mule baby = EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
+         Mule baby = (Mule)EntityTypes.MULE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
          if (baby != null) {
             this.setOffspringAttributes(partner, baby);
          }
@@ -186,7 +186,7 @@ public class Horse extends AbstractHorse {
          return baby;
       } else {
          Horse horsePartner = (Horse)partner;
-         Horse baby = EntityTypes.HORSE.create(level, EntitySpawnReason.BREEDING);
+         Horse baby = (Horse)EntityTypes.HORSE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
          if (baby != null) {
             int selectSkin = this.random.nextInt(9);
             Variant variant;

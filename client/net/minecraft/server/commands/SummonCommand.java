@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -51,7 +52,7 @@ public class SummonCommand {
          CompoundTag entityTag = nbt.copy();
          entityTag.putString("id", type.key().identifier().toString());
          ServerLevel level = source.getLevel();
-         Entity entity = EntityType.loadEntityRecursive((CompoundTag)entityTag, level, EntitySpawnReason.COMMAND, (e) -> {
+         Entity entity = EntityType.loadEntityRecursive((CompoundTag)entityTag, level, (EntitySpawnRequest)(new EntitySpawnRequest(EntitySpawnReason.COMMAND, false)), (e) -> {
             e.snapTo(pos.x, pos.y, pos.z, e.getYRot(), e.getXRot());
             return e;
          });

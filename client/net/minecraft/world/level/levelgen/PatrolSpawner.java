@@ -76,7 +76,7 @@ public class PatrolSpawner implements CustomSpawner {
       } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityTypes.PILLAGER, level, EntitySpawnReason.PATROL, pos, random)) {
          return false;
       } else {
-         PatrollingMonster mob = EntityTypes.PILLAGER.create(level, EntitySpawnReason.PATROL);
+         PatrollingMonster mob = (PatrollingMonster)EntityTypes.PILLAGER.create(level, (EntitySpawnReason)EntitySpawnReason.PATROL);
          if (mob != null) {
             if (isLeader) {
                mob.setPatrolLeader(true);

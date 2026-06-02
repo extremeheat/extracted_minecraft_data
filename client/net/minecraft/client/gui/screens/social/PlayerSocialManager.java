@@ -95,7 +95,7 @@ public class PlayerSocialManager {
       CompletableFuture var10001 = this.pendingBlockListRefresh;
       UserApiService var10002 = this.service;
       Objects.requireNonNull(var10002);
-      this.pendingBlockListRefresh = var10001.thenRunAsync(var10002::refreshBlockList, Util.ioPool());
+      this.pendingBlockListRefresh = var10001.thenRunAsync(var10002::refreshBlockList, Util.nonCriticalIoPool());
    }
 
    public void stopOnlineMode() {

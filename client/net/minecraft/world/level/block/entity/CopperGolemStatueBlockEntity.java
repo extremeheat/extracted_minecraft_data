@@ -27,7 +27,7 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
    }
 
    public @Nullable CopperGolem removeStatue(final BlockState state) {
-      CopperGolem copperGolem = EntityTypes.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
+      CopperGolem copperGolem = (CopperGolem)EntityTypes.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
       if (copperGolem != null) {
          copperGolem.setCustomName((Component)this.components().get(DataComponents.CUSTOM_NAME));
          return this.initCopperGolem(state, copperGolem);

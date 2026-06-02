@@ -45,7 +45,7 @@ class OozingMobEffect extends MobEffect {
    }
 
    private void spawnSlimeOffspring(final Level level, final double x, final double y, final double z) {
-      Slime slime = EntityTypes.SLIME.create(level, EntitySpawnReason.TRIGGERED);
+      Slime slime = (Slime)EntityTypes.SLIME.create(level, EntitySpawnReason.TRIGGERED);
       if (slime != null) {
          slime.setSize(2, true);
          slime.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);

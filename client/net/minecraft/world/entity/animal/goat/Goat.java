@@ -125,7 +125,7 @@ public class Goat extends Animal {
    }
 
    public @Nullable Goat getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Goat newGoat = EntityTypes.GOAT.create(level, EntitySpawnReason.BREEDING);
+      Goat newGoat = (Goat)EntityTypes.GOAT.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (newGoat != null) {
          boolean var10000;
          label22: {

@@ -98,7 +98,7 @@ public class Dolphin extends AgeableWaterCreature {
    }
 
    public @Nullable Dolphin getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.DOLPHIN.create(level, EntitySpawnReason.BREEDING);
+      return (Dolphin)EntityTypes.DOLPHIN.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public float getAgeScale() {

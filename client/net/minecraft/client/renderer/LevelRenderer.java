@@ -670,6 +670,7 @@ public class LevelRenderer implements AutoCloseable {
    }
 
    public void close() {
+      this.resetLevelRenderData();
       this.entityOutlineTarget.destroyBuffers();
       if (this.skyRenderer != null) {
          this.skyRenderer.close();

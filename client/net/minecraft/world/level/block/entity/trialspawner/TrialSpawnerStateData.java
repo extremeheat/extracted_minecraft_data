@@ -28,6 +28,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -241,7 +242,7 @@ public class TrialSpawnerStateData {
          if (this.displayEntity == null) {
             CompoundTag entityToSpawn = this.getOrCreateNextSpawnData(trialSpawner, level.getRandom()).getEntityToSpawn();
             if (entityToSpawn.getString("id").isPresent()) {
-               this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, EntitySpawnReason.TRIAL_SPAWNER, BaseSpawner.SET_DISPLAY_ENTITY_ID);
+               this.displayEntity = EntityType.loadEntityRecursive(entityToSpawn, level, new EntitySpawnRequest(EntitySpawnReason.TRIAL_SPAWNER, true), BaseSpawner.SET_DISPLAY_ENTITY_ID);
             }
          }
 

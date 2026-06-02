@@ -332,7 +332,7 @@ public class Rabbit extends Animal {
    }
 
    public @Nullable Rabbit getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Rabbit offspring = EntityTypes.RABBIT.create(level, EntitySpawnReason.BREEDING);
+      Rabbit offspring = (Rabbit)EntityTypes.RABBIT.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (offspring != null) {
          Variant variant = getRandomRabbitVariant(level, this.blockPosition());
          if (this.random.nextInt(20) != 0) {

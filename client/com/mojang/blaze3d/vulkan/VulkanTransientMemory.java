@@ -128,7 +128,7 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
       var10000.queueForDestroy(var10001::run);
       if (this.useDeviceMemoryForMappedGpuStaging) {
          var10000 = this.encoder;
-         var10001 = this.stagingBlockAllocator.rotate();
+         var10001 = this.gpuBlockAllocator.rotate();
          Objects.requireNonNull(var10001);
          var10000.queueForDestroy(var10001::run);
       } else {

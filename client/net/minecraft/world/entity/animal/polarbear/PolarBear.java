@@ -73,7 +73,7 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.POLAR_BEAR.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.POLAR_BEAR.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {

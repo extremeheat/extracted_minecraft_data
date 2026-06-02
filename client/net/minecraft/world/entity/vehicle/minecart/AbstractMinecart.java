@@ -84,7 +84,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public static <T extends AbstractMinecart> @Nullable T createMinecart(final Level level, final double x, final double y, final double z, final EntityType<T> type, final EntitySpawnReason reason, final ItemStack itemStack, final @Nullable Player player) {
-      T entity = type.create(level, reason);
+      T entity = (T)(type.create(level, reason));
       if (entity != null) {
          entity.setInitialPos(x, y, z);
          EntityType.createDefaultStackConfig(level, itemStack, player).apply(entity);

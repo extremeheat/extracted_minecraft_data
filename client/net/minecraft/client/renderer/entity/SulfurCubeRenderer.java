@@ -49,10 +49,11 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
          poseStack.scale(s, s, s);
       }
 
-      float vOffset = state.isBaby ? 1.19F : 0.98F;
+      float vOffset = state.isBaby ? 1.24F : 0.98F;
       float extraDownscale = state.isBaby ? 1.0F : 0.5F;
+      float onePixelUpIfVisible = (state.isInvisible ? 0.0F : 1.0F) / 16.0F;
       poseStack.scale(extraDownscale, extraDownscale, extraDownscale);
-      poseStack.translate(-0.0F, vOffset, -0.0F);
+      poseStack.translate(-0.0F, vOffset - onePixelUpIfVisible, -0.0F);
    }
 
    public Identifier getTextureLocation(final SulfurCubeRenderState state) {
@@ -73,5 +74,12 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
          this.blockModelResolver.update(state.containedBlock, blockState, BLOCK_DISPLAY_CONTEXT);
       }
 
+   }
+
+   protected void applySizeAndSquish(final SulfurCubeRenderState state, final PoseStack poseStack) {
+      float size = (float)state.size;
+      float ss = state.containedBlock.isEmpty() ? state.squish / (size * 0.5F + 1.0F) : 0.0F;
+      float w = 1.0F / (ss + 1.0F);
+      poseStack.scale(w * size, 1.0F / w * size, w * size);
    }
 }

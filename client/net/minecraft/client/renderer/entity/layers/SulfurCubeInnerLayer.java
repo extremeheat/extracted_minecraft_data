@@ -35,6 +35,10 @@ public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, Sul
       if (!state.containedBlock.isEmpty()) {
          poseStack.pushPose();
          poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
+         if (state.isBaby) {
+            poseStack.scale(0.5F, 0.5F, 0.5F);
+         }
+
          poseStack.translate(-0.5F, -0.518F, -0.5F);
          state.containedBlock.submit(poseStack, submitNodeCollector, state.lightCoords, overlayCoords, state.outlineColor);
          poseStack.popPose();

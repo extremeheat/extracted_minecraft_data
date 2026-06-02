@@ -205,7 +205,7 @@ public class Turtle extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.TURTLE.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.TURTLE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {

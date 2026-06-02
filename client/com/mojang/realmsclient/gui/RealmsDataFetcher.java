@@ -28,7 +28,7 @@ public class RealmsDataFetcher {
 
    public RealmsDataFetcher(final RealmsClient realmsClient) {
       super();
-      this.dataFetcher = new DataFetcher(Util.ioPool(), TimeUnit.MILLISECONDS, Util.timeSource());
+      this.dataFetcher = new DataFetcher(Util.nonCriticalIoPool(), TimeUnit.MILLISECONDS, Util.timeSource());
       this.newsManager = new RealmsNewsManager(new RealmsPersistence());
       this.serverListUpdateTask = this.dataFetcher.<ServerListData>createTask("server list", () -> {
          com.mojang.realmsclient.dto.RealmsServerList realmsServerList = realmsClient.listRealms();

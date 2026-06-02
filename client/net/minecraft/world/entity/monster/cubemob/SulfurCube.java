@@ -34,6 +34,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -89,6 +90,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private boolean floatsInLiquids = false;
    private static final double MAX_PLAYER_PUSH_SPEED = 0.5;
    private static final float PLAYER_PUSH_SPEED_SCALE_MULTIPLIER = 0.3F;
+   private static final float VEHICLE_PUSH_SPEED_SCALE_MULTIPLIER = 0.16F;
    private static final float VERTICAL_PUSH_MULTIPLIER = 0.3F;
    private Optional<SulfurCubeArchetype.ExplosionData> explosionData = Optional.empty();
    private SulfurCubeArchetype.KnockbackModifiers knockbackModifier;
@@ -287,7 +289,8 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             if (var2 instanceof ServerLevel) {
                ServerLevel level = (ServerLevel)var2;
                if ((Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
-                  level.explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.getPortalCooldown() > 0 ? PrimedTnt.USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), (float)((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).power(), ((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).causesFire(), Level.ExplosionInteraction.MOB);
+                  Level.ExplosionInteraction explosionInteraction = (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE;
+                  level.explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.getPortalCooldown() > 0 ? PrimedTnt.USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), (float)((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).power(), ((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).causesFire(), explosionInteraction);
                }
 
                this.triggerOnDeathMobEffects(level, Entity.RemovalReason.KILLED);
@@ -490,7 +493,13 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          }
 
          if (!this.level().isClientSide()) {
+            ItemStack swallowedItem = this.getItemBySlot(EquipmentSlot.BODY);
             this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, heldItem.copyWithCount(1));
+            if (!swallowedItem.isEmpty()) {
+               Map<EquipmentSlot, ItemStack> lastEquipmentItems = Util.<EquipmentSlot, ItemStack>makeEnumMap(EquipmentSlot.class, (slot) -> ItemStack.EMPTY);
+               lastEquipmentItems.put(EquipmentSlot.BODY, swallowedItem);
+               this.collectEquipmentChanges(lastEquipmentItems);
+            }
          }
 
          this.playSound(this.getAbsorbSound());
@@ -652,7 +661,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public @Nullable AbstractCubeMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      SulfurCube sulfurCube = EntityTypes.SULFUR_CUBE.create(level, EntitySpawnReason.BREEDING);
+      SulfurCube sulfurCube = (SulfurCube)EntityTypes.SULFUR_CUBE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (sulfurCube != null) {
          sulfurCube.setSize(1, true);
       }
@@ -699,15 +708,17 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
    private void playerPush(final Player player) {
       if (this.hasBodyItem()) {
-         Vec3 cubeToPlayer = this.position().subtract(player.position());
-         double playerFeetPosition = player.getY();
+         Entity pusher = (Entity)(player.isPassenger() ? player.getRootVehicle() : player);
+         Vec3 cubeToPusher = this.position().subtract(pusher.position());
+         double pusherFeetPosition = pusher.getY();
          double sulfurCubeBottomPosition = this.getY();
          double sulfurCubeTopPosition = sulfurCubeBottomPosition + (double)this.getBbHeight();
-         double playerTopPosition = playerFeetPosition + (double)player.getBbHeight();
-         if (cubeToPlayer.horizontalDistance() < 1.2999999523162842 && playerFeetPosition <= sulfurCubeTopPosition && playerTopPosition > sulfurCubeBottomPosition) {
+         double pusherTopPosition = pusherFeetPosition + (double)pusher.getBbHeight();
+         if (cubeToPusher.horizontalDistance() < 1.2999999523162842 && pusherFeetPosition <= sulfurCubeTopPosition && pusherTopPosition > sulfurCubeBottomPosition) {
             double knockback = Math.max(0.0, 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-            Vec3 pushDirection = cubeToPlayer.horizontal().normalize().scale(knockback);
-            double playerSpeed = player.getKnownSpeed().length() * 2.0 * 0.30000001192092896;
+            Vec3 pushDirection = cubeToPusher.horizontal().normalize().scale(knockback);
+            float pushSpeedScale = player.isPassenger() ? 0.16F : 0.3F;
+            double playerSpeed = player.getKnownSpeed().length() * 2.0 * (double)pushSpeedScale;
             playerSpeed = Mth.clamp(playerSpeed, 0.0, 0.5);
             Vec3 pushVelocity = (new Vec3(pushDirection.x, this.onGround() ? knockback * 0.30000001192092896 : 0.0, pushDirection.z)).scale(playerSpeed);
             this.needsSync = true;
@@ -747,11 +758,19 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return new Vec2(px, py);
    }
 
-   private Vec2 applyVerticalPositionAnglePowerRotation(final float verticalPositionAngleScale, final float horizontalPower, final float verticalPower, final Vec3 attackerFeetPosition, final Vec3 targetFeetPosition) {
+   private Vec2 applyVerticalPositionAnglePowerRotation(final float verticalPositionAngleScale, final float horizontalPower, final float verticalPower, final float originalHorizontalPower, final float originalVerticalPower, final Vec3 attackerFeetPosition, final Vec3 targetFeetPosition) {
       Vec3 attackerFeetToTargetFeet = targetFeetPosition.subtract(attackerFeetPosition);
       float verticalPositionAngle = (float)Math.atan2(-attackerFeetToTargetFeet.y, attackerFeetToTargetFeet.horizontalDistance());
       Vec2 powerBeforeRotation = new Vec2(horizontalPower, verticalPower);
-      return powerBeforeRotation.rotate((double)(-verticalPositionAngle * verticalPositionAngleScale));
+      Vec2 rotatedPower = powerBeforeRotation.rotate((double)(-verticalPositionAngle * verticalPositionAngleScale));
+      float horizontalRatio = originalHorizontalPower > 0.0F ? Mth.abs(rotatedPower.x) / originalHorizontalPower : 0.0F;
+      float verticalRatio = originalVerticalPower > 0.0F ? Mth.abs(rotatedPower.y) / originalVerticalPower : 0.0F;
+      float maxRatio = Math.max(horizontalRatio, verticalRatio);
+      if (maxRatio > 1.0F) {
+         rotatedPower = rotatedPower.scale(1.0F / maxRatio);
+      }
+
+      return rotatedPower;
    }
 
    public void knockback(final double power, double xd, double zd, final DamageSource source, final float damage) {
@@ -761,13 +780,15 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          float verticalPositionAngleScale = 0.8F;
          float horizontalPower = this.knockbackModifier.horizontalPower();
          float verticalPower = this.knockbackModifier.verticalPower();
+         float originalHorizontalPower = horizontalPower;
+         float originalVerticalPower = verticalPower;
          Holder<SoundEvent> hitSound = this.soundSettings.hitSound();
          Vec2 originalAngle = new Vec2((float)xd, (float)zd);
          Vec2 newAngle = this.applyHorizontalHitAngleScale(1.6F, originalAngle, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter());
          Vec2 newPower = this.applyVerticalHitAnglePowerTransfer(0.5F, horizontalPower, verticalPower, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter(), this.getBbHeight());
          horizontalPower = newPower.x;
          verticalPower = newPower.y;
-         newPower = this.applyVerticalPositionAnglePowerRotation(0.8F, horizontalPower, verticalPower, source.getEntity().position(), this.position());
+         newPower = this.applyVerticalPositionAnglePowerRotation(0.8F, horizontalPower, verticalPower, originalHorizontalPower, originalVerticalPower, source.getEntity().position(), this.position());
          horizontalPower = newPower.x;
          verticalPower = newPower.y;
          xd = (double)newAngle.x;
@@ -822,6 +843,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
    protected void setcubeMobHealth(final int actualSize) {
       this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(4 * actualSize));
+   }
+
+   public boolean isInvulnerableToPiercingWeapon() {
+      return this.isInvulnerable() && !this.isPrimed();
    }
 
    static {

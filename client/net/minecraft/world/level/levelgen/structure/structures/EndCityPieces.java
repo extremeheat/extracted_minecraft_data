@@ -264,7 +264,7 @@ public class EndCityPieces {
             }
          } else if (chunkBB.isInside(position) && Level.isInSpawnableBounds(position)) {
             if (markerId.startsWith("Sentry")) {
-               Shulker sentry = EntityTypes.SHULKER.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+               Shulker sentry = (Shulker)EntityTypes.SHULKER.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
                if (sentry != null) {
                   sentry.setPos((double)position.getX() + 0.5, (double)position.getY(), (double)position.getZ() + 0.5);
                   level.addFreshEntity(sentry);

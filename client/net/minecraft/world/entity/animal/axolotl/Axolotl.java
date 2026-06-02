@@ -336,7 +336,7 @@ public class Axolotl extends Animal implements Bucketable {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Axolotl baby = EntityTypes.AXOLOTL.create(level, EntitySpawnReason.BREEDING);
+      Axolotl baby = (Axolotl)EntityTypes.AXOLOTL.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null) {
          Variant variant;
          if (useRareVariant(this.random)) {

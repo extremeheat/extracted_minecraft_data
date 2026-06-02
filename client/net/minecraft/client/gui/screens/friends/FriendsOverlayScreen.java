@@ -98,6 +98,7 @@ public class FriendsOverlayScreen extends Screen {
       this.tabManager.setCurrentTab(this.friendsTab, false, false);
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
+      this.refreshLists();
    }
 
    public int getOverlayWidth() {
@@ -115,7 +116,6 @@ public class FriendsOverlayScreen extends Screen {
       FrameLayout.alignInRectangle(this.layout, this.getRectangle(), 0.5F, 0.5F);
       this.tabNavigationBar.setPosition(this.layout.getX(), this.layout.getY() - 20 - 7);
       this.tabNavigationBar.arrangeElements(this.width);
-      this.refreshLists();
    }
 
    public void tick() {
@@ -166,17 +166,21 @@ public class FriendsOverlayScreen extends Screen {
    }
 
    public boolean keyPressed(final KeyEvent event) {
-      label14: {
+      label22: {
          if (this.minecraft.options.keyFriends.matches(event)) {
             GuiEventListener var3 = this.getFocused();
             if (!(var3 instanceof AddFriendWidget)) {
-               break label14;
+               break label22;
             }
 
             AddFriendWidget addFriendWidget = (AddFriendWidget)var3;
             if (!addFriendWidget.getEditBox().isFocused()) {
-               break label14;
+               break label22;
             }
+         }
+
+         if (this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(event)) {
+            return true;
          }
 
          return super.keyPressed(event);

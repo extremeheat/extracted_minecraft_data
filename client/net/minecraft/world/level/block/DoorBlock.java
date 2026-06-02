@@ -124,7 +124,7 @@ public class DoorBlock extends Block {
    }
 
    public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
-      level.setBlock(pos.above(), (BlockState)state.setValue(HALF, DoubleBlockHalf.UPPER), 3);
+      level.setBlockAndUpdate(pos.above(), (BlockState)state.setValue(HALF, DoubleBlockHalf.UPPER));
    }
 
    private DoorHingeSide getHinge(final BlockPlaceContext context) {

@@ -45,6 +45,6 @@ public class Mule extends AbstractChestedHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.MULE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 }

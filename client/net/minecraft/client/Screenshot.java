@@ -94,7 +94,7 @@ public class Screenshot {
       if (sourceTexture == null) {
          throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
       } else if (width % downscaleFactor == 0 && height % downscaleFactor == 0) {
-         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, (long)width * (long)height * (long)sourceTexture.getFormat().pixelSize());
+         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, (long)width * (long)height * (long)sourceTexture.getFormat().blockSize());
          RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(sourceTexture, buffer, 0L, () -> {
             try (GpuBufferSlice.MappedView read = buffer.map(true, false)) {
                int outputHeight = height / downscaleFactor;
@@ -104,7 +104,7 @@ public class Screenshot {
                for(int y = 0; y < outputHeight; ++y) {
                   for(int x = 0; x < outputWidth; ++x) {
                      if (downscaleFactor == 1) {
-                        int argb = read.data().getInt((x + y * width) * sourceTexture.getFormat().pixelSize());
+                        int argb = read.data().getInt((x + y * width) * sourceTexture.getFormat().blockSize());
                         image.setPixelABGR(x, height - y - 1, argb | -16777216);
                      } else {
                         int red = 0;
@@ -113,7 +113,7 @@ public class Screenshot {
 
                         for(int i = 0; i < downscaleFactor; ++i) {
                            for(int j = 0; j < downscaleFactor; ++j) {
-                              int argb = read.data().getInt((x * downscaleFactor + i + (y * downscaleFactor + j) * width) * sourceTexture.getFormat().pixelSize());
+                              int argb = read.data().getInt((x * downscaleFactor + i + (y * downscaleFactor + j) * width) * sourceTexture.getFormat().blockSize());
                               red += ARGB.red(argb);
                               green += ARGB.green(argb);
                               blue += ARGB.blue(argb);

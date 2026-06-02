@@ -510,7 +510,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
             DifficultyInstance difficulty = this.getCurrentDifficultyAt(pos);
             boolean isTrap = (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && this.random.nextDouble() < (double)difficulty.getEffectiveDifficulty() * 0.01 && !this.getBlockState(pos.below()).is(BlockTags.LIGHTNING_RODS);
             if (isTrap) {
-               SkeletonHorse horse = EntityTypes.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
+               SkeletonHorse horse = (SkeletonHorse)EntityTypes.SKELETON_HORSE.create(this, (EntitySpawnReason)EntitySpawnReason.EVENT);
                if (horse != null) {
                   horse.setTrap(true);
                   horse.setAge(0);
@@ -519,7 +519,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                }
             }
 
-            LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
+            LightningBolt bolt = (LightningBolt)EntityTypes.LIGHTNING_BOLT.create(this, (EntitySpawnReason)EntitySpawnReason.EVENT);
             if (bolt != null) {
                bolt.snapTo(Vec3.atBottomCenterOf(pos));
                bolt.setVisualOnly(isTrap);

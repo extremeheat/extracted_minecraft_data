@@ -408,7 +408,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void rideTick() {
       if (!this.level().isClientSide() && this.wantsToStopRiding() && this.isPassenger()) {
          this.stopRiding();
-         this.setShiftKeyDown(false);
       } else {
          super.rideTick();
       }

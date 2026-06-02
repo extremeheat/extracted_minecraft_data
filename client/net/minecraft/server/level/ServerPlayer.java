@@ -126,6 +126,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -470,7 +471,7 @@ public class ServerPlayer extends Player {
       Optional<ValueInput> rootTag = playerInput.child("RootVehicle");
       if (!rootTag.isEmpty()) {
          ServerLevel serverLevel = this.level();
-         Entity vehicle = EntityType.loadEntityRecursive((ValueInput)((ValueInput)rootTag.get()).childOrEmpty("Entity"), serverLevel, EntitySpawnReason.LOAD, (e) -> !serverLevel.addWithUUID(e) ? null : e);
+         Entity vehicle = EntityType.loadEntityRecursive((ValueInput)((ValueInput)rootTag.get()).childOrEmpty("Entity"), serverLevel, (EntitySpawnReason)EntitySpawnReason.LOAD, (e) -> !serverLevel.addWithUUID(e) ? null : e);
          if (vehicle != null) {
             UUID attachTo = (UUID)((ValueInput)rootTag.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (vehicle.getUUID().equals(attachTo)) {
@@ -523,7 +524,7 @@ public class ServerPlayer extends Player {
       if (!pearlLevelKey.isEmpty()) {
          ServerLevel pearlLevel = this.level().getServer().getLevel((ResourceKey)pearlLevelKey.get());
          if (pearlLevel != null) {
-            Entity pearl = EntityType.loadEntityRecursive((ValueInput)pearlInput, pearlLevel, EntitySpawnReason.LOAD, (entity) -> !pearlLevel.addWithUUID(entity) ? null : entity);
+            Entity pearl = EntityType.loadEntityRecursive((ValueInput)pearlInput, pearlLevel, (EntitySpawnReason)EntitySpawnReason.LOAD, (entity) -> !pearlLevel.addWithUUID(entity) ? null : entity);
             if (pearl != null) {
                placeEnderPearlTicket(pearlLevel, pearl.chunkPosition());
             } else {
@@ -831,7 +832,7 @@ public class ServerPlayer extends Player {
       ServerLevel serverLevel = this.level();
       if (!tag.isEmpty()) {
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-            EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), serverLevel.registryAccess(), tag), serverLevel, EntitySpawnReason.LOAD).ifPresent((entity) -> {
+            EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), serverLevel.registryAccess(), tag), serverLevel, new EntitySpawnRequest(EntitySpawnReason.LOAD, false)).ifPresent((entity) -> {
                if (entity instanceof TamableAnimal tamed) {
                   tamed.setOwner(this);
                }

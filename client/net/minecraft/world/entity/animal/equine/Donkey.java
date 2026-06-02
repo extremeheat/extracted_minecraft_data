@@ -53,7 +53,7 @@ public class Donkey extends AbstractChestedHorse {
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       EntityType<? extends AbstractHorse> babyType = partner instanceof Horse ? EntityTypes.MULE : EntityTypes.DONKEY;
-      AbstractHorse baby = babyType.create(level, EntitySpawnReason.BREEDING);
+      AbstractHorse baby = (AbstractHorse)babyType.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null) {
          this.setOffspringAttributes(partner, baby);
       }

@@ -93,7 +93,7 @@ public class Squid extends AgeableWaterCreature {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.SQUID.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.SQUID.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    protected double getDefaultGravity() {

@@ -21,8 +21,8 @@ import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 
-public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUniformBuffer> uniformBuffers, List<SpvSampler> samplers, List<SpvVariable> outputs, List<SpvVariable> inputs) implements AutoCloseable {
-   public static final IntermediaryShaderModule INVALID = new IntermediaryShaderModule("invalid", ByteBuffer.allocate(1), new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
+public record IntermediaryShaderModule(String name, @Nullable ByteBuffer spirv, List<SpvUniformBuffer> uniformBuffers, List<SpvSampler> samplers, List<SpvVariable> outputs, List<SpvVariable> inputs) implements AutoCloseable {
+   public static final IntermediaryShaderModule INVALID = new IntermediaryShaderModule("invalid", (ByteBuffer)null, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
 
    public IntermediaryShaderModule {
       super();
@@ -131,112 +131,120 @@ public record IntermediaryShaderModule(String name, ByteBuffer spirv, List<SpvUn
    }
 
    public void rebind(final List<String> inputVariables, final List<VulkanBindGroupLayout.Entry> entries) throws ShaderCompileException {
-      IntBuffer spvAsIntBuffer = this.spirv.asIntBuffer();
-      Set<String> remainingInputs = new HashSet();
-      Set<String> remainingSamplers = new HashSet();
-      Set<String> remainingUniformBuffers = new HashSet();
+      if (this.spirv == null) {
+         throw new IllegalStateException("Attempt to use invalid shader");
+      } else {
+         IntBuffer spvAsIntBuffer = this.spirv.asIntBuffer();
+         Set<String> remainingInputs = new HashSet();
+         Set<String> remainingSamplers = new HashSet();
+         Set<String> remainingUniformBuffers = new HashSet();
 
-      for(SpvVariable input : this.inputs) {
-         remainingInputs.add(input.name());
-      }
+         for(SpvVariable input : this.inputs) {
+            remainingInputs.add(input.name());
+         }
 
-      for(SpvUniformBuffer uniformBuffer : this.uniformBuffers) {
-         remainingUniformBuffers.add(uniformBuffer.name());
-      }
+         for(SpvUniformBuffer uniformBuffer : this.uniformBuffers) {
+            remainingUniformBuffers.add(uniformBuffer.name());
+         }
 
-      for(SpvSampler sampler : this.samplers) {
-         remainingSamplers.add(sampler.name());
-      }
+         for(SpvSampler sampler : this.samplers) {
+            remainingSamplers.add(sampler.name());
+         }
 
-      String previousName = null;
-      int attribLocation = 0;
+         String previousName = null;
+         int attribLocation = 0;
 
-      for(int i = 0; i < inputVariables.size(); ++i) {
-         String variableName = (String)inputVariables.get(i);
-         SpvVariable inputVariable = this.getInputVariable(variableName);
-         if (inputVariable != null) {
-            if (!variableName.equals(previousName)) {
-               spvAsIntBuffer.put(inputVariable.locationOffset(), attribLocation);
-               remainingInputs.remove(variableName);
+         for(int i = 0; i < inputVariables.size(); ++i) {
+            String variableName = (String)inputVariables.get(i);
+            SpvVariable inputVariable = this.getInputVariable(variableName);
+            if (inputVariable != null) {
+               if (!variableName.equals(previousName)) {
+                  spvAsIntBuffer.put(inputVariable.locationOffset(), attribLocation);
+                  remainingInputs.remove(variableName);
+               }
+
+               ++attribLocation;
+               previousName = variableName;
             }
-
-            ++attribLocation;
-            previousName = variableName;
          }
-      }
 
-      for(int i = 0; i < entries.size(); ++i) {
-         VulkanBindGroupLayout.Entry entry = (VulkanBindGroupLayout.Entry)entries.get(i);
-         switch (entry.type()) {
-            case UNIFORM_BUFFER:
-               SpvUniformBuffer ubo = this.getUniformBuffer(entry.name());
-               if (ubo != null) {
-                  spvAsIntBuffer.put(ubo.bindingOffset(), i);
-                  remainingUniformBuffers.remove(entry.name());
-               }
-               break;
-            case SAMPLED_IMAGE:
-               SpvSampler sampler = this.getSampler(entry.name());
-               if (sampler != null) {
-                  if (sampler.dimensions() != 1 && sampler.dimensions() != 3) {
-                     String var23 = SpvcUtil.imageDimensionToString(sampler.dimensions());
-                     throw new ShaderCompileException("Unsupported texture dimensions '" + var23 + "' for sampler " + entry.name());
+         for(int i = 0; i < entries.size(); ++i) {
+            VulkanBindGroupLayout.Entry entry = (VulkanBindGroupLayout.Entry)entries.get(i);
+            switch (entry.type()) {
+               case UNIFORM_BUFFER:
+                  SpvUniformBuffer ubo = this.getUniformBuffer(entry.name());
+                  if (ubo != null) {
+                     spvAsIntBuffer.put(ubo.bindingOffset(), i);
+                     remainingUniformBuffers.remove(entry.name());
                   }
+                  break;
+               case SAMPLED_IMAGE:
+                  SpvSampler sampler = this.getSampler(entry.name());
+                  if (sampler != null) {
+                     if (sampler.dimensions() != 1 && sampler.dimensions() != 3) {
+                        String var23 = SpvcUtil.imageDimensionToString(sampler.dimensions());
+                        throw new ShaderCompileException("Unsupported texture dimensions '" + var23 + "' for sampler " + entry.name());
+                     }
 
-                  spvAsIntBuffer.put(sampler.bindingOffset(), i);
-                  remainingSamplers.remove(entry.name());
-               }
-               break;
-            case TEXEL_BUFFER:
-               SpvSampler sampler = this.getSampler(entry.name());
-               if (sampler != null) {
-                  if (sampler.dimensions() != 5) {
-                     String var10002 = SpvcUtil.imageDimensionToString(sampler.dimensions());
-                     throw new ShaderCompileException("Unsupported texel buffer dimensions '" + var10002 + "' for sampler " + entry.name());
+                     spvAsIntBuffer.put(sampler.bindingOffset(), i);
+                     remainingSamplers.remove(entry.name());
                   }
+                  break;
+               case TEXEL_BUFFER:
+                  SpvSampler sampler = this.getSampler(entry.name());
+                  if (sampler != null) {
+                     if (sampler.dimensions() != 5) {
+                        String var10002 = SpvcUtil.imageDimensionToString(sampler.dimensions());
+                        throw new ShaderCompileException("Unsupported texel buffer dimensions '" + var10002 + "' for sampler " + entry.name());
+                     }
 
-                  spvAsIntBuffer.put(sampler.bindingOffset(), i);
-                  remainingSamplers.remove(entry.name());
-               }
+                     spvAsIntBuffer.put(sampler.bindingOffset(), i);
+                     remainingSamplers.remove(entry.name());
+                  }
+            }
          }
-      }
 
-      if (!remainingInputs.isEmpty()) {
-         throw new ShaderCompileException("Shader expects input variables which are not being provided: " + String.valueOf(remainingInputs));
-      } else if (!remainingUniformBuffers.isEmpty()) {
-         throw new ShaderCompileException("Shader expects uniform buffers which are not being provided: " + String.valueOf(remainingUniformBuffers));
-      } else if (!remainingSamplers.isEmpty()) {
-         throw new ShaderCompileException("Shader expects samplers which are not being provided: " + String.valueOf(remainingSamplers));
+         if (!remainingInputs.isEmpty()) {
+            throw new ShaderCompileException("Shader expects input variables which are not being provided: " + String.valueOf(remainingInputs));
+         } else if (!remainingUniformBuffers.isEmpty()) {
+            throw new ShaderCompileException("Shader expects uniform buffers which are not being provided: " + String.valueOf(remainingUniformBuffers));
+         } else if (!remainingSamplers.isEmpty()) {
+            throw new ShaderCompileException("Shader expects samplers which are not being provided: " + String.valueOf(remainingSamplers));
+         }
       }
    }
 
    public long createVulkanShaderModule(final VulkanDevice device) {
-      MemoryStack stack = MemoryStack.stackPush();
+      if (this.spirv == null) {
+         throw new IllegalStateException("Attempt to use invalid shader");
+      } else {
+         MemoryStack stack = MemoryStack.stackPush();
 
-      long var5;
-      try {
-         VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(this.spirv);
-         LongBuffer pointer = stack.callocLong(1);
-         VulkanUtils.crashIfFailure(device, VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer), "Can't compile " + this.name);
-         device.instance().debug().setObjectName(device.vkDevice(), 15, pointer.get(0), (Supplier)(() -> this.name));
-         var5 = pointer.get(0);
-      } catch (Throwable var8) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var7) {
-               var8.addSuppressed(var7);
+         long var5;
+         try {
+            VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(this.spirv);
+            LongBuffer pointer = stack.callocLong(1);
+            VulkanUtils.crashIfFailure(device, VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer), "Can't compile " + this.name);
+            device.instance().debug().setObjectName(device.vkDevice(), 15, pointer.get(0), (Supplier)(() -> this.name));
+            var5 = pointer.get(0);
+         } catch (Throwable var8) {
+            if (stack != null) {
+               try {
+                  stack.close();
+               } catch (Throwable var7) {
+                  var8.addSuppressed(var7);
+               }
             }
+
+            throw var8;
          }
 
-         throw var8;
-      }
+         if (stack != null) {
+            stack.close();
+         }
 
-      if (stack != null) {
-         stack.close();
+         return var5;
       }
-
-      return var5;
    }
 
    private @Nullable SpvUniformBuffer getUniformBuffer(final String name) {

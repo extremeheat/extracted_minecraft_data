@@ -41,7 +41,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
          yOffset = 0.0;
       }
 
-      AbstractBoat boat = this.type.create(level, EntitySpawnReason.DISPENSER);
+      AbstractBoat boat = (AbstractBoat)this.type.create(level, (EntitySpawnReason)EntitySpawnReason.DISPENSER);
       if (boat != null) {
          boat.setInitialPos(spawnX, spawnY + yOffset, spawnZ);
          EntityType.createDefaultStackConfig(level, dispensed, (LivingEntity)null).apply(boat);

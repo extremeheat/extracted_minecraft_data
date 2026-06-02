@@ -422,7 +422,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          int shulkerCount = this.level().getEntities((EntityTypeTest)EntityTypes.SHULKER, oldAabb.inflate(8.0), Entity::isAlive).size();
          float failureChance = (float)(shulkerCount - 1) / 5.0F;
          if (!(this.level().getRandom().nextFloat() < failureChance)) {
-            Shulker baby = EntityTypes.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
+            Shulker baby = (Shulker)EntityTypes.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
             if (baby != null) {
                baby.setVariant(this.getVariant());
                baby.snapTo(oldPosition);

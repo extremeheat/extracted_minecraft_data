@@ -245,7 +245,7 @@ public final class NaturalSpawner {
 
    private static @Nullable Mob getMobForSpawn(final ServerLevel level, final EntityType<?> type) {
       try {
-         Entity var3 = type.create(level, EntitySpawnReason.NATURAL);
+         Entity var3 = type.create(level, (EntitySpawnReason)EntitySpawnReason.NATURAL);
          if (var3 instanceof Mob mob) {
             return mob;
          }
@@ -344,7 +344,7 @@ public final class NaturalSpawner {
 
                         Entity entity;
                         try {
-                           entity = spawnerData.type().create(level.getLevel(), EntitySpawnReason.NATURAL);
+                           entity = spawnerData.type().create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.NATURAL);
                         } catch (Exception e) {
                            LOGGER.warn("Failed to create mob", e);
                            continue;

@@ -222,7 +222,7 @@ public class Frog extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Frog frog = EntityTypes.FROG.create(level, EntitySpawnReason.BREEDING);
+      Frog frog = (Frog)EntityTypes.FROG.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (frog != null) {
          FrogAi.initMemories(frog, level.getRandom());
       }

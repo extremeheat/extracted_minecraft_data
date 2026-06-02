@@ -63,7 +63,7 @@ public enum SpecialGlyphs implements GlyphInfo {
          }
 
          public void upload(final int x, final int y, final GpuTexture texture) {
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, SpecialGlyphs.this.image, 0, 0, x, y, SpecialGlyphs.this.image.getWidth(), SpecialGlyphs.this.image.getHeight(), 0, 0);
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, SpecialGlyphs.this.image, 0, 0, x, y);
          }
 
          public boolean isColored() {

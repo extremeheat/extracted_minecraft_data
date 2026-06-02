@@ -376,7 +376,7 @@ public class Strider extends Animal implements ItemSteerable {
    }
 
    public @Nullable Strider getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.STRIDER.create(level, EntitySpawnReason.BREEDING);
+      return (Strider)EntityTypes.STRIDER.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {
@@ -416,7 +416,7 @@ public class Strider extends Animal implements ItemSteerable {
       } else {
          RandomSource random = level.getRandom();
          if (random.nextInt(30) == 0) {
-            Mob jockey = EntityTypes.ZOMBIFIED_PIGLIN.create(level.getLevel(), EntitySpawnReason.JOCKEY);
+            Mob jockey = (Mob)EntityTypes.ZOMBIFIED_PIGLIN.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.JOCKEY);
             if (jockey != null) {
                groupData = this.spawnJockey(level, difficulty, jockey, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(random), false));
                jockey.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
@@ -424,7 +424,7 @@ public class Strider extends Animal implements ItemSteerable {
                this.setGuaranteedDrop(EquipmentSlot.SADDLE);
             }
          } else if (random.nextInt(10) == 0) {
-            AgeableMob jockey = EntityTypes.STRIDER.create(level.getLevel(), EntitySpawnReason.JOCKEY);
+            AgeableMob jockey = (AgeableMob)EntityTypes.STRIDER.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.JOCKEY);
             if (jockey != null) {
                jockey.setAge(-24000);
                groupData = this.spawnJockey(level, difficulty, jockey, (SpawnGroupData)null);

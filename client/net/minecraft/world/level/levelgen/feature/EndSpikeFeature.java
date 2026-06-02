@@ -96,7 +96,7 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
          }
       }
 
-      EndCrystal endCrystal = EntityTypes.END_CRYSTAL.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+      EndCrystal endCrystal = (EndCrystal)EntityTypes.END_CRYSTAL.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
       if (endCrystal != null) {
          endCrystal.setBeamTarget(config.getCrystalBeamTarget());
          endCrystal.setInvulnerable(config.isCrystalInvulnerable());

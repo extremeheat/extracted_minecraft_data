@@ -18,12 +18,16 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 
 public record ChargedProjectiles(List<ItemStackTemplate> items) implements TooltipProvider {
+   private static final int MAX_SIZE = 64;
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
    public static final Codec<ChargedProjectiles> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC;
 
    public ChargedProjectiles {
       super();
+      if (items.size() > 64) {
+         throw new IllegalArgumentException("Got " + items.size() + " items, but maximum is 64");
+      }
    }
 
    public static ChargedProjectiles of(final ItemStackTemplate stack) {
@@ -88,7 +92,7 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Toolt
    }
 
    static {
-      CODEC = ItemStackTemplate.CODEC.listOf().xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
-      STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+      CODEC = ItemStackTemplate.CODEC.sizeLimitedListOf(64).xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+      STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list(64)).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
    }
 }

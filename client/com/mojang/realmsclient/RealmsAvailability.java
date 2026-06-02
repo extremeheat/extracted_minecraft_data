@@ -54,7 +54,7 @@ public class RealmsAvailability {
                LOGGER.error("Couldn't connect to realms", e);
                return e.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(e);
             }
-         }, Util.ioPool());
+         }, Util.nonCriticalIoPool());
       }
    }
 

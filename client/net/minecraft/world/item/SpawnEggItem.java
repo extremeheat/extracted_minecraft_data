@@ -149,7 +149,7 @@ public class SpawnEggItem extends Item {
             AgeableMob ageableMob = (AgeableMob)parent;
             offspring = ageableMob.getBreedOffspring(level, ageableMob);
          } else {
-            offspring = type.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+            offspring = (Mob)type.create(level, (EntitySpawnReason)EntitySpawnReason.SPAWN_ITEM_USE);
          }
 
          if (offspring == null) {

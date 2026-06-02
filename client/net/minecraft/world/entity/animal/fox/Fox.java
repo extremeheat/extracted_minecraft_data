@@ -281,7 +281,7 @@ public class Fox extends Animal {
    }
 
    public @Nullable Fox getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Fox baby = EntityTypes.FOX.create(level, EntitySpawnReason.BREEDING);
+      Fox baby = (Fox)EntityTypes.FOX.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : ((Fox)partner).getVariant());
       }

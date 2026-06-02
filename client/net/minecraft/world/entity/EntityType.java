@@ -144,7 +144,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public @Nullable T create(final ServerLevel level, final @Nullable PostSpawnProcessor<T> postSpawnConfig, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
-      T entity = this.create(level, spawnReason);
+      T entity = this.create(level, (EntitySpawnReason)spawnReason);
       if (entity == null) {
          return null;
       } else {
@@ -268,11 +268,15 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public @Nullable T create(final Level level, final EntitySpawnReason reason) {
-      return (T)(!this.canSpawn(level) ? null : this.factory.create(this, level));
+      return (T)this.create(level, new EntitySpawnRequest(reason, false));
    }
 
-   public static Optional<Entity> create(final ValueInput input, final Level level, final EntitySpawnReason reason) {
-      return Util.<Entity>ifElse(by(input).map((type) -> type.create(level, reason)), (entity) -> entity.load(input), () -> LOGGER.warn("Skipping Entity with id {}", input.getStringOr("id", "[invalid]")));
+   public @Nullable T create(final Level level, final EntitySpawnRequest request) {
+      return (T)(!request.ignoreChecks() && !this.canSpawn(level) ? null : this.factory.create(this, level));
+   }
+
+   public static Optional<Entity> create(final ValueInput input, final Level level, final EntitySpawnRequest request) {
+      return Util.<Entity>ifElse(by(input).map((type) -> type.create(level, request)), (entity) -> entity.load(input), () -> LOGGER.warn("Skipping Entity with id {}", input.getStringOr("id", "[invalid]")));
    }
 
    public static Optional<Entity> create(final EntityType<?> type, final ValueInput input, final Level level, final EntitySpawnReason reason) {
@@ -305,9 +309,9 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return input.<EntityType<?>>read("id", CODEC);
    }
 
-   public static @Nullable Entity loadEntityRecursive(final CompoundTag tag, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+   public static @Nullable Entity loadEntityRecursive(final CompoundTag tag, final Level level, final EntitySpawnRequest request, final EntityProcessor postLoad) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-         return loadEntityRecursive(TagValueInput.create(reporter, level.registryAccess(), tag), level, reason, postLoad);
+         return loadEntityRecursive(TagValueInput.create(reporter, level.registryAccess(), tag), level, request, postLoad);
       }
    }
 
@@ -318,20 +322,24 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public static @Nullable Entity loadEntityRecursive(final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
-      Optional var10000 = loadStaticEntity(input, level, reason);
+      return loadEntityRecursive(input, level, new EntitySpawnRequest(reason, false), postLoad);
+   }
+
+   public static @Nullable Entity loadEntityRecursive(final ValueInput input, final Level level, final EntitySpawnRequest request, final EntityProcessor postLoad) {
+      Optional var10000 = loadStaticEntity(input, level, request);
       Objects.requireNonNull(postLoad);
-      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, reason, postLoad)).orElse((Object)null);
+      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, request, postLoad)).orElse((Object)null);
    }
 
    public static @Nullable Entity loadEntityRecursive(final EntityType<?> type, final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
       Optional var10000 = loadStaticEntity(type, input, level, reason);
       Objects.requireNonNull(postLoad);
-      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, reason, postLoad)).orElse((Object)null);
+      return (Entity)var10000.map(postLoad::process).map((entity) -> loadPassengersRecursive(entity, input, level, new EntitySpawnRequest(reason, false), postLoad)).orElse((Object)null);
    }
 
-   private static Entity loadPassengersRecursive(final Entity entity, final ValueInput input, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
+   private static Entity loadPassengersRecursive(final Entity entity, final ValueInput input, final Level level, final EntitySpawnRequest request, final EntityProcessor postLoad) {
       for(ValueInput passengerTag : input.childrenListOrEmpty("Passengers")) {
-         Entity passenger = loadEntityRecursive(passengerTag, level, reason, postLoad);
+         Entity passenger = loadEntityRecursive(passengerTag, level, request, postLoad);
          if (passenger != null) {
             passenger.startRiding(entity, true, false);
          }
@@ -341,15 +349,15 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public static Stream<Entity> loadEntitiesRecursive(final ValueInput.ValueInputList entities, final Level level, final EntitySpawnReason reason) {
-      return entities.stream().mapMulti((tag, output) -> loadEntityRecursive((ValueInput)tag, level, reason, (entity) -> {
+      return entities.stream().mapMulti((tag, output) -> loadEntityRecursive((ValueInput)tag, level, (EntitySpawnReason)reason, (entity) -> {
             output.accept(entity);
             return entity;
          }));
    }
 
-   private static Optional<Entity> loadStaticEntity(final ValueInput input, final Level level, final EntitySpawnReason reason) {
+   private static Optional<Entity> loadStaticEntity(final ValueInput input, final Level level, final EntitySpawnRequest request) {
       try {
-         return create(input, level, reason);
+         return create(input, level, request);
       } catch (RuntimeException e) {
          LOGGER.warn("Exception loading entity: ", e);
          return Optional.empty();

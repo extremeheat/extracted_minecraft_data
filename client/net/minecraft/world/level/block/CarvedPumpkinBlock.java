@@ -62,7 +62,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    private void trySpawnGolem(final Level level, final BlockPos topPos) {
       BlockPattern.BlockPatternMatch snowGolemMatch = this.getOrCreateSnowGolemFull().find(level, topPos);
       if (snowGolemMatch != null) {
-         SnowGolem snowGolem = EntityTypes.SNOW_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         SnowGolem snowGolem = (SnowGolem)EntityTypes.SNOW_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (snowGolem != null) {
             spawnGolemInWorld(level, snowGolemMatch, snowGolem, snowGolemMatch.getBlock(0, 2, 0).getPos());
             return;
@@ -71,7 +71,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
       BlockPattern.BlockPatternMatch ironGolemMatch = this.getOrCreateIronGolemFull().find(level, topPos);
       if (ironGolemMatch != null) {
-         IronGolem ironGolem = EntityTypes.IRON_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         IronGolem ironGolem = (IronGolem)EntityTypes.IRON_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (ironGolem != null) {
             ironGolem.setPlayerCreated(true);
             spawnGolemInWorld(level, ironGolemMatch, ironGolem, ironGolemMatch.getBlock(1, 2, 0).getPos());
@@ -81,7 +81,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
       BlockPattern.BlockPatternMatch copperGolemMatch = this.getOrCreateCopperGolemFull().find(level, topPos);
       if (copperGolemMatch != null) {
-         CopperGolem copperGolem = EntityTypes.COPPER_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+         CopperGolem copperGolem = (CopperGolem)EntityTypes.COPPER_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
          if (copperGolem != null) {
             spawnGolemInWorld(level, copperGolemMatch, copperGolem, copperGolemMatch.getBlock(0, 0, 0).getPos());
             this.replaceCopperBlockWithChest(level, copperGolemMatch);

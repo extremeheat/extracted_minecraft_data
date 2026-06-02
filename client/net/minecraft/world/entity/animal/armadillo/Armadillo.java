@@ -79,7 +79,7 @@ public class Armadillo extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.ARMADILLO.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.ARMADILLO.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public static AttributeSupplier.Builder createAttributes() {

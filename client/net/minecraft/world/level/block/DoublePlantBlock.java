@@ -53,7 +53,7 @@ public class DoublePlantBlock extends VegetationBlock {
 
    public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
       BlockPos abovePos = pos.above();
-      level.setBlock(abovePos, copyWaterloggedFrom(level, abovePos, (BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)), 3);
+      level.setBlockAndUpdate(abovePos, copyWaterloggedFrom(level, abovePos, (BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)));
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {

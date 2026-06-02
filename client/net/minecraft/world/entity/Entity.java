@@ -3023,6 +3023,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.invulnerable;
    }
 
+   public boolean isInvulnerableToPiercingWeapon() {
+      return this.isInvulnerable();
+   }
+
    public void setInvulnerable(final boolean invulnerable) {
       this.invulnerable = invulnerable;
    }
@@ -3094,7 +3098,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
       ProfilerFiller profiler = Profiler.get();
       profiler.push("teleportCrossDimension");
-      Entity newEntity = this.getType().create(newLevel, EntitySpawnReason.DIMENSION_TRAVEL);
+      Entity newEntity = this.getType().create(newLevel, (EntitySpawnReason)EntitySpawnReason.DIMENSION_TRAVEL);
       if (newEntity == null) {
          profiler.pop();
          return null;

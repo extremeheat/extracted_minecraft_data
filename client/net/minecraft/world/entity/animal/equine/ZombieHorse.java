@@ -104,7 +104,7 @@ public class ZombieHorse extends AbstractHorse {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.ZOMBIE_HORSE.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.ZOMBIE_HORSE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {
@@ -118,7 +118,7 @@ public class ZombieHorse extends AbstractHorse {
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       if (spawnReason == EntitySpawnReason.NATURAL) {
-         Zombie zombie = EntityTypes.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
+         Zombie zombie = (Zombie)EntityTypes.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
          if (zombie != null) {
             zombie.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             zombie.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);

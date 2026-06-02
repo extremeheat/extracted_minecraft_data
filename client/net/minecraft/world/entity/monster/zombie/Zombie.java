@@ -275,7 +275,7 @@ public class Zombie extends Monster {
             int y = Mth.floor(this.getY());
             int z = Mth.floor(this.getZ());
             EntityType<? extends Zombie> type = this.getType();
-            Zombie reinforcement = type.create(level, EntitySpawnReason.REINFORCEMENT);
+            Zombie reinforcement = (Zombie)type.create(level, (EntitySpawnReason)EntitySpawnReason.REINFORCEMENT);
             if (reinforcement == null) {
                return true;
             }
@@ -435,7 +435,7 @@ public class Zombie extends Monster {
                      this.startRiding(chicken, false, false);
                   }
                } else if ((double)random.nextFloat() < 0.05) {
-                  Chicken chicken = EntityTypes.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
+                  Chicken chicken = (Chicken)EntityTypes.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
                   if (chicken != null) {
                      chicken.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      chicken.finalizeSpawn(level, difficulty, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);

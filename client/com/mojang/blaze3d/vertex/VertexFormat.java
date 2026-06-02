@@ -114,7 +114,7 @@ public class VertexFormat {
       public Builder addAttribute(final String name, final GpuFormat elementFormat) {
          this.validateUniqueName(name);
          this.createAttribute(name, this.offset, elementFormat);
-         this.offset += elementFormat.pixelSize();
+         this.offset += elementFormat.blockSize();
          return this;
       }
 
@@ -130,7 +130,7 @@ public class VertexFormat {
 
          for(int i = 0; i < columnCount; ++i) {
             this.createAttribute(name, this.offset, elementFormat);
-            this.offset += elementFormat.pixelSize();
+            this.offset += elementFormat.blockSize();
          }
 
          return this;

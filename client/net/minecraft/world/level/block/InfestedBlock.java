@@ -45,7 +45,7 @@ public class InfestedBlock extends Block {
    }
 
    private void spawnInfestation(final ServerLevel level, final BlockPos pos) {
-      Silverfish silverfish = EntityTypes.SILVERFISH.create(level, EntitySpawnReason.TRIGGERED);
+      Silverfish silverfish = (Silverfish)EntityTypes.SILVERFISH.create(level, (EntitySpawnReason)EntitySpawnReason.TRIGGERED);
       if (silverfish != null) {
          silverfish.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
          level.addFreshEntity(silverfish);

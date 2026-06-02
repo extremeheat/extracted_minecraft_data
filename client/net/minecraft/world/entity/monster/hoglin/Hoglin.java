@@ -276,7 +276,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Hoglin offspring = EntityTypes.HOGLIN.create(level, EntitySpawnReason.BREEDING);
+      Hoglin offspring = (Hoglin)EntityTypes.HOGLIN.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (offspring != null) {
          offspring.setPersistenceRequired();
       }

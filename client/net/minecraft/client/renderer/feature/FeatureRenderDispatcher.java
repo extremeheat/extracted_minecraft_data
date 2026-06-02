@@ -157,6 +157,12 @@ public class FeatureRenderDispatcher implements AutoCloseable {
             this.executePhase(collection.nameTags, context);
             this.executePhase(collection.texts, context);
             this.executePhase(collection.translucentCustomGeometry, context);
+         }
+
+         var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var3.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
             this.executePhase(collection.shapeOutlines, context);
             this.executePhase(collection.gizmos, context);
          }

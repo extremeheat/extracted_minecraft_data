@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -84,9 +85,10 @@ public class CubeMapTexture extends ReloadableTexture {
       Objects.requireNonNull(var10002);
       this.texture = device.createTexture(var10002::toString, 21, GpuFormat.RGBA8_UNORM, width, height, 6, 1);
       this.textureView = device.createTextureView(this.texture);
+      GpuBufferSlice stagingBuffer = device.createCommandEncoder().transientMemory().uploadStaging(image.getPixelBytes(), 1L, 16);
 
       for(int i = 0; i < 6; ++i) {
-         device.createCommandEncoder().writeToTexture(this.texture, image, 0, i, 0, 0, width, height, 0, height * i);
+         device.createCommandEncoder().copyBufferToTexture(stagingBuffer, 0, height * i, image.getWidth(), image.getHeight(), this.texture, 0, 0, width, height, 0, i);
       }
 
    }

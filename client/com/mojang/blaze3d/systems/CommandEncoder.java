@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
@@ -76,50 +77,79 @@ public class CommandEncoder {
          if (colorAttachmentCount > maxColorAttachments) {
             throw new IllegalStateException("Render pass created with " + colorAttachmentCount + " color attachments but device only supports " + maxColorAttachments);
          } else {
-            for(int i = 0; i < colorAttachmentCount; ++i) {
-               RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.get(i);
-               if (colorAttachment != null) {
-                  GpuTextureView colorTexture = colorAttachment.textureView();
-                  if (colorTexture.isClosed()) {
-                     throw new IllegalStateException("Color texture " + i + " is closed");
+            int totalAttachments = colorAttachmentCount + (descriptor.depthAttachment != null ? 1 : 0);
+            if (totalAttachments == 0) {
+               throw new IllegalArgumentException("At least one attachment (depth or color) must be specified");
+            } else {
+               int attachmentWidth;
+               int attachmentHeight;
+               if (colorAttachmentCount != 0) {
+                  RenderPassDescriptor.Attachment<Optional<Vector4fc>> firstAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.getFirst();
+
+                  assert firstAttachment != null;
+
+                  attachmentWidth = firstAttachment.textureView().getWidth(0);
+                  attachmentHeight = firstAttachment.textureView().getHeight(0);
+               } else {
+                  attachmentWidth = descriptor.depthAttachment.textureView().getWidth(0);
+                  attachmentHeight = descriptor.depthAttachment.textureView().getHeight(0);
+               }
+
+               if (descriptor.renderArea == null) {
+                  throw new IllegalArgumentException("RenderPassDescriptor.renderArea must be provided");
+               } else if (descriptor.renderArea.x() >= 0 && descriptor.renderArea.y() >= 0 && descriptor.renderArea.x() + descriptor.renderArea.width() <= attachmentWidth && descriptor.renderArea.y() + descriptor.renderArea.height() <= attachmentHeight) {
+                  for(int i = 0; i < colorAttachmentCount; ++i) {
+                     RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.get(i);
+                     if (colorAttachment != null) {
+                        GpuTextureView colorTexture = colorAttachment.textureView();
+                        if (colorTexture.isClosed()) {
+                           throw new IllegalStateException("Color texture " + i + " is closed");
+                        }
+
+                        if ((colorTexture.texture().usage() & 8) == 0) {
+                           throw new IllegalStateException("Color texture " + i + " must have USAGE_RENDER_ATTACHMENT");
+                        }
+
+                        if (colorTexture.texture().getDepthOrLayers() > 1) {
+                           throw new UnsupportedOperationException("Color texture " + i + ": Textures with multiple depths or layers are not yet supported as an attachment");
+                        }
+
+                        if (colorTexture.getWidth(0) != attachmentWidth || colorTexture.getHeight(0) != attachmentHeight) {
+                           throw new IllegalArgumentException("Color texture " + i + ": size does not match expected attachment size. Is " + colorTexture.getWidth(0) + "x" + colorTexture.getHeight(0) + " expected " + attachmentWidth + "x" + attachmentHeight);
+                        }
+                     }
                   }
 
-                  if ((colorTexture.texture().usage() & 8) == 0) {
-                     throw new IllegalStateException("Color texture " + i + " must have USAGE_RENDER_ATTACHMENT");
+                  if (descriptor.depthAttachment != null) {
+                     GpuTextureView depthTexture = descriptor.depthAttachment.textureView();
+                     if (depthTexture.isClosed()) {
+                        throw new IllegalStateException("Depth texture is closed");
+                     }
+
+                     if ((depthTexture.texture().usage() & 8) == 0) {
+                        throw new IllegalStateException("Depth texture must have USAGE_RENDER_ATTACHMENT");
+                     }
+
+                     if (depthTexture.texture().getDepthOrLayers() > 1) {
+                        throw new UnsupportedOperationException("Depth texture: Textures with multiple depths or layers are not yet supported as an attachment");
+                     }
+
+                     if (depthTexture.getWidth(0) != attachmentWidth || depthTexture.getHeight(0) != attachmentHeight) {
+                        int var10002 = depthTexture.getWidth(0);
+                        throw new IllegalArgumentException("Depth texture: size does not match expected attachment size. Is " + var10002 + "x" + depthTexture.getHeight(0) + " expected " + attachmentWidth + "x" + attachmentHeight);
+                     }
                   }
 
-                  if (colorTexture.texture().getDepthOrLayers() > 1) {
-                     throw new UnsupportedOperationException("Color texture " + i + ": Textures with multiple depths or layers are not yet supported as an attachment");
+                  this.isInRenderPass = true;
+                  if (this.profiler != null) {
+                     this.profiler.pushZone(this, (String)descriptor.label().get());
                   }
 
-                  if (descriptor.renderArea != null && (descriptor.renderArea.x() < 0 || descriptor.renderArea.y() < 0 || descriptor.renderArea.x() + descriptor.renderArea.width() > colorTexture.getWidth(0) || descriptor.renderArea.y() + descriptor.renderArea.height() > colorTexture.getHeight(0))) {
-                     String var10002 = String.valueOf(descriptor.renderArea);
-                     throw new IllegalArgumentException("RenderPass render area " + var10002 + " is out of bounds for color texture of " + colorTexture.getWidth(0) + "x" + colorTexture.getHeight(0));
-                  }
+                  return new RenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments, this::submitRenderPass, descriptor.renderArea);
+               } else {
+                  throw new IllegalArgumentException("RenderPass render area " + String.valueOf(descriptor.renderArea) + " is out of bounds for texture of " + attachmentWidth + "x" + attachmentHeight);
                }
             }
-
-            if (descriptor.depthAttachment != null) {
-               GpuTextureView depthTexture = descriptor.depthAttachment.textureView();
-               if (depthTexture.isClosed()) {
-                  throw new IllegalStateException("Depth texture is closed");
-               }
-
-               if ((depthTexture.texture().usage() & 8) == 0) {
-                  throw new IllegalStateException("Depth texture must have USAGE_RENDER_ATTACHMENT");
-               }
-
-               if (depthTexture.texture().getDepthOrLayers() > 1) {
-                  throw new UnsupportedOperationException("Depth texture: Textures with multiple depths or layers are not yet supported as an attachment");
-               }
-            }
-
-            this.isInRenderPass = true;
-            if (this.profiler != null) {
-               this.profiler.pushZone(this, (String)descriptor.label().get());
-            }
-
-            return new RenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments, this::submitRenderPass, descriptor.renderArea);
          }
       }
    }
@@ -233,51 +263,46 @@ public class CommandEncoder {
       int width = destination.getWidth(0);
       int height = destination.getHeight(0);
       if (source.getWidth() == width && source.getHeight() == height) {
-         if (destination.isClosed()) {
-            throw new IllegalStateException("Destination texture is closed");
-         } else if ((destination.usage() & 1) == 0) {
-            throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
-         } else {
-            this.writeToTexture(destination, source, 0, 0, 0, 0, width, height, 0, 0);
-         }
+         this.writeToTexture(destination, source, 0, 0, 0, 0);
       } else {
          throw new IllegalArgumentException("Cannot replace texture of size " + width + "x" + height + " with image of size " + source.getWidth() + "x" + source.getHeight());
       }
    }
 
-   public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int sourceX, final int sourceY) {
+   public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
+      } else if (destination.getFormat().componentType() != GpuFormat.ComponentType.UNORM_8) {
+         throw new IllegalArgumentException("Destination texture for NativeImage writes must have component type of UNORM_8");
+      } else if (destination.getFormat().componentCount() != source.format().components()) {
+         String var7 = String.valueOf(destination.getFormat());
+         throw new IllegalArgumentException("Destination(" + var7 + ") texture for NativeImage(" + String.valueOf(source.format()) + ") write must have channel count matching source");
       } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
-         if (sourceX + width <= source.getWidth() && sourceY + height <= source.getHeight()) {
-            if (destX + width <= destination.getWidth(mipLevel) && destY + height <= destination.getHeight(mipLevel)) {
-               if (destination.isClosed()) {
-                  throw new IllegalStateException("Destination texture is closed");
-               } else if ((destination.usage() & 1) == 0) {
-                  throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
-               } else if (depthOrLayer >= destination.getDepthOrLayers()) {
-                  throw new UnsupportedOperationException("Depth or layer is out of range, must be >= 0 and < " + destination.getDepthOrLayers());
-               } else {
-                  this.backend.writeToTexture(destination, source, mipLevel, depthOrLayer, destX, destY, width, height, sourceX, sourceY);
-               }
+         if (destX + source.getWidth() <= destination.getWidth(mipLevel) && destY + source.getHeight() <= destination.getHeight(mipLevel)) {
+            if (destination.isClosed()) {
+               throw new IllegalStateException("Destination texture is closed");
+            } else if ((destination.usage() & 1) == 0) {
+               throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
+            } else if (depthOrLayer >= destination.getDepthOrLayers()) {
+               throw new UnsupportedOperationException("Depth or layer is out of range, must be >= 0 and < " + destination.getDepthOrLayers());
             } else {
-               throw new IllegalArgumentException("Dest texture (" + width + "x" + height + ") is not large enough to write a rectangle of " + width + "x" + height + " at " + destX + "x" + destY + " (at mip level " + mipLevel + ")");
+               this.writeToTexture(destination, source.getPixelBytes(), mipLevel, depthOrLayer, destX, destY, source.getWidth(), source.getHeight());
             }
          } else {
             int var10002 = source.getWidth();
-            throw new IllegalArgumentException("Copy source (" + var10002 + "x" + source.getHeight() + ") is not large enough to read a rectangle of " + width + "x" + height + " from " + sourceX + "x" + sourceY);
+            throw new IllegalArgumentException("Dest texture (" + var10002 + "x" + source.getHeight() + ") is not large enough to write a rectangle of " + source.getWidth() + "x" + source.getHeight() + " at " + destX + "x" + destY + " (at mip level " + mipLevel + ")");
          }
       } else {
          throw new IllegalArgumentException("Invalid mipLevel " + mipLevel + ", must be >= 0 and < " + destination.getMipLevels());
       }
    }
 
-   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final NativeImage.Format format, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
+   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
-         if (width * height * format.components() > source.remaining()) {
-            throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + source.remaining() + ", but copy is " + width + "x" + height + " of format " + String.valueOf(format) + ")");
+         if (width * height * destination.getFormat().blockSize() > source.remaining()) {
+            throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + source.remaining() + ", but copy is " + width + "x" + height + " of format " + String.valueOf(destination.getFormat()) + ")");
          } else if (destX + width <= destination.getWidth(mipLevel) && destY + height <= destination.getHeight(mipLevel)) {
             if (destination.isClosed()) {
                throw new IllegalStateException("Destination texture is closed");
@@ -286,10 +311,42 @@ public class CommandEncoder {
             } else if (depthOrLayer >= destination.getDepthOrLayers()) {
                throw new UnsupportedOperationException("Depth or layer is out of range, must be >= 0 and < " + destination.getDepthOrLayers());
             } else {
-               this.backend.writeToTexture(destination, source, format, mipLevel, depthOrLayer, destX, destY, width, height);
+               this.backend.writeToTexture(destination, source, mipLevel, depthOrLayer, destX, destY, width, height);
             }
          } else {
             throw new IllegalArgumentException("Dest texture (" + destination.getWidth(mipLevel) + "x" + destination.getHeight(mipLevel) + ") is not large enough to write a rectangle of " + width + "x" + height + " at " + destX + "x" + destY);
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid mipLevel, must be >= 0 and < " + destination.getMipLevels());
+      }
+   }
+
+   public void copyBufferToTexture(final GpuBufferSlice source, final int sourceX, final int sourceY, final int sourceWidth, final int sourceHeight, final GpuTexture destination, final int destinationX, final int destinationY, final int copyWidth, final int copyHeight, final int mipLevel, final int arrayLayer) {
+      if (this.isInRenderPass) {
+         throw new IllegalStateException("Close the existing render pass before performing additional commands");
+      } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
+         if (sourceX + copyWidth <= sourceWidth && sourceY + copyHeight <= sourceHeight) {
+            if ((long)sourceWidth * (long)copyHeight * (long)destination.getFormat().blockSize() > source.length()) {
+               throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + source.length() + ", but copy is " + copyWidth + "x" + copyHeight + " of format " + String.valueOf(destination.getFormat()) + ")");
+            } else if (destinationX + copyWidth <= destination.getWidth(mipLevel) && destinationY + copyHeight <= destination.getHeight(mipLevel)) {
+               if (source.buffer().isClosed()) {
+                  throw new IllegalStateException("Source buffer is closed");
+               } else if ((source.buffer().usage() & 16) == 0) {
+                  throw new IllegalStateException("Source buffer must have USAGE_COPY_SRC to be a source for a read");
+               } else if (destination.isClosed()) {
+                  throw new IllegalStateException("Destination texture is closed");
+               } else if ((destination.usage() & 1) == 0) {
+                  throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
+               } else if (arrayLayer >= destination.getDepthOrLayers()) {
+                  throw new UnsupportedOperationException("Depth or layer is out of range, must be >= 0 and < " + destination.getDepthOrLayers());
+               } else {
+                  this.backend.copyBufferToTexture(source, sourceX, sourceY, sourceWidth, sourceHeight, destination, destinationX, destinationY, copyWidth, copyHeight, mipLevel, arrayLayer);
+               }
+            } else {
+               throw new IllegalArgumentException("Dest texture (" + destination.getWidth(mipLevel) + "x" + destination.getHeight(mipLevel) + ") is not large enough to write a rectangle of " + copyWidth + "x" + copyHeight + " at " + destinationX + "x" + destinationY);
+            }
+         } else {
+            throw new IllegalArgumentException("Copy source (" + sourceWidth + "x" + sourceHeight + ") is not large enough to read a rectangle of " + copyWidth + "x" + copyHeight + " from " + sourceX + "x" + sourceY);
          }
       } else {
          throw new IllegalArgumentException("Invalid mipLevel, must be >= 0 and < " + destination.getMipLevels());
@@ -308,9 +365,9 @@ public class CommandEncoder {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < source.getMipLevels()) {
-         if ((long)width * (long)height * (long)source.getFormat().pixelSize() + offset > destination.size()) {
+         if ((long)width * (long)height * (long)source.getFormat().blockSize() + offset > destination.size()) {
             long var10002 = destination.size();
-            throw new IllegalArgumentException("Buffer of size " + var10002 + " is not large enough to hold " + width + "x" + height + " pixels (" + source.getFormat().pixelSize() + " bytes each) starting from offset " + offset);
+            throw new IllegalArgumentException("Buffer of size " + var10002 + " is not large enough to hold " + width + "x" + height + " pixels (" + source.getFormat().blockSize() + " bytes each) starting from offset " + offset);
          } else if ((source.usage() & 2) == 0) {
             throw new IllegalArgumentException("Texture needs USAGE_COPY_SRC to be a source for a copy");
          } else if ((destination.usage() & 8) == 0) {

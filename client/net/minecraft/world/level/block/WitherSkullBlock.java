@@ -56,7 +56,7 @@ public class WitherSkullBlock extends SkullBlock {
          if (correctBlock && pos.getY() >= level.getMinY() && level.getDifficulty() != Difficulty.PEACEFUL) {
             BlockPattern.BlockPatternMatch match = getOrCreateWitherFull().find(level, pos);
             if (match != null) {
-               WitherBoss witherBoss = EntityTypes.WITHER.create(level, EntitySpawnReason.TRIGGERED);
+               WitherBoss witherBoss = (WitherBoss)EntityTypes.WITHER.create(level, EntitySpawnReason.TRIGGERED);
                if (witherBoss != null) {
                   CarvedPumpkinBlock.clearPatternBlocks(level, match);
                   BlockPos spawnPos = match.getBlock(1, 2, 0).getPos();

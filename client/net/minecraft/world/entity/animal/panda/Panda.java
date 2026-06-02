@@ -243,7 +243,7 @@ public class Panda extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Panda baby = EntityTypes.PANDA.create(level, EntitySpawnReason.BREEDING);
+      Panda baby = (Panda)EntityTypes.PANDA.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null) {
          if (partner instanceof Panda) {
             Panda partnerPanda = (Panda)partner;

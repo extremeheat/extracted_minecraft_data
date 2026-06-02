@@ -254,7 +254,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public @Nullable Sheep getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Sheep sheep = EntityTypes.SHEEP.create(level, EntitySpawnReason.BREEDING);
+      Sheep sheep = (Sheep)EntityTypes.SHEEP.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (sheep != null) {
          DyeColor parent1DyeColor = this.getColor();
          DyeColor parent2DyeColor = ((Sheep)partner).getColor();

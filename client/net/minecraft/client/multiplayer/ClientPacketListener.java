@@ -571,7 +571,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             return new RemotePlayer(this.level, playerInfo.getProfile());
          }
       } else {
-         return type.create(this.level, EntitySpawnReason.LOAD);
+         return type.create(this.level, (EntitySpawnReason)EntitySpawnReason.LOAD);
       }
    }
 

@@ -213,7 +213,7 @@ public class HappyGhast extends Animal {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.HAPPY_GHAST.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {

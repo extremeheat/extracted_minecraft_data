@@ -5,7 +5,6 @@ import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.UnbakedGlyph;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.datafixers.util.Either;
@@ -505,7 +504,7 @@ public class UnihexProvider implements GlyphProvider {
             }
 
             public float getAdvance() {
-               return (float)(Glyph.this.width() / 2 + 1);
+               return (float)Glyph.this.width() / 2.0F + 1.0F;
             }
 
             public float getShadowOffset() {
@@ -540,7 +539,7 @@ public class UnihexProvider implements GlyphProvider {
                IntBuffer targetBuffer = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
                UnihexProvider.unpackBitsToBytes(targetBuffer, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
                targetBuffer.rewind();
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, MemoryUtil.memByteBuffer(targetBuffer), NativeImage.Format.RGBA, 0, 0, x, y, Glyph.this.width(), 16);
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, MemoryUtil.memByteBuffer(targetBuffer), 0, 0, x, y, Glyph.this.width(), 16);
                MemoryUtil.memFree(targetBuffer);
             }
 

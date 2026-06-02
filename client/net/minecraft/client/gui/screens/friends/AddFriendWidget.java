@@ -15,15 +15,18 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 class AddFriendWidget extends AbstractContainerWidget {
    private static final WidgetSprites ADD_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/send_request"));
@@ -46,7 +49,7 @@ class AddFriendWidget extends AbstractContainerWidget {
    private final Minecraft minecraft = Minecraft.getInstance();
    private final LinearLayout layout;
 
-   AddFriendWidget(final int width, final Runnable onSend) {
+   AddFriendWidget(final int width, final Runnable afterSend) {
       super(0, 0, width, 0, Component.empty());
       this.editBox = new EditBox(this.minecraft.font, width - 20 - 3 - 16, 20, ENTER_NICKNAME) {
          {
@@ -67,7 +70,25 @@ class AddFriendWidget extends AbstractContainerWidget {
       };
       this.editBox.setHint(ENTER_NICKNAME);
       this.editBox.setResponder(this::editBoxResponder);
-      this.addButton = SpriteIconButton.builder(SEND_REQUEST, (var1) -> onSend.run(), true).sprite((WidgetSprites)ADD_SPRITE, 15, 15).size(20, 20).tooltip(SEND_REQUEST).switchToLoadingAfterPress().build();
+      this.addButton = SpriteIconButton.builder(SEND_REQUEST, (var2) -> {
+         String name = this.getValue();
+         if (name.isBlank()) {
+            this.applyState(AddFriendWidget.State.EMPTY_INPUT);
+         } else {
+            Component invalidInputReason = this.getInvalidInputReason(name);
+            if (invalidInputReason != null) {
+               SystemToast.addOrUpdate(this.minecraft.gui.toastManager(), SystemToast.SystemToastId.FRIEND_SYSTEM_NOTIFICATION, invalidInputReason, (Component)null);
+               this.applyState(AddFriendWidget.State.READY);
+            } else {
+               this.applyState(AddFriendWidget.State.SENDING);
+               this.minecraft.getPlayerSocialManager().sendFriendRequest(name).thenAcceptAsync((var2x) -> {
+                  this.editBox.setValue("");
+                  this.applyState(AddFriendWidget.State.EMPTY_INPUT);
+                  afterSend.run();
+               }, this.minecraft);
+            }
+         }
+      }, true).sprite((WidgetSprites)ADD_SPRITE, 15, 15).size(20, 20).tooltip(SEND_REQUEST).switchToLoadingAfterPress().build();
       this.applyState(AddFriendWidget.State.EMPTY_INPUT);
       String profileName = this.minecraft.getUser().getName();
       final Component profileNameComponent = Component.literal(profileName);
@@ -109,6 +130,29 @@ class AddFriendWidget extends AbstractContainerWidget {
 
    private void editBoxResponder(final String value) {
       this.applyState(value.trim().isEmpty() ? AddFriendWidget.State.EMPTY_INPUT : AddFriendWidget.State.READY);
+   }
+
+   private @Nullable Component getInvalidInputReason(final String name) {
+      PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
+      if (this.minecraft.getUser().getName().equalsIgnoreCase(name)) {
+         return Component.translatable("gui.friends.validation.cannot_add_self");
+      } else if (contains(playerSocialManager.getFriends(), name)) {
+         return Component.translatable("gui.friends.validation.already_friend", name);
+      } else if (contains(playerSocialManager.getOutgoingRequests(), name)) {
+         return Component.translatable("gui.friends.validation.already_outgoing", name);
+      } else {
+         return contains(playerSocialManager.getIncomingRequests(), name) ? Component.translatable("gui.friends.validation.already_incoming", name) : null;
+      }
+   }
+
+   private static boolean contains(final List<PlayerSocialManager.PlayerData> players, final String playerName) {
+      for(PlayerSocialManager.PlayerData playerData : players) {
+         if (playerData.name().equalsIgnoreCase(playerName)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public void applyState(final State newState) {

@@ -7,7 +7,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.BlendOp;
 import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.AddressMode;
@@ -227,19 +226,6 @@ public class GlConst {
       switch (indexType) {
          case SHORT -> var10000 = 5123;
          case INT -> var10000 = 5125;
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
-   public static int toGl(final NativeImage.Format format) {
-      char var10000;
-      switch (format) {
-         case RGBA -> var10000 = 6408;
-         case RGB -> var10000 = 6407;
-         case LUMINANCE_ALPHA -> var10000 = '\u8227';
-         case LUMINANCE -> var10000 = 6403;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

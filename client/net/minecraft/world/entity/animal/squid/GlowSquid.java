@@ -41,7 +41,7 @@ public class GlowSquid extends Squid {
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.GLOW_SQUID.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.GLOW_SQUID.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getSquirtSound() {

@@ -70,7 +70,7 @@ public class CatSpawner implements CustomSpawner {
    }
 
    private void spawnCat(final BlockPos spawnPos, final ServerLevel level, final boolean makePersistent) {
-      Cat cat = EntityTypes.CAT.create(level, EntitySpawnReason.NATURAL);
+      Cat cat = (Cat)EntityTypes.CAT.create(level, (EntitySpawnReason)EntitySpawnReason.NATURAL);
       if (cat != null) {
          cat.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.NATURAL, (SpawnGroupData)null);
          if (makePersistent) {

@@ -100,7 +100,7 @@ public class FrogspawnBlock extends Block {
       int tadpoleAmount = random.nextInt(2, 6);
 
       for(int i = 1; i <= tadpoleAmount; ++i) {
-         Tadpole tadpole = EntityTypes.TADPOLE.create(level, EntitySpawnReason.BREEDING);
+         Tadpole tadpole = (Tadpole)EntityTypes.TADPOLE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
          if (tadpole != null) {
             double xPos = (double)pos.getX() + this.getRandomTadpolePositionOffset(random);
             double zPos = (double)pos.getZ() + this.getRandomTadpolePositionOffset(random);

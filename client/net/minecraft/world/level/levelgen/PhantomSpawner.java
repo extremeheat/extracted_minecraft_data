@@ -51,7 +51,7 @@ public class PhantomSpawner implements CustomSpawner {
                                     int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);
 
                                     for(int i = 0; i < groupSize; ++i) {
-                                       Phantom phantom = EntityTypes.PHANTOM.create(level, EntitySpawnReason.NATURAL);
+                                       Phantom phantom = (Phantom)EntityTypes.PHANTOM.create(level, (EntitySpawnReason)EntitySpawnReason.NATURAL);
                                        if (phantom != null) {
                                           phantom.snapTo(spawnPos, 0.0F, 0.0F);
                                           groupData = phantom.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, groupData);

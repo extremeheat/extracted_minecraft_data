@@ -424,7 +424,7 @@ public class MineshaftPieces {
          if (chunkBB.isInside(pos) && level.getBlockState(pos).isAir() && !level.getBlockState(pos.below()).isAir()) {
             BlockState state = (BlockState)Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, random.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);
             this.placeBlock(level, state, x, y, z, chunkBB);
-            MinecartChest chest = EntityTypes.CHEST_MINECART.create(level.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
+            MinecartChest chest = (MinecartChest)EntityTypes.CHEST_MINECART.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.CHUNK_GENERATION);
             if (chest != null) {
                chest.setInitialPos((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5);
                chest.setLootTable(lootTable, random.nextLong());

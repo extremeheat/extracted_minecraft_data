@@ -220,7 +220,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
    }
 
    public @Nullable MushroomCow getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      MushroomCow baby = EntityTypes.MOOSHROOM.create(level, EntitySpawnReason.BREEDING);
+      MushroomCow baby = (MushroomCow)EntityTypes.MOOSHROOM.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setVariant(this.getOffspringVariant((MushroomCow)partner));
       }

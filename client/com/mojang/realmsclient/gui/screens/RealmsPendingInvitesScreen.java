@@ -45,7 +45,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          LOGGER.error("Couldn't list invites", e);
          return List.of();
       }
-   }, Util.ioPool());
+   }, Util.nonCriticalIoPool());
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private @Nullable PendingInvitationSelectionList pendingInvitationSelectionList;
 

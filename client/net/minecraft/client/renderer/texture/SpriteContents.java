@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Transparency;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -241,7 +242,7 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
    }
 
    public void uploadFirstFrame(final GpuTexture destination, final int level) {
-      RenderSystem.getDevice().createCommandEncoder().writeToTexture(destination, this.byMipLevel[level], level, 0, 0, 0, this.width >> level, this.height >> level, 0, 0);
+      RenderSystem.getDevice().createCommandEncoder().writeToTexture(destination, this.byMipLevel[level], level, 0, 0, 0);
    }
 
    private static record FrameInfo(int index, int time) {
@@ -277,6 +278,8 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
          GpuDevice device = RenderSystem.getDevice();
          Int2ObjectMap<GpuTextureView> frameTexturesByIndex = new Int2ObjectOpenHashMap();
          GpuBufferSlice[] spriteUbosByMip = new GpuBufferSlice[SpriteContents.this.byMipLevel.length];
+         CommandEncoder encoder = device.createCommandEncoder();
+         List<GpuBufferSlice> stagingBuffers = encoder.transientMemory().multiUploadStaging(Arrays.stream(SpriteContents.this.byMipLevel).map(NativeImage::getPixelBytes).toList(), 1L, 16);
 
          for(int i = 0; i < this.uniqueFrames.size(); ++i) {
             int frame = this.uniqueFrames.getInt(i);
@@ -288,7 +291,7 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
             int offsetY = this.getFrameY(frame) * SpriteContents.this.height;
 
             for(int level = 0; level < SpriteContents.this.byMipLevel.length; ++level) {
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, SpriteContents.this.byMipLevel[level], level, 0, 0, 0, SpriteContents.this.width >> level, SpriteContents.this.height >> level, offsetX >> level, offsetY >> level);
+               encoder.copyBufferToTexture((GpuBufferSlice)stagingBuffers.get(level), offsetX >> level, offsetY >> level, SpriteContents.this.byMipLevel[level].getWidth(), SpriteContents.this.byMipLevel[level].getHeight(), texture, 0, 0, SpriteContents.this.width >> level, SpriteContents.this.height >> level, level, 0);
             }
 
             frameTexturesByIndex.put(frame, RenderSystem.getDevice().createTextureView(texture));

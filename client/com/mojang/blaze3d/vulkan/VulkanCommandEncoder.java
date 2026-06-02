@@ -3,7 +3,6 @@ package com.mojang.blaze3d.vulkan;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
 import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
@@ -22,7 +21,6 @@ import java.util.OptionalDouble;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRDynamicRendering;
 import org.lwjgl.vulkan.KHRSynchronization2;
 import org.lwjgl.vulkan.VK12;
@@ -231,7 +229,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
       this.submissionBuilder.close();
       this.submissionBuilder = this.device.graphicsQueue().beginSubmit();
       ++this.currentSubmitIndex;
-      if (!this.awaitSubmitCompletion(this.currentSubmitIndex - 2L, 5000L)) {
+      if (!this.awaitSubmitCompletion(this.currentSubmitIndex - 2L, 5000000000L)) {
          List<CheckpointExtension.QueueCheckpoints> checkpoints = this.device.checkpointExtension().retrieveCheckpoints(false);
          throw new IllegalStateException("5s timeout reached when waiting for VK semaphore: " + VulkanUtils.formatCheckpoints(checkpoints));
       } else {
@@ -277,14 +275,11 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          VkRect2D vkRenderArea = VkRect2D.calloc(stack);
-         if (descriptor.renderArea != null) {
-            vkRenderArea.extent().set(descriptor.renderArea.width(), descriptor.renderArea.height());
-            vkRenderArea.offset().set(descriptor.renderArea.x(), descriptor.renderArea.y());
-         } else {
-            vkRenderArea.extent().set(width, height);
-            vkRenderArea.offset().set(0, 0);
-         }
 
+         assert descriptor.renderArea != null;
+
+         vkRenderArea.extent().set(descriptor.renderArea.width(), descriptor.renderArea.height());
+         vkRenderArea.offset().set(descriptor.renderArea.x(), descriptor.renderArea.y());
          VkRenderingAttachmentInfo.Buffer colorAttachmentInfo = VkRenderingAttachmentInfo.calloc(colorAttachments.size(), stack);
 
          for(int i = 0; i < colorAttachments.size(); ++i) {
@@ -589,28 +584,15 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    }
 
-   public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int sourceX, final int sourceY) {
-      int stagingBufferSize = source.getWidth() * source.getHeight() * destination.getFormat().pixelSize();
-      int texelSize = destination.getFormat().pixelSize();
-      int skipTexels = sourceX + sourceY * source.getWidth();
-      long skipBytes = (long)skipTexels * (long)texelSize;
-      GpuBufferSlice stagingBuffer = this.transientMemory.uploadStaging(MemoryUtil.memByteBuffer(source.getPointer(), stagingBufferSize), 1L, 16);
-      this.writeToTexture((VulkanGpuTexture)destination, (VulkanGpuBuffer)stagingBuffer.buffer(), skipBytes + stagingBuffer.offset(), mipLevel, depthOrLayer, destX, destY, width, height, source.getWidth(), source.getHeight());
-   }
-
-   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final NativeImage.Format format, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
+   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
       GpuBufferSlice stagingBuffer = this.transientMemory.uploadStaging(source, 1L, 16);
-      this.writeToTexture((VulkanGpuTexture)destination, (VulkanGpuBuffer)stagingBuffer.buffer(), stagingBuffer.offset(), mipLevel, depthOrLayer, destX, destY, width, height, width, height);
-   }
-
-   private void writeToTexture(final VulkanGpuTexture destination, final VulkanGpuBuffer stagingBuffer, final long bufferOffset, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int srcWidth, final int srcHeight) {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
          VkBufferImageCopy.Buffer region = VkBufferImageCopy.calloc(1, stack);
-         region.bufferOffset(bufferOffset);
-         region.bufferRowLength(srcWidth);
-         region.bufferImageHeight(srcHeight);
+         region.bufferOffset(stagingBuffer.offset());
+         region.bufferRowLength(width);
+         region.bufferImageHeight(height);
          VkImageSubresourceLayers imageSubresource = region.imageSubresource();
          imageSubresource.aspectMask(1);
          imageSubresource.mipLevel(mipLevel);
@@ -618,18 +600,56 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          imageSubresource.layerCount(1);
          region.imageOffset().set(destX, destY, 0);
          region.imageExtent().set(width, height, 1);
-         VK12.vkCmdCopyBufferToImage(this.commandBuffer(), stagingBuffer.vkBuffer(), destination.vkImage(), 1, region);
+         VK12.vkCmdCopyBufferToImage(this.commandBuffer(), ((VulkanGpuBuffer)stagingBuffer.buffer()).vkBuffer(), ((VulkanGpuTexture)destination).vkImage(), 1, region);
          this.memoryBarrier(stack);
-      } catch (Throwable var17) {
+      } catch (Throwable var14) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var16) {
-               var17.addSuppressed(var16);
+            } catch (Throwable var13) {
+               var14.addSuppressed(var13);
             }
          }
 
-         throw var17;
+         throw var14;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+   }
+
+   public void copyBufferToTexture(final GpuBufferSlice source, final int sourceX, final int sourceY, final int sourceWidth, final int sourceHeight, final GpuTexture destination, final int destinationX, final int destinationY, final int copyWidth, final int copyHeight, final int mipLevel, final int arrayLayer) {
+      int texelSize = destination.getFormat().blockSize();
+      long skipTexels = (long)sourceX + (long)sourceY * (long)sourceWidth;
+      long skipBytes = skipTexels * (long)texelSize;
+      MemoryStack stack = MemoryStack.stackPush();
+
+      try {
+         VkBufferImageCopy.Buffer region = VkBufferImageCopy.calloc(1, stack);
+         region.bufferOffset(source.offset() + skipBytes);
+         region.bufferRowLength(sourceWidth);
+         region.bufferImageHeight(sourceHeight);
+         VkImageSubresourceLayers imageSubresource = region.imageSubresource();
+         imageSubresource.aspectMask(1);
+         imageSubresource.mipLevel(mipLevel);
+         imageSubresource.baseArrayLayer(arrayLayer);
+         imageSubresource.layerCount(1);
+         region.imageOffset().set(destinationX, destinationY, 0);
+         region.imageExtent().set(copyWidth, copyHeight, 1);
+         VK12.vkCmdCopyBufferToImage(this.commandBuffer(), ((VulkanGpuBuffer)source.buffer()).vkBuffer(), ((VulkanGpuTexture)destination).vkImage(), 1, region);
+         this.memoryBarrier(stack);
+      } catch (Throwable var22) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var21) {
+               var22.addSuppressed(var21);
+            }
+         }
+
+         throw var22;
       }
 
       if (stack != null) {
@@ -716,11 +736,11 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    }
 
-   private boolean awaitSubmitCompletion(final long submitIndex, final long timeoutMs) {
+   private boolean awaitSubmitCompletion(final long submitIndex, final long timeoutNS) {
       if (this.completedSubmitIndex >= submitIndex) {
          return true;
       } else if (submitIndex == this.currentSubmitIndex) {
-         if (timeoutMs == 0L) {
+         if (timeoutNS == 0L) {
             return false;
          } else {
             throw new IllegalStateException("Cannot wait on a fence for the current submit");
@@ -734,7 +754,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
             waitInfo.pSemaphores(stack.longs(this.submitSemaphore));
             waitInfo.pValues(stack.longs(submitIndex));
             waitInfo.semaphoreCount(1);
-            int result = VK12.vkWaitSemaphores(this.device.vkDevice(), waitInfo, timeoutMs * 1000000L);
+            int result = VK12.vkWaitSemaphores(this.device.vkDevice(), waitInfo, timeoutNS);
             VulkanUtils.crashIfFailure(this.device, result, "Failed to wait for semaphore");
             boolean completed = result == 0;
             if (completed) {

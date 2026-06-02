@@ -36,7 +36,7 @@ class InfestedMobEffect extends MobEffect {
    }
 
    private void spawnSilverfish(final ServerLevel level, final LivingEntity mob, final double x, final double y, final double z) {
-      Silverfish silverfish = EntityTypes.SILVERFISH.create(level, EntitySpawnReason.TRIGGERED);
+      Silverfish silverfish = (Silverfish)EntityTypes.SILVERFISH.create(level, (EntitySpawnReason)EntitySpawnReason.TRIGGERED);
       if (silverfish != null) {
          RandomSource random = mob.getRandom();
          float angle = 1.5707964F;

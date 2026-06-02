@@ -37,7 +37,7 @@ public class TraderLlama extends Llama {
    }
 
    protected @Nullable Llama makeNewLlama() {
-      TraderLlama baby = EntityTypes.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      TraderLlama baby = (TraderLlama)EntityTypes.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
       if (baby != null) {
          baby.setPersistenceRequired();
       }

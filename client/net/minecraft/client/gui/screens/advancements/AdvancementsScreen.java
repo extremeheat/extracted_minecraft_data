@@ -45,6 +45,8 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private static final Component TITLE = Component.translatable("gui.advancements");
    private final HeaderAndFooterLayout layout;
    private final @Nullable Screen lastScreen;
+   private int leftPos;
+   private int topPos;
    private final ClientAdvancements advancements;
    private final Map<AdvancementHolder, AdvancementTab> tabs;
    private @Nullable AdvancementTab selectedTab;
@@ -80,6 +82,8 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    protected void repositionElements() {
+      this.leftPos = (this.width - 252) / 2;
+      this.topPos = (this.height - 140) / 2;
       this.layout.arrangeElements();
    }
 
@@ -92,6 +96,16 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       ClientPacketListener connection = this.minecraft.getConnection();
       if (connection != null) {
          connection.send(ServerboundSeenAdvancementsPacket.closedScreen());
+      }
+
+   }
+
+   public void tick() {
+      super.tick();
+      if (this.selectedTab != null) {
+         int mouseX = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
+         int mouseY = (int)this.minecraft.mouseHandler.getScaledYPos(this.minecraft.getWindow());
+         this.selectedTab.tick(mouseX - this.leftPos - 9, mouseY - this.topPos - 18);
       }
 
    }
@@ -124,12 +138,10 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       super.extractRenderState(graphics, mouseX, mouseY, a);
-      int xo = (this.width - 252) / 2;
-      int yo = (this.height - 140) / 2;
       graphics.nextStratum();
-      this.extractInside(graphics, xo, yo);
+      this.extractInside(graphics);
       graphics.nextStratum();
-      this.extractWindow(graphics, xo, yo, mouseX, mouseY);
+      this.extractWindow(graphics, mouseX, mouseY);
       if (this.isScrolling && this.selectedTab != null) {
          if (this.selectedTab.canScrollHorizontally() && this.selectedTab.canScrollVertically()) {
             graphics.requestCursor(CursorTypes.RESIZE_ALL);
@@ -140,7 +152,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          }
       }
 
-      this.extractTooltips(graphics, mouseX, mouseY, xo, yo);
+      this.extractTooltips(graphics, mouseX, mouseY);
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
@@ -172,53 +184,53 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
    }
 
-   private void extractInside(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
+   private void extractInside(final GuiGraphicsExtractor graphics) {
       AdvancementTab tab = this.selectedTab;
       if (tab == null) {
-         graphics.fill(xo + 9, yo + 18, xo + 9 + 234, yo + 18 + 113, -16777216);
-         int midX = xo + 9 + 117;
+         graphics.fill(this.leftPos + 9, this.topPos + 18, this.leftPos + 9 + 234, this.topPos + 18 + 113, -16777216);
+         int midX = this.leftPos + 9 + 117;
          Font var10001 = this.font;
          Component var10002 = NO_ADVANCEMENTS_LABEL;
-         int var10004 = yo + 18 + 56;
+         int var10004 = this.topPos + 18 + 56;
          Objects.requireNonNull(this.font);
          graphics.centeredText(var10001, (Component)var10002, midX, var10004 - 9 / 2, -1);
          var10001 = this.font;
          var10002 = VERY_SAD_LABEL;
-         var10004 = yo + 18 + 113;
+         var10004 = this.topPos + 18 + 113;
          Objects.requireNonNull(this.font);
          graphics.centeredText(var10001, (Component)var10002, midX, var10004 - 9, -1);
       } else {
-         tab.extractContents(graphics, xo + 9, yo + 18);
+         tab.extractContents(graphics, this.leftPos + 9, this.topPos + 18);
       }
    }
 
-   public void extractWindow(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY) {
-      graphics.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, xo, yo, 0.0F, 0.0F, 252, 140, 256, 256);
+   public void extractWindow(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      graphics.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
          for(AdvancementTab tab : this.tabs.values()) {
-            tab.extractTab(graphics, xo, yo, mouseX, mouseY, tab == this.selectedTab);
+            tab.extractTab(graphics, this.leftPos, this.topPos, mouseX, mouseY, tab == this.selectedTab);
          }
 
          for(AdvancementTab tab : this.tabs.values()) {
-            tab.extractIcon(graphics, xo, yo);
+            tab.extractIcon(graphics, this.leftPos, this.topPos);
          }
       }
 
-      graphics.text(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, xo + 8, yo + 6, -12566464, false);
+      graphics.text(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, this.leftPos + 8, this.topPos + 6, -12566464, false);
    }
 
-   private void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
+   private void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       if (this.selectedTab != null) {
          graphics.pose().pushMatrix();
-         graphics.pose().translate((float)(xo + 9), (float)(yo + 18));
+         graphics.pose().translate((float)(this.leftPos + 9), (float)(this.topPos + 18));
          graphics.nextStratum();
-         this.selectedTab.extractTooltips(graphics, mouseX - xo - 9, mouseY - yo - 18, xo, yo);
+         this.selectedTab.extractTooltips(graphics, this.leftPos, this.topPos);
          graphics.pose().popMatrix();
       }
 
       if (this.tabs.size() > 1) {
          for(AdvancementTab tab : this.tabs.values()) {
-            if (tab.isMouseOver(xo, yo, (double)mouseX, (double)mouseY)) {
+            if (tab.isMouseOver(this.leftPos, this.topPos, (double)mouseX, (double)mouseY)) {
                graphics.setTooltipForNextFrame(this.font, tab.getTitle(), mouseX, mouseY);
             }
          }

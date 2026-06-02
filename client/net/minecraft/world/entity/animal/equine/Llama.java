@@ -308,7 +308,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    protected @Nullable Llama makeNewLlama() {
-      return EntityTypes.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      return (Llama)EntityTypes.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    private void spit(final LivingEntity target) {

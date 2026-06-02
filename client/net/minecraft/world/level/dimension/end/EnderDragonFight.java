@@ -434,7 +434,7 @@ public class EnderDragonFight extends SavedData {
 
    private @Nullable EnderDragon createNewDragon() {
       this.level.getChunkAt(new BlockPos(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ()));
-      EnderDragon dragon = EntityTypes.ENDER_DRAGON.create(this.level, EntitySpawnReason.EVENT);
+      EnderDragon dragon = (EnderDragon)EntityTypes.ENDER_DRAGON.create(this.level, (EntitySpawnReason)EntitySpawnReason.EVENT);
       if (dragon != null) {
          dragon.setDragonFight(this);
          dragon.setFightOrigin(this.origin);

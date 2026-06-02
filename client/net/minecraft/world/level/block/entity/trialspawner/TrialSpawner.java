@@ -190,7 +190,7 @@ public final class TrialSpawner {
                      }
                   }
 
-                  Entity entity = EntityType.loadEntityRecursive((ValueInput)input, level, EntitySpawnReason.TRIAL_SPAWNER, (e) -> {
+                  Entity entity = EntityType.loadEntityRecursive((ValueInput)input, level, (EntitySpawnReason)EntitySpawnReason.TRIAL_SPAWNER, (e) -> {
                      e.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, random.nextFloat() * 360.0F, 0.0F);
                      return e;
                   });

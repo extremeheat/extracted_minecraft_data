@@ -89,7 +89,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             BlockPos pos = this.getWorldPos(2, 2, 5);
             if (chunkBB.isInside(pos)) {
                this.spawnedWitch = true;
-               Witch witch = EntityTypes.WITCH.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+               Witch witch = (Witch)EntityTypes.WITCH.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
                if (witch != null) {
                   witch.setPersistenceRequired();
                   witch.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
@@ -108,7 +108,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          BlockPos pos = this.getWorldPos(2, 2, 5);
          if (chunkBB.isInside(pos)) {
             this.spawnedCat = true;
-            Cat cat = EntityTypes.CAT.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+            Cat cat = (Cat)EntityTypes.CAT.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
             if (cat != null) {
                cat.setPersistenceRequired();
                cat.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);

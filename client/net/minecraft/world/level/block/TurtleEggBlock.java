@@ -103,7 +103,7 @@ public class TurtleEggBlock extends Block {
 
             for(int i = 0; i < (Integer)state.getValue(EGGS); ++i) {
                level.levelEvent(2001, pos, Block.getId(state));
-               Turtle turtle = EntityTypes.TURTLE.create(level, EntitySpawnReason.BREEDING);
+               Turtle turtle = (Turtle)EntityTypes.TURTLE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
                if (turtle != null) {
                   turtle.setAge(-24000);
                   turtle.setHomePos(pos);

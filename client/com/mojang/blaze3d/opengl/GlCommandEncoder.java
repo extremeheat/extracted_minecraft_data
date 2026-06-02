@@ -10,7 +10,6 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
 import com.mojang.blaze3d.systems.GpuQueryPool;
@@ -89,11 +88,11 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       }
    }
 
-   public boolean awaitSubmit(final long index, final long timeoutMs) {
+   public boolean awaitSubmit(final long index, final long timeoutNS) {
       if (this.currentSubmitIndex > index + 2L) {
          return true;
       } else if (index == this.currentSubmitIndex) {
-         if (timeoutMs == 0L) {
+         if (timeoutNS == 0L) {
             return false;
          } else {
             throw new IllegalStateException("Cannot wait on a fence for the current submit");
@@ -104,7 +103,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
          if (fence == 0L) {
             return true;
          } else {
-            int result = GlStateManager._glClientWaitSync(fence, 1, timeoutMs);
+            int result = GlStateManager._glClientWaitSync(fence, 1, timeoutNS);
             if (result == 37147) {
                return false;
             } else if (result == 37149) {
@@ -134,8 +133,11 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       RenderPassDescriptor.Attachment<OptionalDouble> depthAttachment = descriptor.depthAttachment();
       int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), this.renderPassColorTextures, depthAttachment == null ? null : (GlTextureView)depthAttachment.textureView());
       GlStateManager._glBindFramebuffer(36160, fbo);
-      int clearMask = 0;
-      boolean needsScissor = false;
+
+      assert descriptor.renderArea != null;
+
+      GlStateManager._enableScissorTest();
+      GlStateManager._scissorBox(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
 
       for(int i = 0; i < colorAttachments.size(); ++i) {
          RenderPassDescriptor.Attachment<Optional<Vector4fc>> attachment = (RenderPassDescriptor.Attachment)colorAttachments.get(i);
@@ -145,9 +147,6 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                GlStateManager._colorMask(i, 15);
                GlStateManager._clearBuffer(i, (Vector4fc)clearValue.get());
             }
-
-            clearMask |= 16384;
-            needsScissor |= descriptor.renderArea != null && !descriptor.renderArea.fillsTexture(attachment.textureView());
          }
       }
 
@@ -155,17 +154,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
          OptionalDouble clearValue = depthAttachment.clearValue();
          if (clearValue.isPresent()) {
             GlStateManager._depthMask(true);
-         }
-
-         clearMask |= 256;
-      }
-
-      if (clearMask != 0) {
-         if (needsScissor) {
-            GlStateManager._enableScissorTest();
-            GlStateManager._scissorBox(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
-         } else {
-            GlStateManager._disableScissorTest();
+            GlStateManager._clearBuffer(clearValue.getAsDouble());
          }
       }
 
@@ -187,10 +176,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       GlStateManager._viewport(0, 0, width, height);
       this.lastPipeline = null;
       ScissorState scissorState = new ScissorState();
-      if (needsScissor) {
-         scissorState.enable(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
-      }
-
+      scissorState.enable(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
       return new GlRenderPass(this, this.device, depthAttachment != null, this.renderPassColorTextures.size(), scissorState);
    }
 
@@ -255,24 +241,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       this.device.directStateAccess().copyBufferSubData(sourceBuffer.handle(), targetBuffer.handle(), source.offset(), target.offset(), source.length());
    }
 
-   public void writeToTexture(final GpuTexture destination, final NativeImage source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height, final int sourceX, final int sourceY) {
-      int target;
-      if ((destination.usage() & 16) != 0) {
-         target = GlConst.CUBEMAP_TARGETS[depthOrLayer % 6];
-         GL33C.glBindTexture(34067, ((GlTexture)destination).id);
-      } else {
-         target = 3553;
-         GlStateManager._bindTexture(((GlTexture)destination).id);
-      }
-
-      GlStateManager._pixelStore(3314, source.getWidth());
-      GlStateManager._pixelStore(3316, sourceX);
-      GlStateManager._pixelStore(3315, sourceY);
-      GlStateManager._pixelStore(3317, source.format().components());
-      GlStateManager._texSubImage2D(target, mipLevel, destX, destY, width, height, GlConst.toGl(source.format()), 5121, source.getPointer());
-   }
-
-   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final NativeImage.Format format, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
+   public void writeToTexture(final GpuTexture destination, final ByteBuffer source, final int mipLevel, final int depthOrLayer, final int destX, final int destY, final int width, final int height) {
       int target;
       if ((destination.usage() & 16) != 0) {
          target = GlConst.CUBEMAP_TARGETS[depthOrLayer % 6];
@@ -285,8 +254,32 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       GlStateManager._pixelStore(3314, width);
       GlStateManager._pixelStore(3316, 0);
       GlStateManager._pixelStore(3315, 0);
-      GlStateManager._pixelStore(3317, format.components());
-      GlStateManager._texSubImage2D(target, mipLevel, destX, destY, width, height, GlConst.toGl(format), 5121, source);
+      GlStateManager._pixelStore(3317, destination.getFormat().componentCount());
+      GlStateManager._texSubImage2D(target, mipLevel, destX, destY, width, height, GlConst.toGlExternalId(destination.getFormat()), 5121, source);
+   }
+
+   public void copyBufferToTexture(final GpuBufferSlice source, final int sourceX, final int sourceY, final int sourceWidth, final int sourceHeight, final GpuTexture destination, final int destinationX, final int destinationY, final int copyWidth, final int copyHeight, final int mipLevel, final int arrayLayer) {
+      int target;
+      if ((destination.usage() & 16) != 0) {
+         target = GlConst.CUBEMAP_TARGETS[arrayLayer % 6];
+         GL33C.glBindTexture(34067, ((GlTexture)destination).id);
+      } else {
+         target = 3553;
+         GlStateManager._bindTexture(((GlTexture)destination).id);
+      }
+
+      int texelSize = destination.getFormat().blockSize();
+      long skipTexels = (long)sourceX + (long)sourceY * (long)sourceWidth;
+      long skipBytes = skipTexels * (long)texelSize;
+      GlBuffer sourceGlBuffer = (GlBuffer)source.buffer();
+      GlStateManager._glBindBuffer(35052, sourceGlBuffer.handle());
+      GlStateManager._pixelStore(3314, sourceWidth);
+      GlStateManager._pixelStore(32878, sourceHeight);
+      GlStateManager._pixelStore(3316, 0);
+      GlStateManager._pixelStore(3315, 0);
+      GlStateManager._pixelStore(3317, destination.getFormat().byteAlignment());
+      GlStateManager._texSubImage2D(target, mipLevel, destinationX, destinationY, copyWidth, copyHeight, GlConst.toGlExternalId(destination.getFormat()), GlConst.toGlType(destination.getFormat()), source.offset() + skipBytes);
+      GlStateManager._glBindBuffer(35052, 0);
    }
 
    public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel) {
@@ -360,7 +353,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                   throw new IllegalStateException("Index buffer has been closed!");
                }
 
-               if (draw.slot() < 0 || draw.slot() > 16) {
+               if (draw.slot() < 0 || draw.slot() >= 16) {
                   throw new IllegalStateException("Vertex buffer slot must be between 0 and 16");
                }
 

@@ -386,7 +386,7 @@ public class Sniffer extends Animal {
    }
 
    public AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.SNIFFER.create(level, EntitySpawnReason.BREEDING);
+      return (AgeableMob)EntityTypes.SNIFFER.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean canMate(final Animal partner) {

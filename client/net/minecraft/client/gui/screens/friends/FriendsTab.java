@@ -17,7 +17,6 @@ import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
-import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -29,7 +28,6 @@ class FriendsTab extends AbstractFriendsTab {
    private static final Component EMPTY_STATE;
    private static final Component MANAGE_ACCOUNT_FOOTER;
    private static final Identifier ILLUSTRATION;
-   private final Minecraft minecraft;
    private final FriendsOverlayScreen screen;
    private final LinearLayout layout;
    private final LinearLayout friendScrollableContent;
@@ -39,12 +37,11 @@ class FriendsTab extends AbstractFriendsTab {
 
    FriendsTab(final Minecraft minecraft, final LoadingDotsWidget loadingDotsWidget, final FriendsOverlayScreen screen, final int width, final int height) {
       super(width, height);
-      this.minecraft = minecraft;
       this.screen = screen;
       this.layout = LinearLayout.vertical();
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.loadingDotsWidget = loadingDotsWidget;
-      this.addFriendWidget = new AddFriendWidget(width, this::sendFriendRequest);
+      this.addFriendWidget = new AddFriendWidget(width, this::onSendFriendRequestFinished);
       this.layout.addChild(this.addFriendWidget);
       this.friendScrollableContent = LinearLayout.vertical();
       this.friendScrollableContent.defaultCellSetting();
@@ -102,40 +99,8 @@ class FriendsTab extends AbstractFriendsTab {
       this.scrollableLayout.setMaxHeight(this.height - this.addFriendWidget.contentHeight());
    }
 
-   private void sendFriendRequest() {
-      String name = this.addFriendWidget.getValue();
-      if (!name.isBlank() && !this.checkLocalConflicts(name)) {
-         this.addFriendWidget.applyState(AddFriendWidget.State.SENDING);
-         this.layout.arrangeElements();
-         this.minecraft.getPlayerSocialManager().sendFriendRequest(name).thenAcceptAsync((var1) -> {
-            this.addFriendWidget.setValue("");
-            this.addFriendWidget.applyState(AddFriendWidget.State.EMPTY_INPUT);
-            this.screen.refreshLists();
-         }, this.minecraft);
-      } else {
-         this.addFriendWidget.applyState(AddFriendWidget.State.EMPTY_INPUT);
-         this.layout.arrangeElements();
-      }
-   }
-
-   private boolean checkLocalConflicts(final String name) {
-      String selfName = this.minecraft.getUser().getName();
-      if (selfName.equalsIgnoreCase(name)) {
-         return true;
-      } else {
-         PlayerSocialManager social = this.minecraft.getPlayerSocialManager();
-         return this.contains(name, social.getFriends()) || this.contains(name, social.getOutgoingRequests()) || this.contains(name, social.getIncomingRequests());
-      }
-   }
-
-   private boolean contains(final String playerName, final List<PlayerSocialManager.PlayerData> players) {
-      for(PlayerSocialManager.PlayerData playerData : players) {
-         if (playerData.name().equalsIgnoreCase(playerName)) {
-            return true;
-         }
-      }
-
-      return false;
+   private void onSendFriendRequestFinished() {
+      this.screen.refreshLists();
    }
 
    public Component getTabTitle() {

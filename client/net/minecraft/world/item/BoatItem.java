@@ -73,7 +73,7 @@ public class BoatItem extends Item {
    }
 
    private @Nullable AbstractBoat getBoat(final Level level, final HitResult hitResult, final ItemStack itemStack, final Player player) {
-      AbstractBoat boat = this.entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+      AbstractBoat boat = (AbstractBoat)this.entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
       if (boat != null) {
          Vec3 location = hitResult.getLocation();
          boat.setInitialPos(location.x, location.y, location.z);

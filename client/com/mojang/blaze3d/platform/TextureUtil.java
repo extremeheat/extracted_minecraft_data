@@ -65,7 +65,7 @@ public class TextureUtil {
       long bufferLength = 0L;
 
       for(int i = 0; i <= maxMipLevel; ++i) {
-         bufferLength += (long)texture.getFormat().pixelSize() * (long)texture.getWidth(i) * (long)texture.getHeight(i);
+         bufferLength += (long)texture.getFormat().blockSize() * (long)texture.getWidth(i) * (long)texture.getHeight(i);
       }
 
       if (bufferLength > 2147483647L) {
@@ -89,7 +89,7 @@ public class TextureUtil {
                   try (NativeImage image = new NativeImage(mipWidth, mipHeight, false)) {
                      for(int y = 0; y < mipHeight; ++y) {
                         for(int x = 0; x < mipWidth; ++x) {
-                           int argb = decodeTexel.applyAsInt(offset + (x + y * mipWidth) * texture.getFormat().pixelSize());
+                           int argb = decodeTexel.applyAsInt(offset + (x + y * mipWidth) * texture.getFormat().blockSize());
                            image.setPixelABGR(x, y, pixelModifier.applyAsInt(argb));
                         }
                      }
@@ -101,7 +101,7 @@ public class TextureUtil {
                      LOGGER.debug("Unable to write: ", e);
                   }
 
-                  offset += texture.getFormat().pixelSize() * mipWidth * mipHeight;
+                  offset += texture.getFormat().blockSize() * mipWidth * mipHeight;
                }
             }
 
@@ -117,7 +117,7 @@ public class TextureUtil {
                }
 
             }, i);
-            offset += texture.getFormat().pixelSize() * texture.getWidth(i) * texture.getHeight(i);
+            offset += texture.getFormat().blockSize() * texture.getWidth(i) * texture.getHeight(i);
          }
 
       }

@@ -2,6 +2,7 @@ package net.minecraft.client.sounds;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -55,8 +56,8 @@ public class MusicManager {
             }
          }
 
-         this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(music, this.random));
-         if (this.currentMusic == null && this.nextSongDelay-- <= 0) {
+         this.nextSongDelay = Math.min(this.nextSongDelay, music.maxDelay());
+         if (this.currentMusic == null && !(this.minecraft.gui.screen() instanceof LevelLoadingScreen) && --this.nextSongDelay <= 0) {
             this.startPlaying(music);
          }
 
@@ -104,7 +105,7 @@ public class MusicManager {
          this.minecraft.gui.toastManager().hideNowPlayingToast();
       }
 
-      this.nextSongDelay += 100;
+      this.nextSongDelay = this.gameMusicFrequency.getNextSongDelay(this.minecraft.getSituationalMusic(), this.random) + 100;
    }
 
    private boolean fadePlaying(final float volume) {

@@ -593,7 +593,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    public @Nullable Bee getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.BEE.create(level, EntitySpawnReason.BREEDING);
+      return (Bee)EntityTypes.BEE.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {

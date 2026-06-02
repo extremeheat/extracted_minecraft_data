@@ -426,7 +426,7 @@ public class Camel extends AbstractHorse {
    }
 
    public @Nullable Camel getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.CAMEL.create(level, EntitySpawnReason.BREEDING);
+      return (Camel)EntityTypes.CAMEL.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getEatingSound() {

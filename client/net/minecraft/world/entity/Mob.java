@@ -1261,7 +1261,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       if (this.isRemoved()) {
          return null;
       } else {
-         T newMob = entityType.create(this.level(), spawnReason);
+         T newMob = (T)(entityType.create(this.level(), spawnReason));
          if (newMob == null) {
             return null;
          } else {

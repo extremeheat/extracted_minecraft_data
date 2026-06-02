@@ -39,7 +39,7 @@ public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional
    }
 
    public static boolean canHitEntity(final Entity jabber, final Entity target) {
-      if (!target.isInvulnerable() && target.isAlive()) {
+      if (!target.isInvulnerableToPiercingWeapon() && target.isAlive()) {
          if (target instanceof Interaction) {
             return true;
          } else if (!target.canBeHitByProjectile()) {

@@ -547,7 +547,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    public @Nullable Wolf getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Wolf baby = EntityTypes.WOLF.create(level, EntitySpawnReason.BREEDING);
+      Wolf baby = (Wolf)EntityTypes.WOLF.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Wolf partnerWolf) {
          if (this.random.nextBoolean()) {
             baby.setVariant(this.getVariant());

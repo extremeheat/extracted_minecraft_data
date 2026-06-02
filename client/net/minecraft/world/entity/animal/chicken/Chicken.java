@@ -164,7 +164,7 @@ public class Chicken extends Animal {
    }
 
    public @Nullable Chicken getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Chicken baby = EntityTypes.CHICKEN.create(level, EntitySpawnReason.BREEDING);
+      Chicken baby = (Chicken)EntityTypes.CHICKEN.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Chicken partnerChicken) {
          baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerChicken.getVariant());
       }

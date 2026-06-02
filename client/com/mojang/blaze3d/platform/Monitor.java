@@ -1,6 +1,6 @@
 package com.mojang.blaze3d.platform;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -10,36 +10,46 @@ import org.lwjgl.glfw.GLFWVidMode;
 public final class Monitor {
    private final long monitor;
    private final List<VideoMode> videoModes;
-   private VideoMode currentMode;
-   private int x;
-   private int y;
+   private final VideoMode currentMode;
+   private final int x;
+   private final int y;
 
    public Monitor(final long monitor) {
       super();
       this.monitor = monitor;
-      this.videoModes = Lists.newArrayList();
-      this.refreshVideoModes();
-   }
+      ImmutableList.Builder<VideoMode> videoModes = ImmutableList.builder();
+      GLFWVidMode.Buffer modes = GLFW.glfwGetVideoModes(monitor);
+      if (modes == null) {
+         throw modeGetFailure();
+      } else {
+         for(int i = modes.limit() - 1; i >= 0; --i) {
+            modes.position(i);
+            VideoMode mode = new VideoMode(modes);
+            if (mode.getRedBits() >= 8 && mode.getGreenBits() >= 8 && mode.getBlueBits() >= 8) {
+               videoModes.add(mode);
+            }
+         }
 
-   public void refreshVideoModes() {
-      this.videoModes.clear();
-      GLFWVidMode.Buffer modes = GLFW.glfwGetVideoModes(this.monitor);
-
-      for(int i = modes.limit() - 1; i >= 0; --i) {
-         modes.position(i);
-         VideoMode mode = new VideoMode(modes);
-         if (mode.getRedBits() >= 8 && mode.getGreenBits() >= 8 && mode.getBlueBits() >= 8) {
-            this.videoModes.add(mode);
+         this.videoModes = videoModes.build();
+         int[] x = new int[1];
+         int[] y = new int[1];
+         GLFW.glfwGetMonitorPos(monitor, x, y);
+         this.x = x[0];
+         this.y = y[0];
+         GLFWVidMode mode = GLFW.glfwGetVideoMode(monitor);
+         if (mode == null) {
+            throw modeGetFailure();
+         } else {
+            this.currentMode = new VideoMode(mode);
          }
       }
+   }
 
-      int[] x = new int[1];
-      int[] y = new int[1];
-      GLFW.glfwGetMonitorPos(this.monitor, x, y);
-      this.x = x[0];
-      this.y = y[0];
-      GLFWVidMode mode = GLFW.glfwGetVideoMode(this.monitor);
-      this.currentMode = new VideoMode(mode);
+   private static IllegalArgumentException modeGetFailure() {
+      Window.checkGlfwError((error, description) -> {
+         throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error when getting monitor mode: [0x%X]%s", error, description));
+      });
+      return new IllegalArgumentException("Unknown GLFW error when getting monitor mode");
    }
 
    public VideoMode getPreferredVidMode(final Optional<VideoMode> expectedMode) {

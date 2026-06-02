@@ -37,8 +37,8 @@ public class WorldLoadEvent {
       }
    }
 
-   public boolean send(final TelemetryEventSender eventSender) {
-      if (!this.eventSent && this.gameMode != null && this.serverBrand != null) {
+   public boolean send(final TelemetryEventSender eventSender, final boolean lastChance) {
+      if (!this.eventSent && this.gameMode != null && (this.serverBrand != null || lastChance)) {
          this.eventSent = true;
          eventSender.send(TelemetryEventType.WORLD_LOADED, (properties) -> {
             properties.put(TelemetryProperty.GAME_MODE, this.gameMode);
@@ -51,6 +51,10 @@ public class WorldLoadEvent {
       } else {
          return false;
       }
+   }
+
+   public boolean wasSent() {
+      return this.eventSent;
    }
 
    public void setGameMode(final GameType type, final boolean hardcore) {

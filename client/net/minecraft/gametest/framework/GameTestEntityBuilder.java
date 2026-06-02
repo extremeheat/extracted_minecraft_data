@@ -45,7 +45,7 @@ public class GameTestEntityBuilder<E extends Entity> {
 
    public E spawn() {
       ServerLevel level = this.testHelper.getLevel();
-      E entity = this.entityType.create(level, EntitySpawnReason.STRUCTURE);
+      E entity = this.entityType.create(level, (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
       if (entity == null) {
          throw this.testHelper.assertionException(BlockPos.containing(this.position), "test.error.spawn_failure", this.entityType.builtInRegistryHolder().getRegisteredName());
       } else {

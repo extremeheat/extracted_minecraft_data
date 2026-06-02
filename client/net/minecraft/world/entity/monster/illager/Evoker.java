@@ -250,7 +250,7 @@ public class Evoker extends SpellcasterIllager {
 
          for(int i = 0; i < 3; ++i) {
             BlockPos pos = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex vex = EntityTypes.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
+            Vex vex = (Vex)EntityTypes.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
             if (vex != null) {
                vex.snapTo(pos, 0.0F, 0.0F);
                vex.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(pos), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);

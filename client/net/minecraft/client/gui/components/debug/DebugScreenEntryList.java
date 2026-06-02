@@ -134,7 +134,7 @@ public class DebugScreenEntryList {
    }
 
    public Collection<Identifier> getCurrentlyEnabled() {
-      return this.currentlyEnabled;
+      return List.copyOf(this.currentlyEnabled);
    }
 
    public void toggleDebugOverlay() {

@@ -352,7 +352,7 @@ public class Cat extends TamableAnimal {
    }
 
    public @Nullable Cat getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      Cat baby = EntityTypes.CAT.create(level, EntitySpawnReason.BREEDING);
+      Cat baby = (Cat)EntityTypes.CAT.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
       if (baby != null && partner instanceof Cat partnerCat) {
          if (this.random.nextBoolean()) {
             baby.setVariant(this.getVariant());

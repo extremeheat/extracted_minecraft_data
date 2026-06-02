@@ -97,13 +97,13 @@ public class Husk extends Zombie {
                huskGroupData.triedToSpawnCamelHusk = true;
                if (random.nextFloat() < 0.1F) {
                   this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
-                  CamelHusk camelHusk = EntityTypes.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
+                  CamelHusk camelHusk = (CamelHusk)EntityTypes.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
                   if (camelHusk != null) {
                      camelHusk.setPos(this.getX(), this.getY(), this.getZ());
                      camelHusk.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
                      this.startRiding(camelHusk, true, true);
                      level.addFreshEntity(camelHusk);
-                     Parched parched = EntityTypes.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
+                     Parched parched = (Parched)EntityTypes.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
                      if (parched != null) {
                         parched.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                         parched.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);

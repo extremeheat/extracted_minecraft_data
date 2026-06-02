@@ -1,5 +1,7 @@
 package net.minecraft.client.gui.font.providers;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
@@ -17,6 +19,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,21 +28,22 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class BitmapProvider implements GlyphProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final NativeImage image;
+   private final ImageDataHolder imageData;
    private final CodepointMap<Glyph> glyphs;
 
-   private BitmapProvider(final NativeImage image, final CodepointMap<Glyph> glyphs) {
+   private BitmapProvider(final ImageDataHolder imageData, final CodepointMap<Glyph> glyphs) {
       super();
-      this.image = image;
+      this.imageData = imageData;
       this.glyphs = glyphs;
    }
 
    public void close() {
-      this.image.close();
+      this.imageData.close();
    }
 
    public @Nullable UnbakedGlyph getGlyph(final int codepoint) {
@@ -96,7 +100,7 @@ public class BitmapProvider implements GlyphProvider {
          Identifier texture = this.file.withPrefix("textures/");
          InputStream resource = resourceManager.open(texture);
 
-         BitmapProvider var22;
+         BitmapProvider var23;
          try {
             NativeImage image = NativeImage.read(NativeImage.Format.RGBA, resource);
             int w = image.getWidth();
@@ -105,6 +109,7 @@ public class BitmapProvider implements GlyphProvider {
             int glyphHeight = h / this.codepointGrid.length;
             float pixelScale = (float)this.height / (float)glyphHeight;
             CodepointMap<Glyph> charMap = new CodepointMap<Glyph>((x$0) -> new Glyph[x$0], (x$0) -> new Glyph[x$0][]);
+            ImageDataHolder imageDataHolder = new ImageDataHolder(texture, image);
 
             for(int slotY = 0; slotY < this.codepointGrid.length; ++slotY) {
                int linePos = 0;
@@ -113,7 +118,7 @@ public class BitmapProvider implements GlyphProvider {
                   int slotX = linePos++;
                   if (c != 0) {
                      int actualGlyphWidth = this.getActualGlyphWidth(image, glyphWidth, glyphHeight, slotX, slotY);
-                     Glyph prev = charMap.put(c, new Glyph(pixelScale, image, slotX * glyphWidth, slotY * glyphHeight, glyphWidth, glyphHeight, (int)(0.5 + (double)((float)actualGlyphWidth * pixelScale)) + 1, this.ascent));
+                     Glyph prev = charMap.put(c, new Glyph(pixelScale, imageDataHolder, slotX * glyphWidth, slotY * glyphHeight, glyphWidth, glyphHeight, (int)(0.5 + (double)((float)actualGlyphWidth * pixelScale)) + 1, this.ascent));
                      if (prev != null) {
                         BitmapProvider.LOGGER.warn("Codepoint '{}' declared multiple times in {}", Integer.toHexString(c), texture);
                      }
@@ -121,24 +126,24 @@ public class BitmapProvider implements GlyphProvider {
                }
             }
 
-            var22 = new BitmapProvider(image, charMap);
-         } catch (Throwable var21) {
+            var23 = new BitmapProvider(imageDataHolder, charMap);
+         } catch (Throwable var22) {
             if (resource != null) {
                try {
                   resource.close();
-               } catch (Throwable var20) {
-                  var21.addSuppressed(var20);
+               } catch (Throwable var21) {
+                  var22.addSuppressed(var21);
                }
             }
 
-            throw var21;
+            throw var22;
          }
 
          if (resource != null) {
             resource.close();
          }
 
-         return var22;
+         return var23;
       }
 
       private int getActualGlyphWidth(final NativeImage image, final int glyphWidth, final int glyphHeight, final int xGlyph, final int yGlyph) {
@@ -180,7 +185,40 @@ public class BitmapProvider implements GlyphProvider {
       }
    }
 
-   private static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements UnbakedGlyph {
+   private static class ImageDataHolder implements AutoCloseable {
+      private final Identifier identifier;
+      private final NativeImage image;
+      private @Nullable GpuBuffer gpuBuffer = null;
+
+      private ImageDataHolder(final Identifier identifier, final NativeImage image) {
+         super();
+         this.identifier = identifier;
+         this.image = image;
+      }
+
+      private GpuBuffer gpuData() {
+         if (this.gpuBuffer == null) {
+            ByteBuffer imageBytes = this.image.getPixelBytes();
+            this.gpuBuffer = RenderSystem.getDevice().createBuffer(() -> String.valueOf(this.identifier) + " staging buffer", 22, (long)imageBytes.remaining());
+
+            try (GpuBufferSlice.MappedView mappedView = this.gpuBuffer.map(false, true)) {
+               MemoryUtil.memCopy(imageBytes, mappedView.data());
+            }
+         }
+
+         return this.gpuBuffer;
+      }
+
+      public void close() {
+         this.image.close();
+         if (this.gpuBuffer != null) {
+            this.gpuBuffer.close();
+         }
+
+      }
+   }
+
+   private static record Glyph(float scale, ImageDataHolder imageData, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements UnbakedGlyph {
       private Glyph {
          super();
       }
@@ -212,11 +250,11 @@ public class BitmapProvider implements GlyphProvider {
             }
 
             public void upload(final int x, final int y, final GpuTexture texture) {
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, Glyph.this.image, 0, 0, x, y, Glyph.this.width, Glyph.this.height, Glyph.this.offsetX, Glyph.this.offsetY);
+               RenderSystem.getDevice().createCommandEncoder().copyBufferToTexture(Glyph.this.imageData.gpuData().slice(), Glyph.this.offsetX, Glyph.this.offsetY, Glyph.this.imageData.image.getWidth(), Glyph.this.imageData.image.getHeight(), texture, x, y, Glyph.this.width, Glyph.this.height, 0, 0);
             }
 
             public boolean isColored() {
-               return Glyph.this.image.format().components() > 1;
+               return Glyph.this.imageData.image.format().components() > 1;
             }
          });
       }

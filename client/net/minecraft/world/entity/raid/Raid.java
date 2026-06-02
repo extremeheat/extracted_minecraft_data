@@ -502,7 +502,7 @@ public class Raid {
          int ravagersSpawned = 0;
 
          for(int i = 0; i < numSpawns; ++i) {
-            Raider raider = raiderType.entityType.create(level, EntitySpawnReason.EVENT);
+            Raider raider = (Raider)raiderType.entityType.create(level, (EntitySpawnReason)EntitySpawnReason.EVENT);
             if (raider == null) {
                break;
             }
@@ -517,12 +517,12 @@ public class Raid {
             if (raiderType.entityType == EntityTypes.RAVAGER) {
                Raider ridingRaider = null;
                if (groupNumber == this.getNumGroups(Difficulty.NORMAL)) {
-                  ridingRaider = EntityTypes.PILLAGER.create(level, EntitySpawnReason.EVENT);
+                  ridingRaider = (Raider)EntityTypes.PILLAGER.create(level, (EntitySpawnReason)EntitySpawnReason.EVENT);
                } else if (groupNumber >= this.getNumGroups(Difficulty.HARD)) {
                   if (ravagersSpawned == 0) {
-                     ridingRaider = EntityTypes.EVOKER.create(level, EntitySpawnReason.EVENT);
+                     ridingRaider = (Raider)EntityTypes.EVOKER.create(level, (EntitySpawnReason)EntitySpawnReason.EVENT);
                   } else {
-                     ridingRaider = EntityTypes.VINDICATOR.create(level, EntitySpawnReason.EVENT);
+                     ridingRaider = (Raider)EntityTypes.VINDICATOR.create(level, (EntitySpawnReason)EntitySpawnReason.EVENT);
                   }
                }
 

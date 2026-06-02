@@ -543,7 +543,12 @@ public class ItemInHandRenderer {
       }
    }
 
-   private void synchronizeVisibleHandItems(final ItemStack nextMainHand, final ItemStack nextOffHand) {
+   public void tick() {
+      this.oMainHandHeight = this.mainHandHeight;
+      this.oOffHandHeight = this.offHandHeight;
+      LocalPlayer player = this.minecraft.player;
+      ItemStack nextMainHand = player.getMainHandItem();
+      ItemStack nextOffHand = player.getOffhandItem();
       if (this.shouldInstantlyReplaceVisibleItem(this.mainHandItem, nextMainHand)) {
          this.mainHandItem = nextMainHand;
       }
@@ -552,15 +557,6 @@ public class ItemInHandRenderer {
          this.offHandItem = nextOffHand;
       }
 
-   }
-
-   public void tick() {
-      this.oMainHandHeight = this.mainHandHeight;
-      this.oOffHandHeight = this.offHandHeight;
-      LocalPlayer player = this.minecraft.player;
-      ItemStack nextMainHand = player.getMainHandItem();
-      ItemStack nextOffHand = player.getOffhandItem();
-      this.synchronizeVisibleHandItems(nextMainHand, nextOffHand);
       if (player.isHandsBusy()) {
          this.mainHandHeight = Mth.clamp(this.mainHandHeight - 0.4F, 0.0F, 1.0F);
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);

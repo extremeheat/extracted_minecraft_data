@@ -215,7 +215,7 @@ public class Ocelot extends Animal {
    }
 
    public @Nullable Ocelot getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-      return EntityTypes.OCELOT.create(level, EntitySpawnReason.BREEDING);
+      return (Ocelot)EntityTypes.OCELOT.create(level, (EntitySpawnReason)EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(final ItemStack itemStack) {
