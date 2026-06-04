@@ -29,6 +29,10 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
       this.addEntry(OptionsList.Entry.big(this.minecraft.options, option, this.screen));
    }
 
+   public void addBig(final AbstractWidget widget) {
+      this.addEntry(OptionsList.Entry.big(widget, this.screen));
+   }
+
    public void addSmall(final OptionInstance<?>... options) {
       for(int i = 0; i < options.length; i += 2) {
          OptionInstance<?> secondOption = i < options.length - 1 ? options[i + 1] : null;
@@ -156,6 +160,11 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
 
       public static Entry big(final Options options, final OptionInstance<?> optionInstance, final Screen screen) {
          return new Entry(List.of(new OptionInstanceWidget(optionInstance.createButton(options, 0, 0, 310), optionInstance)), screen);
+      }
+
+      public static Entry big(final AbstractWidget widget, final Screen screen) {
+         widget.setWidth(310);
+         return new Entry(List.of(new OptionInstanceWidget(widget, (OptionInstance)null)), screen);
       }
 
       public static Entry small(final AbstractWidget leftWidget, final @Nullable AbstractWidget rightWidget, final Screen screen) {

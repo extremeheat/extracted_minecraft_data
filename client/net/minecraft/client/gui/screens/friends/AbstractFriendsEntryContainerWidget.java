@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.friends;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
@@ -29,6 +30,7 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
    protected final PlayerFaceWidget playerFaceWidget;
    protected final StringWidget nameWidget;
    protected final String playerName;
+   protected final UUID playerId;
    protected final boolean showingStatus;
    private final List<AbstractWidget> children;
 
@@ -42,7 +44,8 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
       this.minecraft = minecraft;
       this.screen = screen;
       this.playerName = playerData.name();
-      this.playerFaceWidget = new PlayerFaceWidget(24, ResolvableProfile.createUnresolved(playerData.id()));
+      this.playerId = playerData.id();
+      this.playerFaceWidget = new PlayerFaceWidget(24, ResolvableProfile.createUnresolved(this.playerId));
       this.nameWidget = new StringWidget(Component.literal(this.playerName), minecraft.font);
       this.addChild(this.playerFaceWidget);
       this.addChild(this.nameWidget);
@@ -50,6 +53,10 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
    }
 
    abstract void disable();
+
+   UUID playerId() {
+      return this.playerId;
+   }
 
    protected abstract Component getEntryNarration();
 
@@ -77,6 +84,13 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
 
    protected final void addChild(final AbstractWidget child) {
       this.children.add(child);
+   }
+
+   protected final void removeChild(final AbstractWidget child) {
+      if (this.children.remove(child) && this.getFocused() == child) {
+         this.setFocused((GuiEventListener)null);
+      }
+
    }
 
    public List<? extends GuiEventListener> children() {

@@ -184,6 +184,10 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.settings.allowCommands();
    }
 
+   public void setAllowCommands(final boolean allowCommands) {
+      this.settings = this.settings.withAllowCommands(allowCommands);
+   }
+
    public boolean isInitialized() {
       return this.initialized;
    }

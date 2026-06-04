@@ -69,6 +69,8 @@ public interface WorldData {
 
    boolean isAllowCommands();
 
+   void setAllowCommands(final boolean allowCommands);
+
    Difficulty getDifficulty();
 
    void setDifficulty(final Difficulty difficulty);

@@ -21,15 +21,15 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
    private static final Component UNFRIEND = Component.translatable("gui.friends.unfriend");
    private static final Component CONFIRM_TITLE = Component.translatable("gui.friends.confirm_title");
    private static final Component CONFIRM_UNFRIEND = Component.translatable("gui.friends.confirm_unfriend");
+   private static final Component PRESENCE_OFFLINE = Component.translatable("gui.friends.presence.status.offline").withColor(-6250336);
    private final SpriteIconButton removeButton;
    private final StringWidget statusWidget;
-   private final @Nullable PresenceStatusDto presence;
+   private @Nullable PresenceStatusDto presence;
 
    public FriendEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final @Nullable PresenceStatusDto presence, final boolean initiallyLoading, final Runnable onAction) {
       super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 16, 28, playerData, true);
       this.presence = presence;
-      String var10003 = presence == null ? "offline" : presence.status().toString().toLowerCase(Locale.ROOT);
-      this.statusWidget = new StringWidget(Component.translatable("gui.friends.presence.status." + var10003).withColor(presence == null ? -6250336 : -16711936), minecraft.font);
+      this.statusWidget = new StringWidget(presenceStatusComponent(presence), minecraft.font);
       this.addChild(this.statusWidget);
       Button.CreateNarration narration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.unfriend", playerData.name()));
       this.removeButton = SpriteIconButton.builder(UNFRIEND, (var2) -> this.confirmRemoveFriend(onAction), true).size(20, 20).sprite((WidgetSprites)REMOVE_SPRITE, 13, 11).tooltip(UNFRIEND).narration(narration).build();
@@ -38,6 +38,21 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
       }
 
       this.addChild(this.removeButton);
+   }
+
+   private static Component presenceStatusComponent(final @Nullable PresenceStatusDto presence) {
+      if (presence != null && presence.status() != PresenceStatus.OFFLINE) {
+         String var10000 = presence.status().toString();
+         String key = "gui.friends.presence.status." + var10000.toLowerCase(Locale.ROOT);
+         return Component.translatable(key).withColor(-16711936);
+      } else {
+         return PRESENCE_OFFLINE;
+      }
+   }
+
+   void applyPresence(final @Nullable PresenceStatusDto newPresence) {
+      this.presence = newPresence;
+      this.statusWidget.setMessage(presenceStatusComponent(newPresence));
    }
 
    public int presenceStatusSortOrder() {

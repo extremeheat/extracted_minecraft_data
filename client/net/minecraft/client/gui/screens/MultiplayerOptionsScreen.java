@@ -29,7 +29,6 @@ public class MultiplayerOptionsScreen extends Screen {
    private static final Component PORT_INFO_TEXT = Component.translatable("lanServer.port");
    private static final Component PORT_UNAVAILABLE = Component.translatable("lanServer.port.unavailable", 1024, 65535);
    private static final Component INVALID_PORT = Component.translatable("lanServer.port.invalid", 1024, 65535);
-   private static final Component NETWORK_HEADER;
    private static final Component OTHER_PLAYERS_HEADER;
    private static final Component APPLY_CHANGES;
    private static final Identifier INWORLD_MENU_LIST_BACKGROUND;
@@ -67,9 +66,9 @@ public class MultiplayerOptionsScreen extends Screen {
          this.layout.addTitleHeader(this.title, this.font);
          LinearLayout content = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
          content.defaultCellSetting().alignHorizontallyCenter();
-         content.addChild(new StringWidget(NETWORK_HEADER, this.font));
-         content.addChild(CycleButton.builder(MinecraftServer.MultiplayerScope::getDisplayName, singleplayerServer.getMultiplayerScope()).withValues(MinecraftServer.MultiplayerScope.values()).withTooltip((scope) -> Tooltip.create(scope.getTooltip())).create(Component.translatable("menu.multiplayerOptions.network"), (var1, value) -> {
-            this.wantedMultiplayerScope = value;
+         this.initialMultiplayerScope = singleplayerServer.getMultiplayerScope();
+         content.addChild(CycleButton.onOffBuilder(this.initialMultiplayerScope == MinecraftServer.MultiplayerScope.LAN).withTooltip((lan) -> Tooltip.create(lan ? MinecraftServer.MultiplayerScope.LAN.getTooltip() : MinecraftServer.MultiplayerScope.OFF.getTooltip())).create(Component.translatable("menu.multiplayerOptions.lan"), (var1, value) -> {
+            this.wantedMultiplayerScope = value ? MinecraftServer.MultiplayerScope.LAN : MinecraftServer.MultiplayerScope.OFF;
             this.updatePortControlsState();
             this.updateApplyChangesActiveState();
          }));
@@ -83,11 +82,11 @@ public class MultiplayerOptionsScreen extends Screen {
          this.applyChanges = Button.builder(APPLY_CHANGES, (var2) -> {
             this.minecraft.gui.setScreen((Screen)null);
             if (this.gameMode != this.initialGameMode) {
-               singleplayerServer.applyDefaultGameMode(this.gameMode);
+               singleplayerServer.setGameTypeForOtherPlayers(this.gameMode);
             }
 
             if (this.commands != this.initialCommands) {
-               singleplayerServer.setCommandsAllowedForAllPlayers(this.commands);
+               singleplayerServer.setCommandsAllowedForOtherPlayers(this.commands);
             }
 
             if (this.wantedMultiplayerScope != this.initialMultiplayerScope || this.lanPortChanged()) {
@@ -113,14 +112,13 @@ public class MultiplayerOptionsScreen extends Screen {
          content.addChild(new StringWidget(OTHER_PLAYERS_HEADER, this.font));
          LinearLayout otherPlayerSettings = (LinearLayout)content.addChild(LinearLayout.horizontal().spacing(8));
          otherPlayerSettings.defaultCellSetting().alignHorizontallyCenter();
-         GameType forcedGameMode = singleplayerServer.getForcedGameType();
-         this.gameMode = forcedGameMode != null ? forcedGameMode : singleplayerServer.getDefaultGameType();
+         this.gameMode = singleplayerServer.getGameTypeForOtherPlayers();
          this.initialGameMode = this.gameMode;
          otherPlayerSettings.addChild(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE_LABEL, (var1, value) -> {
             this.gameMode = value;
             this.updateApplyChangesActiveState();
          }));
-         this.commands = singleplayerServer.isPublished() ? singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers() : singleplayerServer.getWorldData().isAllowCommands();
+         this.commands = singleplayerServer.commandsAllowedForOtherPlayers();
          this.initialCommands = this.commands;
          otherPlayerSettings.addChild(CycleButton.onOffBuilder(this.commands).create(ALLOW_COMMANDS_LABEL, (var1, value) -> {
             this.commands = value;
@@ -204,7 +202,7 @@ public class MultiplayerOptionsScreen extends Screen {
    }
 
    private void publish(final IntegratedServer singleplayerServer, final MinecraftServer.MultiplayerScope scope) {
-      boolean published = singleplayerServer.publishServer(scope, this.gameMode, this.commands, this.port);
+      boolean published = singleplayerServer.publishServer(scope, this.port);
       if (!published) {
          this.sendPublishMessage(Component.translatable("commands.publish.failed"));
       } else {
@@ -261,7 +259,6 @@ public class MultiplayerOptionsScreen extends Screen {
    }
 
    static {
-      NETWORK_HEADER = Component.translatable("menu.multiplayerOptions.network.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
       OTHER_PLAYERS_HEADER = Component.translatable("menu.multiplayerOptions.otherPlayers.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
       APPLY_CHANGES = Component.translatable("menu.multiplayerOptions.applyChanges");
       INWORLD_MENU_LIST_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");

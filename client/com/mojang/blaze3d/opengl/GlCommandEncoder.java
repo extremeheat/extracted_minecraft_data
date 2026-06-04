@@ -320,13 +320,16 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       }
    }
 
-   public void presentTexture(final GpuTextureView textureView) {
+   public void presentTexture(final GpuTextureView textureView, final int swapchainWidth, final int swapchainHeight) {
+      int destY = Math.max(0, swapchainHeight - textureView.getHeight(0));
+      int copyWidth = Math.min(swapchainWidth, textureView.getWidth(0));
+      int copyHeight = Math.min(swapchainHeight, textureView.getHeight(0));
       GlStateManager._disableScissorTest();
       GlStateManager._viewport(0, 0, textureView.getWidth(0), textureView.getHeight(0));
       GlStateManager._depthMask(true);
       GlStateManager._colorMask(15);
       this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)textureView.texture()).glId(), 0, 0, 0);
-      this.device.directStateAccess().blitFrameBuffers(this.drawFbo, 0, 0, 0, textureView.getWidth(0), textureView.getHeight(0), 0, 0, textureView.getWidth(0), textureView.getHeight(0), 16384, 9728);
+      this.device.directStateAccess().blitFrameBuffers(this.drawFbo, 0, 0, 0, copyWidth, copyHeight, 0, destY, copyWidth, copyHeight + destY, 16384, 9728);
    }
 
    public GpuFence createFence() {

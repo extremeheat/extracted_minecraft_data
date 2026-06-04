@@ -5,6 +5,7 @@ import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
 import com.mojang.authlib.yggdrasil.response.FriendData;
 import com.mojang.authlib.yggdrasil.response.FriendDto;
 import com.mojang.logging.LogUtils;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -27,7 +28,7 @@ import org.slf4j.Logger;
 public final class RemoteFriendListUpdateHandler {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final long FOREGROUND_INTERVAL_NANOS;
-   private static final long BACKGROUND_INTERVAL_NANOS;
+   private static final long BACKGROUND_INTERVAL_MULTIPLIER = 5L;
    private static final long POLL_INTERVAL_SECONDS = 1L;
    private final FriendsService friendsService;
    private final Minecraft minecraft;
@@ -85,8 +86,9 @@ public final class RemoteFriendListUpdateHandler {
    }
 
    private long getUpdateIntervalNanos() {
+      long foregroundNanos = (Long)this.friendsService.getFriendsPollInterval().map(Duration::toNanos).orElse(FOREGROUND_INTERVAL_NANOS);
       Screen screen = this.minecraft.gui.screen();
-      return screen instanceof FriendsOverlayScreen ? FOREGROUND_INTERVAL_NANOS : BACKGROUND_INTERVAL_NANOS;
+      return screen instanceof FriendsOverlayScreen ? foregroundNanos : foregroundNanos * 5L;
    }
 
    void runUpdateFriendDataInternal() {
@@ -147,6 +149,9 @@ public final class RemoteFriendListUpdateHandler {
             break;
          case UNKNOWN_PROFILE:
             var10000 = RemoteFriendListUpdateHandler.State.USER_MAY_LACK_ACTIVE_PROFILE;
+            break;
+         case UNAUTHORIZED:
+            var10000 = RemoteFriendListUpdateHandler.State.UNAUTHORIZED;
             break;
          case GENERIC_ERROR:
          case ERROR:
@@ -279,7 +284,6 @@ public final class RemoteFriendListUpdateHandler {
 
    static {
       FOREGROUND_INTERVAL_NANOS = TimeUnit.MINUTES.toNanos(1L);
-      BACKGROUND_INTERVAL_NANOS = TimeUnit.MINUTES.toNanos(5L);
    }
 
    public static enum State {
@@ -287,6 +291,7 @@ public final class RemoteFriendListUpdateHandler {
       UPGRADE_NEEDED,
       CONNECTION_ISSUE,
       USER_MAY_LACK_ACTIVE_PROFILE,
+      UNAUTHORIZED,
       TEMPORARY_UNAVAILABLE,
       GENERIC_ERROR,
       SUCCESS;
@@ -296,7 +301,7 @@ public final class RemoteFriendListUpdateHandler {
 
       // $FF: synthetic method
       private static State[] $values() {
-         return new State[]{LOADING, UPGRADE_NEEDED, CONNECTION_ISSUE, USER_MAY_LACK_ACTIVE_PROFILE, TEMPORARY_UNAVAILABLE, GENERIC_ERROR, SUCCESS};
+         return new State[]{LOADING, UPGRADE_NEEDED, CONNECTION_ISSUE, USER_MAY_LACK_ACTIVE_PROFILE, UNAUTHORIZED, TEMPORARY_UNAVAILABLE, GENERIC_ERROR, SUCCESS};
       }
    }
 }

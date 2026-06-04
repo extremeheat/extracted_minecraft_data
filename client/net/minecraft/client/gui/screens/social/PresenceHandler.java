@@ -6,17 +6,20 @@ import com.mojang.authlib.yggdrasil.response.PresenceStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.PresenceSharing;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 
 public class PresenceHandler {
-   private static final Duration PRESENCE_UPDATE_INTERVAL = Duration.ofSeconds(10L);
-   private static final Duration MAX_PRESENCE_UPDATE_INTERVAL = Duration.ofSeconds(60L);
+   private static final Duration PRESENCE_UPDATE_INTERVAL = Duration.ofMinutes(1L);
+   private static final long MAX_PRESENCE_INTERVAL_MULTIPLIER = 5L;
    private final Minecraft minecraft;
    private final FriendsService friendsService;
    private PresenceResponse latestPresence = new PresenceResponse(new ArrayList());
@@ -37,13 +40,13 @@ public class PresenceHandler {
       CompletableFuture.runAsync(() -> {
          PresenceResponse newPresence = this.friendsService.presence(publicPresenceStatus.name());
          this.minecraft.execute(() -> {
-            boolean refreshList = this.latestPresence != newPresence;
+            boolean refreshPresence = !Objects.equals(this.latestPresence, newPresence);
             this.latestPresence = newPresence;
-            if (refreshList) {
+            if (refreshPresence) {
                Screen patt0$temp = this.minecraft.gui.screen();
                if (patt0$temp instanceof FriendsOverlayScreen) {
                   FriendsOverlayScreen friendsOverlayScreen = (FriendsOverlayScreen)patt0$temp;
-                  friendsOverlayScreen.refreshLists();
+                  friendsOverlayScreen.applyPresenceUpdate();
                }
             }
 
@@ -52,9 +55,12 @@ public class PresenceHandler {
    }
 
    private boolean shouldRefreshPresence() {
-      if (this.minecraft.getPlayerSocialManager().isFriendListEnabled() && !this.minecraft.getPlayerSocialManager().getFriends().isEmpty()) {
+      PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
+      if (socialManager.isFriendListEnabled() && !socialManager.getFriends().isEmpty()) {
          Duration sinceLastPresence = Duration.between(this.lastPresencePost, Instant.now());
-         return this.updatePresence && sinceLastPresence.compareTo(PRESENCE_UPDATE_INTERVAL) >= 0 || sinceLastPresence.compareTo(MAX_PRESENCE_UPDATE_INTERVAL) >= 0;
+         Duration interval = (Duration)this.friendsService.getPresencePollInterval().orElse(PRESENCE_UPDATE_INTERVAL);
+         Duration maxInterval = interval.multipliedBy(5L);
+         return this.updatePresence && sinceLastPresence.compareTo(interval) >= 0 || sinceLastPresence.compareTo(maxInterval) >= 0;
       } else {
          return false;
       }
@@ -89,6 +95,15 @@ public class PresenceHandler {
 
    private PresenceStatus getPresenceStatus() {
       IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
-      return singleplayerServer != null ? PresenceStatus.PLAYING_OFFLINE : PresenceStatus.ONLINE;
+      if (singleplayerServer != null) {
+         return singleplayerServer.getMultiplayerScope() == MinecraftServer.MultiplayerScope.LAN ? PresenceStatus.PLAYING_HOSTED_SERVER : PresenceStatus.PLAYING_OFFLINE;
+      } else {
+         ServerData server = this.minecraft.getCurrentServer();
+         if (server != null) {
+            return server.isRealm() ? PresenceStatus.PLAYING_REALMS : PresenceStatus.PLAYING_SERVER;
+         } else {
+            return PresenceStatus.ONLINE;
+         }
+      }
    }
 }

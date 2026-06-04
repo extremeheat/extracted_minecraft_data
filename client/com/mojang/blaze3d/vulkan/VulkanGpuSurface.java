@@ -348,16 +348,16 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             VkDependencyInfo depinfo = VkDependencyInfo.calloc(stack).sType$Default();
             depinfo.pImageMemoryBarriers(imageBarrier);
             KHRSynchronization2.vkCmdPipelineBarrier2KHR(blitCommandBuffer, depinfo);
-         } catch (Throwable var19) {
+         } catch (Throwable var21) {
             if (var8 != null) {
                try {
                   var8.close();
-               } catch (Throwable var16) {
-                  var19.addSuppressed(var16);
+               } catch (Throwable var18) {
+                  var21.addSuppressed(var18);
                }
             }
 
-            throw var19;
+            throw var21;
          }
 
          if (var8 != null) {
@@ -367,15 +367,17 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
          var8 = stack.push();
 
          try {
+            int copyWidth = Math.min(this.swapchainWidth, textureView.getWidth(0));
+            int copyHeight = Math.min(this.swapchainHeight, textureView.getHeight(0));
             VkOffset3D.Buffer srcOffsets = VkOffset3D.calloc(2, stack);
             srcOffsets.x(0).y(0).z(0);
             srcOffsets.position(1);
-            srcOffsets.x(textureView.getWidth(0)).y(textureView.getHeight(0)).z(1);
+            srcOffsets.x(copyWidth).y(copyHeight).z(1);
             srcOffsets.position(0);
             VkOffset3D.Buffer dstOffsets = VkOffset3D.calloc(2, stack);
-            dstOffsets.x(0).y(this.swapchainHeight).z(0);
+            dstOffsets.x(0).y(copyHeight).z(0);
             dstOffsets.position(1);
-            dstOffsets.x(this.swapchainWidth).y(0).z(1);
+            dstOffsets.x(copyWidth).y(0).z(1);
             dstOffsets.position(0);
             VkImageSubresourceLayers srcSubresource = VkImageSubresourceLayers.calloc(stack);
             srcSubresource.aspectMask(1);
@@ -393,16 +395,16 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             blitRegion.dstSubresource(dstSubresource);
             blitRegion.dstOffsets(dstOffsets);
             VK12.vkCmdBlitImage(blitCommandBuffer, ((VulkanGpuTexture)textureView.texture()).vkImage(), 1, swapchainImage, 7, blitRegion, 0);
-         } catch (Throwable var18) {
+         } catch (Throwable var20) {
             if (var8 != null) {
                try {
                   var8.close();
-               } catch (Throwable var15) {
-                  var18.addSuppressed(var15);
+               } catch (Throwable var17) {
+                  var20.addSuppressed(var17);
                }
             }
 
-            throw var18;
+            throw var20;
          }
 
          if (var8 != null) {
@@ -437,16 +439,16 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             depinfo.pMemoryBarriers(memoryBarrier);
             depinfo.pImageMemoryBarriers(imageBarrier);
             KHRSynchronization2.vkCmdPipelineBarrier2KHR(blitCommandBuffer, depinfo);
-         } catch (Throwable var17) {
+         } catch (Throwable var19) {
             if (var8 != null) {
                try {
                   var8.close();
-               } catch (Throwable var14) {
-                  var17.addSuppressed(var14);
+               } catch (Throwable var16) {
+                  var19.addSuppressed(var16);
                }
             }
 
-            throw var17;
+            throw var19;
          }
 
          if (var8 != null) {

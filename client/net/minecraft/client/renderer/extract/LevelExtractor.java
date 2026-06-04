@@ -213,23 +213,31 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       EntityRenderDispatcher entityRenderDispatcher = this.levelRenderer.entityRenderDispatcher();
 
       for(Entity entity : this.level.entitiesForRendering()) {
-         if (entityRenderDispatcher.shouldRender(entity, frustum, camX, camY, camZ) || entity.hasIndirectPassenger(this.minecraft.player)) {
-            BlockPos blockPos = entity.blockPosition();
-            if ((this.level.isOutsideBuildHeight(blockPos.getY()) || this.levelRenderer.isSectionCompiledAndVisible(blockPos)) && (entity != camera.entity() || camera.isDetached() || camera.entity() instanceof LivingEntity && ((LivingEntity)camera.entity()).isSleeping()) && (!(entity instanceof LocalPlayer) || camera.entity() == entity)) {
-               if (entity.tickCount == 0) {
-                  entity.xOld = entity.getX();
-                  entity.yOld = entity.getY();
-                  entity.zOld = entity.getZ();
-               }
-
-               float partialEntity = deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
-               EntityRenderState state = this.extractEntity(entity, partialEntity);
-               output.entityRenderStates.add(state);
+         if (this.isEntityVisible(entity, frustum, camX, camY, camZ) && (entity != camera.entity() || camera.isDetached() || camera.entity() instanceof LivingEntity && ((LivingEntity)camera.entity()).isSleeping()) && (!(entity instanceof LocalPlayer) || camera.entity() == entity)) {
+            if (entity.tickCount == 0) {
+               entity.xOld = entity.getX();
+               entity.yOld = entity.getY();
+               entity.zOld = entity.getZ();
             }
+
+            float partialEntity = deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
+            EntityRenderState state = this.extractEntity(entity, partialEntity);
+            output.entityRenderStates.add(state);
          }
       }
 
       output.lastEntityRenderStateCount = output.entityRenderStates.size();
+   }
+
+   public boolean isEntityVisible(final Entity entity, final Frustum frustum, final double camX, final double camY, final double camZ) {
+      if (this.level == null) {
+         return false;
+      } else if (this.levelRenderer.entityRenderDispatcher().shouldRender(entity, frustum, camX, camY, camZ) || this.minecraft.player != null && entity.hasIndirectPassenger(this.minecraft.player)) {
+         BlockPos blockPos = entity.blockPosition();
+         return this.level.isOutsideBuildHeight(blockPos.getY()) || this.levelRenderer.isSectionCompiledAndVisible(blockPos);
+      } else {
+         return false;
+      }
    }
 
    private EntityRenderState extractEntity(final Entity entity, final float partialTickTime) {

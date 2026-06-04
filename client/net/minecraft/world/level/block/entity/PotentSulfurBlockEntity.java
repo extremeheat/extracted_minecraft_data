@@ -10,6 +10,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -252,7 +253,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
                      }
                   }
 
-                  if (!entityToBeLaunched.isPassenger() && entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
+                  if (!entityToBeLaunched.isPassenger() && !entityToBeLaunched.is(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS) && entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
                      entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
                   }
                }

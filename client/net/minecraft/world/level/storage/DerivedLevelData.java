@@ -49,6 +49,9 @@ public class DerivedLevelData implements ServerLevelData {
       return this.worldData.isAllowCommands();
    }
 
+   public void setAllowCommands(final boolean allowCommands) {
+   }
+
    public boolean isInitialized() {
       return this.wrapped.isInitialized();
    }

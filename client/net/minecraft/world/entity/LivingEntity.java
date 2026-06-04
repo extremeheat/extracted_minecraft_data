@@ -1574,7 +1574,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   public void knockback(double power, double xd, double zd, final DamageSource source, final float damage) {
+   public void knockback(double power, double xd, double zd, final DamageSource source, final float damage, final boolean comesFromEffect) {
       power *= 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
       if (!(power <= 0.0)) {
          this.needsSync = true;
@@ -1587,6 +1587,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          Vec3 deltaVector = (new Vec3(xd, 0.0, zd)).normalize().scale(power);
          this.setDeltaMovement(deltaMovement.x / 2.0 - deltaVector.x, this.onGround() ? Math.min(0.4, deltaMovement.y / 2.0 + power) : deltaMovement.y, deltaMovement.z / 2.0 - deltaVector.z);
       }
+   }
+
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
+      this.knockback(power, xd, zd, source, damage, false);
    }
 
    public void indicateDamage(final double xd, final double zd) {
@@ -2657,9 +2661,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return false;
    }
 
-   public void causeExtraKnockback(final Entity target, final float knockback, final Vec3 oldMovement, final DamageSource damageSource, final float damage) {
+   public void causeExtraKnockback(final Entity target, final float knockback, final Vec3 oldMovement, final DamageSource damageSource, final float damage, final boolean comesFromEffect) {
       if (knockback > 0.0F && target instanceof LivingEntity livingTarget) {
-         livingTarget.knockback((double)knockback, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, damage);
+         livingTarget.knockback((double)knockback, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, damage, comesFromEffect);
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
       }
 
@@ -2819,7 +2823,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          boolean dealtDamage = dealsDamage && target.hurtServer(serverLevel, damageSource, postEnchantmentDamage);
          boolean affected = dealsKnockback | dealtDamage;
          if (dealsKnockback) {
-            this.causeExtraKnockback(target, 0.4F + this.getKnockback(target, damageSource), oldMovement, damageSource, postEnchantmentDamage);
+            this.causeExtraKnockback(target, 0.4F, oldMovement, damageSource, postEnchantmentDamage, false);
+            this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, postEnchantmentDamage, true);
          }
 
          if (dismounts && target.isPassenger()) {

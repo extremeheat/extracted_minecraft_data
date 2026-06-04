@@ -52,6 +52,7 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> NAUTILUS_HOSTILES = create("nautilus_hostiles");
    TagKey<EntityType<?>> CAN_FLOAT_WHILE_RIDDEN = create("can_float_while_ridden");
    TagKey<EntityType<?>> CANNOT_BE_AGE_LOCKED = create("cannot_be_age_locked");
+   TagKey<EntityType<?>> NOT_AFFECTED_BY_GEYSERS = create("not_affected_by_geysers");
 
    private static TagKey<EntityType<?>> create(final String name) {
       return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(name));

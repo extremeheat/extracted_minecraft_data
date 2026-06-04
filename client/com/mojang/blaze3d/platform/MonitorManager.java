@@ -12,33 +12,36 @@ import org.lwjgl.glfw.GLFWMonitorCallback;
 import org.lwjgl.glfw.GLFWMonitorCallbackI;
 import org.slf4j.Logger;
 
-public class ScreenManager {
+public class MonitorManager implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Long2ObjectMap<Monitor> monitors = new Long2ObjectOpenHashMap();
-   private final MonitorCreator monitorCreator;
 
-   public ScreenManager(final MonitorCreator monitorCreator) {
+   public MonitorManager() {
       super();
-      this.monitorCreator = monitorCreator;
       GLFW.glfwSetMonitorCallback(this::onMonitorChange);
       PointerBuffer buffer = GLFW.glfwGetMonitors();
       if (buffer != null) {
          for(int i = 0; i < buffer.limit(); ++i) {
-            long monitor = buffer.get(i);
-            this.monitors.put(monitor, monitorCreator.createMonitor(monitor));
+            Monitor monitor = Monitor.tryCreate(buffer.get(i));
+            if (monitor != null) {
+               this.monitors.put(buffer.get(i), monitor);
+            }
          }
       }
 
    }
 
-   private void onMonitorChange(final long monitor, final int event) {
+   private void onMonitorChange(final long monitorHandle, final int event) {
       RenderSystem.assertOnRenderThread();
       if (event == 262145) {
-         this.monitors.put(monitor, this.monitorCreator.createMonitor(monitor));
-         LOGGER.debug("Monitor {} connected. Current monitors: {}", monitor, this.monitors);
+         Monitor monitor = Monitor.tryCreate(monitorHandle);
+         if (monitor != null) {
+            this.monitors.put(monitorHandle, monitor);
+            LOGGER.debug("Monitor {} connected. Current monitors: {}", monitor, this.monitors);
+         }
       } else if (event == 262146) {
-         this.monitors.remove(monitor);
-         LOGGER.debug("Monitor {} disconnected. Current monitors: {}", monitor, this.monitors);
+         Monitor monitor = (Monitor)this.monitors.remove(monitorHandle);
+         LOGGER.debug("Monitor {} disconnected. Current monitors: {}", monitor != null ? monitor : monitorHandle, this.monitors);
       }
 
    }
@@ -64,10 +67,10 @@ public class ScreenManager {
 
          while(var12.hasNext()) {
             Monitor monitor = (Monitor)var12.next();
-            int monMinX = monitor.getX();
-            int monMaxX = monMinX + monitor.getCurrentMode().getWidth();
-            int monMinY = monitor.getY();
-            int monMaxY = monMinY + monitor.getCurrentMode().getHeight();
+            int monMinX = monitor.x();
+            int monMaxX = monMinX + monitor.currentMode().getWidth();
+            int monMinY = monitor.y();
+            int monMaxY = monMinY + monitor.currentMode().getHeight();
             int minX = clamp(winMinX, monMinX, monMaxX);
             int maxX = clamp(winMaxX, monMinX, monMaxX);
             int minY = clamp(winMinY, monMinY, monMaxY);
@@ -78,7 +81,7 @@ public class ScreenManager {
             if (area > maxArea) {
                result = monitor;
                maxArea = area;
-            } else if (area == maxArea && primaryMonitor == monitor.getMonitor()) {
+            } else if (area == maxArea && primaryMonitor == monitor.monitor()) {
                LOGGER.debug("Primary monitor {} is preferred to monitor {}", monitor, result);
                result = monitor;
             }
@@ -97,7 +100,7 @@ public class ScreenManager {
       }
    }
 
-   public void shutdown() {
+   public void close() {
       RenderSystem.assertOnRenderThread();
       GLFWMonitorCallback callback = GLFW.glfwSetMonitorCallback((GLFWMonitorCallbackI)null);
       if (callback != null) {

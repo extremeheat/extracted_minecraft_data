@@ -30,7 +30,7 @@ public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRende
    public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
       if (this.minecraft.level != null) {
          for(Entity entity : this.minecraft.level.entitiesForRendering()) {
-            if (!entity.isInvisible() && frustum.isVisible(entity.getBoundingBox()) && (entity != this.minecraft.getCameraEntity() || this.minecraft.options.getCameraType() != CameraType.FIRST_PERSON)) {
+            if (!entity.isInvisible() && frustum.isVisible(entity.getBoundingBox()) && this.minecraft.levelExtractor.isEntityVisible(entity, frustum, camX, camY, camZ) && (entity != this.minecraft.getCameraEntity() || this.minecraft.options.getCameraType() != CameraType.FIRST_PERSON)) {
                float entityPartialTicks = this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(!this.minecraft.level.tickRateManager().isEntityFrozen(entity));
                this.showHitboxes(entity, entityPartialTicks, false);
                if (SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES) {

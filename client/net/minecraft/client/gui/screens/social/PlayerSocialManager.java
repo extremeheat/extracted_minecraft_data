@@ -26,6 +26,7 @@ public class PlayerSocialManager {
    private static final Component FRIEND_ACTION_RATE_LIMITED_MESSAGE = Component.translatable("gui.friends.error.rateLimited.message");
    private static final Component FRIEND_ACTION_FORBIDDEN_MESSAGE = Component.translatable("gui.friends.error.forbidden.message");
    private static final Component FRIEND_ACTION_UNKNOWN_PROFILE = Component.translatable("gui.friends.error.user_may_lack_active_profile");
+   private static final Component FRIEND_ACTION_UNAUTHORIZED = Component.translatable("gui.friends.error.unauthorized");
    private static final Component FRIEND_ACTION_UNAVAILABLE_MESSAGE = Component.translatable("gui.friends.error.unavailable.message");
    private final Minecraft minecraft;
    private final Set<UUID> hiddenPlayers = Sets.newHashSet();
@@ -177,19 +178,41 @@ public class PlayerSocialManager {
    }
 
    private void showFailureToast(final FriendsService.ResultCode resultCode) {
-      Component title;
+      Component var10000;
       switch (resultCode) {
-         case TOO_MANY_REQUESTS -> title = FRIEND_ACTION_RATE_LIMITED_MESSAGE;
-         case UNKNOWN_PROFILE -> title = FRIEND_ACTION_UNKNOWN_PROFILE;
-         case FORBIDDEN -> title = FRIEND_ACTION_FORBIDDEN_MESSAGE;
-         case SERVICE_NOT_AVAILABLE -> title = FRIEND_ACTION_UNAVAILABLE_MESSAGE;
-         case ERROR -> title = FRIEND_ACTION_FAILED_MESSAGE;
-         default -> {
-            return;
-         }
+         case TOO_MANY_REQUESTS:
+            var10000 = FRIEND_ACTION_RATE_LIMITED_MESSAGE;
+            break;
+         case UNKNOWN_PROFILE:
+            var10000 = FRIEND_ACTION_UNKNOWN_PROFILE;
+            break;
+         case UNAUTHORIZED:
+            var10000 = FRIEND_ACTION_UNAUTHORIZED;
+            break;
+         case FORBIDDEN:
+            var10000 = FRIEND_ACTION_FORBIDDEN_MESSAGE;
+            break;
+         case SERVICE_NOT_AVAILABLE:
+            var10000 = FRIEND_ACTION_UNAVAILABLE_MESSAGE;
+            break;
+         case ERROR:
+            var10000 = FRIEND_ACTION_FAILED_MESSAGE;
+            break;
+         case SUCCESS:
+         case UPGRADE_NEEDED:
+         case CONNECTION_ISSUE:
+         case TEMPORARY_UNAVAILABLE:
+         case GENERIC_ERROR:
+            var10000 = null;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
-      this.minecraft.execute(() -> SystemToast.addOrUpdate(this.minecraft.gui.toastManager(), SystemToast.SystemToastId.FRIEND_SYSTEM_NOTIFICATION, title, (Component)null));
+      Component title = var10000;
+      if (title != null) {
+         this.minecraft.execute(() -> SystemToast.addOrUpdate(this.minecraft.gui.toastManager(), SystemToast.SystemToastId.FRIEND_SYSTEM_NOTIFICATION, title, (Component)null));
+      }
    }
 
    public boolean isFriendListEnabled() {

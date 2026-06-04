@@ -13,6 +13,8 @@ import org.lwjgl.glfw.GLFW;
 public class GlSurface implements GpuSurfaceBackend {
    private static final Set<GpuSurface.PresentMode> SUPPORTED_PRESENT_MODES;
    private final long windowHandle;
+   private int swapchainWidth;
+   private int swapchainHeight;
 
    public GlSurface(final long windowHandle) {
       super();
@@ -21,6 +23,8 @@ public class GlSurface implements GpuSurfaceBackend {
 
    public void configure(final GpuSurface.Configuration config) throws SurfaceException {
       GLFW.glfwSwapInterval(config.presentMode() == GpuSurface.PresentMode.FIFO ? 1 : 0);
+      this.swapchainWidth = config.width();
+      this.swapchainHeight = config.height();
    }
 
    public boolean isSuboptimal() {
@@ -31,7 +35,7 @@ public class GlSurface implements GpuSurfaceBackend {
    }
 
    public void blitFromTexture(final CommandEncoderBackend commandEncoder, final GpuTextureView textureView) {
-      ((GlCommandEncoder)commandEncoder).presentTexture(textureView);
+      ((GlCommandEncoder)commandEncoder).presentTexture(textureView, this.swapchainWidth, this.swapchainHeight);
    }
 
    public void present() {

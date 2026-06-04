@@ -94,7 +94,9 @@ public class ParticleEngine {
       Particle particle;
       if (!this.particlesToAdd.isEmpty()) {
          while((particle = (Particle)this.particlesToAdd.poll()) != null) {
-            ((ParticleGroup)this.particles.computeIfAbsent(particle.getGroup(), this::createParticleGroup)).add(particle);
+            if (!((ParticleGroup)this.particles.computeIfAbsent(particle.getGroup(), this::createParticleGroup)).add(particle)) {
+               particle.getParticleLimit().ifPresent((options) -> this.updateCount(options, -1));
+            }
          }
       }
 
@@ -131,7 +133,19 @@ public class ParticleEngine {
    }
 
    public String countParticles() {
-      return String.valueOf(this.particles.values().stream().mapToInt(ParticleGroup::size).sum());
+      StringBuilder builder = new StringBuilder();
+      int total = 0;
+
+      for(Map.Entry<ParticleRenderType, ParticleGroup<?>> group : this.particles.entrySet()) {
+         builder.append(((ParticleRenderType)group.getKey()).shorthand()).append(" ");
+         int size = ((ParticleGroup)group.getValue()).size();
+         builder.append(size).append(" ");
+         total += size;
+      }
+
+      builder.append("T ");
+      builder.append(total);
+      return builder.toString();
    }
 
    private boolean hasSpaceInParticleLimit(final ParticleLimit limit) {
@@ -143,6 +157,10 @@ public class ParticleEngine {
       this.particlesToAdd.clear();
       this.trackingEmitters.clear();
       this.trackedParticleCounts.clear();
+   }
+
+   public RandomSource getRandom() {
+      return this.random;
    }
 
    static {

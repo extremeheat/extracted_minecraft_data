@@ -20,11 +20,9 @@ import net.minecraft.client.gui.screens.telemetry.TelemetryInfoScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.level.Level;
-import org.jspecify.annotations.Nullable;
 
-public class OptionsScreen extends Screen implements HasGamemasterPermissionReaction, HasDifficultyReaction {
+public class OptionsScreen extends Screen implements HasGamemasterPermissionReaction {
    private static final Component TITLE = Component.translatable("options.title");
    private static final Component SKIN_CUSTOMIZATION = Component.translatable("options.skinCustomisation");
    private static final Component SOUNDS = Component.translatable("options.sounds");
@@ -42,7 +40,6 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
    private final Screen lastScreen;
    private final Options options;
    private final boolean inWorld;
-   private @Nullable DifficultyButtons difficultyButtons;
 
    public OptionsScreen(final Screen lastScreen, final Options options, final boolean inWorld) {
       super(TITLE);
@@ -57,7 +54,7 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
       LinearLayout subHeader = ((LinearLayout)header.addChild(LinearLayout.horizontal())).spacing(8);
       subHeader.addChild(this.options.fov().createButton(this.minecraft.options));
       if (this.inWorld) {
-         subHeader.addChild(this.createWorldOptionsButtonOrDifficultyButton((Level)Objects.requireNonNull(this.minecraft.level)));
+         subHeader.addChild(Button.builder(Component.translatable("options.worldOptions.button"), (var1) -> this.minecraft.gui.setScreen(new WorldOptionsScreen(this, (Level)Objects.requireNonNull(this.minecraft.level)))).build());
       } else {
          subHeader.addChild(this.createOnlineButton());
       }
@@ -107,23 +104,6 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
       return Button.builder(Component.translatable("options.online"), (var1) -> this.minecraft.gui.setScreen(new OnlineOptionsScreen(this, this.options))).bounds(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20).build();
    }
 
-   private LayoutElement createWorldOptionsButtonOrDifficultyButton(final Level level) {
-      if (!this.canShowWorldOptions()) {
-         this.difficultyButtons = DifficultyButtons.create(this.minecraft, level, this);
-         return this.difficultyButtons.layout();
-      } else {
-         return Button.builder(Component.translatable("options.worldOptions.button"), (var2) -> this.minecraft.gui.setScreen(new WorldOptionsScreen(this, level))).build();
-      }
-   }
-
-   private boolean canShowWorldOptions() {
-      if (this.minecraft.player == null) {
-         return false;
-      } else {
-         return this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) || this.minecraft.player.chatAbilities().hasAnyRestrictions();
-      }
-   }
-
    public void removed() {
       this.options.save();
    }
@@ -134,19 +114,5 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       this.minecraft.gui.setScreen(new OptionsScreen(this.lastScreen, this.minecraft.options, true));
-   }
-
-   public void added() {
-      if (this.difficultyButtons != null) {
-         this.difficultyButtons.refresh(this.minecraft);
-      }
-
-   }
-
-   public void onDifficultyChanged() {
-      if (this.difficultyButtons != null) {
-         this.difficultyButtons.refresh(this.minecraft);
-      }
-
    }
 }

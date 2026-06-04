@@ -21,6 +21,7 @@ import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.IconSet;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.MessageBox;
+import com.mojang.blaze3d.platform.MonitorManager;
 import com.mojang.blaze3d.platform.TextInputManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
@@ -95,12 +96,15 @@ import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Overlay;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
@@ -270,6 +274,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final TextureManager textureManager;
    private final ShaderManager shaderManager;
    private final DataFixer fixerUpper;
+   private final MonitorManager monitorManager;
    private final Window window;
    private final GpuSurface windowSurface;
    private final TextInputManager textInputManager;
@@ -441,6 +446,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       Util.setTimeSource(RenderSystem.initBackendSystem());
+      this.monitorManager = new MonitorManager();
       StringBuilder errorMsgBuilder = new StringBuilder("No supported graphics backend was found.");
       Window windowCandidate = null;
       GpuDevice device = null;
@@ -454,11 +460,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.backendCreationException = VulkanBackend.checkBackendAvailable();
       }
 
+      String initialWindowTitle = this.createTitle();
+
       for(GpuBackend backend : preferredGraphicsBackend.getBackendsToTry()) {
          try {
             GLFW.glfwDefaultWindowHints();
             GLFW.glfwWindowHint(131088, GLX.glfwBool(!(Boolean)this.options.exclusiveFullscreen().get()));
-            windowCandidate = new Window(this, displayData, this.options.fullscreenVideoModeString, this.createTitle(), backend);
+            windowCandidate = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend);
             device = windowCandidate.backend().createDevice(windowCandidate.handle(), (id, type) -> this.getShaderManager().getShader(id, type), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation), this::loadCriticalShaders);
             DeviceInfo deviceInfo = device.getDeviceInfo();
             int maxSize = deviceInfo.limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
@@ -468,11 +476,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             LOGGER.info("Using graphics device: {} ({})", deviceInfo.name(), deviceInfo.vendorName());
             LOGGER.info("Using graphics device extensions: {}", String.join(", ", deviceInfo.underlyingExtensions()));
             break;
-         } catch (BackendCreationException var28) {
-            LOGGER.error("Failed to create backend {}", backend.getName(), var28);
-            errorMsgBuilder.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(var28.getMessage());
-            if (this.backendCreationException == null || var28.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
-               this.backendCreationException = var28;
+         } catch (BackendCreationException var29) {
+            LOGGER.error("Failed to create backend {}", backend.getName(), var29);
+            errorMsgBuilder.append("\n\n- Tried ").append(backend.getName()).append(": \n  ").append(var29.getMessage());
+            if (this.backendCreationException == null || var29.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
+               this.backendCreationException = var29;
             }
 
             if (windowCandidate != null) {
@@ -615,7 +623,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                if (!messages.isEmpty()) {
                   message.append("\n\nReported GL debug messages:\n").append(String.join("\n", messages));
                }
-            } catch (Throwable var26) {
+            } catch (Throwable var27) {
             }
 
             this.window.setWindowed(mainRenderTarget.width, mainRenderTarget.height);
@@ -1085,6 +1093,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          throw t;
       } finally {
          this.window.close();
+         this.monitorManager.close();
          GLFW.glfwTerminate();
       }
 
@@ -2164,6 +2173,44 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public boolean friendsEnabled() {
       return this.userProperties().flag(UserFlag.FRIENDS_ENABLED);
+   }
+
+   public boolean handleGlobalKeyPress(final InputConstants.Key key, final boolean controlDown) {
+      if (this.options.keyFullscreen.matches(key)) {
+         this.toggleFullscreen();
+         return true;
+      } else if (this.options.keyScreenshot.matches(key)) {
+         Screenshot.grab(this, controlDown);
+         return true;
+      } else {
+         return this.options.keyFriends.matches(key) ? this.toggleFriendsScreen() : false;
+      }
+   }
+
+   private void toggleFullscreen() {
+      Window window = this.getWindow();
+      window.toggleFullScreen();
+      boolean fullscreen = window.isFullscreen();
+      this.options.fullscreen().set(fullscreen);
+      this.options.save();
+      Screen var4 = this.gui.screen();
+      if (var4 instanceof VideoSettingsScreen videoSettingsScreen) {
+         videoSettingsScreen.updateFullscreenButton(fullscreen);
+      }
+
+   }
+
+   private boolean toggleFriendsScreen() {
+      Screen current = this.gui.screen();
+      if (current instanceof FriendsOverlayScreen friends) {
+         friends.onClose();
+         return true;
+      } else if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+         return false;
+      } else {
+         this.gui.setScreen(new FriendsOverlayScreen(current));
+         return true;
+      }
    }
 
    public boolean allowFriendRequests() {

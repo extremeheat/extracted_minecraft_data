@@ -1,6 +1,6 @@
 package net.minecraft.client.particle;
 
-import com.google.common.collect.EvictingQueue;
+import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Queue;
@@ -13,8 +13,10 @@ import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 
 public abstract class ParticleGroup<P extends Particle> {
    private static final int MAX_PARTICLES = 16384;
+   private static final int RESERVOIR_SIZE = 4096;
+   private static final int RESERVOIR_START = 12288;
    protected final ParticleEngine engine;
-   protected final Queue<P> particles = EvictingQueue.create(16384);
+   protected final Queue<P> particles = new ArrayDeque(16384);
 
    public ParticleGroup(final ParticleEngine engine) {
       super();
@@ -56,8 +58,21 @@ public abstract class ParticleGroup<P extends Particle> {
       }
    }
 
-   public void add(final Particle particle) {
-      this.particles.add(particle);
+   public boolean add(final Particle particle) {
+      int currentSize = this.particles.size();
+      if (currentSize >= 16384) {
+         return false;
+      } else {
+         if (currentSize >= 12288) {
+            float freeSpace = (float)(16384 - currentSize) / 4096.0F;
+            if (this.engine.getRandom().nextFloat() >= freeSpace * freeSpace) {
+               return false;
+            }
+         }
+
+         this.particles.add(particle);
+         return true;
+      }
    }
 
    public int size() {
@@ -65,8 +80,4 @@ public abstract class ParticleGroup<P extends Particle> {
    }
 
    public abstract ParticleGroupRenderState extractRenderState(Frustum frustum, Camera camera, float partialTickTime);
-
-   public Queue<P> getAll() {
-      return this.particles;
-   }
 }

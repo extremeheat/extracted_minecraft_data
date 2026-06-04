@@ -542,7 +542,11 @@ public abstract class PlayerList {
    }
 
    public boolean isOp(final NameAndId nameAndId) {
-      return this.ops.contains(nameAndId) || this.server.isSingleplayerOwner(nameAndId) && this.server.getWorldData().isAllowCommands() || this.allowCommandsForAllPlayers;
+      if (this.ops.contains(nameAndId)) {
+         return true;
+      } else {
+         return this.server.isSingleplayerOwner(nameAndId) ? this.server.getWorldData().isAllowCommands() : this.allowCommandsForAllPlayers;
+      }
    }
 
    public @Nullable ServerPlayer getPlayerByName(final String name) {

@@ -123,7 +123,7 @@ public class ChargeAttack extends Behavior<Animal> {
       float speedFactor = Mth.clamp(this.speed * (float)body.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.2F, 2.0F) + speedBoostPower;
       DamageSource damageSource = level.damageSources().mobAttack(body);
       float damage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
-      body.causeExtraKnockback(target, speedFactor * this.knockbackForce, body.getDeltaMovement(), damageSource, damage);
+      body.causeExtraKnockback(target, speedFactor * this.knockbackForce, body.getDeltaMovement(), damageSource, damage, false);
    }
 
    protected void stop(final ServerLevel level, final Animal body, final long timestamp) {

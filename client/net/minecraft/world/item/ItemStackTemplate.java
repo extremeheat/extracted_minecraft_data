@@ -49,8 +49,12 @@ public record ItemStackTemplate(Holder<Item> item, int count, DataComponentPatch
       if (itemStack.isEmpty()) {
          throw new IllegalStateException("Stack must be non-empty");
       } else {
-         return new ItemStackTemplate(itemStack.typeHolder(), itemStack.getCount(), itemStack.getComponentsPatch());
+         return fromStack(itemStack);
       }
+   }
+
+   public static ItemStackTemplate fromStack(final ItemStack itemStack) {
+      return new ItemStackTemplate(itemStack.typeHolder(), itemStack.getCount(), itemStack.getComponentsPatch());
    }
 
    public ItemStackTemplate withCount(final int count) {

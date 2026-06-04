@@ -13,6 +13,7 @@ import com.mojang.realmsclient.dto.RegionDataDto;
 import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServiceQuality;
+import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
@@ -52,6 +53,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private final RealmsMainScreen lastScreen;
    private @Nullable RealmsServer serverData;
    private @Nullable PreferredRegionsDto regions;
+   private @Nullable Subscription subscription;
    private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    private final long serverId;
    private boolean stateChanged;
@@ -84,6 +86,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          this.fetchRegionData();
       }
 
+      if (this.subscription == null) {
+         this.fetchSubscription(this.serverId);
+      }
+
       Component loadingTitle = Component.translatable("mco.configure.world.loading");
       this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), RealmsWorldsTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsPlayersTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSubscriptionTab.TITLE, loadingTitle), new LoadingTab(this.getFont(), RealmsSettingsTab.TITLE, loadingTitle)).build();
       this.tabNavigationBar.setTabActiveState(3, false);
@@ -101,7 +107,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       });
       this.tabNavigationBar.selectTab(0, false);
       this.repositionElements();
-      if (this.serverData != null && this.regions != null) {
+      if (this.serverData != null && this.regions != null && this.subscription != null) {
          this.onRealmsDataFetched();
       }
 
@@ -202,8 +208,23 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }, this.minecraft);
    }
 
+   public void fetchSubscription(final long realmId) {
+      RealmsUtil.supplyAsync((client) -> client.subscriptionFor(realmId), (e) -> {
+         LOGGER.error("Couldn't get subscription", e);
+         this.minecraft.execute(() -> {
+            if (this.minecraft.gui.screen() instanceof RealmsConfigureWorldScreen) {
+               this.minecraft.gui.setScreen(this.createErrorScreen(e));
+            }
+
+         });
+      }).thenAcceptAsync((subscription) -> {
+         this.subscription = subscription;
+         this.onRealmsDataFetched();
+      }, this.minecraft);
+   }
+
    private void onRealmsDataFetched() {
-      if (this.serverData != null && this.regions != null) {
+      if (this.serverData != null && this.regions != null && this.subscription != null) {
          this.regionServiceQuality.clear();
 
          for(RegionDataDto region : this.regions.regionData()) {
@@ -221,7 +242,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = (MenuTabBar)this.addRenderableWidget(MenuTabBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
+         this.tabNavigationBar = (MenuTabBar)this.addRenderableWidget(MenuTabBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData, this.subscription), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
          this.setFocused(this.tabNavigationBar);
          if (focusedTabIndex != -1) {
             this.tabNavigationBar.selectTab(focusedTabIndex, false);

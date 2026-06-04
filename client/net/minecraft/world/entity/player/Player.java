@@ -929,7 +929,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                Vec3 oldMovement = entity.getDeltaMovement();
                boolean wasHurt = entity.hurtOrSimulate(damageSource, totalDamage);
                if (wasHurt) {
-                  this.causeExtraKnockback(entity, this.getKnockback(entity, damageSource) + (knockbackAttack ? 0.5F : 0.0F), oldMovement, damageSource, totalDamage);
+                  this.causeExtraKnockback(entity, this.getKnockback(entity, damageSource) + (knockbackAttack ? 0.5F : 0.0F), oldMovement, damageSource, totalDamage, true);
                   if (sweepAttack) {
                      this.doSweepAttack(entity, baseDamage, damageSource, attackStrengthScale);
                   }
@@ -1050,11 +1050,11 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   public void causeExtraKnockback(final Entity entity, final float knockbackAmount, final Vec3 oldMovement, final DamageSource damageSource, final float damage) {
+   public void causeExtraKnockback(final Entity entity, final float knockbackAmount, final Vec3 oldMovement, final DamageSource damageSource, final float damage, final boolean comesFromEffect) {
       if (knockbackAmount > 0.0F) {
          if (entity instanceof LivingEntity) {
             LivingEntity livingTarget = (LivingEntity)entity;
-            livingTarget.knockback((double)knockbackAmount, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, damage);
+            livingTarget.knockback((double)knockbackAmount, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))), damageSource, damage, comesFromEffect);
          } else {
             entity.push((double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)) * knockbackAmount), 0.1, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * knockbackAmount));
          }
@@ -1149,7 +1149,8 @@ public abstract class Player extends Avatar implements ContainerUser {
             Vec3 oldMovement = target.getDeltaMovement();
             boolean wasHurt = dealsDamage && target.hurtOrSimulate(damageSource, totalDamage);
             if (dealsKnockback) {
-               this.causeExtraKnockback(target, 0.4F + this.getKnockback(target, damageSource), oldMovement, damageSource, totalDamage);
+               this.causeExtraKnockback(target, 0.4F, oldMovement, damageSource, totalDamage, false);
+               this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, totalDamage, true);
             }
 
             boolean dismounted = false;

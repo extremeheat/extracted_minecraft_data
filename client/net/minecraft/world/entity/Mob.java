@@ -1403,7 +1403,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       Vec3 oldMovement = target.getDeltaMovement();
       boolean wasHurt = target.hurtServer(level, damageSource, dmg);
       if (wasHurt) {
-         this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, dmg);
+         this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, dmg, true);
          if (target instanceof LivingEntity) {
             LivingEntity livingTarget = (LivingEntity)target;
             weaponItem.hurtEnemy(livingTarget, this);

@@ -19,6 +19,10 @@ public record LevelSettings(String levelName, GameType gameType, DifficultySetti
       return new LevelSettings(this.levelName, gameType, this.difficultySettings, this.allowCommands, this.dataConfiguration);
    }
 
+   public LevelSettings withAllowCommands(final boolean allowCommands) {
+      return new LevelSettings(this.levelName, this.gameType, this.difficultySettings, allowCommands, this.dataConfiguration);
+   }
+
    public LevelSettings withDifficulty(final Difficulty difficulty) {
       return new LevelSettings(this.levelName, this.gameType, new DifficultySettings(difficulty, this.difficultySettings.hardcore(), this.difficultySettings.locked()), this.allowCommands, this.dataConfiguration);
    }

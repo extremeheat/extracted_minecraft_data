@@ -20,6 +20,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Position;
@@ -36,7 +37,6 @@ import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
-import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
@@ -62,7 +62,8 @@ public class IntegratedServer extends MinecraftServer {
    private final Minecraft minecraft;
    private boolean paused = true;
    private int publishedPort = -1;
-   private @Nullable GameType publishedGameType;
+   private @Nullable GameType gameTypeForOtherPlayers;
+   private @Nullable Boolean commandsAllowedForOtherPlayers;
    private @Nullable LanServerPinger lanPinger;
    private @Nullable UUID uuid;
    private int previousSimulationDistance = 0;
@@ -208,6 +209,15 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    public boolean publishServer(final MinecraftServer.MultiplayerScope scope, final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
+      if (gameMode != null) {
+         this.setGameTypeForOtherPlayers(gameMode);
+      }
+
+      this.setCommandsAllowedForOtherPlayers(allowCommands);
+      return this.publishServer(scope, port);
+   }
+
+   public boolean publishServer(final MinecraftServer.MultiplayerScope scope, final int port) {
       if (scope != MinecraftServer.MultiplayerScope.OFF && !this.isPublished()) {
          try {
             this.minecraft.prepareForMultiplayer();
@@ -217,11 +227,10 @@ public class IntegratedServer extends MinecraftServer {
             this.publishedPort = port;
             this.lanPinger = new LanServerPinger(this.getMotd(), Integer.toString(port));
             this.lanPinger.start();
-            this.publishedGameType = gameMode;
-            this.setCommandsAllowedForAllPlayers(allowCommands);
             this.setMultiplayerScope(scope);
+            this.updateCommandsAllowedForOtherPlayers();
             return true;
-         } catch (IOException var6) {
+         } catch (IOException var4) {
             return false;
          }
       } else {
@@ -229,28 +238,71 @@ public class IntegratedServer extends MinecraftServer {
       }
    }
 
-   public void applyDefaultGameMode(final GameType gameMode) {
+   public void setWorldGameType(final GameType gameMode) {
       this.setDefaultGameType(gameMode);
-      this.enforceGameTypeForPlayers(this.getForcedGameType());
+      this.applyGameTypeToPlayers(gameMode, true);
+      if (this.gameTypeForOtherPlayers == null) {
+         this.applyGameTypeToPlayers(gameMode, false);
+      }
+
    }
 
-   public void setCommandsAllowedForAllPlayers(final boolean allowCommands) {
-      this.getPlayerList().setAllowCommandsForAllPlayers(allowCommands);
-      PermissionSet newProfilePermissions = this.getProfilePermissions(this.minecraft.player.nameAndId());
-      this.minecraft.player.setPermissions(newProfilePermissions);
-      this.minecraft.player.refreshChatAbilities();
+   public GameType getGameTypeForOtherPlayers() {
+      return (GameType)MoreObjects.firstNonNull(this.gameTypeForOtherPlayers, this.worldData.getGameType());
+   }
+
+   public void setGameTypeForOtherPlayers(final GameType gameMode) {
+      this.gameTypeForOtherPlayers = gameMode;
+      this.applyGameTypeToPlayers(gameMode, false);
+   }
+
+   private void applyGameTypeToPlayers(final GameType gameMode, final boolean singleplayerOwner) {
+      for(ServerPlayer player : this.getPlayerList().getPlayers()) {
+         if (this.isSingleplayerOwner(player.nameAndId()) == singleplayerOwner) {
+            player.setGameMode(gameMode);
+         }
+      }
+
+   }
+
+   public void setWorldAllowCommands(final boolean allowCommands) {
+      this.getWorldData().setAllowCommands(allowCommands);
+      this.updateCommandsAllowedForOtherPlayers();
+   }
+
+   public boolean commandsAllowedForOtherPlayers() {
+      return (Boolean)MoreObjects.firstNonNull(this.commandsAllowedForOtherPlayers, this.worldData.isAllowCommands());
+   }
+
+   public void setCommandsAllowedForOtherPlayers(final boolean allowCommands) {
+      this.commandsAllowedForOtherPlayers = allowCommands;
+      this.updateCommandsAllowedForOtherPlayers();
+   }
+
+   private void updateCommandsAllowedForOtherPlayers() {
+      this.getPlayerList().setAllowCommandsForAllPlayers(this.commandsAllowedForOtherPlayers());
 
       for(ServerPlayer player : this.getPlayerList().getPlayers()) {
          this.getPlayerList().sendPlayerPermissionLevel(player);
       }
 
+      LocalPlayer player = this.minecraft.player;
+      if (player != null) {
+         this.updatePermissionAndChatAbilities(player);
+      }
+
+   }
+
+   private void updatePermissionAndChatAbilities(final LocalPlayer player) {
+      player.setPermissions(this.getProfilePermissions(player.nameAndId()));
+      player.refreshChatAbilities();
    }
 
    private void teardownPublishedState() {
       this.stopLanPinger();
       this.publishedPort = -1;
-      this.publishedGameType = null;
       this.setMultiplayerScope(MinecraftServer.MultiplayerScope.OFF);
+      this.updateCommandsAllowedForOtherPlayers();
    }
 
    private void stopLanPinger() {
@@ -310,11 +362,6 @@ public class IntegratedServer extends MinecraftServer {
       return this.publishedPort;
    }
 
-   public void setDefaultGameType(final GameType gameType) {
-      super.setDefaultGameType(gameType);
-      this.publishedGameType = null;
-   }
-
    public LevelBasedPermissionSet operatorUserPermissions() {
       return LevelBasedPermissionSet.GAMEMASTER;
    }
@@ -340,7 +387,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    public @Nullable GameType getForcedGameType() {
-      return this.isPublished() && !this.isHardcore() ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, this.worldData.getGameType()) : null;
+      return this.isPublished() && !this.isHardcore() ? this.getGameTypeForOtherPlayers() : null;
    }
 
    protected GlobalPos selectLevelLoadFocusPos() {

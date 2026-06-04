@@ -1,6 +1,7 @@
 package net.minecraft.world.item.component;
 
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,17 +17,19 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
+import org.slf4j.Logger;
 
 public record ChargedProjectiles(List<ItemStackTemplate> items) implements TooltipProvider {
-   private static final int MAX_SIZE = 64;
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int MAX_SIZE = 1024;
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
    public static final Codec<ChargedProjectiles> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC;
 
    public ChargedProjectiles {
       super();
-      if (items.size() > 64) {
-         throw new IllegalArgumentException("Got " + items.size() + " items, but maximum is 64");
+      if (items.size() > 1024) {
+         throw new IllegalArgumentException("Got " + items.size() + " items, but maximum is 1024");
       }
    }
 
@@ -35,7 +38,12 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Toolt
    }
 
    public static ChargedProjectiles ofNonEmpty(final List<ItemStack> items) {
-      return new ChargedProjectiles(List.copyOf(Lists.transform(items, ItemStackTemplate::fromNonEmptyStack)));
+      List<ItemStackTemplate> list = items.stream().filter((i) -> !i.isEmpty()).map(ItemStackTemplate::fromStack).limit(1024L).toList();
+      if (list.size() != items.size()) {
+         LOGGER.warn("Tried to load invalid items as charged projectiles");
+      }
+
+      return new ChargedProjectiles(list);
    }
 
    public boolean contains(final Item item) {
@@ -92,7 +100,7 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Toolt
    }
 
    static {
-      CODEC = ItemStackTemplate.CODEC.sizeLimitedListOf(64).xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
-      STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list(64)).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+      CODEC = ItemStackTemplate.CODEC.sizeLimitedListOf(1024).xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+      STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list(1024)).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
    }
 }

@@ -62,7 +62,7 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
          ReferenceArrayList<T> specialBlocksUsedThisRotation = this.specialBlocks.clone();
          this.specialBlocks.clear();
          return () -> {
-            if (!this.freeBlocks.isEmpty()) {
+            if (!blocksUsedThisRotation.isEmpty()) {
                this.allocator.free(blocksUsedThisRotation.pop());
             }
 

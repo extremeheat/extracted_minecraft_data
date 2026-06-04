@@ -21,7 +21,7 @@ public class CommonButtons {
       return button;
    }
 
-   public static FriendsButton friends(final int width, final Button.OnPress onPress) {
-      return new FriendsButton(width, onPress);
+   public static FriendsButton friends(final int width, final Button.OnPress onPress, final boolean friendsAvailable) {
+      return new FriendsButton(width, onPress, friendsAvailable);
    }
 }

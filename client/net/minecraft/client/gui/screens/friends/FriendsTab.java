@@ -1,5 +1,7 @@
 package net.minecraft.client.gui.screens.friends;
 
+import com.mojang.authlib.yggdrasil.response.PresenceResponse;
+import com.mojang.authlib.yggdrasil.response.PresenceStatusDto;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -130,6 +132,24 @@ class FriendsTab extends AbstractFriendsTab {
       Objects.requireNonNull(var10001);
       friendEntries.forEach(var10001::addChild);
       this.friendScrollableContent.addChild(this.createManageAccountFooter());
+   }
+
+   void applyPresenceUpdate(final PresenceResponse latestPresence) {
+      this.friendScrollableContent.visitWidgets((widget) -> {
+         if (widget instanceof FriendEntry entry) {
+            PresenceStatusDto newPresenceStatus = null;
+
+            for(PresenceStatusDto presenceStatus : latestPresence.presence()) {
+               if (presenceStatus.profileId().equals(entry.playerId())) {
+                  newPresenceStatus = presenceStatus;
+                  break;
+               }
+            }
+
+            entry.applyPresence(newPresenceStatus);
+         }
+
+      });
    }
 
    private FrameLayout createManageAccountFooter() {

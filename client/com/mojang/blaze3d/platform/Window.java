@@ -21,6 +21,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.Callbacks;
@@ -39,7 +40,7 @@ public final class Window implements AutoCloseable {
    public static final int BASE_HEIGHT = 240;
    private final GLFWErrorCallback defaultErrorCallback = GLFWErrorCallback.create(this::defaultErrorCallback);
    private final WindowEventHandler eventHandler;
-   private final ScreenManager screenManager;
+   private final MonitorManager monitorManager;
    private final long handle;
    private int windowedX;
    private int windowedY;
@@ -65,12 +66,14 @@ public final class Window implements AutoCloseable {
    private boolean minimized;
    private boolean allowCursorChanges;
    private CursorType currentCursor;
+   private final boolean exclusiveFullscreen;
    private final GpuBackend backend;
 
-   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final String title, final GpuBackend backend) throws BackendCreationException {
+   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend) throws BackendCreationException {
       super();
       this.currentCursor = CursorType.DEFAULT;
-      this.screenManager = new ScreenManager(Monitor::new);
+      this.monitorManager = monitorManager;
+      this.exclusiveFullscreen = exclusiveFullscreen;
       this.setBootErrorCallback();
       this.setErrorSection("Pre startup");
       this.eventHandler = eventHandler;
@@ -84,15 +87,15 @@ public final class Window implements AutoCloseable {
       }
 
       this.actuallyFullscreen = this.fullscreen = displayData.isFullscreen();
-      Monitor initialMonitor = this.screenManager.getMonitor(GLFW.glfwGetPrimaryMonitor());
+      Monitor initialMonitor = monitorManager.getMonitor(GLFW.glfwGetPrimaryMonitor());
       this.windowedWidth = this.width = allowedWindowMinSize(displayData.width());
       this.windowedHeight = this.height = allowedWindowMinSize(displayData.height());
-      this.handle = this.createWindow(backend, this.width, this.height, title, this.fullscreen && initialMonitor != null ? initialMonitor.getMonitor() : 0L);
+      this.handle = this.createWindow(backend, this.width, this.height, title, this.fullscreen && initialMonitor != null ? initialMonitor.monitor() : 0L);
       this.backend = backend;
       if (initialMonitor != null) {
          VideoMode mode = initialMonitor.getPreferredVidMode(this.fullscreen ? this.preferredFullscreenVideoMode : Optional.empty());
-         this.windowedX = this.x = initialMonitor.getX() + mode.getWidth() / 2 - this.width / 2;
-         this.windowedY = this.y = initialMonitor.getY() + mode.getHeight() / 2 - this.height / 2;
+         this.windowedX = this.x = initialMonitor.x() + mode.getWidth() / 2 - this.width / 2;
+         this.windowedY = this.y = initialMonitor.y() + mode.getHeight() / 2 - this.height / 2;
       } else {
          int[] actualX = new int[1];
          int[] actualY = new int[1];
@@ -297,7 +300,6 @@ public final class Window implements AutoCloseable {
 
    public void close() {
       RenderSystem.assertOnRenderThread();
-      this.screenManager.shutdown();
       Callbacks.glfwFreeCallbacks(this.handle);
       GLFW.glfwSetErrorCallback((GLFWErrorCallbackI)null);
       this.defaultErrorCallback.close();
@@ -309,15 +311,20 @@ public final class Window implements AutoCloseable {
       this.y = y;
    }
 
+   private boolean isSoftScreen() {
+      return Util.getPlatform() == Util.OS.WINDOWS && this.fullscreen && !this.exclusiveFullscreen;
+   }
+
    private void onFramebufferResize(final long handle, final int newWidth, final int newHeight) {
       if (handle == this.handle) {
          int oldWidth = this.getWidth();
          int oldHeight = this.getHeight();
          if (newWidth != 0 && newHeight != 0) {
-            if (newWidth != oldWidth || newHeight != oldHeight || this.minimized) {
+            int newFrameBufferHeight = this.isSoftScreen() ? newHeight - 1 : newHeight;
+            if (newWidth != oldWidth || newFrameBufferHeight != oldHeight || this.minimized) {
                this.minimized = false;
                this.framebufferWidth = newWidth;
-               this.framebufferHeight = newHeight;
+               this.framebufferHeight = newFrameBufferHeight;
 
                try {
                   this.eventHandler.framebufferSizeChanged();
@@ -339,6 +346,7 @@ public final class Window implements AutoCloseable {
       int[] outWidth = new int[1];
       int[] outHeight = new int[1];
       GLFW.glfwGetFramebufferSize(this.handle, outWidth, outHeight);
+      outHeight[0] = this.isSoftScreen() ? outHeight[0] - 1 : outHeight[0];
       this.framebufferWidth = outWidth[0] > 0 ? outWidth[0] : 1;
       this.framebufferHeight = outHeight[0] > 0 ? outHeight[0] : 1;
    }
@@ -405,7 +413,7 @@ public final class Window implements AutoCloseable {
    private void setMode() {
       boolean wasFullscreen = GLFW.glfwGetWindowMonitor(this.handle) != 0L;
       if (this.fullscreen) {
-         Monitor monitor = this.screenManager.findBestMonitor(this);
+         Monitor monitor = this.monitorManager.findBestMonitor(this);
          if (monitor == null) {
             LOGGER.warn("Failed to find suitable monitor for fullscreen mode");
             this.fullscreen = false;
@@ -426,7 +434,7 @@ public final class Window implements AutoCloseable {
             this.y = 0;
             this.width = allowedWindowMinSize(mode.getWidth());
             this.height = allowedWindowMinSize(mode.getHeight());
-            GLFW.glfwSetWindowMonitor(this.handle, monitor.getMonitor(), this.x, this.y, this.width, this.height, mode.getRefreshRate());
+            GLFW.glfwSetWindowMonitor(this.handle, monitor.monitor(), this.x, this.y, this.width, this.height, mode.getRefreshRate());
             if (MacosUtil.IS_MACOS) {
                MacosUtil.clearResizableBit(this);
             }
@@ -538,7 +546,7 @@ public final class Window implements AutoCloseable {
    }
 
    public @Nullable Monitor findBestMonitor() {
-      return this.screenManager.findBestMonitor(this);
+      return this.monitorManager.findBestMonitor(this);
    }
 
    public void updateRawMouseInput(final boolean value) {

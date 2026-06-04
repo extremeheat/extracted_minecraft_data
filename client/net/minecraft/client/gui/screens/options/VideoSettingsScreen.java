@@ -78,7 +78,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       } else {
          Optional<VideoMode> preferredFullscreenVideoMode = window.getPreferredFullscreenVideoMode();
          Objects.requireNonNull(monitor);
-         initialValue = (Integer)preferredFullscreenVideoMode.map(monitor::getVideoModeIndex).orElse(-1);
+         initialValue = (Integer)preferredFullscreenVideoMode.map(monitor::indexOfMode).orElse(-1);
       }
 
       OptionInstance<Integer> fullscreenOption = new OptionInstance<Integer>("options.fullscreen.resolution", OptionInstance.noTooltip(), (caption, value) -> {
@@ -87,12 +87,12 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          } else if (value == -1) {
             return Options.genericValueLabel(caption, Component.translatable("options.fullscreen.current"));
          } else {
-            VideoMode mode = monitor.getMode(value);
+            VideoMode mode = monitor.mode(value);
             return Options.genericValueLabel(caption, Component.translatable("options.fullscreen.entry", mode.getWidth(), mode.getHeight(), mode.getRefreshRate(), mode.getRedBits() + mode.getGreenBits() + mode.getBlueBits()));
          }
-      }, new OptionInstance.IntRange(-1, monitor != null ? monitor.getModeCount() - 1 : -1), initialValue, (value) -> {
+      }, new OptionInstance.IntRange(-1, monitor != null ? monitor.modeCount() - 1 : -1), initialValue, (value) -> {
          if (monitor != null) {
-            window.setPreferredFullscreenVideoMode(value == -1 ? Optional.empty() : Optional.of(monitor.getMode(value)));
+            window.setPreferredFullscreenVideoMode(value == -1 ? Optional.empty() : Optional.of(monitor.mode(value)));
          }
       });
       this.list.addHeader(DISPLAY_HEADER);

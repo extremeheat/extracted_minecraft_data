@@ -103,6 +103,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private static final float HORIZONTAL_HIT_ANGLE_SCALE = 1.6F;
    private static final float VERTICAL_HIT_ANGLE_SCALE = 0.5F;
    private static final float VERTICAL_POSITION_ANGLE_SCALE = 0.8F;
+   private static final float EXTRA_KNOCKBACK_DAMPENING = 0.25F;
    private static final Predicate<ItemEntity> ALLOWED_ITEMS;
 
    public SulfurCube(final EntityType<? extends SulfurCube> type, final Level level) {
@@ -773,7 +774,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return rotatedPower;
    }
 
-   public void knockback(final double power, double xd, double zd, final DamageSource source, final float damage) {
+   public void knockback(final double power, double xd, double zd, final DamageSource source, final float damage, final boolean comesFromEffect) {
       if (source.getEntity() != null && this.hasBodyItem()) {
          float horizontalHitAngleScale = 1.6F;
          float verticalHitAngleScale = 0.5F;
@@ -793,8 +794,9 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          verticalPower = newPower.y;
          xd = (double)newAngle.x;
          zd = (double)newAngle.y;
-         horizontalPower *= Mth.sqrt(damage);
-         verticalPower *= Mth.sqrt(damage);
+         float powerMultiplier = Mth.sqrt(damage) * (comesFromEffect ? (float)power * 0.25F : 1.0F);
+         horizontalPower *= powerMultiplier;
+         verticalPower *= powerMultiplier;
          double knockBackResistance = this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
          horizontalPower *= (float)(1.0 - knockBackResistance);
          verticalPower *= (float)(1.0 - knockBackResistance);
@@ -807,7 +809,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          this.setDeltaMovement(deltaMovement.x - horizontalKnockback.x, deltaMovement.y + (double)verticalPower * 1.2, deltaMovement.z - horizontalKnockback.z);
          this.playSound(hitSound.value());
       } else {
-         super.knockback(power, xd, zd, source, damage);
+         super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }
    }
 

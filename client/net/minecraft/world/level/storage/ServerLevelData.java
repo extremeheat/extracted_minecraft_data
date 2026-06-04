@@ -23,6 +23,8 @@ public interface ServerLevelData extends WritableLevelData {
 
    boolean isAllowCommands();
 
+   void setAllowCommands(boolean allowCommands);
+
    void setGameType(GameType gameType);
 
    void setGameTime(final long time);

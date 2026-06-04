@@ -1,55 +1,99 @@
 package com.mojang.blaze3d.platform;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.GLFWErrorCapture;
+import com.mojang.blaze3d.GLFWErrorScope;
+import com.mojang.logging.LogUtils;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.slf4j.Logger;
 
-public final class Monitor {
-   private final long monitor;
-   private final List<VideoMode> videoModes;
-   private final VideoMode currentMode;
-   private final int x;
-   private final int y;
+public record Monitor(String monitorName, long monitor, List<VideoMode> videoModes, VideoMode currentMode, int x, int y) {
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
 
-   public Monitor(final long monitor) {
+   public Monitor {
       super();
-      this.monitor = monitor;
-      ImmutableList.Builder<VideoMode> videoModes = ImmutableList.builder();
-      GLFWVidMode.Buffer modes = GLFW.glfwGetVideoModes(monitor);
-      if (modes == null) {
-         throw modeGetFailure();
-      } else {
-         for(int i = modes.limit() - 1; i >= 0; --i) {
-            modes.position(i);
-            VideoMode mode = new VideoMode(modes);
-            if (mode.getRedBits() >= 8 && mode.getGreenBits() >= 8 && mode.getBlueBits() >= 8) {
-               videoModes.add(mode);
-            }
-         }
-
-         this.videoModes = videoModes.build();
-         int[] x = new int[1];
-         int[] y = new int[1];
-         GLFW.glfwGetMonitorPos(monitor, x, y);
-         this.x = x[0];
-         this.y = y[0];
-         GLFWVidMode mode = GLFW.glfwGetVideoMode(monitor);
-         if (mode == null) {
-            throw modeGetFailure();
-         } else {
-            this.currentMode = new VideoMode(mode);
-         }
-      }
    }
 
-   private static IllegalArgumentException modeGetFailure() {
-      Window.checkGlfwError((error, description) -> {
-         throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error when getting monitor mode: [0x%X]%s", error, description));
-      });
-      return new IllegalArgumentException("Unknown GLFW error when getting monitor mode");
+   public static @Nullable Monitor tryCreate(final long monitor) {
+      GLFWErrorCapture glfwErrors = new GLFWErrorCapture();
+
+      Object var23;
+      try {
+         GLFWErrorScope var3;
+         label204: {
+            Monitor var25;
+            label205: {
+               var3 = new GLFWErrorScope(glfwErrors);
+
+               try {
+                  String monitorName = queryMonitorName(monitor);
+                  ImmutableList.Builder<VideoMode> videoModes = ImmutableList.builder();
+                  GLFWVidMode.Buffer modes = GLFW.glfwGetVideoModes(monitor);
+                  if (modes == null) {
+                     LOGGER.warn("Failed to query video modes of monitor {}", monitorName);
+                     var23 = null;
+                     break label204;
+                  }
+
+                  for(int i = modes.limit() - 1; i >= 0; --i) {
+                     modes.position(i);
+                     VideoMode mode = new VideoMode(modes);
+                     if (mode.getRedBits() >= 8 && mode.getGreenBits() >= 8 && mode.getBlueBits() >= 8) {
+                        videoModes.add(mode);
+                     }
+                  }
+
+                  int[] x = new int[1];
+                  int[] y = new int[1];
+                  GLFW.glfwGetMonitorPos(monitor, x, y);
+                  GLFWVidMode currentMode = GLFW.glfwGetVideoMode(monitor);
+                  if (currentMode == null) {
+                     LOGGER.warn("Failed to query current video mode of monitor {}", monitorName);
+                     var25 = null;
+                     break label205;
+                  }
+
+                  var25 = new Monitor(monitorName, monitor, videoModes.build(), new VideoMode(currentMode), x[0], y[0]);
+               } catch (Throwable var20) {
+                  try {
+                     var3.close();
+                  } catch (Throwable var19) {
+                     var20.addSuppressed(var19);
+                  }
+
+                  throw var20;
+               }
+
+               var3.close();
+               return var25;
+            }
+
+            var3.close();
+            return (Monitor)var25;
+         }
+
+         var3.close();
+      } finally {
+         for(GLFWErrorCapture.Error error : glfwErrors) {
+            LOGGER.error("GLFW error collected during monitor 0x{} query: {}", HEX_FORMAT.toHexDigits(monitor), error);
+         }
+
+      }
+
+      return (Monitor)var23;
+   }
+
+   private static String queryMonitorName(final long monitor) {
+      String monitorName = (String)Objects.requireNonNull(GLFW.glfwGetMonitorName(monitor), "unknown");
+      return monitorName + "[0x" + HEX_FORMAT.toHexDigits(monitor) + "]";
    }
 
    public VideoMode getPreferredVidMode(final Optional<VideoMode> expectedMode) {
@@ -63,38 +107,22 @@ public final class Monitor {
          }
       }
 
-      return this.getCurrentMode();
-   }
-
-   public int getVideoModeIndex(final VideoMode videoMode) {
-      return this.videoModes.indexOf(videoMode);
-   }
-
-   public VideoMode getCurrentMode() {
       return this.currentMode;
    }
 
-   public int getX() {
-      return this.x;
+   public int indexOfMode(final VideoMode videoMode) {
+      return this.videoModes.indexOf(videoMode);
    }
 
-   public int getY() {
-      return this.y;
-   }
-
-   public VideoMode getMode(final int mode) {
+   public VideoMode mode(final int mode) {
       return (VideoMode)this.videoModes.get(mode);
    }
 
-   public int getModeCount() {
+   public int modeCount() {
       return this.videoModes.size();
    }
 
-   public long getMonitor() {
-      return this.monitor;
-   }
-
    public String toString() {
-      return String.format(Locale.ROOT, "Monitor[%s %sx%s %s]", this.monitor, this.x, this.y, this.currentMode);
+      return String.format(Locale.ROOT, "%s(%s at (%d,%d))", this.monitorName, this.currentMode, this.x, this.y);
    }
 }

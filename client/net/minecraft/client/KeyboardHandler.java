@@ -22,11 +22,8 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
-import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
-import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -458,35 +455,16 @@ public class KeyboardHandler {
          }
 
          if (action == 1) {
-            label239: {
+            label194: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label239;
+                     break label194;
                   }
                }
 
-               if (options.keyFullscreen.matches(event)) {
-                  window.toggleFullScreen();
-                  boolean fullscreen = window.isFullscreen();
-                  options.fullscreen().set(fullscreen);
-                  options.save();
-                  Screen var14 = this.minecraft.gui.screen();
-                  if (var14 instanceof VideoSettingsScreen) {
-                     VideoSettingsScreen videoSettingsScreen = (VideoSettingsScreen)var14;
-                     videoSettingsScreen.updateFullscreenButton(fullscreen);
-                  }
-
+               if (this.minecraft.handleGlobalKeyPress(InputConstants.getKey(event), event.hasControlDownWithQuirk())) {
                   return;
-               }
-
-               if (options.keyScreenshot.matches(event)) {
-                  Screenshot.grab(this.minecraft, event.hasControlDownWithQuirk());
-                  return;
-               }
-
-               if (options.keyFriends.matches(event) && (screen == null || screen instanceof TitleScreen || screen instanceof PauseScreen) && this.minecraft.getPlayerSocialManager().isFriendListEnabled()) {
-                  this.minecraft.gui.setScreen(new FriendsOverlayScreen(screen));
                }
             }
          }
@@ -542,22 +520,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label190: {
+         label173: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label188: {
+               label171: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label188;
+                        break label171;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label190;
+                     break label173;
                   }
                }
             }
@@ -606,7 +584,7 @@ public class KeyboardHandler {
             }
 
             if (handlesGameInput) {
-               if (didDebugAction && !KeyMapping.hasBindingOutsideCategory(key, KeyMapping.Category.DEBUG)) {
+               if (didDebugAction) {
                   KeyMapping.set(key, false);
                } else {
                   KeyMapping.set(key, true);

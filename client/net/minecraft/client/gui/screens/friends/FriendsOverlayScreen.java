@@ -39,6 +39,7 @@ public class FriendsOverlayScreen extends Screen {
    private static final Component ERROR_CONNECTION_ISSUE = Component.translatable("gui.friends.error.connection_issue");
    private static final Component ERROR_TEMPORARY_UNAVAILABLE = Component.translatable("gui.friends.error.temporary_unavailable");
    private static final Component ERROR_USER_MAY_LACK_ACTIVE_PROFILE = Component.translatable("gui.friends.error.user_may_lack_active_profile");
+   private static final Component ERROR_UNAUTHORIZED = Component.translatable("gui.friends.error.unauthorized");
    private static final Component ERROR_GENERIC = Component.translatable("gui.friends.error.generic");
    private static final Component ERROR_TOAST_GENERIC = Component.translatable("gui.friends.toast.generic_error");
    private static final int BG_BORDER_WIDTH = 8;
@@ -214,6 +215,9 @@ public class FriendsOverlayScreen extends Screen {
          case USER_MAY_LACK_ACTIVE_PROFILE:
             this.showError(ERROR_USER_MAY_LACK_ACTIVE_PROFILE);
             break;
+         case UNAUTHORIZED:
+            this.showError(ERROR_UNAUTHORIZED);
+            break;
          case GENERIC_ERROR:
             this.showError(ERROR_GENERIC);
             break;
@@ -224,6 +228,13 @@ public class FriendsOverlayScreen extends Screen {
       if (this.layout != null) {
          this.layout.arrangeElements();
          FrameLayout.alignInRectangle(this.layout, this.getRectangle(), 0.5F, 0.5F);
+      }
+
+   }
+
+   public void applyPresenceUpdate() {
+      if (this.friendsTab != null) {
+         this.friendsTab.applyPresenceUpdate(this.minecraft.getPlayerSocialManager().getPresenceHandler().getLatestPresence());
       }
 
    }

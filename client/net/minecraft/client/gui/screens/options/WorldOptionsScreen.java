@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.options;
 
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -8,13 +9,17 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.RestrictionsScreen;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 
 public class WorldOptionsScreen extends Screen implements HasGamemasterPermissionReaction, HasDifficultyReaction {
    private static final Component TITLE = Component.translatable("options.worldOptions.title");
+   private static final Component ALLOW_COMMANDS = Component.translatable("selectWorld.allowCommands");
+   private static final Component GAME_MODE = Component.translatable("selectWorld.gameMode");
    private static final Component GAME_RULES = Component.translatable("editGamerule.inGame.button");
    private static final Tooltip GAMERULES_DISABLED_TOOLTIP = Tooltip.create(Component.translatable("editGamerule.inGame.disabled.tooltip"));
    private static final Component RESTRICTIONS = Component.translatable("restrictions_screen.button");
@@ -32,18 +37,32 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       this.layout.addToHeader(new StringWidget(TITLE, this.font), LayoutSettings::alignHorizontallyCenter);
       GridLayout content = (GridLayout)this.layout.addToContents(new GridLayout(0, 0));
       GridLayout.RowHelper gridHelper = content.columnSpacing(8).rowSpacing(4).createRowHelper(2);
-      gridHelper.addChild(this.difficultyButtons.layout());
       gridHelper.addChild(this.createGameRulesButton());
+      gridHelper.addChild(this.difficultyButtons.layout());
+      if (this.minecraft.hasSingleplayerServer()) {
+         IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
+         gridHelper.addChild(this.createGameModeButton(singleplayerServer));
+         gridHelper.addChild(this.createAllowCommandsButton(singleplayerServer));
+      }
+
       gridHelper.addChild(this.createRestrictionsButton());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
+   private CycleButton<GameType> createGameModeButton(final IntegratedServer singleplayerServer) {
+      return CycleButton.builder(GameType::getShortDisplayName, singleplayerServer.getWorldData().getGameType()).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE, (var1, value) -> singleplayerServer.setWorldGameType(value));
+   }
+
+   private CycleButton<Boolean> createAllowCommandsButton(final IntegratedServer singleplayerServer) {
+      return CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).create(ALLOW_COMMANDS, (var1, value) -> singleplayerServer.setWorldAllowCommands(value));
+   }
+
    private Button createGameRulesButton() {
-      Button gameRulesButton = Button.builder(GAME_RULES, (button) -> {
+      Button gameRulesButton = Button.builder(GAME_RULES, (var1) -> {
          if (this.minecraft.player != null) {
-            this.minecraft.gui.setScreen(new InWorldGameRulesScreen(this.minecraft.player.connection, (var1) -> this.minecraft.gui.setScreen(this), this));
+            this.minecraft.gui.setScreen(new InWorldGameRulesScreen(this.minecraft.player.connection, (var1x) -> this.minecraft.gui.setScreen(this), this));
          }
 
       }).build();
@@ -73,7 +92,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
-      if (!hasGamemasterPermission) {
+      if (!hasGamemasterPermission && !this.minecraft.hasSingleplayerServer()) {
          this.minecraft.gui.setScreen(this.lastScreen);
          Screen var3 = this.minecraft.gui.screen();
          if (var3 instanceof HasGamemasterPermissionReaction) {

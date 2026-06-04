@@ -15,8 +15,9 @@ public class FriendsButton extends SpriteIconButton.CenteredIcon {
    private static final int SPRITE_SIZE = 15;
    private int incomingRequestCount;
 
-   public FriendsButton(final int width, final Button.OnPress onPress) {
-      super(width, 20, MESSAGE, 15, 15, 0, 0, new WidgetSprites(Identifier.withDefaultNamespace("friends/friends")), onPress, TOOLTIP, NARRATION, false);
+   public FriendsButton(final int width, final Button.OnPress onPress, final boolean friendsAvailable) {
+      super(width, 20, MESSAGE, 15, 15, 0, 0, new WidgetSprites(Identifier.withDefaultNamespace("friends/friends")), onPress, friendsAvailable ? TOOLTIP : null, NARRATION, false);
+      this.active = friendsAvailable;
       this.refreshIncomingRequestCount();
    }
 

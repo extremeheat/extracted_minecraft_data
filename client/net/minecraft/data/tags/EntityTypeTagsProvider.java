@@ -61,5 +61,6 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.NAUTILUS_HOSTILES).add(EntityTypeIds.PUFFERFISH);
       this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityTypeIds.HORSE, EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.MULE, EntityTypeIds.DONKEY, EntityTypeIds.CAMEL, EntityTypeIds.CAMEL_HUSK);
       this.tag(EntityTypeTags.CANNOT_BE_AGE_LOCKED).add(EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.SKELETON_HORSE, EntityTypeIds.VILLAGER);
+      this.tag(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS).add(EntityTypeIds.ENDER_DRAGON);
    }
 }
