@@ -78,10 +78,12 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.entity.ClientMannequin;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
@@ -453,6 +455,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       PreferredGraphicsApi forcedGraphicsApi = gameConfig.game.forcedGraphicsApi;
       if (forcedGraphicsApi != null) {
          LOGGER.warn("Graphics backend forced to {} by launch argument, in-game preferred graphics backend setting is ignored", forcedGraphicsApi.getSerializedName());
+      } else if (!lastStartWasClean) {
+         if (this.options.preferredGraphicsBackend().get() == PreferredGraphicsApi.VULKAN) {
+            LOGGER.warn("Detected unexpected shutdown during last game startup: resetting preferred graphics API to Default");
+            this.options.preferredGraphicsBackend().set(PreferredGraphicsApi.DEFAULT);
+            this.options.save();
+         } else if (this.options.preferredGraphicsBackend().get() == PreferredGraphicsApi.DEFAULT) {
+            LOGGER.warn("Detected unexpected shutdown during last game startup: forcing preferred graphics API to OpenGL");
+            this.options.preferredGraphicsBackend().set(PreferredGraphicsApi.OPENGL);
+         }
       }
 
       PreferredGraphicsApi preferredGraphicsBackend = forcedGraphicsApi == null ? (PreferredGraphicsApi)this.options.preferredGraphicsBackend().get() : forcedGraphicsApi;
@@ -2176,7 +2187,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean handleGlobalKeyPress(final InputConstants.Key key, final boolean controlDown) {
-      if (this.options.keyFullscreen.matches(key)) {
+      if (this.options.keyDebugModifier.isDown()) {
+         return false;
+      } else if (this.options.keyFullscreen.matches(key)) {
          this.toggleFullscreen();
          return true;
       } else if (this.options.keyScreenshot.matches(key)) {
@@ -2201,15 +2214,25 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private boolean toggleFriendsScreen() {
-      Screen current = this.gui.screen();
-      if (current instanceof FriendsOverlayScreen friends) {
-         friends.onClose();
-         return true;
-      } else if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+      if (this.isDemo()) {
          return false;
       } else {
-         this.gui.setScreen(new FriendsOverlayScreen(current));
-         return true;
+         Screen current = this.gui.screen();
+         if (current instanceof FriendsOverlayScreen) {
+            FriendsOverlayScreen friends = (FriendsOverlayScreen)current;
+            ComponentPath focusPath = current.getCurrentFocusPath();
+            if (focusPath == null || !(focusPath.leafComponent() instanceof EditBox)) {
+               friends.onClose();
+               return true;
+            }
+         }
+
+         if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+            return false;
+         } else {
+            this.gui.setScreen(new FriendsOverlayScreen(current));
+            return true;
+         }
       }
    }
 

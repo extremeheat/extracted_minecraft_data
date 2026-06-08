@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.options.WorldOptionsScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.CommonComponents;
@@ -114,16 +115,23 @@ public class MultiplayerOptionsScreen extends Screen {
          otherPlayerSettings.defaultCellSetting().alignHorizontallyCenter();
          this.gameMode = singleplayerServer.getGameTypeForOtherPlayers();
          this.initialGameMode = this.gameMode;
-         otherPlayerSettings.addChild(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE_LABEL, (var1, value) -> {
+         CycleButton<GameType> gameModeButton = (CycleButton)otherPlayerSettings.addChild(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE_LABEL, (var1, value) -> {
             this.gameMode = value;
             this.updateApplyChangesActiveState();
          }));
          this.commands = singleplayerServer.commandsAllowedForOtherPlayers();
          this.initialCommands = this.commands;
-         otherPlayerSettings.addChild(CycleButton.onOffBuilder(this.commands).create(ALLOW_COMMANDS_LABEL, (var1, value) -> {
+         CycleButton<Boolean> allowCommandsButton = (CycleButton)otherPlayerSettings.addChild(CycleButton.onOffBuilder(this.commands).create(ALLOW_COMMANDS_LABEL, (var1, value) -> {
             this.commands = value;
             this.updateApplyChangesActiveState();
          }));
+         if (singleplayerServer.isHardcore()) {
+            gameModeButton.active = false;
+            gameModeButton.setTooltip(WorldOptionsScreen.GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
+            allowCommandsButton.active = false;
+            allowCommandsButton.setTooltip(WorldOptionsScreen.ALLOW_COMMANDS_DISABLED_TOOLTIP);
+         }
+
          LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
          footer.addChild(this.applyChanges);
          footer.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onClose()).build());

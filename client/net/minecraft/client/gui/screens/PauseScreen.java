@@ -166,7 +166,7 @@ public class PauseScreen extends Screen {
    }
 
    private void addCustomDialogButtons(final Minecraft minecraft, final Holder<Dialog> dialog, final GridLayout.RowHelper helper) {
-      helper.addChild(Button.builder(((Dialog)dialog.value()).common().computeExternalTitle(), (button) -> minecraft.player.connection.showDialog(dialog, this)).width(204).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
+      helper.addChild(Button.builder(((Dialog)dialog.value()).common().computeExternalTitle(), (button) -> minecraft.player.connection.showDialog(dialog, this)).width(204).tooltip(CUSTOM_OPTIONS_TOOLTIP).build(), 2);
    }
 
    public void tick() {

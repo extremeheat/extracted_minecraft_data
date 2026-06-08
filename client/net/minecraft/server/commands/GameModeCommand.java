@@ -11,6 +11,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.server.permissions.Permissions;
@@ -44,8 +45,13 @@ public class GameModeCommand {
 
    private static int setMode(final CommandContext<CommandSourceStack> context, final Collection<ServerPlayer> players, final GameType type) {
       int count = 0;
+      MinecraftServer server = ((CommandSourceStack)context.getSource()).getServer();
 
       for(ServerPlayer player : players) {
+         if (server.isSingleplayerOwner(player.nameAndId())) {
+            server.setDefaultGameType(type);
+         }
+
          if (setGameMode((CommandSourceStack)context.getSource(), player, type)) {
             ++count;
          }
@@ -60,6 +66,11 @@ public class GameModeCommand {
 
    private static boolean setGameMode(final CommandSourceStack source, final ServerPlayer player, final GameType type) {
       if (player.setGameMode(type)) {
+         MinecraftServer server = source.getServer();
+         if (server.isSingleplayerOwner(player.nameAndId())) {
+            server.setDefaultGameType(type);
+         }
+
          logGamemodeChange(source, player, type);
          return true;
       } else {

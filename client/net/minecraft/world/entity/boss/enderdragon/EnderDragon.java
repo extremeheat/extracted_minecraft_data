@@ -61,6 +61,7 @@ public class EnderDragon extends Mob implements Enemy {
    private static final float SITTING_ALLOWED_DAMAGE_PERCENTAGE = 0.25F;
    private static final String DRAGON_DEATH_TIME_KEY = "DragonDeathTime";
    private static final String DRAGON_PHASE_KEY = "DragonPhase";
+   private static final String SITTING_DAMAGE_RECEIVED_KEY = "sitting_damage_received";
    private static final int DEFAULT_DEATH_TIME = 0;
    public final DragonFlightHistory flightHistory = new DragonFlightHistory();
    private final EnderDragonPart[] subEntities;
@@ -724,12 +725,14 @@ public class EnderDragon extends Mob implements Enemy {
       super.addAdditionalSaveData(output);
       output.putInt("DragonPhase", this.phaseManager.getCurrentPhase().getPhase().getId());
       output.putInt("DragonDeathTime", this.dragonDeathTime);
+      output.putFloat("sitting_damage_received", this.sittingDamageReceived);
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       input.getInt("DragonPhase").ifPresent((phaseId) -> this.phaseManager.setPhase(EnderDragonPhase.getById(phaseId)));
       this.dragonDeathTime = input.getIntOr("DragonDeathTime", 0);
+      this.sittingDamageReceived = input.getFloatOr("sitting_damage_received", 0.0F);
    }
 
    public void checkDespawn() {

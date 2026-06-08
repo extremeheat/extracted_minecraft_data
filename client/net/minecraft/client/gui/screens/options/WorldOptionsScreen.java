@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.StringWidget;
@@ -15,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class WorldOptionsScreen extends Screen implements HasGamemasterPermissionReaction, HasDifficultyReaction {
    private static final Component TITLE = Component.translatable("options.worldOptions.title");
@@ -22,10 +24,16 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    private static final Component GAME_MODE = Component.translatable("selectWorld.gameMode");
    private static final Component GAME_RULES = Component.translatable("editGamerule.inGame.button");
    private static final Tooltip GAMERULES_DISABLED_TOOLTIP = Tooltip.create(Component.translatable("editGamerule.inGame.disabled.tooltip"));
+   private static final Tooltip GAMERULES_DISABLED_HARDCORE_TOOLTIP = Tooltip.create(Component.translatable("editGamerule.inGame.disabled.hardcore.tooltip"));
+   public static final Tooltip GAME_MODE_DISABLED_HARDCORE_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.game_mode.disabled.tooltip"));
+   private static final Tooltip GAME_MODE_DISABLED_OPERATOR_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.game_mode.disabled.operator.tooltip"));
+   public static final Tooltip ALLOW_COMMANDS_DISABLED_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.allow_commands.disabled.tooltip"));
    private static final Component RESTRICTIONS = Component.translatable("restrictions_screen.button");
    private final Screen lastScreen;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final DifficultyButtons difficultyButtons;
+   private @Nullable Button gameRulesButton;
+   private @Nullable CycleButton<GameType> gameModeButton;
 
    public WorldOptionsScreen(final Screen lastScreen, final Level level) {
       super(TITLE);
@@ -37,10 +45,10 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       this.layout.addToHeader(new StringWidget(TITLE, this.font), LayoutSettings::alignHorizontallyCenter);
       GridLayout content = (GridLayout)this.layout.addToContents(new GridLayout(0, 0));
       GridLayout.RowHelper gridHelper = content.columnSpacing(8).rowSpacing(4).createRowHelper(2);
-      gridHelper.addChild(this.createGameRulesButton());
+      IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
+      gridHelper.addChild(this.createGameRulesButton(singleplayerServer));
       gridHelper.addChild(this.difficultyButtons.layout());
-      if (this.minecraft.hasSingleplayerServer()) {
-         IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
+      if (singleplayerServer != null) {
          gridHelper.addChild(this.createGameModeButton(singleplayerServer));
          gridHelper.addChild(this.createAllowCommandsButton(singleplayerServer));
       }
@@ -52,26 +60,40 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    private CycleButton<GameType> createGameModeButton(final IntegratedServer singleplayerServer) {
-      return CycleButton.builder(GameType::getShortDisplayName, singleplayerServer.getWorldData().getGameType()).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE, (var1, value) -> singleplayerServer.setWorldGameType(value));
+      this.gameModeButton = CycleButton.builder(GameType::getShortDisplayName, singleplayerServer.getWorldData().getGameType()).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).create(GAME_MODE, (var1, value) -> singleplayerServer.setWorldGameType(value));
+      this.updateButton(this.gameModeButton, singleplayerServer, GAME_MODE_DISABLED_HARDCORE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP);
+      return this.gameModeButton;
    }
 
    private CycleButton<Boolean> createAllowCommandsButton(final IntegratedServer singleplayerServer) {
-      return CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).create(ALLOW_COMMANDS, (var1, value) -> singleplayerServer.setWorldAllowCommands(value));
+      CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).create(ALLOW_COMMANDS, (var1, value) -> singleplayerServer.setWorldAllowCommands(value));
+      if (singleplayerServer.isHardcore() && (this.minecraft.player == null || !this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_OWNER))) {
+         allowCommandsButton.active = false;
+         allowCommandsButton.setTooltip(ALLOW_COMMANDS_DISABLED_TOOLTIP);
+      }
+
+      return allowCommandsButton;
    }
 
-   private Button createGameRulesButton() {
-      Button gameRulesButton = Button.builder(GAME_RULES, (var1) -> {
+   private Button createGameRulesButton(final @Nullable IntegratedServer singleplayerServer) {
+      this.gameRulesButton = Button.builder(GAME_RULES, (var1) -> {
          if (this.minecraft.player != null) {
             this.minecraft.gui.setScreen(new InWorldGameRulesScreen(this.minecraft.player.connection, (var1x) -> this.minecraft.gui.setScreen(this), this));
          }
 
       }).build();
-      if (this.minecraft.player == null || !this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
-         gameRulesButton.active = false;
-         gameRulesButton.setTooltip(GAMERULES_DISABLED_TOOLTIP);
+      this.updateButton(this.gameRulesButton, singleplayerServer, GAMERULES_DISABLED_HARDCORE_TOOLTIP, GAMERULES_DISABLED_TOOLTIP);
+      return this.gameRulesButton;
+   }
+
+   private void updateButton(final @Nullable AbstractWidget widget, final @Nullable IntegratedServer singleplayerServer, final Tooltip hardcoreTooltip, final Tooltip disabledTooltip) {
+      if (widget != null) {
+         boolean hardcore = singleplayerServer != null && singleplayerServer.isHardcore();
+         boolean hasGameMasterPermission = this.minecraft.player != null && this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+         widget.active = !hardcore && hasGameMasterPermission;
+         widget.setTooltip(hardcore ? hardcoreTooltip : (hasGameMasterPermission ? null : disabledTooltip));
       }
 
-      return gameRulesButton;
    }
 
    private Button createRestrictionsButton() {
@@ -92,11 +114,14 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
+      IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
+      this.updateButton(this.gameRulesButton, singleplayerServer, GAMERULES_DISABLED_HARDCORE_TOOLTIP, GAMERULES_DISABLED_TOOLTIP);
+      this.updateButton(this.gameModeButton, singleplayerServer, GAME_MODE_DISABLED_HARDCORE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP);
       if (!hasGamemasterPermission && !this.minecraft.hasSingleplayerServer()) {
          this.minecraft.gui.setScreen(this.lastScreen);
-         Screen var3 = this.minecraft.gui.screen();
-         if (var3 instanceof HasGamemasterPermissionReaction) {
-            HasGamemasterPermissionReaction screen = (HasGamemasterPermissionReaction)var3;
+         Screen var4 = this.minecraft.gui.screen();
+         if (var4 instanceof HasGamemasterPermissionReaction) {
+            HasGamemasterPermissionReaction screen = (HasGamemasterPermissionReaction)var4;
             screen.onGamemasterPermissionChanged(hasGamemasterPermission);
          }
       }

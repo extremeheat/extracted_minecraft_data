@@ -27,6 +27,8 @@ public interface ComponentPath {
 
    void applyFocus(boolean focused);
 
+   GuiEventListener leafComponent();
+
    public static record Path(ContainerEventHandler component, ComponentPath childPath) implements ComponentPath {
       public Path {
          super();
@@ -41,6 +43,10 @@ public interface ComponentPath {
 
          this.childPath.applyFocus(focused);
       }
+
+      public GuiEventListener leafComponent() {
+         return this.childPath.leafComponent();
+      }
    }
 
    public static record Leaf(GuiEventListener component) implements ComponentPath {
@@ -50,6 +56,10 @@ public interface ComponentPath {
 
       public void applyFocus(final boolean focused) {
          this.component.setFocused(focused);
+      }
+
+      public GuiEventListener leafComponent() {
+         return this.component;
       }
    }
 }

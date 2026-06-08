@@ -245,7 +245,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
             for(Entity entityToBeLaunched : level.getEntitiesOfClass(Entity.class, aabb, EFFECT_PREDICATE)) {
                Vec3 entityVelocity = entityToBeLaunched.getDeltaMovement();
                entityToBeLaunched.checkFallDistanceAccumulation();
-               if (entityToBeLaunched.isLocalInstanceAuthoritative()) {
+               if (entityToBeLaunched.canSimulateMovement()) {
                   if (entityToBeLaunched instanceof Player) {
                      Player player = (Player)entityToBeLaunched;
                      if (player.getAbilities().flying) {
@@ -255,6 +255,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
 
                   if (!entityToBeLaunched.isPassenger() && !entityToBeLaunched.is(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS) && entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
                      entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
+                     entityToBeLaunched.needsSync = true;
                   }
                }
             }
