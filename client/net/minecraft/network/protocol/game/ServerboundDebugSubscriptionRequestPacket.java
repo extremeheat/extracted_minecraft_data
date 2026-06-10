@@ -27,7 +27,7 @@ public record ServerboundDebugSubscriptionRequestPacket(Set<DebugSubscription<?>
    }
 
    static {
-      SET_STREAM_CODEC = ByteBufCodecs.registry(Registries.DEBUG_SUBSCRIPTION).apply(ByteBufCodecs.collection(ReferenceOpenHashSet::new));
+      SET_STREAM_CODEC = ByteBufCodecs.registry(Registries.DEBUG_SUBSCRIPTION).apply(ByteBufCodecs.collection(ReferenceOpenHashSet::new, 32));
       STREAM_CODEC = SET_STREAM_CODEC.map(ServerboundDebugSubscriptionRequestPacket::new, ServerboundDebugSubscriptionRequestPacket::subscriptions);
    }
 }

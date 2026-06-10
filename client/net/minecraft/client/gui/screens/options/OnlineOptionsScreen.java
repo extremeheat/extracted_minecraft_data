@@ -46,12 +46,12 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       super(lastScreen, options, TITLE);
    }
 
-   public static void confirmFriendsListEnabled(final Minecraft minecraft, final Runnable onEnabled, final Screen lastScreen) {
+   public static void confirmFriendsListEnabled(final Minecraft minecraft, final Runnable onEnabled, final @Nullable Screen lastScreen) {
       PlayerSocialManager playerSocialManager = minecraft.getPlayerSocialManager();
       if (playerSocialManager.isFriendListEnabled()) {
          onEnabled.run();
       } else {
-         minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
+         minecraft.gui.setScreen(new FriendsListConfirmScreen((accepted) -> {
             if (accepted) {
                applyFriendSettings(minecraft, true, true, (successful) -> {
                   if (successful) {
@@ -60,7 +60,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
 
                });
             } else {
-               minecraft.setScreenAndShow(lastScreen);
+               minecraft.gui.setScreen(lastScreen);
             }
 
          }, FRIENDS_CONFIRM_TITLE, FRIENDS_CONFIRM_MESSAGE, FRIENDS_CONFIRM_TURN_ON, FRIENDS_CONFIRM_TURN_OFF));
@@ -101,8 +101,8 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
 
    private void onFriendsListToggled(final Boolean newValue, final PlayerSocialManager playerSocialManager, final OptionInstance<Boolean> inGameNotificationOpt) {
       if (newValue) {
-         this.minecraft.setScreenAndShow(new FriendsListConfirmScreen((accepted) -> {
-            this.minecraft.setScreenAndShow(this);
+         this.minecraft.gui.setScreen(new FriendsListConfirmScreen((accepted) -> {
+            this.minecraft.gui.setScreen(this);
             if (accepted) {
                playerSocialManager.setFriendListEnabled(true);
                playerSocialManager.setAllowFriendRequests(true);

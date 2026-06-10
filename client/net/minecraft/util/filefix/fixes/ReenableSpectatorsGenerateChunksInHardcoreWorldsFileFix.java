@@ -1,0 +1,43 @@
+package net.minecraft.util.filefix.fixes;
+
+import com.mojang.datafixers.schemas.Schema;
+import com.mojang.serialization.Dynamic;
+import java.util.Optional;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.util.filefix.FileFix;
+import net.minecraft.util.filefix.access.FileAccess;
+import net.minecraft.util.filefix.access.FileRelation;
+import net.minecraft.util.filefix.access.FileResourceTypes;
+import net.minecraft.util.filefix.access.LevelDat;
+import net.minecraft.util.filefix.access.SavedDataNbt;
+import net.minecraft.util.worldupdate.UpgradeProgress;
+
+public class ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix extends FileFix {
+   public ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix(final Schema schema) {
+      super(schema);
+   }
+
+   public void makeFixer() {
+      this.addFileContentFix((files) -> {
+         FileAccess<LevelDat> levelDat = files.<LevelDat>getFileAccess(FileResourceTypes.LEVEL_DAT, FileRelation.ORIGIN.forFile("level.dat"));
+         FileAccess<SavedDataNbt> gameRules = files.<SavedDataNbt>getFileAccess(FileResourceTypes.savedData(References.SAVED_DATA_GAME_RULES), FileRelation.DATA.forFile("minecraft/game_rules.dat"));
+         return (upgradeProgress) -> {
+            upgradeProgress.setType(UpgradeProgress.Type.FILES);
+            Optional<Dynamic<Tag>> levelDatData = ((LevelDat)levelDat.getOnlyFile()).read();
+            if (!levelDatData.isEmpty()) {
+               Dynamic<?> data = (Dynamic)levelDatData.get();
+               boolean wasEverLoadedInSingleplayer = data.get("singleplayer_uuid").get().isSuccess();
+               if (wasEverLoadedInSingleplayer) {
+                  boolean hardcore = data.get("difficulty_settings").orElseEmptyMap().get("hardcore").asBoolean(false);
+                  if (hardcore) {
+                     SavedDataNbt gameRulesFile = gameRules.getOnlyFile();
+                     gameRulesFile.read().ifPresent((dataTag) -> gameRulesFile.write(dataTag.update("minecraft:spectators_generate_chunks", (old) -> old.createBoolean(true))));
+                  }
+               }
+
+            }
+         };
+      });
+   }
+}

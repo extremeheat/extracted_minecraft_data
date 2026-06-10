@@ -408,6 +408,7 @@ import net.minecraft.util.filefix.fixes.GeneratedStructuresRenameFileFix;
 import net.minecraft.util.filefix.fixes.LegacyStructureFileFix;
 import net.minecraft.util.filefix.fixes.LevelDatToSavedDataFileFix;
 import net.minecraft.util.filefix.fixes.PlayerStorageFileFix;
+import net.minecraft.util.filefix.fixes.ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix;
 import net.minecraft.util.filefix.fixes.RemoveObsoleteFilesFileFix;
 import net.minecraft.util.filefix.fixes.ResourcePackLocationFileFix;
 
@@ -901,9 +902,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var309 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var309);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var309::contains));
+      Set var310 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var310);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var310::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1204,6 +1205,8 @@ public class DataFixers {
       fixerUpper.addFixer(new RenameNameplateToNameTagFix(v4888));
       Schema v4892 = fixerUpper.addSchema(4892, SAME_NAMESPACED);
       fixerUpper.addFixer(new OptionsForceDefaultGraphicsApiFix(v4892));
+      Schema v4899 = fileFixerUpper.addSchema(fixerUpper, 4899, SAME_NAMESPACED);
+      fileFixerUpper.addFixer(new ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix(v4899));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

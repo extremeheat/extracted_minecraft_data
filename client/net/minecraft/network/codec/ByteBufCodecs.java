@@ -434,6 +434,10 @@ public interface ByteBufCodecs {
       return (original) -> collection(constructor, original);
    }
 
+   static <B extends ByteBuf, V, C extends Collection<V>> StreamCodec.CodecOperation<B, V, C> collection(final IntFunction<C> constructor, final int maxSize) {
+      return (original) -> collection(constructor, original, maxSize);
+   }
+
    static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, List<V>> list() {
       return (original) -> collection(ArrayList::new, original);
    }

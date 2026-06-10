@@ -78,7 +78,7 @@ public class FriendsOverlayScreen extends Screen {
    }
 
    private void onFriendListUpdate() {
-      if (this.minecraft.gui.screen() == this) {
+      if (this.minecraft.gui.screen() == this && this.minecraft.getPlayerSocialManager().isFriendListEnabled()) {
          this.refreshLists();
       }
    }

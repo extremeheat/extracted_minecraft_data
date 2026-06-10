@@ -1888,7 +1888,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.restartClientLoadTimerAfterRespawn();
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
-                  this.player.level().getGameRules().set(GameRules.SPECTATORS_GENERATE_CHUNKS, false, this.server);
                }
             }
             break;

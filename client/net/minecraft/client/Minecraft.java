@@ -106,6 +106,7 @@ import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
@@ -2227,10 +2228,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          }
 
-         if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+         if (!(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
             return false;
          } else {
-            this.gui.setScreen(new FriendsOverlayScreen(current));
+            OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(current)), current);
             return true;
          }
       }
