@@ -1,16 +1,16 @@
 {
-    "id": "26.2-pre-6",
-    "name": "26.2 Pre-Release 6",
-    "world_version": 4900,
+    "id": "26.2-rc-1",
+    "name": "26.2 Release Candidate 1",
+    "world_version": 4901,
     "series_id": "main",
-    "protocol_version": 1073742144,
+    "protocol_version": 1073742145,
     "pack_version": {
         "resource_major": 88,
         "resource_minor": 0,
         "data_major": 107,
         "data_minor": 1
     },
-    "build_time": "2026-06-10T12:18:20+00:00",
+    "build_time": "2026-06-11T11:55:39+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
     "stable": false,

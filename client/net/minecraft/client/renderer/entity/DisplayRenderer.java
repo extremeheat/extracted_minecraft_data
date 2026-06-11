@@ -188,6 +188,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
    }
 
    public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState, TextDisplayEntityRenderState> {
+      private static final float TEXT_BACKGROUND_OFFSET = -0.01F;
       private final Font font;
 
       protected TextDisplayRenderer(final EntityRendererProvider.Context context) {
@@ -248,10 +249,10 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          pose.translate(1.0F - (float)width / 2.0F, (float)(-height), 0.0F);
          if (backgroundColor != 0) {
             submitNodeCollector.submitCustomGeometry(poseStack, seeThrough ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (lambdaPose, buffer) -> {
-               buffer.addVertex(lambdaPose, -1.0F, -1.0F, 0.0F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, -1.0F, (float)height, 0.0F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, (float)width, (float)height, 0.0F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, (float)width, -1.0F, 0.0F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, -1.0F, -1.0F, -0.01F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, -1.0F, (float)height, -0.01F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, (float)width, (float)height, -0.01F).setColor(backgroundColor).setLight(lightCoords);
+               buffer.addVertex(lambdaPose, (float)width, -1.0F, -0.01F).setColor(backgroundColor).setLight(lightCoords);
             });
          }
 

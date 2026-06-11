@@ -112,6 +112,10 @@ public class PlayerChunkSender {
 
    public void onChunkBatchReceivedByClient(final float desiredChunksPerTick) {
       --this.unacknowledgedBatches;
+      if (this.unacknowledgedBatches < 0) {
+         this.unacknowledgedBatches = 0;
+      }
+
       this.desiredChunksPerTick = Double.isNaN((double)desiredChunksPerTick) ? 0.01F : Mth.clamp(desiredChunksPerTick, 0.01F, 64.0F);
       if (this.unacknowledgedBatches == 0) {
          this.batchQuota = 1.0F;

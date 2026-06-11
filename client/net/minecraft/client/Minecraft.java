@@ -2228,7 +2228,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          }
 
-         if (!(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+         if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
             return false;
          } else {
             OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(current)), current);
