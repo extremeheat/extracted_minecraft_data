@@ -851,6 +851,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return this.isInvulnerable() && !this.isPrimed();
    }
 
+   public boolean canBePickedFromInside() {
+      return !this.hasBodyItem();
+   }
+
    static {
       MAX_FUSE = SynchedEntityData.<Integer>defineId(SulfurCube.class, EntityDataSerializers.INT);
       FROM_BUCKET = SynchedEntityData.<Boolean>defineId(SulfurCube.class, EntityDataSerializers.BOOLEAN);

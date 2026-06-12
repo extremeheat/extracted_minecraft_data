@@ -2031,6 +2031,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return false;
    }
 
+   public boolean canBePickedFromInside() {
+      return true;
+   }
+
    public boolean isPushable() {
       return false;
    }

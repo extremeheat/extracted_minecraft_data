@@ -102,7 +102,7 @@ public final class ProjectileUtil {
          AABB bb = entity.getBoundingBox().inflate((double)entity.getPickRadius());
          Optional<Vec3> clipPoint = bb.clip(from, to);
          if (bb.contains(from)) {
-            if (nearest >= 0.0) {
+            if (nearest >= 0.0 && entity.canBePickedFromInside()) {
                hovered = entity;
                hoveredPos = (Vec3)clipPoint.orElse(from);
                nearest = 0.0;

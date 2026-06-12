@@ -3,6 +3,7 @@ package net.minecraft.client.multiplayer;
 import com.mojang.logging.LogUtils;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -160,7 +161,8 @@ public class LevelLoadTracker implements LevelLoadListener {
             return true;
          } else {
             BlockPos playerPos = this.player.blockPosition();
-            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.playerSectionReady.get() : true;
+            BlockPos cameraPos = Minecraft.getInstance().gameRenderer.mainCamera().blockPosition();
+            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.level.isOutsideBuildHeight(cameraPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.playerSectionReady.get() : true;
          }
       }
    }
