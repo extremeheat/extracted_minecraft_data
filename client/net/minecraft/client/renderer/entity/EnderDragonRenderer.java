@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -21,8 +21,8 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
@@ -57,7 +57,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       int overlayCoords = OverlayTexture.pack(0.0F, state.hasRedOverlay);
       if (state.deathTime > 0.0F) {
          int color = ARGB.white(1.0F - state.deathTime / 200.0F);
-         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
          submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
@@ -166,7 +166,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       DragonPhaseInstance phase = entity.getPhaseManager().getCurrentPhase();
       state.isLandingOrTakingOff = phase == EnderDragonPhase.LANDING || phase == EnderDragonPhase.TAKEOFF;
       state.isSitting = phase.isSitting();
-      BlockPos egg = entity.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(entity.getFightOrigin()));
+      BlockPos egg = entity.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(entity.getFightOrigin()));
       state.distanceToEgg = egg.distToCenterSqr(entity.position());
       state.partialTicks = entity.isDeadOrDying() ? 0.0F : partialTicks;
       state.flightHistory.copyFrom(entity.flightHistory);

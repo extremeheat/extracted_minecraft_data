@@ -1,48 +1,59 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.SpringConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.material.FluidState;
 
-public class SpringFeature extends Feature<SpringConfiguration> {
-   public SpringFeature(final Codec<SpringConfiguration> codec) {
-      super(codec);
+public record SpringFeature(FluidState state, boolean requiresBlockBelow, int rockCount, int holeCount, HolderSet<Block> validBlocks) implements Feature {
+   public static final MapCodec<SpringFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter(SpringFeature::state), Codec.BOOL.optionalFieldOf("requires_block_below", true).forGetter(SpringFeature::requiresBlockBelow), Codec.INT.optionalFieldOf("rock_count", 4).forGetter(SpringFeature::rockCount), Codec.INT.optionalFieldOf("hole_count", 1).forGetter(SpringFeature::holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter(SpringFeature::validBlocks)).apply(i, SpringFeature::new));
+
+   public SpringFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<SpringConfiguration> context) {
-      SpringConfiguration config = context.config();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      if (!level.getBlockState(origin.above()).is(config.validBlocks)) {
+   public MapCodec<SpringFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      if (!level.getBlockState(origin.above()).is(this.validBlocks)) {
          return false;
-      } else if (config.requiresBlockBelow && !level.getBlockState(origin.below()).is(config.validBlocks)) {
+      } else if (this.requiresBlockBelow && !level.getBlockState(origin.below()).is(this.validBlocks)) {
          return false;
       } else {
          BlockState currentState = level.getBlockState(origin);
-         if (!currentState.isAir() && !currentState.is(config.validBlocks)) {
+         if (!currentState.isAir() && !currentState.is(this.validBlocks)) {
             return false;
          } else {
             int placed = 0;
             int rockCount = 0;
-            if (level.getBlockState(origin.west()).is(config.validBlocks)) {
+            if (level.getBlockState(origin.west()).is(this.validBlocks)) {
                ++rockCount;
             }
 
-            if (level.getBlockState(origin.east()).is(config.validBlocks)) {
+            if (level.getBlockState(origin.east()).is(this.validBlocks)) {
                ++rockCount;
             }
 
-            if (level.getBlockState(origin.north()).is(config.validBlocks)) {
+            if (level.getBlockState(origin.north()).is(this.validBlocks)) {
                ++rockCount;
             }
 
-            if (level.getBlockState(origin.south()).is(config.validBlocks)) {
+            if (level.getBlockState(origin.south()).is(this.validBlocks)) {
                ++rockCount;
             }
 
-            if (level.getBlockState(origin.below()).is(config.validBlocks)) {
+            if (level.getBlockState(origin.below()).is(this.validBlocks)) {
                ++rockCount;
             }
 
@@ -67,9 +78,9 @@ public class SpringFeature extends Feature<SpringConfiguration> {
                ++holeCount;
             }
 
-            if (rockCount == config.rockCount && holeCount == config.holeCount) {
-               level.setBlock(origin, config.state.createLegacyBlock(), 2);
-               level.scheduleTick(origin, config.state.getType(), 0);
+            if (rockCount == this.rockCount && holeCount == this.holeCount) {
+               level.setBlock(origin, this.state.createLegacyBlock(), 2);
+               level.scheduleTick(origin, this.state.getType(), 0);
                ++placed;
             }
 

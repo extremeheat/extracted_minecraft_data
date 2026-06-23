@@ -1,8 +1,10 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
@@ -10,30 +12,29 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TwistingVinesConfig;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
-   public TwistingVinesFeature(final Codec<TwistingVinesConfig> codec) {
-      super(codec);
+public record TwistingVinesFeature(int spreadWidth, int spreadHeight, int maxHeight) implements Feature {
+   public static final MapCodec<TwistingVinesFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("spread_width").forGetter(TwistingVinesFeature::spreadWidth), ExtraCodecs.POSITIVE_INT.fieldOf("spread_height").forGetter(TwistingVinesFeature::spreadHeight), ExtraCodecs.POSITIVE_INT.fieldOf("max_height").forGetter(TwistingVinesFeature::maxHeight)).apply(i, TwistingVinesFeature::new));
+
+   public TwistingVinesFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<TwistingVinesConfig> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
+   public MapCodec<TwistingVinesFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (isInvalidPlacementLocation(level, origin)) {
          return false;
       } else {
-         RandomSource random = context.random();
-         TwistingVinesConfig config = context.config();
-         int spreadWidth = config.spreadWidth();
-         int spreadHeight = config.spreadHeight();
-         int maxHeight = config.maxHeight();
          BlockPos.MutableBlockPos placePos = new BlockPos.MutableBlockPos();
 
-         for(int i = 0; i < spreadWidth * spreadWidth; ++i) {
-            placePos.set(origin).move(Mth.nextInt(random, -spreadWidth, spreadWidth), Mth.nextInt(random, -spreadHeight, spreadHeight), Mth.nextInt(random, -spreadWidth, spreadWidth));
+         for(int i = 0; i < this.spreadWidth * this.spreadWidth; ++i) {
+            placePos.set(origin).move(Mth.nextInt(random, -this.spreadWidth, this.spreadWidth), Mth.nextInt(random, -this.spreadHeight, this.spreadHeight), Mth.nextInt(random, -this.spreadWidth, this.spreadWidth));
             if (findFirstAirBlockAboveGround(level, placePos) && !isInvalidPlacementLocation(level, placePos)) {
-               int vineHeight = Mth.nextInt(random, 1, maxHeight);
+               int vineHeight = Mth.nextInt(random, 1, this.maxHeight);
                if (random.nextInt(6) == 0) {
                   vineHeight *= 2;
                }

@@ -152,7 +152,7 @@ public class BlockItem extends Item {
                }
 
                if (!type.onlyOpCanSetNbt() || player != null && player.canUseGameMasterBlocks()) {
-                  return customData.loadInto(blockEntity, level.registryAccess());
+                  return customData.loadInto((BlockEntity)blockEntity, level.registryAccess());
                }
 
                return false;

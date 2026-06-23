@@ -19,6 +19,8 @@ public class RenderTypes {
    private static final RenderType CUTOUT_MOVING_BLOCK;
    private static final RenderType TRANSLUCENT_MOVING_BLOCK;
    private static final Function<Identifier, RenderType> ARMOR_CUTOUT_NO_CULL;
+   private static final Function<Identifier, RenderType> ARMOR_TRIM;
+   private static final Function<Identifier, RenderType> ARMOR_TRIM_DECAL;
    private static final Function<Identifier, RenderType> ARMOR_TRANSLUCENT;
    private static final Function<Identifier, RenderType> ENTITY_SOLID;
    private static final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_FORWARD;
@@ -95,9 +97,8 @@ public class RenderTypes {
       return (RenderType)ARMOR_CUTOUT_NO_CULL.apply(texture);
    }
 
-   public static RenderType createArmorDecalCutoutNoCull(final Identifier texture) {
-      RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_DECAL_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
-      return RenderType.create("armor_decal_cutout_no_cull", state);
+   public static RenderType armorTrim(final Identifier texture, final boolean decal) {
+      return (RenderType)(decal ? ARMOR_TRIM_DECAL : ARMOR_TRIM).apply(texture);
    }
 
    public static RenderType armorTranslucent(final Identifier texture) {
@@ -320,6 +321,14 @@ public class RenderTypes {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("armor_cutout_no_cull", state);
       }));
+      ARMOR_TRIM = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("armor_trim", state);
+      }));
+      ARMOR_TRIM_DECAL = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_DECAL_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         return RenderType.create("armor_trim_decal", state);
+      }));
       ARMOR_TRANSLUCENT = Util.memoize((Function)((texture) -> {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_TRANSLUCENT).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("armor_translucent", state);
@@ -402,8 +411,8 @@ public class RenderTypes {
       TEXT_GRAYSCALE_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_see_through", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       LIGHTNING = RenderType.create("lightning", RenderSetup.builder(RenderPipelines.LIGHTNING).setOutputTarget(OutputTarget.WEATHER_TARGET).sortOnUpload().createRenderSetup());
       DRAGON_RAYS = RenderType.create("dragon_rays", RenderSetup.builder(RenderPipelines.DRAGON_RAYS).createRenderSetup());
-      END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
-      END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
+      END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       LINES = RenderType.create("lines", RenderSetup.builder(RenderPipelines.LINES).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());
       LINES_TRANSLUCENT = RenderType.create("lines_translucent", RenderSetup.builder(RenderPipelines.LINES_TRANSLUCENT).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());
       SECONDARY_BLOCK_OUTLINE = RenderType.create("secondary_block_outline", RenderSetup.builder(RenderPipelines.SECONDARY_BLOCK_OUTLINE).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());

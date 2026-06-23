@@ -246,12 +246,12 @@ public class EnderMan extends Monster implements NeutralMob {
    private boolean teleport(final double x, final double y, final double z) {
       BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
 
-      while(pos.getY() > this.level().getMinY() && !this.level().getBlockState(pos).blocksMotion()) {
+      while(pos.getY() > this.level().getMinY() && !this.level().getBlockState(pos).is(BlockTags.ENTITIES_CAN_TELEPORT_TO)) {
          pos.move(Direction.DOWN);
       }
 
       BlockState blockState = this.level().getBlockState(pos);
-      boolean couldStandOn = blockState.blocksMotion();
+      boolean couldStandOn = blockState.is(BlockTags.ENTITIES_CAN_TELEPORT_TO);
       boolean isWet = blockState.getFluidState().is(FluidTags.WATER);
       if (couldStandOn && !isWet) {
          Vec3 oldPos = this.position();
@@ -517,7 +517,7 @@ public class EnderMan extends Monster implements NeutralMob {
          if (carried != null) {
             carried = Block.updateFromNeighbourShapes(carried, this.enderman.level(), pos);
             if (this.canPlaceBlock(level, pos, carried, targetState, belowState, below)) {
-               level.setBlock(pos, carried, 3);
+               level.setBlockAndUpdate(pos, carried);
                level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this.enderman, carried));
                this.enderman.setCarriedBlock((BlockState)null);
             }

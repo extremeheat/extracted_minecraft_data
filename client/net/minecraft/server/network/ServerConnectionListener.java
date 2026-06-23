@@ -7,7 +7,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -111,26 +110,6 @@ public class ServerConnectionListener {
       }
 
       return newChannel.channel().localAddress();
-   }
-
-   public void acceptChannel(final Channel channel, final UUID profileId) {
-      channel.pipeline().addLast(new ChannelHandler[]{new ChannelInitializer<Channel>() {
-         {
-            Objects.requireNonNull(ServerConnectionListener.this);
-         }
-
-         protected void initChannel(final Channel ch) {
-            int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
-            Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
-            ChannelPipeline pipeline = ch.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
-            Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
-            connection.configurePacketHandler(pipeline);
-            connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
-            connection.setIntendedProfileId(profileId);
-            ServerConnectionListener.this.connections.add(connection);
-         }
-      }});
-      EventLoopGroupHolder.local().eventLoopGroup().register(channel).syncUninterruptibly();
    }
 
    public void stop() {

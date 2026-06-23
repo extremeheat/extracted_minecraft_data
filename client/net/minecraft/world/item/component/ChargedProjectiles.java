@@ -1,10 +1,11 @@
 package net.minecraft.world.item.component;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
@@ -19,7 +20,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 import org.slf4j.Logger;
 
-public record ChargedProjectiles(List<ItemStackTemplate> items) implements TooltipProvider {
+public record ChargedProjectiles(List<ItemStackTemplate> items) implements ContainerComponent<ChargedProjectiles>, TooltipProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_SIZE = 1024;
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
@@ -56,12 +57,30 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Toolt
       return false;
    }
 
-   public List<ItemStack> itemCopies() {
-      return Lists.transform(this.items, ItemStackTemplate::create);
+   public Stream<ItemStack> itemCopies() {
+      return this.items.stream().map(ItemStackTemplate::create);
+   }
+
+   public int size() {
+      return this.items.size();
    }
 
    public boolean isEmpty() {
       return this.items.isEmpty();
+   }
+
+   public ChargedProjectiles copyWithContents(final Stream<ItemStack> newContents) {
+      return new ChargedProjectiles(newContents.filter((s) -> !s.isEmpty()).map(ItemStackTemplate::fromNonEmptyStack).toList());
+   }
+
+   public Mutable asMutable() {
+      List<ItemStack> itemsList = new ArrayList(this.items.size());
+
+      for(ItemStackTemplate item : this.items) {
+         itemsList.add(item.create());
+      }
+
+      return new Mutable(itemsList);
    }
 
    public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
@@ -102,5 +121,31 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Toolt
    static {
       CODEC = ItemStackTemplate.CODEC.sizeLimitedListOf(1024).xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
       STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list(1024)).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+   }
+
+   public static class Mutable extends SimpleMutableContainer<ChargedProjectiles> {
+      private Mutable(final List<ItemStack> items) {
+         super(items);
+      }
+
+      protected boolean addSlotWithItem(final ItemStack itemStack) {
+         return !itemStack.isEmpty() && super.addSlotWithItem(itemStack);
+      }
+
+      public boolean canInsertNewSlots() {
+         return this.items.size() < 1024;
+      }
+
+      public ChargedProjectiles toImmutable() {
+         List<ItemStackTemplate> nonEmptyItems = new ArrayList(this.items.size());
+
+         for(ItemStack item : this.items) {
+            if (!item.isEmpty()) {
+               nonEmptyItems.add(ItemStackTemplate.fromNonEmptyStack(item));
+            }
+         }
+
+         return new ChargedProjectiles(nonEmptyItems);
+      }
    }
 }

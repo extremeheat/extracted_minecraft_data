@@ -5,9 +5,11 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
@@ -24,17 +26,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.phys.AABB;
 
-public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
-   public static final int NUMBER_OF_SPIKES = 10;
+public record EndSpikeFeature(List<EndSpike> spikes, boolean crystalInvulnerable, Optional<BlockPos> crystalBeamTarget) implements Feature {
+   private static final int NUMBER_OF_SPIKES = 10;
    private static final int SPIKE_DISTANCE = 42;
    private static final LoadingCache<Long, List<EndSpike>> SPIKE_CACHE;
+   public static final MapCodec<EndSpikeFeature> CODEC;
 
-   public EndSpikeFeature(final Codec<EndSpikeConfiguration> codec) {
-      super(codec);
+   public EndSpikeFeature {
+      super();
    }
 
    public static List<EndSpike> getSpikesForLevel(final WorldGenLevel level) {
@@ -43,26 +46,26 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
       return (List)SPIKE_CACHE.getUnchecked(key);
    }
 
-   public boolean place(final FeaturePlaceContext<EndSpikeConfiguration> context) {
-      EndSpikeConfiguration config = context.config();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      BlockPos origin = context.origin();
-      List<EndSpike> spikes = config.getSpikes();
+   public MapCodec<EndSpikeFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      List<EndSpike> spikes = this.spikes;
       if (spikes.isEmpty()) {
          spikes = getSpikesForLevel(level);
       }
 
       for(EndSpike spike : spikes) {
          if (spike.isCenterWithinChunk(origin)) {
-            this.placeSpike(level, random, config, spike);
+            this.placeSpike(level, random, spike);
          }
       }
 
       return true;
    }
 
-   private void placeSpike(final ServerLevelAccessor level, final RandomSource random, final EndSpikeConfiguration config, final EndSpike spike) {
+   private void placeSpike(final ServerLevelAccessor level, final RandomSource random, final EndSpike spike) {
       int radius = spike.getRadius();
 
       for(BlockPos pos : BlockPos.betweenClosed(new BlockPos(spike.getCenterX() - radius, level.getMinY(), spike.getCenterZ() - radius), new BlockPos(spike.getCenterX() + radius, spike.getHeight() + 10, spike.getCenterZ() + radius))) {
@@ -98,8 +101,8 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
 
       EndCrystal endCrystal = (EndCrystal)EntityTypes.END_CRYSTAL.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
       if (endCrystal != null) {
-         endCrystal.setBeamTarget(config.getCrystalBeamTarget());
-         endCrystal.setInvulnerable(config.isCrystalInvulnerable());
+         endCrystal.setBeamTarget((BlockPos)this.crystalBeamTarget.orElse((Object)null));
+         endCrystal.setInvulnerable(this.crystalInvulnerable);
          endCrystal.snapTo((double)spike.getCenterX() + 0.5, (double)(spike.getHeight() + 1), (double)spike.getCenterZ() + 0.5, random.nextFloat() * 360.0F, 0.0F);
          level.addFreshEntity(endCrystal);
          BlockPos crystalPos = endCrystal.blockPosition();
@@ -111,6 +114,7 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
 
    static {
       SPIKE_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5L, TimeUnit.MINUTES).build(new SpikeCacheLoader());
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EndSpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter(EndSpikeFeature::spikes), Codec.BOOL.optionalFieldOf("crystal_invulnerable", false).forGetter(EndSpikeFeature::crystalInvulnerable), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter(EndSpikeFeature::crystalBeamTarget)).apply(i, EndSpikeFeature::new));
    }
 
    public static class EndSpike {

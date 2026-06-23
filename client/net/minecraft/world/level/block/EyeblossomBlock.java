@@ -78,7 +78,7 @@ public class EyeblossomBlock extends FlowerBlock {
          return false;
       } else {
          Type newType = this.type.transform();
-         level.setBlock(pos, newType.state(), 3);
+         level.setBlockAndUpdate(pos, newType.state());
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
          newType.spawnTransformParticle(level, pos, random);
          BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 2, 3)).forEach((nearby) -> {

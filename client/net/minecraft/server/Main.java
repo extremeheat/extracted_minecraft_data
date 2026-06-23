@@ -157,7 +157,7 @@ public class Main {
                return;
             }
 
-            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
+            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress(notificationManager));
          } else {
             levelDataTag = null;
          }

@@ -68,7 +68,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    public void onLightningStrike(final BlockState state, final Level level, final BlockPos pos) {
-      level.setBlock(pos, (BlockState)state.setValue(POWERED, true), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, true));
       this.updateNeighbours(state, level, pos);
       level.scheduleTick(pos, this, 8);
       level.levelEvent(3002, pos, ((Direction)state.getValue(FACING)).getAxis().ordinal());
@@ -80,7 +80,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
-      level.setBlock(pos, (BlockState)state.setValue(POWERED, false), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, false));
       this.updateNeighbours(state, level, pos);
    }
 

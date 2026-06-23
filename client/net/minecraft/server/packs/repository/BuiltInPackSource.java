@@ -13,8 +13,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.world.level.validation.DirectoryValidator;
@@ -41,7 +39,7 @@ public abstract class BuiltInPackSource implements RepositorySource {
    }
 
    public void loadPacks(final Consumer<Pack> result) {
-      Pack vanilla = this.createVanillaPack(this.vanillaPack);
+      Pack vanilla = this.createVanillaPack(this.vanillaPack.asResourcesSupplier());
       if (vanilla != null) {
          result.accept(vanilla);
       }
@@ -49,9 +47,9 @@ public abstract class BuiltInPackSource implements RepositorySource {
       this.listBundledPacks(result);
    }
 
-   protected abstract @Nullable Pack createVanillaPack(final PackResources resources);
+   protected abstract @Nullable Pack createVanillaPack(final Pack.ResourcesSupplier resources);
 
-   protected abstract Component getPackTitle(final String id);
+   protected abstract Component getPackTitle(String id);
 
    public VanillaPackResources getVanillaPack() {
       return this.vanillaPack;
@@ -90,16 +88,4 @@ public abstract class BuiltInPackSource implements RepositorySource {
    }
 
    protected abstract @Nullable Pack createBuiltinPack(final String id, final Pack.ResourcesSupplier resources, final Component name);
-
-   protected static Pack.ResourcesSupplier fixedResources(final PackResources instance) {
-      return new Pack.ResourcesSupplier() {
-         public PackResources openPrimary(final PackLocationInfo location) {
-            return instance;
-         }
-
-         public PackResources openFull(final PackLocationInfo location, final Pack.Metadata metadata) {
-            return instance;
-         }
-      };
-   }
 }

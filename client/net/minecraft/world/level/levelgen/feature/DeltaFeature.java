@@ -1,38 +1,42 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.DeltaFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
+public record DeltaFeature(BlockState contents, BlockState rim, IntProvider size, IntProvider rimSize) implements Feature {
+   public static final MapCodec<DeltaFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("contents").forGetter(DeltaFeature::contents), BlockState.CODEC.fieldOf("rim").forGetter(DeltaFeature::rim), IntProviders.codec(0, 16).fieldOf("size").forGetter(DeltaFeature::size), IntProviders.codec(0, 16).fieldOf("rim_size").forGetter(DeltaFeature::rimSize)).apply(i, DeltaFeature::new));
    private static final ImmutableList<Block> CANNOT_REPLACE;
    private static final Direction[] DIRECTIONS;
    private static final double RIM_SPAWN_CHANCE = 0.9;
 
-   public DeltaFeature(final Codec<DeltaFeatureConfiguration> codec) {
-      super(codec);
+   public DeltaFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<DeltaFeatureConfiguration> context) {
+   public MapCodec<DeltaFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       boolean anyPlaced = false;
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      DeltaFeatureConfiguration config = context.config();
-      BlockPos origin = context.origin();
       boolean spawnRim = random.nextDouble() < 0.9;
-      int rimX = spawnRim ? config.rimSize().sample(random) : 0;
-      int rimZ = spawnRim ? config.rimSize().sample(random) : 0;
+      int rimX = spawnRim ? this.rimSize.sample(random) : 0;
+      int rimZ = spawnRim ? this.rimSize.sample(random) : 0;
       boolean hasRim = spawnRim && rimX != 0 && rimZ != 0;
-      int radiusX = config.size().sample(random);
-      int radiusZ = config.size().sample(random);
+      int radiusX = this.size.sample(random);
+      int radiusZ = this.size.sample(random);
       int radiusLimit = Math.max(radiusX, radiusZ);
 
       for(BlockPos pos : BlockPos.withinManhattan(origin, radiusX, 0, radiusZ)) {
@@ -40,16 +44,16 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
             break;
          }
 
-         if (isClear(level, pos, config)) {
+         if (this.isClear(level, pos)) {
             if (hasRim) {
                anyPlaced = true;
-               this.setBlock(level, pos, config.rim());
+               this.setBlock(level, pos, this.rim);
             }
 
             BlockPos posOffset = pos.offset(rimX, 0, rimZ);
-            if (isClear(level, posOffset, config)) {
+            if (this.isClear(level, posOffset)) {
                anyPlaced = true;
-               this.setBlock(level, posOffset, config.contents());
+               this.setBlock(level, posOffset, this.contents);
             }
          }
       }
@@ -57,9 +61,9 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
       return anyPlaced;
    }
 
-   private static boolean isClear(final LevelAccessor level, final BlockPos pos, final DeltaFeatureConfiguration config) {
+   private boolean isClear(final LevelAccessor level, final BlockPos pos) {
       BlockState state = level.getBlockState(pos);
-      if (state.is(config.contents().getBlock())) {
+      if (state.is(this.contents.getBlock())) {
          return false;
       } else if (CANNOT_REPLACE.contains(state.getBlock())) {
          return false;

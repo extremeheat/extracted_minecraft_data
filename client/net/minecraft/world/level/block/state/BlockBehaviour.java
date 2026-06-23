@@ -22,6 +22,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -92,6 +93,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final float speedFactor;
    protected final float jumpFactor;
    protected final float bounceRestitution;
+   protected final float fallDistanceReduction;
    protected final boolean dynamicShape;
    protected final FeatureFlagSet requiredFeatures;
    protected final Properties properties;
@@ -110,6 +112,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.speedFactor = properties.speedFactor;
       this.jumpFactor = properties.jumpFactor;
       this.bounceRestitution = properties.bounceRestitution;
+      this.fallDistanceReduction = properties.fallDistanceReduction;
       this.dynamicShape = properties.dynamicShape;
       this.requiredFeatures = properties.requiredFeatures;
       this.properties = properties;
@@ -176,7 +179,7 @@ public abstract class BlockBehaviour implements FeatureElement {
             state.getDrops(params).forEach((stack) -> onHit.accept(stack, pos));
          }
 
-         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
          block.wasExploded(level, pos, explosion);
       }
    }
@@ -450,6 +453,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private boolean dynamicShape;
       private FeatureFlagSet requiredFeatures;
       private @Nullable OffsetFunction offsetFunction;
+      private float fallDistanceReduction;
 
       private Properties() {
          super();
@@ -466,7 +470,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.instrument = NoteBlockInstrument.HARP;
          this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
          this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
-         this.isSuffocating = (state, level, pos) -> state.blocksMotion() && state.isCollisionShapeFullBlock(level, pos);
+         this.isSuffocating = (state, level, pos) -> state.is(BlockTags.CAUSES_SUFFOCATION) && state.isCollisionShapeFullBlock(level, pos);
          this.isViewBlocking = this.isSuffocating;
          this.postProcess = (state, level, pos) -> null;
          this.emissiveRendering = (var0) -> false;
@@ -567,6 +571,11 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public Properties bounceRestitution(final float bounceRestitution) {
          this.bounceRestitution = bounceRestitution;
+         return this;
+      }
+
+      public Properties fallDistanceReduction(final float fallDistanceReduction) {
+         this.fallDistanceReduction = fallDistanceReduction;
          return this;
       }
 
@@ -821,21 +830,21 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       private boolean calculateSolid() {
          if ((this.owner).properties.forceSolidOn) {
-            return true;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FORCE_SOLID_ON);
          } else if ((this.owner).properties.forceSolidOff) {
-            return false;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FORCE_SOLID_OFF);
          } else if (this.cache == null) {
-            return false;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.NULL_CACHE);
          } else {
             VoxelShape shape = this.cache.collisionShape;
             if (shape.isEmpty()) {
-               return false;
+               return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.EMPTY_COLLISION_SHAPE);
             } else {
                AABB bounds = shape.bounds();
                if (bounds.getSize() >= 0.7291666666666666) {
-                  return true;
+                  return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.LARGE_ENOUGH_COLLISION_SHAPE);
                } else {
-                  return bounds.getYsize() >= 1.0;
+                  return bounds.getYsize() >= 1.0 ? SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.HIGH_ENOUGH_COLLISION_SHAPE) : SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FALLTHROUGH);
                }
             }
          }
@@ -873,13 +882,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public Holder<Block> typeHolder() {
          return this.getBlock().builtInRegistryHolder();
-      }
-
-      /** @deprecated */
-      @Deprecated
-      public boolean blocksMotion() {
-         Block block = this.getBlock();
-         return block != Blocks.COBWEB && block != Blocks.BAMBOO_SAPLING && this.isSolid();
       }
 
       /** @deprecated */

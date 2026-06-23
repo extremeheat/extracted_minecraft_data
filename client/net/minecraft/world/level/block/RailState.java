@@ -204,7 +204,7 @@ public class RailState {
       }
 
       this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), shape);
-      this.level.setBlock(this.pos, this.state, 3);
+      this.level.setBlockAndUpdate(this.pos, this.state);
    }
 
    private boolean hasNeighborRail(final BlockPos railPos) {
@@ -332,7 +332,7 @@ public class RailState {
       this.updateConnections(shape);
       this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), shape);
       if (first || this.level.getBlockState(this.pos) != this.state) {
-         this.level.setBlock(this.pos, this.state, 3);
+         this.level.setBlockAndUpdate(this.pos, this.state);
 
          for(int i = 0; i < this.connections.size(); ++i) {
             RailState neighbor = this.getRail((BlockPos)this.connections.get(i));

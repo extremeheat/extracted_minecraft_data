@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import org.jspecify.annotations.Nullable;
 
@@ -21,6 +22,7 @@ public class BlockFamilies {
    public static final BlockFamily OAK_PLANKS;
    public static final BlockFamily DARK_OAK_PLANKS;
    public static final BlockFamily PALE_OAK_PLANKS;
+   public static final BlockFamily POPLAR_PLANKS;
    public static final BlockFamily SPRUCE_PLANKS;
    public static final BlockFamily WARPED_PLANKS;
    public static final BlockFamily MANGROVE_PLANKS;
@@ -75,6 +77,7 @@ public class BlockFamilies {
    public static final BlockFamily POLISHED_DEEPSLATE;
    public static final BlockFamily DEEPSLATE_BRICKS;
    public static final BlockFamily DEEPSLATE_TILES;
+   public static final ColorCollection<BlockFamily> WOOL;
 
    public BlockFamilies() {
       super();
@@ -107,6 +110,7 @@ public class BlockFamilies {
       OAK_PLANKS = familyBuilder(Blocks.OAK_PLANKS).log(Blocks.OAK_LOG).strippedLog(Blocks.STRIPPED_OAK_LOG).button(Blocks.OAK_BUTTON).fence(Blocks.OAK_FENCE).fenceGate(Blocks.OAK_FENCE_GATE).hangingSign(Blocks.OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN).pressurePlate(Blocks.OAK_PRESSURE_PLATE).sign(Blocks.OAK_SIGN, Blocks.OAK_WALL_SIGN).slab(Blocks.OAK_SLAB).stairs(Blocks.OAK_STAIRS).door(Blocks.OAK_DOOR).trapdoor(Blocks.OAK_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
       DARK_OAK_PLANKS = familyBuilder(Blocks.DARK_OAK_PLANKS).log(Blocks.DARK_OAK_LOG).strippedLog(Blocks.STRIPPED_DARK_OAK_LOG).button(Blocks.DARK_OAK_BUTTON).fence(Blocks.DARK_OAK_FENCE).fenceGate(Blocks.DARK_OAK_FENCE_GATE).hangingSign(Blocks.DARK_OAK_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN).pressurePlate(Blocks.DARK_OAK_PRESSURE_PLATE).sign(Blocks.DARK_OAK_SIGN, Blocks.DARK_OAK_WALL_SIGN).slab(Blocks.DARK_OAK_SLAB).stairs(Blocks.DARK_OAK_STAIRS).door(Blocks.DARK_OAK_DOOR).trapdoor(Blocks.DARK_OAK_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
       PALE_OAK_PLANKS = familyBuilder(Blocks.PALE_OAK_PLANKS).log(Blocks.PALE_OAK_LOG).strippedLog(Blocks.STRIPPED_PALE_OAK_LOG).button(Blocks.PALE_OAK_BUTTON).fence(Blocks.PALE_OAK_FENCE).fenceGate(Blocks.PALE_OAK_FENCE_GATE).hangingSign(Blocks.PALE_OAK_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN).pressurePlate(Blocks.PALE_OAK_PRESSURE_PLATE).sign(Blocks.PALE_OAK_SIGN, Blocks.PALE_OAK_WALL_SIGN).slab(Blocks.PALE_OAK_SLAB).stairs(Blocks.PALE_OAK_STAIRS).door(Blocks.PALE_OAK_DOOR).trapdoor(Blocks.PALE_OAK_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
+      POPLAR_PLANKS = familyBuilder(Blocks.POPLAR_PLANKS).log(Blocks.POPLAR_LOG).strippedLog(Blocks.STRIPPED_POPLAR_LOG).button(Blocks.POPLAR_BUTTON).fence(Blocks.POPLAR_FENCE).fenceGate(Blocks.POPLAR_FENCE_GATE).pressurePlate(Blocks.POPLAR_PRESSURE_PLATE).hangingSign(Blocks.POPLAR_HANGING_SIGN, Blocks.POPLAR_WALL_HANGING_SIGN).sign(Blocks.POPLAR_SIGN, Blocks.POPLAR_WALL_SIGN).slab(Blocks.POPLAR_SLAB).stairs(Blocks.POPLAR_STAIRS).door(Blocks.POPLAR_DOOR).trapdoor(Blocks.POPLAR_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
       SPRUCE_PLANKS = familyBuilder(Blocks.SPRUCE_PLANKS).log(Blocks.SPRUCE_LOG).strippedLog(Blocks.STRIPPED_SPRUCE_LOG).button(Blocks.SPRUCE_BUTTON).fence(Blocks.SPRUCE_FENCE).fenceGate(Blocks.SPRUCE_FENCE_GATE).hangingSign(Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN).pressurePlate(Blocks.SPRUCE_PRESSURE_PLATE).sign(Blocks.SPRUCE_SIGN, Blocks.SPRUCE_WALL_SIGN).slab(Blocks.SPRUCE_SLAB).stairs(Blocks.SPRUCE_STAIRS).door(Blocks.SPRUCE_DOOR).trapdoor(Blocks.SPRUCE_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
       WARPED_PLANKS = familyBuilder(Blocks.WARPED_PLANKS).log(Blocks.WARPED_STEM).strippedLog(Blocks.STRIPPED_WARPED_STEM).button(Blocks.WARPED_BUTTON).fence(Blocks.WARPED_FENCE).fenceGate(Blocks.WARPED_FENCE_GATE).hangingSign(Blocks.WARPED_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN).pressurePlate(Blocks.WARPED_PRESSURE_PLATE).sign(Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN).slab(Blocks.WARPED_SLAB).stairs(Blocks.WARPED_STAIRS).door(Blocks.WARPED_DOOR).trapdoor(Blocks.WARPED_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
       MANGROVE_PLANKS = familyBuilder(Blocks.MANGROVE_PLANKS).log(Blocks.MANGROVE_LOG).strippedLog(Blocks.STRIPPED_MANGROVE_LOG).button(Blocks.MANGROVE_BUTTON).slab(Blocks.MANGROVE_SLAB).stairs(Blocks.MANGROVE_STAIRS).fence(Blocks.MANGROVE_FENCE).fenceGate(Blocks.MANGROVE_FENCE_GATE).hangingSign(Blocks.MANGROVE_HANGING_SIGN, Blocks.MANGROVE_WALL_HANGING_SIGN).pressurePlate(Blocks.MANGROVE_PRESSURE_PLATE).sign(Blocks.MANGROVE_SIGN, Blocks.MANGROVE_WALL_SIGN).door(Blocks.MANGROVE_DOOR).trapdoor(Blocks.MANGROVE_TRAPDOOR).recipeGroupPrefix("wooden").recipeUnlockedBy("has_planks").getFamily();
@@ -161,5 +165,6 @@ public class BlockFamilies {
       POLISHED_DEEPSLATE = familyBuilder(Blocks.POLISHED_DEEPSLATE).slab(Blocks.POLISHED_DEEPSLATE_SLAB).stairs(Blocks.POLISHED_DEEPSLATE_STAIRS).wall(Blocks.POLISHED_DEEPSLATE_WALL).bricks(Blocks.DEEPSLATE_BRICKS).generateStonecutterRecipe().getFamily();
       DEEPSLATE_BRICKS = familyBuilder(Blocks.DEEPSLATE_BRICKS).slab(Blocks.DEEPSLATE_BRICK_SLAB).stairs(Blocks.DEEPSLATE_BRICK_STAIRS).wall(Blocks.DEEPSLATE_BRICK_WALL).cracked(Blocks.CRACKED_DEEPSLATE_BRICKS).tiles(Blocks.DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
       DEEPSLATE_TILES = familyBuilder(Blocks.DEEPSLATE_TILES).slab(Blocks.DEEPSLATE_TILE_SLAB).stairs(Blocks.DEEPSLATE_TILE_STAIRS).wall(Blocks.DEEPSLATE_TILE_WALL).cracked(Blocks.CRACKED_DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
+      WOOL = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.WOOL.pick(color)).carpet(Blocks.CARPET.pick(color)).stairs(Blocks.WOOL_STAIRS.pick(color)).slab(Blocks.WOOL_SLAB.pick(color)).getFamily());
    }
 }

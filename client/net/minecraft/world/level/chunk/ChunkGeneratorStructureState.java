@@ -41,16 +41,17 @@ public class ChunkGeneratorStructureState {
    private final Map<Structure, List<StructurePlacement>> placementsForStructure = new Object2ObjectOpenHashMap();
    private final Map<ConcentricRingsStructurePlacement, CompletableFuture<List<ChunkPos>>> ringPositions = new Object2ObjectArrayMap();
    private boolean hasGeneratedPositions;
+   private final ChunkPos origin;
    private final List<Holder<StructureSet>> possibleStructureSets;
 
-   public static ChunkGeneratorStructureState createForFlat(final RandomState randomState, final long levelSeed, final BiomeSource biomeSource, final Stream<Holder<StructureSet>> structureOverrides) {
+   public static ChunkGeneratorStructureState createForFlat(final RandomState randomState, final long levelSeed, final ChunkPos origin, final BiomeSource biomeSource, final Stream<Holder<StructureSet>> structureOverrides) {
       List<Holder<StructureSet>> structures = structureOverrides.filter((structureSet) -> hasBiomesForStructureSet((StructureSet)structureSet.value(), biomeSource)).toList();
-      return new ChunkGeneratorStructureState(randomState, biomeSource, levelSeed, 0L, structures);
+      return new ChunkGeneratorStructureState(randomState, biomeSource, levelSeed, origin, 0L, structures);
    }
 
-   public static ChunkGeneratorStructureState createForNormal(final RandomState randomState, final long levelSeed, final BiomeSource biomeSource, final HolderLookup<StructureSet> allStructures) {
+   public static ChunkGeneratorStructureState createForNormal(final RandomState randomState, final long levelSeed, final ChunkPos origin, final BiomeSource biomeSource, final HolderLookup<StructureSet> allStructures) {
       List<Holder<StructureSet>> structures = (List)allStructures.listElements().filter((structureSet) -> hasBiomesForStructureSet((StructureSet)structureSet.value(), biomeSource)).collect(Collectors.toUnmodifiableList());
-      return new ChunkGeneratorStructureState(randomState, biomeSource, levelSeed, levelSeed, structures);
+      return new ChunkGeneratorStructureState(randomState, biomeSource, levelSeed, origin, levelSeed, structures);
    }
 
    private static boolean hasBiomesForStructureSet(final StructureSet structureSet, final BiomeSource biomeSource) {
@@ -63,10 +64,11 @@ public class ChunkGeneratorStructureState {
       return structureBiomes.anyMatch(var10001::contains);
    }
 
-   private ChunkGeneratorStructureState(final RandomState randomState, final BiomeSource biomeSource, final long levelSeed, final long concentricRingsSeed, final List<Holder<StructureSet>> possibleStructureSets) {
+   private ChunkGeneratorStructureState(final RandomState randomState, final BiomeSource biomeSource, final long levelSeed, final ChunkPos origin, final long concentricRingsSeed, final List<Holder<StructureSet>> possibleStructureSets) {
       super();
       this.randomState = randomState;
       this.levelSeed = levelSeed;
+      this.origin = origin;
       this.biomeSource = biomeSource;
       this.concentricRingsSeed = concentricRingsSeed;
       this.possibleStructureSets = possibleStructureSets;
@@ -154,6 +156,10 @@ public class ChunkGeneratorStructureState {
             return ringPositions;
          });
       }
+   }
+
+   public ChunkPos getDimensionOrigin() {
+      return this.origin;
    }
 
    public void ensureStructuresGenerated() {

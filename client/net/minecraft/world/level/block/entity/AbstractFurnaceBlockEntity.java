@@ -199,7 +199,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       if (wasLit != isLit) {
          changed = true;
          state = (BlockState)state.setValue(AbstractFurnaceBlock.LIT, isLit);
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
       }
 
       if (changed) {

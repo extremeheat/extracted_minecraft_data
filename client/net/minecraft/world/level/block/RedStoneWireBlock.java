@@ -420,7 +420,7 @@ public class RedStoneWireBlock extends Block {
             newState = (BlockState)newState.setValue(POWER, (Integer)state.getValue(POWER));
             newState = this.getConnectionState(level, newState, pos);
             if (newState != state) {
-               level.setBlock(pos, newState, 3);
+               level.setBlockAndUpdate(pos, newState);
                this.updatesOnShapeChange(level, pos, state, newState);
                return InteractionResult.SUCCESS;
             }

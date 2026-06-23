@@ -48,7 +48,7 @@ public interface HoglinBase {
          Vec3 horizontalPushVector = (new Vec3(xd, 0.0, zd)).normalize().scale(horizontalScale).yRot(horizontalPushAngle);
          double verticalScale = effectiveKnockbackPower * (double)random.nextFloat() * 0.5;
          target.push(horizontalPushVector.x, verticalScale, horizontalPushVector.z);
-         target.hurtMarked = true;
+         target.syncVelocity = true;
       }
    }
 }

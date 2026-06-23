@@ -29,7 +29,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
@@ -66,8 +66,8 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
       return (Holder.Reference)getRegistry(context, registryKey).get(key).orElseThrow(() -> exception.create(key.identifier()));
    }
 
-   public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return resolveKey(context, name, Registries.CONFIGURED_FEATURE, ERROR_INVALID_FEATURE);
+   public static Holder.Reference<Feature> getConfiguredFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return resolveKey(context, name, Registries.FEATURE, ERROR_INVALID_FEATURE);
    }
 
    public static Holder.Reference<Structure> getStructure(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {

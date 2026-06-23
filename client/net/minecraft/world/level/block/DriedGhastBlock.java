@@ -161,7 +161,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
    public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
          if (!level.isClientSide()) {
-            level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true));
             level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
             level.playSound((Entity)null, pos, SoundEvents.DRIED_GHAST_PLACE_IN_WATER, SoundSource.BLOCKS, 1.0F, 1.0F);
          }

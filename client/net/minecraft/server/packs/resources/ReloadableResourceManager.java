@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
@@ -56,12 +55,12 @@ public class ReloadableResourceManager implements AutoCloseable, ResourceManager
       return this.resources.getResourceStack(location);
    }
 
-   public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filenameFilter) {
-      return this.resources.listResources(directory, filenameFilter);
+   public Map<Identifier, Resource> listResources(final String directory, final ResourceManager.Selector selector) {
+      return this.resources.listResources(directory, selector);
    }
 
-   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
-      return this.resources.listResourceStacks(directory, filter);
+   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final ResourceManager.Selector selector) {
+      return this.resources.listResourceStacks(directory, selector);
    }
 
    public Stream<PackResources> listPacks() {

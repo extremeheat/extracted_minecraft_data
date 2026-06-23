@@ -17,7 +17,7 @@ import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
@@ -39,18 +39,18 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.UPWARDS_BRANCHING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
       BlockPos.MutableBlockPos logPos = new BlockPos.MutableBlockPos();
 
       for(int heightPos = 0; heightPos < treeHeight; ++heightPos) {
          int currentHeight = origin.getY() + heightPos;
-         if (this.placeLog(level, trunkSetter, random, logPos.set(origin.getX(), currentHeight, origin.getZ()), config) && heightPos < treeHeight - 1 && random.nextFloat() < this.placeBranchPerLogProbability) {
+         if (this.placeLog(level, trunkSetter, random, logPos.set(origin.getX(), currentHeight, origin.getZ()), tree) && heightPos < treeHeight - 1 && random.nextFloat() < this.placeBranchPerLogProbability) {
             Direction branchDir = Direction.Plane.HORIZONTAL.getRandomDirection(random);
             int branchLen = this.extraBranchLength.sample(random);
             int branchPos = Math.max(0, branchLen - this.extraBranchLength.sample(random) - 1);
             int branchSteps = this.extraBranchSteps.sample(random);
-            this.placeBranch(level, trunkSetter, random, treeHeight, config, attachments, logPos, currentHeight, branchDir, branchPos, branchSteps);
+            this.placeBranch(level, trunkSetter, random, treeHeight, tree, attachments, logPos, currentHeight, branchDir, branchPos, branchSteps);
          }
 
          if (heightPos == treeHeight - 1) {
@@ -61,7 +61,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
       return attachments;
    }
 
-   private void placeBranch(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final TreeConfiguration config, final List<FoliagePlacer.FoliageAttachment> attachments, final BlockPos.MutableBlockPos logPos, final int currentHeight, final Direction branchDir, final int branchPos, int branchSteps) {
+   private void placeBranch(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final TreeFeature tree, final List<FoliagePlacer.FoliageAttachment> attachments, final BlockPos.MutableBlockPos logPos, final int currentHeight, final Direction branchDir, final int branchPos, int branchSteps) {
       int heightAlongBranch = currentHeight + branchPos;
       int logX = logPos.getX();
       int logZ = logPos.getZ();
@@ -72,7 +72,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
             logX += branchDir.getStepX();
             logZ += branchDir.getStepZ();
             heightAlongBranch = placementHeight;
-            if (this.placeLog(level, trunkSetter, random, logPos.set(logX, placementHeight, logZ), config)) {
+            if (this.placeLog(level, trunkSetter, random, logPos.set(logX, placementHeight, logZ), tree)) {
                heightAlongBranch = placementHeight + 1;
             }
 

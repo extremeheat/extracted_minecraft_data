@@ -43,7 +43,6 @@ import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -105,7 +104,6 @@ import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
@@ -142,7 +140,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private final ChunkTaskDispatcher lightTaskDispatcher;
    private final ChunkStatusUpdateListener chunkStatusListener;
    private final DistanceManager distanceManager;
-   private final String storageName;
    private final PlayerMap playerMap;
    private final Int2ObjectMap<TrackedEntity> entityMap;
    private final Long2ByteMap chunkTypeCache;
@@ -153,7 +150,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private int serverViewDistance;
    private final WorldGenContext worldGenContext;
 
-   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
+   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
       super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK);
       this.visibleChunkMap = this.updatingChunkMap.clone();
       this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
@@ -167,7 +164,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.unloadQueue = Queues.newConcurrentLinkedQueue();
       this.activeChunkWrites = new AtomicInteger();
       Path storageFolder = levelStorage.getDimensionPath(level.dimension());
-      this.storageName = storageFolder.getFileName().toString();
       this.level = level;
       RegistryAccess registryAccess = level.registryAccess();
       long levelSeed = level.getSeed();
@@ -569,10 +565,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       Throwable cause = var10000;
       boolean alwaysThrow = cause instanceof Error;
       boolean ioException = cause instanceof IOException || cause instanceof NbtException;
-      if (!alwaysThrow) {
-         if (!ioException) {
-         }
-
+      if (!alwaysThrow && ioException) {
          this.level.getServer().reportChunkLoadFailure(cause, this.storageInfo(), pos);
          return this.createEmptyChunk(pos);
       } else {
@@ -1268,10 +1261,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
 
    protected PoiManager getPoiManager() {
       return this.poiManager;
-   }
-
-   public String getStorageName() {
-      return this.storageName;
    }
 
    void onFullChunkStatusChange(final ChunkPos pos, final FullChunkStatus status) {

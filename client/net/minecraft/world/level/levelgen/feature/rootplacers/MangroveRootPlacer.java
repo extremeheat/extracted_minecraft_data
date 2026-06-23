@@ -13,7 +13,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class MangroveRootPlacer extends RootPlacer {
@@ -27,7 +27,7 @@ public class MangroveRootPlacer extends RootPlacer {
       this.mangroveRootPlacement = mangroveRootPlacement;
    }
 
-   public boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeConfiguration config) {
+   public boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeFeature tree) {
       List<BlockPos> rootPositions = Lists.newArrayList();
       BlockPos.MutableBlockPos columnPos = origin.mutable();
 
@@ -53,7 +53,7 @@ public class MangroveRootPlacer extends RootPlacer {
       }
 
       for(BlockPos rootPos : rootPositions) {
-         this.placeRoot(level, rootSetter, random, rootPos, config);
+         this.placeRoot(level, rootSetter, random, rootPos, tree);
       }
 
       return true;
@@ -98,12 +98,12 @@ public class MangroveRootPlacer extends RootPlacer {
       return super.canPlaceRoot(level, pos) || level.isStateAtPosition(pos, (state) -> state.is(this.mangroveRootPlacement.canGrowThrough()));
    }
 
-   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
       if (level.isStateAtPosition(pos, (s) -> s.is(this.mangroveRootPlacement.muddyRootsIn()))) {
          BlockState muddyRoots = this.mangroveRootPlacement.muddyRootsProvider().getState(level, random, pos);
          rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, muddyRoots));
       } else {
-         super.placeRoot(level, rootSetter, random, pos, config);
+         super.placeRoot(level, rootSetter, random, pos, tree);
       }
 
    }

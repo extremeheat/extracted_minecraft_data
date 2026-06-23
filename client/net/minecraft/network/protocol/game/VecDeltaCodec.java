@@ -22,6 +22,10 @@ public class VecDeltaCodec {
       return (double)v / 4096.0;
    }
 
+   public static double encodingPrecisionLoss(final double d) {
+      return decode(encode(d)) - d;
+   }
+
    public Vec3 decode(final long xa, final long ya, final long za) {
       if (xa == 0L && ya == 0L && za == 0L) {
          return this.base;

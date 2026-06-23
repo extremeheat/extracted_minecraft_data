@@ -5,16 +5,17 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
 
 public record VulkanFeature(VulkanPNextStruct struct, String name, long offset) {
-   public VulkanFeature(final VulkanPNextStruct struct, final String name, final long offset) {
-      super();
-      this.name = name;
-      this.struct = struct;
-      if (struct.sType() == 1000059000) {
-         this.offset = offset + (long)VkPhysicalDeviceFeatures2.FEATURES;
+   public VulkanFeature(final VulkanPNextStruct struct, final String name) {
+      String structClassName = struct.pNextStructClass().getSimpleName();
+      if (!structClassName.contains("Features")) {
+         throw new IllegalArgumentException("Struct name \"" + structClassName + "\" does not contain \"Features\". All Vulkan features structs are expected to have \"Features\" in the name.");
       } else {
-         this.offset = offset;
+         this(struct, name, struct.fieldOffset(name));
       }
+   }
 
+   public VulkanFeature {
+      super();
    }
 
    public boolean get(final VkPhysicalDeviceFeatures2 features2) {
@@ -23,11 +24,15 @@ public record VulkanFeature(VulkanPNextStruct struct, String name, long offset) 
 
    public boolean get(final long pNextChain) {
       long structAddr = this.struct.findStructInPNextChain(pNextChain);
-      if (structAddr == 0L) {
-         return false;
-      } else {
-         return MemoryUtil.memGetInt(structAddr + this.offset) != 0;
-      }
+      return structAddr == 0L ? false : this.getVkBool32(structAddr);
+   }
+
+   private boolean getVkBool32(final long pointer) {
+      return MemoryUtil.memGetInt(pointer + this.offset) != 0;
+   }
+
+   private void putVkBool32(final boolean value, final long structAddr) {
+      MemoryUtil.memPutInt(structAddr + this.offset, value ? 1 : 0);
    }
 
    public boolean set(final VkPhysicalDeviceFeatures2 features2, final boolean value) {
@@ -39,7 +44,7 @@ public record VulkanFeature(VulkanPNextStruct struct, String name, long offset) 
       if (structAddr == 0L) {
          return false;
       } else {
-         MemoryUtil.memPutInt(structAddr + this.offset, value ? 1 : 0);
+         this.putVkBool32(value, structAddr);
          return true;
       }
    }
@@ -50,6 +55,11 @@ public record VulkanFeature(VulkanPNextStruct struct, String name, long offset) 
 
    public void set(final long pNextChain, final boolean value, final MemoryStack stack) {
       long structAddr = this.struct.findOrCreateStructInPNextChain(pNextChain, stack);
-      MemoryUtil.memPutInt(structAddr + this.offset, value ? 1 : 0);
+      this.putVkBool32(value, structAddr);
+   }
+
+   public String toString() {
+      String var10000 = String.valueOf(this.struct);
+      return var10000 + "." + this.name;
    }
 }

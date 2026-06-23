@@ -55,15 +55,22 @@ public class SpawnEggItem extends Item {
             if (var10 instanceof Spawner) {
                Spawner spawnerHolder = (Spawner)var10;
                if (!serverLevel.isSpawnerBlockEnabled()) {
-                  Player var11 = context.getPlayer();
-                  if (var11 instanceof ServerPlayer) {
-                     ServerPlayer serverPlayer = (ServerPlayer)var11;
+                  Player var15 = context.getPlayer();
+                  if (var15 instanceof ServerPlayer) {
+                     ServerPlayer serverPlayer = (ServerPlayer)var15;
                      serverPlayer.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
                   }
 
                   return InteractionResult.FAIL;
                } else {
-                  spawnerHolder.setEntityId(type, level.getRandom());
+                  Player player = context.getPlayer();
+                  TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
+                  if (player != null && entityData != null && level.getServer().getPlayerList().isOp(player.nameAndId())) {
+                     spawnerHolder.setEntityData(entityData, level.getRandom());
+                  } else {
+                     spawnerHolder.setEntityId(type, level.getRandom());
+                  }
+
                   level.sendBlockUpdated(pos, blockState, blockState, 3);
                   level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
                   itemStack.shrink(1);

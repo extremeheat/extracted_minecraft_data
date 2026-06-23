@@ -3,10 +3,18 @@ package com.mojang.blaze3d.vulkan;
 import com.mojang.blaze3d.GpuDeviceLossException;
 import com.mojang.blaze3d.systems.BackendCreationException;
 import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
+import com.mojang.blaze3d.vulkan.init.VulkanFeature;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Set;
 import org.joml.Vector4fc;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkClearColorValue;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
 
 public class VulkanUtils {
    public static final Set<DeviceUUID> KNOWN_PROBLEMATIC_DEVICES = Set.of(new DeviceUUID(14, 32902, 338), new DeviceUUID(14, 32902, 341), new DeviceUUID(14, 32902, 343), new DeviceUUID(14, 32902, 346), new DeviceUUID(14, 32902, 354), new DeviceUUID(14, 32902, 358), new DeviceUUID(14, 32902, 362), new DeviceUUID(14, 32902, 1026), new DeviceUUID(14, 32902, 1030), new DeviceUUID(14, 32902, 1034), new DeviceUUID(14, 32902, 1035), new DeviceUUID(14, 32902, 1038), new DeviceUUID(14, 32902, 1042), new DeviceUUID(14, 32902, 1046), new DeviceUUID(14, 32902, 1050), new DeviceUUID(14, 32902, 1051), new DeviceUUID(14, 32902, 1054), new DeviceUUID(14, 32902, 1058), new DeviceUUID(14, 32902, 1062), new DeviceUUID(14, 32902, 1066), new DeviceUUID(14, 32902, 1067), new DeviceUUID(14, 32902, 1070), new DeviceUUID(14, 32902, 2562), new DeviceUUID(14, 32902, 2566), new DeviceUUID(14, 32902, 2570), new DeviceUUID(14, 32902, 2571), new DeviceUUID(14, 32902, 2574), new DeviceUUID(14, 32902, 2578), new DeviceUUID(14, 32902, 2582), new DeviceUUID(14, 32902, 2586), new DeviceUUID(14, 32902, 2587), new DeviceUUID(14, 32902, 2590), new DeviceUUID(14, 32902, 2594), new DeviceUUID(14, 32902, 2598), new DeviceUUID(14, 32902, 2602), new DeviceUUID(14, 32902, 2603), new DeviceUUID(14, 32902, 2606), new DeviceUUID(14, 32902, 3362), new DeviceUUID(14, 32902, 3366), new DeviceUUID(14, 32902, 3370), new DeviceUUID(14, 32902, 3371), new DeviceUUID(14, 32902, 3374), new DeviceUUID(14, 32902, 3888), new DeviceUUID(14, 32902, 3889), new DeviceUUID(14, 32902, 3890), new DeviceUUID(14, 32902, 3891), new DeviceUUID(14, 32902, 5638), new DeviceUUID(14, 32902, 5650), new DeviceUUID(14, 32902, 5654), new DeviceUUID(14, 32902, 5662), new DeviceUUID(14, 32902, 5666), new DeviceUUID(14, 32902, 5670), new DeviceUUID(14, 32902, 5674), new DeviceUUID(14, 32902, 5675), new DeviceUUID(14, 32902, 8880), new DeviceUUID(14, 32902, 8881), new DeviceUUID(14, 32902, 8882), new DeviceUUID(14, 32902, 8883));
@@ -186,6 +194,68 @@ public class VulkanUtils {
       vkClearColor.float32(2, argb.z());
       vkClearColor.float32(3, argb.w());
       return vkClearColor;
+   }
+
+   public static Set<String> enumerateExtensions(final VkPhysicalDevice vkPhysicalDevice) throws BackendCreationException {
+      Set<String> extensions = new ObjectOpenHashSet();
+      MemoryStack stack = MemoryStack.stackPush();
+
+      try {
+         IntBuffer extensionCount = stack.callocInt(1);
+         throwIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, extensionCount, (VkExtensionProperties.Buffer)null), "Failed to get number of device extension properties", BackendCreationException.Reason.VULKAN_NO_DEVICE);
+         VkExtensionProperties.Buffer vkDeviceExtensions = VkExtensionProperties.calloc(extensionCount.get(0));
+
+         try {
+            throwIfFailure(VK12.vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, (String)null, extensionCount, vkDeviceExtensions), "Failed to get extension properties", BackendCreationException.Reason.VULKAN_NO_DEVICE);
+            vkDeviceExtensions.limit(extensionCount.get(0));
+
+            for(int i = 0; i < vkDeviceExtensions.limit(); ++i) {
+               vkDeviceExtensions.position(i);
+               extensions.add(vkDeviceExtensions.extensionNameString());
+            }
+         } catch (Throwable var9) {
+            if (vkDeviceExtensions != null) {
+               try {
+                  vkDeviceExtensions.close();
+               } catch (Throwable var8) {
+                  var9.addSuppressed(var8);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (vkDeviceExtensions != null) {
+            vkDeviceExtensions.close();
+         }
+      } catch (Throwable var10) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var7) {
+               var10.addSuppressed(var7);
+            }
+         }
+
+         throw var10;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return extensions;
+   }
+
+   public static VkPhysicalDeviceFeatures2 enumerateFeatures(final VkPhysicalDevice vkPhysicalDevice, final Set<VulkanFeature> features, final MemoryStack stack) {
+      VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
+
+      for(VulkanFeature requiredDeviceFeature : features) {
+         requiredDeviceFeature.struct().findOrCreateStructInPNextChain(deviceFeatures, stack);
+      }
+
+      VK12.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
+      return deviceFeatures;
    }
 
    public static record DeviceUUID(int driverID, int vendorID, int deviceID) {

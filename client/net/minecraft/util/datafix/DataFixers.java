@@ -225,6 +225,8 @@ import net.minecraft.util.datafix.fixes.PlayerRespawnDataFix;
 import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
+import net.minecraft.util.datafix.fixes.PotDecorationsBlockEntityUnflatteningFix;
+import net.minecraft.util.datafix.fixes.PotDecorationsComponentUnflatteningFix;
 import net.minecraft.util.datafix.fixes.PrimedTntBlockStateFixer;
 import net.minecraft.util.datafix.fixes.ProjectileStoredWeaponFix;
 import net.minecraft.util.datafix.fixes.RaidRenamesDataFix;
@@ -393,6 +395,9 @@ import net.minecraft.util.datafix.schemas.V4656;
 import net.minecraft.util.datafix.schemas.V4771;
 import net.minecraft.util.datafix.schemas.V4881;
 import net.minecraft.util.datafix.schemas.V4885;
+import net.minecraft.util.datafix.schemas.V4996;
+import net.minecraft.util.datafix.schemas.V4996_1;
+import net.minecraft.util.datafix.schemas.V4997;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -417,7 +422,7 @@ public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
    private static final DataFixerBuilder.Result DATA_FIXER;
    private static final FileFixerUpper FILE_FIXER;
-   public static final int BLENDING_VERSION = 4882;
+   public static final int BLENDING_VERSION = 4997;
 
    private DataFixers() {
       super();
@@ -902,9 +907,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var310 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var310);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var310::contains));
+      Set var313 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var313);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var313::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1197,8 +1202,6 @@ public class DataFixers {
       Schema v4881 = fixerUpper.addSchema(4881, V4881::new);
       fixerUpper.addFixer(new AddNewChoices(v4881, "Added Sulfur Cube", References.ENTITY));
       fixerUpper.addFixer(new AddNewChoices(v4881, "Added Potent Sulfur", References.BLOCK_ENTITY));
-      Schema blendingSchema = fixerUpper.addSchema(4882, SAME_NAMESPACED);
-      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4885 = fixerUpper.addSchema(4885, V4885::new);
       fixerUpper.addFixer(new RemoveBlockEntityTagFix(v4885, Set.of("minecraft:bed")));
       Schema v4888 = fixerUpper.addSchema(4888, SAME_NAMESPACED);
@@ -1207,6 +1210,14 @@ public class DataFixers {
       fixerUpper.addFixer(new OptionsForceDefaultGraphicsApiFix(v4892));
       Schema v4899 = fileFixerUpper.addSchema(fixerUpper, 4899, SAME_NAMESPACED);
       fileFixerUpper.addFixer(new ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix(v4899));
+      Schema v4996 = fixerUpper.addSchema(4996, V4996::new);
+      fixerUpper.addFixer(new PotDecorationsComponentUnflatteningFix(v4996));
+      Schema v4996_1 = fixerUpper.addSchema(4996, 1, V4996_1::new);
+      fixerUpper.addFixer(new PotDecorationsBlockEntityUnflatteningFix(v4996_1));
+      Schema blendingSchema = fixerUpper.addSchema(4997, SAME_NAMESPACED);
+      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
+      Schema v4997 = fixerUpper.addSchema(4997, V4997::new);
+      fixerUpper.addFixer(new AddNewChoices(v4997, "Added Poplar Boat and Poplar Chest Boat", References.ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

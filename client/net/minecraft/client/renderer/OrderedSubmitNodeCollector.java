@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
@@ -39,31 +39,31 @@ public interface OrderedSubmitNodeCollector {
 
    void submitLeash(PoseStack poseStack, EntityRenderState.LeashState leashState);
 
-   <S> void submitModel(Model<? super S> model, S state, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay);
+   <S> void submitModel(Model<? super S> model, S state, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, @Nullable UvMapping uvMapping, int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay);
 
    default <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      this.submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, crumblingOverlay);
+      this.submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (UvMapping)null, outlineColor, crumblingOverlay);
    }
 
    default <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final Identifier texture, final int lightCoords, final int overlayCoords, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      this.submitModel(model, state, poseStack, model.renderType(texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, crumblingOverlay);
+      this.submitModel(model, state, poseStack, model.renderType(texture), lightCoords, overlayCoords, -1, (UvMapping)null, outlineColor, crumblingOverlay);
    }
 
    default <S> void submitModel(final Model<S> model, final S state, final PoseStack poseStack, final int lightCoords, final int overlayCoords, final int tintedColor, final SpriteId sprite, final SpriteGetter sprites, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
       this.submitModel(model, state, poseStack, sprite.renderType(model.renderType()), lightCoords, overlayCoords, tintedColor, sprites.get(sprite), outlineColor, crumblingOverlay);
    }
 
-   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite) {
-      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable UvMapping uvMapping) {
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, uvMapping, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
-   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, tintedColor, crumblingOverlay, 0);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable UvMapping uvMapping, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, uvMapping, tintedColor, crumblingOverlay, 0);
    }
 
-   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable UvMapping uvMapping, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
       Model.Simple model = new Model.Simple(modelPart, (var1) -> renderType);
-      this.submitModel(model, Unit.INSTANCE, poseStack, renderType, lightCoords, overlayCoords, tintedColor, sprite, outlineColor, crumblingOverlay);
+      this.submitModel(model, Unit.INSTANCE, poseStack, renderType, lightCoords, overlayCoords, tintedColor, uvMapping, outlineColor, crumblingOverlay);
    }
 
    void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState, int outlineColor);

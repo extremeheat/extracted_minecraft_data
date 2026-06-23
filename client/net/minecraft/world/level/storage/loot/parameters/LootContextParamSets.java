@@ -17,6 +17,7 @@ public class LootContextParamSets {
    public static final ContextKeySet EMPTY;
    public static final ContextKeySet CHEST;
    public static final ContextKeySet COMMAND;
+   public static final ContextKeySet COMMAND_SLOT_SOURCE;
    public static final ContextKeySet SELECTOR;
    public static final ContextKeySet VILLAGER_TRADE;
    public static final ContextKeySet FISHING;
@@ -68,6 +69,7 @@ public class LootContextParamSets {
       });
       CHEST = register("chest", (builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
       COMMAND = register("command", (builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
+      COMMAND_SLOT_SOURCE = register("command_slot_source", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.CONTAINER).optional(LootContextParams.THIS_ENTITY));
       SELECTOR = register("selector", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY));
       VILLAGER_TRADE = register("villager_trade", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED));
       FISHING = register("fishing", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.TOOL).optional(LootContextParams.THIS_ENTITY));
@@ -81,7 +83,7 @@ public class LootContextParamSets {
       ADVANCEMENT_ENTITY = register("advancement_entity", (builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN));
       ADVANCEMENT_LOCATION = register("advancement_location", (builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.TOOL).required(LootContextParams.BLOCK_STATE));
       BLOCK_USE = register("block_use", (builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE));
-      ALL_PARAMS = register("generic", (builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.LAST_DAMAGE_PLAYER).required(LootContextParams.DAMAGE_SOURCE).required(LootContextParams.ATTACKING_ENTITY).required(LootContextParams.DIRECT_ATTACKING_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE).required(LootContextParams.BLOCK_ENTITY).required(LootContextParams.TOOL).required(LootContextParams.EXPLOSION_RADIUS).required(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED));
+      ALL_PARAMS = register("generic", (builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.LAST_DAMAGE_PLAYER).required(LootContextParams.DAMAGE_SOURCE).required(LootContextParams.ATTACKING_ENTITY).required(LootContextParams.DIRECT_ATTACKING_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE).required(LootContextParams.BLOCK_ENTITY).required(LootContextParams.TOOL).required(LootContextParams.EXPLOSION_RADIUS).required(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED).required(LootContextParams.CONTAINER));
       BLOCK = register("block", (builder) -> builder.required(LootContextParams.BLOCK_STATE).required(LootContextParams.ORIGIN).required(LootContextParams.TOOL).optional(LootContextParams.THIS_ENTITY).optional(LootContextParams.BLOCK_ENTITY).optional(LootContextParams.EXPLOSION_RADIUS));
       SHEARING = register("shearing", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.TOOL));
       ENTITY_INTERACT = register("entity_interact", (builder) -> builder.required(LootContextParams.TARGET_ENTITY).optional(LootContextParams.INTERACTING_ENTITY).required(LootContextParams.TOOL));

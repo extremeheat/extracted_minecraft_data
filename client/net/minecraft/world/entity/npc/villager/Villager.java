@@ -114,7 +114,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private static final int DEFAULT_LAST_RESTOCK = 0;
    private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
    private static final int DEFAULT_RESTOCKS_TODAY = 0;
-   private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
    private static final EntityDimensions BABY_DIMENSIONS;
    private int updateMerchantTimer;
    private boolean increaseProfessionLevelOnUpdate;
@@ -127,7 +126,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private long lastRestockGameTime = 0L;
    private int numberOfRestocksToday = 0;
    private long lastRestockCheckDay;
-   private boolean assignProfessionWhenSpawned = false;
    private static final Brain.Provider<Villager> BRAIN_PROVIDER;
    public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES;
 
@@ -178,19 +176,11 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.5);
    }
 
-   public boolean assignProfessionWhenSpawned() {
-      return this.assignProfessionWhenSpawned;
-   }
-
    protected void customServerAiStep(final ServerLevel level) {
       ProfilerFiller profiler = Profiler.get();
       profiler.push("villagerBrain");
       this.getBrain().tick(level, this);
       profiler.pop();
-      if (this.assignProfessionWhenSpawned) {
-         this.assignProfessionWhenSpawned = false;
-      }
-
       if (!this.isTrading() && this.updateMerchantTimer > 0) {
          --this.updateMerchantTimer;
          if (this.updateMerchantTimer <= 0) {
@@ -421,10 +411,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       output.putLong("LastRestock", this.lastRestockGameTime);
       output.putLong("LastGossipDecay", this.lastGossipDecayTime);
       output.putInt("RestocksToday", this.numberOfRestocksToday);
-      if (this.assignProfessionWhenSpawned) {
-         output.putBoolean("AssignProfessionWhenSpawned", true);
-      }
-
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
@@ -450,7 +436,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       }
 
       this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
-      this.assignProfessionWhenSpawned = input.getBooleanOr("AssignProfessionWhenSpawned", false);
    }
 
    public boolean removeWhenFarAway(final double distSqr) {
@@ -657,10 +642,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       }
 
       this.finalizeVillagerType(level, this.blockPosition());
-      if (spawnReason == EntitySpawnReason.STRUCTURE) {
-         this.assignProfessionWhenSpawned = true;
-      }
-
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 

@@ -86,7 +86,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"dry_vegetation", DryVegetationBlock.CODEC);
       Registry.register(registry, (String)"decorated_pot", DecoratedPotBlock.CODEC);
       Registry.register(registry, (String)"detector_rail", DetectorRailBlock.CODEC);
-      Registry.register(registry, (String)"dirt_path", DirtPathBlock.CODEC);
+      Registry.register(registry, (String)"path", PathBlock.CODEC);
       Registry.register(registry, (String)"dispenser", DispenserBlock.CODEC);
       Registry.register(registry, (String)"door", DoorBlock.CODEC);
       Registry.register(registry, (String)"double_plant", DoublePlantBlock.CODEC);
@@ -138,6 +138,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"lantern", LanternBlock.CODEC);
       Registry.register(registry, (String)"lava_cauldron", LavaCauldronBlock.CODEC);
       Registry.register(registry, (String)"layered_cauldron", LayeredCauldronBlock.CODEC);
+      Registry.register(registry, (String)"leaves", LeavesBlock.CODEC);
       Registry.register(registry, (String)"leaf_litter", LeafLitterBlock.CODEC);
       Registry.register(registry, (String)"lectern", LecternBlock.CODEC);
       Registry.register(registry, (String)"lever", LeverBlock.CODEC);
@@ -199,6 +200,7 @@ public class BlockTypes {
       Registry.register(registry, (String)"seagrass", SeagrassBlock.CODEC);
       Registry.register(registry, (String)"sea_pickle", SeaPickleBlock.CODEC);
       Registry.register(registry, (String)"shelf", ShelfBlock.CODEC);
+      Registry.register(registry, (String)"shelf_mushroom", ShelfMushroomBlock.CODEC);
       Registry.register(registry, (String)"short_dry_grass", ShortDryGrassBlock.CODEC);
       Registry.register(registry, (String)"shulker_box", ShulkerBoxBlock.CODEC);
       Registry.register(registry, (String)"skull", SkullBlock.CODEC);

@@ -34,7 +34,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
             if (random.nextInt(xpPerGrowthSpawn) < charge) {
                BlockPos growthPlacement = chargePos.above();
                BlockState growthState = this.getRandomGrowthState(level, growthPlacement, random, spreader.isWorldGeneration());
-               level.setBlock(growthPlacement, growthState, 3);
+               level.setBlockAndUpdate(growthPlacement, growthState);
                level.playSound((Entity)null, chargePos, growthState.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 

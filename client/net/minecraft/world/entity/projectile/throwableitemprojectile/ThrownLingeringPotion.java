@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class ThrownLingeringPotion extends AbstractThrownPotion {
@@ -30,10 +31,16 @@ public class ThrownLingeringPotion extends AbstractThrownPotion {
    }
 
    public void onHitAsPotion(final ServerLevel level, final ItemStack potionItem, final HitResult hitResult) {
-      AreaEffectCloud cloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+      AreaEffectCloud cloud;
+      if (hitResult instanceof EntityHitResult entityHitResult) {
+         cloud = new AreaEffectCloud(this.level(), entityHitResult.getEntity().getX(), entityHitResult.getEntity().getY(), entityHitResult.getEntity().getZ());
+      } else {
+         cloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+      }
+
       Entity var6 = this.getOwner();
-      if (var6 instanceof LivingEntity owner) {
-         cloud.setOwner(owner);
+      if (var6 instanceof LivingEntity livingEntity) {
+         cloud.setOwner(livingEntity);
       }
 
       cloud.setRadius(3.0F);

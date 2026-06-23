@@ -32,7 +32,7 @@ public class LilyPadBlock extends VegetationBlock {
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
       super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
       if (level instanceof ServerLevel && entity instanceof AbstractBoat) {
-         level.destroyBlock(new BlockPos(pos), true, entity);
+         level.destroyBlock(pos.immutable(), true, entity);
       }
 
    }

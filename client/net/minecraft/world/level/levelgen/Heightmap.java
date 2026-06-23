@@ -13,14 +13,13 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeavesBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ import org.slf4j.Logger;
 public class Heightmap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Predicate<BlockState> NOT_AIR = (input) -> !input.isAir();
-   private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
+   private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = (state) -> state.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP);
    private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
    private final ChunkAccess chunk;
@@ -162,8 +161,8 @@ public class Heightmap {
       WORLD_SURFACE(1, "WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
       OCEAN_FLOOR_WG(2, "OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR(3, "OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (input) -> input.blocksMotion() || !input.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> (input.blocksMotion() || !input.getFluidState().isEmpty()) && !(input.getBlock() instanceof LeavesBlock));
+      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (input) -> input.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP) || !input.getFluidState().isEmpty()),
+      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> input.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES) || !input.getFluidState().isEmpty());
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
       private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);

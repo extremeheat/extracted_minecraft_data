@@ -20,6 +20,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
    public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, SaplingBlock::new));
    public static final IntegerProperty STAGE;
+   public static final int BRIGHTNESS_FOR_SAPLING_GROWTH = 9;
+   public static final int TICK_CHANCE_FOR_SAPLING_GROWTH = 7;
    private static final VoxelShape SHAPE;
    protected final TreeGrower treeGrower;
 
@@ -55,8 +57,12 @@ public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       if (level instanceof ServerLevel serverLevel) {
-         int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
-         return level.isInsideBuildHeight(pos.above(heightOffset));
+         if (!this.treeGrower.canGrow(serverLevel, pos, state)) {
+            return false;
+         } else {
+            int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
+            return level.isInsideBuildHeight(pos.above(heightOffset));
+         }
       } else {
          return false;
       }

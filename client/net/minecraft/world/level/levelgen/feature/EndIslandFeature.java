@@ -1,22 +1,26 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class EndIslandFeature extends Feature<NoneFeatureConfiguration> {
-   public EndIslandFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record EndIslandFeature() implements Feature {
+   public static final EndIslandFeature INSTANCE = new EndIslandFeature();
+   public static final MapCodec<EndIslandFeature> CODEC;
+
+   public EndIslandFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      BlockPos origin = context.origin();
+   public MapCodec<EndIslandFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       float size = (float)random.nextInt(3) + 4.0F;
 
       for(int y = 0; size > 0.5F; --y) {
@@ -32,5 +36,9 @@ public class EndIslandFeature extends Feature<NoneFeatureConfiguration> {
       }
 
       return true;
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

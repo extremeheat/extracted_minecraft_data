@@ -31,7 +31,7 @@ public class ConcretePowderBlock extends FallingBlock {
 
    public void onLand(final Level level, final BlockPos pos, final BlockState state, final BlockState replacedBlock, final FallingBlockEntity entity) {
       if (shouldSolidify(level, pos, replacedBlock)) {
-         level.setBlock(pos, this.concrete.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, this.concrete.defaultBlockState());
       }
 
    }

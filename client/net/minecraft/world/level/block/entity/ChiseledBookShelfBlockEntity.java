@@ -46,7 +46,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBac
             updatedState = (BlockState)updatedState.setValue(slotProperty, slotIsOccupied);
          }
 
-         ((Level)Objects.requireNonNull(this.level)).setBlock(this.worldPosition, updatedState, 3);
+         ((Level)Objects.requireNonNull(this.level)).setBlockAndUpdate(this.worldPosition, updatedState);
          this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.worldPosition, GameEvent.Context.of(updatedState));
       } else {
          LOGGER.error("Expected slot 0-5, got {}", interactedSlot);

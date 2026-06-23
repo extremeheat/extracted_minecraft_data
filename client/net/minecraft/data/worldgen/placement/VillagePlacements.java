@@ -1,7 +1,7 @@
 package net.minecraft.data.worldgen.placement;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Directional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -12,7 +12,7 @@ import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -38,20 +38,20 @@ public class VillagePlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
-      Holder<ConfiguredFeature<?, ?>> pileHay = configuredFeatures.getOrThrow(PileFeatures.PILE_HAY);
-      Holder<ConfiguredFeature<?, ?>> pileMelon = configuredFeatures.getOrThrow(PileFeatures.PILE_MELON);
-      Holder<ConfiguredFeature<?, ?>> pileSnow = configuredFeatures.getOrThrow(PileFeatures.PILE_SNOW);
-      Holder<ConfiguredFeature<?, ?>> pileIce = configuredFeatures.getOrThrow(PileFeatures.PILE_ICE);
-      Holder<ConfiguredFeature<?, ?>> pilePumpkin = configuredFeatures.getOrThrow(PileFeatures.PILE_PUMPKIN);
-      Holder<ConfiguredFeature<?, ?>> oak = configuredFeatures.getOrThrow(TreeFeatures.OAK);
-      Holder<ConfiguredFeature<?, ?>> acacia = configuredFeatures.getOrThrow(TreeFeatures.ACACIA);
-      Holder<ConfiguredFeature<?, ?>> spruce = configuredFeatures.getOrThrow(TreeFeatures.SPRUCE);
-      Holder<ConfiguredFeature<?, ?>> pine = configuredFeatures.getOrThrow(TreeFeatures.PINE);
-      Holder<ConfiguredFeature<?, ?>> cactus = configuredFeatures.getOrThrow(VegetationFeatures.CACTUS);
-      Holder<ConfiguredFeature<?, ?>> flowerPlain = configuredFeatures.getOrThrow(VegetationFeatures.FLOWER_PLAIN);
-      Holder<ConfiguredFeature<?, ?>> taigaGrass = configuredFeatures.getOrThrow(VegetationFeatures.TAIGA_GRASS);
-      Holder<ConfiguredFeature<?, ?>> berryBush = configuredFeatures.getOrThrow(VegetationFeatures.BERRY_BUSH);
+      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      Holder<Feature> pileHay = configuredFeatures.getOrThrow(PileFeatures.PILE_HAY);
+      Holder<Feature> pileMelon = configuredFeatures.getOrThrow(PileFeatures.PILE_MELON);
+      Holder<Feature> pileSnow = configuredFeatures.getOrThrow(PileFeatures.PILE_SNOW);
+      Holder<Feature> pileIce = configuredFeatures.getOrThrow(PileFeatures.PILE_ICE);
+      Holder<Feature> pilePumpkin = configuredFeatures.getOrThrow(PileFeatures.PILE_PUMPKIN);
+      Holder<Feature> oak = configuredFeatures.getOrThrow(TreeFeatures.OAK);
+      Holder<Feature> acacia = configuredFeatures.getOrThrow(TreeFeatures.ACACIA);
+      Holder<Feature> spruce = configuredFeatures.getOrThrow(TreeFeatures.SPRUCE);
+      Holder<Feature> pine = configuredFeatures.getOrThrow(TreeFeatures.PINE);
+      Holder<Feature> cactus = configuredFeatures.getOrThrow(VegetationFeatures.CACTUS);
+      Holder<Feature> flowerPlain = configuredFeatures.getOrThrow(VegetationFeatures.FLOWER_PLAIN);
+      Holder<Feature> taigaGrass = configuredFeatures.getOrThrow(VegetationFeatures.TAIGA_GRASS);
+      Holder<Feature> berryBush = configuredFeatures.getOrThrow(VegetationFeatures.BERRY_BUSH);
       PlacementUtils.register(context, PILE_HAY_VILLAGE, pileHay);
       PlacementUtils.register(context, PILE_MELON_VILLAGE, pileMelon);
       PlacementUtils.register(context, PILE_SNOW_VILLAGE, pileSnow);
@@ -61,9 +61,9 @@ public class VillagePlacements {
       PlacementUtils.register(context, ACACIA_VILLAGE, acacia, PlacementUtils.filteredByBlockSurvival(Blocks.ACACIA_SAPLING));
       PlacementUtils.register(context, SPRUCE_VILLAGE, spruce, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
       PlacementUtils.register(context, PINE_VILLAGE, pine, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
-      PlacementUtils.register(context, PATCH_CACTUS_VILLAGE, cactus, CountPlacement.of(10), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(Blocks.CACTUS.defaultBlockState(), BlockPos.ZERO))));
+      PlacementUtils.register(context, PATCH_CACTUS_VILLAGE, cactus, CountPlacement.of(10), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(Blocks.CACTUS))));
       PlacementUtils.register(context, FLOWER_PLAIN_VILLAGE, flowerPlain, CountPlacement.of(64), RandomOffsetPlacement.ofTriangle(6, 2), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
       PlacementUtils.register(context, PATCH_TAIGA_GRASS_VILLAGE, taigaGrass, CountPlacement.of(32), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
-      PlacementUtils.register(context, PATCH_BERRY_BUSH_VILLAGE, berryBush, CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks(Direction.DOWN.getUnitVec3i(), Blocks.GRASS_BLOCK))));
+      PlacementUtils.register(context, PATCH_BERRY_BUSH_VILLAGE, berryBush, CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.GRASS_BLOCK))));
    }
 }

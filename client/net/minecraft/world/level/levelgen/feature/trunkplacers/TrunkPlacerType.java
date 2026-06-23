@@ -14,6 +14,7 @@ public class TrunkPlacerType<P extends TrunkPlacer> {
    public static final TrunkPlacerType<BendingTrunkPlacer> BENDING_TRUNK_PLACER;
    public static final TrunkPlacerType<UpwardsBranchingTrunkPlacer> UPWARDS_BRANCHING_TRUNK_PLACER;
    public static final TrunkPlacerType<CherryTrunkPlacer> CHERRY_TRUNK_PLACER;
+   public static final TrunkPlacerType<PoplarTrunkPlacer> POPLAR_TRUNK_PLACER;
    private final MapCodec<P> codec;
 
    private static <P extends TrunkPlacer> TrunkPlacerType<P> register(final String name, final MapCodec<P> codec) {
@@ -39,5 +40,6 @@ public class TrunkPlacerType<P extends TrunkPlacer> {
       BENDING_TRUNK_PLACER = register("bending_trunk_placer", BendingTrunkPlacer.CODEC);
       UPWARDS_BRANCHING_TRUNK_PLACER = register("upwards_branching_trunk_placer", UpwardsBranchingTrunkPlacer.CODEC);
       CHERRY_TRUNK_PLACER = register("cherry_trunk_placer", CherryTrunkPlacer.CODEC);
+      POPLAR_TRUNK_PLACER = register("poplar_trunk_placer", PoplarTrunkPlacer.CODEC);
    }
 }

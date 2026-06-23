@@ -34,7 +34,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.network.chat.Component;
@@ -111,10 +111,10 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.solid.submit(new LeashFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), leashState));
    }
 
-   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable TextureAtlasSprite sprite, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable UvMapping uvMapping, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
       PoseStack.Pose pose = poseStack.last().copy();
       if (!renderType.isOutline()) {
-         ModelFeatureRenderer.Submit<S> submit = new ModelFeatureRenderer.Submit<S>(renderType, pose, model, state, lightCoords, overlayCoords, tintedColor, sprite, (PoseStack.Pose)null);
+         ModelFeatureRenderer.Submit<S> submit = new ModelFeatureRenderer.Submit<S>(renderType, pose, model, state, lightCoords, overlayCoords, tintedColor, uvMapping, (PoseStack.Pose)null);
          if (renderType == RenderTypes.waterMask()) {
             this.waterMask.submit(submit);
          } else if (renderType.hasBlending()) {
@@ -127,13 +127,13 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       if (outlineColor != 0) {
          RenderType outlineRenderType = getOutlineRenderType(renderType);
          if (outlineRenderType != null) {
-            this.outline.submit(new ModelFeatureRenderer.Submit(outlineRenderType, pose, model, state, 15728880, OverlayTexture.NO_OVERLAY, outlineColor, sprite, (PoseStack.Pose)null));
+            this.outline.submit(new ModelFeatureRenderer.Submit(outlineRenderType, pose, model, state, 15728880, OverlayTexture.NO_OVERLAY, outlineColor, uvMapping, (PoseStack.Pose)null));
          }
       }
 
       if (crumblingOverlay != null && renderType.affectsCrumbling()) {
          RenderType crumblingRenderType = (RenderType)ModelBakery.DESTROY_TYPES.get(crumblingOverlay.progress());
-         this.breakingOverlay.submit(new ModelFeatureRenderer.Submit(crumblingRenderType, pose, model, state, lightCoords, overlayCoords, tintedColor, (TextureAtlasSprite)null, crumblingOverlay.cameraPose()));
+         this.breakingOverlay.submit(new ModelFeatureRenderer.Submit(crumblingRenderType, pose, model, state, lightCoords, overlayCoords, tintedColor, (UvMapping)null, crumblingOverlay.cameraPose()));
       }
 
    }

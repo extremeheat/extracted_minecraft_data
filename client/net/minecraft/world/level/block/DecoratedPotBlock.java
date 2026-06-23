@@ -20,7 +20,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -153,10 +152,10 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockEntity maybeEntity = (BlockEntity)params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (maybeEntity instanceof DecoratedPotBlockEntity entity) {
          params.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, (output) -> {
-            for(Item item : entity.getDecorations().ordered()) {
-               output.accept(item.getDefaultInstance());
-            }
-
+            entity.getDecorations().left().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().back().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().front().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().right().ifPresent((item) -> output.accept(item.create()));
          });
       }
 

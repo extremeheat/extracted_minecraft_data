@@ -393,7 +393,7 @@ public abstract class RecipeProvider {
 
    protected void suspiciousStew(final Item item, final SuspiciousEffectHolder effectHolder) {
       ItemStackTemplate stew = new ItemStackTemplate(Items.SUSPICIOUS_STEW, DataComponentPatch.builder().set(DataComponents.SUSPICIOUS_STEW_EFFECTS, effectHolder.getSuspiciousEffects()).build());
-      ShapelessRecipeBuilder var10000 = this.shapeless(RecipeCategory.FOOD, stew).requires(Items.BOWL).requires(Items.BROWN_MUSHROOM).requires(Items.RED_MUSHROOM).requires(item).group("suspicious_stew").unlockedBy(getHasName(item), this.has(item));
+      ShapelessRecipeBuilder var10000 = this.shapeless(RecipeCategory.FOOD, stew).requires(Items.BOWL).requires(ItemTags.MUSHROOMS).requires(ItemTags.MUSHROOMS).requires(item).group("suspicious_stew").unlockedBy(getHasName(item), this.has(item));
       RecipeOutput var10001 = this.output;
       String var10002 = getItemName((ItemLike)stew.item().value());
       var10000.save(var10001, var10002 + "_from_" + getItemName(item));

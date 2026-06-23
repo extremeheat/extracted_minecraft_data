@@ -32,8 +32,8 @@ import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
 import net.minecraft.client.resources.sounds.RidingEntitySoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.UnderLiquidAmbientSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
-import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -217,6 +217,16 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.connection.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
+
+         for(AmbientSoundHandler soundHandler : this.ambientSoundHandlers) {
+            soundHandler.tick();
+         }
+
+      }
+   }
+
+   public void sendChanges() {
+      if (this.connection.hasClientLoaded()) {
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
             this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
             this.lastSentInput = this.input.keyPresses;
@@ -231,10 +241,6 @@ public class LocalPlayer extends AbstractClientPlayer {
             }
          } else {
             this.sendPosition();
-         }
-
-         for(AmbientSoundHandler soundHandler : this.ambientSoundHandlers) {
-            soundHandler.tick();
          }
 
       }
@@ -1143,7 +1149,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       } else {
          if (!oldIsUnderwater && newIsUnderwater) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.AMBIENT_UNDERWATER_ENTER, SoundSource.AMBIENT, 1.0F, 1.0F, false);
-            this.minecraft.getSoundManager().play(new UnderwaterAmbientSoundInstances.UnderwaterAmbientSoundInstance(this));
+            this.minecraft.getSoundManager().play(UnderLiquidAmbientSoundInstance.underwater(this));
          }
 
          if (oldIsUnderwater && !newIsUnderwater) {

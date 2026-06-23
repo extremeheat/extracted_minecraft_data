@@ -81,7 +81,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       BlockState newState = updateState(state, level, pos);
       if (newState != state) {
-         level.setBlock(pos, newState, 3);
+         level.setBlockAndUpdate(pos, newState);
       }
 
    }

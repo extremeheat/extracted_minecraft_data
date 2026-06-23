@@ -16,8 +16,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.CompositeDirection;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction8;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -45,10 +45,10 @@ public class UpgradeData {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final UpgradeData EMPTY;
    private static final String TAG_INDICES = "Indices";
-   private static final Direction8[] DIRECTIONS;
+   private static final CompositeDirection.Direction8[] DIRECTIONS;
    private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
    private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
-   private final EnumSet<Direction8> sides;
+   private final EnumSet<CompositeDirection.Direction8> sides;
    private final List<SavedTick<Block>> neighborBlockTicks;
    private final List<SavedTick<Fluid>> neighborFluidTicks;
    private final int[][] index;
@@ -57,7 +57,7 @@ public class UpgradeData {
 
    private UpgradeData(final LevelHeightAccessor levelHeightAccessor) {
       super();
-      this.sides = EnumSet.noneOf(Direction8.class);
+      this.sides = EnumSet.noneOf(CompositeDirection.Direction8.class);
       this.neighborBlockTicks = Lists.newArrayList();
       this.neighborFluidTicks = Lists.newArrayList();
       this.index = new int[levelHeightAccessor.getSectionsCount()][];
@@ -73,7 +73,7 @@ public class UpgradeData {
       });
       int sideInt = tag.getIntOr("Sides", 0);
 
-      for(Direction8 direction8 : Direction8.values()) {
+      for(CompositeDirection.Direction8 direction8 : CompositeDirection.Direction8.values()) {
          if ((sideInt & 1 << direction8.ordinal()) != 0) {
             this.sides.add(direction8);
          }
@@ -91,7 +91,7 @@ public class UpgradeData {
 
    private UpgradeData(final UpgradeData source) {
       super();
-      this.sides = EnumSet.noneOf(Direction8.class);
+      this.sides = EnumSet.noneOf(CompositeDirection.Direction8.class);
       this.neighborBlockTicks = Lists.newArrayList();
       this.neighborFluidTicks = Lists.newArrayList();
       this.sides.addAll(source.sides);
@@ -109,7 +109,7 @@ public class UpgradeData {
    public void upgrade(final LevelChunk chunk) {
       this.upgradeInside(chunk);
 
-      for(Direction8 direction8 : DIRECTIONS) {
+      for(CompositeDirection.Direction8 direction8 : DIRECTIONS) {
          upgradeSides(chunk, direction8);
       }
 
@@ -125,7 +125,7 @@ public class UpgradeData {
       CHUNKY_FIXERS.forEach((fixer) -> fixer.processChunk(level));
    }
 
-   private static void upgradeSides(final LevelChunk chunk, final Direction8 direction8) {
+   private static void upgradeSides(final LevelChunk chunk, final CompositeDirection.Direction8 direction8) {
       Level level = chunk.getLevel();
       if (chunk.getUpgradeData().sides.remove(direction8)) {
          Set<Direction> directions = direction8.getDirections();
@@ -236,7 +236,7 @@ public class UpgradeData {
 
       int sides = 0;
 
-      for(Direction8 side : this.sides) {
+      for(CompositeDirection.Direction8 side : this.sides) {
          sides |= 1 << side.ordinal();
       }
 
@@ -258,7 +258,7 @@ public class UpgradeData {
 
    static {
       EMPTY = new UpgradeData(EmptyBlockGetter.INSTANCE);
-      DIRECTIONS = Direction8.values();
+      DIRECTIONS = CompositeDirection.Direction8.values();
       BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec().orElse(Blocks.AIR)).listOf();
       FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec().orElse(Fluids.EMPTY)).listOf();
       MAP = new IdentityHashMap();
@@ -273,7 +273,7 @@ public class UpgradeData {
    }
 
    private static enum BlockFixers implements BlockFixer {
-      BLACKLIST(new Block[]{Blocks.OBSERVER, Blocks.NETHER_PORTAL, Blocks.CONCRETE_POWDER.white(), Blocks.CONCRETE_POWDER.orange(), Blocks.CONCRETE_POWDER.magenta(), Blocks.CONCRETE_POWDER.lightBlue(), Blocks.CONCRETE_POWDER.yellow(), Blocks.CONCRETE_POWDER.lime(), Blocks.CONCRETE_POWDER.pink(), Blocks.CONCRETE_POWDER.gray(), Blocks.CONCRETE_POWDER.lightGray(), Blocks.CONCRETE_POWDER.cyan(), Blocks.CONCRETE_POWDER.purple(), Blocks.CONCRETE_POWDER.blue(), Blocks.CONCRETE_POWDER.brown(), Blocks.CONCRETE_POWDER.green(), Blocks.CONCRETE_POWDER.red(), Blocks.CONCRETE_POWDER.black(), Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL, Blocks.DRAGON_EGG, Blocks.GRAVEL, Blocks.SAND, Blocks.RED_SAND, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.CHERRY_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.PALE_OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.PALE_OAK_WALL_SIGN, Blocks.OAK_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.PALE_OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN}) {
+      BLACKLIST(new Block[]{Blocks.OBSERVER, Blocks.NETHER_PORTAL, Blocks.CONCRETE_POWDER.white(), Blocks.CONCRETE_POWDER.orange(), Blocks.CONCRETE_POWDER.magenta(), Blocks.CONCRETE_POWDER.lightBlue(), Blocks.CONCRETE_POWDER.yellow(), Blocks.CONCRETE_POWDER.lime(), Blocks.CONCRETE_POWDER.pink(), Blocks.CONCRETE_POWDER.gray(), Blocks.CONCRETE_POWDER.lightGray(), Blocks.CONCRETE_POWDER.cyan(), Blocks.CONCRETE_POWDER.purple(), Blocks.CONCRETE_POWDER.blue(), Blocks.CONCRETE_POWDER.brown(), Blocks.CONCRETE_POWDER.green(), Blocks.CONCRETE_POWDER.red(), Blocks.CONCRETE_POWDER.black(), Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL, Blocks.DRAGON_EGG, Blocks.GRAVEL, Blocks.SAND, Blocks.RED_SAND, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.CHERRY_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.PALE_OAK_SIGN, Blocks.POPLAR_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.PALE_OAK_WALL_SIGN, Blocks.POPLAR_WALL_SIGN, Blocks.OAK_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.PALE_OAK_HANGING_SIGN, Blocks.POPLAR_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN, Blocks.POPLAR_WALL_HANGING_SIGN}) {
          public BlockState updateShape(final BlockState state, final Direction direction, final BlockState neighbour, final LevelAccessor level, final BlockPos pos, final BlockPos neighbourPos) {
             return state;
          }
@@ -309,7 +309,7 @@ public class UpgradeData {
             return state;
          }
       },
-      LEAVES(true, new Block[]{Blocks.ACACIA_LEAVES, Blocks.CHERRY_LEAVES, Blocks.BIRCH_LEAVES, Blocks.PALE_OAK_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES}) {
+      LEAVES(true, new Block[]{Blocks.ACACIA_LEAVES, Blocks.CHERRY_LEAVES, Blocks.BIRCH_LEAVES, Blocks.PALE_OAK_LEAVES, Blocks.RED_POPLAR_LEAVES, Blocks.ORANGE_POPLAR_LEAVES, Blocks.YELLOW_POPLAR_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES}) {
          private final ThreadLocal<List<ObjectSet<BlockPos>>> queue = ThreadLocal.withInitial(() -> Lists.newArrayListWithCapacity(7));
 
          public BlockState updateShape(final BlockState state, final Direction direction, final BlockState neighbour, final LevelAccessor level, final BlockPos pos, final BlockPos neighbourPos) {

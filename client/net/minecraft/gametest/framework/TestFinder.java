@@ -11,6 +11,9 @@ import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 public class TestFinder implements TestInstanceFinder, TestPosFinder {
    private static final TestInstanceFinder NO_FUNCTIONS = Stream::empty;
@@ -76,17 +79,59 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
          };
       }
 
+      public static ResourceKey<Level> levelForDimension(final TestEnvironmentDefinition<?> definition) {
+         Objects.requireNonNull(definition);
+         byte var2 = 0;
+         ResourceKey var10000;
+         //$FF: var2->value
+         //0->net/minecraft/gametest/framework/TestEnvironmentDefinition$Dimension
+         //1->net/minecraft/gametest/framework/TestEnvironmentDefinition$AllOf
+         switch (definition.typeSwitch<invokedynamic>(definition, var2)) {
+            case 0:
+               TestEnvironmentDefinition.Dimension dimension = (TestEnvironmentDefinition.Dimension)definition;
+               switch (dimension.type()) {
+                  case OVERWORLD:
+                     var10000 = Level.OVERWORLD;
+                     return var10000;
+                  case NETHER:
+                     var10000 = Level.NETHER;
+                     return var10000;
+                  case END:
+                     var10000 = Level.END;
+                     return var10000;
+                  default:
+                     throw new MatchException((String)null, (Throwable)null);
+               }
+            case 1:
+               TestEnvironmentDefinition.AllOf allOf = (TestEnvironmentDefinition.AllOf)definition;
+               var10000 = (ResourceKey)allOf.definitions().stream().map((h) -> levelForDimension((TestEnvironmentDefinition)h.value())).filter((key) -> key != Level.OVERWORLD).findFirst().orElse(Level.OVERWORLD);
+               break;
+            default:
+               var10000 = Level.OVERWORLD;
+         }
+
+         return var10000;
+      }
+
+      private static CommandSourceStack resolveTargetSource(final CommandSourceStack source, final List<Holder.Reference<GameTestInstance>> tests) {
+         ResourceKey<Level> requestedLevel = (ResourceKey)tests.stream().map((test) -> levelForDimension((TestEnvironmentDefinition)((GameTestInstance)test.value()).batch().value())).findFirst().orElse(source.getLevel().dimension());
+         ServerLevel targetLevel = source.getServer().getLevel(requestedLevel);
+         return targetLevel != null ? source.withLevel(targetLevel) : source;
+      }
+
       private TestFinder build(final CommandSourceStack source, final TestInstanceFinder testInstanceFinder, final TestPosFinder testPosFinder) {
+         List<Holder.Reference<GameTestInstance>> selectedTests = testInstanceFinder.findTests().toList();
+         CommandSourceStack targetSource = resolveTargetSource(source, selectedTests);
          UnaryOperator var10003 = this.testFinderWrapper;
-         Objects.requireNonNull(testInstanceFinder);
-         Supplier var4 = (Supplier)var10003.apply(testInstanceFinder::findTests);
-         Objects.requireNonNull(var4);
-         TestInstanceFinder var5 = var4::get;
+         Objects.requireNonNull(selectedTests);
+         Supplier var6 = (Supplier)var10003.apply(selectedTests::stream);
+         Objects.requireNonNull(var6);
+         TestInstanceFinder var7 = var6::get;
          UnaryOperator var10004 = this.structureBlockPosFinderWrapper;
          Objects.requireNonNull(testPosFinder);
-         Supplier var6 = (Supplier)var10004.apply(testPosFinder::findTestPos);
-         Objects.requireNonNull(var6);
-         return new TestFinder(source, var5, var6::get);
+         Supplier var8 = (Supplier)var10004.apply(testPosFinder::findTestPos);
+         Objects.requireNonNull(var8);
+         return new TestFinder(targetSource, var7, var8::get);
       }
 
       public TestFinder radius(final CommandContext<CommandSourceStack> sourceStack, final int radius) {

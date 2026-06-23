@@ -44,7 +44,7 @@ class WeavingMobEffect extends MobEffect {
       }
 
       for(BlockPos blockPos : positionsToTransform) {
-         level.setBlock(blockPos, Blocks.COBWEB.defaultBlockState(), 3);
+         level.setBlockAndUpdate(blockPos, Blocks.COBWEB.defaultBlockState());
          level.levelEvent(3018, blockPos, 0);
       }
 

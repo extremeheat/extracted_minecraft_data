@@ -314,7 +314,7 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    public boolean removeBlock(final BlockPos pos, final boolean movedByPiston) {
-      return this.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+      return this.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
    }
 
    public WorldBorder getWorldBorder() {

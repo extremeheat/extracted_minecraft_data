@@ -194,6 +194,8 @@ public class ModelLayers {
    public static final ModelLayerLocation PLAYER_SPIN_ATTACK = register("spin_attack");
    public static final ModelLayerLocation POLAR_BEAR = register("polar_bear");
    public static final ModelLayerLocation POLAR_BEAR_BABY = register("polar_bear_baby");
+   public static final ModelLayerLocation POPLAR_BOAT = register("boat/poplar");
+   public static final ModelLayerLocation POPLAR_CHEST_BOAT = register("chest_boat/poplar");
    public static final ModelLayerLocation PUFFERFISH_BIG = register("pufferfish_big");
    public static final ModelLayerLocation PUFFERFISH_MEDIUM = register("pufferfish_medium");
    public static final ModelLayerLocation PUFFERFISH_SMALL = register("pufferfish_small");

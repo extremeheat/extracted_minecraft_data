@@ -88,6 +88,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -453,6 +454,10 @@ public class Item implements ItemLike, FeatureElement {
 
       public Properties enchantable(final int value) {
          return this.component(DataComponents.ENCHANTABLE, new Enchantable(value));
+      }
+
+      public Properties potPattern(final ResourceKey<DecoratedPotPattern> pattern) {
+         return this.delayedComponent(DataComponents.PROVIDES_POTTERY_PATTERN, (context) -> context.getOrThrow(pattern));
       }
 
       public Properties repairable(final Item repairItem) {

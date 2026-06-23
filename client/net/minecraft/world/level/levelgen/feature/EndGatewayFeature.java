@@ -1,23 +1,37 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
-import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
-   public EndGatewayFeature(final Codec<EndGatewayConfiguration> codec) {
-      super(codec);
+public record EndGatewayFeature(Optional<BlockPos> exit, boolean exact) implements Feature {
+   public static final MapCodec<EndGatewayFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPos.CODEC.optionalFieldOf("exit").forGetter(EndGatewayFeature::exit), Codec.BOOL.fieldOf("exact").forGetter(EndGatewayFeature::exact)).apply(i, EndGatewayFeature::new));
+
+   public EndGatewayFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<EndGatewayConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      EndGatewayConfiguration config = context.config();
+   public MapCodec<EndGatewayFeature> codec() {
+      return CODEC;
+   }
 
+   public static EndGatewayFeature knownExit(final BlockPos exit, final boolean exact) {
+      return new EndGatewayFeature(Optional.of(exit), exact);
+   }
+
+   public static EndGatewayFeature delayedExitSearch() {
+      return new EndGatewayFeature(Optional.empty(), false);
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       for(BlockPos pos : BlockPos.betweenClosed(origin.offset(-1, -2, -1), origin.offset(1, 2, 1))) {
          boolean sameX = pos.getX() == origin.getX();
          boolean sameY = pos.getY() == origin.getY();
@@ -26,10 +40,10 @@ public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
          if (sameX && sameY && sameZ) {
             BlockPos immutable = pos.immutable();
             this.setBlock(level, immutable, Blocks.END_GATEWAY.defaultBlockState());
-            config.getExit().ifPresent((targetPos) -> {
+            this.exit.ifPresent((targetPos) -> {
                BlockEntity exitEntity = level.getBlockEntity(immutable);
                if (exitEntity instanceof TheEndGatewayBlockEntity exitGateway) {
-                  exitGateway.setExitPosition(targetPos, config.isExitExact());
+                  exitGateway.setExitPosition(targetPos, this.exact);
                }
 
             });

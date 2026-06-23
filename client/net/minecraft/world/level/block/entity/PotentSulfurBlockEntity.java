@@ -226,7 +226,7 @@ public class PotentSulfurBlockEntity extends BlockEntity {
 
                if (entity.waitingCountdown == 0) {
                   PotentSulfurState stateToSet = state.getValue(PotentSulfurBlock.STATE) == PotentSulfurState.DORMANT ? PotentSulfurState.ERUPTING : PotentSulfurState.DORMANT;
-                  level.setBlock(pos, (BlockState)state.setValue(PotentSulfurBlock.STATE, stateToSet), 3);
+                  level.setBlockAndUpdate(pos, (BlockState)state.setValue(PotentSulfurBlock.STATE, stateToSet));
                   if (stateToSet == PotentSulfurState.DORMANT) {
                      level.gameEvent(GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(state));
                   }
@@ -255,7 +255,6 @@ public class PotentSulfurBlockEntity extends BlockEntity {
 
                   if (!entityToBeLaunched.isPassenger() && !entityToBeLaunched.is(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS) && entityVelocity.y < 0.30000001192092896 + (double)waterBlocks * 0.1) {
                      entityToBeLaunched.addDeltaMovement(new Vec3(0.0, 0.20000000298023224, 0.0));
-                     entityToBeLaunched.needsSync = true;
                   }
                }
             }

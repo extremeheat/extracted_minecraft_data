@@ -154,6 +154,9 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle.DripstoneWaterFallProvider::new);
       this.register(ParticleTypes.CHERRY_LEAVES, FallingLeavesParticle.CherryProvider::new);
       this.register(ParticleTypes.PALE_OAK_LEAVES, FallingLeavesParticle.PaleOakProvider::new);
+      this.register(ParticleTypes.RED_POPLAR_LEAVES, FallingLeavesParticle.PoplarProvider::new);
+      this.register(ParticleTypes.ORANGE_POPLAR_LEAVES, FallingLeavesParticle.PoplarProvider::new);
+      this.register(ParticleTypes.YELLOW_POPLAR_LEAVES, FallingLeavesParticle.PoplarProvider::new);
       this.register(ParticleTypes.TINTED_LEAVES, FallingLeavesParticle.TintedLeavesProvider::new);
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle.DripstoneLavaHangProvider::new);
       this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle.DripstoneLavaFallProvider::new);

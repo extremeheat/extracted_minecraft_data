@@ -70,7 +70,7 @@ public class BellBlock extends BaseEntityBlock {
             this.attemptToRing(level, pos, (Direction)null);
          }
 
-         level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, signal));
       }
 
    }

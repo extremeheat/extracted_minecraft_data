@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -33,15 +34,24 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
 public class SurfaceRules {
-   public static final ConditionSource ON_FLOOR;
-   public static final ConditionSource UNDER_FLOOR;
-   public static final ConditionSource DEEP_UNDER_FLOOR;
-   public static final ConditionSource VERY_DEEP_UNDER_FLOOR;
-   public static final ConditionSource ON_CEILING;
-   public static final ConditionSource UNDER_CEILING;
-
    public SurfaceRules() {
       super();
+   }
+
+   public static RuleSource registerAndWrap(final BootstrapContext<RuleSource> context, final ResourceKey<RuleSource> key, final RuleSource rule) {
+      return new HolderRuleSource(context.register(key, rule));
+   }
+
+   public static ConditionSource registerAndWrap(final BootstrapContext<ConditionSource> context, final ResourceKey<ConditionSource> key, final ConditionSource condition) {
+      return new HolderConditionSource(context.register(key, condition));
+   }
+
+   public static RuleSource getRule(final HolderGetter<RuleSource> rules, final ResourceKey<RuleSource> key) {
+      return new HolderRuleSource(rules.getOrThrow(key));
+   }
+
+   public static ConditionSource getCondition(final HolderGetter<ConditionSource> conditions, final ResourceKey<ConditionSource> key) {
+      return new HolderConditionSource(conditions.getOrThrow(key));
    }
 
    public static ConditionSource stoneDepthCheck(final int offset, final boolean addSurfaceDepth1, final CaveSurface surfaceType) {
@@ -122,7 +132,7 @@ public class SurfaceRules {
       if (rules.length == 0) {
          throw new IllegalArgumentException("Need at least 1 rule for a sequence");
       } else {
-         return new SequenceRuleSource(Arrays.asList(rules));
+         return new SequenceRuleSource(List.of(rules));
       }
    }
 
@@ -136,15 +146,6 @@ public class SurfaceRules {
 
    private static <A> MapCodec<? extends A> register(final Registry<MapCodec<? extends A>> registry, final String name, final MapCodec<? extends A> codec) {
       return (MapCodec)Registry.register(registry, (String)name, codec);
-   }
-
-   static {
-      ON_FLOOR = stoneDepthCheck(0, false, CaveSurface.FLOOR);
-      UNDER_FLOOR = stoneDepthCheck(0, true, CaveSurface.FLOOR);
-      DEEP_UNDER_FLOOR = stoneDepthCheck(0, true, 6, CaveSurface.FLOOR);
-      VERY_DEEP_UNDER_FLOOR = stoneDepthCheck(0, true, 30, CaveSurface.FLOOR);
-      ON_CEILING = stoneDepthCheck(0, false, CaveSurface.CEILING);
-      UNDER_CEILING = stoneDepthCheck(0, true, CaveSurface.CEILING);
    }
 
    protected static final class Context {
@@ -469,7 +470,54 @@ public class SurfaceRules {
    }
 
    public interface ConditionSource extends Function<Context, Condition> {
-      Codec<ConditionSource> CODEC = BuiltInRegistries.MATERIAL_CONDITION.byNameCodec().dispatch(ConditionSource::codec, Function.identity());
+      Codec<ConditionSource> DIRECT_CODEC = BuiltInRegistries.MATERIAL_CONDITION_TYPE.byNameCodec().dispatch(ConditionSource::codec, Function.identity());
+      Codec<ConditionSource> CODEC = RegistryFileCodec.create(Registries.MATERIAL_CONDITION, DIRECT_CODEC).xmap((holder) -> {
+         Objects.requireNonNull(holder);
+         int index$1 = 0;
+         Object var10000;
+         //$FF: index$1->value
+         //0->net/minecraft/core/Holder$Direct
+         //1->net/minecraft/core/Holder$Reference
+         switch (holder.typeSwitch<invokedynamic>(holder, index$1)) {
+            case 0:
+               Holder.Direct<ConditionSource> direct = (Holder.Direct)holder;
+               var10000 = direct.value();
+               break;
+            case 1:
+               Holder.Reference<ConditionSource> reference = (Holder.Reference)holder;
+               var10000 = new HolderConditionSource(reference);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (ConditionSource)var10000;
+      }, (value) -> {
+         Objects.requireNonNull(value);
+         int index$2 = 0;
+         Holder var8;
+         //$FF: index$2->value
+         //0->net/minecraft/world/level/levelgen/SurfaceRules$HolderConditionSource
+         switch (value.typeSwitch<invokedynamic>(value, index$2)) {
+            case 0:
+               HolderConditionSource $b$0 = (HolderConditionSource)value;
+               HolderConditionSource var10000 = $b$0;
+
+               try {
+                  var7 = var10000.holder();
+               } catch (Throwable var6) {
+                  throw new MatchException(var6.toString(), var6);
+               }
+
+               Holder patt3$temp = var7;
+               var8 = patt3$temp;
+               break;
+            default:
+               var8 = Holder.direct(value);
+         }
+
+         return var8;
+      });
 
       static MapCodec<? extends ConditionSource> bootstrap(final Registry<MapCodec<? extends ConditionSource>> registry) {
          SurfaceRules.register(registry, "biome", SurfaceRules.BiomeConditionSource.CODEC);
@@ -488,8 +536,70 @@ public class SurfaceRules {
       MapCodec<? extends ConditionSource> codec();
    }
 
+   private static record HolderConditionSource(Holder<ConditionSource> holder) implements ConditionSource {
+      private HolderConditionSource {
+         super();
+      }
+
+      public Condition apply(final Context context) {
+         return (Condition)((ConditionSource)this.holder.value()).apply(context);
+      }
+
+      public MapCodec<HolderConditionSource> codec() {
+         throw new UnsupportedOperationException("HolderConditionSource cannot be serialized");
+      }
+   }
+
    public interface RuleSource extends Function<Context, SurfaceRule> {
-      Codec<RuleSource> CODEC = BuiltInRegistries.MATERIAL_RULE.byNameCodec().dispatch(RuleSource::codec, Function.identity());
+      Codec<RuleSource> DIRECT_CODEC = BuiltInRegistries.MATERIAL_RULE_TYPE.byNameCodec().dispatch(RuleSource::codec, Function.identity());
+      Codec<Holder<RuleSource>> HOLDER_CODEC = RegistryFileCodec.<Holder<RuleSource>>create(Registries.MATERIAL_RULE, DIRECT_CODEC);
+      Codec<RuleSource> CODEC = HOLDER_CODEC.xmap((holder) -> {
+         Objects.requireNonNull(holder);
+         int index$1 = 0;
+         Object var10000;
+         //$FF: index$1->value
+         //0->net/minecraft/core/Holder$Direct
+         //1->net/minecraft/core/Holder$Reference
+         switch (holder.typeSwitch<invokedynamic>(holder, index$1)) {
+            case 0:
+               Holder.Direct<RuleSource> direct = (Holder.Direct)holder;
+               var10000 = direct.value();
+               break;
+            case 1:
+               Holder.Reference<RuleSource> reference = (Holder.Reference)holder;
+               var10000 = new HolderRuleSource(reference);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (RuleSource)var10000;
+      }, (value) -> {
+         Objects.requireNonNull(value);
+         int index$2 = 0;
+         Holder var8;
+         //$FF: index$2->value
+         //0->net/minecraft/world/level/levelgen/SurfaceRules$HolderRuleSource
+         switch (value.typeSwitch<invokedynamic>(value, index$2)) {
+            case 0:
+               HolderRuleSource $b$0 = (HolderRuleSource)value;
+               HolderRuleSource var10000 = $b$0;
+
+               try {
+                  var7 = var10000.holder();
+               } catch (Throwable var6) {
+                  throw new MatchException(var6.toString(), var6);
+               }
+
+               Holder patt3$temp = var7;
+               var8 = patt3$temp;
+               break;
+            default:
+               var8 = Holder.direct(value);
+         }
+
+         return var8;
+      });
 
       static MapCodec<? extends RuleSource> bootstrap(final Registry<MapCodec<? extends RuleSource>> registry) {
          SurfaceRules.register(registry, "bandlands", SurfaceRules.Bandlands.CODEC);
@@ -499,6 +609,20 @@ public class SurfaceRules {
       }
 
       MapCodec<? extends RuleSource> codec();
+   }
+
+   private static record HolderRuleSource(Holder<RuleSource> holder) implements RuleSource {
+      private HolderRuleSource {
+         super();
+      }
+
+      public SurfaceRule apply(final Context context) {
+         return (SurfaceRule)((RuleSource)this.holder.value()).apply(context);
+      }
+
+      public MapCodec<HolderRuleSource> codec() {
+         throw new UnsupportedOperationException("HolderRuleSource cannot be serialized");
+      }
    }
 
    private static record NotConditionSource(ConditionSource target) implements ConditionSource {
@@ -879,7 +1003,7 @@ public class SurfaceRules {
 
       public SurfaceRule apply(final Context context) {
          if (this.sequence.size() == 1) {
-            return (SurfaceRule)((RuleSource)this.sequence.get(0)).apply(context);
+            return (SurfaceRule)((RuleSource)this.sequence.getFirst()).apply(context);
          } else {
             ImmutableList.Builder<SurfaceRule> builder = ImmutableList.builder();
 

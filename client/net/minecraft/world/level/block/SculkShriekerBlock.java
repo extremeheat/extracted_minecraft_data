@@ -68,7 +68,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(SHRIEKING)) {
-         level.setBlock(pos, (BlockState)state.setValue(SHRIEKING, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(SHRIEKING, false));
          level.getBlockEntity(pos, BlockEntityTypes.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryRespond(level));
       }
 

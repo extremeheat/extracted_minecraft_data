@@ -63,6 +63,8 @@ public class EntityEvent {
    public static final byte SADDLE_BREAK = 68;
    public static final byte RAVAGER_ROARED = 69;
    public static final byte TNT_PRIME = 70;
+   public static final byte BOAT_SINK = 71;
+   public static final byte BOAT_LAUNCH = 72;
 
    public EntityEvent() {
       super();

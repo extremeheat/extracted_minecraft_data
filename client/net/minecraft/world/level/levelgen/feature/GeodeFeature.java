@@ -3,6 +3,8 @@ package net.minecraft.world.level.levelgen.feature;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -12,66 +14,66 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BuddingAmethystBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GeodeBlockSettings;
 import net.minecraft.world.level.levelgen.GeodeCrackSettings;
 import net.minecraft.world.level.levelgen.GeodeLayerSettings;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
-import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.FluidState;
 
-public class GeodeFeature extends Feature<GeodeConfiguration> {
+public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings layerSettings, GeodeCrackSettings crackSettings, double usePotentialPlacementsChance, double useAlternateLayer0Chance, boolean placementsRequireLayer0Alternate, IntProvider outerWallDistance, IntProvider distributionPoints, IntProvider pointOffset, int minGenOffset, int maxGenOffset, double noiseMultiplier, int invalidBlocksThreshold) implements Feature {
+   public static final Codec<Double> CHANCE_RANGE = Codec.doubleRange(0.0, 1.0);
+   public static final MapCodec<GeodeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(GeodeBlockSettings.CODEC.fieldOf("blocks").forGetter(GeodeFeature::blockSettings), GeodeLayerSettings.CODEC.fieldOf("layers").forGetter(GeodeFeature::layerSettings), GeodeCrackSettings.CODEC.fieldOf("crack").forGetter(GeodeFeature::crackSettings), CHANCE_RANGE.optionalFieldOf("use_potential_placements_chance", 0.35).forGetter(GeodeFeature::usePotentialPlacementsChance), CHANCE_RANGE.optionalFieldOf("use_alternate_layer0_chance", 0.0).forGetter(GeodeFeature::useAlternateLayer0Chance), Codec.BOOL.optionalFieldOf("placements_require_layer0_alternate", true).forGetter(GeodeFeature::placementsRequireLayer0Alternate), IntProviders.codec(1, 20).optionalFieldOf("outer_wall_distance", UniformInt.of(4, 5)).forGetter(GeodeFeature::outerWallDistance), IntProviders.codec(1, 20).optionalFieldOf("distribution_points", UniformInt.of(3, 4)).forGetter(GeodeFeature::distributionPoints), IntProviders.codec(0, 10).optionalFieldOf("point_offset", UniformInt.of(1, 2)).forGetter(GeodeFeature::pointOffset), Codec.INT.optionalFieldOf("min_gen_offset", -16).forGetter(GeodeFeature::minGenOffset), Codec.INT.optionalFieldOf("max_gen_offset", 16).forGetter(GeodeFeature::maxGenOffset), CHANCE_RANGE.optionalFieldOf("noise_multiplier", 0.05).forGetter(GeodeFeature::noiseMultiplier), Codec.INT.fieldOf("invalid_blocks_threshold").forGetter(GeodeFeature::invalidBlocksThreshold)).apply(i, GeodeFeature::new));
    private static final Direction[] DIRECTIONS = Direction.values();
 
-   public GeodeFeature(final Codec<GeodeConfiguration> codec) {
-      super(codec);
+   public GeodeFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<GeodeConfiguration> context) {
-      GeodeConfiguration config = context.config();
-      RandomSource random = context.random();
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      int minGenOffset = config.minGenOffset();
-      int maxGenOffset = config.maxGenOffset();
+   public MapCodec<GeodeFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       List<Pair<BlockPos, Integer>> points = Lists.newLinkedList();
-      int numPoints = config.distributionPoints().sample(random);
+      int numPoints = this.distributionPoints.sample(random);
       WorldgenRandom random1 = new WorldgenRandom(new LegacyRandomSource(level.getSeed()));
       NormalNoise noise = NormalNoise.create(random1, -4, 1.0);
       List<BlockPos> crackPoints = Lists.newLinkedList();
-      double crackSizeAdjustment = (double)numPoints / (double)config.outerWallDistance().maxInclusive();
-      GeodeLayerSettings layerSettings = config.geodeLayerSettings();
-      GeodeBlockSettings blockSettings = config.geodeBlockSettings();
-      GeodeCrackSettings crackSettings = config.geodeCrackSettings();
-      double innerAir = 1.0 / Math.sqrt(layerSettings.filling);
-      double innermostBlockLayer = 1.0 / Math.sqrt(layerSettings.innerLayer + crackSizeAdjustment);
-      double innerCrust = 1.0 / Math.sqrt(layerSettings.middleLayer + crackSizeAdjustment);
-      double outerCrust = 1.0 / Math.sqrt(layerSettings.outerLayer + crackSizeAdjustment);
-      double crackSize = 1.0 / Math.sqrt(crackSettings.baseCrackSize + random.nextDouble() / 2.0 + (numPoints > 3 ? crackSizeAdjustment : 0.0));
-      boolean shouldGenerateCrack = (double)random.nextFloat() < crackSettings.generateCrackChance;
+      double crackSizeAdjustment = (double)numPoints / (double)this.outerWallDistance.maxInclusive();
+      double innerAir = 1.0 / Math.sqrt(this.layerSettings.filling);
+      double innermostBlockLayer = 1.0 / Math.sqrt(this.layerSettings.innerLayer + crackSizeAdjustment);
+      double innerCrust = 1.0 / Math.sqrt(this.layerSettings.middleLayer + crackSizeAdjustment);
+      double outerCrust = 1.0 / Math.sqrt(this.layerSettings.outerLayer + crackSizeAdjustment);
+      double crackSize = 1.0 / Math.sqrt(this.crackSettings.baseCrackSize + random.nextDouble() / 2.0 + (numPoints > 3 ? crackSizeAdjustment : 0.0));
+      boolean shouldGenerateCrack = (double)random.nextFloat() < this.crackSettings.generateCrackChance;
       int numInvalidPoints = 0;
 
       for(int i = 0; i < numPoints; ++i) {
-         int x = config.outerWallDistance().sample(random);
-         int y = config.outerWallDistance().sample(random);
-         int z = config.outerWallDistance().sample(random);
+         int x = this.outerWallDistance.sample(random);
+         int y = this.outerWallDistance.sample(random);
+         int z = this.outerWallDistance.sample(random);
          BlockPos pos = origin.offset(x, y, z);
          BlockState state = level.getBlockState(pos);
-         if (state.isAir() || state.is(blockSettings.invalidBlocks())) {
+         if (state.isAir() || state.is(this.blockSettings.invalidBlocks())) {
             ++numInvalidPoints;
-            if (numInvalidPoints > config.invalidBlocksThreshold()) {
+            if (numInvalidPoints > this.invalidBlocksThreshold) {
                return false;
             }
          }
 
-         points.add(Pair.of(pos, config.pointOffset().sample(random)));
+         points.add(Pair.of(pos, this.pointOffset.sample(random)));
       }
 
       if (shouldGenerateCrack) {
@@ -97,11 +99,11 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       }
 
       List<BlockPos> potentialCrystalPlacements = Lists.newArrayList();
-      HolderSet<Block> cantReplace = config.geodeBlockSettings().cannotReplace();
+      HolderSet<Block> cantReplace = this.blockSettings.cannotReplace();
       Predicate<BlockState> canReplace = (s) -> !s.is(cantReplace);
 
-      for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(minGenOffset, minGenOffset, minGenOffset), origin.offset(maxGenOffset, maxGenOffset, maxGenOffset))) {
-         double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * config.noiseMultiplier();
+      for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(this.minGenOffset, this.minGenOffset, this.minGenOffset), origin.offset(this.maxGenOffset, this.maxGenOffset, this.maxGenOffset))) {
+         double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * this.noiseMultiplier;
          double distSumShell = 0.0;
          double distSumCrack = 0.0;
 
@@ -110,7 +112,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
          }
 
          for(BlockPos point : crackPoints) {
-            distSumCrack += Mth.invSqrt(pointInside.distSqr(point) + (double)crackSettings.crackPointOffset) + noiseOffset;
+            distSumCrack += Mth.invSqrt(pointInside.distSqr(point) + (double)this.crackSettings.crackPointOffset) + noiseOffset;
          }
 
          if (!(distSumShell < outerCrust)) {
@@ -125,27 +127,27 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
                   }
                }
             } else if (distSumShell >= innerAir) {
-               this.safeSetBlock(level, pointInside, blockSettings.fillingProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, this.blockSettings.fillingProvider().getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= innermostBlockLayer) {
-               boolean useAlternateLayer = (double)random.nextFloat() < config.useAlternateLayer0Chance();
+               boolean useAlternateLayer = (double)random.nextFloat() < this.useAlternateLayer0Chance;
                if (useAlternateLayer) {
-                  this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, this.blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
                } else {
-                  this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, this.blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
                }
 
-               if ((!config.placementsRequireLayer0Alternate() || useAlternateLayer) && (double)random.nextFloat() < config.usePotentialPlacementsChance()) {
+               if ((!this.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < this.usePotentialPlacementsChance) {
                   potentialCrystalPlacements.add(pointInside.immutable());
                }
             } else if (distSumShell >= innerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.middleLayerProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, this.blockSettings.middleLayerProvider().getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= outerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.outerLayerProvider().getState(level, random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, this.blockSettings.outerLayerProvider().getState(level, random, pointInside), canReplace);
             }
          }
       }
 
-      List<BlockState> innerPlacements = blockSettings.innerPlacements();
+      List<BlockState> innerPlacements = this.blockSettings.innerPlacements();
 
       for(BlockPos crystalPos : potentialCrystalPlacements) {
          BlockState blockState = (BlockState)Util.getRandom(innerPlacements, random);

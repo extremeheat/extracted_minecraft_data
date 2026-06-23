@@ -43,7 +43,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackDetector;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -312,7 +312,7 @@ public class PackSelectionScreen extends Screen {
    private Identifier loadPackIcon(final TextureManager textureManager, final Pack pack) {
       try {
          Identifier var9;
-         try (PackResources packResources = pack.open()) {
+         try (PackMetadataResources packResources = pack.openMetadata()) {
             IoSupplier<InputStream> resource = packResources.getRootResource("pack.png");
             if (resource == null) {
                return DEFAULT_ICON;

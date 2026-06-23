@@ -13,7 +13,8 @@ public class TexturedModel {
    public static final Provider CUBE_MIRRORED;
    public static final Provider COLUMN;
    public static final Provider COLUMN_HORIZONTAL;
-   public static final Provider CUBE_TOP_BOTTOM;
+   public static final Provider CUBE_BOTTOM_TOP;
+   public static final Provider CUBE_BOTTOM_TOP_INDENTED;
    public static final Provider CUBE_TOP;
    public static final Provider ORIENTABLE_ONLY_TOP;
    public static final Provider ORIENTABLE;
@@ -83,7 +84,8 @@ public class TexturedModel {
       CUBE_MIRRORED = createDefault(TextureMapping::cube, ModelTemplates.CUBE_MIRRORED_ALL);
       COLUMN = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN);
       COLUMN_HORIZONTAL = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
-      CUBE_TOP_BOTTOM = createDefault(TextureMapping::cubeBottomTop, ModelTemplates.CUBE_BOTTOM_TOP);
+      CUBE_BOTTOM_TOP = createDefault(TextureMapping::cubeBottomTop, ModelTemplates.CUBE_BOTTOM_TOP);
+      CUBE_BOTTOM_TOP_INDENTED = createDefault(TextureMapping::cubeBottomTop, ModelTemplates.CUBE_BOTTOM_TOP_INDENTED);
       CUBE_TOP = createDefault(TextureMapping::cubeTop, ModelTemplates.CUBE_TOP);
       ORIENTABLE_ONLY_TOP = createDefault(TextureMapping::orientableCubeOnlyTop, ModelTemplates.CUBE_ORIENTABLE);
       ORIENTABLE = createDefault(TextureMapping::orientableCube, ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM);

@@ -101,7 +101,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
             level.destroyBlock(pos, true);
          }
       } else if (state != newState) {
-         level.setBlock(pos, newState, 3);
+         level.setBlockAndUpdate(pos, newState);
       }
 
    }

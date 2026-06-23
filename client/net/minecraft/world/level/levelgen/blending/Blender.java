@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.CompositeDirection;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction8;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.data.worldgen.NoiseData;
@@ -298,9 +298,9 @@ public class Blender {
    public static void addAroundOldChunksCarvingMaskFilter(final WorldGenLevel region, final ProtoChunk chunk) {
       if (!SharedConstants.DEBUG_DISABLE_BLENDING) {
          ChunkPos chunkPos = chunk.getPos();
-         ImmutableMap.Builder<Direction8, BlendingData> builder = ImmutableMap.builder();
+         ImmutableMap.Builder<CompositeDirection.Direction8, BlendingData> builder = ImmutableMap.builder();
 
-         for(Direction8 direction8 : Direction8.values()) {
+         for(CompositeDirection.Direction8 direction8 : CompositeDirection.Direction8.values()) {
             int testChunkX = chunkPos.x() + direction8.getStepX();
             int testChunkZ = chunkPos.z() + direction8.getStepZ();
             BlendingData blendingData = region.getChunk(testChunkX, testChunkZ).getBlendingData();
@@ -309,7 +309,7 @@ public class Blender {
             }
          }
 
-         ImmutableMap<Direction8, BlendingData> oldSidesBlendingData = builder.build();
+         ImmutableMap<CompositeDirection.Direction8, BlendingData> oldSidesBlendingData = builder.build();
          if (chunk.isOldNoiseGeneration() || !oldSidesBlendingData.isEmpty()) {
             DistanceGetter distanceGetter = makeOldChunkDistanceGetter(chunk.getBlendingData(), oldSidesBlendingData);
             CarvingMask.Mask filter = (x, y, z) -> {
@@ -323,10 +323,10 @@ public class Blender {
       }
    }
 
-   public static DistanceGetter makeOldChunkDistanceGetter(final @Nullable BlendingData centerBlendingData, final Map<Direction8, BlendingData> oldSidesBlendingData) {
+   public static DistanceGetter makeOldChunkDistanceGetter(final @Nullable BlendingData centerBlendingData, final Map<CompositeDirection.Direction8, BlendingData> oldSidesBlendingData) {
       List<DistanceGetter> distanceGetters = Lists.newArrayList();
       if (centerBlendingData != null) {
-         distanceGetters.add(makeOffsetOldChunkDistanceGetter((Direction8)null, centerBlendingData));
+         distanceGetters.add(makeOffsetOldChunkDistanceGetter((CompositeDirection.Direction8)null, centerBlendingData));
       }
 
       oldSidesBlendingData.forEach((side, blendingData) -> distanceGetters.add(makeOffsetOldChunkDistanceGetter(side, blendingData)));
@@ -344,7 +344,7 @@ public class Blender {
       };
    }
 
-   private static DistanceGetter makeOffsetOldChunkDistanceGetter(final @Nullable Direction8 offset, final BlendingData blendingData) {
+   private static DistanceGetter makeOffsetOldChunkDistanceGetter(final CompositeDirection.@Nullable Direction8 offset, final BlendingData blendingData) {
       double offsetX = 0.0;
       double offsetZ = 0.0;
       if (offset != null) {

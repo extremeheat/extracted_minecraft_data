@@ -85,7 +85,7 @@ public class IglooPieces {
 
       protected void handleDataMarker(final String markerId, final BlockPos position, final ServerLevelAccessor level, final RandomSource random, final BoundingBox chunkBB) {
          if ("chest".equals(markerId)) {
-            level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
+            level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
             BlockEntity chest = level.getBlockEntity(position.below());
             if (chest instanceof ChestBlockEntity) {
                ChestBlockEntity chestBlockEntity = (ChestBlockEntity)chest;
@@ -108,7 +108,7 @@ public class IglooPieces {
             BlockPos trapDoorPos = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(settings, new BlockPos(3, 0, 5)));
             BlockState belowState = level.getBlockState(trapDoorPos.below());
             if (!belowState.isAir() && !belowState.is(Blocks.LADDER)) {
-               level.setBlock(trapDoorPos, Blocks.SNOW_BLOCK.defaultBlockState(), 3);
+               level.setBlockAndUpdate(trapDoorPos, Blocks.SNOW_BLOCK.defaultBlockState());
             }
          }
 

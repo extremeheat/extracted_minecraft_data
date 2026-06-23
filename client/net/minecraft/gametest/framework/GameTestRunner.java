@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
@@ -20,7 +21,7 @@ import org.slf4j.Logger;
 public class GameTestRunner {
    public static final int DEFAULT_TESTS_PER_ROW = 8;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final ServerLevel level;
+   private final MinecraftServer server;
    private final GameTestTicker testTicker;
    private final List<GameTestInfo> allTestInfos;
    private ImmutableList<GameTestBatch> batches;
@@ -34,9 +35,9 @@ public class GameTestRunner {
    private final boolean haltOnError;
    private final boolean clearBetweenBatches;
 
-   protected GameTestRunner(final GameTestBatcher batcher, final Collection<GameTestBatch> batches, final ServerLevel level, final GameTestTicker testTicker, final StructureSpawner existingStructureSpawner, final StructureSpawner newStructureSpawner, final boolean haltOnError, final boolean clearBetweenBatches) {
+   protected GameTestRunner(final GameTestBatcher batcher, final Collection<GameTestBatch> batches, final MinecraftServer server, final GameTestTicker testTicker, final StructureSpawner existingStructureSpawner, final StructureSpawner newStructureSpawner, final boolean haltOnError, final boolean clearBetweenBatches) {
       super();
-      this.level = level;
+      this.server = server;
       this.testTicker = testTicker;
       this.testBatcher = batcher;
       this.existingStructureSpawner = existingStructureSpawner;
@@ -85,19 +86,20 @@ public class GameTestRunner {
          if (batchIndex > 0 && this.clearBetweenBatches) {
             GameTestBatch lastBatch = (GameTestBatch)this.batches.get(batchIndex - 1);
             lastBatch.gameTestInfos().forEach((gameTestInfo) -> {
+               ServerLevel level = gameTestInfo.getLevel();
                TestInstanceBlockEntity testInstanceBlockEntity = gameTestInfo.getTestInstanceBlockEntity();
-               StructureUtils.clearSpaceForStructure(testInstanceBlockEntity.getTestBoundingBox(), this.level);
-               this.level.destroyBlock(testInstanceBlockEntity.getBlockPos(), false);
+               StructureUtils.clearSpaceForStructure(testInstanceBlockEntity.getTestBoundingBox(), level);
+               level.destroyBlock(testInstanceBlockEntity.getBlockPos(), false);
             });
          }
 
          final GameTestBatch currentBatch = (GameTestBatch)this.batches.get(batchIndex);
-         this.existingStructureSpawner.onBatchStart(this.level);
-         this.newStructureSpawner.onBatchStart(this.level);
+         this.existingStructureSpawner.onBatchStart(this.server);
+         this.newStructureSpawner.onBatchStart(this.server);
          Collection<GameTestInfo> testInfosForThisBatch = this.createStructuresForBatch(currentBatch.gameTestInfos());
          LOGGER.info("Running test environment '{}' batch {} ({} tests)...", new Object[]{currentBatch.environment().getRegisteredName(), currentBatch.index(), testInfosForThisBatch.size()});
          this.endCurrentEnvironment();
-         this.currentEnvironment = TestEnvironmentDefinition.activate((TestEnvironmentDefinition)currentBatch.environment().value(), this.level);
+         this.currentEnvironment = TestEnvironmentDefinition.activate((TestEnvironmentDefinition)currentBatch.environment().value(), this.server.getLevel(TestFinder.Builder.levelForDimension((TestEnvironmentDefinition)currentBatch.environment().value())));
          this.batchListeners.forEach((listener) -> listener.testBatchStarting(currentBatch));
          final MultipleTestTracker currentBatchTracker = new MultipleTestTracker();
          Objects.requireNonNull(currentBatchTracker);
@@ -110,8 +112,8 @@ public class GameTestRunner {
             private void testCompleted(final GameTestInfo testInfo) {
                if (currentBatchTracker.isDone()) {
                   GameTestRunner.this.batchListeners.forEach((listener) -> listener.testBatchFinished(currentBatch));
-                  LongSet forcedChunks = new LongArraySet(GameTestRunner.this.level.getForceLoadedChunks());
-                  forcedChunks.forEach((pos) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(pos), ChunkPos.getZ(pos), false));
+                  LongSet forcedChunks = new LongArraySet(testInfo.getLevel().getForceLoadedChunks());
+                  forcedChunks.forEach((pos) -> testInfo.getLevel().setChunkForced(ChunkPos.getX(pos), ChunkPos.getZ(pos), false));
                   GameTestRunner.this.runBatch(batchIndex + 1);
                }
 
@@ -128,8 +130,8 @@ public class GameTestRunner {
             public void testFailed(final GameTestInfo testInfo, final GameTestRunner runner) {
                if (GameTestRunner.this.haltOnError) {
                   GameTestRunner.this.endCurrentEnvironment();
-                  LongSet forcedChunks = new LongArraySet(GameTestRunner.this.level.getForceLoadedChunks());
-                  forcedChunks.forEach((pos) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(pos), ChunkPos.getZ(pos), false));
+                  LongSet forcedChunks = new LongArraySet(testInfo.getLevel().getForceLoadedChunks());
+                  forcedChunks.forEach((pos) -> testInfo.getLevel().setChunkForced(ChunkPos.getX(pos), ChunkPos.getZ(pos), false));
                   GameTestTicker.SINGLETON.clear();
                } else {
                   this.testCompleted(testInfo);
@@ -186,12 +188,12 @@ public class GameTestRunner {
 
       Optional<GameTestInfo> spawnStructure(GameTestInfo testInfo);
 
-      default void onBatchStart(final ServerLevel level) {
+      default void onBatchStart(final MinecraftServer server) {
       }
    }
 
    public static class Builder {
-      private final ServerLevel level;
+      private final MinecraftServer server;
       private final GameTestTicker testTicker;
       private GameTestBatcher batcher;
       private StructureSpawner existingStructureSpawner;
@@ -200,7 +202,7 @@ public class GameTestRunner {
       private boolean haltOnError;
       private boolean clearBetweenBatches;
 
-      private Builder(final Collection<GameTestBatch> batches, final ServerLevel level) {
+      private Builder(final Collection<GameTestBatch> batches, final MinecraftServer server) {
          super();
          this.testTicker = GameTestTicker.SINGLETON;
          this.batcher = GameTestBatchFactory.fromGameTestInfo();
@@ -209,15 +211,15 @@ public class GameTestRunner {
          this.haltOnError = false;
          this.clearBetweenBatches = false;
          this.batches = batches;
-         this.level = level;
+         this.server = server;
       }
 
-      public static Builder fromBatches(final Collection<GameTestBatch> batches, final ServerLevel level) {
-         return new Builder(batches, level);
+      public static Builder fromBatches(final Collection<GameTestBatch> batches, final MinecraftServer server) {
+         return new Builder(batches, server);
       }
 
-      public static Builder fromInfo(final Collection<GameTestInfo> tests, final ServerLevel level) {
-         return fromBatches(GameTestBatchFactory.fromGameTestInfo().batch(tests), level);
+      public static Builder fromInfo(final Collection<GameTestInfo> tests, final MinecraftServer server) {
+         return fromBatches(GameTestBatchFactory.fromGameTestInfo().batch(tests), server);
       }
 
       public Builder haltOnError() {
@@ -246,7 +248,7 @@ public class GameTestRunner {
       }
 
       public GameTestRunner build() {
-         return new GameTestRunner(this.batcher, this.batches, this.level, this.testTicker, this.existingStructureSpawner, this.newStructureSpawner, this.haltOnError, this.clearBetweenBatches);
+         return new GameTestRunner(this.batcher, this.batches, this.server, this.testTicker, this.existingStructureSpawner, this.newStructureSpawner, this.haltOnError, this.clearBetweenBatches);
       }
    }
 

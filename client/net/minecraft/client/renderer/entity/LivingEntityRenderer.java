@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -96,7 +96,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          int overlayCoords = getOverlayCoords(state, this.getWhiteOverlayProgress(state));
          int baseColor = forceTransparent ? 654311423 : -1;
          int tintedColor = ARGB.multiply(baseColor, this.getModelTint(state));
-         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       if (this.shouldRenderLayers(state) && !this.layers.isEmpty()) {

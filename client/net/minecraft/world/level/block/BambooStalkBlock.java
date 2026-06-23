@@ -171,8 +171,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
             if (belowState.is(Blocks.BAMBOO) && belowState.getValue(LEAVES) != BambooLeaves.NONE) {
                leaves = BambooLeaves.LARGE;
                if (twoBelowState.is(Blocks.BAMBOO)) {
-                  level.setBlock(pos.below(), (BlockState)belowState.setValue(LEAVES, BambooLeaves.SMALL), 3);
-                  level.setBlock(twoBelowPos, (BlockState)twoBelowState.setValue(LEAVES, BambooLeaves.NONE), 3);
+                  level.setBlockAndUpdate(pos.below(), (BlockState)belowState.setValue(LEAVES, BambooLeaves.SMALL));
+                  level.setBlockAndUpdate(twoBelowPos, (BlockState)twoBelowState.setValue(LEAVES, BambooLeaves.NONE));
                }
             }
          } else {
@@ -182,7 +182,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
 
       int age = (Integer)state.getValue(AGE) != 1 && !twoBelowState.is(Blocks.BAMBOO) ? 0 : 1;
       int stage = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
-      level.setBlock(pos.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, age)).setValue(LEAVES, leaves)).setValue(STAGE, stage), 3);
+      level.setBlockAndUpdate(pos.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, age)).setValue(LEAVES, leaves)).setValue(STAGE, stage));
    }
 
    protected int getHeightAboveUpToMax(final BlockGetter level, final BlockPos pos) {

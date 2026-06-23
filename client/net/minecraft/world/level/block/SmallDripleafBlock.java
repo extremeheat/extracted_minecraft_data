@@ -59,7 +59,7 @@ public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterl
       if (!level.isClientSide()) {
          BlockPos abovePos = pos.above();
          BlockState blockState = DoublePlantBlock.copyWaterloggedFrom(level, abovePos, (BlockState)((BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)).setValue(FACING, (Direction)state.getValue(FACING)));
-         level.setBlock(abovePos, blockState, 3);
+         level.setBlockAndUpdate(abovePos, blockState);
       }
 
    }

@@ -11,7 +11,6 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -29,7 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
-public class TabNavigationBar extends AbstractContainerWidget implements NarratableEntry, Renderable {
+public class TabNavigationBar extends AbstractContainerWidget {
    private static final int NO_TAB = -1;
    private static final Component USAGE_NARRATION = Component.translatable("narration.tab_navigation.usage");
    protected final FrameLayout layout;

@@ -11,6 +11,7 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -44,6 +45,13 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
       CompoundTag tag = new CompoundTag();
       tag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
       SpawnData spawnData = new SpawnData(tag, Optional.empty(), Optional.empty());
+      return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(spawnData), this.lootTablesToEject, this.itemsToDropWhenOminous);
+   }
+
+   public TrialSpawnerConfig withSpawning(final TypedEntityData<EntityType<?>> entityData) {
+      CompoundTag tag = new CompoundTag();
+      SpawnData spawnData = new SpawnData(tag, Optional.empty(), Optional.empty());
+      entityData.loadInto(spawnData, BuiltInRegistries.ENTITY_TYPE);
       return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(spawnData), this.lootTablesToEject, this.itemsToDropWhenOminous);
    }
 

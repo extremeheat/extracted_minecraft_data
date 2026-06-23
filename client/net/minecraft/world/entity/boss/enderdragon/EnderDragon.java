@@ -41,7 +41,6 @@ import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.BinaryHeap;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -263,7 +262,7 @@ public class EnderDragon extends Mob implements Enemy {
             Level var11 = this.level();
             if (var11 instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)var11;
-               if (this.hurtTime == 0) {
+               if (!this.wasHurtRecently()) {
                   this.knockBack(serverLevel, serverLevel.getEntities(this, this.wing1.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
                   this.knockBack(serverLevel, serverLevel.getEntities(this, this.wing2.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
                   this.hurt(serverLevel, serverLevel.getEntities(this, this.head.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
@@ -478,9 +477,9 @@ public class EnderDragon extends Mob implements Enemy {
 
    }
 
-   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage, final boolean comesFromEffect) {
       if (!this.phaseManager.getCurrentPhase().isSitting()) {
-         super.knockback(power, xd, zd, source, damage);
+         super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }
    }
 
@@ -777,7 +776,7 @@ public class EnderDragon extends Mob implements Enemy {
             result = this.getViewVector(a);
          }
       } else {
-         BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.fightOrigin));
+         BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(this.fightOrigin));
          float dist = Math.max((float)Math.sqrt(egg.distToCenterSqr(this.position())) / 4.0F, 1.0F);
          float yOffset = 6.0F / dist;
          float xRotOld = this.getXRot();
@@ -850,6 +849,10 @@ public class EnderDragon extends Mob implements Enemy {
 
    protected float sanitizeScale(final float scale) {
       return 1.0F;
+   }
+
+   public boolean canSimulateMovement() {
+      return super.canSimulateMovement() || this.isDeadOrDying();
    }
 
    static {

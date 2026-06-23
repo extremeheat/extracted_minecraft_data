@@ -20,6 +20,7 @@ public final class BlockTags {
    public static final TagKey<Block> WOODEN_PRESSURE_PLATES;
    public static final TagKey<Block> WOODEN_SHELVES;
    public static final TagKey<Block> DOORS;
+   public static final TagKey<Block> SAPLINGS;
    public static final TagKey<Block> BAMBOO_BLOCKS;
    public static final TagKey<Block> PALE_OAK_LOGS;
    public static final TagKey<Block> JUNGLE_LOGS;
@@ -44,6 +45,7 @@ public final class BlockTags {
    public static final TagKey<Block> GOLD_ORES;
    public static final TagKey<Block> IRON_ORES;
    public static final TagKey<Block> COPPER_ORES;
+   public static final TagKey<Block> ORES;
    public static final TagKey<Block> DIRT;
    public static final TagKey<Block> MUD;
    public static final TagKey<Block> MOSS_BLOCKS;
@@ -61,6 +63,7 @@ public final class BlockTags {
    public static final TagKey<Block> COPPER_GOLEM_STATUES;
    public static final TagKey<Block> LANTERNS;
    public static final TagKey<Block> BARS;
+   public static final TagKey<Block> SKULLS;
    public static final TagKey<Block> CEILING_HANGING_SIGNS;
    public static final TagKey<Block> STANDING_SIGNS;
    public static final TagKey<Block> BEE_ATTRACTIVE;
@@ -244,6 +247,7 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS;
+   public static final TagKey<Block> REQUIRED_FOR_POPLAR_LEAF_AMBIENCE;
    public static final TagKey<Block> SPELEOTHEMS;
    public static final TagKey<Block> FOX_IMMUNE_TO;
    public static final TagKey<Block> POLAR_BEAR_IMMUNE_TO;
@@ -252,6 +256,17 @@ public final class BlockTags {
    public static final TagKey<Block> WITHER_IMMUNE_TO;
    public static final TagKey<Block> WITHER_SKELETON_IMMUNE_TO;
    public static final TagKey<Block> DEFAULT_IMMUNE_TO;
+   public static final TagKey<Block> BLOCKS_MOTION;
+   public static final TagKey<Block> BLOCKS_MOTION_NO_LEAVES;
+   public static final TagKey<Block> ENTITIES_CAN_TELEPORT_TO;
+   public static final TagKey<Block> BLOCKS_DOLPHIN_JUMP;
+   public static final TagKey<Block> ICE_MELTS_WHEN_DESTROYED_ABOVE;
+   public static final TagKey<Block> CAUSES_SUFFOCATION;
+   public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP;
+   public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES;
+   public static final TagKey<Block> BLOCKS_LAVA_FIRE_SPREAD;
+   public static final TagKey<Block> BLOCKS_FLUID_FLOW;
+   public static final TagKey<Block> WASHED_AWAY_BY_FLUIDS;
    public static final TagKey<Block> AIR;
 
    private BlockTags() {
@@ -278,6 +293,7 @@ public final class BlockTags {
       WOODEN_PRESSURE_PLATES = BlockItemTags.WOODEN_PRESSURE_PLATES.block();
       WOODEN_SHELVES = BlockItemTags.WOODEN_SHELVES.block();
       DOORS = BlockItemTags.DOORS.block();
+      SAPLINGS = BlockItemTags.SAPLINGS.block();
       BAMBOO_BLOCKS = BlockItemTags.BAMBOO_BLOCKS.block();
       PALE_OAK_LOGS = BlockItemTags.PALE_OAK_LOGS.block();
       JUNGLE_LOGS = BlockItemTags.JUNGLE_LOGS.block();
@@ -302,6 +318,7 @@ public final class BlockTags {
       GOLD_ORES = BlockItemTags.GOLD_ORES.block();
       IRON_ORES = BlockItemTags.IRON_ORES.block();
       COPPER_ORES = BlockItemTags.COPPER_ORES.block();
+      ORES = BlockItemTags.ORES.block();
       DIRT = BlockItemTags.DIRT.block();
       MUD = BlockItemTags.MUD.block();
       MOSS_BLOCKS = BlockItemTags.MOSS_BLOCKS.block();
@@ -319,6 +336,7 @@ public final class BlockTags {
       COPPER_GOLEM_STATUES = BlockItemTags.COPPER_GOLEM_STATUES.block();
       LANTERNS = BlockItemTags.LANTERNS.block();
       BARS = BlockItemTags.BARS.block();
+      SKULLS = BlockItemTags.SKULLS.block();
       CEILING_HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.block();
       STANDING_SIGNS = BlockItemTags.SIGNS.block();
       BEE_ATTRACTIVE = BlockItemTags.BEE_FOOD.block();
@@ -502,6 +520,7 @@ public final class BlockTags {
       TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS = create("triggers_ambient_desert_sand_block_sounds");
       TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
       TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
+      REQUIRED_FOR_POPLAR_LEAF_AMBIENCE = create("required_for_poplar_leaf_ambience");
       SPELEOTHEMS = create("speleothems");
       FOX_IMMUNE_TO = create("fox_immune_to");
       POLAR_BEAR_IMMUNE_TO = create("polar_bear_immune_to");
@@ -510,6 +529,17 @@ public final class BlockTags {
       WITHER_IMMUNE_TO = create("wither_immune_to");
       WITHER_SKELETON_IMMUNE_TO = create("wither_skeleton_immune_to");
       DEFAULT_IMMUNE_TO = create("default_immune_to");
+      BLOCKS_MOTION = create("blocks_motion");
+      BLOCKS_MOTION_NO_LEAVES = create("blocks_motion_no_leaves");
+      ENTITIES_CAN_TELEPORT_TO = create("entities_can_teleport_to");
+      BLOCKS_DOLPHIN_JUMP = create("blocks_dolphin_jump");
+      ICE_MELTS_WHEN_DESTROYED_ABOVE = create("ice_melts_when_destroyed_above");
+      CAUSES_SUFFOCATION = create("causes_suffocation");
+      BLOCKS_MOTION_IN_HEIGHTMAP = create("blocks_motion_in_heightmap");
+      BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES = create("blocks_motion_in_heightmap_no_leaves");
+      BLOCKS_LAVA_FIRE_SPREAD = create("blocks_lava_fire_spread");
+      BLOCKS_FLUID_FLOW = create("blocks_fluid_flow");
+      WASHED_AWAY_BY_FLUIDS = create("washed_away_by_fluids");
       AIR = create("air");
    }
 }

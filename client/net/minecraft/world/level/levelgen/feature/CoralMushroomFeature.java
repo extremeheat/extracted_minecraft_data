@@ -1,19 +1,25 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
-public class CoralMushroomFeature extends CoralFeature {
-   public CoralMushroomFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record CoralMushroomFeature() implements CoralFeature {
+   public static final CoralMushroomFeature INSTANCE = new CoralMushroomFeature();
+   public static final MapCodec<CoralMushroomFeature> CODEC;
+
+   public CoralMushroomFeature() {
+      super();
    }
 
-   protected boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
+   public MapCodec<CoralMushroomFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
       int height = random.nextInt(3) + 3;
       int width = random.nextInt(3) + 3;
       int length = random.nextInt(3) + 3;
@@ -32,5 +38,9 @@ public class CoralMushroomFeature extends CoralFeature {
       }
 
       return true;
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.resources.Identifier;
 
 public class SheepWoolLayer extends RenderLayer<SheepRenderState, SheepModel> {
@@ -33,7 +33,7 @@ public class SheepWoolLayer extends RenderLayer<SheepRenderState, SheepModel> {
          Identifier location = state.isBaby ? BABY_SHEEP_WOOL_LOCATION : SHEEP_WOOL_LOCATION;
          if (state.isInvisible) {
             if (state.appearsGlowing()) {
-               submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.outline(location), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), -16777216, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+               submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.outline(location), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), -16777216, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
             }
 
          } else {

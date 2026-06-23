@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -9,20 +10,23 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class IcebergFeature extends Feature<BlockStateConfiguration> {
-   public IcebergFeature(final Codec<BlockStateConfiguration> codec) {
-      super(codec);
+public record IcebergFeature(BlockState state) implements Feature {
+   public static final MapCodec<IcebergFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("state").forGetter(IcebergFeature::state)).apply(i, IcebergFeature::new));
+
+   public IcebergFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<BlockStateConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      origin = new BlockPos(origin.getX(), context.chunkGenerator().getSeaLevel(), origin.getZ());
-      RandomSource random = context.random();
+   public MapCodec<IcebergFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, BlockPos origin) {
+      origin = new BlockPos(origin.getX(), chunkGenerator.getSeaLevel(), origin.getZ());
       boolean snowOnTop = random.nextDouble() > 0.7;
-      BlockState mainBlockState = (context.config()).state;
+      BlockState mainBlockState = this.state;
       double shapeAngle = random.nextDouble() * 2.0 * 3.141592653589793;
       int shapeEllipseA = 11 - random.nextInt(5);
       int shapeEllipseC = 3 + random.nextInt(3);

@@ -137,7 +137,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
          BlockState newLowerState = (BlockState)lowerState.setValue(AGE, updatedAge);
          level.setBlock(lowerPos, newLowerState, 2);
          if (isDouble(updatedAge)) {
-            level.setBlock(lowerPos.above(), (BlockState)newLowerState.setValue(HALF, DoubleBlockHalf.UPPER), 3);
+            level.setBlockAndUpdate(lowerPos.above(), (BlockState)newLowerState.setValue(HALF, DoubleBlockHalf.UPPER));
          }
 
       }

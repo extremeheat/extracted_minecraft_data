@@ -427,11 +427,19 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
-      entity.causeFallDamage(fallDistance, 1.0F, entity.damageSources().fall());
+      double reducedFallDistance = fallDistance * (double)(1.0F - this.getFallDistanceReduction());
+      entity.causeFallDamage(reducedFallDistance, 1.0F, entity.damageSources().fall());
+   }
+
+   public void bounceOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
    }
 
    public float getBounceRestitution() {
       return this.bounceRestitution;
+   }
+
+   public float getFallDistanceReduction() {
+      return this.fallDistanceReduction;
    }
 
    public float getFriction() {

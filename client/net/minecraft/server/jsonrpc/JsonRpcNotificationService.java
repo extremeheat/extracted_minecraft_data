@@ -54,6 +54,22 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.SERVER_ACTIVITY_OCCURRED);
    }
 
+   public void worldUpgradeStarted() {
+      this.broadcastNotification(OutgoingRpcMethods.WORLD_UPGRADE_STARTED);
+   }
+
+   public void worldUpgradeProgress(final float progressPercentage) {
+      this.broadcastNotification(OutgoingRpcMethods.WORLD_UPGRADE_PROGRESS, progressPercentage);
+   }
+
+   public void worldUpgradeFinished() {
+      this.broadcastNotification(OutgoingRpcMethods.WORLD_UPGRADE_FINISHED);
+   }
+
+   public void worldUpgradeFailed(final String reason) {
+      this.broadcastNotification(OutgoingRpcMethods.WORLD_UPGRADE_FAILED, reason);
+   }
+
    public void playerOped(final ServerOpListEntry operator) {
       this.broadcastNotification(OutgoingRpcMethods.PLAYER_OPED, OperatorService.OperatorDto.from(operator));
    }

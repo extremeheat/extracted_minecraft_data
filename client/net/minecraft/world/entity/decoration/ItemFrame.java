@@ -232,7 +232,7 @@ public class ItemFrame extends HangingEntity {
             }
 
             if (withFrame) {
-               this.spawnAtLocation(level, this.getFrameItemStack());
+               this.spawnAtLocation(level, this.getFrameItemStackWithData());
             }
 
             if (!itemStack.isEmpty()) {
@@ -408,11 +408,17 @@ public class ItemFrame extends HangingEntity {
 
    public ItemStack getPickResult() {
       ItemStack framedStack = this.getItem();
-      return framedStack.isEmpty() ? this.getFrameItemStack() : framedStack.copy();
+      return framedStack.isEmpty() ? this.getFrameItemStackWithData() : framedStack.copy();
    }
 
    protected ItemStack getFrameItemStack() {
       return new ItemStack(Items.ITEM_FRAME);
+   }
+
+   private ItemStack getFrameItemStackWithData() {
+      ItemStack itemStack = this.getFrameItemStack();
+      itemStack.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+      return itemStack;
    }
 
    public float getVisualRotationYInDegrees() {

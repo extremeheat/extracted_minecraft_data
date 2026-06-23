@@ -25,8 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.LayerConfiguration;
+import net.minecraft.world.level.levelgen.feature.FillLayerFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
@@ -139,7 +138,7 @@ public class FlatLevelGeneratorSettings {
             BlockState layer = (BlockState)layers.get(i);
             if (!Heightmap.Types.MOTION_BLOCKING.isOpaque().test(layer)) {
                layers.set(i, (Object)null);
-               newGenerationSettings.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlacementUtils.inlinePlaced(Feature.FILL_LAYER, new LayerConfiguration(i, layer)));
+               newGenerationSettings.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlacementUtils.inlinePlaced(new FillLayerFeature(i, layer)));
             }
          }
 

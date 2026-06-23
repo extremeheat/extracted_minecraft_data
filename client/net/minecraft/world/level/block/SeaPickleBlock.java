@@ -129,7 +129,7 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
                if (!position.equals(pos) && random.nextInt(6) == 0 && level.getBlockState(position).is(Blocks.WATER)) {
                   BlockState belowState = level.getBlockState(position.below());
                   if (belowState.is(BlockTags.CORAL_BLOCKS)) {
-                     level.setBlock(position, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, random.nextInt(4) + 1), 3);
+                     level.setBlockAndUpdate(position, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, random.nextInt(4) + 1));
                   }
                }
             }

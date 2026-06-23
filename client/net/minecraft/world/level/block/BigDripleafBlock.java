@@ -107,7 +107,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Simp
 
    protected static boolean place(final LevelAccessor level, final BlockPos pos, final FluidState fluidState, final Direction facing) {
       BlockState newState = (BlockState)((BlockState)Blocks.BIG_DRIPLEAF.defaultBlockState().setValue(WATERLOGGED, fluidState.isSourceOfType(Fluids.WATER))).setValue(FACING, facing);
-      return level.setBlock(pos, newState, 3);
+      return level.setBlockAndUpdate(pos, newState);
    }
 
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {

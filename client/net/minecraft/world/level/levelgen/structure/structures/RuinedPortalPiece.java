@@ -142,7 +142,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          if (neighourState.isAir()) {
             if (Block.isFaceFull(state.getCollisionShape(level, pos), direction)) {
                BooleanProperty vineDir = VineBlock.getPropertyForFace(direction.getOpposite());
-               level.setBlock(neighbourPos, (BlockState)Blocks.VINE.defaultBlockState().setValue(vineDir, true), 3);
+               level.setBlockAndUpdate(neighbourPos, (BlockState)Blocks.VINE.defaultBlockState().setValue(vineDir, true));
             }
          }
       }
@@ -150,7 +150,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
    private void maybeAddLeavesAbove(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
       if (random.nextFloat() < 0.5F && level.getBlockState(pos).is(Blocks.NETHERRACK) && level.getBlockState(pos.above()).isAir()) {
-         level.setBlock(pos.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true), 3);
+         level.setBlockAndUpdate(pos.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
       }
 
    }
@@ -224,9 +224,9 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
    private void placeNetherrackOrMagma(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
       if (!this.properties.cold && random.nextFloat() < 0.07F) {
-         level.setBlock(pos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.MAGMA_BLOCK.defaultBlockState());
       } else {
-         level.setBlock(pos, Blocks.NETHERRACK.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.NETHERRACK.defaultBlockState());
       }
 
    }

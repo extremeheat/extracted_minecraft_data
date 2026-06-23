@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.block;
 import com.mojang.blaze3d.platform.Transparency;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.MaterialBaker;
@@ -19,15 +20,20 @@ public record FluidModel(ChunkSectionLayer layer, Material.Baked stillMaterial, 
       }
 
       public FluidModel bake(final MaterialBaker materials, final ModelDebugName modelName) {
-         Material.Baked stillMaterial = materials.get(this.stillMaterial, modelName);
-         Material.Baked flowingMaterial = materials.get(this.flowingMaterial, modelName);
-         Material.Baked overlayMaterial = this.overlayMaterial != null ? materials.get(this.overlayMaterial, modelName) : null;
+         Material.Baked stillMaterial = this.getAndValidateMaterial(this.stillMaterial, materials, "still", modelName);
+         Material.Baked flowingMaterial = this.getAndValidateMaterial(this.flowingMaterial, materials, "flowing", modelName);
+         Material.Baked overlayMaterial = this.overlayMaterial != null ? this.getAndValidateMaterial(this.overlayMaterial, materials, "overlay", modelName) : null;
          Transparency transparency = getTransparency(stillMaterial).or(getTransparency(flowingMaterial));
          if (overlayMaterial != null) {
             transparency = transparency.or(getTransparency(overlayMaterial));
          }
 
          return new FluidModel(ChunkSectionLayer.byTransparency(transparency), stillMaterial, flowingMaterial, overlayMaterial, this.tintSource);
+      }
+
+      private Material.Baked getAndValidateMaterial(final Material material, final MaterialBaker materials, final String textureName, final ModelDebugName modelName) {
+         Material.Baked baked = materials.get(material, modelName);
+         return !baked.sprite().atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? materials.reportMissingReference(textureName, modelName) : baked;
       }
 
       private static Transparency getTransparency(final Material.Baked material) {

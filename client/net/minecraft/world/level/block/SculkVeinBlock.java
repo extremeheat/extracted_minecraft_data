@@ -61,7 +61,7 @@ public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBe
             newState = (BlockState)newState.setValue(MultifaceBlock.WATERLOGGED, true);
          }
 
-         level.setBlock(pos, newState, 3);
+         level.setBlockAndUpdate(pos, newState);
          return true;
       }
    }
@@ -80,7 +80,7 @@ public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBe
             state = (fluidState.isEmpty() ? Blocks.AIR : Blocks.WATER).defaultBlockState();
          }
 
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
          SculkBehaviour.super.onDischarged(level, state, pos, random);
       }
    }
@@ -103,7 +103,7 @@ public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBe
             BlockState supportState = level.getBlockState(supportPos);
             if (supportState.is(replaceTag)) {
                BlockState defaultSculk = Blocks.SCULK.defaultBlockState();
-               level.setBlock(supportPos, defaultSculk, 3);
+               level.setBlockAndUpdate(supportPos, defaultSculk);
                Block.pushEntitiesUp(supportState, defaultSculk, level, supportPos);
                level.playSound((Entity)null, supportPos, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
                this.veinSpreader.spreadAll(defaultSculk, level, supportPos, spreader.isWorldGeneration());

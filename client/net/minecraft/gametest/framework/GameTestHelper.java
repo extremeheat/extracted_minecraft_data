@@ -16,6 +16,7 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -388,6 +389,11 @@ public class GameTestHelper {
       return player;
    }
 
+   public void rotateEntityWithTest(final Entity entity) {
+      float yRot = this.getTestRotation().rotate(Direction.SOUTH).toYRot();
+      entity.setYRot(yRot);
+   }
+
    /** @deprecated */
    @Deprecated(
       forRemoval = true
@@ -461,7 +467,7 @@ public class GameTestHelper {
    }
 
    public void setBlock(final BlockPos blockPos, final BlockState state) {
-      this.getLevel().setBlock(this.absolutePos(blockPos), state, 3);
+      this.getLevel().setBlockAndUpdate(this.absolutePos(blockPos), state);
    }
 
    public void setBlock(final BlockPos blockPos, final Block block, final Direction direction) {
@@ -478,7 +484,22 @@ public class GameTestHelper {
          state = (BlockState)blockState.setValue(BlockStateProperties.FACING, direction);
       }
 
-      this.getLevel().setBlock(this.absolutePos(blockPos), state, 3);
+      this.getLevel().setBlockAndUpdate(this.absolutePos(blockPos), state);
+   }
+
+   public void placeAt(final Player player, final ItemStack blockStack, final BlockPos pos, final Direction face) {
+      BlockPos absolute = this.absolutePos(pos.relative(face));
+      BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(absolute), face, absolute, false);
+      UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, hitResult);
+      blockStack.useOn(context);
+   }
+
+   public void useItemOnBlock(final Player player, final Item item, final BlockPos pos) {
+      Vec3 playerStandPos = this.absoluteVec(Vec3.atBottomCenterOf(pos));
+      Vec3 playerLookPos = this.absoluteVec(Vec3.atCenterOf(pos));
+      player.setPos(playerStandPos.x, playerStandPos.y, playerStandPos.z);
+      player.lookAt(EntityAnchorArgument.Anchor.EYES, playerLookPos);
+      item.use(this.getLevel(), player, InteractionHand.MAIN_HAND);
    }
 
    public void assertBlockPresent(final Block blockType, final int x, final int y, final int z) {
@@ -937,6 +958,12 @@ public class GameTestHelper {
       level.clockManager().setTotalTicks(clock, ticks);
    }
 
+   public void setTimeInDimension(final long ticks, final ResourceKey<Level> levelDimension) {
+      ServerLevel level = this.getLevel().getServer().getLevel(levelDimension);
+      Holder<WorldClock> clock = (Holder)level.dimensionType().defaultClock().orElseThrow();
+      level.clockManager().setTotalTicks(clock, ticks);
+   }
+
    public void randomTick(final BlockPos pos) {
       BlockPos absolutePos = this.absolutePos(pos);
       ServerLevel level = this.getLevel();
@@ -1130,13 +1157,6 @@ public class GameTestHelper {
          Objects.requireNonNull(action);
          var10000.setRunAtTickTime(i, action::run);
       });
-   }
-
-   public void placeAt(final Player player, final ItemStack blockStack, final BlockPos pos, final Direction face) {
-      BlockPos absolute = this.absolutePos(pos.relative(face));
-      BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(absolute), face, absolute, false);
-      UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, hitResult);
-      blockStack.useOn(context);
    }
 
    public void setBiome(final ResourceKey<Biome> biome) {

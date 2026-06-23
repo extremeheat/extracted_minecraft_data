@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.Mth;
@@ -58,12 +59,13 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private final Supplier<EntityModelSet> entityModels;
    private final EquipmentAssetManager equipmentAssets;
    private final PlayerSkinRenderCache playerSkinRenderCache;
+   private final PalettedTextureManager palettedTextures;
 
    public <E extends Entity> int getPackedLightCoords(final E entity, final float partialTickTime) {
       return this.getRenderer(entity).getPackedLightCoords(entity, partialTickTime);
    }
 
-   public EntityRenderDispatcher(final Minecraft minecraft, final TextureManager textureManager, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final AtlasManager atlasManager, final Font font, final Options options, final Supplier<EntityModelSet> entityModels, final EquipmentAssetManager equipmentAssets, final PlayerSkinRenderCache playerSkinRenderCache) {
+   public EntityRenderDispatcher(final Minecraft minecraft, final TextureManager textureManager, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final AtlasManager atlasManager, final Font font, final Options options, final Supplier<EntityModelSet> entityModels, final EquipmentAssetManager equipmentAssets, final PlayerSkinRenderCache playerSkinRenderCache, final PalettedTextureManager palettedTextures) {
       super();
       this.textureManager = textureManager;
       this.blockModelResolver = blockModelResolver;
@@ -76,6 +78,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.options = options;
       this.entityModels = entityModels;
       this.equipmentAssets = equipmentAssets;
+      this.palettedTextures = palettedTextures;
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(final T entity) {
@@ -202,7 +205,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(final ResourceManager resourceManager) {
-      EntityRendererProvider.Context context = new EntityRendererProvider.Context(this, this.blockModelResolver, this.itemModelResolver, this.mapRenderer, resourceManager, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache);
+      EntityRendererProvider.Context context = new EntityRendererProvider.Context(this, this.blockModelResolver, this.itemModelResolver, this.mapRenderer, resourceManager, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache, this.palettedTextures);
       this.renderers = EntityRenderers.createEntityRenderers(context);
       this.playerRenderers = EntityRenderers.createAvatarRenderers(context);
       this.mannequinRenderers = EntityRenderers.createAvatarRenderers(context);

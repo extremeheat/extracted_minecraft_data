@@ -67,7 +67,7 @@ public class FlowerPotBlock extends Block {
       } else if (!this.isEmpty()) {
          return InteractionResult.CONSUME;
       } else {
-         level.setBlock(pos, newContents, 3);
+         level.setBlockAndUpdate(pos, newContents);
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          player.awardStat(Stats.POT_FLOWER);
          itemStack.consume(1, player);
@@ -84,7 +84,7 @@ public class FlowerPotBlock extends Block {
             player.drop(plant, false);
          }
 
-         level.setBlock(pos, Blocks.FLOWER_POT.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.FLOWER_POT.defaultBlockState());
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          return InteractionResult.SUCCESS;
       }
@@ -119,7 +119,7 @@ public class FlowerPotBlock extends Block {
          boolean isOpen = this.potted == Blocks.OPEN_EYEBLOSSOM;
          boolean shouldBeOpen = ((TriState)level.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, pos)).toBoolean(isOpen);
          if (isOpen != shouldBeOpen) {
-            level.setBlock(pos, this.opposite(state), 3);
+            level.setBlockAndUpdate(pos, this.opposite(state));
             EyeblossomBlock.Type newType = EyeblossomBlock.Type.fromBoolean(isOpen).transform();
             newType.spawnTransformParticle(level, pos, random);
             level.playSound((Entity)null, pos, newType.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);

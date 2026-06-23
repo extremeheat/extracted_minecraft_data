@@ -499,7 +499,7 @@ public class Turtle extends Animal {
                level.playSound((Entity)null, (BlockPos)turtlePos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.getRandom().nextFloat() * 0.2F);
                BlockPos eggPos = this.blockPos.above();
                BlockState eggState = (BlockState)Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, this.turtle.random.nextInt(4) + 1);
-               level.setBlock(eggPos, eggState, 3);
+               level.setBlockAndUpdate(eggPos, eggState);
                level.gameEvent(GameEvent.BLOCK_PLACE, eggPos, GameEvent.Context.of(this.turtle, eggState));
                this.turtle.setHasEgg(false);
                this.turtle.setLayingEgg(false);

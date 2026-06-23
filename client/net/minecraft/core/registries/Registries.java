@@ -106,7 +106,6 @@ import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicateType;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.featuresize.FeatureSizeType;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
@@ -123,7 +122,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
-import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
+import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
@@ -165,7 +164,6 @@ public class Registries {
    public static final ResourceKey<Registry<DataComponentType<?>>> DATA_COMPONENT_TYPE = createRegistryKey("data_component_type");
    public static final ResourceKey<Registry<GameRule<?>>> GAME_RULE = createRegistryKey("game_rule");
    public static final ResourceKey<Registry<DebugSubscription<?>>> DEBUG_SUBSCRIPTION = createRegistryKey("debug_subscription");
-   public static final ResourceKey<Registry<DecoratedPotPattern>> DECORATED_POT_PATTERN = createRegistryKey("decorated_pot_pattern");
    public static final ResourceKey<Registry<MapCodec<? extends DensityFunction>>> DENSITY_FUNCTION_TYPE = createRegistryKey("worldgen/density_function_type");
    public static final ResourceKey<Registry<MapCodec<? extends DialogBody>>> DIALOG_BODY_TYPE = createRegistryKey("dialog_body_type");
    public static final ResourceKey<Registry<MapCodec<? extends Dialog>>> DIALOG_TYPE = createRegistryKey("dialog_type");
@@ -180,7 +178,7 @@ public class Registries {
    public static final ResourceKey<Registry<EnvironmentAttribute<?>>> ENVIRONMENT_ATTRIBUTE = createRegistryKey("environment_attribute");
    public static final ResourceKey<Registry<AttributeType<?>>> ATTRIBUTE_TYPE = createRegistryKey("attribute_type");
    public static final ResourceKey<Registry<FeatureSizeType<?>>> FEATURE_SIZE_TYPE = createRegistryKey("worldgen/feature_size_type");
-   public static final ResourceKey<Registry<Feature<?>>> FEATURE = createRegistryKey("worldgen/feature");
+   public static final ResourceKey<Registry<MapCodec<? extends Feature>>> FEATURE_TYPE = createRegistryKey("worldgen/feature_type");
    public static final ResourceKey<Registry<MapCodec<? extends FloatProvider>>> FLOAT_PROVIDER_TYPE = createRegistryKey("float_provider_type");
    public static final ResourceKey<Registry<Fluid>> FLUID = createRegistryKey("fluid");
    public static final ResourceKey<Registry<FoliagePlacerType<?>>> FOLIAGE_PLACER_TYPE = createRegistryKey("worldgen/foliage_placer_type");
@@ -197,8 +195,8 @@ public class Registries {
    public static final ResourceKey<Registry<MapCodec<? extends LootPoolEntryContainer>>> LOOT_POOL_ENTRY_TYPE = createRegistryKey("loot_pool_entry_type");
    public static final ResourceKey<Registry<MapCodec<? extends ScoreboardNameProvider>>> LOOT_SCORE_PROVIDER_TYPE = createRegistryKey("loot_score_provider_type");
    public static final ResourceKey<Registry<MapDecorationType>> MAP_DECORATION_TYPE = createRegistryKey("map_decoration_type");
-   public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.ConditionSource>>> MATERIAL_CONDITION = createRegistryKey("worldgen/material_condition");
-   public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.RuleSource>>> MATERIAL_RULE = createRegistryKey("worldgen/material_rule");
+   public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.ConditionSource>>> MATERIAL_CONDITION_TYPE = createRegistryKey("worldgen/material_condition_type");
+   public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.RuleSource>>> MATERIAL_RULE_TYPE = createRegistryKey("worldgen/material_rule_type");
    public static final ResourceKey<Registry<MemoryModuleType<?>>> MEMORY_MODULE_TYPE = createRegistryKey("memory_module_type");
    public static final ResourceKey<Registry<MenuType<?>>> MENU = createRegistryKey("menu");
    public static final ResourceKey<Registry<MobEffect>> MOB_EFFECT = createRegistryKey("mob_effect");
@@ -223,7 +221,7 @@ public class Registries {
    public static final ResourceKey<Registry<MapCodec<? extends SpawnCondition>>> SPAWN_CONDITION_TYPE = createRegistryKey("spawn_condition_type");
    public static final ResourceKey<Registry<StatType<?>>> STAT_TYPE = createRegistryKey("stat_type");
    public static final ResourceKey<Registry<StructurePieceType>> STRUCTURE_PIECE = createRegistryKey("worldgen/structure_piece");
-   public static final ResourceKey<Registry<StructurePlacementType<?>>> STRUCTURE_PLACEMENT = createRegistryKey("worldgen/structure_placement");
+   public static final ResourceKey<Registry<MapCodec<? extends StructurePlacement>>> STRUCTURE_PLACEMENT = createRegistryKey("worldgen/structure_placement");
    public static final ResourceKey<Registry<StructurePoolElementType<?>>> STRUCTURE_POOL_ELEMENT = createRegistryKey("worldgen/structure_pool_element");
    public static final ResourceKey<Registry<MapCodec<? extends StructureProcessor>>> STRUCTURE_PROCESSOR = createRegistryKey("worldgen/structure_processor");
    public static final ResourceKey<Registry<StructureType<?>>> STRUCTURE_TYPE = createRegistryKey("worldgen/structure_type");
@@ -249,7 +247,7 @@ public class Registries {
    public static final ResourceKey<Registry<ChickenVariant>> CHICKEN_VARIANT = createRegistryKey("chicken_variant");
    public static final ResourceKey<Registry<ZombieNautilusVariant>> ZOMBIE_NAUTILUS_VARIANT = createRegistryKey("zombie_nautilus_variant");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
-   public static final ResourceKey<Registry<ConfiguredFeature<?, ?>>> CONFIGURED_FEATURE = createRegistryKey("worldgen/configured_feature");
+   public static final ResourceKey<Registry<Feature>> FEATURE = createRegistryKey("worldgen/feature");
    public static final ResourceKey<Registry<CowSoundVariant>> COW_SOUND_VARIANT = createRegistryKey("cow_sound_variant");
    public static final ResourceKey<Registry<CowVariant>> COW_VARIANT = createRegistryKey("cow_variant");
    public static final ResourceKey<Registry<DamageType>> DAMAGE_TYPE = createRegistryKey("damage_type");
@@ -262,6 +260,8 @@ public class Registries {
    public static final ResourceKey<Registry<FrogVariant>> FROG_VARIANT = createRegistryKey("frog_variant");
    public static final ResourceKey<Registry<Instrument>> INSTRUMENT = createRegistryKey("instrument");
    public static final ResourceKey<Registry<JukeboxSong>> JUKEBOX_SONG = createRegistryKey("jukebox_song");
+   public static final ResourceKey<Registry<SurfaceRules.ConditionSource>> MATERIAL_CONDITION = createRegistryKey("worldgen/material_condition");
+   public static final ResourceKey<Registry<SurfaceRules.RuleSource>> MATERIAL_RULE = createRegistryKey("worldgen/material_rule");
    public static final ResourceKey<Registry<MultiNoiseBiomeSourceParameterList>> MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST = createRegistryKey("worldgen/multi_noise_biome_source_parameter_list");
    public static final ResourceKey<Registry<NoiseGeneratorSettings>> NOISE_SETTINGS = createRegistryKey("worldgen/noise_settings");
    public static final ResourceKey<Registry<NormalNoise.NoiseParameters>> NOISE = createRegistryKey("worldgen/noise");
@@ -287,11 +287,13 @@ public class Registries {
    public static final ResourceKey<Registry<WolfSoundVariant>> WOLF_SOUND_VARIANT = createRegistryKey("wolf_sound_variant");
    public static final ResourceKey<Registry<WorldClock>> WORLD_CLOCK = createRegistryKey("world_clock");
    public static final ResourceKey<Registry<WorldPreset>> WORLD_PRESET = createRegistryKey("worldgen/world_preset");
+   public static final ResourceKey<Registry<DecoratedPotPattern>> DECORATED_POT_PATTERN = createRegistryKey("decorated_pot_pattern");
    public static final ResourceKey<Registry<Level>> DIMENSION = createRegistryKey("dimension");
    public static final ResourceKey<Registry<LevelStem>> LEVEL_STEM = createRegistryKey("dimension");
    public static final ResourceKey<Registry<LootTable>> LOOT_TABLE = createRegistryKey("loot_table");
    public static final ResourceKey<Registry<LootItemFunction>> ITEM_MODIFIER = createRegistryKey("item_modifier");
    public static final ResourceKey<Registry<LootItemCondition>> PREDICATE = createRegistryKey("predicate");
+   public static final ResourceKey<Registry<SlotSource>> SLOT_SOURCE = createRegistryKey("slot_source");
    public static final ResourceKey<Registry<Advancement>> ADVANCEMENT = createRegistryKey("advancement");
    public static final ResourceKey<Registry<Recipe<?>>> RECIPE = createRegistryKey("recipe");
 

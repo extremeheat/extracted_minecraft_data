@@ -59,11 +59,11 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       }
 
       if (foundBlue && foundRed) {
-         level.setBlock(pos, random.nextBoolean() ? Blocks.WARPED_NYLIUM.defaultBlockState() : Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, random.nextBoolean() ? Blocks.WARPED_NYLIUM.defaultBlockState() : Blocks.CRIMSON_NYLIUM.defaultBlockState());
       } else if (foundBlue) {
-         level.setBlock(pos, Blocks.WARPED_NYLIUM.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.WARPED_NYLIUM.defaultBlockState());
       } else if (foundRed) {
-         level.setBlock(pos, Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.CRIMSON_NYLIUM.defaultBlockState());
       }
 
    }

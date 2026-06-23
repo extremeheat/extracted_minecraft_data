@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.CommonLinks;
@@ -24,6 +25,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
    private static final Component CLOSE_TEXT = Component.translatable("mco.selectServer.close");
    private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("popup/background");
    private static final Identifier TRIAL_AVAILABLE_SPRITE = Identifier.withDefaultNamespace("icon/trial_available");
+   private static final FileToIdConverter CAROUSEL_SELECTOR = new FileToIdConverter("textures/gui/images", ".png");
    private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/cross_button"), Identifier.withDefaultNamespace("widget/cross_button_highlighted"));
    private static final int IMAGE_WIDTH = 195;
    private static final int IMAGE_HEIGHT = 152;
@@ -49,7 +51,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
    }
 
    public static void updateCarouselImages(final ResourceManager resourceManager) {
-      Collection<Identifier> candidates = resourceManager.listResources("textures/gui/images", (s) -> s.getPath().endsWith(".png")).keySet();
+      Collection<Identifier> candidates = CAROUSEL_SELECTOR.listMatchingResources(resourceManager).keySet();
       carouselImages = candidates.stream().filter((id) -> id.getNamespace().equals("realms")).toList();
    }
 

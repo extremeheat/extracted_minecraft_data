@@ -1,23 +1,28 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockBlobConfiguration;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 
-public class BlockBlobFeature extends Feature<BlockBlobConfiguration> {
-   public BlockBlobFeature(final Codec<BlockBlobConfiguration> codec) {
-      super(codec);
+public record BlockBlobFeature(BlockState state, BlockPredicate canPlaceOn) implements Feature {
+   public static final MapCodec<BlockBlobFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("state").forGetter(BlockBlobFeature::state), BlockPredicate.CODEC.fieldOf("can_place_on").forGetter(BlockBlobFeature::canPlaceOn)).apply(i, BlockBlobFeature::new));
+
+   public BlockBlobFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<BlockBlobConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
+   public MapCodec<BlockBlobFeature> codec() {
+      return CODEC;
+   }
 
-      BlockBlobConfiguration config;
-      for(config = context.config(); origin.getY() > level.getMinY() + 3 && !config.canPlaceOn().test(level, origin.below()); origin = origin.below()) {
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, BlockPos origin) {
+      while(origin.getY() > level.getMinY() + 3 && !this.canPlaceOn.test(level, origin.below())) {
+         origin = origin.below();
       }
 
       if (origin.getY() <= level.getMinY() + 3) {
@@ -31,7 +36,7 @@ public class BlockBlobFeature extends Feature<BlockBlobConfiguration> {
 
             for(BlockPos blockPos : BlockPos.betweenClosed(origin.offset(-xr, -yr, -zr), origin.offset(xr, yr, zr))) {
                if (blockPos.distSqr(origin) <= (double)(tr * tr)) {
-                  level.setBlock(blockPos, config.state(), 3);
+                  level.setBlockAndUpdate(blockPos, this.state);
                }
             }
 

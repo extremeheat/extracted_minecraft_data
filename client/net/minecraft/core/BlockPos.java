@@ -47,10 +47,6 @@ public class BlockPos extends Vec3i {
       super(x, y, z);
    }
 
-   public BlockPos(final Vec3i vec3i) {
-      this(vec3i.getX(), vec3i.getY(), vec3i.getZ());
-   }
-
    public static long offset(final long blockNode, final Direction offset) {
       return offset(blockNode, offset.getStepX(), offset.getStepY(), offset.getStepZ());
    }
@@ -691,7 +687,7 @@ public class BlockPos extends Vec3i {
       }
 
       public BlockPos immutable() {
-         return new BlockPos(this);
+         return new BlockPos(this.getX(), this.getY(), this.getZ());
       }
    }
 

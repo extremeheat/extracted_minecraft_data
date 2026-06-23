@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -27,20 +29,23 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public abstract class LeavesBlock extends Block implements SimpleWaterloggedBlock {
+public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
+   public static final MapCodec<LeavesBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(AmbientLeavesBlockSoundPlayer.CODEC.fieldOf("ambient_leaves_block_sound_player").forGetter((e) -> e.ambientLeavesBlockSoundPlayer), propertiesCodec()).apply(i, LeavesBlock::new));
    public static final int DECAY_DISTANCE = 7;
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty PERSISTENT;
    public static final BooleanProperty WATERLOGGED;
-   protected final float leafParticleChance;
+   protected final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer;
    private static final int TICK_DELAY = 1;
    private static volatile boolean cutoutLeaves;
 
-   public abstract MapCodec<? extends LeavesBlock> codec();
+   public MapCodec<? extends LeavesBlock> codec() {
+      return CODEC;
+   }
 
-   public LeavesBlock(final float leafParticleChance, final BlockBehaviour.Properties properties) {
+   public LeavesBlock(final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(properties);
-      this.leafParticleChance = leafParticleChance;
+      this.ambientLeavesBlockSoundPlayer = ambientLeavesBlockSoundPlayer;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
    }
 
@@ -73,7 +78,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
-      level.setBlock(pos, updateDistance(state, level, pos), 3);
+      level.setBlockAndUpdate(pos, updateDistance(state, level, pos));
    }
 
    protected int getLightDampening(final BlockState state) {
@@ -129,7 +134,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
       BlockPos below = pos.below();
       BlockState belowState = level.getBlockState(below);
       makeDrippingWaterParticles(level, pos, random, belowState, below);
-      this.makeFallingLeavesParticles(level, pos, random, belowState, below);
+      this.ambientLeavesBlockSoundPlayer.playAmbientLeavesSounds(level, pos, this, random);
    }
 
    private static void makeDrippingWaterParticles(final Level level, final BlockPos pos, final RandomSource random, final BlockState belowState, final BlockPos below) {
@@ -141,16 +146,6 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
          }
       }
    }
-
-   private void makeFallingLeavesParticles(final Level level, final BlockPos pos, final RandomSource random, final BlockState belowState, final BlockPos below) {
-      if (!(random.nextFloat() >= this.leafParticleChance)) {
-         if (!isFaceFull(belowState.getCollisionShape(level, below), Direction.UP)) {
-            this.spawnFallingLeavesParticle(level, pos, random);
-         }
-      }
-   }
-
-   protected abstract void spawnFallingLeavesParticle(Level level, BlockPos pos, RandomSource random);
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
       builder.add(DISTANCE, PERSISTENT, WATERLOGGED);

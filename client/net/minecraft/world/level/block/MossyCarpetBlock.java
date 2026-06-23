@@ -172,7 +172,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
          Objects.requireNonNull(random);
          BlockState topper = createTopperWithSideChance(level, pos, random::nextBoolean);
          if (!topper.isAir()) {
-            level.setBlock(pos.above(), topper, 3);
+            level.setBlockAndUpdate(pos.above(), topper);
          }
 
       }
@@ -254,7 +254,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
       BlockState topper = createTopperWithSideChance(level, pos, () -> true);
       if (!topper.isAir()) {
-         level.setBlock(pos.above(), topper, 3);
+         level.setBlockAndUpdate(pos.above(), topper);
       }
 
    }

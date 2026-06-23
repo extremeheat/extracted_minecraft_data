@@ -19,6 +19,10 @@ public record Material(Identifier sprite, boolean forceTranslucent) {
       super();
    }
 
+   public Material withSuffix(final String suffix) {
+      return new Material(this.sprite.withSuffix(suffix), this.forceTranslucent);
+   }
+
    public Material withForceTranslucent(final boolean forceTranslucent) {
       return new Material(this.sprite, forceTranslucent);
    }

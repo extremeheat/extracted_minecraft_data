@@ -4,15 +4,13 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.nio.ByteBuffer;
-import net.minecraft.client.renderer.SpriteCoordinateExpander;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
-public class TextureAtlasSprite implements AutoCloseable {
+public class TextureAtlasSprite implements UvMapping, AutoCloseable {
    private final Identifier atlasLocation;
    private final SpriteContents contents;
    private final int x;
@@ -93,10 +91,6 @@ public class TextureAtlasSprite implements AutoCloseable {
 
    public void uploadFirstFrame(final GpuTexture destination, final int level) {
       this.contents.uploadFirstFrame(destination, level);
-   }
-
-   public VertexConsumer wrap(final VertexConsumer buffer) {
-      return new SpriteCoordinateExpander(buffer, this);
    }
 
    public boolean isAnimated() {

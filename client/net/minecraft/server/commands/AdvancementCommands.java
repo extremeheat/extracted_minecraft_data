@@ -8,7 +8,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +27,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class AdvancementCommands {
-   private static final DynamicCommandExceptionType ERROR_NO_ACTION_PERFORMED = new DynamicCommandExceptionType((msg) -> (Component)msg);
    private static final Dynamic2CommandExceptionType ERROR_CRITERION_NOT_FOUND = new Dynamic2CommandExceptionType((name, criterion) -> Component.translatableEscape("commands.advancement.criterionNotFound", name, criterion));
 
    public AdvancementCommands() {
@@ -43,75 +42,42 @@ public class AdvancementCommands {
    }
 
    private static int perform(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final Collection<AdvancementHolder> advancements, final boolean showAdvancements) throws CommandSyntaxException {
-      int advancementCount = 0;
-      int playerCount = 0;
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
 
       for(ServerPlayer player : players) {
-         int changedAdvancements = action.perform(player, advancements, showAdvancements);
-         if (changedAdvancements > 0) {
-            ++playerCount;
-         }
-
-         advancementCount += changedAdvancements;
+         tracker.track(player, action.perform(player, advancements, showAdvancements));
       }
 
-      if (advancementCount == 0) {
-         if (advancements.size() == 1) {
-            Component advancementName = Advancement.name((AdvancementHolder)Iterables.getOnlyElement(advancements));
-            if (players.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.one.failure", advancementName, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
-            } else {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.many.failure", advancementName, players.size()));
-            }
-         } else if (players.size() == 1) {
-            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.one.failure", advancements.size(), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
+      int advancementCount = advancements.size();
+      if (advancementCount == 1) {
+         AdvancementHolder advancementName = (AdvancementHolder)Iterables.getOnlyElement(advancements);
+         if (tracker.totalValue() == 0) {
+            throw (CommandSyntaxException)tracker.dispatch(CommandResponseTracker.ElementType.ANY, action.singleAdvancementsError, advancementName);
          } else {
-            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.many.failure", advancements.size(), players.size()));
+            return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.NON_ZERO, action.singleAdvancementSuccessResponse, advancementName);
          }
+      } else if (tracker.totalValue() == 0) {
+         throw (CommandSyntaxException)tracker.dispatch(CommandResponseTracker.ElementType.ANY, action.multipleAdvancementsError, advancementCount);
       } else {
-         if (advancements.size() == 1) {
-            Component advancementName = Advancement.name((AdvancementHolder)Iterables.getOnlyElement(advancements));
-            if (players.size() == 1) {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.one.success", advancementName, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
-            } else {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.many.success", advancementName, playerCount), true);
-            }
-         } else if (players.size() == 1) {
-            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.one.success", advancementCount, ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.many.success", advancementCount, playerCount), true);
-         }
-
-         return advancementCount;
+         return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.NON_ZERO, action.multipleAdvancementsSuccessResponse, advancementCount);
       }
    }
 
    private static int performCriterion(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final AdvancementHolder holder, final String criterion) throws CommandSyntaxException {
-      int playerCount = 0;
       Advancement advancement = holder.value();
       if (!advancement.criteria().containsKey(criterion)) {
          throw ERROR_CRITERION_NOT_FOUND.create(Advancement.name(holder), criterion);
       } else {
+         CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+
          for(ServerPlayer player : players) {
-            if (action.performCriterion(player, holder, criterion)) {
-               ++playerCount;
-            }
+            tracker.track(player, action.performCriterion(player, holder, criterion));
          }
 
-         if (playerCount == 0) {
-            if (players.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.one.failure", criterion, Advancement.name(holder), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()));
-            } else {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.many.failure", criterion, Advancement.name(holder), players.size()));
-            }
+         if (tracker.totalValue() == 0) {
+            throw (CommandSyntaxException)tracker.dispatch(CommandResponseTracker.ElementType.ANY, action.criterionError, holder, criterion);
          } else {
-            if (players.size() == 1) {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.one.success", criterion, Advancement.name(holder), ((ServerPlayer)Iterables.getOnlyElement(players)).getDisplayName()), true);
-            } else {
-               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.many.success", criterion, Advancement.name(holder), playerCount), true);
-            }
-
-            return playerCount;
+            return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.NON_ZERO, action.criterionSuccessResponse, holder, criterion);
          }
       }
    }
@@ -184,10 +150,26 @@ public class AdvancementCommands {
          }
       };
 
-      private final String key;
+      public final CommandResponseTracker.MessagesWithArg<ServerPlayer, AdvancementHolder> singleAdvancementSuccessResponse;
+      public final CommandResponseTracker.DispatchWithArg<CommandSyntaxException, ServerPlayer, AdvancementHolder> singleAdvancementsError;
+      public final CommandResponseTracker.MessagesWithArg<ServerPlayer, Integer> multipleAdvancementsSuccessResponse;
+      public final CommandResponseTracker.DispatchWithArg<CommandSyntaxException, ServerPlayer, Integer> multipleAdvancementsError;
+      public final CommandResponseTracker.MessagesWithArgs<ServerPlayer, AdvancementHolder, String> criterionSuccessResponse;
+      public final CommandResponseTracker.DispatchWithArgs<CommandSyntaxException, ServerPlayer, AdvancementHolder, String> criterionError;
 
       private Action(final String key) {
-         this.key = "commands.advancement." + key;
+         this.singleAdvancementSuccessResponse = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((player, var2x, advancement) -> Component.translatable("commands.advancement." + key + ".one.to.one.success", Advancement.name(advancement), player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((playerCount, var2x, advancement) -> Component.translatable("commands.advancement." + key + ".one.to.many.success", Advancement.name(advancement), playerCount)));
+         Dynamic2CommandExceptionType singleAdvancementSinglePlayerError = new Dynamic2CommandExceptionType((advancement, player) -> Component.translatableEscape("commands.advancement." + key + ".one.to.one.failure", advancement, player));
+         Dynamic2CommandExceptionType singleAdvancementMultiplePlayersError = new Dynamic2CommandExceptionType((advancement, playerCount) -> Component.translatableEscape("commands.advancement." + key + ".one.to.many.failure", advancement, playerCount));
+         this.singleAdvancementsError = new CommandResponseTracker.DispatchWithArg<CommandSyntaxException, ServerPlayer, AdvancementHolder>((player, var2x, advancement) -> singleAdvancementSinglePlayerError.create(Advancement.name(advancement), player.getDisplayName()), (playerCount, var2x, advancement) -> singleAdvancementMultiplePlayersError.create(Advancement.name(advancement), playerCount));
+         this.multipleAdvancementsSuccessResponse = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((player, var2x, advancementCount) -> Component.translatable("commands.advancement." + key + ".many.to.one.success", advancementCount, player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((playerCount, var2x, advancementCount) -> Component.translatable("commands.advancement." + key + ".many.to.many.success", advancementCount, playerCount)));
+         Dynamic2CommandExceptionType multipleAdvancementSinglePlayerError = new Dynamic2CommandExceptionType((advancementCount, player) -> Component.translatableEscape("commands.advancement." + key + ".many.to.one.failure", advancementCount, player));
+         Dynamic2CommandExceptionType multipleAdvancementMultiplePlayersError = new Dynamic2CommandExceptionType((advancementCount, playerCount) -> Component.translatableEscape("commands.advancement." + key + ".many.to.many.failure", advancementCount, playerCount));
+         this.multipleAdvancementsError = new CommandResponseTracker.DispatchWithArg<CommandSyntaxException, ServerPlayer, Integer>((player, var2x, advancementCount) -> multipleAdvancementSinglePlayerError.create(advancementCount, player.getDisplayName()), (playerCount, var2x, advancementCount) -> multipleAdvancementMultiplePlayersError.create(advancementCount, playerCount));
+         this.criterionSuccessResponse = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((player, var2x, advancement, criterion) -> Component.translatable("commands.advancement." + key + ".criterion.to.one.success", criterion, Advancement.name(advancement), player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArgs)((playerCount, var2x, advancement, criterion) -> Component.translatable("commands.advancement." + key + ".criterion.to.many.success", criterion, Advancement.name(advancement), playerCount)));
+         Dynamic3CommandExceptionType criterionSinglePlayerError = new Dynamic3CommandExceptionType((criterion, advancement, player) -> Component.translatableEscape("commands.advancement." + key + ".criterion.to.one.failure", criterion, advancement, player));
+         Dynamic3CommandExceptionType criterionMultiplePlayersError = new Dynamic3CommandExceptionType((criterion, advancement, playerCount) -> Component.translatableEscape("commands.advancement." + key + ".criterion.to.many.failure", criterion, advancement, playerCount));
+         this.criterionError = new CommandResponseTracker.DispatchWithArgs<CommandSyntaxException, ServerPlayer, AdvancementHolder, String>((player, var2x, advancement, criterion) -> criterionSinglePlayerError.create(criterion, Advancement.name(advancement), player.getDisplayName()), (playerCount, var2x, advancement, criterion) -> criterionMultiplePlayersError.create(criterion, Advancement.name(advancement), playerCount));
       }
 
       public int perform(final ServerPlayer player, final Iterable<AdvancementHolder> advancements, final boolean showAdvancements) {
@@ -212,10 +194,6 @@ public class AdvancementCommands {
       protected abstract boolean perform(ServerPlayer player, AdvancementHolder advancement);
 
       protected abstract boolean performCriterion(ServerPlayer player, AdvancementHolder advancement, String criterion);
-
-      protected String getKey() {
-         return this.key;
-      }
 
       // $FF: synthetic method
       private static Action[] $values() {

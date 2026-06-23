@@ -166,7 +166,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
             dowse((Entity)null, level, pos, state);
          }
 
-         level.setBlock(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false));
          level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
          return true;
       } else {

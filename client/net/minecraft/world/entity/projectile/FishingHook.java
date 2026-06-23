@@ -458,14 +458,8 @@ public class FishingHook extends Projectile {
    }
 
    public void handleEntityEvent(final byte id) {
-      if (id == 31 && this.level().isClientSide()) {
-         Entity var3 = this.hookedIn;
-         if (var3 instanceof Player) {
-            Player player = (Player)var3;
-            if (player.isLocalPlayer()) {
-               this.pullEntity(this.hookedIn);
-            }
-         }
+      if (id == 31 && this.hookedIn != null) {
+         this.pullEntity(this.hookedIn);
       }
 
       super.handleEntityEvent(id);
@@ -473,7 +467,7 @@ public class FishingHook extends Projectile {
 
    protected void pullEntity(final Entity entity) {
       Entity owner = this.getOwner();
-      if (owner != null) {
+      if (owner != null && entity.canSimulateMovement()) {
          Vec3 delta = (new Vec3(owner.getX() - this.getX(), owner.getY() - this.getY(), owner.getZ() - this.getZ())).scale(0.1);
          entity.setDeltaMovement(entity.getDeltaMovement().add(delta));
       }

@@ -1,24 +1,29 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.ReplaceBlockConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class ReplaceBlockFeature extends Feature<ReplaceBlockConfiguration> {
-   public ReplaceBlockFeature(final Codec<ReplaceBlockConfiguration> codec) {
-      super(codec);
+public record ReplaceBlockFeature(List<BlockReplacement> replacements) implements Feature {
+   public static final MapCodec<ReplaceBlockFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.list(BlockReplacement.CODEC).fieldOf("targets").forGetter(ReplaceBlockFeature::replacements)).apply(i, ReplaceBlockFeature::new));
+
+   public ReplaceBlockFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<ReplaceBlockConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      ReplaceBlockConfiguration config = context.config();
+   public MapCodec<ReplaceBlockFeature> codec() {
+      return CODEC;
+   }
 
-      for(OreConfiguration.TargetBlockState targetState : config.targetStates) {
-         if (targetState.target.test(level.getBlockState(origin), context.random())) {
-            level.setBlock(origin, targetState.state, 2);
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      for(BlockReplacement replacement : this.replacements) {
+         if (replacement.target().test(level.getBlockState(origin), origin, random)) {
+            level.setBlock(origin, replacement.state(), 2);
             break;
          }
       }

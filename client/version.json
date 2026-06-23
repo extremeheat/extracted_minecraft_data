@@ -1,18 +1,18 @@
 {
-    "id": "26.2",
-    "name": "26.2",
-    "world_version": 4903,
+    "id": "26.3-snapshot-1",
+    "name": "26.3 Snapshot 1",
+    "world_version": 4998,
     "series_id": "main",
-    "protocol_version": 776,
+    "protocol_version": 1073742147,
     "pack_version": {
-        "resource_major": 88,
+        "resource_major": 89,
         "resource_minor": 0,
-        "data_major": 107,
-        "data_minor": 1
+        "data_major": 108,
+        "data_minor": 0
     },
-    "build_time": "2026-06-16T12:01:27+00:00",
+    "build_time": "2026-06-23T11:54:59+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
-    "stable": true,
+    "stable": false,
     "use_editor": false
 }

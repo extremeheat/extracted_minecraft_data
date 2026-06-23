@@ -102,10 +102,14 @@ public abstract class ChunkGenerator {
       this.featuresPerStep.get();
    }
 
+   public ChunkPos getOrigin(final RandomState randomState) {
+      return ChunkPos.ZERO;
+   }
+
    protected abstract MapCodec<? extends ChunkGenerator> codec();
 
    public ChunkGeneratorStructureState createState(final HolderLookup<StructureSet> structureSets, final RandomState randomState, final long legacyLevelSeed) {
-      return ChunkGeneratorStructureState.createForNormal(randomState, legacyLevelSeed, this.biomeSource, structureSets);
+      return ChunkGeneratorStructureState.createForNormal(randomState, legacyLevelSeed, this.getOrigin(randomState), this.biomeSource, structureSets);
    }
 
    public Optional<Identifier> getTypeNameForDataFixer() {

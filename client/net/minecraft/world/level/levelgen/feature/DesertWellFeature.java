@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,28 +11,27 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
-public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
+public record DesertWellFeature() implements Feature {
    private static final BlockStatePredicate IS_SAND;
-   private final BlockState sand;
-   private final BlockState sandSlab;
-   private final BlockState sandstone;
-   private final BlockState water;
+   private static final BlockState SAND;
+   private static final BlockState SAND_SLAB;
+   private static final BlockState SANDSTONE;
+   private static final BlockState WATER;
+   public static final DesertWellFeature INSTANCE;
+   public static final MapCodec<DesertWellFeature> CODEC;
 
-   public DesertWellFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
-      this.sand = Blocks.SAND.defaultBlockState();
-      this.sandSlab = Blocks.SANDSTONE_SLAB.defaultBlockState();
-      this.sandstone = Blocks.SANDSTONE.defaultBlockState();
-      this.water = Blocks.WATER.defaultBlockState();
+   public DesertWellFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
+   public MapCodec<DesertWellFeature> codec() {
+      return CODEC;
+   }
 
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, BlockPos origin) {
       for(origin = origin.above(); level.isEmptyBlock(origin) && origin.getY() > level.getMinY() + 2; origin = origin.below()) {
       }
 
@@ -50,56 +49,55 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
          for(int oy = -2; oy <= 0; ++oy) {
             for(int ox = -2; ox <= 2; ++ox) {
                for(int oz = -2; oz <= 2; ++oz) {
-                  level.setBlock(origin.offset(ox, oy, oz), this.sandstone, 2);
+                  level.setBlock(origin.offset(ox, oy, oz), SANDSTONE, 2);
                }
             }
          }
 
-         level.setBlock(origin, this.water, 2);
+         level.setBlock(origin, WATER, 2);
 
          for(Direction direction : Direction.Plane.HORIZONTAL) {
-            level.setBlock(origin.relative(direction), this.water, 2);
+            level.setBlock(origin.relative(direction), WATER, 2);
          }
 
          BlockPos sandCenter = origin.below();
-         level.setBlock(sandCenter, this.sand, 2);
+         level.setBlock(sandCenter, SAND, 2);
 
          for(Direction direction : Direction.Plane.HORIZONTAL) {
-            level.setBlock(sandCenter.relative(direction), this.sand, 2);
+            level.setBlock(sandCenter.relative(direction), SAND, 2);
          }
 
          for(int ox = -2; ox <= 2; ++ox) {
             for(int oz = -2; oz <= 2; ++oz) {
                if (ox == -2 || ox == 2 || oz == -2 || oz == 2) {
-                  level.setBlock(origin.offset(ox, 1, oz), this.sandstone, 2);
+                  level.setBlock(origin.offset(ox, 1, oz), SANDSTONE, 2);
                }
             }
          }
 
-         level.setBlock(origin.offset(2, 1, 0), this.sandSlab, 2);
-         level.setBlock(origin.offset(-2, 1, 0), this.sandSlab, 2);
-         level.setBlock(origin.offset(0, 1, 2), this.sandSlab, 2);
-         level.setBlock(origin.offset(0, 1, -2), this.sandSlab, 2);
+         level.setBlock(origin.offset(2, 1, 0), SAND_SLAB, 2);
+         level.setBlock(origin.offset(-2, 1, 0), SAND_SLAB, 2);
+         level.setBlock(origin.offset(0, 1, 2), SAND_SLAB, 2);
+         level.setBlock(origin.offset(0, 1, -2), SAND_SLAB, 2);
 
          for(int ox = -1; ox <= 1; ++ox) {
             for(int oz = -1; oz <= 1; ++oz) {
                if (ox == 0 && oz == 0) {
-                  level.setBlock(origin.offset(ox, 4, oz), this.sandstone, 2);
+                  level.setBlock(origin.offset(ox, 4, oz), SANDSTONE, 2);
                } else {
-                  level.setBlock(origin.offset(ox, 4, oz), this.sandSlab, 2);
+                  level.setBlock(origin.offset(ox, 4, oz), SAND_SLAB, 2);
                }
             }
          }
 
          for(int oy = 1; oy <= 3; ++oy) {
-            level.setBlock(origin.offset(-1, oy, -1), this.sandstone, 2);
-            level.setBlock(origin.offset(-1, oy, 1), this.sandstone, 2);
-            level.setBlock(origin.offset(1, oy, -1), this.sandstone, 2);
-            level.setBlock(origin.offset(1, oy, 1), this.sandstone, 2);
+            level.setBlock(origin.offset(-1, oy, -1), SANDSTONE, 2);
+            level.setBlock(origin.offset(-1, oy, 1), SANDSTONE, 2);
+            level.setBlock(origin.offset(1, oy, -1), SANDSTONE, 2);
+            level.setBlock(origin.offset(1, oy, 1), SANDSTONE, 2);
          }
 
          List<BlockPos> waterPositions = List.of(origin, origin.east(), origin.south(), origin.west(), origin.north());
-         RandomSource random = context.random();
          placeSusSand(level, ((BlockPos)Util.getRandom(waterPositions, random)).below(1));
          placeSusSand(level, ((BlockPos)Util.getRandom(waterPositions, random)).below(2));
          return true;
@@ -107,11 +105,17 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
    }
 
    private static void placeSusSand(final WorldGenLevel level, final BlockPos pos) {
-      level.setBlock(pos, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 3);
+      level.setBlockAndUpdate(pos, Blocks.SUSPICIOUS_SAND.defaultBlockState());
       level.getBlockEntity(pos, BlockEntityTypes.BRUSHABLE_BLOCK).ifPresent((e) -> e.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, pos.asLong()));
    }
 
    static {
       IS_SAND = BlockStatePredicate.forBlock(Blocks.SAND);
+      SAND = Blocks.SAND.defaultBlockState();
+      SAND_SLAB = Blocks.SANDSTONE_SLAB.defaultBlockState();
+      SANDSTONE = Blocks.SANDSTONE.defaultBlockState();
+      WATER = Blocks.WATER.defaultBlockState();
+      INSTANCE = new DesertWellFeature();
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

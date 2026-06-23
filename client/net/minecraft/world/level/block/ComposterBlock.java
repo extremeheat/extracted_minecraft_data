@@ -72,6 +72,9 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.BIRCH_LEAVES);
       add(0.3F, Items.AZALEA_LEAVES);
       add(0.3F, Items.MANGROVE_LEAVES);
+      add(0.3F, Items.RED_POPLAR_LEAVES);
+      add(0.3F, Items.ORANGE_POPLAR_LEAVES);
+      add(0.3F, Items.YELLOW_POPLAR_LEAVES);
       add(0.3F, Items.OAK_SAPLING);
       add(0.3F, Items.SPRUCE_SAPLING);
       add(0.3F, Items.BIRCH_SAPLING);
@@ -80,6 +83,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.CHERRY_SAPLING);
       add(0.3F, Items.DARK_OAK_SAPLING);
       add(0.3F, Items.PALE_OAK_SAPLING);
+      add(0.3F, Items.POPLAR_SAPLING);
       add(0.3F, Items.MANGROVE_PROPAGULE);
       add(0.3F, Items.BEETROOT_SEEDS);
       add(0.3F, Items.DRIED_KELP);
@@ -107,6 +111,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.CACTUS_FLOWER);
       add(0.3F, Items.DRY_SHORT_GRASS);
       add(0.3F, Items.DRY_TALL_GRASS);
+      add(0.3F, Items.RED_SHRUB);
       add(0.5F, Items.DRIED_KELP_BLOCK);
       add(0.5F, Items.TALL_GRASS);
       add(0.5F, Items.FLOWERING_AZALEA_LEAVES);
@@ -164,6 +169,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.65F, Items.MOSS_BLOCK);
       add(0.65F, Items.PALE_MOSS_BLOCK);
       add(0.65F, Items.BIG_DRIPLEAF);
+      add(0.65F, Items.SHELF_MUSHROOM);
       add(0.85F, Items.HAY_BLOCK);
       add(0.85F, Items.BROWN_MUSHROOM_BLOCK);
       add(0.85F, Items.RED_MUSHROOM_BLOCK);
@@ -277,7 +283,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    private static BlockState empty(final @Nullable Entity sourceEntity, final BlockState state, final LevelAccessor level, final BlockPos pos) {
       BlockState newState = (BlockState)state.setValue(LEVEL, 0);
-      level.setBlock(pos, newState, 3);
+      level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)pos, (GameEvent.Context)GameEvent.Context.of(sourceEntity, newState));
       return newState;
    }
@@ -290,7 +296,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       } else {
          int newLevel = fillLevel + 1;
          BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
-         level.setBlock(pos, newState, 3);
+         level.setBlockAndUpdate(pos, newState);
          level.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)pos, (GameEvent.Context)GameEvent.Context.of(sourceEntity, newState));
          if (newLevel == 7) {
             level.scheduleTick(pos, state.getBlock(), 20);
@@ -302,7 +308,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Integer)state.getValue(LEVEL) == 7) {
-         level.setBlock(pos, (BlockState)state.cycle(LEVEL), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.cycle(LEVEL));
          level.playSound((Entity)null, pos, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 

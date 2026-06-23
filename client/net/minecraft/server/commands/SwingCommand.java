@@ -17,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class SwingCommand {
    private static final SimpleCommandExceptionType ERROR_NO_LIVING_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.swing.failed.notliving"));
+   private static final CommandResponseTracker.Messages<LivingEntity> RESPONSE_SWING;
 
    public SwingCommand() {
       super();
@@ -27,25 +28,19 @@ public class SwingCommand {
    }
 
    private static int swing(final CommandSourceStack source, final Collection<? extends Entity> targets, final InteractionHand hand) throws CommandSyntaxException {
-      int livingEntitiesCount = 0;
+      CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
 
       for(Entity entity : targets) {
          if (entity instanceof LivingEntity livingEntity) {
             livingEntity.swing(hand, true);
-            ++livingEntitiesCount;
+            tracker.track(livingEntity);
          }
       }
 
-      if (livingEntitiesCount == 0) {
-         throw ERROR_NO_LIVING_ENTITY.create();
-      } else {
-         if (livingEntitiesCount == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.swing.success.single", ((Entity)targets.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.swing.success.multiple", livingEntitiesCount), true);
-         }
+      return tracker.sendFeedback(source, true, RESPONSE_SWING);
+   }
 
-         return livingEntitiesCount;
-      }
+   static {
+      RESPONSE_SWING = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_NO_LIVING_ENTITY, (CommandResponseTracker.SingleHandler)((entity, var1) -> Component.translatable("commands.swing.success.single", entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, var1) -> Component.translatable("commands.swing.success.multiple", entityCount)));
    }
 }

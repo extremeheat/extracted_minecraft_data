@@ -21,7 +21,7 @@ import net.minecraft.tags.FeatureTags;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.slf4j.Logger;
 
@@ -40,7 +40,7 @@ public class BiomeGenerationSettings {
    });
    private final HolderSet<ConfiguredWorldCarver<?>> carvers;
    private final List<HolderSet<PlacedFeature>> features;
-   private final Supplier<List<ConfiguredFeature<?, ?>>> boneMealFeatures;
+   private final Supplier<List<Feature>> boneMealFeatures;
    private final Supplier<Set<PlacedFeature>> featureSet;
 
    private BiomeGenerationSettings(final HolderSet<ConfiguredWorldCarver<?>> carvers, final List<HolderSet<PlacedFeature>> features) {
@@ -55,7 +55,7 @@ public class BiomeGenerationSettings {
       return this.carvers;
    }
 
-   public List<ConfiguredFeature<?, ?>> getBoneMealFeatures() {
+   public List<Feature> getBoneMealFeatures() {
       return (List)this.boneMealFeatures.get();
    }
 

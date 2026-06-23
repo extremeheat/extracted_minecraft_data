@@ -201,7 +201,7 @@ public class Ravager extends Raider {
             this.strongKnockback(defender);
          }
 
-         defender.hurtMarked = true;
+         defender.syncVelocity = true;
       }
 
    }

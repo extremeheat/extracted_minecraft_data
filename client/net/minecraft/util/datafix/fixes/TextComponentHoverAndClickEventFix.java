@@ -67,8 +67,7 @@ public class TextComponentHoverAndClickEventFix extends DataFix {
             break;
          case "show_item":
             Dynamic<?> contents = dynamic.get("contents").orElseEmptyMap();
-            Optional<String> simpleId = contents.asString().result();
-            var10000 = simpleId.isPresent() ? dynamic.renameField("contents", "id") : copyFields(dynamic.remove("contents"), contents, "id", "count", "components");
+            var10000 = copyFields(dynamic.remove("contents"), contents, "id", "count", "components");
             break;
          case "show_entity":
             Dynamic<?> contents = dynamic.get("contents").orElseEmptyMap();

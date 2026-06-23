@@ -1902,6 +1902,12 @@ public class SoundEvents {
    public static final SoundEvent SULFUR_CUBE_SMALL_JUMP = register("entity.small_sulfur_cube.jump");
    public static final SoundEvent SULFUR_CUBE_SMALL_SQUISH = register("entity.small_sulfur_cube.squish");
    public static final SoundEvent SULFUR_CUBE_SMALL_EAT = register("entity.small_sulfur_cube.eat");
+   public static final SoundEvent SHELF_MUSHROOM_BREAK = register("block.shelf_mushroom.break");
+   public static final SoundEvent SHELF_MUSHROOM_FALL = register("block.shelf_mushroom.fall");
+   public static final SoundEvent SHELF_MUSHROOM_PLACE = register("block.shelf_mushroom.place");
+   public static final SoundEvent SHELF_MUSHROOM_STEP = register("block.shelf_mushroom.step");
+   public static final SoundEvent SHELF_MUSHROOM_BOUNCE = register("block.shelf_mushroom.bounce");
+   public static final Holder.Reference<SoundEvent> POPLAR_LEAVES_AMBIENT = registerForHolder("block.poplar_leaves.ambient");
 
    public SoundEvents() {
       super();

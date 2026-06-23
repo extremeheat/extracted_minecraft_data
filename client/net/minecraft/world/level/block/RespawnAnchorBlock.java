@@ -148,7 +148,7 @@ public class RespawnAnchorBlock extends Block {
 
    public static void charge(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state) {
       BlockState newState = (BlockState)state.setValue(CHARGE, (Integer)state.getValue(CHARGE) + 1);
-      level.setBlock(pos, newState, 3);
+      level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
       level.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }

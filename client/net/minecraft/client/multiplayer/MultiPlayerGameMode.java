@@ -71,6 +71,7 @@ import org.slf4j.Logger;
 
 public class MultiPlayerGameMode {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int DEFAULT_DESTROY_COOLDOWN_TICKS = 5;
    private final Minecraft minecraft;
    private final ClientPacketListener connection;
    private BlockPos destroyBlockPos = new BlockPos(-1, -1, -1);
@@ -415,6 +416,7 @@ public class MultiPlayerGameMode {
       this.connection.send(new ServerboundAttackPacket(entity.getId()));
       player.attack(entity);
       player.resetAttackStrengthTicker();
+      this.destroyDelay = 5;
    }
 
    public void spectate(final Entity entity) {

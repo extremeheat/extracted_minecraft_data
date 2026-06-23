@@ -16,7 +16,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 
 public class PaleMossDecorator extends TreeDecorator {
    public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((p) -> p.leavesProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((p) -> p.trunkProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((p) -> p.groundProbability)).apply(i, PaleMossDecorator::new));
@@ -42,7 +42,7 @@ public class PaleMossDecorator extends TreeDecorator {
       if (!logs.isEmpty()) {
          BlockPos origin = (BlockPos)Collections.min(logs, Comparator.comparingInt(Vec3i::getY));
          if (random.nextFloat() < this.groundProbability) {
-            level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((mossPatch) -> ((ConfiguredFeature)mossPatch.value()).place(level, level.getLevel().getChunkSource().getGenerator(), random, origin.above()));
+            level.registryAccess().lookup(Registries.FEATURE).flatMap((registry) -> registry.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((mossPatch) -> ((Feature)mossPatch.value()).place(level, level.getLevel().getChunkSource().getGenerator(), random, origin.above()));
          }
 
          context.logs().forEach((pos) -> {

@@ -3,7 +3,6 @@ package net.minecraft.data;
 import net.minecraft.resources.Identifier;
 
 public class AtlasIds {
-   public static final Identifier ARMOR_TRIMS = Identifier.withDefaultNamespace("armor_trims");
    public static final Identifier BANNER_PATTERNS = Identifier.withDefaultNamespace("banner_patterns");
    public static final Identifier BLOCKS = Identifier.withDefaultNamespace("blocks");
    public static final Identifier ITEMS = Identifier.withDefaultNamespace("items");

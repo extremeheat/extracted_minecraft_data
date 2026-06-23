@@ -1,25 +1,29 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.KelpBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
-public class KelpFeature extends Feature<NoneFeatureConfiguration> {
-   public KelpFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record KelpFeature() implements Feature {
+   public static final KelpFeature INSTANCE = new KelpFeature();
+   public static final MapCodec<KelpFeature> CODEC;
+
+   public KelpFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+   public MapCodec<KelpFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       int placed = 0;
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      RandomSource random = context.random();
       int y = level.getHeight(Heightmap.Types.OCEAN_FLOOR, origin.getX(), origin.getZ());
       BlockPos kelpPos = new BlockPos(origin.getX(), y, origin.getZ());
       if (level.getBlockState(kelpPos).is(Blocks.WATER)) {
@@ -49,5 +53,9 @@ public class KelpFeature extends Feature<NoneFeatureConfiguration> {
       }
 
       return placed > 0;
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

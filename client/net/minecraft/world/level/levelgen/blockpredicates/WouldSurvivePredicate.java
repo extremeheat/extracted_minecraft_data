@@ -12,7 +12,7 @@ public class WouldSurvivePredicate implements BlockPredicate {
    private final Vec3i offset;
    private final BlockState state;
 
-   protected WouldSurvivePredicate(final Vec3i offset, final BlockState state) {
+   public WouldSurvivePredicate(final Vec3i offset, final BlockState state) {
       super();
       this.offset = offset;
       this.state = state;

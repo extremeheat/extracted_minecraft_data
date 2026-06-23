@@ -103,7 +103,7 @@ public abstract class StructurePiece {
    }
 
    public BlockPos getLocatorPosition() {
-      return new BlockPos(this.boundingBox.getCenter());
+      return this.boundingBox.getCenter();
    }
 
    protected BlockPos.MutableBlockPos getWorldPos(final int x, final int y, final int z) {

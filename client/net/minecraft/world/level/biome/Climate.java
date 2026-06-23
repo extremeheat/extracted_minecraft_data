@@ -55,7 +55,7 @@ public class Climate {
 
    public static Sampler empty() {
       DensityFunction zero = DensityFunctions.zero();
-      return new Sampler(zero, zero, zero, zero, zero, zero, List.of());
+      return new Sampler(zero, zero, zero, zero, zero, zero);
    }
 
    public static BlockPos findSpawnPosition(final List<ParameterPoint> targetClimates, final Sampler sampler) {
@@ -403,7 +403,7 @@ public class Climate {
       }
    }
 
-   public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness, List<ParameterPoint> spawnTarget) {
+   public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness) {
       public Sampler {
          super();
       }
@@ -414,10 +414,6 @@ public class Climate {
          int blockZ = QuartPos.toBlock(quartZ);
          DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
          return Climate.target((float)this.temperature.compute(context), (float)this.humidity.compute(context), (float)this.continentalness.compute(context), (float)this.erosion.compute(context), (float)this.depth.compute(context), (float)this.weirdness.compute(context));
-      }
-
-      public BlockPos findSpawnPosition() {
-         return this.spawnTarget.isEmpty() ? BlockPos.ZERO : Climate.findSpawnPosition(this.spawnTarget, this);
       }
    }
 

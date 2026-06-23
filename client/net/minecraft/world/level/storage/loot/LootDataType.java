@@ -8,6 +8,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKeySet;
+import net.minecraft.world.item.slot.SlotSource;
+import net.minecraft.world.item.slot.SlotSources;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public record LootDataType<T extends Validatable>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, ContextGetter<T> contextGetter) {
    public static final LootDataType<LootItemCondition> PREDICATE;
    public static final LootDataType<LootItemFunction> MODIFIER;
+   public static final LootDataType<SlotSource> SLOT_SOURCE;
    public static final LootDataType<LootTable> TABLE;
 
    public LootDataType {
@@ -33,12 +36,13 @@ public record LootDataType<T extends Validatable>(ResourceKey<Registry<T>> regis
    }
 
    public static Stream<LootDataType<?>> values() {
-      return Stream.of(PREDICATE, MODIFIER, TABLE);
+      return Stream.of(PREDICATE, MODIFIER, SLOT_SOURCE, TABLE);
    }
 
    static {
       PREDICATE = new LootDataType<LootItemCondition>(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
       MODIFIER = new LootDataType<LootItemFunction>(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
+      SLOT_SOURCE = new LootDataType<SlotSource>(Registries.SLOT_SOURCE, SlotSources.CODEC, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
       TABLE = new LootDataType<LootTable>(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, LootTable::getParamSet);
    }
 

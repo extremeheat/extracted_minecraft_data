@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class TransferCommand {
    private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(Component.translatable("commands.transfer.error.no_players"));
+   private static final CommandResponseTracker.MessagesWithArgs<ServerPlayer, String, Integer> RESPONSE_TRANSFER;
 
    public TransferCommand() {
       super();
@@ -28,20 +29,17 @@ public class TransferCommand {
    }
 
    private static int transfer(final CommandSourceStack source, final String hostname, final int port, final Collection<ServerPlayer> players) throws CommandSyntaxException {
-      if (players.isEmpty()) {
-         throw ERROR_NO_PLAYERS.create();
-      } else {
-         for(ServerPlayer player : players) {
-            player.connection.send(new ClientboundTransferPacket(hostname, port));
-         }
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
 
-         if (players.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.transfer.success.single", ((ServerPlayer)players.iterator().next()).getDisplayName(), hostname, port), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.transfer.success.multiple", players.size(), hostname, port), true);
-         }
-
-         return players.size();
+      for(ServerPlayer player : players) {
+         player.connection.send(new ClientboundTransferPacket(hostname, port));
+         tracker.track(player);
       }
+
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_TRANSFER, hostname, port);
+   }
+
+   static {
+      RESPONSE_TRANSFER = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_NO_PLAYERS, (CommandResponseTracker.SingleHandlerWithArgs)((player, var1, hostname, port) -> Component.translatable("commands.transfer.success.single", player.getDisplayName(), hostname, port)), (CommandResponseTracker.MultipleHandlerWithArgs)((playerCount, totalValue, hostname, port) -> Component.translatable("commands.transfer.success.multiple", playerCount, hostname, port)));
    }
 }

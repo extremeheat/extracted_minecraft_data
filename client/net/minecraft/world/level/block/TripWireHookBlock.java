@@ -136,7 +136,7 @@ public class TripWireHookBlock extends Block {
          if (receiverPos > 0) {
             BlockPos testPos = pos.relative(direction, receiverPos);
             Direction opposite = direction.getOpposite();
-            level.setBlock(testPos, (BlockState)newState.setValue(FACING, opposite), 3);
+            level.setBlockAndUpdate(testPos, (BlockState)newState.setValue(FACING, opposite));
             notifyNeighbors(block, level, testPos, opposite);
             if (!level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) {
                onRemoved(newState, level, pos);
@@ -148,7 +148,7 @@ public class TripWireHookBlock extends Block {
 
          emitState(level, pos, attached, powered, wasAttached, wasPowered);
          if (!isBeingDestroyed) {
-            level.setBlock(pos, (BlockState)newState.setValue(FACING, direction), 3);
+            level.setBlockAndUpdate(pos, (BlockState)newState.setValue(FACING, direction));
             if (canUpdate) {
                notifyNeighbors(block, level, pos, direction);
             }
@@ -161,7 +161,7 @@ public class TripWireHookBlock extends Block {
                if (wireData != null) {
                   BlockState testPosState = level.getBlockState(testPos);
                   if (testPosState.is(Blocks.TRIPWIRE) || testPosState.is(Blocks.TRIPWIRE_HOOK)) {
-                     level.setBlock(testPos, (BlockState)wireData.trySetValue(ATTACHED, attached), 3);
+                     level.setBlockAndUpdate(testPos, (BlockState)wireData.trySetValue(ATTACHED, attached));
                   }
                }
             }

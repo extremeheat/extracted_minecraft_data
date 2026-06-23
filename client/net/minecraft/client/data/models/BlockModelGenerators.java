@@ -225,20 +225,22 @@ public class BlockModelGenerators {
    }
 
    private Identifier createFlatItemModel(final Item item) {
-      return ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layer0(item), this.modelOutput);
+      return this.createFlatItemModel(item, TextureMapping.getItemTexture(item));
    }
 
    private Identifier createFlatItemModelWithBlockTexture(final Item item, final Block block) {
-      return ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layer0(block), this.modelOutput);
+      return this.createFlatItemModel(item, TextureMapping.getBlockTexture(block));
    }
 
    private Identifier createFlatItemModelWithBlockTexture(final Item item, final Block block, final String suffix) {
-      return ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layer0(TextureMapping.getBlockTexture(block, suffix)), this.modelOutput);
+      return this.createFlatItemModel(item, TextureMapping.getBlockTexture(block, suffix));
    }
 
-   private Identifier createFlatItemModelWithBlockTextureAndOverlay(final Item item, final Block block, final String overlaySuffix) {
-      Material base = TextureMapping.getBlockTexture(block);
-      Material overlay = TextureMapping.getBlockTexture(block, overlaySuffix);
+   private Identifier createFlatItemModel(final Item item, final Material material) {
+      return ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layer0(material), this.modelOutput);
+   }
+
+   private Identifier createTwoLayeredItemModel(final Item item, final Material base, final Material overlay) {
       return ModelTemplates.TWO_LAYERED_ITEM.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layered(base, overlay), this.modelOutput);
    }
 
@@ -262,15 +264,6 @@ public class BlockModelGenerators {
 
    }
 
-   private void registerTwoLayerFlatItemModel(final Block block, final String overlaySuffix) {
-      Item blockItem = block.asItem();
-      if (blockItem != Items.AIR) {
-         Identifier model = this.createFlatItemModelWithBlockTextureAndOverlay(blockItem, block, overlaySuffix);
-         this.registerSimpleItemModel(blockItem, model);
-      }
-
-   }
-
    private static MultiVariant createRotatedVariants(final Variant base) {
       return variants(base, base.with(Y_ROT_90), base.with(Y_ROT_180), base.with(Y_ROT_270));
    }
@@ -290,7 +283,15 @@ public class BlockModelGenerators {
    }
 
    private void createRotatedVariantBlock(final Block block) {
-      Variant normal = plainModel(TexturedModel.CUBE.create(block, this.modelOutput));
+      this.createRotatedVariantBlock(block, TexturedModel.CUBE);
+   }
+
+   private void createRotatedVariantBlock(final Block block, final TexturedModel.Provider modelProvider) {
+      this.createRotatedVariantBlock(block, modelProvider.create(block, this.modelOutput));
+   }
+
+   private void createRotatedVariantBlock(final Block block, final Identifier model) {
+      Variant normal = plainModel(model);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, createRotatedVariants(normal)));
    }
 
@@ -524,7 +525,7 @@ public class BlockModelGenerators {
    }
 
    private void createCrossBlockWithDefaultItem(final Block block, final PlantType plantType) {
-      this.registerSimpleItemModel(block.asItem(), plantType.createItemModel(this, block));
+      this.registerSimpleItemModel(block.asItem(), plantType.createItemModelUsingBlockTexture(this, block));
       this.createCrossBlock(block, plantType);
    }
 
@@ -558,7 +559,7 @@ public class BlockModelGenerators {
    }
 
    private void createPlantWithDefaultItem(final Block standAlone, final Block potted, final PlantType plantType) {
-      this.registerSimpleItemModel(standAlone.asItem(), plantType.createItemModel(this, standAlone));
+      this.registerSimpleItemModel(standAlone.asItem(), plantType.createItemModelUsingBlockTexture(this, standAlone));
       this.createPlant(standAlone, potted, plantType);
    }
 
@@ -746,8 +747,7 @@ public class BlockModelGenerators {
 
    private void createColoredBlockWithRandomRotations(final TexturedModel.Provider modelProvider, final List<Block> blocks) {
       for(Block block : blocks) {
-         Variant model = plainModel(modelProvider.create(block, this.modelOutput));
-         this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, createRotatedVariants(model)));
+         this.createRotatedVariantBlock(block, modelProvider);
       }
 
    }
@@ -796,8 +796,8 @@ public class BlockModelGenerators {
 
    private void createBarrel() {
       Material openTop = TextureMapping.getBlockTexture(Blocks.BARREL, "_top_open");
-      MultiVariant closedModel = plainVariant(TexturedModel.CUBE_TOP_BOTTOM.create(Blocks.BARREL, this.modelOutput));
-      MultiVariant openModel = plainVariant(TexturedModel.CUBE_TOP_BOTTOM.get(Blocks.BARREL).updateTextures((t) -> t.put(TextureSlot.TOP, openTop)).createWithSuffix(Blocks.BARREL, "_open", this.modelOutput));
+      MultiVariant closedModel = plainVariant(TexturedModel.CUBE_BOTTOM_TOP.create(Blocks.BARREL, this.modelOutput));
+      MultiVariant openModel = plainVariant(TexturedModel.CUBE_BOTTOM_TOP.get(Blocks.BARREL).updateTextures((t) -> t.put(TextureSlot.TOP, openTop)).createWithSuffix(Blocks.BARREL, "_open", this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.BARREL).with(PropertyDispatch.initial(BlockStateProperties.OPEN).select(false, closedModel).select(true, openModel)).with(ROTATIONS_COLUMN_WITH_FACING));
    }
 
@@ -1085,12 +1085,12 @@ public class BlockModelGenerators {
       this.itemModelOutput.copy(block.asItem(), waxedBlock.asItem());
    }
 
-   private void createFarmland() {
-      TextureMapping dryTextures = (new TextureMapping()).put(TextureSlot.DIRT, TextureMapping.getBlockTexture(Blocks.DIRT)).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.FARMLAND));
-      TextureMapping moistTextures = (new TextureMapping()).put(TextureSlot.DIRT, TextureMapping.getBlockTexture(Blocks.DIRT)).put(TextureSlot.TOP, TextureMapping.getBlockTexture(Blocks.FARMLAND, "_moist"));
-      MultiVariant dryModel = plainVariant(ModelTemplates.FARMLAND.create(Blocks.FARMLAND, dryTextures, this.modelOutput));
-      MultiVariant moistModel = plainVariant(ModelTemplates.FARMLAND.create(ModelLocationUtils.getModelLocation(Blocks.FARMLAND, "_moist"), moistTextures, this.modelOutput));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.FARMLAND).with(createEmptyOrFullDispatch(BlockStateProperties.MOISTURE, 7, moistModel, dryModel)));
+   private void createFarmland(final Block farmland, final Material baseTexture, final Material bottomTexture, final ModelTemplate template) {
+      TextureMapping dryTextures = (new TextureMapping()).put(TextureSlot.SIDE, baseTexture).put(TextureSlot.BOTTOM, bottomTexture).put(TextureSlot.TOP, TextureMapping.getBlockTexture(farmland));
+      TextureMapping moistTextures = (new TextureMapping()).put(TextureSlot.SIDE, baseTexture).put(TextureSlot.BOTTOM, bottomTexture).put(TextureSlot.TOP, TextureMapping.getBlockTexture(farmland, "_moist"));
+      MultiVariant dryModel = plainVariant(template.create(farmland, dryTextures, this.modelOutput));
+      MultiVariant moistModel = plainVariant(template.create(ModelLocationUtils.getModelLocation(farmland, "_moist"), moistTextures, this.modelOutput));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(farmland).with(createEmptyOrFullDispatch(BlockStateProperties.MOISTURE, 7, moistModel, dryModel)));
    }
 
    private MultiVariant createFloorFireModels(final Block block) {
@@ -1165,9 +1165,9 @@ public class BlockModelGenerators {
       Identifier plainGrassModel = ModelLocationUtils.getModelLocation(Blocks.GRASS_BLOCK);
       this.createGrassLikeBlock(Blocks.GRASS_BLOCK, createRotatedVariants(plainModel(plainGrassModel)), snowyGrass);
       this.registerSimpleTintedItemModel(Blocks.GRASS_BLOCK, plainGrassModel, new GrassColorSource());
-      MultiVariant myceliumModel = createRotatedVariants(plainModel(TexturedModel.CUBE_TOP_BOTTOM.get(Blocks.MYCELIUM).updateTextures((m) -> m.put(TextureSlot.BOTTOM, bottomTexture)).create(Blocks.MYCELIUM, this.modelOutput)));
+      MultiVariant myceliumModel = createRotatedVariants(plainModel(TexturedModel.CUBE_BOTTOM_TOP.get(Blocks.MYCELIUM).updateTextures((m) -> m.put(TextureSlot.BOTTOM, bottomTexture)).create(Blocks.MYCELIUM, this.modelOutput)));
       this.createGrassLikeBlock(Blocks.MYCELIUM, myceliumModel, snowyGrass);
-      MultiVariant podzolModel = createRotatedVariants(plainModel(TexturedModel.CUBE_TOP_BOTTOM.get(Blocks.PODZOL).updateTextures((m) -> m.put(TextureSlot.BOTTOM, bottomTexture)).create(Blocks.PODZOL, this.modelOutput)));
+      MultiVariant podzolModel = createRotatedVariants(plainModel(TexturedModel.CUBE_BOTTOM_TOP.get(Blocks.PODZOL).updateTextures((m) -> m.put(TextureSlot.BOTTOM, bottomTexture)).create(Blocks.PODZOL, this.modelOutput)));
       this.createGrassLikeBlock(Blocks.PODZOL, podzolModel, snowyGrass);
    }
 
@@ -1180,9 +1180,10 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.COCOA).with(PropertyDispatch.initial(BlockStateProperties.AGE_2).select(0, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage0"))).select(1, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage1"))).select(2, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage2")))).with(ROTATION_HORIZONTAL_FACING_ALT));
    }
 
-   private void createDirtPath() {
-      Variant model = plainModel(ModelLocationUtils.getModelLocation(Blocks.DIRT_PATH));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.DIRT_PATH, createRotatedVariants(model)));
+   private void createShelfMushroom() {
+      Identifier shelfMushroom = ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage1");
+      this.registerSimpleItemModel(Blocks.SHELF_MUSHROOM, shelfMushroom);
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.SHELF_MUSHROOM).with(PropertyDispatch.initial(BlockStateProperties.AGE_1).select(0, plainVariant(ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage0"))).select(1, plainVariant(ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage1")))).with(ROTATION_HORIZONTAL_FACING));
    }
 
    private void createWeightedPressurePlate(final Block block, final Block appearance) {
@@ -1249,8 +1250,7 @@ public class BlockModelGenerators {
    private void createLilyPad() {
       Identifier itemModel = this.createFlatItemModelWithBlockTexture(Items.LILY_PAD, Blocks.LILY_PAD);
       this.registerSimpleTintedItemModel(Blocks.LILY_PAD, itemModel, ItemModelUtils.constantTint(-9321636));
-      Variant blockModel = plainModel(ModelLocationUtils.getModelLocation(Blocks.LILY_PAD));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.LILY_PAD, createRotatedVariants(blockModel)));
+      this.createRotatedVariantBlock(Blocks.LILY_PAD, ModelLocationUtils.getModelLocation(Blocks.LILY_PAD));
    }
 
    private void createFrogspawnBlock() {
@@ -2024,7 +2024,7 @@ public class BlockModelGenerators {
       this.createTrivialCube(Blocks.SPONGE);
       this.createTrivialBlock(Blocks.SEAGRASS, TexturedModel.SEAGRASS);
       this.registerSimpleFlatItemModel(Items.SEAGRASS);
-      this.createTrivialBlock(Blocks.TNT, TexturedModel.CUBE_TOP_BOTTOM);
+      this.createTrivialBlock(Blocks.TNT, TexturedModel.CUBE_BOTTOM_TOP);
       this.createTrivialBlock(Blocks.TARGET, TexturedModel.COLUMN);
       this.createTrivialCube(Blocks.WARPED_WART_BLOCK);
       this.createTrivialCube(Blocks.WET_SPONGE);
@@ -2059,6 +2059,7 @@ public class BlockModelGenerators {
       this.createShelf(Blocks.DARK_OAK_SHELF, Blocks.STRIPPED_DARK_OAK_LOG);
       this.createShelf(Blocks.JUNGLE_SHELF, Blocks.STRIPPED_JUNGLE_LOG);
       this.createShelf(Blocks.MANGROVE_SHELF, Blocks.STRIPPED_MANGROVE_LOG);
+      this.createShelf(Blocks.POPLAR_SHELF, Blocks.STRIPPED_POPLAR_LOG);
       this.createShelf(Blocks.OAK_SHELF, Blocks.STRIPPED_OAK_LOG);
       this.createShelf(Blocks.PALE_OAK_SHELF, Blocks.STRIPPED_PALE_OAK_LOG);
       this.createShelf(Blocks.SPRUCE_SHELF, Blocks.STRIPPED_SPRUCE_LOG);
@@ -2077,13 +2078,14 @@ public class BlockModelGenerators {
       this.createDaylightDetector();
       this.createEndPortalFrame();
       this.createRotatableColumn(Blocks.END_ROD);
-      this.createFarmland();
+      this.createFarmland(Blocks.FARMLAND, TextureMapping.getBlockTexture(Blocks.DIRT), TextureMapping.getBlockTexture(Blocks.DIRT), ModelTemplates.CUBE_BOTTOM_TOP_INDENTED);
       this.createFire();
       this.createSoulFire();
       this.createFrostedIce();
       this.createGrassBlocks();
       this.createCocoa();
-      this.createDirtPath();
+      this.createShelfMushroom();
+      this.createRotatedVariantBlock(Blocks.DIRT_PATH, TexturedModel.CUBE_BOTTOM_TOP_INDENTED.updateTexture((m) -> m.put(TextureSlot.BOTTOM, TextureMapping.getBlockTexture(Blocks.DIRT))));
       this.createGrindstone();
       this.createHopper();
       this.createBarsAndItem(Blocks.IRON_BARS);
@@ -2157,7 +2159,7 @@ public class BlockModelGenerators {
       this.createBrushableBlock(Blocks.SUSPICIOUS_GRAVEL);
       this.createRotatedVariantBlock(Blocks.RED_SAND);
       this.createRotatedMirroredVariantBlock(Blocks.BEDROCK);
-      this.createTrivialBlock(Blocks.REINFORCED_DEEPSLATE, TexturedModel.CUBE_TOP_BOTTOM);
+      this.createTrivialBlock(Blocks.REINFORCED_DEEPSLATE, TexturedModel.CUBE_BOTTOM_TOP);
       this.createRotatedPillarWithHorizontalVariant(Blocks.HAY_BLOCK, TexturedModel.COLUMN, TexturedModel.COLUMN_HORIZONTAL);
       this.createRotatedPillarWithHorizontalVariant(Blocks.OCHRE_FROGLIGHT, TexturedModel.COLUMN, TexturedModel.COLUMN_HORIZONTAL);
       this.createRotatedPillarWithHorizontalVariant(Blocks.VERDANT_FROGLIGHT, TexturedModel.COLUMN, TexturedModel.COLUMN_HORIZONTAL);
@@ -2199,7 +2201,6 @@ public class BlockModelGenerators {
       this.createGlassBlocks(Blocks.GLASS, Blocks.GLASS_PANE);
       ColorCollection.zipApply(Blocks.STAINED_GLASS, Blocks.STAINED_GLASS_PANE, this::createGlassBlocks);
       this.createColoredBlockWithStateRotations(TexturedModel.GLAZED_TERRACOTTA, Blocks.GLAZED_TERRACOTTA.asList());
-      ColorCollection.zipApply(Blocks.WOOL, Blocks.CARPET, this::createFullAndCarpetBlocks);
       this.createTrivialCube(Blocks.MUD);
       this.createTrivialCube(Blocks.PACKED_MUD);
       this.createPlant(Blocks.FERN, Blocks.POTTED_FERN, BlockModelGenerators.PlantType.TINTED);
@@ -2233,6 +2234,7 @@ public class BlockModelGenerators {
       this.createItemWithGrassTint(Blocks.SHORT_GRASS);
       this.createCrossBlockWithDefaultItem(Blocks.SHORT_DRY_GRASS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createCrossBlockWithDefaultItem(Blocks.TALL_DRY_GRASS, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createCrossBlockWithDefaultItem(Blocks.RED_SHRUB, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createCrossBlock(Blocks.BUSH, BlockModelGenerators.PlantType.TINTED);
       this.createItemWithGrassTint(Blocks.BUSH);
       this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.PlantType.TINTED);
@@ -2294,6 +2296,12 @@ public class BlockModelGenerators {
       this.woodProvider(Blocks.STRIPPED_PALE_OAK_LOG).logWithHorizontal(Blocks.STRIPPED_PALE_OAK_LOG).wood(Blocks.STRIPPED_PALE_OAK_WOOD);
       this.createPlantWithDefaultItem(Blocks.PALE_OAK_SAPLING, Blocks.POTTED_PALE_OAK_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.PALE_OAK_LEAVES, TexturedModel.LEAVES);
+      this.woodProvider(Blocks.POPLAR_LOG).logWithHorizontal(Blocks.POPLAR_LOG).wood(Blocks.POPLAR_WOOD);
+      this.woodProvider(Blocks.STRIPPED_POPLAR_LOG).logWithHorizontal(Blocks.STRIPPED_POPLAR_LOG).wood(Blocks.STRIPPED_POPLAR_WOOD);
+      this.createPlantWithDefaultItem(Blocks.POPLAR_SAPLING, Blocks.POTTED_POPLAR_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createTrivialCube(Blocks.RED_POPLAR_LEAVES);
+      this.createTrivialCube(Blocks.ORANGE_POPLAR_LEAVES);
+      this.createTrivialCube(Blocks.YELLOW_POPLAR_LEAVES);
       this.woodProvider(Blocks.JUNGLE_LOG).logWithHorizontal(Blocks.JUNGLE_LOG).wood(Blocks.JUNGLE_WOOD);
       this.woodProvider(Blocks.STRIPPED_JUNGLE_LOG).logWithHorizontal(Blocks.STRIPPED_JUNGLE_LOG).wood(Blocks.STRIPPED_JUNGLE_WOOD);
       this.createPlantWithDefaultItem(Blocks.JUNGLE_SAPLING, Blocks.POTTED_JUNGLE_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
@@ -2414,7 +2422,7 @@ public class BlockModelGenerators {
          m.put(TextureSlot.END, TextureMapping.getBlockTexture(Blocks.RED_SANDSTONE, "_top"));
          m.put(TextureSlot.SIDE, TextureMapping.getBlockTexture(Blocks.CHISELED_RED_SANDSTONE));
       })).put(Blocks.CHISELED_TUFF_BRICKS, TexturedModel.COLUMN_WITH_WALL.get(Blocks.CHISELED_TUFF_BRICKS)).put(Blocks.CHISELED_TUFF, TexturedModel.COLUMN_WITH_WALL.get(Blocks.CHISELED_TUFF)).build();
-      SHAPE_CONSUMERS = ImmutableMap.builder().put(BlockFamily.Variant.BUTTON, BlockFamilyProvider::button).put(BlockFamily.Variant.DOOR, BlockFamilyProvider::door).put(BlockFamily.Variant.CHISELED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.CRACKED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.CUSTOM_FENCE, BlockFamilyProvider::customFence).put(BlockFamily.Variant.FENCE, BlockFamilyProvider::fence).put(BlockFamily.Variant.CUSTOM_FENCE_GATE, BlockFamilyProvider::customFenceGate).put(BlockFamily.Variant.FENCE_GATE, BlockFamilyProvider::fenceGate).put(BlockFamily.Variant.SIGN, BlockFamilyProvider::sign).put(BlockFamily.Variant.CUSTOM_HANGING_SIGN, BlockFamilyProvider::customHangingSign).put(BlockFamily.Variant.HANGING_SIGN, BlockFamilyProvider::hangingSign).put(BlockFamily.Variant.SLAB, BlockFamilyProvider::slab).put(BlockFamily.Variant.STAIRS, BlockFamilyProvider::stairs).put(BlockFamily.Variant.PRESSURE_PLATE, BlockFamilyProvider::pressurePlate).put(BlockFamily.Variant.TRAPDOOR, BlockFamilyProvider::trapdoor).put(BlockFamily.Variant.WALL, BlockFamilyProvider::wall).put(BlockFamily.Variant.BRICKS, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.TILES, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.COBBLED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.PILLAR, BlockFamilyProvider::pillar).build();
+      SHAPE_CONSUMERS = ImmutableMap.builder().put(BlockFamily.Variant.BUTTON, BlockFamilyProvider::button).put(BlockFamily.Variant.CARPET, BlockFamilyProvider::carpet).put(BlockFamily.Variant.DOOR, BlockFamilyProvider::door).put(BlockFamily.Variant.CHISELED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.CRACKED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.CUSTOM_FENCE, BlockFamilyProvider::customFence).put(BlockFamily.Variant.FENCE, BlockFamilyProvider::fence).put(BlockFamily.Variant.CUSTOM_FENCE_GATE, BlockFamilyProvider::customFenceGate).put(BlockFamily.Variant.FENCE_GATE, BlockFamilyProvider::fenceGate).put(BlockFamily.Variant.SIGN, BlockFamilyProvider::sign).put(BlockFamily.Variant.CUSTOM_HANGING_SIGN, BlockFamilyProvider::customHangingSign).put(BlockFamily.Variant.HANGING_SIGN, BlockFamilyProvider::hangingSign).put(BlockFamily.Variant.SLAB, BlockFamilyProvider::slab).put(BlockFamily.Variant.STAIRS, BlockFamilyProvider::stairs).put(BlockFamily.Variant.PRESSURE_PLATE, BlockFamilyProvider::pressurePlate).put(BlockFamily.Variant.TRAPDOOR, BlockFamilyProvider::trapdoor).put(BlockFamily.Variant.WALL, BlockFamilyProvider::wall).put(BlockFamily.Variant.BRICKS, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.TILES, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.COBBLED, BlockFamilyProvider::fullBlockVariant).put(BlockFamily.Variant.PILLAR, BlockFamilyProvider::pillar).build();
       MULTIFACE_GENERATOR = ImmutableMap.of(Direction.NORTH, NOP, Direction.EAST, Y_ROT_90.then(UV_LOCK), Direction.SOUTH, Y_ROT_180.then(UV_LOCK), Direction.WEST, Y_ROT_270.then(UV_LOCK), Direction.UP, X_ROT_270.then(UV_LOCK), Direction.DOWN, X_ROT_90.then(UV_LOCK));
       CHISELED_BOOKSHELF_SLOT_MODEL_CACHE = new HashMap();
    }
@@ -2459,6 +2467,14 @@ public class BlockModelGenerators {
          BlockModelGenerators.this.blockStateOutput.accept(BlockModelGenerators.createButton(block, normal, pressed));
          Identifier inventory = ModelTemplates.BUTTON_INVENTORY.create(block, this.mapping, BlockModelGenerators.this.modelOutput);
          BlockModelGenerators.this.registerSimpleItemModel(block, inventory);
+         return this;
+      }
+
+      public BlockFamilyProvider carpet(final Block block) {
+         TextureMapping carpetMapping = (new TextureMapping()).put(TextureSlot.WOOL, this.mapping.get(TextureSlot.ALL));
+         Identifier model = ModelTemplates.CARPET.create(block, carpetMapping, BlockModelGenerators.this.modelOutput);
+         BlockModelGenerators.this.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(model)));
+         BlockModelGenerators.this.registerSimpleItemModel(block, model);
          return this;
       }
 
@@ -2687,9 +2703,22 @@ public class BlockModelGenerators {
          return this.flowerPotTemplate;
       }
 
-      public Identifier createItemModel(final BlockModelGenerators generator, final Block block) {
-         Item blockItem = block.asItem();
-         return this.isEmissive ? generator.createFlatItemModelWithBlockTextureAndOverlay(blockItem, block, "_emissive") : generator.createFlatItemModelWithBlockTexture(blockItem, block);
+      public Identifier createItemModelUsingBlockTexture(final BlockModelGenerators generator, final Block block) {
+         return this.createItemModelUsingBlockTexture(generator, block, "");
+      }
+
+      public Identifier createItemModelUsingBlockTexture(final BlockModelGenerators generator, final Block block, final String suffix) {
+         Material material = TextureMapping.getBlockTexture(block, suffix);
+         return this.isEmissive ? generator.createTwoLayeredItemModel(block.asItem(), material, material.withSuffix("_emissive")) : generator.createFlatItemModel(block.asItem(), material);
+      }
+
+      public Identifier createItemModelUsingItemTexture(final BlockModelGenerators generator, final Block block) {
+         return this.createItemModelUsingItemTexture(generator, block, "");
+      }
+
+      public Identifier createItemModelUsingItemTexture(final BlockModelGenerators generator, final Block block, final String suffix) {
+         Material material = TextureMapping.getItemTexture(block.asItem(), suffix);
+         return generator.createFlatItemModel(block.asItem(), material);
       }
 
       public TextureMapping getTextureMapping(final Block block) {

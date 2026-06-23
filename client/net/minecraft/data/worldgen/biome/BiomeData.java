@@ -27,6 +27,7 @@ public abstract class BiomeData {
       context.register(Biomes.FOREST, OverworldBiomes.forest(placedFeatures, carvers, false, false, false));
       context.register(Biomes.FLOWER_FOREST, OverworldBiomes.forest(placedFeatures, carvers, false, false, true));
       context.register(Biomes.BIRCH_FOREST, OverworldBiomes.forest(placedFeatures, carvers, true, false, false));
+      context.register(Biomes.DAPPLED_FOREST, OverworldBiomes.dappledForest(placedFeatures, carvers));
       context.register(Biomes.DARK_FOREST, OverworldBiomes.darkForest(placedFeatures, carvers, false));
       context.register(Biomes.PALE_GARDEN, OverworldBiomes.darkForest(placedFeatures, carvers, true));
       context.register(Biomes.OLD_GROWTH_BIRCH_FOREST, OverworldBiomes.forest(placedFeatures, carvers, true, true, false));

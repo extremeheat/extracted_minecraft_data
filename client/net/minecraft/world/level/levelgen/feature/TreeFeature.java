@@ -4,39 +4,59 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.feature.featuresize.FeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.rootplacers.RootPlacer;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
+import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 
-public class TreeFeature extends Feature<TreeConfiguration> {
+public record TreeFeature(BlockStateProvider trunkProvider, TrunkPlacer trunkPlacer, BlockStateProvider foliageProvider, FoliagePlacer foliagePlacer, Optional<RootPlacer> rootPlacer, FeatureSize minimumSize, List<TreeDecorator> decorators, boolean ignoreVines, BlockStateProvider belowTrunkProvider) implements Feature {
+   public static final BlockPredicate CAN_PLACE_BELOW_TREE_TRUNKS;
+   public static final MapCodec<TreeFeature> CODEC;
    private static final @Block.UpdateFlags int BLOCK_UPDATE_FLAGS = 19;
 
-   public TreeFeature(final Codec<TreeConfiguration> codec) {
-      super(codec);
+   public TreeFeature {
+      super();
+   }
+
+   public MapCodec<TreeFeature> codec() {
+      return CODEC;
+   }
+
+   public static BlockStateProvider defaultPlaceBelowTreeTrunkProvider(final HolderGetter<Biome> biomes) {
+      return RuleBasedStateProvider.ifTrueThenProvide(CAN_PLACE_BELOW_TREE_TRUNKS, Blocks.DIRT);
    }
 
    public static boolean isVine(final LevelSimulatedReader level, final BlockPos pos) {
@@ -55,23 +75,23 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       return level.isStateAtPosition(pos, (state) -> state.isAir() || state.is(BlockTags.REPLACEABLE_BY_TREES));
    }
 
-   private boolean doPlace(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final BiConsumer<BlockPos, BlockState> rootSetter, final BiConsumer<BlockPos, BlockState> trunkSetter, final FoliagePlacer.FoliageSetter foliageSetter, final TreeConfiguration config) {
-      int treeHeight = config.trunkPlacer.getTreeHeight(random);
-      int foliageHeight = config.foliagePlacer.foliageHeight(random, treeHeight, config);
+   private boolean doPlace(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final BiConsumer<BlockPos, BlockState> rootSetter, final BiConsumer<BlockPos, BlockState> trunkSetter, final FoliagePlacer.FoliageSetter foliageSetter) {
+      int treeHeight = this.trunkPlacer.getTreeHeight(random);
+      int foliageHeight = this.foliagePlacer.foliageHeight(random, treeHeight, this);
       int trunkHeight = treeHeight - foliageHeight;
-      int leafRadius = config.foliagePlacer.foliageRadius(random, trunkHeight);
-      BlockPos trunkOrigin = (BlockPos)config.rootPlacer.map((rootPlacer) -> rootPlacer.getTrunkOrigin(origin, random)).orElse(origin);
+      int leafRadius = this.foliagePlacer.foliageRadius(random, trunkHeight);
+      BlockPos trunkOrigin = (BlockPos)this.rootPlacer.map((rootPlacer) -> rootPlacer.getTrunkOrigin(origin, random)).orElse(origin);
       int minY = Math.min(origin.getY(), trunkOrigin.getY());
       int maxY = Math.max(origin.getY(), trunkOrigin.getY()) + treeHeight + 1;
       if (minY >= level.getMinY() + 1 && maxY <= level.getMaxY() + 1) {
-         OptionalInt minClippedHeight = config.minimumSize.minClippedHeight();
-         int clippedTreeHeight = this.getMaxFreeTreeHeight(level, treeHeight, trunkOrigin, config);
+         OptionalInt minClippedHeight = this.minimumSize.minClippedHeight();
+         int clippedTreeHeight = this.getMaxFreeTreeHeight(level, treeHeight, trunkOrigin);
          if (clippedTreeHeight >= treeHeight || !minClippedHeight.isEmpty() && clippedTreeHeight >= minClippedHeight.getAsInt()) {
-            if (config.rootPlacer.isPresent() && !((RootPlacer)config.rootPlacer.get()).placeRoots(level, rootSetter, random, origin, trunkOrigin, config)) {
+            if (this.rootPlacer.isPresent() && !((RootPlacer)this.rootPlacer.get()).placeRoots(level, rootSetter, random, origin, trunkOrigin, this)) {
                return false;
             } else {
-               List<FoliagePlacer.FoliageAttachment> foliageAttachments = config.trunkPlacer.placeTrunk(level, trunkSetter, random, clippedTreeHeight, trunkOrigin, config);
-               foliageAttachments.forEach((foliageAttachment) -> config.foliagePlacer.createFoliage(level, foliageSetter, random, config, clippedTreeHeight, foliageAttachment, foliageHeight, leafRadius));
+               List<FoliagePlacer.FoliageAttachment> foliageAttachments = this.trunkPlacer.placeTrunk(level, trunkSetter, random, clippedTreeHeight, trunkOrigin, this);
+               foliageAttachments.forEach((foliageAttachment) -> this.foliagePlacer.createFoliage(level, foliageSetter, random, this, clippedTreeHeight, foliageAttachment, foliageHeight, leafRadius));
                return true;
             }
          } else {
@@ -82,16 +102,16 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       }
    }
 
-   private int getMaxFreeTreeHeight(final WorldGenLevel level, final int maxTreeHeight, final BlockPos treePos, final TreeConfiguration config) {
+   private int getMaxFreeTreeHeight(final WorldGenLevel level, final int maxTreeHeight, final BlockPos treePos) {
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
       for(int y = 0; y <= maxTreeHeight + 1; ++y) {
-         int r = config.minimumSize.getSizeAtHeight(maxTreeHeight, y);
+         int r = this.minimumSize.getSizeAtHeight(maxTreeHeight, y);
 
          for(int x = -r; x <= r; ++x) {
             for(int z = -r; z <= r; ++z) {
                blockPos.setWithOffset(treePos, x, y, z);
-               if (!config.trunkPlacer.isFree(level, blockPos) || !config.ignoreVines && isVine(level, blockPos)) {
+               if (!this.trunkPlacer.isFree(level, blockPos) || !this.ignoreVines && isVine(level, blockPos)) {
                   return y - 2;
                }
             }
@@ -101,15 +121,11 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       return maxTreeHeight;
    }
 
-   protected void setBlock(final LevelWriter level, final BlockPos pos, final BlockState blockState) {
+   public void setBlock(final LevelWriter level, final BlockPos pos, final BlockState blockState) {
       setBlockKnownShape(level, pos, blockState);
    }
 
-   public final boolean place(final FeaturePlaceContext<TreeConfiguration> context) {
-      final WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      BlockPos origin = context.origin();
-      TreeConfiguration config = context.config();
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       Set<BlockPos> rootPositions = Sets.newHashSet();
       Set<BlockPos> trunks = Sets.newHashSet();
       final Set<BlockPos> foliage = Sets.newHashSet();
@@ -140,11 +156,11 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          decorations.add(pos.immutable());
          level.setBlock(pos, state, 19);
       };
-      boolean result = this.doPlace(level, random, origin, rootSetter, trunkSetter, foliageSetter, config);
+      boolean result = this.doPlace(level, random, origin, rootSetter, trunkSetter, foliageSetter);
       if (result && (!trunks.isEmpty() || !foliage.isEmpty())) {
-         if (!config.decorators.isEmpty()) {
+         if (!this.decorators.isEmpty()) {
             TreeDecorator.Context decoratorContext = new TreeDecorator.Context(level, decorationSetter, random, trunks, foliage, rootPositions);
-            config.decorators.forEach((decorator) -> decorator.place(decoratorContext));
+            this.decorators.forEach((decorator) -> decorator.place(decoratorContext));
          }
 
          return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(rootPositions, trunks, foliage, decorations)).map((bounds) -> {
@@ -233,5 +249,57 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       }
 
       return blockPositions;
+   }
+
+   static {
+      CAN_PLACE_BELOW_TREE_TRUNKS = BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter(TreeFeature::trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter(TreeFeature::trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter(TreeFeature::foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter(TreeFeature::foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter(TreeFeature::rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter(TreeFeature::minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter(TreeFeature::decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter(TreeFeature::ignoreVines), BlockStateProvider.CODEC.fieldOf("below_trunk_provider").forGetter(TreeFeature::belowTrunkProvider)).apply(i, TreeFeature::new));
+   }
+
+   public static class Builder {
+      public final BlockStateProvider trunkProvider;
+      private final TrunkPlacer trunkPlacer;
+      public final BlockStateProvider foliageProvider;
+      private final FoliagePlacer foliagePlacer;
+      private final Optional<RootPlacer> rootPlacer;
+      private final FeatureSize minimumSize;
+      private List<TreeDecorator> decorators;
+      private boolean ignoreVines;
+      private BlockStateProvider belowTrunkProvider;
+
+      public Builder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize, final BlockStateProvider belowTrunkProvider) {
+         super();
+         this.decorators = List.of();
+         this.trunkProvider = trunkProvider;
+         this.trunkPlacer = trunkPlacer;
+         this.foliageProvider = foliageProvider;
+         this.foliagePlacer = foliagePlacer;
+         this.rootPlacer = rootPlacer;
+         this.minimumSize = minimumSize;
+         this.belowTrunkProvider = belowTrunkProvider;
+      }
+
+      public Builder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final FeatureSize minimumSize, final BlockStateProvider belowTrunkProvider) {
+         this(trunkProvider, trunkPlacer, foliageProvider, foliagePlacer, Optional.empty(), minimumSize, belowTrunkProvider);
+      }
+
+      public Builder belowTrunkProvider(final BlockStateProvider belowTrunkProvider) {
+         this.belowTrunkProvider = belowTrunkProvider;
+         return this;
+      }
+
+      public Builder decorators(final List<TreeDecorator> decorators) {
+         this.decorators = decorators;
+         return this;
+      }
+
+      public Builder ignoreVines() {
+         this.ignoreVines = true;
+         return this;
+      }
+
+      public TreeFeature build() {
+         return new TreeFeature(this.trunkProvider, this.trunkPlacer, this.foliageProvider, this.foliagePlacer, this.rootPlacer, this.minimumSize, this.decorators, this.ignoreVines, this.belowTrunkProvider);
+      }
    }
 }

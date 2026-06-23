@@ -1,7 +1,6 @@
 package net.minecraft.data.worldgen.placement;
 
 import java.util.List;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -15,9 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
@@ -58,11 +55,11 @@ public class PlacementUtils {
       return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.withDefaultNamespace(name));
    }
 
-   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<ConfiguredFeature<?, ?>> feature, final List<PlacementModifier> placementModifiers) {
+   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<Feature> feature, final List<PlacementModifier> placementModifiers) {
       context.register(id, new PlacedFeature(feature, List.copyOf(placementModifiers)));
    }
 
-   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<ConfiguredFeature<?, ?>> feature, final PlacementModifier... placementModifiers) {
+   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<Feature> feature, final PlacementModifier... placementModifiers) {
       register(context, id, feature, List.of(placementModifiers));
    }
 
@@ -81,23 +78,15 @@ public class PlacementUtils {
    }
 
    public static BlockPredicateFilter filteredByBlockSurvival(final Block block) {
-      return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(block.defaultBlockState(), BlockPos.ZERO));
+      return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(block));
    }
 
-   public static Holder<PlacedFeature> inlinePlaced(final Holder<ConfiguredFeature<?, ?>> configuredFeature, final PlacementModifier... placedFeatures) {
+   public static Holder<PlacedFeature> inlinePlaced(final Holder<Feature> configuredFeature, final PlacementModifier... placedFeatures) {
       return Holder.<PlacedFeature>direct(new PlacedFeature(configuredFeature, List.of(placedFeatures)));
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(final F feature, final FC config, final PlacementModifier... placedFeatures) {
-      return inlinePlaced(Holder.direct(new ConfiguredFeature(feature, config)), placedFeatures);
-   }
-
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> onlyWhenEmpty(final F feature, final FC config) {
-      return filtered(feature, config, BlockPredicate.ONLY_IN_AIR_PREDICATE);
-   }
-
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> filtered(final F feature, final FC config, final BlockPredicate predicate) {
-      return inlinePlaced(feature, config, BlockPredicateFilter.forPredicate(predicate));
+   public static Holder<PlacedFeature> inlinePlaced(final Feature feature, final PlacementModifier... placedFeatures) {
+      return inlinePlaced(Holder.direct(feature), placedFeatures);
    }
 
    static {

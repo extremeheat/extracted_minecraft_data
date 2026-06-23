@@ -8,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 
 public class MegaPineFoliagePlacer extends FoliagePlacer {
    public static final MapCodec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProviders.codec(0, 24).fieldOf("crown_height").forGetter((p) -> p.crownHeight)).apply(i, MegaPineFoliagePlacer::new));
@@ -23,7 +23,7 @@ public class MegaPineFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.MEGA_PINE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       BlockPos foliagePos = foliageAttachment.pos();
       int prevRadius = 0;
 
@@ -37,13 +37,13 @@ public class MegaPineFoliagePlacer extends FoliagePlacer {
             jaggedRadius = smoothRadius;
          }
 
-         this.placeLeavesRow(level, foliageSetter, random, config, new BlockPos(foliagePos.getX(), yy, foliagePos.getZ()), jaggedRadius, 0, foliageAttachment.doubleTrunk());
+         this.placeLeavesRow(level, foliageSetter, random, tree, new BlockPos(foliagePos.getX(), yy, foliagePos.getZ()), jaggedRadius, 0, foliageAttachment.doubleTrunk());
          prevRadius = smoothRadius;
       }
 
    }
 
-   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeFeature tree) {
       return this.crownHeight.sample(random);
    }
 

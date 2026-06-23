@@ -37,7 +37,7 @@ public class RepeaterBlock extends DiodeBlock {
       if (!player.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
-         level.setBlock(pos, (BlockState)state.cycle(DELAY), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.cycle(DELAY));
          return InteractionResult.SUCCESS;
       }
    }

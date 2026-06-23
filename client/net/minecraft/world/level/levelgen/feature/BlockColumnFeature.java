@@ -1,52 +1,71 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockColumnConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
-   public BlockColumnFeature(final Codec<BlockColumnConfiguration> codec) {
-      super(codec);
+public record BlockColumnFeature(List<Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip) implements Feature {
+   public static final MapCodec<BlockColumnFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockColumnFeature.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnFeature::layers), Direction.CODEC.fieldOf("direction").forGetter(BlockColumnFeature::direction), BlockPredicate.CODEC.fieldOf("allowed_placement").forGetter(BlockColumnFeature::allowedPlacement), Codec.BOOL.fieldOf("prioritize_tip").forGetter(BlockColumnFeature::prioritizeTip)).apply(i, BlockColumnFeature::new));
+
+   public BlockColumnFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<BlockColumnConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockColumnConfiguration config = context.config();
-      RandomSource random = context.random();
-      int layerCount = config.layers().size();
+   public static Layer layer(final IntProvider height, final BlockStateProvider state) {
+      return new Layer(height, state);
+   }
+
+   public static BlockColumnFeature simple(final IntProvider height, final BlockStateProvider state) {
+      return new BlockColumnFeature(List.of(layer(height, state)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
+   }
+
+   public MapCodec<BlockColumnFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      int layerCount = this.layers.size();
       int[] layerHeights = new int[layerCount];
       int totalHeight = 0;
 
       for(int i = 0; i < layerCount; ++i) {
-         layerHeights[i] = ((BlockColumnConfiguration.Layer)config.layers().get(i)).height().sample(random);
+         layerHeights[i] = ((Layer)this.layers.get(i)).height().sample(random);
          totalHeight += layerHeights[i];
       }
 
       if (totalHeight == 0) {
          return false;
       } else {
-         BlockPos.MutableBlockPos placePos = context.origin().mutable();
-         BlockPos.MutableBlockPos nextPos = placePos.mutable().move(config.direction());
+         BlockPos.MutableBlockPos placePos = origin.mutable();
+         BlockPos.MutableBlockPos nextPos = placePos.mutable().move(this.direction);
 
          for(int y = 0; y < totalHeight; ++y) {
-            if (!config.allowedPlacement().test(level, nextPos)) {
-               truncate(layerHeights, totalHeight, y, config.prioritizeTip());
+            if (!this.allowedPlacement.test(level, nextPos)) {
+               truncate(layerHeights, totalHeight, y, this.prioritizeTip);
                break;
             }
 
-            nextPos.move(config.direction());
+            nextPos.move(this.direction);
          }
 
          for(int i = 0; i < layerCount; ++i) {
             int count = layerHeights[i];
             if (count != 0) {
-               BlockColumnConfiguration.Layer layer = (BlockColumnConfiguration.Layer)config.layers().get(i);
+               Layer layer = (Layer)this.layers.get(i);
 
                for(int y = 0; y < count; ++y) {
                   level.setBlock(placePos, layer.state().getState(level, random, placePos), 2);
-                  placePos.move(config.direction());
+                  placePos.move(this.direction);
                }
             }
          }
@@ -68,5 +87,13 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
          layerHeights[i] -= toRemoveFromLayer;
       }
 
+   }
+
+   public static record Layer(IntProvider height, BlockStateProvider state) {
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((i) -> i.group(IntProviders.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(Layer::height), BlockStateProvider.CODEC.fieldOf("provider").forGetter(Layer::state)).apply(i, Layer::new));
+
+      public Layer {
+         super();
+      }
    }
 }

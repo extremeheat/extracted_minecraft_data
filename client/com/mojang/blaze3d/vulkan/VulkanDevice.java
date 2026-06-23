@@ -23,6 +23,7 @@ import com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension;
 import com.mojang.blaze3d.vulkan.glsl.GlslCompiler;
 import com.mojang.blaze3d.vulkan.glsl.IntermediaryShaderModule;
 import com.mojang.blaze3d.vulkan.glsl.ShaderCompileException;
+import com.mojang.blaze3d.vulkan.init.FeatureSet;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import java.nio.ByteBuffer;
@@ -63,7 +64,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final VulkanCommandEncoder commandEncoder;
    private final CheckpointExtension checkpointExtension;
 
-   public VulkanDevice(final ShaderSource defaultShaderSource, final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final Set<String> enabledDeviceExtensions, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
+   public VulkanDevice(final ShaderSource defaultShaderSource, final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final FeatureSet enabledFeatureSet, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
       super();
       this.defaultShaderSource = defaultShaderSource;
       this.instance = instance;
@@ -76,13 +77,13 @@ public class VulkanDevice implements GpuDeviceBackend {
          extensionNames.add(name + " (I)");
       }
 
-      for(String name : enabledDeviceExtensions) {
+      for(String name : enabledFeatureSet.extensions()) {
          extensionNames.add(name + " (D)");
       }
 
       VkPhysicalDeviceLimits limits = physicalDevice.vkPhysicalDeviceProperties().limits();
       VkPhysicalDeviceVulkan11Properties vk11Properties = physicalDevice.vkPhysicalDeviceVulkan11Properties();
-      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments()), new DeviceFeatures(true, enabledDeviceExtensions.contains("VK_EXT_multi_draw"), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false), physicalDevice.deviceType());
+      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments()), new DeviceFeatures(true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false), physicalDevice.deviceType());
       IntIntPair graphicsQueueFamily = physicalDevice.graphicsQueueFamilyAndIndex();
 
       assert graphicsQueueFamily != null;

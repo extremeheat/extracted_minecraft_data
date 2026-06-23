@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.resources.Identifier;
 
 public abstract class RenderLayer<S extends EntityRenderState, M extends EntityModel<? super S>> {
@@ -29,7 +29,7 @@ public abstract class RenderLayer<S extends EntityRenderState, M extends EntityM
    }
 
    protected static <S extends LivingEntityRenderState> void renderColoredCutoutModel(final Model<? super S> model, final Identifier texture, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final int color, final int order) {
-      submitNodeCollector.order(order).submitModel(model, state, poseStack, RenderTypes.entityCutout(texture), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.order(order).submitModel(model, state, poseStack, RenderTypes.entityCutout(texture), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), color, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public M getParentModel() {

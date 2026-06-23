@@ -20,7 +20,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.IceBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,7 +58,7 @@ public abstract class FlowingFluid extends Fluid {
             float neighborHeight = neighbourFluid.getOwnHeight();
             float distance = 0.0F;
             if (neighborHeight == 0.0F) {
-               if (!level.getBlockState(blockPos).blocksMotion()) {
+               if (!level.getBlockState(blockPos).is(BlockTags.BLOCKS_FLUID_FLOW)) {
                   BlockPos neighborPos = blockPos.below();
                   FluidState belowNeighborState = level.getFluidState(neighborPos);
                   if (this.affectsFlow(belowNeighborState)) {
@@ -265,7 +264,7 @@ public abstract class FlowingFluid extends Fluid {
             this.beforeDestroyingBlock(level, pos, state);
          }
 
-         level.setBlock(pos, target.createLegacyBlock(), 3);
+         level.setBlockAndUpdate(pos, target.createLegacyBlock());
       }
 
    }
@@ -377,13 +376,7 @@ public abstract class FlowingFluid extends Fluid {
 
    private static boolean canHoldAnyFluid(final BlockState state) {
       Block block = state.getBlock();
-      if (block instanceof LiquidBlockContainer) {
-         return true;
-      } else if (state.blocksMotion()) {
-         return false;
-      } else {
-         return !(block instanceof DoorBlock) && !state.is(BlockTags.SIGNS) && !state.is(Blocks.LADDER) && !state.is(Blocks.SUGAR_CANE) && !state.is(Blocks.BUBBLE_COLUMN) && !state.is(Blocks.NETHER_PORTAL) && !state.is(Blocks.END_PORTAL) && !state.is(Blocks.END_GATEWAY) && !state.is(Blocks.STRUCTURE_VOID);
-      }
+      return block instanceof LiquidBlockContainer ? true : state.is(BlockTags.WASHED_AWAY_BY_FLUIDS);
    }
 
    private static boolean canHoldFluid(final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid newFluid) {
@@ -412,11 +405,11 @@ public abstract class FlowingFluid extends Fluid {
          if (newFluidState.isEmpty()) {
             fluidState = newFluidState;
             blockState = Blocks.AIR.defaultBlockState();
-            level.setBlock(pos, blockState, 3);
+            level.setBlockAndUpdate(pos, blockState);
          } else if (newFluidState != fluidState) {
             fluidState = newFluidState;
             blockState = newFluidState.createLegacyBlock();
-            level.setBlock(pos, blockState, 3);
+            level.setBlockAndUpdate(pos, blockState);
             level.scheduleTick(pos, newFluidState.getType(), tickDelay);
          }
       }

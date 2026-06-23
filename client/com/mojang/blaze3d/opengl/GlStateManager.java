@@ -81,12 +81,12 @@ public class GlStateManager {
 
    }
 
-   public static void _disableBlend(int index) {
+   public static void _disableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
       BLEND[index].mode.disable();
    }
 
-   public static void _enableBlend(int index) {
+   public static void _enableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
       BLEND[index].mode.enable();
    }

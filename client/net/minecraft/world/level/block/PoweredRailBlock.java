@@ -129,7 +129,7 @@ public class PoweredRailBlock extends BaseRailBlock {
       boolean isPowered = (Boolean)state.getValue(POWERED);
       boolean shouldPower = level.hasNeighborSignal(pos) || this.findPoweredRailSignal(level, pos, state, true, 0) || this.findPoweredRailSignal(level, pos, state, false, 0);
       if (shouldPower != isPowered) {
-         level.setBlock(pos, (BlockState)state.setValue(POWERED, shouldPower), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, shouldPower));
          level.updateNeighborsAt(pos.below(), this);
          if (((RailShape)state.getValue(SHAPE)).isSlope()) {
             level.updateNeighborsAt(pos.above(), this);

@@ -1,23 +1,34 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
-   public SimpleBlockFeature(final Codec<SimpleBlockConfiguration> codec) {
-      super(codec);
+public record SimpleBlockFeature(BlockStateProvider toPlace, boolean scheduleTick) implements Feature {
+   public static final MapCodec<SimpleBlockFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("to_place").forGetter(SimpleBlockFeature::toPlace), Codec.BOOL.optionalFieldOf("schedule_tick", false).forGetter(SimpleBlockFeature::scheduleTick)).apply(i, SimpleBlockFeature::new));
+
+   public SimpleBlockFeature(final BlockStateProvider toPlace) {
+      this(toPlace, false);
    }
 
-   public boolean place(final FeaturePlaceContext<SimpleBlockConfiguration> context) {
-      SimpleBlockConfiguration config = context.config();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      BlockState stateToPlace = config.toPlace().getOptionalState(level, context.random(), origin);
+   public SimpleBlockFeature {
+      super();
+   }
+
+   public MapCodec<SimpleBlockFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      BlockState stateToPlace = this.toPlace.getOptionalState(level, random, origin);
       if (stateToPlace == null) {
          return false;
       } else if (stateToPlace.canSurvive(level, origin)) {
@@ -33,7 +44,7 @@ public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
             level.setBlock(origin, stateToPlace, 2);
          }
 
-         if (config.scheduleTick()) {
+         if (this.scheduleTick) {
             level.scheduleTick(origin, level.getBlockState(origin).getBlock(), 1);
          }
 

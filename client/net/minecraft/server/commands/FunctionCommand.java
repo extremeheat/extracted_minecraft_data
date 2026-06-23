@@ -62,10 +62,10 @@ public class FunctionCommand {
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
       LiteralArgumentBuilder<CommandSourceStack> sources = Commands.literal("with");
 
-      for(DataCommands.DataProvider provider : DataCommands.SOURCE_PROVIDERS) {
+      for(ArgProvider<DataAccessor> provider : DataCommands.SOURCE_PROVIDERS) {
          provider.wrap(sources, (p) -> p.executes(new FunctionCustomExecutor() {
                protected CompoundTag arguments(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-                  return provider.access(context).getData();
+                  return ((DataAccessor)provider.access(context)).getData();
                }
             }).then(Commands.argument("path", NbtPathArgument.nbtPath()).executes(new FunctionCustomExecutor() {
                protected CompoundTag arguments(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

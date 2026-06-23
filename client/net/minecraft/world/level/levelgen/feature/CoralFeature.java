@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,28 +15,23 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SeaPickleBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
-   public CoralFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
-   }
+public interface CoralFeature extends Feature {
+   MapCodec<? extends CoralFeature> codec();
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
+   default boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       Optional<Block> coral = BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORAL_BLOCKS, random).map(Holder::value);
       return coral.isEmpty() ? false : this.placeFeature(level, random, origin, ((Block)coral.get()).defaultBlockState());
    }
 
-   protected abstract boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state);
+   boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state);
 
-   protected boolean placeCoralBlock(final LevelAccessor level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   default boolean placeCoralBlock(final LevelAccessor level, final RandomSource random, final BlockPos pos, final BlockState state) {
       BlockPos above = pos.above();
       BlockState targetBlockState = level.getBlockState(pos);
       if ((targetBlockState.is(Blocks.WATER) || targetBlockState.is(BlockTags.CORALS)) && level.getBlockState(above).is(Blocks.WATER)) {
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
          if (random.nextFloat() < 0.25F) {
             BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORALS, random).map(Holder::value).ifPresent((block) -> level.setBlock(above, block.defaultBlockState(), 2));
          } else if (random.nextFloat() < 0.05F) {

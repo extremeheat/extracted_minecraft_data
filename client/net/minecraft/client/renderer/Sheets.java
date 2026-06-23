@@ -25,14 +25,11 @@ public class Sheets {
    public static final Identifier BANNER_SHEET = Identifier.withDefaultNamespace("textures/atlas/banner_patterns.png");
    public static final Identifier SHIELD_SHEET = Identifier.withDefaultNamespace("textures/atlas/shield_patterns.png");
    public static final Identifier CHEST_SHEET = Identifier.withDefaultNamespace("textures/atlas/chest.png");
-   public static final Identifier ARMOR_TRIMS_SHEET = Identifier.withDefaultNamespace("textures/atlas/armor_trims.png");
    public static final Identifier DECORATED_POT_SHEET = Identifier.withDefaultNamespace("textures/atlas/decorated_pot.png");
    public static final Identifier GUI_SHEET = Identifier.withDefaultNamespace("textures/atlas/gui.png");
    public static final Identifier MAP_DECORATIONS_SHEET = Identifier.withDefaultNamespace("textures/atlas/map_decorations.png");
    public static final Identifier PAINTINGS_SHEET = Identifier.withDefaultNamespace("textures/atlas/paintings.png");
    public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
-   private static final RenderType ARMOR_TRIMS_SHEET_TYPE;
-   private static final RenderType ARMOR_TRIMS_DECAL_SHEET_TYPE;
    private static final RenderType CUTOUT_BLOCK_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
    private static final RenderType CUTOUT_ITEM_SHEET;
@@ -64,10 +61,6 @@ public class Sheets {
 
    public Sheets() {
       super();
-   }
-
-   public static RenderType armorTrimsSheet(final boolean decal) {
-      return decal ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
    }
 
    public static RenderType cutoutBlockItemSheet() {
@@ -132,8 +125,6 @@ public class Sheets {
    }
 
    static {
-      ARMOR_TRIMS_SHEET_TYPE = RenderTypes.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
-      ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
       CUTOUT_BLOCK_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_ITEMS);

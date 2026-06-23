@@ -541,6 +541,8 @@ public class LayerDefinitions {
       result.put(ModelLayers.PALE_OAK_CHEST_BOAT, chestBoatModel);
       result.put(ModelLayers.MANGROVE_BOAT, boatModel);
       result.put(ModelLayers.MANGROVE_CHEST_BOAT, chestBoatModel);
+      result.put(ModelLayers.POPLAR_BOAT, boatModel);
+      result.put(ModelLayers.POPLAR_CHEST_BOAT, chestBoatModel);
       ImmutableMap<ModelLayerLocation, LayerDefinition> definitions = result.build();
       List<ModelLayerLocation> missingDefinitions = ModelLayers.getKnownLocations().filter((l) -> !definitions.containsKey(l)).toList();
       if (!missingDefinitions.isEmpty()) {

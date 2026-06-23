@@ -53,6 +53,17 @@ public class ScoreboardCommand {
    private static final SimpleCommandExceptionType ERROR_TRIGGER_ALREADY_ENABLED = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.players.enable.failed"));
    private static final SimpleCommandExceptionType ERROR_NOT_TRIGGER = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.players.enable.invalid"));
    private static final Dynamic2CommandExceptionType ERROR_NO_VALUE = new Dynamic2CommandExceptionType((objective, target) -> Component.translatableEscape("commands.scoreboard.players.get.null", objective, target));
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_ENABLE;
+   private static final CommandResponseTracker.Messages<ScoreHolder> RESPONSE_SCORE_RESET_ALL;
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_SCORE_RESET;
+   private static final CommandResponseTracker.MessagesWithArgs<ScoreHolder, Objective, Integer> RESPONSE_SCORE_SET;
+   private static final CommandResponseTracker.MessagesWithArgs<ScoreHolder, Objective, Integer> RESPONSE_SCORE_ADD;
+   private static final CommandResponseTracker.MessagesWithArgs<ScoreHolder, Objective, Integer> RESPONSE_SCORE_REMOVE;
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_SCORE_OPERATION;
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_NUMBER_FORMAT_CLEAR;
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_NUMBER_FORMAT_SET;
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, Objective> RESPONSE_DISPLAY_CLEAR;
+   private static final CommandResponseTracker.MessagesWithArgs<ScoreHolder, Objective, Component> RESPONSE_DISPLAY_SET;
 
    public ScoreboardCommand() {
       super();
@@ -118,13 +129,9 @@ public class ScoreboardCommand {
       }
    }
 
-   private static Component getFirstTargetName(final Collection<ScoreHolder> names) {
-      return ((ScoreHolder)names.iterator().next()).getFeedbackDisplayName();
-   }
-
    private static int performOperation(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective targetObjective, final OperationArgument.Operation operation, final Collection<ScoreHolder> sources, final Objective sourceObjective) throws CommandSyntaxException {
       Scoreboard scoreboard = source.getServer().getScoreboard();
-      int result = 0;
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
 
       for(ScoreHolder target : targets) {
          ScoreAccess score = scoreboard.getOrCreatePlayerScore(target, targetObjective);
@@ -134,175 +141,115 @@ public class ScoreboardCommand {
             operation.apply(score, sourceScore);
          }
 
-         result += score.get();
+         tracker.track(target, score.get());
       }
 
-      if (targets.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.single", targetObjective.getFormattedDisplayName(), getFirstTargetName(targets), result), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.operation.success.multiple", targetObjective.getFormattedDisplayName(), targets.size()), true);
-      }
-
-      return result;
+      return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.ANY, RESPONSE_SCORE_OPERATION, targetObjective);
    }
 
-   private static int enableTrigger(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective) throws CommandSyntaxException {
+   private static int enableTrigger(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective) throws CommandSyntaxException {
       if (objective.getCriteria() != ObjectiveCriteria.TRIGGER) {
          throw ERROR_NOT_TRIGGER.create();
       } else {
+         CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
          Scoreboard scoreboard = source.getServer().getScoreboard();
-         int count = 0;
 
-         for(ScoreHolder name : names) {
-            ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+         for(ScoreHolder target : targets) {
+            ScoreAccess score = scoreboard.getOrCreatePlayerScore(target, objective);
             if (score.locked()) {
                score.unlock();
-               ++count;
+               tracker.track(target);
             }
          }
 
-         if (count == 0) {
-            throw ERROR_TRIGGER_ALREADY_ENABLED.create();
-         } else {
-            if (names.size() == 1) {
-               source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.single", objective.getFormattedDisplayName(), getFirstTargetName(names)), true);
-            } else {
-               source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.enable.success.multiple", objective.getFormattedDisplayName(), names.size()), true);
-            }
-
-            return count;
-         }
+         return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_ENABLE, objective);
       }
    }
 
-   private static int resetScores(final CommandSourceStack source, final Collection<ScoreHolder> names) {
+   private static int resetScores(final CommandSourceStack source, final Collection<ScoreHolder> targets) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder name : names) {
-         scoreboard.resetAllPlayerScores(name);
+      for(ScoreHolder target : targets) {
+         scoreboard.resetAllPlayerScores(target);
+         tracker.track(target);
       }
 
-      if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.single", getFirstTargetName(names)), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.multiple", names.size()), true);
-      }
-
-      return names.size();
+      return tracker.sendFeedback(source, true, RESPONSE_SCORE_RESET_ALL);
    }
 
-   private static int resetScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective) {
+   private static int resetScore(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder name : names) {
-         scoreboard.resetSinglePlayerScore(name, objective);
+      for(ScoreHolder target : targets) {
+         scoreboard.resetSinglePlayerScore(target, objective);
+         tracker.track(target);
       }
 
-      if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.single", objective.getFormattedDisplayName(), getFirstTargetName(names)), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.specific.multiple", objective.getFormattedDisplayName(), names.size()), true);
-      }
-
-      return names.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_SCORE_RESET, objective);
    }
 
-   private static int setScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+   private static int setScore(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective, final int value) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder name : names) {
-         scoreboard.getOrCreatePlayerScore(name, objective).set(value);
+      for(ScoreHolder target : targets) {
+         scoreboard.getOrCreatePlayerScore(target, objective).set(value);
+         tracker.track(target, value);
       }
 
-      if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.single", objective.getFormattedDisplayName(), getFirstTargetName(names), value), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.set.success.multiple", objective.getFormattedDisplayName(), names.size(), value), true);
-      }
-
-      return value * names.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_SCORE_SET, objective, value);
    }
 
-   private static int setScoreDisplay(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final @Nullable Component display) {
+   private static int setScoreDisplay(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective, final @Nullable Component display) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder name : names) {
-         scoreboard.getOrCreatePlayerScore(name, objective).display(display);
+      for(ScoreHolder target : targets) {
+         scoreboard.getOrCreatePlayerScore(target, objective).display(display);
+         tracker.track(target);
       }
 
-      if (display == null) {
-         if (names.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.clear.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
-         }
-      } else if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.single", display, getFirstTargetName(names), objective.getFormattedDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.name.set.success.multiple", display, names.size(), objective.getFormattedDisplayName()), true);
-      }
-
-      return names.size();
+      return display == null ? tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_DISPLAY_CLEAR, objective) : tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_DISPLAY_SET, objective, display);
    }
 
-   private static int setScoreNumberFormat(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final @Nullable NumberFormat numberFormat) {
+   private static int setScoreNumberFormat(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective, final @Nullable NumberFormat numberFormat) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
-      for(ScoreHolder name : names) {
-         scoreboard.getOrCreatePlayerScore(name, objective).numberFormatOverride(numberFormat);
+      for(ScoreHolder target : targets) {
+         scoreboard.getOrCreatePlayerScore(target, objective).numberFormatOverride(numberFormat);
+         tracker.track(target);
       }
 
-      if (numberFormat == null) {
-         if (names.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
-         }
-      } else if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.single", getFirstTargetName(names), objective.getFormattedDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.multiple", names.size(), objective.getFormattedDisplayName()), true);
-      }
-
-      return names.size();
+      return numberFormat == null ? tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_NUMBER_FORMAT_CLEAR, objective) : tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_NUMBER_FORMAT_SET, objective);
    }
 
-   private static int addScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+   private static int addScore(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective, final int value) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
-      int result = 0;
 
-      for(ScoreHolder name : names) {
-         ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+      for(ScoreHolder target : targets) {
+         ScoreAccess score = scoreboard.getOrCreatePlayerScore(target, objective);
          score.set(score.get() + value);
-         result += score.get();
+         tracker.track(target, score.get());
       }
 
-      if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.single", value, objective.getFormattedDisplayName(), getFirstTargetName(names), result), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.add.success.multiple", value, objective.getFormattedDisplayName(), names.size()), true);
-      }
-
-      return result;
+      return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.ANY, RESPONSE_SCORE_ADD, objective, value);
    }
 
-   private static int removeScore(final CommandSourceStack source, final Collection<ScoreHolder> names, final Objective objective, final int value) {
+   private static int removeScore(final CommandSourceStack source, final Collection<ScoreHolder> targets, final Objective objective, final int value) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
-      int result = 0;
 
-      for(ScoreHolder name : names) {
-         ScoreAccess score = scoreboard.getOrCreatePlayerScore(name, objective);
+      for(ScoreHolder target : targets) {
+         ScoreAccess score = scoreboard.getOrCreatePlayerScore(target, objective);
          score.set(score.get() - value);
-         result += score.get();
+         tracker.track(target, score.get());
       }
 
-      if (names.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.single", value, objective.getFormattedDisplayName(), getFirstTargetName(names), result), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.scoreboard.players.remove.success.multiple", value, objective.getFormattedDisplayName(), names.size()), true);
-      }
-
-      return result;
+      return tracker.sendFeedback(source, true, CommandResponseTracker.ElementType.ANY, RESPONSE_SCORE_REMOVE, objective, value);
    }
 
    private static int listTrackedPlayers(final CommandSourceStack source) {
@@ -420,6 +367,20 @@ public class ScoreboardCommand {
       }
 
       return objectives.size();
+   }
+
+   static {
+      RESPONSE_ENABLE = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_TRIGGER_ALREADY_ENABLED, (CommandResponseTracker.SingleHandlerWithArg)((holder, var1, objective) -> Component.translatable("commands.scoreboard.players.enable.success.single", objective.getFormattedDisplayName(), holder.getFeedbackDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, objective) -> Component.translatable("commands.scoreboard.players.enable.success.multiple", objective.getFormattedDisplayName(), holderCount)));
+      RESPONSE_SCORE_RESET_ALL = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((holder, var1) -> Component.translatable("commands.scoreboard.players.reset.all.single", holder.getFeedbackDisplayName())), (CommandResponseTracker.MultipleHandler)((holderCount, var1) -> Component.translatable("commands.scoreboard.players.reset.all.multiple", holderCount)));
+      RESPONSE_SCORE_RESET = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, var1, objective) -> Component.translatable("commands.scoreboard.players.reset.specific.single", objective.getFormattedDisplayName(), holder.getFeedbackDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, objective) -> Component.translatable("commands.scoreboard.players.reset.specific.multiple", objective.getFormattedDisplayName(), holderCount)));
+      RESPONSE_SCORE_SET = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((holder, var1, objective, value) -> Component.translatable("commands.scoreboard.players.set.success.single", objective.getFormattedDisplayName(), holder.getFeedbackDisplayName(), value)), (CommandResponseTracker.MultipleHandlerWithArgs)((holderCount, var1, objective, value) -> Component.translatable("commands.scoreboard.players.set.success.multiple", objective.getFormattedDisplayName(), holderCount, value)));
+      RESPONSE_SCORE_ADD = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((holder, totalValue, objective, value) -> Component.translatable("commands.scoreboard.players.add.success.single", value, objective.getFormattedDisplayName(), holder.getFeedbackDisplayName(), totalValue)), (CommandResponseTracker.MultipleHandlerWithArgs)((holderCount, var1, objective, value) -> Component.translatable("commands.scoreboard.players.add.success.multiple", value, objective.getFormattedDisplayName(), holderCount)));
+      RESPONSE_SCORE_REMOVE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((holder, totalValue, objective, value) -> Component.translatable("commands.scoreboard.players.remove.success.single", value, objective.getFormattedDisplayName(), holder.getFeedbackDisplayName(), totalValue)), (CommandResponseTracker.MultipleHandlerWithArgs)((holderCount, var1, objective, value) -> Component.translatable("commands.scoreboard.players.remove.success.multiple", value, objective.getFormattedDisplayName(), holderCount)));
+      RESPONSE_SCORE_OPERATION = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, totalValue, targetObjective) -> Component.translatable("commands.scoreboard.players.operation.success.single", targetObjective.getFormattedDisplayName(), holder.getFeedbackDisplayName(), totalValue)), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, targetObjective) -> Component.translatable("commands.scoreboard.players.operation.success.multiple", targetObjective.getFormattedDisplayName(), holderCount)));
+      RESPONSE_NUMBER_FORMAT_CLEAR = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, var1, objective) -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.single", holder.getFeedbackDisplayName(), objective.getFormattedDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, objective) -> Component.translatable("commands.scoreboard.players.display.numberFormat.clear.success.multiple", holderCount, objective.getFormattedDisplayName())));
+      RESPONSE_NUMBER_FORMAT_SET = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, var1, objective) -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.single", holder.getFeedbackDisplayName(), objective.getFormattedDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, objective) -> Component.translatable("commands.scoreboard.players.display.numberFormat.set.success.multiple", holderCount, objective.getFormattedDisplayName())));
+      RESPONSE_DISPLAY_CLEAR = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, var1, objective) -> Component.translatable("commands.scoreboard.players.display.name.clear.success.single", holder.getFeedbackDisplayName(), objective.getFormattedDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, objective) -> Component.translatable("commands.scoreboard.players.display.name.clear.success.multiple", holderCount, objective.getFormattedDisplayName())));
+      RESPONSE_DISPLAY_SET = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((holder, var1, objective, display) -> Component.translatable("commands.scoreboard.players.display.name.set.success.single", display, holder.getFeedbackDisplayName(), objective.getFormattedDisplayName())), (CommandResponseTracker.MultipleHandlerWithArgs)((holderCount, var1, objective, display) -> Component.translatable("commands.scoreboard.players.display.name.set.success.multiple", display, holderCount, objective.getFormattedDisplayName())));
    }
 
    @FunctionalInterface

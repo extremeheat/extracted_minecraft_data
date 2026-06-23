@@ -373,6 +373,10 @@ public class ExperienceOrb extends Entity {
       return this.interpolation;
    }
 
+   public boolean canSimulateMovement() {
+      return true;
+   }
+
    static {
       DATA_VALUE = SynchedEntityData.<Integer>defineId(ExperienceOrb.class, EntityDataSerializers.INT);
    }

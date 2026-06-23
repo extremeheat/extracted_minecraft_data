@@ -242,7 +242,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       int var10010 = server.getPlayerList().getSimulationDistance();
       PersistentEntitySectionManager var10012 = this.entityManager;
       Objects.requireNonNull(var10012);
-      this.chunkSource = new ServerChunkCache(this, levelStorage, fixerUpper, var10006, executor, generator, var10009, var10010, syncWrites, var10012::updateChunkStatus, () -> server.overworld().getDataStorage());
+      this.chunkSource = new ServerChunkCache(this, levelStorage, fixerUpper, var10006, executor, generator, var10009, var10010, syncWrites, var10012::updateChunkStatus);
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
       if (this.canHaveWeather()) {

@@ -251,6 +251,8 @@ public class EntityTypes {
    public static final EntityType<PiglinBrute> PIGLIN_BRUTE;
    public static final EntityType<Pillager> PILLAGER;
    public static final EntityType<PolarBear> POLAR_BEAR;
+   public static final EntityType<Boat> POPLAR_BOAT;
+   public static final EntityType<ChestBoat> POPLAR_CHEST_BOAT;
    public static final EntityType<ThrownSplashPotion> SPLASH_POTION;
    public static final EntityType<ThrownLingeringPotion> LINGERING_POTION;
    public static final EntityType<Pufferfish> PUFFERFISH;
@@ -341,7 +343,7 @@ public class EntityTypes {
       AXOLOTL = register(EntityTypeIds.AXOLOTL, EntityType.Builder.of(Axolotl::new, MobCategory.AXOLOTLS).sized(0.75F, 0.42F).eyeHeight(0.2751F).clientTrackingRange(10));
       BAMBOO_CHEST_RAFT = register(EntityTypeIds.BAMBOO_CHEST_RAFT, EntityType.Builder.of(chestRaftFactory(() -> Items.BAMBOO_CHEST_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BAMBOO_RAFT = register(EntityTypeIds.BAMBOO_RAFT, EntityType.Builder.of(raftFactory(() -> Items.BAMBOO_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
-      BAT = register(EntityTypeIds.BAT, EntityType.Builder.of(Bat::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5));
+      BAT = register(EntityTypeIds.BAT, EntityType.Builder.of(Bat::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5).dontTrackDeltas());
       BEE = register(EntityTypeIds.BEE, EntityType.Builder.of(Bee::new, MobCategory.CREATURE).sized(0.55F, 0.5F).eyeHeight(0.3F).clientTrackingRange(8));
       BIRCH_BOAT = register(EntityTypeIds.BIRCH_BOAT, EntityType.Builder.of(boatFactory(() -> Items.BIRCH_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BIRCH_CHEST_BOAT = register(EntityTypeIds.BIRCH_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.BIRCH_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -376,9 +378,9 @@ public class EntityTypes {
       ENDERMITE = register(EntityTypeIds.ENDERMITE, EntityType.Builder.of(Endermite::new, MobCategory.MONSTER).sized(0.4F, 0.3F).eyeHeight(0.13F).passengerAttachments(0.2375F).clientTrackingRange(8).notInPeaceful());
       ENDER_DRAGON = register(EntityTypeIds.ENDER_DRAGON, EntityType.Builder.of(EnderDragon::new, MobCategory.MONSTER).fireImmune().sized(16.0F, 8.0F).passengerAttachments(3.0F).clientTrackingRange(10));
       ENDER_PEARL = register(EntityTypeIds.ENDER_PEARL, EntityType.Builder.of(ThrownEnderpearl::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
-      END_CRYSTAL = register(EntityTypeIds.END_CRYSTAL, EntityType.Builder.of(EndCrystal::new, MobCategory.MISC).noLootTable().fireImmune().sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647));
+      END_CRYSTAL = register(EntityTypeIds.END_CRYSTAL, EntityType.Builder.of(EndCrystal::new, MobCategory.MISC).noLootTable().fireImmune().sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647).dontTrackDeltas());
       EVOKER = register(EntityTypeIds.EVOKER, EntityType.Builder.of(Evoker::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8).notInPeaceful());
-      EVOKER_FANGS = register(EntityTypeIds.EVOKER_FANGS, EntityType.Builder.of(EvokerFangs::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.8F).clientTrackingRange(6).updateInterval(2));
+      EVOKER_FANGS = register(EntityTypeIds.EVOKER_FANGS, EntityType.Builder.of(EvokerFangs::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.8F).clientTrackingRange(6).updateInterval(2).dontTrackDeltas());
       EXPERIENCE_BOTTLE = register(EntityTypeIds.EXPERIENCE_BOTTLE, EntityType.Builder.of(ThrownExperienceBottle::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       EXPERIENCE_ORB = register(EntityTypeIds.EXPERIENCE_ORB, EntityType.Builder.of(ExperienceOrb::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(20));
       EYE_OF_ENDER = register(EntityTypeIds.EYE_OF_ENDER, EntityType.Builder.of(EyeOfEnder::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(4));
@@ -391,7 +393,7 @@ public class EntityTypes {
       GHAST = register(EntityTypeIds.GHAST, EntityType.Builder.of(Ghast::new, MobCategory.MONSTER).fireImmune().sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10).notInPeaceful());
       HAPPY_GHAST = register(EntityTypeIds.HAPPY_GHAST, EntityType.Builder.of(HappyGhast::new, MobCategory.CREATURE).sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(new Vec3(0.0, 4.0, 1.7), new Vec3(-1.7, 4.0, 0.0), new Vec3(0.0, 4.0, -1.7), new Vec3(1.7, 4.0, 0.0)).ridingOffset(0.5F).clientTrackingRange(10));
       GIANT = register(EntityTypeIds.GIANT, EntityType.Builder.of(Giant::new, MobCategory.MONSTER).sized(3.6F, 12.0F).eyeHeight(10.44F).ridingOffset(-3.75F).clientTrackingRange(10).notInPeaceful());
-      GLOW_ITEM_FRAME = register(EntityTypeIds.GLOW_ITEM_FRAME, EntityType.Builder.of(GlowItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647));
+      GLOW_ITEM_FRAME = register(EntityTypeIds.GLOW_ITEM_FRAME, EntityType.Builder.of(GlowItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647).dontTrackDeltas());
       GLOW_SQUID = register(EntityTypeIds.GLOW_SQUID, EntityType.Builder.of(GlowSquid::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(10));
       GOAT = register(EntityTypeIds.GOAT, EntityType.Builder.of(Goat::new, MobCategory.CREATURE).sized(0.9F, 1.3F).passengerAttachments(1.1125F).clientTrackingRange(10));
       GUARDIAN = register(EntityTypeIds.GUARDIAN, EntityType.Builder.of(Guardian::new, MobCategory.MONSTER).sized(0.85F, 0.85F).eyeHeight(0.425F).passengerAttachments(0.975F).clientTrackingRange(8).notInPeaceful());
@@ -404,13 +406,13 @@ public class EntityTypes {
       IRON_GOLEM = register(EntityTypeIds.IRON_GOLEM, EntityType.Builder.of(IronGolem::new, MobCategory.MISC).sized(1.4F, 2.7F).clientTrackingRange(10));
       ITEM = register(EntityTypeIds.ITEM, EntityType.Builder.of(ItemEntity::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).eyeHeight(0.2125F).clientTrackingRange(6).updateInterval(20));
       ITEM_DISPLAY = register(EntityTypeIds.ITEM_DISPLAY, EntityType.Builder.of(Display.ItemDisplay::new, MobCategory.MISC).noLootTable().sized(0.0F, 0.0F).clientTrackingRange(10).updateInterval(1));
-      ITEM_FRAME = register(EntityTypeIds.ITEM_FRAME, EntityType.Builder.of(ItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647));
+      ITEM_FRAME = register(EntityTypeIds.ITEM_FRAME, EntityType.Builder.of(ItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647).dontTrackDeltas());
       JUNGLE_BOAT = register(EntityTypeIds.JUNGLE_BOAT, EntityType.Builder.of(boatFactory(() -> Items.JUNGLE_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       JUNGLE_CHEST_BOAT = register(EntityTypeIds.JUNGLE_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.JUNGLE_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
-      LEASH_KNOT = register(EntityTypeIds.LEASH_KNOT, EntityType.Builder.of(LeashFenceKnotEntity::new, MobCategory.MISC).noLootTable().noSave().sized(0.375F, 0.5F).eyeHeight(0.0625F).clientTrackingRange(10).updateInterval(2147483647));
+      LEASH_KNOT = register(EntityTypeIds.LEASH_KNOT, EntityType.Builder.of(LeashFenceKnotEntity::new, MobCategory.MISC).noLootTable().noSave().sized(0.375F, 0.5F).eyeHeight(0.0625F).clientTrackingRange(10).updateInterval(2147483647).dontTrackDeltas());
       LIGHTNING_BOLT = register(EntityTypeIds.LIGHTNING_BOLT, EntityType.Builder.of(LightningBolt::new, MobCategory.MISC).noLootTable().noSave().sized(0.0F, 0.0F).clientTrackingRange(16).updateInterval(2147483647));
       LLAMA = register(EntityTypeIds.LLAMA, EntityType.Builder.of(Llama::new, MobCategory.CREATURE).sized(0.9F, 1.87F).eyeHeight(1.7765F).passengerAttachments(new Vec3(0.0, 1.37, -0.3)).clientTrackingRange(10));
-      LLAMA_SPIT = register(EntityTypeIds.LLAMA_SPIT, EntityType.Builder.of(LlamaSpit::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
+      LLAMA_SPIT = register(EntityTypeIds.LLAMA_SPIT, EntityType.Builder.of(LlamaSpit::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10).dontTrackDeltas());
       MAGMA_CUBE = register(EntityTypeIds.MAGMA_CUBE, EntityType.Builder.of(MagmaCube::new, MobCategory.MONSTER).fireImmune().sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(4.0F).clientTrackingRange(8).notInPeaceful());
       MANGROVE_BOAT = register(EntityTypeIds.MANGROVE_BOAT, EntityType.Builder.of(boatFactory(() -> Items.MANGROVE_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       MANGROVE_CHEST_BOAT = register(EntityTypeIds.MANGROVE_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.MANGROVE_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -424,7 +426,7 @@ public class EntityTypes {
       OAK_CHEST_BOAT = register(EntityTypeIds.OAK_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       OCELOT = register(EntityTypeIds.OCELOT, EntityType.Builder.of(Ocelot::new, MobCategory.CREATURE).sized(0.6F, 0.7F).passengerAttachments(0.6375F).clientTrackingRange(10));
       OMINOUS_ITEM_SPAWNER = register(EntityTypeIds.OMINOUS_ITEM_SPAWNER, EntityType.Builder.of(OminousItemSpawner::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(8));
-      PAINTING = register(EntityTypeIds.PAINTING, EntityType.Builder.of(Painting::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
+      PAINTING = register(EntityTypeIds.PAINTING, EntityType.Builder.of(Painting::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(2147483647).dontTrackDeltas());
       PALE_OAK_BOAT = register(EntityTypeIds.PALE_OAK_BOAT, EntityType.Builder.of(boatFactory(() -> Items.PALE_OAK_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PALE_OAK_CHEST_BOAT = register(EntityTypeIds.PALE_OAK_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.PALE_OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PANDA = register(EntityTypeIds.PANDA, EntityType.Builder.of(Panda::new, MobCategory.CREATURE).sized(1.3F, 1.25F).clientTrackingRange(10));
@@ -436,6 +438,8 @@ public class EntityTypes {
       PIGLIN_BRUTE = register(EntityTypeIds.PIGLIN_BRUTE, EntityType.Builder.of(PiglinBrute::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       PILLAGER = register(EntityTypeIds.PILLAGER, EntityType.Builder.of(Pillager::new, MobCategory.MONSTER).canSpawnFarFromPlayer().sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8).notInPeaceful());
       POLAR_BEAR = register(EntityTypeIds.POLAR_BEAR, EntityType.Builder.of(PolarBear::new, MobCategory.CREATURE).immuneTo(BlockTags.POLAR_BEAR_IMMUNE_TO).sized(1.4F, 1.4F).clientTrackingRange(10));
+      POPLAR_BOAT = register(EntityTypeIds.POPLAR_BOAT, EntityType.Builder.of(boatFactory(() -> Items.POPLAR_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
+      POPLAR_CHEST_BOAT = register(EntityTypeIds.POPLAR_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.POPLAR_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       SPLASH_POTION = register(EntityTypeIds.SPLASH_POTION, EntityType.Builder.of(ThrownSplashPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       LINGERING_POTION = register(EntityTypeIds.LINGERING_POTION, EntityType.Builder.of(ThrownLingeringPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       PUFFERFISH = register(EntityTypeIds.PUFFERFISH, EntityType.Builder.of(Pufferfish::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.7F).eyeHeight(0.455F).clientTrackingRange(4));
@@ -477,7 +481,7 @@ public class EntityTypes {
       WARDEN = register(EntityTypeIds.WARDEN, EntityType.Builder.of(Warden::new, MobCategory.MONSTER).sized(0.9F, 2.9F).passengerAttachments(3.15F).attach(EntityAttachment.WARDEN_CHEST, 0.0F, 1.6F, 0.0F).clientTrackingRange(16).fireImmune().notInPeaceful());
       WIND_CHARGE = register(EntityTypeIds.WIND_CHARGE, EntityType.Builder.of(WindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
       WITCH = register(EntityTypeIds.WITCH, EntityType.Builder.of(Witch::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.62F).passengerAttachments(2.2625F).clientTrackingRange(8).notInPeaceful());
-      WITHER = register(EntityTypeIds.WITHER, EntityType.Builder.of(WitherBoss::new, MobCategory.MONSTER).fireImmune().immuneTo(BlockTags.WITHER_IMMUNE_TO).sized(0.9F, 3.5F).clientTrackingRange(10).notInPeaceful());
+      WITHER = register(EntityTypeIds.WITHER, EntityType.Builder.of(WitherBoss::new, MobCategory.MONSTER).fireImmune().immuneTo(BlockTags.WITHER_IMMUNE_TO).sized(0.9F, 3.5F).clientTrackingRange(10).notInPeaceful().dontTrackDeltas());
       WITHER_SKELETON = register(EntityTypeIds.WITHER_SKELETON, EntityType.Builder.of(WitherSkeleton::new, MobCategory.MONSTER).fireImmune().immuneTo(BlockTags.WITHER_SKELETON_IMMUNE_TO).sized(0.7F, 2.4F).eyeHeight(2.1F).ridingOffset(-0.875F).clientTrackingRange(8).notInPeaceful());
       WITHER_SKULL = register(EntityTypeIds.WITHER_SKULL, EntityType.Builder.of(WitherSkull::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10));
       WOLF = register(EntityTypeIds.WOLF, EntityType.Builder.of(Wolf::new, MobCategory.CREATURE).sized(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3(0.0, 0.81875, -0.0625)).clientTrackingRange(10));
@@ -487,7 +491,7 @@ public class EntityTypes {
       ZOMBIE_NAUTILUS = register(EntityTypeIds.ZOMBIE_NAUTILUS, EntityType.Builder.of(ZombieNautilus::new, MobCategory.MONSTER).sized(0.875F, 0.95F).passengerAttachments(1.1375F).eyeHeight(0.2751F).clientTrackingRange(10));
       ZOMBIE_VILLAGER = register(EntityTypeIds.ZOMBIE_VILLAGER, EntityType.Builder.of(ZombieVillager::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.125F).ridingOffset(-0.7F).eyeHeight(1.74F).clientTrackingRange(8).notInPeaceful());
       ZOMBIFIED_PIGLIN = register(EntityTypeIds.ZOMBIFIED_PIGLIN, EntityType.Builder.of(ZombifiedPiglin::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
-      PLAYER = register(EntityTypeIds.PLAYER, EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(32).updateInterval(2));
+      PLAYER = register(EntityTypeIds.PLAYER, EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Avatar.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(32).updateInterval(2).dontTrackDeltas());
       FISHING_BOBBER = register(EntityTypeIds.FISHING_BOBBER, EntityType.Builder.of(FishingHook::new, MobCategory.MISC).noLootTable().noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5));
       OP_ONLY_CUSTOM_DATA = Set.of(FALLING_BLOCK, COMMAND_BLOCK_MINECART, SPAWNER_MINECART);
    }

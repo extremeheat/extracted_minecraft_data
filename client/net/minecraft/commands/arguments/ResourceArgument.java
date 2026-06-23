@@ -31,7 +31,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.timeline.Timeline;
 
@@ -67,8 +67,8 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
       return getResource(context, name, Registries.ATTRIBUTE);
    }
 
-   public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return getResource(context, name, Registries.CONFIGURED_FEATURE);
+   public static Holder.Reference<Feature> getConfiguredFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return getResource(context, name, Registries.FEATURE);
    }
 
    public static Holder.Reference<Structure> getStructure(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {

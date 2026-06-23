@@ -100,7 +100,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                newState = (BlockState)newState.setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED);
             }
 
-            level.setBlock(pos, newState, 3);
+            level.setBlockAndUpdate(pos, newState);
             this.playSound(level, pos, signal ? SoundEvents.SHELF_ACTIVATE : SoundEvents.SHELF_DEACTIVATE);
             level.gameEvent(signal ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(newState));
          }

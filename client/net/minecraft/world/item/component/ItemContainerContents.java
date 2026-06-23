@@ -21,9 +21,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 
-public final class ItemContainerContents implements TooltipProvider {
+public final class ItemContainerContents implements ContainerComponent<ItemContainerContents>, TooltipProvider {
    private static final int NO_SLOT = -1;
-   private static final int MAX_SIZE = 256;
+   public static final int MAX_SIZE = 256;
    public static final ItemContainerContents EMPTY = new ItemContainerContents(List.of());
    public static final Codec<ItemContainerContents> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemContainerContents> STREAM_CODEC;
@@ -122,7 +122,7 @@ public final class ItemContainerContents implements TooltipProvider {
       return this.createStackFromSlot(0);
    }
 
-   public Stream<ItemStack> allItemsCopyStream() {
+   public Stream<ItemStack> itemCopies() {
       return this.items.stream().map((i) -> (ItemStack)i.map(ItemStackTemplate::create).orElse(ItemStack.EMPTY));
    }
 
@@ -136,6 +136,24 @@ public final class ItemContainerContents implements TooltipProvider {
 
    public Iterable<ItemStackTemplate> nonEmptyItems() {
       return () -> this.nonEmptyItemsStream().iterator();
+   }
+
+   public int size() {
+      return this.items.size();
+   }
+
+   public ItemContainerContents copyWithContents(final Stream<ItemStack> newContents) {
+      return fromItems(newContents.toList());
+   }
+
+   public Mutable asMutable() {
+      List<ItemStack> itemsList = new ArrayList(this.items.size());
+
+      for(Optional<ItemStackTemplate> item : this.items) {
+         itemsList.add((ItemStack)item.map(ItemStackTemplate::create).orElse(ItemStack.EMPTY));
+      }
+
+      return new Mutable(itemsList);
    }
 
    public boolean equals(final Object obj) {
@@ -191,6 +209,20 @@ public final class ItemContainerContents implements TooltipProvider {
 
       private Slot {
          super();
+      }
+   }
+
+   public static class Mutable extends SimpleMutableContainer<ItemContainerContents> {
+      private Mutable(final List<ItemStack> items) {
+         super(items);
+      }
+
+      public boolean canInsertNewSlots() {
+         return this.items.size() < 256;
+      }
+
+      public ItemContainerContents toImmutable() {
+         return ItemContainerContents.fromItems(this.items);
       }
    }
 }

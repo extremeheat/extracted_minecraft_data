@@ -44,7 +44,7 @@ public class AttributeCommand {
    private static AttributeInstance getAttributeInstance(final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
       AttributeInstance attributeInstance = getLivingEntity(target).getAttributes().getInstance(attribute);
       if (attributeInstance == null) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getDisplayName(), getAttributeDescription(attribute));
       } else {
          return attributeInstance;
       }
@@ -54,14 +54,14 @@ public class AttributeCommand {
       if (target instanceof LivingEntity livingEntity) {
          return livingEntity;
       } else {
-         throw ERROR_NOT_LIVING_ENTITY.create(target.getName());
+         throw ERROR_NOT_LIVING_ENTITY.create(target.getDisplayName());
       }
    }
 
    private static LivingEntity getEntityWithAttribute(final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
       LivingEntity livingEntity = getLivingEntity(target);
       if (!livingEntity.getAttributes().hasAttribute(attribute)) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getDisplayName(), getAttributeDescription(attribute));
       } else {
          return livingEntity;
       }
@@ -70,14 +70,14 @@ public class AttributeCommand {
    private static int getAttributeValue(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double scale) throws CommandSyntaxException {
       LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
       double result = livingEntity.getAttributeValue(attribute);
-      source.sendSuccess(() -> Component.translatable("commands.attribute.value.get.success", getAttributeDescription(attribute), target.getName(), result), false);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.value.get.success", getAttributeDescription(attribute), target.getDisplayName(), result), false);
       return (int)(result * scale);
    }
 
    private static int getAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double scale) throws CommandSyntaxException {
       LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
       double result = livingEntity.getAttributeBaseValue(attribute);
-      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.get.success", getAttributeDescription(attribute), target.getName(), result), false);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.get.success", getAttributeDescription(attribute), target.getDisplayName(), result), false);
       return (int)(result * scale);
    }
 
@@ -85,10 +85,10 @@ public class AttributeCommand {
       LivingEntity livingEntity = getEntityWithAttribute(target, attribute);
       AttributeMap attributes = livingEntity.getAttributes();
       if (!attributes.hasModifier(attribute, id)) {
-         throw ERROR_NO_SUCH_MODIFIER.create(target.getName(), getAttributeDescription(attribute), id);
+         throw ERROR_NO_SUCH_MODIFIER.create(target.getDisplayName(), getAttributeDescription(attribute), id);
       } else {
          double result = attributes.getModifierValue(attribute, id);
-         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.value.get.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName(), result), false);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.value.get.success", Component.translationArg(id), getAttributeDescription(attribute), target.getDisplayName(), result), false);
          return (int)(result * scale);
       }
    }
@@ -100,17 +100,17 @@ public class AttributeCommand {
 
    private static int setAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final double value) throws CommandSyntaxException {
       getAttributeInstance(target, attribute).setBaseValue(value);
-      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(attribute), target.getName(), value), false);
+      source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(attribute), target.getDisplayName(), value), false);
       return 1;
    }
 
    private static int resetAttributeBase(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute) throws CommandSyntaxException {
       LivingEntity livingTarget = getLivingEntity(target);
       if (!livingTarget.getAttributes().resetBaseValue(attribute)) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getName(), getAttributeDescription(attribute));
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(target.getDisplayName(), getAttributeDescription(attribute));
       } else {
          double value = livingTarget.getAttributeBaseValue(attribute);
-         source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.reset.success", getAttributeDescription(attribute), target.getName(), value), false);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.base_value.reset.success", getAttributeDescription(attribute), target.getDisplayName(), value), false);
          return 1;
       }
    }
@@ -119,10 +119,10 @@ public class AttributeCommand {
       AttributeInstance attributeInstance = getAttributeInstance(target, attribute);
       AttributeModifier modifier = new AttributeModifier(id, value, operation);
       if (attributeInstance.hasModifier(id)) {
-         throw ERROR_MODIFIER_ALREADY_PRESENT.create(target.getName(), getAttributeDescription(attribute), id);
+         throw ERROR_MODIFIER_ALREADY_PRESENT.create(target.getDisplayName(), getAttributeDescription(attribute), id);
       } else {
          attributeInstance.addPermanentModifier(modifier);
-         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.add.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName()), false);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.add.success", Component.translationArg(id), getAttributeDescription(attribute), target.getDisplayName()), false);
          return 1;
       }
    }
@@ -130,10 +130,10 @@ public class AttributeCommand {
    private static int removeModifier(final CommandSourceStack source, final Entity target, final Holder<Attribute> attribute, final Identifier id) throws CommandSyntaxException {
       AttributeInstance attributeInstance = getAttributeInstance(target, attribute);
       if (attributeInstance.removeModifier(id)) {
-         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.remove.success", Component.translationArg(id), getAttributeDescription(attribute), target.getName()), false);
+         source.sendSuccess(() -> Component.translatable("commands.attribute.modifier.remove.success", Component.translationArg(id), getAttributeDescription(attribute), target.getDisplayName()), false);
          return 1;
       } else {
-         throw ERROR_NO_SUCH_MODIFIER.create(target.getName(), getAttributeDescription(attribute), id);
+         throw ERROR_NO_SUCH_MODIFIER.create(target.getDisplayName(), getAttributeDescription(attribute), id);
       }
    }
 

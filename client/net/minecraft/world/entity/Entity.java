@@ -37,6 +37,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -229,7 +230,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public boolean verticalCollision;
    public boolean verticalCollisionBelow;
    public boolean minorHorizontalCollision;
-   public boolean hurtMarked;
    protected Vec3 stuckSpeedMultiplier;
    private @Nullable RemovalReason removalReason;
    public static final float DEFAULT_BB_WIDTH = 0.6F;
@@ -270,6 +270,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    private final VecDeltaCodec packetPositionCodec;
    public boolean needsSync;
    public boolean syncPosition;
+   public boolean syncVelocity;
    public @Nullable PortalProcessor portalProcess;
    private int portalCooldown;
    private boolean invulnerable;
@@ -741,7 +742,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void move(final MoverType moverType, Vec3 delta) {
-      if (this.noPhysics) {
+      if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
+         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement"));
+      } else if (this.noPhysics) {
          this.setPos(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z);
          this.horizontalCollision = false;
          this.verticalCollision = false;
@@ -864,6 +867,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
 
       if (bounced) {
+         effectState.getBlock().bounceOn(this.level, effectState, this.getBlockPosBelowThatAffectsMyMovement(), this, this.fallDistance);
          this.gameEvent(GameEvent.BOUNCE);
          this.syncPosition = true;
       }
@@ -1922,7 +1926,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    protected void markHurt() {
-      this.hurtMarked = true;
+      this.syncVelocity = true;
    }
 
    /** @deprecated */
@@ -2880,15 +2884,18 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    protected static void handleOnAboveBubbleColumn(final Entity entity, final boolean dragDown, final BlockPos pos) {
-      Vec3 movement = entity.getDeltaMovement();
-      double yd;
-      if (dragDown) {
-         yd = Math.max(-0.9, movement.y - 0.03);
-      } else {
-         yd = Math.min(1.8, movement.y + 0.1);
+      if (entity.canSimulateMovement()) {
+         Vec3 movement = entity.getDeltaMovement();
+         double yd;
+         if (dragDown) {
+            yd = Math.max(-0.9, movement.y - 0.03);
+         } else {
+            yd = Math.min(1.8, movement.y + 0.1);
+         }
+
+         entity.setDeltaMovement(movement.x, yd, movement.z);
       }
 
-      entity.setDeltaMovement(movement.x, yd, movement.z);
       sendBubbleColumnParticles(entity.level, pos);
    }
 
@@ -2909,15 +2916,18 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    protected static void handleOnInsideBubbleColumn(final Entity entity, final boolean dragDown) {
-      Vec3 movement = entity.getDeltaMovement();
-      double yd;
-      if (dragDown) {
-         yd = Math.max(-0.3, movement.y - 0.03);
-      } else {
-         yd = Math.min(0.7, movement.y + 0.06);
+      if (entity.canSimulateMovement()) {
+         Vec3 movement = entity.getDeltaMovement();
+         double yd;
+         if (dragDown) {
+            yd = Math.max(-0.3, movement.y - 0.03);
+         } else {
+            yd = Math.min(0.7, movement.y + 0.06);
+         }
+
+         entity.setDeltaMovement(movement.x, yd, movement.z);
       }
 
-      entity.setDeltaMovement(movement.x, yd, movement.z);
       entity.resetFallDistance();
    }
 

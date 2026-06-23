@@ -38,6 +38,8 @@ public class TeamCommand {
    private static final SimpleCommandExceptionType ERROR_TEAM_NAMETAG_VISIBLITY_UNCHANGED = new SimpleCommandExceptionType(Component.translatable("commands.team.option.nametagVisibility.unchanged"));
    private static final SimpleCommandExceptionType ERROR_TEAM_DEATH_MESSAGE_VISIBLITY_UNCHANGED = new SimpleCommandExceptionType(Component.translatable("commands.team.option.deathMessageVisibility.unchanged"));
    private static final SimpleCommandExceptionType ERROR_TEAM_COLLISION_UNCHANGED = new SimpleCommandExceptionType(Component.translatable("commands.team.option.collisionRule.unchanged"));
+   private static final CommandResponseTracker.Messages<ScoreHolder> RESPONSE_LEAVE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((holder, var1) -> Component.translatable("commands.team.leave.success.single", holder.getFeedbackDisplayName())), (CommandResponseTracker.MultipleHandler)((holderCount, var1) -> Component.translatable("commands.team.leave.success.multiple", holderCount)));
+   private static final CommandResponseTracker.MessagesWithArg<ScoreHolder, PlayerTeam> RESPONSE_JOIN = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((holder, var1, team) -> Component.translatable("commands.team.join.success.single", holder.getFeedbackDisplayName(), team.getFormattedDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((holderCount, var1, team) -> Component.translatable("commands.team.join.success.multiple", holderCount, team.getFormattedDisplayName())));
 
    public TeamCommand() {
       super();
@@ -47,40 +49,26 @@ public class TeamCommand {
       dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("team").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)Commands.literal("list").executes((c) -> listTeams((CommandSourceStack)c.getSource()))).then(Commands.argument("team", TeamArgument.team()).executes((c) -> listMembers((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team")))))).then(Commands.literal("add").then(((RequiredArgumentBuilder)Commands.argument("team", StringArgumentType.word()).executes((c) -> createTeam((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "team")))).then(Commands.argument("displayName", ComponentArgument.textComponent(context)).executes((c) -> createTeam((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "team"), ComponentArgument.getResolvedComponent(c, "displayName"))))))).then(Commands.literal("remove").then(Commands.argument("team", TeamArgument.team()).executes((c) -> deleteTeam((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team")))))).then(Commands.literal("empty").then(Commands.argument("team", TeamArgument.team()).executes((c) -> emptyTeam((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team")))))).then(Commands.literal("join").then(((RequiredArgumentBuilder)Commands.argument("team", TeamArgument.team()).executes((c) -> joinTeam((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Collections.singleton(((CommandSourceStack)c.getSource()).getEntityOrException())))).then(Commands.argument("members", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((c) -> joinTeam((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "members"))))))).then(Commands.literal("leave").then(Commands.argument("members", ScoreHolderArgument.scoreHolders()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).executes((c) -> leaveTeam((CommandSourceStack)c.getSource(), ScoreHolderArgument.getNamesWithDefaultWildcard(c, "members")))))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("team", TeamArgument.team()).then(Commands.literal("displayName").then(Commands.argument("displayName", ComponentArgument.textComponent(context)).executes((c) -> setDisplayName((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), ComponentArgument.getResolvedComponent(c, "displayName")))))).then(((LiteralArgumentBuilder)Commands.literal("color").then(Commands.literal("reset").executes((c) -> clearColor((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"))))).then(Commands.argument("value", TeamColorArgument.teamColor()).executes((c) -> setColor((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), TeamColorArgument.getTeamColor(c, "value")))))).then(Commands.literal("friendlyFire").then(Commands.argument("allowed", BoolArgumentType.bool()).executes((c) -> setFriendlyFire((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), BoolArgumentType.getBool(c, "allowed")))))).then(Commands.literal("seeFriendlyInvisibles").then(Commands.argument("allowed", BoolArgumentType.bool()).executes((c) -> setFriendlySight((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), BoolArgumentType.getBool(c, "allowed")))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("nametagVisibility").then(Commands.literal("never").executes((c) -> setNameTagVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.NEVER)))).then(Commands.literal("hideForOtherTeams").executes((c) -> setNameTagVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.HIDE_FOR_OTHER_TEAMS)))).then(Commands.literal("hideForOwnTeam").executes((c) -> setNameTagVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.HIDE_FOR_OWN_TEAM)))).then(Commands.literal("always").executes((c) -> setNameTagVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.ALWAYS))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("deathMessageVisibility").then(Commands.literal("never").executes((c) -> setDeathMessageVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.NEVER)))).then(Commands.literal("hideForOtherTeams").executes((c) -> setDeathMessageVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.HIDE_FOR_OTHER_TEAMS)))).then(Commands.literal("hideForOwnTeam").executes((c) -> setDeathMessageVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.HIDE_FOR_OWN_TEAM)))).then(Commands.literal("always").executes((c) -> setDeathMessageVisibility((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.Visibility.ALWAYS))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("collisionRule").then(Commands.literal("never").executes((c) -> setCollision((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.CollisionRule.NEVER)))).then(Commands.literal("pushOwnTeam").executes((c) -> setCollision((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.CollisionRule.PUSH_OWN_TEAM)))).then(Commands.literal("pushOtherTeams").executes((c) -> setCollision((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.CollisionRule.PUSH_OTHER_TEAMS)))).then(Commands.literal("always").executes((c) -> setCollision((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), Team.CollisionRule.ALWAYS))))).then(Commands.literal("prefix").then(Commands.argument("prefix", ComponentArgument.textComponent(context)).executes((c) -> setPrefix((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), ComponentArgument.getResolvedComponent(c, "prefix")))))).then(Commands.literal("suffix").then(Commands.argument("suffix", ComponentArgument.textComponent(context)).executes((c) -> setSuffix((CommandSourceStack)c.getSource(), TeamArgument.getTeam(c, "team"), ComponentArgument.getResolvedComponent(c, "suffix"))))))));
    }
 
-   private static Component getFirstMemberName(final Collection<ScoreHolder> members) {
-      return ((ScoreHolder)members.iterator().next()).getFeedbackDisplayName();
-   }
-
-   private static int leaveTeam(final CommandSourceStack source, final Collection<ScoreHolder> members) {
+   private static int leaveTeam(final CommandSourceStack source, final Collection<ScoreHolder> members) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
       for(ScoreHolder member : members) {
-         scoreboard.removePlayerFromTeam(member.getScoreboardName());
+         tracker.track(member, scoreboard.removePlayerFromTeam(member.getScoreboardName()));
       }
 
-      if (members.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.team.leave.success.single", getFirstMemberName(members)), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.team.leave.success.multiple", members.size()), true);
-      }
-
-      return members.size();
+      return tracker.sendFeedback(source, true, RESPONSE_LEAVE);
    }
 
-   private static int joinTeam(final CommandSourceStack source, final PlayerTeam team, final Collection<ScoreHolder> members) {
+   private static int joinTeam(final CommandSourceStack source, final PlayerTeam team, final Collection<ScoreHolder> members) throws CommandSyntaxException {
+      CommandResponseTracker<ScoreHolder> tracker = CommandResponseTracker.<ScoreHolder>create();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
       for(ScoreHolder member : members) {
-         scoreboard.addPlayerToTeam(member.getScoreboardName(), team);
+         tracker.track(member, scoreboard.addPlayerToTeam(member.getScoreboardName(), team));
       }
 
-      if (members.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.team.join.success.single", getFirstMemberName(members), team.getFormattedDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.team.join.success.multiple", members.size(), team.getFormattedDisplayName()), true);
-      }
-
-      return members.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_JOIN, team);
    }
 
    private static int setNameTagVisibility(final CommandSourceStack source, final PlayerTeam team, final Team.Visibility visibility) throws CommandSyntaxException {

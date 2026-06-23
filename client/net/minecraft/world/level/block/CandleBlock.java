@@ -104,7 +104,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
          if ((Boolean)state.getValue(LIT)) {
             extinguish((Player)null, newState, level, pos);
          } else {
-            level.setBlock(pos, newState, 3);
+            level.setBlockAndUpdate(pos, newState);
          }
 
          level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));

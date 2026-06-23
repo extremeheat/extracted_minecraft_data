@@ -2,6 +2,7 @@ package net.minecraft.data.worldgen.placement;
 
 import java.util.List;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Directional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -13,7 +14,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountOnEveryLayerPlacement;
@@ -50,25 +51,25 @@ public class NetherPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
-      Holder<ConfiguredFeature<?, ?>> delta = configuredFeatures.getOrThrow(NetherFeatures.DELTA);
-      Holder<ConfiguredFeature<?, ?>> smallBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.SMALL_BASALT_COLUMNS);
-      Holder<ConfiguredFeature<?, ?>> largeBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.LARGE_BASALT_COLUMNS);
-      Holder<ConfiguredFeature<?, ?>> basaltBlobs = configuredFeatures.getOrThrow(NetherFeatures.BASALT_BLOBS);
-      Holder<ConfiguredFeature<?, ?>> blackstoneBlobs = configuredFeatures.getOrThrow(NetherFeatures.BLACKSTONE_BLOBS);
-      Holder<ConfiguredFeature<?, ?>> glowstoneExtra = configuredFeatures.getOrThrow(NetherFeatures.GLOWSTONE_EXTRA);
-      Holder<ConfiguredFeature<?, ?>> crimsonForestVegetation = configuredFeatures.getOrThrow(NetherFeatures.CRIMSON_FOREST_VEGETATION);
-      Holder<ConfiguredFeature<?, ?>> warpedForestVegetion = configuredFeatures.getOrThrow(NetherFeatures.WARPED_FOREST_VEGETION);
-      Holder<ConfiguredFeature<?, ?>> netherSprouts = configuredFeatures.getOrThrow(NetherFeatures.NETHER_SPROUTS);
-      Holder<ConfiguredFeature<?, ?>> twistingVines = configuredFeatures.getOrThrow(NetherFeatures.TWISTING_VINES);
-      Holder<ConfiguredFeature<?, ?>> weepingVines = configuredFeatures.getOrThrow(NetherFeatures.WEEPING_VINES);
-      Holder<ConfiguredFeature<?, ?>> crimsonRoots = configuredFeatures.getOrThrow(NetherFeatures.CRIMSON_ROOTS);
-      Holder<ConfiguredFeature<?, ?>> basaltPillar = configuredFeatures.getOrThrow(NetherFeatures.BASALT_PILLAR);
-      Holder<ConfiguredFeature<?, ?>> springLavaNether = configuredFeatures.getOrThrow(NetherFeatures.SPRING_LAVA_NETHER);
-      Holder<ConfiguredFeature<?, ?>> springNetherClosed = configuredFeatures.getOrThrow(NetherFeatures.SPRING_NETHER_CLOSED);
-      Holder<ConfiguredFeature<?, ?>> springNetherOpen = configuredFeatures.getOrThrow(NetherFeatures.SPRING_NETHER_OPEN);
-      Holder<ConfiguredFeature<?, ?>> soulFire = configuredFeatures.getOrThrow(NetherFeatures.SOUL_FIRE);
-      Holder<ConfiguredFeature<?, ?>> fire = configuredFeatures.getOrThrow(NetherFeatures.FIRE);
+      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      Holder<Feature> delta = configuredFeatures.getOrThrow(NetherFeatures.DELTA);
+      Holder<Feature> smallBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.SMALL_BASALT_COLUMNS);
+      Holder<Feature> largeBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.LARGE_BASALT_COLUMNS);
+      Holder<Feature> basaltBlobs = configuredFeatures.getOrThrow(NetherFeatures.BASALT_BLOBS);
+      Holder<Feature> blackstoneBlobs = configuredFeatures.getOrThrow(NetherFeatures.BLACKSTONE_BLOBS);
+      Holder<Feature> glowstoneExtra = configuredFeatures.getOrThrow(NetherFeatures.GLOWSTONE_EXTRA);
+      Holder<Feature> crimsonForestVegetation = configuredFeatures.getOrThrow(NetherFeatures.CRIMSON_FOREST_VEGETATION);
+      Holder<Feature> warpedForestVegetion = configuredFeatures.getOrThrow(NetherFeatures.WARPED_FOREST_VEGETION);
+      Holder<Feature> netherSprouts = configuredFeatures.getOrThrow(NetherFeatures.NETHER_SPROUTS);
+      Holder<Feature> twistingVines = configuredFeatures.getOrThrow(NetherFeatures.TWISTING_VINES);
+      Holder<Feature> weepingVines = configuredFeatures.getOrThrow(NetherFeatures.WEEPING_VINES);
+      Holder<Feature> crimsonRoots = configuredFeatures.getOrThrow(NetherFeatures.CRIMSON_ROOTS);
+      Holder<Feature> basaltPillar = configuredFeatures.getOrThrow(NetherFeatures.BASALT_PILLAR);
+      Holder<Feature> springLavaNether = configuredFeatures.getOrThrow(NetherFeatures.SPRING_LAVA_NETHER);
+      Holder<Feature> springNetherClosed = configuredFeatures.getOrThrow(NetherFeatures.SPRING_NETHER_CLOSED);
+      Holder<Feature> springNetherOpen = configuredFeatures.getOrThrow(NetherFeatures.SPRING_NETHER_OPEN);
+      Holder<Feature> soulFire = configuredFeatures.getOrThrow(NetherFeatures.SOUL_FIRE);
+      Holder<Feature> fire = configuredFeatures.getOrThrow(NetherFeatures.FIRE);
       PlacementUtils.register(context, DELTA, delta, CountOnEveryLayerPlacement.of(40), BiomeFilter.biome());
       PlacementUtils.register(context, SMALL_BASALT_COLUMNS, smallBasaltColumns, CountOnEveryLayerPlacement.of(4), BiomeFilter.biome());
       PlacementUtils.register(context, LARGE_BASALT_COLUMNS, largeBasaltColumns, CountOnEveryLayerPlacement.of(2), BiomeFilter.biome());
@@ -92,6 +93,6 @@ public class NetherPlacements {
    }
 
    private static List<PlacementModifier> firePlacement(final Block onlyOnBlock) {
-      return List.of(CountPlacement.of(UniformInt.of(0, 5)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome(), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks(Direction.DOWN.getUnitVec3i(), onlyOnBlock))));
+      return List.of(CountPlacement.of(UniformInt.of(0, 5)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome(), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, onlyOnBlock))));
    }
 }

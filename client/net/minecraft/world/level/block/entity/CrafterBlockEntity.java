@@ -240,7 +240,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       if (craftingTicksRemaining >= 0) {
          entity.craftingTicksRemaining = craftingTicksRemaining;
          if (craftingTicksRemaining == 0) {
-            level.setBlock(blockPos, (BlockState)blockState.setValue(CrafterBlock.CRAFTING, false), 3);
+            level.setBlockAndUpdate(blockPos, (BlockState)blockState.setValue(CrafterBlock.CRAFTING, false));
          }
 
       }

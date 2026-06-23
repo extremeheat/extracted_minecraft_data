@@ -29,7 +29,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
-public enum Direction implements StringRepresentable {
+public enum Direction implements Directional, StringRepresentable {
    DOWN(0, 1, -1, "down", Direction.AxisDirection.NEGATIVE, Direction.Axis.Y, new Vec3i(0, -1, 0)),
    UP(1, 0, -1, "up", Direction.AxisDirection.POSITIVE, Direction.Axis.Y, new Vec3i(0, 1, 0)),
    NORTH(2, 3, 2, "north", Direction.AxisDirection.NEGATIVE, Direction.Axis.Z, new Vec3i(0, 0, -1)),
@@ -310,6 +310,10 @@ public enum Direction implements StringRepresentable {
 
    public int getStepZ() {
       return this.normal.getZ();
+   }
+
+   public Vec3i getStep() {
+      return this.getUnitVec3i();
    }
 
    public Vector3f step() {

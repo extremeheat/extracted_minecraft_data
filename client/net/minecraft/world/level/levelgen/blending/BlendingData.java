@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.CompositeDirection;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction8;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
@@ -94,10 +94,10 @@ public class BlendingData {
       }
    }
 
-   public static Set<Direction8> sideByGenerationAge(final WorldGenLevel region, final int chunkX, final int chunkZ, final boolean wantedOldGen) {
-      Set<Direction8> sides = EnumSet.noneOf(Direction8.class);
+   public static Set<CompositeDirection.Direction8> sideByGenerationAge(final WorldGenLevel region, final int chunkX, final int chunkZ, final boolean wantedOldGen) {
+      Set<CompositeDirection.Direction8> sides = EnumSet.noneOf(CompositeDirection.Direction8.class);
 
-      for(Direction8 direction8 : Direction8.values()) {
+      for(CompositeDirection.Direction8 direction8 : CompositeDirection.Direction8.values()) {
          int testChunkX = chunkX + direction8.getStepX();
          int testChunkZ = chunkZ + direction8.getStepZ();
          if (region.getChunk(testChunkX, testChunkZ).isOldNoiseGeneration() == wantedOldGen) {
@@ -108,41 +108,41 @@ public class BlendingData {
       return sides;
    }
 
-   private void calculateData(final ChunkAccess chunk, final Set<Direction8> newSides) {
+   private void calculateData(final ChunkAccess chunk, final Set<CompositeDirection.Direction8> newSides) {
       if (!this.hasCalculatedData) {
-         if (newSides.contains(Direction8.NORTH) || newSides.contains(Direction8.WEST) || newSides.contains(Direction8.NORTH_WEST)) {
+         if (newSides.contains(CompositeDirection.Direction8.NORTH) || newSides.contains(CompositeDirection.Direction8.WEST) || newSides.contains(CompositeDirection.Direction8.NORTH_WEST)) {
             this.addValuesForColumn(getInsideIndex(0, 0), chunk, 0, 0);
          }
 
-         if (newSides.contains(Direction8.NORTH)) {
+         if (newSides.contains(CompositeDirection.Direction8.NORTH)) {
             for(int i = 1; i < QUARTS_PER_SECTION; ++i) {
                this.addValuesForColumn(getInsideIndex(i, 0), chunk, 4 * i, 0);
             }
          }
 
-         if (newSides.contains(Direction8.WEST)) {
+         if (newSides.contains(CompositeDirection.Direction8.WEST)) {
             for(int i = 1; i < QUARTS_PER_SECTION; ++i) {
                this.addValuesForColumn(getInsideIndex(0, i), chunk, 0, 4 * i);
             }
          }
 
-         if (newSides.contains(Direction8.EAST)) {
+         if (newSides.contains(CompositeDirection.Direction8.EAST)) {
             for(int i = 1; i < QUARTS_PER_SECTION; ++i) {
                this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, i), chunk, 15, 4 * i);
             }
          }
 
-         if (newSides.contains(Direction8.SOUTH)) {
+         if (newSides.contains(CompositeDirection.Direction8.SOUTH)) {
             for(int i = 0; i < QUARTS_PER_SECTION; ++i) {
                this.addValuesForColumn(getOutsideIndex(i, CELL_HORIZONTAL_MAX_INDEX_OUTSIDE), chunk, 4 * i, 15);
             }
          }
 
-         if (newSides.contains(Direction8.EAST) && newSides.contains(Direction8.NORTH_EAST)) {
+         if (newSides.contains(CompositeDirection.Direction8.EAST) && newSides.contains(CompositeDirection.Direction8.NORTH_EAST)) {
             this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, 0), chunk, 15, 0);
          }
 
-         if (newSides.contains(Direction8.EAST) && newSides.contains(Direction8.SOUTH) && newSides.contains(Direction8.SOUTH_EAST)) {
+         if (newSides.contains(CompositeDirection.Direction8.EAST) && newSides.contains(CompositeDirection.Direction8.SOUTH) && newSides.contains(CompositeDirection.Direction8.SOUTH_EAST)) {
             this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, CELL_HORIZONTAL_MAX_INDEX_OUTSIDE), chunk, 15, 15);
          }
 

@@ -1,53 +1,63 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.util.valueproviders.FloatProviders;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Column;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.LargeDripstoneConfiguration;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> {
-   public LargeDripstoneFeature(final Codec<LargeDripstoneConfiguration> codec) {
-      super(codec);
+public record LargeDripstoneFeature(HolderSet<Block> replaceableBlocks, int floorToCeilingSearchRange, IntProvider columnRadius, FloatProvider heightScale, float maxColumnRadiusToCaveHeightRatio, FloatProvider stalactiteBluntness, FloatProvider stalagmiteBluntness, FloatProvider windSpeed, int minRadiusForWind, float minBluntnessForWind) implements Feature {
+   public static final MapCodec<LargeDripstoneFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("replaceable_blocks").forGetter(LargeDripstoneFeature::replaceableBlocks), Codec.intRange(1, 512).optionalFieldOf("floor_to_ceiling_search_range", 30).forGetter(LargeDripstoneFeature::floorToCeilingSearchRange), IntProviders.codec(1, 16).fieldOf("column_radius").forGetter(LargeDripstoneFeature::columnRadius), FloatProviders.codec(0.0F, 20.0F).fieldOf("height_scale").forGetter(LargeDripstoneFeature::heightScale), Codec.floatRange(0.1F, 1.0F).fieldOf("max_column_radius_to_cave_height_ratio").forGetter(LargeDripstoneFeature::maxColumnRadiusToCaveHeightRatio), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalactite_bluntness").forGetter(LargeDripstoneFeature::stalactiteBluntness), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalagmite_bluntness").forGetter(LargeDripstoneFeature::stalagmiteBluntness), FloatProviders.codec(0.0F, 2.0F).fieldOf("wind_speed").forGetter(LargeDripstoneFeature::windSpeed), Codec.intRange(0, 100).fieldOf("min_radius_for_wind").forGetter(LargeDripstoneFeature::minRadiusForWind), Codec.floatRange(0.0F, 5.0F).fieldOf("min_bluntness_for_wind").forGetter(LargeDripstoneFeature::minBluntnessForWind)).apply(i, LargeDripstoneFeature::new));
+
+   public LargeDripstoneFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<LargeDripstoneConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      LargeDripstoneConfiguration config = context.config();
-      RandomSource random = context.random();
+   public MapCodec<LargeDripstoneFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (!SpeleothemUtils.isEmptyOrWater(level, origin)) {
          return false;
       } else {
-         Optional<Column> column = Column.scan(level, origin, config.floorToCeilingSearchRange, SpeleothemUtils::isEmptyOrWater, (state) -> SpeleothemUtils.isBaseOrLava(state, Blocks.DRIPSTONE_BLOCK, config.replaceableBlocks));
+         Optional<Column> column = Column.scan(level, origin, this.floorToCeilingSearchRange, SpeleothemUtils::isEmptyOrWater, (state) -> SpeleothemUtils.isBaseOrLava(state, Blocks.DRIPSTONE_BLOCK, this.replaceableBlocks));
          if (!column.isEmpty()) {
-            Object var8 = column.get();
-            if (var8 instanceof Column.Range) {
-               Column.Range columnRange = (Column.Range)var8;
+            Object var7 = column.get();
+            if (var7 instanceof Column.Range) {
+               Column.Range columnRange = (Column.Range)var7;
                if (columnRange.height() < 4) {
                   return false;
                }
 
-               int maxColumnRadiusBasedOnColumnHeight = (int)((float)columnRange.height() * config.maxColumnRadiusToCaveHeightRatio);
-               int maxColumnRadius = Mth.clamp(maxColumnRadiusBasedOnColumnHeight, config.columnRadius.minInclusive(), config.columnRadius.maxInclusive());
-               int radius = Mth.randomBetweenInclusive(random, config.columnRadius.minInclusive(), maxColumnRadius);
-               LargeDripstone stalactite = makeDripstone(origin.atY(columnRange.ceiling() - 1), false, random, radius, config.stalactiteBluntness, config.heightScale);
-               LargeDripstone stalagmite = makeDripstone(origin.atY(columnRange.floor() + 1), true, random, radius, config.stalagmiteBluntness, config.heightScale);
+               int maxColumnRadiusBasedOnColumnHeight = (int)((float)columnRange.height() * this.maxColumnRadiusToCaveHeightRatio);
+               int maxColumnRadius = Mth.clamp(maxColumnRadiusBasedOnColumnHeight, this.columnRadius.minInclusive(), this.columnRadius.maxInclusive());
+               int radius = Mth.randomBetweenInclusive(random, this.columnRadius.minInclusive(), maxColumnRadius);
+               LargeDripstone stalactite = makeDripstone(origin.atY(columnRange.ceiling() - 1), false, random, radius, this.stalactiteBluntness, this.heightScale);
+               LargeDripstone stalagmite = makeDripstone(origin.atY(columnRange.floor() + 1), true, random, radius, this.stalagmiteBluntness, this.heightScale);
                WindOffsetter wind;
-               if (stalactite.isSuitableForWind(config) && stalagmite.isSuitableForWind(config)) {
-                  wind = new WindOffsetter(origin.getY(), random, config.windSpeed, 16 - radius);
+               if (stalactite.isSuitableForWind(this.minRadiusForWind, this.minBluntnessForWind) && stalagmite.isSuitableForWind(this.minRadiusForWind, this.minBluntnessForWind)) {
+                  wind = new WindOffsetter(origin.getY(), random, this.windSpeed, 16 - radius);
                } else {
                   wind = LargeDripstoneFeature.WindOffsetter.noWind();
                }
@@ -109,14 +119,6 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
       private int getHeight() {
          return this.getHeightAtRadius(0.0F);
-      }
-
-      private int getMinY() {
-         return this.pointingUp ? this.root.getY() : this.root.getY() - this.getHeight();
-      }
-
-      private int getMaxY() {
-         return !this.pointingUp ? this.root.getY() : this.root.getY() + this.getHeight();
       }
 
       private boolean moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(final WorldGenLevel level, final WindOffsetter wind) {
@@ -181,8 +183,8 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
       }
 
-      private boolean isSuitableForWind(final LargeDripstoneConfiguration config) {
-         return this.radius >= config.minRadiusForWind && this.bluntness >= (double)config.minBluntnessForWind;
+      private boolean isSuitableForWind(final int minRadiusForWind, final float minBluntnessForWind) {
+         return this.radius >= minRadiusForWind && this.bluntness >= (double)minBluntnessForWind;
       }
    }
 

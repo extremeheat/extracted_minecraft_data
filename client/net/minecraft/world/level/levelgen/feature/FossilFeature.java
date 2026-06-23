@@ -1,11 +1,16 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -13,28 +18,33 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.apache.commons.lang3.mutable.MutableInt;
 
-public class FossilFeature extends Feature<FossilFeatureConfiguration> {
-   public FossilFeature(final Codec<FossilFeatureConfiguration> codec) {
-      super(codec);
+public record FossilFeature(List<Identifier> fossilStructures, List<Identifier> overlayStructures, Holder<StructureProcessorList> fossilProcessors, Holder<StructureProcessorList> overlayProcessors, int maxEmptyCornersAllowed) implements Feature {
+   public static final MapCodec<FossilFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.nonEmptyList(Identifier.CODEC.listOf()).fieldOf("fossil_structures").forGetter(FossilFeature::fossilStructures), ExtraCodecs.nonEmptyList(Identifier.CODEC.listOf()).fieldOf("overlay_structures").forGetter(FossilFeature::overlayStructures), StructureProcessorType.LIST_CODEC.fieldOf("fossil_processors").forGetter(FossilFeature::fossilProcessors), StructureProcessorType.LIST_CODEC.fieldOf("overlay_processors").forGetter(FossilFeature::overlayProcessors), Codec.intRange(0, 7).fieldOf("max_empty_corners_allowed").forGetter(FossilFeature::maxEmptyCornersAllowed)).apply(i, FossilFeature::new)).validate((fossil) -> fossil.fossilStructures.size() == fossil.overlayStructures.size() ? DataResult.success(fossil) : DataResult.error(() -> "Fossil structure lists must be equal lengths"));
+
+   public FossilFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<FossilFeatureConfiguration> context) {
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
+   public MapCodec<FossilFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       Rotation rotation = Rotation.getRandom(random);
-      FossilFeatureConfiguration config = context.config();
-      int fossilIndex = random.nextInt(config.fossilStructures.size());
+      int fossilIndex = random.nextInt(this.fossilStructures().size());
       StructureTemplateManager structureTemplateManager = level.getLevel().getServer().getStructureManager();
-      StructureTemplate fossilBase = structureTemplateManager.getOrCreate((Identifier)config.fossilStructures.get(fossilIndex));
-      StructureTemplate fossilOverlay = structureTemplateManager.getOrCreate((Identifier)config.overlayStructures.get(fossilIndex));
+      StructureTemplate fossilBase = structureTemplateManager.getOrCreate((Identifier)this.fossilStructures().get(fossilIndex));
+      StructureTemplate fossilOverlay = structureTemplateManager.getOrCreate((Identifier)this.overlayStructures().get(fossilIndex));
       ChunkPos chunkPos = ChunkPos.containing(origin);
       BoundingBox boundingBox = new BoundingBox(chunkPos.getMinBlockX() - 16, level.getMinY(), chunkPos.getMinBlockZ() - 16, chunkPos.getMaxBlockX() + 16, level.getMaxY(), chunkPos.getMaxBlockZ() + 16);
       StructurePlaceSettings settings = (new StructurePlaceSettings()).setRotation(rotation).setBoundingBox(boundingBox).setRandom(random);
@@ -50,16 +60,16 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
 
       int targetY = Math.max(lowestSurfaceY - 15 - random.nextInt(10), level.getMinY() + 10);
       BlockPos targetPos = fossilBase.getZeroPositionWithTransform(lowCorner.atY(targetY), Mirror.NONE, rotation);
-      if (countEmptyCorners(level, fossilBase.getBoundingBox(settings, targetPos)) > config.maxEmptyCornersAllowed) {
+      if (countEmptyCorners(level, fossilBase.getBoundingBox(settings, targetPos)) > this.maxEmptyCornersAllowed()) {
          return false;
       } else {
          settings.clearProcessors();
-         List var10000 = (config.fossilProcessors.value()).list();
+         List var10000 = ((StructureProcessorList)this.fossilProcessors().value()).list();
          Objects.requireNonNull(settings);
          var10000.forEach(settings::addProcessor);
          fossilBase.placeInWorld(level, targetPos, targetPos, settings, random, 260);
          settings.clearProcessors();
-         var10000 = (config.overlayProcessors.value()).list();
+         var10000 = ((StructureProcessorList)this.overlayProcessors().value()).list();
          Objects.requireNonNull(settings);
          var10000.forEach(settings::addProcessor);
          fossilOverlay.placeInWorld(level, targetPos, targetPos, settings, random, 260);

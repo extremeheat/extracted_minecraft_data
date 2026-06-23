@@ -68,6 +68,10 @@ public abstract class TreeDecorator {
          return this.level.isStateAtPosition(pos, predicate);
       }
 
+      public boolean isReplaceable(final BlockPos pos) {
+         return this.checkBlock(pos, BlockBehaviour.BlockStateBase::canBeReplaced);
+      }
+
       public WorldGenLevel level() {
          return this.level;
       }

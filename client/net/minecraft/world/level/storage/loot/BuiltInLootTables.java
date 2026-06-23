@@ -130,6 +130,9 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> TRAIL_RUINS_ARCHAEOLOGY_RARE;
    public static final ResourceKey<LootTable> OCEAN_RUIN_WARM_ARCHAEOLOGY;
    public static final ResourceKey<LootTable> OCEAN_RUIN_COLD_ARCHAEOLOGY;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_BARREL;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_COMMON_CHEST;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_SECRET_CHEST;
 
    public BuiltInLootTables() {
       super();
@@ -272,5 +275,8 @@ public class BuiltInLootTables {
       TRAIL_RUINS_ARCHAEOLOGY_RARE = register("archaeology/trail_ruins_rare");
       OCEAN_RUIN_WARM_ARCHAEOLOGY = register("archaeology/ocean_ruin_warm");
       OCEAN_RUIN_COLD_ARCHAEOLOGY = register("archaeology/ocean_ruin_cold");
+      ABANDONED_CAMP_BARREL = register("barrels/abandoned_camp_barrel");
+      ABANDONED_CAMP_COMMON_CHEST = register("chests/abandoned_camp_common_chest");
+      ABANDONED_CAMP_SECRET_CHEST = register("chests/abandoned_camp_secret_chest");
    }
 }

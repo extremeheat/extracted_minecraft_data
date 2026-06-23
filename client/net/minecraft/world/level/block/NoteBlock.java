@@ -78,7 +78,7 @@ public class NoteBlock extends Block {
             this.playNote((Entity)null, state, level, pos);
          }
 
-         level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, signal));
       }
 
    }
@@ -98,7 +98,7 @@ public class NoteBlock extends Block {
    protected InteractionResult useWithoutItem(BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (!level.isClientSide()) {
          state = (BlockState)state.cycle(NOTE);
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
          this.playNote(player, state, level, pos);
          player.awardStat(Stats.TUNE_NOTEBLOCK);
       }

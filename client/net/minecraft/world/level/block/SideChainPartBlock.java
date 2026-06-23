@@ -107,7 +107,7 @@ public interface SideChainPartBlock {
    private void setPart(final LevelAccessor level, final BlockPos pos, final SideChainPart newPart) {
       BlockState state = level.getBlockState(pos);
       if (this.getSideChainPart(state) != newPart) {
-         level.setBlock(pos, this.setSideChainPart(state, newPart), 3);
+         level.setBlockAndUpdate(pos, this.setSideChainPart(state, newPart));
       }
 
    }

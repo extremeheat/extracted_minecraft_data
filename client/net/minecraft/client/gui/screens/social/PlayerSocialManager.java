@@ -241,7 +241,7 @@ public class PlayerSocialManager {
       return this.presenceHandler;
    }
 
-   public boolean isFriend(UUID uuid) {
+   public boolean isFriend(final UUID uuid) {
       for(PlayerData playerData : this.getFriends()) {
          if (playerData.id.equals(uuid)) {
             return true;

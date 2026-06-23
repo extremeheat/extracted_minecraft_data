@@ -124,10 +124,6 @@ public class BedBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
-      super.fallOn(level, state, pos, entity, fallDistance * 0.5);
-   }
-
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
       if (directionToNeighbour == getNeighbourDirection((BedPart)state.getValue(PART), (Direction)state.getValue(FACING))) {
          return neighbourState.is(this) && neighbourState.getValue(PART) != state.getValue(PART) ? (BlockState)state.setValue(OCCUPIED, (Boolean)neighbourState.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();

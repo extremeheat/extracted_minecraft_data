@@ -131,6 +131,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       return RenderTypes.entityTranslucent(texture);
    }
 
+   public static RenderType getPlayerSkinRenderTypeCutout(final Identifier texture) {
+      return RenderTypes.entityCutout(texture);
+   }
+
    private static Transformation createWallTransformation(final Direction wallDirection) {
       float offset = 0.25F;
       return new Transformation(new Vector3f(0.5F - (float)wallDirection.getStepX() * 0.25F, 0.25F, 0.5F - (float)wallDirection.getStepZ() * 0.25F), Axis.YP.rotationDegrees(-wallDirection.getOpposite().toYRot()), new Vector3f(-1.0F, -1.0F, 1.0F), (Quaternionfc)null);

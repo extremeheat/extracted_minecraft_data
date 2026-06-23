@@ -33,6 +33,8 @@ import org.jspecify.annotations.Nullable;
 
 public class TeleportCommand {
    private static final SimpleCommandExceptionType INVALID_POSITION = new SimpleCommandExceptionType(Component.translatable("commands.teleport.invalidPosition"));
+   private static final CommandResponseTracker.MessagesWithArg<Entity, Entity> RESPONSE_TELEPORT_TO_ENTITY = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((entity, var1, destination) -> Component.translatable("commands.teleport.success.entity.single", entity.getDisplayName(), destination.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((elementCount, var1, destination) -> Component.translatable("commands.teleport.success.entity.multiple", elementCount, destination.getDisplayName())));
+   private static final CommandResponseTracker.MessagesWithArg<Entity, Vec3> RESPONSE_TELEPORT_TO_POS = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((entity, var1, pos) -> Component.translatable("commands.teleport.success.location.single", entity.getDisplayName(), formatDouble(pos.x), formatDouble(pos.y), formatDouble(pos.z))), (CommandResponseTracker.MultipleHandlerWithArg)((elementCount, var1, pos) -> Component.translatable("commands.teleport.success.location.multiple", elementCount, formatDouble(pos.x), formatDouble(pos.y), formatDouble(pos.z))));
 
    public TeleportCommand() {
       super();
@@ -44,20 +46,18 @@ public class TeleportCommand {
    }
 
    private static int teleportToEntity(final CommandSourceStack source, final Collection<? extends Entity> entities, final Entity destination) throws CommandSyntaxException {
+      CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
+
       for(Entity entity : entities) {
          performTeleport(source, entity, (ServerLevel)destination.level(), destination.getX(), destination.getY(), destination.getZ(), EnumSet.noneOf(Relative.class), destination.getYRot(), destination.getXRot(), (LookAt)null);
+         tracker.track(entity);
       }
 
-      if (entities.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.teleport.success.entity.single", ((Entity)entities.iterator().next()).getDisplayName(), destination.getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.teleport.success.entity.multiple", entities.size(), destination.getDisplayName()), true);
-      }
-
-      return entities.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_TELEPORT_TO_ENTITY, destination);
    }
 
    private static int teleportToPos(final CommandSourceStack source, final Collection<? extends Entity> entities, final ServerLevel level, final Coordinates destination, final @Nullable Coordinates rotation, final @Nullable LookAt lookAt) throws CommandSyntaxException {
+      CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
       Vec3 pos = destination.getPosition(source);
       Vec2 rot = rotation == null ? null : rotation.getRotation(source);
 
@@ -70,13 +70,7 @@ public class TeleportCommand {
          }
       }
 
-      if (entities.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.teleport.success.location.single", ((Entity)entities.iterator().next()).getDisplayName(), formatDouble(pos.x), formatDouble(pos.y), formatDouble(pos.z)), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.teleport.success.location.multiple", entities.size(), formatDouble(pos.x), formatDouble(pos.y), formatDouble(pos.z)), true);
-      }
-
-      return entities.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_TELEPORT_TO_POS, pos);
    }
 
    private static Set<Relative> getRelatives(final Coordinates destination, final @Nullable Coordinates rotation, final boolean sameDimension) {

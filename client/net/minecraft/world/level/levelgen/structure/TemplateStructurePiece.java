@@ -88,7 +88,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
                   LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", stateString, jigsawBlock.pos());
                }
 
-               level.setBlock(jigsawBlock.pos(), targetState, 3);
+               level.setBlockAndUpdate(jigsawBlock.pos(), targetState);
             }
          }
       }

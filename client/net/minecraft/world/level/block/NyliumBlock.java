@@ -14,7 +14,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.lighting.LightEngine;
 
 public class NyliumBlock extends Block implements BonemealableBlock {
@@ -54,7 +54,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       BlockState blockState = level.getBlockState(pos);
       BlockPos abovePos = pos.above();
       ChunkGenerator generator = level.getChunkSource().getGenerator();
-      Registry<ConfiguredFeature<?, ?>> configuredFeatures = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
+      Registry<Feature> configuredFeatures = level.registryAccess().lookupOrThrow(Registries.FEATURE);
       if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
          this.place(configuredFeatures, NetherFeatures.CRIMSON_FOREST_VEGETATION_BONEMEAL, level, generator, random, abovePos);
       } else if (blockState.is(Blocks.WARPED_NYLIUM)) {
@@ -67,9 +67,9 @@ public class NyliumBlock extends Block implements BonemealableBlock {
 
    }
 
-   private void place(final Registry<ConfiguredFeature<?, ?>> configuredFeatures, final ResourceKey<ConfiguredFeature<?, ?>> id, final ServerLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos pos) {
+   private void place(final Registry<Feature> configuredFeatures, final ResourceKey<Feature> id, final ServerLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos pos) {
       if (level.isInsideBuildHeight(pos)) {
-         configuredFeatures.get(id).ifPresent((h) -> ((ConfiguredFeature)h.value()).place(level, generator, random, pos));
+         configuredFeatures.get(id).ifPresent((h) -> ((Feature)h.value()).place(level, generator, random, pos));
       }
 
    }

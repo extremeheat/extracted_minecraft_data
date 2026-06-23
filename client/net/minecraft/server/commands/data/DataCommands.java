@@ -1,6 +1,5 @@
 package net.minecraft.server.commands.data;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -20,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.CompoundTagArgument;
@@ -34,6 +32,7 @@ import net.minecraft.nbt.PrimitiveTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.util.Mth;
 
 public class DataCommands {
@@ -44,9 +43,9 @@ public class DataCommands {
    private static final DynamicCommandExceptionType ERROR_EXPECTED_OBJECT = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.expected_object", node));
    private static final DynamicCommandExceptionType ERROR_EXPECTED_VALUE = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.expected_value", node));
    private static final Dynamic2CommandExceptionType ERROR_INVALID_SUBSTRING = new Dynamic2CommandExceptionType((start, end) -> Component.translatableEscape("commands.data.modify.invalid_substring", start, end));
-   public static final List<Function<String, DataProvider>> ALL_PROVIDERS;
-   public static final List<DataProvider> TARGET_PROVIDERS;
-   public static final List<DataProvider> SOURCE_PROVIDERS;
+   public static final List<ArgProvider.Factory<DataAccessor>> ALL_PROVIDERS;
+   public static final List<ArgProvider<DataAccessor>> TARGET_PROVIDERS;
+   public static final List<ArgProvider<DataAccessor>> SOURCE_PROVIDERS;
 
    public DataCommands() {
       super();
@@ -55,7 +54,7 @@ public class DataCommands {
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
       LiteralArgumentBuilder<CommandSourceStack> root = (LiteralArgumentBuilder)Commands.literal("data").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
-      for(DataProvider targetProvider : TARGET_PROVIDERS) {
+      for(ArgProvider<DataAccessor> targetProvider : TARGET_PROVIDERS) {
          ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)root.then(targetProvider.wrap(Commands.literal("merge"), (p) -> p.then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((c) -> mergeData((CommandSourceStack)c.getSource(), targetProvider.access(c), CompoundTagArgument.getCompoundTag(c, "nbt"))))))).then(targetProvider.wrap(Commands.literal("get"), (p) -> p.executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c))).then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path")))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getNumeric((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"), DoubleArgumentType.getDouble(c, "scale")))))))).then(targetProvider.wrap(Commands.literal("remove"), (p) -> p.then(Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> removeData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"))))))).then(decorateModification((parent, rest) -> parent.then(Commands.literal("insert").then(Commands.argument("index", IntegerArgumentType.integer()).then(rest.create((context, target, targetPath, source) -> targetPath.insert(IntegerArgumentType.getInteger(context, "index"), target, source))))).then(Commands.literal("prepend").then(rest.create((context, target, targetPath, source) -> targetPath.insert(0, target, source)))).then(Commands.literal("append").then(rest.create((context, target, targetPath, source) -> targetPath.insert(-1, target, source)))).then(Commands.literal("set").then(rest.create((context, target, targetPath, source) -> targetPath.set(target, (Tag)Iterables.getLast(source))))).then(Commands.literal("merge").then(rest.create((context, target, targetPath, source) -> {
                CompoundTag combinedSources = new CompoundTag();
 
@@ -139,11 +138,11 @@ public class DataCommands {
    private static ArgumentBuilder<CommandSourceStack, ?> decorateModification(final BiConsumer<ArgumentBuilder<CommandSourceStack, ?>, DataManipulatorDecorator> nodeSupplier) {
       LiteralArgumentBuilder<CommandSourceStack> modify = Commands.literal("modify");
 
-      for(DataProvider targetProvider : TARGET_PROVIDERS) {
+      for(ArgProvider<DataAccessor> targetProvider : TARGET_PROVIDERS) {
          targetProvider.wrap(modify, (t) -> {
             ArgumentBuilder<CommandSourceStack, ?> targetPathNode = Commands.argument("targetPath", NbtPathArgument.nbtPath());
 
-            for(DataProvider sourceProvider : SOURCE_PROVIDERS) {
+            for(ArgProvider<DataAccessor> sourceProvider : SOURCE_PROVIDERS) {
                nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> sourceProvider.wrap(Commands.literal("from"), (s) -> s.executes((c) -> manipulateData(c, targetProvider, manipulator, getSingletonSource(c, sourceProvider))).then(Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((c) -> manipulateData(c, targetProvider, manipulator, resolveSourcePath(c, sourceProvider))))));
                nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> sourceProvider.wrap(Commands.literal("string"), (s) -> s.executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(getSingletonSource(c, sourceProvider), (str) -> str))).then(((RequiredArgumentBuilder)Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> str)))).then(((RequiredArgumentBuilder)Commands.argument("start", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start")))))).then(Commands.argument("end", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start"), IntegerArgumentType.getInteger(c, "end"))))))))));
             }
@@ -183,18 +182,18 @@ public class DataCommands {
       return index >= 0 ? index : length + index;
    }
 
-   private static List<Tag> getSingletonSource(final CommandContext<CommandSourceStack> context, final DataProvider sourceProvider) throws CommandSyntaxException {
+   private static List<Tag> getSingletonSource(final CommandContext<CommandSourceStack> context, final ArgProvider<DataAccessor> sourceProvider) throws CommandSyntaxException {
       DataAccessor source = sourceProvider.access(context);
       return Collections.singletonList(source.getData());
    }
 
-   private static List<Tag> resolveSourcePath(final CommandContext<CommandSourceStack> context, final DataProvider sourceProvider) throws CommandSyntaxException {
+   private static List<Tag> resolveSourcePath(final CommandContext<CommandSourceStack> context, final ArgProvider<DataAccessor> sourceProvider) throws CommandSyntaxException {
       DataAccessor source = sourceProvider.access(context);
       NbtPathArgument.NbtPath sourcePath = NbtPathArgument.getPath(context, "sourcePath");
       return sourcePath.get(source.getData());
    }
 
-   private static int manipulateData(final CommandContext<CommandSourceStack> context, final DataProvider targetProvider, final DataManipulator manipulator, final List<Tag> source) throws CommandSyntaxException {
+   private static int manipulateData(final CommandContext<CommandSourceStack> context, final ArgProvider<DataAccessor> targetProvider, final DataManipulator manipulator, final List<Tag> source) throws CommandSyntaxException {
       DataAccessor target = targetProvider.access(context);
       NbtPathArgument.NbtPath targetPath = NbtPathArgument.getPath(context, "targetPath");
       CompoundTag targetData = target.getData();
@@ -314,9 +313,9 @@ public class DataCommands {
    }
 
    static {
-      ALL_PROVIDERS = ImmutableList.of(EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER);
-      TARGET_PROVIDERS = (List)ALL_PROVIDERS.stream().map((f) -> (DataProvider)f.apply("target")).collect(ImmutableList.toImmutableList());
-      SOURCE_PROVIDERS = (List)ALL_PROVIDERS.stream().map((f) -> (DataProvider)f.apply("source")).collect(ImmutableList.toImmutableList());
+      ALL_PROVIDERS = List.of(EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER);
+      TARGET_PROVIDERS = ArgProvider.buildList("target", ALL_PROVIDERS);
+      SOURCE_PROVIDERS = ArgProvider.buildList("source", ALL_PROVIDERS);
    }
 
    @FunctionalInterface
@@ -327,12 +326,6 @@ public class DataCommands {
    @FunctionalInterface
    private interface DataManipulatorDecorator {
       ArgumentBuilder<CommandSourceStack, ?> create(DataManipulator manipulator);
-   }
-
-   public interface DataProvider {
-      DataAccessor access(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
-
-      ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> parent, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function);
    }
 
    @FunctionalInterface

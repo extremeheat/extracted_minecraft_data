@@ -39,6 +39,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
       Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
       Registry.register(registry, (String)"difficulty", TestEnvironmentDefinition.SetDifficulty.CODEC);
+      Registry.register(registry, (String)"dimension", TestEnvironmentDefinition.Dimension.CODEC);
       Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
       Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"timeline_attributes", TestEnvironmentDefinition.Timelines.CODEC);
@@ -69,6 +70,47 @@ public interface TestEnvironmentDefinition<SavedDataType> {
 
       public void teardown() {
          this.definition.teardown(this.level, this.value);
+      }
+   }
+
+   public static record Dimension(Type type) implements TestEnvironmentDefinition<Type> {
+      public static final MapCodec<Dimension> CODEC = RecordCodecBuilder.mapCodec((instance) -> instance.group(TestEnvironmentDefinition.Dimension.Type.CODEC.fieldOf("dimension").forGetter(Dimension::type)).apply(instance, Dimension::new));
+
+      public Dimension {
+         super();
+      }
+
+      public Type setup(final ServerLevel level) {
+         return this.type;
+      }
+
+      public void teardown(final ServerLevel level, final Type savedData) {
+      }
+
+      public MapCodec<Dimension> codec() {
+         return CODEC;
+      }
+
+      public static enum Type implements StringRepresentable {
+         OVERWORLD("overworld"),
+         NETHER("nether"),
+         END("end");
+
+         public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+         private final String id;
+
+         private Type(final String id) {
+            this.id = id;
+         }
+
+         public String getSerializedName() {
+            return this.id;
+         }
+
+         // $FF: synthetic method
+         private static Type[] $values() {
+            return new Type[]{OVERWORLD, NETHER, END};
+         }
       }
    }
 

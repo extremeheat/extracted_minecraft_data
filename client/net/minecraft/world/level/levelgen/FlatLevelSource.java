@@ -39,7 +39,7 @@ public class FlatLevelSource extends ChunkGenerator {
 
    public ChunkGeneratorStructureState createState(final HolderLookup<StructureSet> structureSets, final RandomState randomState, final long levelSeed) {
       Stream<Holder<StructureSet>> structures = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> structureSets.listElements().map((e) -> e));
-      return ChunkGeneratorStructureState.createForFlat(randomState, levelSeed, this.biomeSource, structures);
+      return ChunkGeneratorStructureState.createForFlat(randomState, levelSeed, this.getOrigin(randomState), this.biomeSource, structures);
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {

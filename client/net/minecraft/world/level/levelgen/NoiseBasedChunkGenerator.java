@@ -34,6 +34,7 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.CarvingMask;
@@ -84,11 +85,16 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    private void doCreateBiomes(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess protoChunk) {
       NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
       BiomeResolver biomeResolver = BelowZeroRetrogen.getBiomeResolver(blender.getBiomeResolver(this.biomeSource), protoChunk);
-      protoChunk.fillBiomesFromNoise(biomeResolver, noiseChunk.cachedClimateSampler(randomState.router(), (this.settings.value()).spawnTarget()));
+      protoChunk.fillBiomesFromNoise(biomeResolver, noiseChunk.cachedClimateSampler(randomState.router()));
    }
 
    private NoiseChunk createNoiseChunk(final ChunkAccess chunk, final StructureManager structureManager, final Blender blender, final RandomState randomState) {
       return NoiseChunk.forChunk(chunk, randomState, Beardifier.forStructuresInChunk(structureManager, chunk.getPos()), this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), blender);
+   }
+
+   public ChunkPos getOrigin(final RandomState randomState) {
+      List<Climate.ParameterPoint> spawnTarget = ((NoiseGeneratorSettings)this.settings.value()).spawnTarget();
+      return spawnTarget.isEmpty() ? super.getOrigin(randomState) : ChunkPos.containing(Climate.findSpawnPosition(spawnTarget, randomState.sampler()));
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
@@ -228,7 +234,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public void buildSurface(final ChunkAccess protoChunk, final WorldGenerationContext context, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final Blender blender, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
       NoiseGeneratorSettings settings = this.settings.value();
-      randomState.surfaceSystem().buildSurface(randomState, biomeManager, settings.useLegacyRandomSource(), context, protoChunk, noiseChunk, settings.surfaceRule(), possibleBiomes);
+      randomState.surfaceSystem().buildSurface(randomState, biomeManager, settings.useLegacyRandomSource(), context, protoChunk, noiseChunk, (SurfaceRules.RuleSource)settings.materialRule().value(), possibleBiomes);
    }
 
    public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
@@ -239,7 +245,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          ChunkPos pos = chunk.getPos();
          NoiseChunk noiseChunk = chunk.getOrCreateNoiseChunk((c) -> this.createNoiseChunk(c, structureManager, Blender.of(region), randomState));
          Aquifer aquifer = noiseChunk.aquifer();
-         CarvingContext context = new CarvingContext(this, region.registryAccess(), chunk.getHeightAccessorForGeneration(), noiseChunk, randomState, ((NoiseGeneratorSettings)this.settings.value()).surfaceRule());
+         CarvingContext context = new CarvingContext(this, region.registryAccess(), chunk.getHeightAccessorForGeneration(), noiseChunk, randomState, (SurfaceRules.RuleSource)(this.settings.value()).materialRule().value());
          CarvingMask mask = ((ProtoChunk)chunk).getOrCreateCarvingMask();
 
          for(int dx = -8; dx <= 8; ++dx) {

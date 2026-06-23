@@ -15,12 +15,12 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<PlacementModifier> placement) {
-   public static final Codec<PlacedFeature> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ConfiguredFeature.CODEC.fieldOf("feature").forGetter((c) -> c.feature), PlacementModifier.CODEC.listOf().fieldOf("placement").forGetter((c) -> c.placement)).apply(i, PlacedFeature::new));
+public record PlacedFeature(Holder<Feature> feature, List<PlacementModifier> placement) {
+   public static final Codec<PlacedFeature> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Feature.CODEC.fieldOf("feature").forGetter((c) -> c.feature), PlacementModifier.CODEC.listOf().fieldOf("placement").forGetter((c) -> c.placement)).apply(i, PlacedFeature::new));
    public static final Codec<Holder<PlacedFeature>> CODEC;
    public static final Codec<HolderSet<PlacedFeature>> LIST_CODEC;
    public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC;
@@ -44,7 +44,7 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<Placem
          placements = placements.flatMap((p) -> placementModifier.getPositions(context, random, p));
       }
 
-      ConfiguredFeature<?, ?> feature = this.feature.value();
+      Feature feature = this.feature.value();
       MutableBoolean placedAny = new MutableBoolean();
       placements.forEach((pos) -> {
          if (feature.place(context.getLevel(), context.generator(), random, pos)) {
@@ -58,8 +58,8 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<Placem
       return placedAny.isTrue();
    }
 
-   public Stream<Holder<ConfiguredFeature<?, ?>>> getFeatures() {
-      return Stream.concat(Stream.of(this.feature), ((ConfiguredFeature)this.feature.value()).getSubFeatures());
+   public Stream<Holder<Feature>> getFeatures() {
+      return Stream.concat(Stream.of(this.feature), (this.feature.value()).getSubFeatures());
    }
 
    public String toString() {

@@ -73,14 +73,14 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
       if ((Boolean)state.getValue(LIT)) {
          if (neighborSignal) {
-            level.setBlock(pos, (BlockState)state.setValue(LIT, false), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
             if (isToggledTooFrequently(level, pos, true)) {
                level.levelEvent(1502, pos, 0);
                level.scheduleTick(pos, level.getBlockState(pos).getBlock(), 160);
             }
          }
       } else if (!neighborSignal && !isToggledTooFrequently(level, pos, false)) {
-         level.setBlock(pos, (BlockState)state.setValue(LIT, true), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, true));
       }
 
    }

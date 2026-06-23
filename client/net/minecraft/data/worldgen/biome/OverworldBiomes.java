@@ -583,6 +583,22 @@ public class OverworldBiomes {
       }
    }
 
+   public static Biome dappledForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+      BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
+      globalOverworldGeneration(generation);
+      BackgroundMusic music = new BackgroundMusic(SoundEvents.MUSIC_BIOME_FLOWER_FOREST);
+      BiomeDefaultFeatures.addDefaultOres(generation);
+      BiomeDefaultFeatures.addDefaultSoftDisks(generation);
+      generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_DAPPLED_FOREST);
+      BiomeDefaultFeatures.addDappledForestVegetation(generation);
+      BiomeDefaultFeatures.addForestGrass(generation);
+      MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(mobs);
+      BiomeDefaultFeatures.commonSpawns(mobs);
+      mobs.addSpawn(MobCategory.CREATURE, 4, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 4)).addSpawn(MobCategory.CREATURE, 4, new MobSpawnSettings.SpawnerData(EntityTypes.FOX, 2, 4));
+      return baseBiome(0.6F, 0.6F).putAttributes(EnvironmentAttributeMap.builder().set(EnvironmentAttributes.BACKGROUND_MUSIC, music).set(EnvironmentAttributes.SKY_COLOR, 8168447).set(EnvironmentAttributes.FOG_COLOR, 13424866).set(EnvironmentAttributes.WATER_FOG_COLOR, 3625300).build()).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3625300).grassColorOverride(14641191).foliageColorOverride(15109680).dryFoliageColorOverride(9189892).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+   }
+
    private static Biome.BiomeBuilder basePeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();

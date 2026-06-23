@@ -23,7 +23,7 @@ import org.joml.Quaternionfc;
 
 public class CustomHeadLayer<S extends LivingEntityRenderState, M extends EntityModel<S> & HeadedModel> extends RenderLayer<S, M> {
    private static final float ITEM_SCALE = 0.625F;
-   private static final float SKULL_SCALE = 1.1875F;
+   public static final float SKULL_SCALE = 1.1875F;
    private final Transforms transforms;
    private final Function<SkullBlock.Type, SkullModelBase> skullModels;
    private final PlayerSkinRenderCache playerSkinRenderCache;
@@ -42,7 +42,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
       if (!state.headItem.isEmpty() || state.wornHeadType != null) {
          poseStack.pushPose();
-         poseStack.scale(this.transforms.horizontalScale(), 1.0F, this.transforms.horizontalScale());
+         poseStack.scale(this.transforms.horizontalScale(), this.transforms.verticalScale(), this.transforms.horizontalScale());
          M parentModel = this.getParentModel();
          parentModel.root().translateAndRotate(poseStack);
          ((HeadedModel)parentModel).translateToHead(poseStack);
@@ -66,7 +66,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
       if (type == SkullBlock.Types.PLAYER) {
          ResolvableProfile profile = state.wornHeadProfile;
          if (profile != null) {
-            return this.playerSkinRenderCache.getOrDefault(profile).renderType();
+            return (RenderType)this.transforms.playerSkinRenderTypeResolver().apply(this.playerSkinRenderCache.getOrDefault(profile));
          }
       }
 
@@ -79,8 +79,18 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
       poseStack.scale(0.625F, -0.625F, -0.625F);
    }
 
-   public static record Transforms(float yOffset, float skullYOffset, float horizontalScale) {
-      public static final Transforms DEFAULT = new Transforms(0.0F, 0.0F, 1.0F);
+   public static record Transforms(float yOffset, float skullYOffset, float horizontalScale, float verticalScale, Function<PlayerSkinRenderCache.RenderInfo, RenderType> playerSkinRenderTypeResolver) {
+      public static final Function<PlayerSkinRenderCache.RenderInfo, RenderType> TRANSLUCENT_PLAYER_SKIN_RESOLVER = PlayerSkinRenderCache.RenderInfo::renderType;
+      public static final Function<PlayerSkinRenderCache.RenderInfo, RenderType> CUTOUT_PLAYER_SKIN_RESOLVER = (renderInfo) -> SkullBlockRenderer.getPlayerSkinRenderTypeCutout(renderInfo.playerSkin().body().texturePath());
+      public static final Transforms DEFAULT = new Transforms(0.0F, 0.0F, 1.0F, 1.0F);
+
+      public Transforms(final float yOffset, final float skullYOffset, final float horizontalScale, final float verticalScale) {
+         this(yOffset, skullYOffset, horizontalScale, verticalScale, TRANSLUCENT_PLAYER_SKIN_RESOLVER);
+      }
+
+      public Transforms(final float yOffset, final float skullYOffset, final float horizontalScale) {
+         this(yOffset, skullYOffset, horizontalScale, 1.0F);
+      }
 
       public Transforms {
          super();

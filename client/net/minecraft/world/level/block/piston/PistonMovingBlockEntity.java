@@ -1,13 +1,11 @@
 package net.minecraft.world.level.block.piston;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
@@ -118,59 +116,46 @@ public class PistonMovingBlockEntity extends BlockEntity {
          if (!entities.isEmpty()) {
             List<AABB> shapeAabbs = shape.toAabbs();
             boolean causeBounce = self.movedState.is(Blocks.SLIME_BLOCK);
-            Iterator var12 = entities.iterator();
 
-            while(true) {
-               Entity entity;
-               while(true) {
-                  if (!var12.hasNext()) {
-                     return;
-                  }
-
-                  entity = (Entity)var12.next();
-                  if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
-                     if (!causeBounce) {
-                        break;
+            for(Entity entity : entities) {
+               if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
+                  if (causeBounce && entity.canSimulateMovement()) {
+                     Vec3 deltaMovement = entity.getDeltaMovement();
+                     double dx = deltaMovement.x;
+                     double dy = deltaMovement.y;
+                     double dz = deltaMovement.z;
+                     switch (movement.getAxis()) {
+                        case X -> dx = (double)movement.getStepX();
+                        case Y -> dy = (double)movement.getStepY();
+                        case Z -> dz = (double)movement.getStepZ();
                      }
 
-                     if (!(entity instanceof ServerPlayer)) {
-                        Vec3 deltaMovement = entity.getDeltaMovement();
-                        double dx = deltaMovement.x;
-                        double dy = deltaMovement.y;
-                        double dz = deltaMovement.z;
-                        switch (movement.getAxis()) {
-                           case X -> dx = (double)movement.getStepX();
-                           case Y -> dy = (double)movement.getStepY();
-                           case Z -> dz = (double)movement.getStepZ();
+                     entity.setDeltaMovement(dx, dy, dz);
+                  }
+
+                  double delta = 0.0;
+
+                  for(AABB shapeAabb : shapeAabbs) {
+                     AABB movingAABB = PistonMath.getMovementArea(moveByPositionAndProgress(pos, shapeAabb, self), movement, deltaProgress);
+                     AABB entityAabb = entity.getBoundingBox();
+                     if (movingAABB.intersects(entityAabb)) {
+                        delta = Math.max(delta, getMovement(movingAABB, movement, entityAabb));
+                        if (delta >= deltaProgress) {
+                           break;
                         }
-
-                        entity.setDeltaMovement(dx, dy, dz);
-                        break;
                      }
                   }
-               }
 
-               double delta = 0.0;
-
-               for(AABB shapeAabb : shapeAabbs) {
-                  AABB movingAABB = PistonMath.getMovementArea(moveByPositionAndProgress(pos, shapeAabb, self), movement, deltaProgress);
-                  AABB entityAabb = entity.getBoundingBox();
-                  if (movingAABB.intersects(entityAabb)) {
-                     delta = Math.max(delta, getMovement(movingAABB, movement, entityAabb));
-                     if (delta >= deltaProgress) {
-                        break;
+                  if (!(delta <= 0.0)) {
+                     delta = Math.min(delta, deltaProgress) + 0.01;
+                     moveEntityByPiston(movement, entity, delta, movement);
+                     if (!self.extending && self.isSourcePiston) {
+                        fixEntityWithinPistonBase(pos, entity, movement, deltaProgress);
                      }
-                  }
-               }
-
-               if (!(delta <= 0.0)) {
-                  delta = Math.min(delta, deltaProgress) + 0.01;
-                  moveEntityByPiston(movement, entity, delta, movement);
-                  if (!self.extending && self.isSourcePiston) {
-                     fixEntityWithinPistonBase(pos, entity, movement, deltaProgress);
                   }
                }
             }
+
          }
       }
    }
@@ -268,7 +253,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
                newState = Block.updateFromNeighbourShapes(this.movedState, this.level, this.worldPosition);
             }
 
-            this.level.setBlock(this.worldPosition, newState, 3);
+            this.level.setBlockAndUpdate(this.worldPosition, newState);
             this.level.neighborChanged(this.worldPosition, newState.getBlock(), ExperimentalRedstoneUtils.initialOrientation(this.level, this.getPushDirection(), (Direction)null));
          }
       }

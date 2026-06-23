@@ -6,15 +6,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.advancements.predicates.LocationPredicate;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offset) implements LootItemCondition {
-   private static final MapCodec<BlockPos> OFFSET_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.optionalFieldOf("offsetX", 0).forGetter(Vec3i::getX), Codec.INT.optionalFieldOf("offsetY", 0).forGetter(Vec3i::getY), Codec.INT.optionalFieldOf("offsetZ", 0).forGetter(Vec3i::getZ)).apply(i, BlockPos::new));
+public record LocationCheck(Optional<LocationPredicate> predicate, Vec3i offset) implements LootItemCondition {
+   private static final MapCodec<Vec3i> OFFSET_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.optionalFieldOf("offsetX", 0).forGetter(Vec3i::getX), Codec.INT.optionalFieldOf("offsetY", 0).forGetter(Vec3i::getY), Codec.INT.optionalFieldOf("offsetZ", 0).forGetter(Vec3i::getZ)).apply(i, Vec3i::new));
    public static final MapCodec<LocationCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LocationPredicate.CODEC.optionalFieldOf("predicate").forGetter(LocationCheck::predicate), OFFSET_CODEC.forGetter(LocationCheck::offset)).apply(i, LocationCheck::new));
 
    public LocationCheck {
@@ -35,10 +35,14 @@ public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offs
    }
 
    public static LootItemCondition.Builder checkLocation(final LocationPredicate.Builder predicate) {
-      return () -> new LocationCheck(Optional.of(predicate.build()), BlockPos.ZERO);
+      return () -> new LocationCheck(Optional.of(predicate.build()), Vec3i.ZERO);
    }
 
-   public static LootItemCondition.Builder checkLocation(final LocationPredicate.Builder predicate, final BlockPos offset) {
+   public static LootItemCondition.Builder checkLocation(final LocationPredicate.Builder predicate, final Vec3i offset) {
       return () -> new LocationCheck(Optional.of(predicate.build()), offset);
+   }
+
+   public static LootItemCondition.Builder checkLocation(final LocationPredicate.Builder predicate, final Direction direction) {
+      return checkLocation(predicate, direction.getUnitVec3i());
    }
 }

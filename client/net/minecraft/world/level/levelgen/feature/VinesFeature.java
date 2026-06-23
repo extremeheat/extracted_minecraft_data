@@ -1,23 +1,28 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class VinesFeature extends Feature<NoneFeatureConfiguration> {
-   public VinesFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record VinesFeature() implements Feature {
+   public static final VinesFeature INSTANCE = new VinesFeature();
+   public static final MapCodec<VinesFeature> CODEC;
+
+   public VinesFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      context.config();
+   public MapCodec<VinesFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (!level.isEmptyBlock(origin)) {
          return false;
       } else {
@@ -30,5 +35,9 @@ public class VinesFeature extends Feature<NoneFeatureConfiguration> {
 
          return false;
       }
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

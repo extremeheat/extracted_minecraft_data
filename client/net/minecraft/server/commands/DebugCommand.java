@@ -82,6 +82,8 @@ public class DebugCommand {
    }
 
    private static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
+      private static final CommandResponseTracker.DispatchWithArg<Component, CommandFunction<CommandSourceStack>, String> RESPONSE_TRACE = new CommandResponseTracker.DispatchWithArg<Component, CommandFunction<CommandSourceStack>, String>((function, totalValue, outputName) -> Component.translatable("commands.debug.function.success.single", totalValue, Component.translationArg(function.id()), outputName), (functionCount, totalValue, outputName) -> Component.translatable("commands.debug.function.success.multiple", totalValue, functionCount, outputName));
+
       private TraceCustomExecutor() {
          super();
       }
@@ -97,7 +99,7 @@ public class DebugCommand {
             MinecraftServer server = source.getServer();
             String outputName = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
             CommandDispatcher<CommandSourceStack> dispatcher = source.getServer().getFunctions().getDispatcher();
-            int commandCount = 0;
+            CommandResponseTracker<CommandFunction<CommandSourceStack>> tracker = CommandResponseTracker.<CommandFunction<CommandSourceStack>>create();
 
             try {
                Path dirPath = server.getFile("debug");
@@ -120,7 +122,7 @@ public class DebugCommand {
                            super.execute(sender, context, frame);
                         }
                      }).bind(functionSource));
-                     commandCount += instantiatedFunction.entries().size();
+                     tracker.track(function, instantiatedFunction.entries().size());
                   } catch (FunctionInstantiationException exception) {
                      source.sendFailure(exception.messageComponent());
                   }
@@ -130,14 +132,7 @@ public class DebugCommand {
                source.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
             }
 
-            context.queueNext((c, frame) -> {
-               if (functions.size() == 1) {
-                  source.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", commandCount, Component.translationArg(((CommandFunction)functions.iterator().next()).id()), outputName), true);
-               } else {
-                  source.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", commandCount, functions.size(), outputName), true);
-               }
-
-            });
+            context.queueNext((var3, var4) -> source.sendSuccess(() -> (Component)tracker.dispatch(CommandResponseTracker.ElementType.ANY, RESPONSE_TRACE, outputName), true));
          }
       }
    }

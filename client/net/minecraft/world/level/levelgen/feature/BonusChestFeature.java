@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.stream.IntStream;
@@ -13,30 +13,35 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
-public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
-   public BonusChestFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record BonusChestFeature() implements Feature {
+   public static final BonusChestFeature INSTANCE = new BonusChestFeature();
+   public static final MapCodec<BonusChestFeature> CODEC;
+
+   public BonusChestFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      ChunkPos chunkPos = ChunkPos.containing(context.origin());
+   public MapCodec<BonusChestFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      ChunkPos chunkPos = ChunkPos.containing(origin);
       IntArrayList xPoses = Util.toShuffledList(IntStream.rangeClosed(chunkPos.getMinBlockX(), chunkPos.getMaxBlockX()), random);
       IntArrayList zPoses = Util.toShuffledList(IntStream.rangeClosed(chunkPos.getMinBlockZ(), chunkPos.getMaxBlockZ()), random);
       BlockPos.MutableBlockPos mutPos = new BlockPos.MutableBlockPos();
-      IntListIterator var8 = xPoses.iterator();
+      IntListIterator var9 = xPoses.iterator();
 
-      while(var8.hasNext()) {
-         Integer x = (Integer)var8.next();
-         IntListIterator var10 = zPoses.iterator();
+      while(var9.hasNext()) {
+         Integer x = (Integer)var9.next();
+         IntListIterator var11 = zPoses.iterator();
 
-         while(var10.hasNext()) {
-            Integer z = (Integer)var10.next();
+         while(var11.hasNext()) {
+            Integer z = (Integer)var11.next();
             mutPos.set(x, 0, z);
             BlockPos chestPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, mutPos);
             if (level.isEmptyBlock(chestPos) || level.getBlockState(chestPos).getCollisionShape(level, chestPos).isEmpty()) {
@@ -57,5 +62,9 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
       }
 
       return false;
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

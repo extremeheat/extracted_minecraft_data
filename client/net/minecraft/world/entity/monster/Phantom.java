@@ -410,7 +410,7 @@ public class Phantom extends Mob implements Enemy {
                if (!Phantom.this.isSilent()) {
                   Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
                }
-            } else if (Phantom.this.horizontalCollision || Phantom.this.hurtTime > 0) {
+            } else if (Phantom.this.horizontalCollision || Phantom.this.wasHurtRecently()) {
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
             }
 

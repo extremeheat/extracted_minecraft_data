@@ -24,6 +24,7 @@ public class BlockItemTags {
    public static final BlockItemTagId ACACIA_LOGS = BlockItemTagId.create("acacia_logs");
    public static final BlockItemTagId SPRUCE_LOGS = BlockItemTagId.create("spruce_logs");
    public static final BlockItemTagId MANGROVE_LOGS = BlockItemTagId.create("mangrove_logs");
+   public static final BlockItemTagId POPLAR_LOGS = BlockItemTagId.create("poplar_logs");
    public static final BlockItemTagId JUNGLE_LOGS = BlockItemTagId.create("jungle_logs");
    public static final BlockItemTagId CHERRY_LOGS = BlockItemTagId.create("cherry_logs");
    public static final BlockItemTagId CRIMSON_STEMS = BlockItemTagId.create("crimson_stems");
@@ -56,6 +57,7 @@ public class BlockItemTags {
    public static final BlockItemTagId COAL_ORES = BlockItemTagId.create("coal_ores");
    public static final BlockItemTagId EMERALD_ORES = BlockItemTagId.create("emerald_ores");
    public static final BlockItemTagId COPPER_ORES = BlockItemTagId.create("copper_ores");
+   public static final BlockItemTagId ORES = BlockItemTagId.create("ores");
    public static final BlockItemTagId DIRT = BlockItemTagId.create("dirt");
    public static final BlockItemTagId MUD = BlockItemTagId.create("mud");
    public static final BlockItemTagId MOSS_BLOCKS = BlockItemTagId.create("moss_blocks");
@@ -74,6 +76,9 @@ public class BlockItemTags {
    public static final BlockItemTagId WOODEN_SHELVES = BlockItemTagId.create("wooden_shelves");
    public static final BlockItemTagId LANTERNS = BlockItemTagId.create("lanterns");
    public static final BlockItemTagId BARS = BlockItemTagId.create("bars");
+   public static final BlockItemTagId WOOL_STAIRS = BlockItemTagId.create("wool_stairs");
+   public static final BlockItemTagId WOOL_SLABS = BlockItemTagId.create("wool_slabs");
+   public static final BlockItemTagId SKULLS = BlockItemTagId.create("skulls");
    public static final BlockItemTagId SIGNS = BlockItemTagId.create("standing_signs", "signs");
    public static final BlockItemTagId HANGING_SIGNS = BlockItemTagId.create("ceiling_hanging_signs", "hanging_signs");
    public static final BlockItemTagId BEE_FOOD = BlockItemTagId.create("bee_attractive", "bee_food");

@@ -1,39 +1,43 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.ColumnFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import org.jspecify.annotations.Nullable;
 
-public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
+public record BasaltColumnsFeature(IntProvider reach, IntProvider height) implements Feature {
+   public static final MapCodec<BasaltColumnsFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProviders.codec(0, 3).fieldOf("reach").forGetter(BasaltColumnsFeature::reach), IntProviders.codec(1, 10).fieldOf("height").forGetter(BasaltColumnsFeature::height)).apply(i, BasaltColumnsFeature::new));
    private static final ImmutableList<Block> CANNOT_PLACE_ON;
    private static final int CLUSTERED_REACH = 5;
    private static final int CLUSTERED_SIZE = 50;
    private static final int UNCLUSTERED_REACH = 8;
    private static final int UNCLUSTERED_SIZE = 15;
 
-   public BasaltColumnsFeature(final Codec<ColumnFeatureConfiguration> codec) {
-      super(codec);
+   public BasaltColumnsFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<ColumnFeatureConfiguration> context) {
-      int lavaSeaLevel = context.chunkGenerator().getSeaLevel();
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      ColumnFeatureConfiguration config = context.config();
+   public MapCodec<BasaltColumnsFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      int lavaSeaLevel = chunkGenerator.getSeaLevel();
       if (!canPlaceAt(level, lavaSeaLevel, origin.mutable())) {
          return false;
       } else {
-         int columnHeight = config.height().sample(random);
+         int columnHeight = this.height.sample(random);
          boolean genereteClustered = random.nextFloat() < 0.9F;
          int reach = Math.min(columnHeight, genereteClustered ? 5 : 8);
          int count = genereteClustered ? 50 : 15;
@@ -42,7 +46,7 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
          for(BlockPos pos : BlockPos.randomBetweenClosed(random, count, origin.getX() - reach, origin.getY(), origin.getZ() - reach, origin.getX() + reach, origin.getY(), origin.getZ() + reach)) {
             int blocksToPlaceY = columnHeight - pos.distManhattan(origin);
             if (blocksToPlaceY >= 0) {
-               placed |= this.placeColumn(level, lavaSeaLevel, pos, blocksToPlaceY, config.reach().sample(random));
+               placed |= this.placeColumn(level, lavaSeaLevel, pos, blocksToPlaceY, this.reach.sample(random));
             }
          }
 

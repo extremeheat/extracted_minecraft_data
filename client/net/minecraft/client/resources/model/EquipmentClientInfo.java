@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
-public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
+public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identifier, Identifier> trimPaletteReplacements) {
    private static final Codec<List<Layer>> LAYER_LIST_CODEC;
    public static final Codec<EquipmentClientInfo> CODEC;
 
@@ -33,7 +33,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
 
    static {
       LAYER_LIST_CODEC = ExtraCodecs.nonEmptyList(EquipmentClientInfo.Layer.CODEC.listOf());
-      CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers)).apply(i, EquipmentClientInfo::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers), Codec.unboundedMap(Identifier.CODEC, Identifier.CODEC).optionalFieldOf("trim_palette_replacements", Map.of()).forGetter(EquipmentClientInfo::trimPaletteReplacements)).apply(i, EquipmentClientInfo::new));
    }
 
    public static record Layer(Identifier textureId, Optional<Dyeable> dyeable, boolean usePlayerTexture) {
@@ -73,6 +73,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
 
    public static class Builder {
       private final Map<LayerType, List<Layer>> layersByType = new EnumMap(LayerType.class);
+      private final ImmutableMap.Builder<Identifier, Identifier> trimPaletteReplacements = ImmutableMap.builder();
 
       private Builder() {
          super();
@@ -99,8 +100,13 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
          return this;
       }
 
+      public Builder replaceTrimPalette(final Identifier fromPaletteId, final Identifier toPaletteId) {
+         this.trimPaletteReplacements.put(fromPaletteId, toPaletteId);
+         return this;
+      }
+
       public EquipmentClientInfo build() {
-         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> List.copyOf((Collection)entry.getValue()))));
+         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> List.copyOf((Collection)entry.getValue()))), this.trimPaletteReplacements.build());
       }
    }
 

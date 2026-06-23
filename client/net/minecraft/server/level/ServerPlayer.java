@@ -1055,7 +1055,7 @@ public class ServerPlayer extends Player {
       if (block instanceof RespawnAnchorBlock && (forced || (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(level, pos)) {
          Optional<Vec3> standUpPosition = RespawnAnchorBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos);
          if (!forced && consumeSpawnBlock && standUpPosition.isPresent()) {
-            level.setBlock(pos, (BlockState)blockState.setValue(RespawnAnchorBlock.CHARGE, (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
+            level.setBlockAndUpdate(pos, (BlockState)blockState.setValue(RespawnAnchorBlock.CHARGE, (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) - 1));
          }
 
          return standUpPosition.map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
@@ -2002,8 +2002,8 @@ public class ServerPlayer extends Player {
       return this.allowsListing;
    }
 
-   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
-      return Optional.of(this.wardenSpawnTracker);
+   public WardenSpawnTracker getWardenSpawnTracker() {
+      return this.wardenSpawnTracker;
    }
 
    public void setSpawnExtraParticlesOnFall(final boolean toggle) {

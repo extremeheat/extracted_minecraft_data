@@ -1,6 +1,8 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -8,26 +10,28 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TallSeagrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 
-public class SeagrassFeature extends Feature<ProbabilityFeatureConfiguration> {
-   public SeagrassFeature(final Codec<ProbabilityFeatureConfiguration> codec) {
-      super(codec);
+public record SeagrassFeature(float probability) implements Feature {
+   public static final MapCodec<SeagrassFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter(SeagrassFeature::probability)).apply(i, SeagrassFeature::new));
+
+   public SeagrassFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<ProbabilityFeatureConfiguration> context) {
+   public MapCodec<SeagrassFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       boolean placedAny = false;
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      ProbabilityFeatureConfiguration config = context.config();
       int x = random.nextInt(8) - random.nextInt(8);
       int z = random.nextInt(8) - random.nextInt(8);
       int y = level.getHeight(Heightmap.Types.OCEAN_FLOOR, origin.getX() + x, origin.getZ() + z);
       BlockPos grassPos = new BlockPos(origin.getX() + x, y, origin.getZ() + z);
       if (level.getBlockState(grassPos).is(Blocks.WATER)) {
-         boolean isTall = random.nextDouble() < (double)config.probability;
+         boolean isTall = random.nextDouble() < (double)this.probability;
          BlockState state = isTall ? Blocks.TALL_SEAGRASS.defaultBlockState() : Blocks.SEAGRASS.defaultBlockState();
          if (state.canSurvive(level, grassPos)) {
             if (isTall) {

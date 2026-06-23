@@ -1,23 +1,27 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class GlowstoneFeature extends Feature<NoneFeatureConfiguration> {
-   public GlowstoneFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record GlowstoneFeature() implements Feature {
+   public static final GlowstoneFeature INSTANCE = new GlowstoneFeature();
+   public static final MapCodec<GlowstoneFeature> CODEC;
+
+   public GlowstoneFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      RandomSource random = context.random();
+   public MapCodec<GlowstoneFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (!level.isEmptyBlock(origin)) {
          return false;
       } else {
@@ -51,5 +55,9 @@ public class GlowstoneFeature extends Feature<NoneFeatureConfiguration> {
             return true;
          }
       }
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -113,6 +113,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void onPacketError(final Packet packet, final Exception cause) {
       LOGGER.error("Failed to handle packet {}, disconnecting", packet, cause);
+      ClientCommonPacketListener.super.onPacketError(packet, cause);
       Optional<Path> report = this.storeDisconnectionReport(packet, cause);
       Optional<URI> bugReportLink = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::link);
       this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), report, bugReportLink));

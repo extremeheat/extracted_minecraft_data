@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
@@ -11,23 +11,34 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.BulkSectionAccess;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
-public class OreFeature extends Feature<OreConfiguration> {
-   public OreFeature(final Codec<OreConfiguration> codec) {
-      super(codec);
+public class OreFeature extends AbstractOreFeature {
+   public static final MapCodec<OreFeature> CODEC = makeCodec(OreFeature::new);
+
+   public OreFeature(final List<BlockReplacement> targetStates, final int size, final float discardChanceOnAirExposure) {
+      super(targetStates, size, discardChanceOnAirExposure);
    }
 
-   public boolean place(final FeaturePlaceContext<OreConfiguration> context) {
-      RandomSource random = context.random();
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      OreConfiguration config = context.config();
+   public OreFeature(final List<BlockReplacement> targetStates, final int size) {
+      this(targetStates, size, 0.0F);
+   }
+
+   public OreFeature(final RuleTest target, final BlockState state, final int size) {
+      this(List.of(new BlockReplacement(target, state)), size, 0.0F);
+   }
+
+   public MapCodec<OreFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       float dir = random.nextFloat() * 3.1415927F;
-      float spreadXY = (float)config.size / 8.0F;
-      int maxRadius = Mth.ceil(((float)config.size / 16.0F * 2.0F + 1.0F) / 2.0F);
+      float spreadXY = (float)this.size / 8.0F;
+      int maxRadius = Mth.ceil(((float)this.size / 16.0F * 2.0F + 1.0F) / 2.0F);
       double x0 = (double)origin.getX() + Math.sin((double)dir) * (double)spreadXY;
       double x1 = (double)origin.getX() - Math.sin((double)dir) * (double)spreadXY;
       double z0 = (double)origin.getZ() + Math.cos((double)dir) * (double)spreadXY;
@@ -44,7 +55,7 @@ public class OreFeature extends Feature<OreConfiguration> {
       for(int xprobe = xStart; xprobe <= xStart + sizeXZ; ++xprobe) {
          for(int zprobe = zStart; zprobe <= zStart + sizeXZ; ++zprobe) {
             if (yStart <= level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, xprobe, zprobe)) {
-               return this.doPlace(level, random, config, x0, x1, z0, z1, y0, y1, xStart, yStart, zStart, sizeXZ, sizeY);
+               return this.doPlace(level, random, x0, x1, z0, z1, y0, y1, xStart, yStart, zStart, sizeXZ, sizeY);
             }
          }
       }
@@ -52,19 +63,18 @@ public class OreFeature extends Feature<OreConfiguration> {
       return false;
    }
 
-   protected boolean doPlace(final WorldGenLevel level, final RandomSource random, final OreConfiguration config, final double x0, final double x1, final double z0, final double z1, final double y0, final double y1, final int xStart, final int yStart, final int zStart, final int sizeXZ, final int sizeY) {
+   protected boolean doPlace(final WorldGenLevel level, final RandomSource random, final double x0, final double x1, final double z0, final double z1, final double y0, final double y1, final int xStart, final int yStart, final int zStart, final int sizeXZ, final int sizeY) {
       int placed = 0;
       BitSet tested = new BitSet(sizeXZ * sizeY * sizeXZ);
       BlockPos.MutableBlockPos orePos = new BlockPos.MutableBlockPos();
-      int size = config.size;
-      double[] data = new double[size * 4];
+      double[] data = new double[this.size * 4];
 
-      for(int i = 0; i < size; ++i) {
-         float step = (float)i / (float)size;
+      for(int i = 0; i < this.size; ++i) {
+         float step = (float)i / (float)this.size;
          double xx = Mth.lerp((double)step, x0, x1);
          double yy = Mth.lerp((double)step, y0, y1);
          double zz = Mth.lerp((double)step, z0, z1);
-         double ss = random.nextDouble() * (double)size / 16.0;
+         double ss = random.nextDouble() * (double)this.size / 16.0;
          double r = ((double)(Mth.sin((double)(3.1415927F * step)) + 1.0F) * ss + 1.0) / 2.0;
          data[i * 4 + 0] = xx;
          data[i * 4 + 1] = yy;
@@ -72,9 +82,9 @@ public class OreFeature extends Feature<OreConfiguration> {
          data[i * 4 + 3] = r;
       }
 
-      for(int i1 = 0; i1 < size - 1; ++i1) {
+      for(int i1 = 0; i1 < this.size - 1; ++i1) {
          if (!(data[i1 * 4 + 3] <= 0.0)) {
-            for(int i2 = i1 + 1; i2 < size; ++i2) {
+            for(int i2 = i1 + 1; i2 < this.size; ++i2) {
                if (!(data[i2 * 4 + 3] <= 0.0)) {
                   double dx = data[i1 * 4 + 0] - data[i2 * 4 + 0];
                   double dy = data[i1 * 4 + 1] - data[i2 * 4 + 1];
@@ -93,7 +103,7 @@ public class OreFeature extends Feature<OreConfiguration> {
       }
 
       try (BulkSectionAccess sectionGetter = new BulkSectionAccess(level)) {
-         for(int i = 0; i < size; ++i) {
+         for(int i = 0; i < this.size; ++i) {
             double r = data[i * 4 + 3];
             if (!(r < 0.0)) {
                double xx = data[i * 4 + 0];
@@ -127,10 +137,10 @@ public class OreFeature extends Feature<OreConfiguration> {
                                           int sectionRelativeZ = SectionPos.sectionRelative(z);
                                           BlockState blockState = section.getBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ);
 
-                                          for(OreConfiguration.TargetBlockState targetState : config.targetStates) {
+                                          for(BlockReplacement targetState : this.targetStates) {
                                              Objects.requireNonNull(sectionGetter);
-                                             if (canPlaceOre(blockState, sectionGetter::getBlockState, random, config, targetState, orePos)) {
-                                                section.setBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ, targetState.state, false);
+                                             if (this.canPlaceOre(blockState, sectionGetter::getBlockState, random, targetState, orePos)) {
+                                                section.setBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ, targetState.state(), false);
                                                 ++placed;
                                                 break;
                                              }
@@ -149,25 +159,5 @@ public class OreFeature extends Feature<OreConfiguration> {
       }
 
       return placed > 0;
-   }
-
-   public static boolean canPlaceOre(final BlockState orePosState, final Function<BlockPos, BlockState> blockGetter, final RandomSource random, final OreConfiguration config, final OreConfiguration.TargetBlockState targetState, final BlockPos.MutableBlockPos orePos) {
-      if (!targetState.target.test(orePosState, random)) {
-         return false;
-      } else if (shouldSkipAirCheck(random, config.discardChanceOnAirExposure)) {
-         return true;
-      } else {
-         return !isAdjacentToAir(blockGetter, orePos);
-      }
-   }
-
-   protected static boolean shouldSkipAirCheck(final RandomSource random, final float discardChanceOnAirExposure) {
-      if (discardChanceOnAirExposure <= 0.0F) {
-         return true;
-      } else if (discardChanceOnAirExposure >= 1.0F) {
-         return false;
-      } else {
-         return random.nextFloat() >= discardChanceOnAirExposure;
-      }
    }
 }

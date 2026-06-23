@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
@@ -9,24 +9,25 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 /** @deprecated */
 @Deprecated
-public class LakeFeature extends Feature<Configuration> {
+public record LakeFeature(BlockStateProvider fluid, BlockStateProvider barrier, BlockPredicate canPlaceFeature, BlockPredicate canReplaceWithAirOrFluid, BlockPredicate canReplaceWithBarrier) implements Feature {
+   public static final MapCodec<LakeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(LakeFeature::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(LakeFeature::barrier), BlockPredicate.CODEC.fieldOf("can_place_feature").forGetter(LakeFeature::canPlaceFeature), BlockPredicate.CODEC.fieldOf("can_replace_with_air_or_fluid").forGetter(LakeFeature::canReplaceWithAirOrFluid), BlockPredicate.CODEC.fieldOf("can_replace_with_barrier").forGetter(LakeFeature::canReplaceWithBarrier)).apply(i, LakeFeature::new));
    private static final BlockState AIR;
 
-   public LakeFeature(final Codec<Configuration> codec) {
-      super(codec);
+   public LakeFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<Configuration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      Configuration config = context.config();
+   public MapCodec<LakeFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, BlockPos origin) {
       if (origin.getY() <= level.getMinY() + 4) {
          return false;
       } else {
@@ -57,7 +58,7 @@ public class LakeFeature extends Feature<Configuration> {
             }
          }
 
-         BlockState fluid = config.fluid().getState(level, random, origin);
+         BlockState fluid = this.fluid.getState(level, random, origin);
 
          for(int xx = 0; xx < 16; ++xx) {
             for(int zz = 0; zz < 16; ++zz) {
@@ -74,7 +75,7 @@ public class LakeFeature extends Feature<Configuration> {
                         return false;
                      }
 
-                     if (!config.canPlaceFeature.test(level, offsetPos)) {
+                     if (!this.canPlaceFeature.test(level, offsetPos)) {
                         return false;
                      }
                   }
@@ -87,7 +88,7 @@ public class LakeFeature extends Feature<Configuration> {
                for(int yy = 0; yy < 8; ++yy) {
                   if (grid[(xx * 16 + zz) * 8 + yy]) {
                      BlockPos placePos = origin.offset(xx, yy, zz);
-                     if (config.canReplaceWithAirOrFluid.test(level, placePos)) {
+                     if (this.canReplaceWithAirOrFluid.test(level, placePos)) {
                         boolean placeAir = yy >= 4;
                         level.setBlock(placePos, placeAir ? AIR : fluid, 2);
                         if (placeAir) {
@@ -100,7 +101,7 @@ public class LakeFeature extends Feature<Configuration> {
             }
          }
 
-         BlockState barrier = config.barrier().getState(level, random, origin);
+         BlockState barrier = this.barrier.getState(level, random, origin);
          if (!barrier.isAir()) {
             for(int xx = 0; xx < 16; ++xx) {
                for(int zz = 0; zz < 16; ++zz) {
@@ -109,7 +110,7 @@ public class LakeFeature extends Feature<Configuration> {
                      if (check && (yy < 4 || random.nextInt(2) != 0)) {
                         BlockPos offset = origin.offset(xx, yy, zz);
                         BlockState blockState = level.getBlockState(offset);
-                        if (blockState.isSolid() && config.canReplaceWithBarrier.test(level, offset)) {
+                        if (blockState.isSolid() && this.canReplaceWithBarrier.test(level, offset)) {
                            BlockPos barrierPos = origin.offset(xx, yy, zz);
                            level.setBlock(barrierPos, barrier, 2);
                            this.markAboveForPostProcessing(level, barrierPos);
@@ -125,7 +126,7 @@ public class LakeFeature extends Feature<Configuration> {
                for(int zz = 0; zz < 16; ++zz) {
                   int yy = 4;
                   BlockPos offset = origin.offset(xx, 4, zz);
-                  if (((Biome)level.getBiome(offset).value()).shouldFreeze(level, offset, false) && config.canReplaceWithAirOrFluid.test(level, offset)) {
+                  if (((Biome)level.getBiome(offset).value()).shouldFreeze(level, offset, false) && this.canReplaceWithAirOrFluid.test(level, offset)) {
                      level.setBlock(offset, Blocks.ICE.defaultBlockState(), 2);
                   }
                }
@@ -138,13 +139,5 @@ public class LakeFeature extends Feature<Configuration> {
 
    static {
       AIR = Blocks.CAVE_AIR.defaultBlockState();
-   }
-
-   public static record Configuration(BlockStateProvider fluid, BlockStateProvider barrier, BlockPredicate canPlaceFeature, BlockPredicate canReplaceWithAirOrFluid, BlockPredicate canReplaceWithBarrier) implements FeatureConfiguration {
-      public static final Codec<Configuration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(Configuration::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(Configuration::barrier), BlockPredicate.CODEC.fieldOf("can_place_feature").forGetter(Configuration::canPlaceFeature), BlockPredicate.CODEC.fieldOf("can_replace_with_air_or_fluid").forGetter(Configuration::canReplaceWithAirOrFluid), BlockPredicate.CODEC.fieldOf("can_replace_with_barrier").forGetter(Configuration::canReplaceWithBarrier)).apply(i, Configuration::new));
-
-      public Configuration {
-         super();
-      }
    }
 }

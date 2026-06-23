@@ -60,7 +60,7 @@ public class RedStoneOreBlock extends Block {
    private static void interact(final BlockState state, final Level level, final BlockPos pos) {
       spawnParticles(level, pos);
       if (!(Boolean)state.getValue(LIT)) {
-         level.setBlock(pos, (BlockState)state.setValue(LIT, true), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, true));
       }
 
    }
@@ -71,7 +71,7 @@ public class RedStoneOreBlock extends Block {
 
    protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(LIT)) {
-         level.setBlock(pos, (BlockState)state.setValue(LIT, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
       }
 
    }

@@ -21,6 +21,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -66,6 +67,11 @@ public abstract class BaseSpawner {
 
    public void setEntityId(final EntityType<?> type, final @Nullable Level level, final RandomSource random, final BlockPos pos) {
       this.getOrCreateNextSpawnData(level, random, pos).getEntityToSpawn().putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+   }
+
+   public void setEntityData(final TypedEntityData<EntityType<?>> entityData, final @Nullable Level level, final RandomSource random, final BlockPos pos) {
+      SpawnData spawnData = this.getOrCreateNextSpawnData(level, random, pos);
+      entityData.loadInto(spawnData, BuiltInRegistries.ENTITY_TYPE);
    }
 
    private boolean isNearPlayer(final Level level, final BlockPos pos) {

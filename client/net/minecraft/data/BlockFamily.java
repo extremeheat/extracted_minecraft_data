@@ -60,6 +60,7 @@ public class BlockFamily {
 
    public static enum Variant {
       BUTTON("button"),
+      CARPET("carpet"),
       CHISELED("chiseled") {
          public Variant getBaseVariantForCrafting() {
             return SLAB;
@@ -124,7 +125,7 @@ public class BlockFamily {
 
       // $FF: synthetic method
       private static Variant[] $values() {
-         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, CUSTOM_HANGING_SIGN, HANGING_SIGN, LOG, STRIPPED_LOG, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, CUSTOM_WALL_HANGING_SIGN, WALL_HANGING_SIGN, BRICKS, COBBLED, TILES, PILLAR};
+         return new Variant[]{BUTTON, CARPET, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, CUSTOM_HANGING_SIGN, HANGING_SIGN, LOG, STRIPPED_LOG, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN, CUSTOM_WALL_HANGING_SIGN, WALL_HANGING_SIGN, BRICKS, COBBLED, TILES, PILLAR};
       }
    }
 
@@ -142,6 +143,11 @@ public class BlockFamily {
 
       public Builder button(final Block button) {
          this.family.variants.put(BlockFamily.Variant.BUTTON, button);
+         return this;
+      }
+
+      public Builder carpet(final Block carpet) {
+         this.family.variants.put(BlockFamily.Variant.CARPET, carpet);
          return this;
       }
 

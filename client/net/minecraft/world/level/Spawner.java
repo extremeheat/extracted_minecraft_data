@@ -13,6 +13,8 @@ import org.jspecify.annotations.Nullable;
 public interface Spawner {
    void setEntityId(final EntityType<?> type, final RandomSource random);
 
+   void setEntityData(final TypedEntityData<EntityType<?>> entityData, final RandomSource random);
+
    static void appendHoverText(final @Nullable TypedEntityData<BlockEntityType<?>> data, final Consumer<Component> consumer, final String nextSpawnDataTagKey) {
       Component displayName = getSpawnEntityDisplayName(data, nextSpawnDataTagKey);
       if (displayName != null) {

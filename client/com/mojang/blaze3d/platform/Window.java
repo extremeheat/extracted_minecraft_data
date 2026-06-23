@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 
 public final class Window implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
    public static final int BASE_WIDTH = 320;
    public static final int BASE_HEIGHT = 240;
    private final GLFWErrorCallback defaultErrorCallback = GLFWErrorCallback.create(this::defaultErrorCallback);
@@ -58,7 +60,7 @@ public final class Window implements AutoCloseable {
    private int guiScaledWidth;
    private int guiScaledHeight;
    private int guiScale;
-   private String errorSection = "";
+   private String errorSection = "Startup";
    private boolean dirty;
    private boolean vsync;
    private boolean iconified;
@@ -74,8 +76,6 @@ public final class Window implements AutoCloseable {
       this.currentCursor = CursorType.DEFAULT;
       this.monitorManager = monitorManager;
       this.exclusiveFullscreen = exclusiveFullscreen;
-      this.setBootErrorCallback();
-      this.setErrorSection("Pre startup");
       this.eventHandler = eventHandler;
       Optional<VideoMode> optionsMode = VideoMode.read(fullscreenVideoModeString);
       if (optionsMode.isPresent()) {
@@ -269,14 +269,14 @@ public final class Window implements AutoCloseable {
       this.errorSection = string;
    }
 
-   private void setBootErrorCallback() {
+   public static void setBootErrorCallback() {
       GLFW.glfwSetErrorCallback(Window::bootCrash);
    }
 
    private static void bootCrash(final int error, final long description) {
-      String message = "GLFW error " + error + ": " + MemoryUtil.memUTF8(description);
-      MessageBox.error(message + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
-      throw new WindowInitFailed(message);
+      String var10000 = HEX_FORMAT.toHexDigits(error);
+      String message = "Unexpected GLFW error " + var10000 + ": " + MemoryUtil.memUTF8(description);
+      throw new IllegalStateException(message);
    }
 
    public void defaultErrorCallback(final int errorCode, final long description) {
@@ -285,9 +285,7 @@ public final class Window implements AutoCloseable {
       }
 
       String errorString = MemoryUtil.memUTF8(description);
-      LOGGER.error("########## GL ERROR ##########");
-      LOGGER.error("@ {}", this.errorSection);
-      LOGGER.error("{}: {}", errorCode, errorString);
+      LOGGER.error("GLFW error @ {}: {}[{}]", new Object[]{this.errorSection, errorString, HEX_FORMAT.toHexDigits(errorCode)});
    }
 
    public void setDefaultErrorCallback() {

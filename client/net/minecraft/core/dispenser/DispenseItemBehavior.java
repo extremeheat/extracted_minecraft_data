@@ -118,6 +118,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(EntityTypes.ACACIA_BOAT));
       DispenserBlock.registerBehavior(Items.CHERRY_BOAT, new BoatDispenseItemBehavior(EntityTypes.CHERRY_BOAT));
       DispenserBlock.registerBehavior(Items.MANGROVE_BOAT, new BoatDispenseItemBehavior(EntityTypes.MANGROVE_BOAT));
+      DispenserBlock.registerBehavior(Items.POPLAR_BOAT, new BoatDispenseItemBehavior(EntityTypes.POPLAR_BOAT));
       DispenserBlock.registerBehavior(Items.PALE_OAK_BOAT, new BoatDispenseItemBehavior(EntityTypes.PALE_OAK_BOAT));
       DispenserBlock.registerBehavior(Items.BAMBOO_RAFT, new BoatDispenseItemBehavior(EntityTypes.BAMBOO_RAFT));
       DispenserBlock.registerBehavior(Items.OAK_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.OAK_CHEST_BOAT));
@@ -128,6 +129,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.ACACIA_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.ACACIA_CHEST_BOAT));
       DispenserBlock.registerBehavior(Items.CHERRY_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.CHERRY_CHEST_BOAT));
       DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.MANGROVE_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.POPLAR_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.POPLAR_CHEST_BOAT));
       DispenserBlock.registerBehavior(Items.PALE_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(EntityTypes.PALE_OAK_CHEST_BOAT));
       DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(EntityTypes.BAMBOO_CHEST_RAFT));
       DispenseItemBehavior filledBucketBehavior = new DefaultDispenseItemBehavior() {
@@ -218,7 +220,7 @@ public interface DispenseItemBehavior {
             Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos target = source.pos().relative(direction);
             if (level.isEmptyBlock(target) && WitherSkullBlock.canSpawnMob(level, target, dispensed)) {
-               level.setBlock(target, (BlockState)Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, RotationSegment.convertToSegment(direction)), 3);
+               level.setBlockAndUpdate(target, (BlockState)Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, RotationSegment.convertToSegment(direction)));
                level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, target);
                BlockEntity skull = level.getBlockEntity(target);
                if (skull instanceof SkullBlockEntity) {
@@ -242,7 +244,7 @@ public interface DispenseItemBehavior {
             CarvedPumpkinBlock pumpkinBlock = (CarvedPumpkinBlock)Blocks.CARVED_PUMPKIN;
             if (level.isEmptyBlock(target) && pumpkinBlock.canSpawnGolem(level, target)) {
                if (!level.isClientSide()) {
-                  level.setBlock(target, pumpkinBlock.defaultBlockState(), 3);
+                  level.setBlockAndUpdate(target, pumpkinBlock.defaultBlockState());
                   level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, target);
                }
 

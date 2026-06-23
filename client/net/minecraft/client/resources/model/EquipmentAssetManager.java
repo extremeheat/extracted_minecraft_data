@@ -12,7 +12,7 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 
 public class EquipmentAssetManager extends SimpleJsonResourceReloadListener<EquipmentClientInfo> {
-   public static final EquipmentClientInfo MISSING = new EquipmentClientInfo(Map.of());
+   public static final EquipmentClientInfo MISSING = new EquipmentClientInfo(Map.of(), Map.of());
    private static final FileToIdConverter ASSET_LISTER = FileToIdConverter.json("equipment");
    private Map<ResourceKey<EquipmentAsset>, EquipmentClientInfo> equipmentAssets = Map.of();
 

@@ -48,7 +48,10 @@ public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boo
       CommandSourceStack source = context.source();
       if (source == null) {
          return Component.empty();
+      } else if (context.resolvedComponentCount().intValue() > context.resolvedComponentLimit()) {
+         return Component.empty();
       } else {
+         context.resolvedComponentCount().increment();
          Stream<Tag> elements = this.dataSource.getData(source).flatMap((t) -> {
             try {
                return ((NbtPathArgument.NbtPath)this.nbtPath.compiled()).get(t).stream();

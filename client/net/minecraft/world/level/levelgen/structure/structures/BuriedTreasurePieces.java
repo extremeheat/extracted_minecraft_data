@@ -51,9 +51,9 @@ public class BuriedTreasurePieces {
                      BlockPos belowRelativePos = relativePos.below();
                      BlockState belowRelativeState = level.getBlockState(belowRelativePos);
                      if ((belowRelativeState.isAir() || isLiquid(belowRelativeState)) && direction != Direction.UP) {
-                        level.setBlock(relativePos, belowState, 3);
+                        level.setBlockAndUpdate(relativePos, belowState);
                      } else {
-                        level.setBlock(relativePos, softState, 3);
+                        level.setBlockAndUpdate(relativePos, softState);
                      }
                   }
                }

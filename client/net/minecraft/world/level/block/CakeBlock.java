@@ -92,7 +92,7 @@ public class CakeBlock extends Block {
          int bites = (Integer)state.getValue(BITES);
          level.gameEvent(player, (Holder)GameEvent.EAT, (BlockPos)pos);
          if (bites < 6) {
-            level.setBlock(pos, (BlockState)state.setValue(BITES, bites + 1), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(BITES, bites + 1));
          } else {
             level.removeBlock(pos, false);
             level.gameEvent(player, (Holder)GameEvent.BLOCK_DESTROY, (BlockPos)pos);

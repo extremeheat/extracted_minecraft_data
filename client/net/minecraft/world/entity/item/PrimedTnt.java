@@ -104,6 +104,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          }
       }
 
+      this.setRequiresPrecisePosition(this.horizontalCollision || this.verticalCollision);
    }
 
    private void explode() {
@@ -180,6 +181,10 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
+   }
+
+   public boolean canSimulateMovement() {
+      return true;
    }
 
    static {

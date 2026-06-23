@@ -254,6 +254,11 @@ public class BiomeDefaultFeatures {
       builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.RED_MUSHROOM_SWAMP);
    }
 
+   public static void addDappledForestVegetation(final BiomeGenerationSettings.Builder builder) {
+      builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.BROWN_MUSHROOM_DAPPLED_FOREST);
+      builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_RED_SHRUB);
+   }
+
    public static void addMangroveSwampVegetation(final BiomeGenerationSettings.Builder builder) {
       builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_MANGROVE);
       builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_GRASS_NORMAL);

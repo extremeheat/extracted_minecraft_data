@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
@@ -14,9 +13,9 @@ public interface ResourceManager extends ResourceProvider {
 
    List<Resource> getResourceStack(Identifier location);
 
-   Map<Identifier, Resource> listResources(String directory, Predicate<Identifier> filter);
+   Map<Identifier, Resource> listResources(String directory, Selector selector);
 
-   Map<Identifier, List<Resource>> listResourceStacks(String directory, Predicate<Identifier> filter);
+   Map<Identifier, List<Resource>> listResourceStacks(String directory, Selector selector);
 
    Stream<PackResources> listPacks();
 
@@ -38,11 +37,11 @@ public interface ResourceManager extends ResourceProvider {
          return List.of();
       }
 
-      public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filter) {
+      public Map<Identifier, Resource> listResources(final String directory, final Selector selector) {
          return Map.of();
       }
 
-      public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
+      public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Selector selector) {
          return Map.of();
       }
 
@@ -54,5 +53,10 @@ public interface ResourceManager extends ResourceProvider {
       private static Empty[] $values() {
          return new Empty[]{INSTANCE};
       }
+   }
+
+   @FunctionalInterface
+   public interface Selector {
+      boolean isIncluded(Identifier resourceId);
    }
 }

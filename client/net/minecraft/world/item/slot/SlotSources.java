@@ -21,6 +21,7 @@ public interface SlotSources {
       Registry.register(registry, (String)"limit_slots", LimitSlotSource.MAP_CODEC);
       Registry.register(registry, (String)"slot_range", RangeSlotSource.MAP_CODEC);
       Registry.register(registry, (String)"contents", ContentsSlotSource.MAP_CODEC);
+      Registry.register(registry, (String)"reference", SlotSourceReference.MAP_CODEC);
       return (MapCodec)Registry.register(registry, (String)"empty", EmptySlotSource.MAP_CODEC);
    }
 

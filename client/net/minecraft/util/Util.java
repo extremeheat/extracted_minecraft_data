@@ -46,6 +46,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HexFormat;
@@ -1148,24 +1149,24 @@ public class Util {
       return ImmutableList.builderWithExpectedSize(list.size() + 1).add(element).addAll(list).build();
    }
 
-   public static <T> List<T> join(final List<T> first, final List<T> second) {
+   public static <T> List<T> join(final Collection<T> first, final Collection<T> second) {
       ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(first.size() + second.size());
       builder.addAll(first);
       builder.addAll(second);
       return builder.build();
    }
 
-   public static <T> List<T> join(final List<T>... lists) {
+   public static <T> List<T> join(final Collection<T>... collections) {
       int size = 0;
 
-      for(List<T> list : lists) {
-         size += list.size();
+      for(Collection<T> collection : collections) {
+         size += collection.size();
       }
 
       ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(size);
 
-      for(List<T> list : lists) {
-         builder.addAll(list);
+      for(Collection<T> collection : collections) {
+         builder.addAll(collection);
       }
 
       return builder.build();

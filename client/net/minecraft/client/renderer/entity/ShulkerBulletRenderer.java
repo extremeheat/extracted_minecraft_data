@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -42,7 +42,7 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       poseStack.scale(-0.5F, -0.5F, 0.5F);
       submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.scale(1.5F, 1.5F, 1.5F);
-      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }

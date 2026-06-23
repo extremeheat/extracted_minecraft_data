@@ -1,33 +1,39 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.ReplaceSphereConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import org.jspecify.annotations.Nullable;
 
-public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
-   public ReplaceBlobsFeature(final Codec<ReplaceSphereConfiguration> codec) {
-      super(codec);
+public record ReplaceBlobsFeature(BlockState targetState, BlockState replaceState, IntProvider radius) implements Feature {
+   public static final MapCodec<ReplaceBlobsFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("target").forGetter(ReplaceBlobsFeature::targetState), BlockState.CODEC.fieldOf("state").forGetter(ReplaceBlobsFeature::replaceState), IntProviders.codec(0, 12).fieldOf("radius").forGetter(ReplaceBlobsFeature::radius)).apply(i, ReplaceBlobsFeature::new));
+
+   public ReplaceBlobsFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<ReplaceSphereConfiguration> context) {
-      ReplaceSphereConfiguration config = context.config();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      Block targetBlock = config.targetState.getBlock();
-      BlockPos centerPos = findTarget(level, context.origin().mutable().clamp(Direction.Axis.Y, level.getMinY() + 1, level.getMaxY()), targetBlock);
+   public MapCodec<ReplaceBlobsFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      Block targetBlock = this.targetState.getBlock();
+      BlockPos centerPos = findTarget(level, origin.mutable().clamp(Direction.Axis.Y, level.getMinY() + 1, level.getMaxY()), targetBlock);
       if (centerPos == null) {
          return false;
       } else {
-         int radiusX = config.radius().sample(random);
-         int radiusY = config.radius().sample(random);
-         int radiusZ = config.radius().sample(random);
+         int radiusX = this.radius.sample(random);
+         int radiusY = this.radius.sample(random);
+         int radiusZ = this.radius.sample(random);
          int maximumRadius = Math.max(radiusX, Math.max(radiusY, radiusZ));
          boolean replacedAny = false;
 
@@ -38,7 +44,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
 
             BlockState blockState = level.getBlockState(pos);
             if (blockState.is(targetBlock)) {
-               this.setBlock(level, pos, config.replaceState);
+               this.setBlock(level, pos, this.replaceState);
                replacedAny = true;
             }
          }

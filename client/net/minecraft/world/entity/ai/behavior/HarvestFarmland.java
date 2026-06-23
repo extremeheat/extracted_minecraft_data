@@ -52,7 +52,7 @@ public class HarvestFarmland extends Behavior<Villager> {
                for(int z = -1; z <= 1; ++z) {
                   mutPos.set(body.getX() + (double)x, body.getY() + (double)y, body.getZ() + (double)z);
                   if (this.validPos(mutPos, level)) {
-                     this.validFarmlandAroundVillager.add(new BlockPos(mutPos));
+                     this.validFarmlandAroundVillager.add(mutPos.immutable());
                   }
                }
             }

@@ -110,6 +110,8 @@ public class EntityTypeIds {
    public static final ResourceKey<EntityType<?>> PIGLIN_BRUTE = create("piglin_brute");
    public static final ResourceKey<EntityType<?>> PILLAGER = create("pillager");
    public static final ResourceKey<EntityType<?>> POLAR_BEAR = create("polar_bear");
+   public static final ResourceKey<EntityType<?>> POPLAR_BOAT = create("poplar_boat");
+   public static final ResourceKey<EntityType<?>> POPLAR_CHEST_BOAT = create("poplar_chest_boat");
    public static final ResourceKey<EntityType<?>> SPLASH_POTION = create("splash_potion");
    public static final ResourceKey<EntityType<?>> LINGERING_POTION = create("lingering_potion");
    public static final ResourceKey<EntityType<?>> PUFFERFISH = create("pufferfish");

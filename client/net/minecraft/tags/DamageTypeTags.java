@@ -22,6 +22,7 @@ public interface DamageTypeTags {
    TagKey<DamageType> IS_FREEZING = create("is_freezing");
    TagKey<DamageType> IS_LIGHTNING = create("is_lightning");
    TagKey<DamageType> NO_ANGER = create("no_anger");
+   TagKey<DamageType> NO_WOLF_RETALIATION = create("no_wolf_retaliation");
    TagKey<DamageType> NO_IMPACT = create("no_impact");
    TagKey<DamageType> ALWAYS_MOST_SIGNIFICANT_FALL = create("always_most_significant_fall");
    TagKey<DamageType> WITHER_IMMUNE_TO = create("wither_immune_to");

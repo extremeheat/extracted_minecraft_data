@@ -683,6 +683,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       super.remove(reason);
       this.brain.clearMemories();
+      this.getCombatTracker().recheckStatus();
    }
 
    public void onRemoval(final Entity.RemovalReason reason) {
@@ -1138,6 +1139,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.getHealth() <= 0.0F || this.dead;
    }
 
+   public boolean wasHurtRecently() {
+      return this.hurtTime > 0;
+   }
+
    public boolean hurtServer(final ServerLevel level, final DamageSource source, float damage) {
       if (this.isInvulnerableTo(level, source)) {
          return false;
@@ -1397,11 +1402,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public @Nullable DamageSource getLastDamageSource() {
-      if (this.level().getGameTime() - this.lastDamageStamp > 40L) {
-         this.lastDamageSource = null;
-      }
+      return this.getLastDamageSource(40);
+   }
 
-      return this.lastDamageSource;
+   public @Nullable DamageSource getLastDamageSource(final int damageSourceTimeout) {
+      return this.level().getGameTime() - this.lastDamageStamp > (long)damageSourceTimeout ? null : this.lastDamageSource;
    }
 
    protected void playHurtSound(final DamageSource source) {
@@ -1445,7 +1450,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
 
          this.handleKillingBlow();
-         this.getCombatTracker().recheckStatus();
          Level var5 = this.level();
          if (var5 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var5;
@@ -1475,7 +1479,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                BlockPos pos = this.blockPosition();
                BlockState state = Blocks.WITHER_ROSE.defaultBlockState();
                if (this.level().getBlockState(pos).isAir() && state.canSurvive(this.level(), pos)) {
-                  this.level().setBlock(pos, state, 3);
+                  this.level().setBlockAndUpdate(pos, state);
                   var6 = true;
                }
             }
@@ -2827,7 +2831,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, postEnchantmentDamage, true);
          }
 
-         if (dismounts && target.isPassenger()) {
+         if (dismounts && target.isPassenger() && !target.is(EntityTypeTags.CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE)) {
             affected = true;
             target.stopRiding();
          }
@@ -3604,7 +3608,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          while(!landed && pos.getY() > level.getMinY()) {
             BlockPos below = pos.below();
             BlockState state = level.getBlockState(below);
-            if (state.blocksMotion()) {
+            if (state.is(BlockTags.ENTITIES_CAN_TELEPORT_TO)) {
                landed = true;
             } else {
                --y;
@@ -3701,7 +3705,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       BlockState blockState = this.level().getBlockState(bedPosition);
       if (blockState.getBlock() instanceof BedBlock) {
-         this.level().setBlock(bedPosition, (BlockState)blockState.setValue(BedBlock.OCCUPIED, true), 3);
+         this.level().setBlockAndUpdate(bedPosition, (BlockState)blockState.setValue(BedBlock.OCCUPIED, true));
       }
 
       this.setPose(Pose.SLEEPING);
@@ -3727,7 +3731,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          BlockState state = this.level().getBlockState(bedPosition);
          if (state.getBlock() instanceof BedBlock) {
             Direction facing = (Direction)state.getValue(BedBlock.FACING);
-            this.level().setBlock(bedPosition, (BlockState)state.setValue(BedBlock.OCCUPIED, false), 3);
+            this.level().setBlockAndUpdate(bedPosition, (BlockState)state.setValue(BedBlock.OCCUPIED, false));
             Vec3 standUp = (Vec3)BedBlock.findStandUpPosition(this.getType(), this.level(), bedPosition, facing, this.getYRot()).orElseGet(() -> {
                BlockPos above = bedPosition.above();
                return new Vec3((double)above.getX() + 0.5, (double)above.getY() + 0.1, (double)above.getZ() + 0.5);

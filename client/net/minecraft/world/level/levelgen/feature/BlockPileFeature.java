@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -8,18 +9,21 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockPileConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public class BlockPileFeature extends Feature<BlockPileConfiguration> {
-   public BlockPileFeature(final Codec<BlockPileConfiguration> codec) {
-      super(codec);
+public record BlockPileFeature(BlockStateProvider stateProvider) implements Feature {
+   public static final MapCodec<BlockPileFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("state_provider").forGetter(BlockPileFeature::stateProvider)).apply(i, BlockPileFeature::new));
+
+   public BlockPileFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<BlockPileConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      BlockPileConfiguration config = context.config();
+   public MapCodec<BlockPileFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (origin.getY() < level.getMinY() + 5) {
          return false;
       } else {
@@ -30,9 +34,9 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
             int xd = origin.getX() - blockPos.getX();
             int zd = origin.getZ() - blockPos.getZ();
             if ((float)(xd * xd + zd * zd) <= random.nextFloat() * 10.0F - random.nextFloat() * 6.0F) {
-               this.tryPlaceBlock(level, blockPos, random, config);
+               this.tryPlaceBlock(level, blockPos, random);
             } else if ((double)random.nextFloat() < 0.031) {
-               this.tryPlaceBlock(level, blockPos, random, config);
+               this.tryPlaceBlock(level, blockPos, random);
             }
          }
 
@@ -46,9 +50,9 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
       return belowState.is(Blocks.DIRT_PATH) ? random.nextBoolean() : belowState.isFaceSturdy(level, below, Direction.UP);
    }
 
-   private void tryPlaceBlock(final WorldGenLevel level, final BlockPos blockPos, final RandomSource random, final BlockPileConfiguration config) {
+   private void tryPlaceBlock(final WorldGenLevel level, final BlockPos blockPos, final RandomSource random) {
       if (level.isEmptyBlock(blockPos) && this.mayPlaceOn(level, blockPos, random)) {
-         level.setBlock(blockPos, config.stateProvider.getState(level, random, blockPos), 260);
+         level.setBlock(blockPos, this.stateProvider.getState(level, random, blockPos), 260);
       }
 
    }

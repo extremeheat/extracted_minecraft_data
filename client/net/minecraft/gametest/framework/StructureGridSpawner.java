@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 
@@ -29,11 +29,11 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
       this.clearOnBatch = clearOnBatch;
    }
 
-   public void onBatchStart(final ServerLevel level) {
+   public void onBatchStart(final MinecraftServer server) {
       if (this.clearOnBatch) {
          this.testInLastBatch.forEach((info) -> {
             BoundingBox boundingBox = info.getTestInstanceBlockEntity().getTestBoundingBox();
-            StructureUtils.clearSpaceForStructure(boundingBox, level);
+            StructureUtils.clearSpaceForStructure(boundingBox, info.getLevel());
          });
          this.testInLastBatch.clear();
          this.rowBounds = new AABB(this.firstTestNorthWestCorner);
@@ -43,7 +43,7 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
    }
 
    public Optional<GameTestInfo> spawnStructure(final GameTestInfo testInfo) {
-      BlockPos northWestCorner = new BlockPos(this.nextTestNorthWestCorner);
+      BlockPos northWestCorner = this.nextTestNorthWestCorner.immutable();
       testInfo.setTestBlockPos(northWestCorner);
       GameTestInfo infoWithStructure = testInfo.prepareTestStructure();
       if (infoWithStructure == null) {

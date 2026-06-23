@@ -16,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
@@ -74,7 +73,7 @@ public class ServerChunkCache extends ChunkSource {
    @VisibleForDebug
    private NaturalSpawner.@Nullable SpawnState lastSpawnState;
 
-   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage) {
+   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener) {
       super();
       this.level = level;
       this.mainThreadProcessor = new MainThreadExecutor(level);
@@ -89,7 +88,7 @@ public class ServerChunkCache extends ChunkSource {
 
       this.savedDataStorage = new SavedDataStorage(dataFolder, fixerUpper, level.registryAccess());
       this.ticketStorage = (TicketStorage)this.savedDataStorage.computeIfAbsent(TicketStorage.TYPE);
-      this.chunkMap = new ChunkMap(level, levelStorage, fixerUpper, structureTemplateManager, executor, this.mainThreadProcessor, this, generator, chunkStatusListener, overworldDataStorage, this.ticketStorage, viewDistance, syncWrites);
+      this.chunkMap = new ChunkMap(level, levelStorage, fixerUpper, structureTemplateManager, executor, this.mainThreadProcessor, this, generator, chunkStatusListener, this.ticketStorage, viewDistance, syncWrites);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(simulationDistance);

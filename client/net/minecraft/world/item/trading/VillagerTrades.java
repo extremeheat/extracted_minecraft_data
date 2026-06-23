@@ -318,6 +318,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_SPRUCE_SAPLING;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_CHERRY_SAPLING;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING;
+   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_POPLAR_SAPLING;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE;
    public static final ColorCollection<ResourceKey<VillagerTrade>> WANDERING_TRADER_EMERALD_DYE;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK;
@@ -342,6 +343,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_DRY_TALL_GRASS;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_FIREFLY_BUSH;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_NAME_TAG;
+   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_SHELF_MUSHROOM;
 
    public VillagerTrades() {
       super();
@@ -566,7 +568,8 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_MOSS_BLOCK, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.MOSS_BLOCK, 2), 5, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_PALE_MOSS_BLOCK, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.PALE_MOSS_BLOCK, 2), 5, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_FIREFLY_BUSH, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.FIREFLY_BUSH), 12, 1, 0.05F, Optional.empty(), List.of()));
-      return context.register(WANDERING_TRADER_EMERALD_NAME_TAG, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.NAME_TAG), 5, 1, 0.05F, Optional.empty(), List.of()));
+      context.register(WANDERING_TRADER_EMERALD_NAME_TAG, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.NAME_TAG), 5, 1, 0.05F, Optional.empty(), List.of()));
+      return context.register(WANDERING_TRADER_EMERALD_SHELF_MUSHROOM, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SHELF_MUSHROOM, 3), 12, 1, 0.05F, Optional.empty(), List.of()));
    }
 
    private static VillagerTrade createWanderingTraderCoralBlockSell(final Item item) {
@@ -620,6 +623,7 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_SPRUCE_SAPLING, createWanderingTraderSaplingSell(Items.SPRUCE_SAPLING));
       context.register(WANDERING_TRADER_EMERALD_CHERRY_SAPLING, createWanderingTraderSaplingSell(Items.CHERRY_SAPLING));
       context.register(WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING, createWanderingTraderSaplingSell(Items.PALE_OAK_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_POPLAR_SAPLING, createWanderingTraderSaplingSell(Items.POPLAR_SAPLING));
       context.register(WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE, createWanderingTraderSaplingSell(Items.MANGROVE_PROPAGULE));
    }
 
@@ -1035,6 +1039,7 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_SPRUCE_SAPLING = resourceKey("wandering_trader/emerald_spruce_sapling");
       WANDERING_TRADER_EMERALD_CHERRY_SAPLING = resourceKey("wandering_trader/emerald_cherry_sapling");
       WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING = resourceKey("wandering_trader/emerald_pale_oak_sapling");
+      WANDERING_TRADER_EMERALD_POPLAR_SAPLING = resourceKey("wandering_trader/emerald_poplar_sapling");
       WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE = resourceKey("wandering_trader/emerald_mangrove_propagule");
       WANDERING_TRADER_EMERALD_DYE = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("wandering_trader/emerald_" + color + "_dye"));
       WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK = resourceKey("wandering_trader/emerald_brain_coral_block");
@@ -1059,5 +1064,6 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_DRY_TALL_GRASS = resourceKey("wandering_trader/emerald_dry_tall_grass");
       WANDERING_TRADER_EMERALD_FIREFLY_BUSH = resourceKey("wandering_trader/emerald_firefly_bush");
       WANDERING_TRADER_EMERALD_NAME_TAG = resourceKey("wandering_trader/emerald_name_tag");
+      WANDERING_TRADER_EMERALD_SHELF_MUSHROOM = resourceKey("wandering_trader/emerald_shelf_mushroom");
    }
 }

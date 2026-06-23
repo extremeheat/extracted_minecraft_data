@@ -22,6 +22,10 @@ public interface LootContextArg<R> {
       return original;
    }
 
+   static <R> LootContextArg<R> of(final ContextKey<? extends R> contextParam) {
+      return () -> contextParam;
+   }
+
    static <R> Codec<LootContextArg<R>> createArgCodec(final UnaryOperator<ArgCodecBuilder<R>> consumer) {
       return ((ArgCodecBuilder)consumer.apply(new ArgCodecBuilder())).build();
    }
@@ -78,6 +82,11 @@ public interface LootContextArg<R> {
 
       public ArgCodecBuilder<R> anyItemStack(final Function<? super ContextKey<? extends ItemInstance>, ? extends LootContextArg<R>> function) {
          return this.anyOf(LootContext.ItemStackTarget.values(), (target) -> (LootContextArg)function.apply(target.contextParam()));
+      }
+
+      public ArgCodecBuilder<R> or(final String name, final LootContextArg<R> arg) {
+         this.sources.put(name, arg);
+         return this;
       }
 
       private Codec<LootContextArg<R>> build() {

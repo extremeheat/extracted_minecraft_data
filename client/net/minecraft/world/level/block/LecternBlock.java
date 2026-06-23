@@ -130,7 +130,7 @@ public class LecternBlock extends BaseEntityBlock {
 
    public static void resetBookState(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state, final boolean hasBook) {
       BlockState newState = (BlockState)((BlockState)state.setValue(POWERED, false)).setValue(HAS_BOOK, hasBook);
-      level.setBlock(pos, newState, 3);
+      level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
       updateBelow(level, pos, state);
    }
@@ -142,7 +142,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    private static void changePowered(final Level level, final BlockPos pos, final BlockState state, final boolean isPowered) {
-      level.setBlock(pos, (BlockState)state.setValue(POWERED, isPowered), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, isPowered));
       updateBelow(level, pos, state);
    }
 

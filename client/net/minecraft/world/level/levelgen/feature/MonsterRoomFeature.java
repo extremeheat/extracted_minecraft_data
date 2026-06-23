@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,25 +16,28 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import org.slf4j.Logger;
 
-public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
+public record MonsterRoomFeature() implements Feature {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityType<?>[] MOBS;
    private static final BlockState AIR;
+   public static final MonsterRoomFeature INSTANCE;
+   public static final MapCodec<MonsterRoomFeature> CODEC;
 
-   public MonsterRoomFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+   public MonsterRoomFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      Predicate<BlockState> replaceableTag = Feature.isReplaceable(BlockTags.FEATURES_CANNOT_REPLACE);
-      BlockPos origin = context.origin();
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
+   public MapCodec<MonsterRoomFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      Predicate<BlockState> replaceableTag = (s) -> !s.is(BlockTags.FEATURES_CANNOT_REPLACE);
       int hr = 3;
       int xr = random.nextInt(2) + 2;
       int minX = -xr - 1;
@@ -135,5 +138,7 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
    static {
       MOBS = new EntityType[]{EntityTypes.SKELETON, EntityTypes.ZOMBIE, EntityTypes.ZOMBIE, EntityTypes.SPIDER};
       AIR = Blocks.CAVE_AIR.defaultBlockState();
+      INSTANCE = new MonsterRoomFeature();
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

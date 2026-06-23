@@ -537,7 +537,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
       public void onReceiveVibration(final ServerLevel level, final BlockPos pos, final Holder<GameEvent> event, final @Nullable Entity sourceEntity, final @Nullable Entity projectileOwner, final float receivingDistance) {
          if (event.is((Holder)GameEvent.NOTE_BLOCK_PLAY)) {
-            AllayAi.hearNoteblock(Allay.this, new BlockPos(pos));
+            AllayAi.hearNoteblock(Allay.this, pos.immutable());
          }
 
       }

@@ -26,6 +26,7 @@ public class BlockIds {
    public static final ResourceKey<Block> DARK_OAK_WALL_SIGN = create("dark_oak_wall_sign");
    public static final ResourceKey<Block> PALE_OAK_WALL_SIGN = create("pale_oak_wall_sign");
    public static final ResourceKey<Block> MANGROVE_WALL_SIGN = create("mangrove_wall_sign");
+   public static final ResourceKey<Block> POPLAR_WALL_SIGN = create("poplar_wall_sign");
    public static final ResourceKey<Block> BAMBOO_WALL_SIGN = create("bamboo_wall_sign");
    public static final ResourceKey<Block> OAK_WALL_HANGING_SIGN = create("oak_wall_hanging_sign");
    public static final ResourceKey<Block> SPRUCE_WALL_HANGING_SIGN = create("spruce_wall_hanging_sign");
@@ -36,6 +37,7 @@ public class BlockIds {
    public static final ResourceKey<Block> DARK_OAK_WALL_HANGING_SIGN = create("dark_oak_wall_hanging_sign");
    public static final ResourceKey<Block> PALE_OAK_WALL_HANGING_SIGN = create("pale_oak_wall_hanging_sign");
    public static final ResourceKey<Block> MANGROVE_WALL_HANGING_SIGN = create("mangrove_wall_hanging_sign");
+   public static final ResourceKey<Block> POPLAR_WALL_HANGING_SIGN = create("poplar_wall_hanging_sign");
    public static final ResourceKey<Block> CRIMSON_WALL_HANGING_SIGN = create("crimson_wall_hanging_sign");
    public static final ResourceKey<Block> WARPED_WALL_HANGING_SIGN = create("warped_wall_hanging_sign");
    public static final ResourceKey<Block> BAMBOO_WALL_HANGING_SIGN = create("bamboo_wall_hanging_sign");
@@ -57,6 +59,7 @@ public class BlockIds {
    public static final ResourceKey<Block> POTTED_DARK_OAK_SAPLING = create("potted_dark_oak_sapling");
    public static final ResourceKey<Block> POTTED_PALE_OAK_SAPLING = create("potted_pale_oak_sapling");
    public static final ResourceKey<Block> POTTED_MANGROVE_PROPAGULE = create("potted_mangrove_propagule");
+   public static final ResourceKey<Block> POTTED_POPLAR_SAPLING = create("potted_poplar_sapling");
    public static final ResourceKey<Block> POTTED_FERN = create("potted_fern");
    public static final ResourceKey<Block> POTTED_DANDELION = create("potted_dandelion");
    public static final ResourceKey<Block> POTTED_GOLDEN_DANDELION = create("potted_golden_dandelion");

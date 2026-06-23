@@ -73,7 +73,7 @@ public class SpongeBlock extends Block {
                }
 
                if (state.getBlock() instanceof LiquidBlock) {
-                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                  level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                } else {
                   if (!state.is(Blocks.KELP) && !state.is(Blocks.KELP_PLANT) && !state.is(Blocks.SEAGRASS) && !state.is(Blocks.TALL_SEAGRASS)) {
                      return BlockPos.TraversalNodeStatus.SKIP;
@@ -81,7 +81,7 @@ public class SpongeBlock extends Block {
 
                   BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
                   dropResources(state, level, pos, blockEntity);
-                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                  level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                }
 
                return BlockPos.TraversalNodeStatus.ACCEPT;

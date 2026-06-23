@@ -34,6 +34,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
@@ -103,14 +104,14 @@ public final class TrialSpawner {
    }
 
    public void applyOminous(final ServerLevel level, final BlockPos spawnerPos) {
-      level.setBlock(spawnerPos, (BlockState)level.getBlockState(spawnerPos).setValue(TrialSpawnerBlock.OMINOUS, true), 3);
+      level.setBlockAndUpdate(spawnerPos, (BlockState)level.getBlockState(spawnerPos).setValue(TrialSpawnerBlock.OMINOUS, true));
       level.levelEvent(3020, spawnerPos, 1);
       this.isOminous = true;
       this.data.resetAfterBecomingOminous(this, level);
    }
 
    public void removeOminous(final ServerLevel level, final BlockPos spawnerPos) {
-      level.setBlock(spawnerPos, (BlockState)level.getBlockState(spawnerPos).setValue(TrialSpawnerBlock.OMINOUS, false), 3);
+      level.setBlockAndUpdate(spawnerPos, (BlockState)level.getBlockState(spawnerPos).setValue(TrialSpawnerBlock.OMINOUS, false));
       this.isOminous = false;
    }
 
@@ -347,6 +348,12 @@ public final class TrialSpawner {
       this.setState(level, TrialSpawnerState.INACTIVE);
    }
 
+   public void overrideEntityToSpawn(final TypedEntityData<EntityType<?>> entityData, final Level level) {
+      this.data.reset();
+      this.config = this.config.overrideEntityData(entityData);
+      this.setState(level, TrialSpawnerState.INACTIVE);
+   }
+
    /** @deprecated */
    @Deprecated(
       forRemoval = true
@@ -399,7 +406,11 @@ public final class TrialSpawner {
       }
 
       public FullConfig overrideEntity(final EntityType<?> type) {
-         return new FullConfig(Holder.direct((this.normal.value()).withSpawning(type)), Holder.direct((this.ominous.value()).withSpawning(type)), this.targetCooldownLength, this.requiredPlayerRange);
+         return new FullConfig(Holder.direct(((TrialSpawnerConfig)this.normal.value()).withSpawning(type)), Holder.direct(((TrialSpawnerConfig)this.ominous.value()).withSpawning(type)), this.targetCooldownLength, this.requiredPlayerRange);
+      }
+
+      public FullConfig overrideEntityData(final TypedEntityData<EntityType<?>> entityData) {
+         return new FullConfig(Holder.direct(((TrialSpawnerConfig)this.normal.value()).withSpawning(entityData)), Holder.direct(((TrialSpawnerConfig)this.ominous.value()).withSpawning(entityData)), this.targetCooldownLength, this.requiredPlayerRange);
       }
 
       static {

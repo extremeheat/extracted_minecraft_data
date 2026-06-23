@@ -16,22 +16,20 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.AbstractHugeMushroomFeature;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, MushroomBlock::new));
+   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, MushroomBlock::new));
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
-   private final ResourceKey<ConfiguredFeature<?, ?>> feature;
+   private final ResourceKey<Feature> feature;
 
    public MapCodec<MushroomBlock> codec() {
       return CODEC;
    }
 
-   public MushroomBlock(final ResourceKey<ConfiguredFeature<?, ?>> feature, final BlockBehaviour.Properties properties) {
+   public MushroomBlock(final ResourceKey<Feature> feature, final BlockBehaviour.Properties properties) {
       super(properties);
       this.feature = feature;
    }
@@ -86,15 +84,15 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
    }
 
    public boolean growMushroom(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
-      Optional<? extends Holder<ConfiguredFeature<?, ?>>> feature = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+      Optional<? extends Holder<Feature>> feature = level.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
       if (feature.isEmpty()) {
          return false;
       } else {
          level.removeBlock(pos, false);
-         if (((ConfiguredFeature)((Holder)feature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, pos)) {
+         if (((Feature)((Holder)feature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, pos)) {
             return true;
          } else {
-            level.setBlock(pos, state, 3);
+            level.setBlockAndUpdate(pos, state);
             return false;
          }
       }
@@ -102,19 +100,16 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       if (level instanceof ServerLevel serverLevel) {
-         Optional<? extends Holder<ConfiguredFeature<?, ?>>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+         Optional<? extends Holder<Feature>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
          if (featureHolder.isPresent()) {
-            ConfiguredFeature<?, ?> configuredFeature = (ConfiguredFeature)((Holder)featureHolder.get()).value();
-            if (configuredFeature.feature() instanceof AbstractHugeMushroomFeature) {
-               FeatureConfiguration var8 = configuredFeature.config();
-               if (var8 instanceof HugeMushroomFeatureConfiguration) {
-                  HugeMushroomFeatureConfiguration config = (HugeMushroomFeatureConfiguration)var8;
-                  int minHeight = 4 + config.foliageRadius();
-                  return level.isInsideBuildHeight(pos.above(minHeight));
-               }
+            Feature feature = (Feature)((Holder)featureHolder.get()).value();
+            if (feature instanceof AbstractHugeMushroomFeature) {
+               AbstractHugeMushroomFeature mushroomFeature = (AbstractHugeMushroomFeature)feature;
+               int minHeight = 4 + mushroomFeature.foliageRadius();
+               return level.isInsideBuildHeight(pos.above(minHeight));
+            } else {
+               return false;
             }
-
-            return false;
          } else {
             return false;
          }

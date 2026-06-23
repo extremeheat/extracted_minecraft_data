@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 
@@ -20,11 +21,12 @@ public class GameTestBatchFactory {
       super();
    }
 
-   public static List<GameTestBatch> divideIntoBatches(final Collection<Holder.Reference<GameTestInstance>> allTests, final TestDecorator decorator, final ServerLevel level) {
-      Map<Holder<TestEnvironmentDefinition<?>>, List<GameTestInfo>> testsPerBatch = (Map)allTests.stream().flatMap((test) -> decorator.decorate(test, level)).collect(Collectors.groupingBy((info) -> info.getTest().batch()));
+   public static List<GameTestBatch> divideIntoBatches(final Collection<Holder.Reference<GameTestInstance>> allTests, final TestDecorator decorator, final MinecraftServer server) {
+      Map<Holder<TestEnvironmentDefinition<?>>, List<Holder.Reference<GameTestInstance>>> testsPerBatch = (Map)allTests.stream().collect(Collectors.groupingBy((instance) -> ((GameTestInstance)instance.value()).batch()));
       return testsPerBatch.entrySet().stream().flatMap((e) -> {
          Holder<TestEnvironmentDefinition<?>> batchKey = (Holder)e.getKey();
-         List<GameTestInfo> testsInBatch = (List)e.getValue();
+         ServerLevel level = server.getLevel(TestFinder.Builder.levelForDimension(batchKey.value()));
+         List<GameTestInfo> testsInBatch = ((List)e.getValue()).stream().flatMap((test) -> decorator.decorate(test, level)).toList();
          return Streams.mapWithIndex(Lists.partition(testsInBatch, 50).stream(), (tests, index) -> toGameTestBatch(tests, batchKey, (int)index));
       }).toList();
    }

@@ -176,7 +176,7 @@ import net.minecraft.world.level.levelgen.PatrolSpawner;
 import net.minecraft.world.level.levelgen.PhantomSpawner;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.saveddata.WeatherData;
 import net.minecraft.world.level.storage.CommandStorage;
@@ -209,7 +209,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
    public static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
    private static final int SERVER_ACTIVITY_MONITOR_SECONDS_BETWEEN_NOTIFICATIONS = 30;
-   private static final Map<String, String> LEGACY_WORLD_NAMES_FOR_REALMS_LOG;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -490,7 +489,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          levelData.setSpawn(LevelData.RespawnData.of(level.dimension(), BlockPos.ZERO.above(80), 0.0F, 0.0F));
       } else {
          ServerChunkCache chunkSource = level.getChunkSource();
-         ChunkPos spawnChunk = ChunkPos.containing(chunkSource.randomState().sampler().findSpawnPosition());
+         ChunkPos spawnChunk = chunkSource.getGenerator().getOrigin(chunkSource.randomState());
          levelLoadListener.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
          levelLoadListener.updateFocus(level.dimension(), spawnChunk);
          int height = chunkSource.getGenerator().getSpawnHeight(level);
@@ -525,7 +524,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          if (spawnBonusChest) {
-            level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((feature) -> ((ConfiguredFeature)feature.value()).place(level, chunkSource.getGenerator(), level.getRandom(), levelData.getRespawnData().pos()));
+            level.registryAccess().lookup(Registries.FEATURE).flatMap((registry) -> registry.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((feature) -> ((Feature)feature.value()).place(level, chunkSource.getGenerator(), level.getRandom(), levelData.getRespawnData().pos()));
          }
 
          levelLoadListener.finish(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN);
@@ -604,15 +603,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.savedDataStorage.saveAndJoin();
       } else {
          this.savedDataStorage.scheduleSave();
-      }
-
-      if (flush) {
-         for(ServerLevel level : this.getAllLevels()) {
-            String storageName = level.getChunkSource().chunkMap.getStorageName();
-            LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", LEGACY_WORLD_NAMES_FOR_REALMS_LOG.getOrDefault(storageName, storageName));
-         }
-
-         LOGGER.info("ThreadedAnvilChunkStorage: All dimensions are saved");
       }
 
       return result;
@@ -1531,7 +1521,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          Stream var10000 = packsToEnable.stream();
          PackRepository var10001 = this.packRepository;
          Objects.requireNonNull(var10001);
-         return (ImmutableList)var10000.map(var10001::getPack).filter(Objects::nonNull).map(Pack::open).collect(ImmutableList.toImmutableList());
+         return (ImmutableList)var10000.map(var10001::getPack).filter(Objects::nonNull).flatMap(Pack::open).collect(ImmutableList.toImmutableList());
       }, this).thenCompose((packsToLoad) -> {
          CloseableResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, packsToLoad);
          List<Registry.PendingTags<?>> postponedTags = TagLoader.loadTagsForExistingRegistries(resources, this.registries.compositeAccess());
@@ -2322,7 +2312,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       OVERLOADED_WARNING_INTERVAL_NANOS = 10L * TimeUtil.NANOSECONDS_PER_SECOND;
       STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
       PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
-      LEGACY_WORLD_NAMES_FOR_REALMS_LOG = Map.of("overworld", "world", "the_nether", "DIM-1", "the_end", "DIM1");
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");

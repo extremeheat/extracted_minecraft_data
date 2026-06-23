@@ -23,7 +23,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
@@ -145,8 +144,6 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       Component error = playerList.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));
       if (error != null) {
          this.disconnect(error);
-      } else if (this.connection.getIntendedProfileId() != null && !profile.id().equals(this.connection.getIntendedProfileId())) {
-         this.disconnect(CommonComponents.CONNECT_FAILED);
       } else {
          if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
             this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));

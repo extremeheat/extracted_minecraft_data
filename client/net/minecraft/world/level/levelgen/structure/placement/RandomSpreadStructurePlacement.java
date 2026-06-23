@@ -11,7 +11,7 @@ import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
-public class RandomSpreadStructurePlacement extends StructurePlacement {
+public class RandomSpreadStructurePlacement extends AbstractSpreadingStructurePlacement {
    public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> placementCodec(i).and(i.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(i, RandomSpreadStructurePlacement::new)).validate(RandomSpreadStructurePlacement::validate);
    private final int spacing;
    private final int separation;
@@ -21,7 +21,7 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
       return c.spacing <= c.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(c);
    }
 
-   public RandomSpreadStructurePlacement(final Vec3i locateOffset, final StructurePlacement.FrequencyReductionMethod frequencyReductionMethod, final float frequency, final int salt, final Optional<StructurePlacement.ExclusionZone> exclusionZone, final int spacing, final int separation, final RandomSpreadType spreadType) {
+   public RandomSpreadStructurePlacement(final Vec3i locateOffset, final AbstractSpreadingStructurePlacement.FrequencyReductionMethod frequencyReductionMethod, final float frequency, final int salt, final Optional<AbstractSpreadingStructurePlacement.ExclusionZone> exclusionZone, final int spacing, final int separation, final RandomSpreadType spreadType) {
       super(locateOffset, frequencyReductionMethod, frequency, salt, exclusionZone);
       this.spacing = spacing;
       this.separation = separation;
@@ -29,7 +29,7 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
    }
 
    public RandomSpreadStructurePlacement(final int spacing, final int separation, final RandomSpreadType spreadType, final int salt) {
-      this(Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, salt, Optional.empty(), spacing, separation, spreadType);
+      this(Vec3i.ZERO, AbstractSpreadingStructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, salt, Optional.empty(), spacing, separation, spreadType);
    }
 
    public int spacing() {
@@ -60,7 +60,7 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
       return chunkPos.x() == sourceX && chunkPos.z() == sourceZ;
    }
 
-   public StructurePlacementType<?> type() {
-      return StructurePlacementType.RANDOM_SPREAD;
+   public MapCodec<RandomSpreadStructurePlacement> codec() {
+      return CODEC;
    }
 }

@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
-import net.minecraft.data.AtlasIds;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
@@ -35,7 +35,7 @@ public interface EntityRendererProvider<T extends Entity> {
       private final AtlasManager atlasManager;
       private final PlayerSkinRenderCache playerSkinRenderCache;
 
-      public Context(final EntityRenderDispatcher entityRenderDispatcher, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final ResourceManager resourceManager, final EntityModelSet modelSet, final EquipmentAssetManager equipmentAssets, final AtlasManager atlasManager, final Font font, final PlayerSkinRenderCache playerSkinRenderCache) {
+      public Context(final EntityRenderDispatcher entityRenderDispatcher, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final ResourceManager resourceManager, final EntityModelSet modelSet, final EquipmentAssetManager equipmentAssets, final AtlasManager atlasManager, final Font font, final PlayerSkinRenderCache playerSkinRenderCache, final PalettedTextureManager palettedTextures) {
          super();
          this.entityRenderDispatcher = entityRenderDispatcher;
          this.blockModelResolver = blockModelResolver;
@@ -47,7 +47,7 @@ public interface EntityRendererProvider<T extends Entity> {
          this.font = font;
          this.atlasManager = atlasManager;
          this.playerSkinRenderCache = playerSkinRenderCache;
-         this.equipmentRenderer = new EquipmentLayerRenderer(equipmentAssets, atlasManager.getAtlasOrThrow(AtlasIds.ARMOR_TRIMS));
+         this.equipmentRenderer = new EquipmentLayerRenderer(equipmentAssets, palettedTextures);
       }
 
       public EntityRenderDispatcher getEntityRenderDispatcher() {

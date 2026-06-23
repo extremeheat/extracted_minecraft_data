@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -41,7 +42,7 @@ public class IceBlock extends HalfTransparentBlock {
          }
 
          BlockState belowState = level.getBlockState(pos.below());
-         if (belowState.blocksMotion() || belowState.liquid()) {
+         if (belowState.is(BlockTags.ICE_MELTS_WHEN_DESTROYED_ABOVE) || belowState.liquid()) {
             level.setBlockAndUpdate(pos, meltsInto());
          }
       }

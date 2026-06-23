@@ -59,6 +59,7 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.material.Fluids;
@@ -137,6 +138,7 @@ public class Items {
    public static final Item DARK_OAK_PLANKS;
    public static final Item PALE_OAK_PLANKS;
    public static final Item MANGROVE_PLANKS;
+   public static final Item POPLAR_PLANKS;
    public static final Item BAMBOO_PLANKS;
    public static final Item CRIMSON_PLANKS;
    public static final Item WARPED_PLANKS;
@@ -150,6 +152,7 @@ public class Items {
    public static final Item DARK_OAK_SAPLING;
    public static final Item PALE_OAK_SAPLING;
    public static final Item MANGROVE_PROPAGULE;
+   public static final Item POPLAR_SAPLING;
    public static final Item BEDROCK;
    public static final Item SAND;
    public static final Item SUSPICIOUS_SAND;
@@ -200,6 +203,7 @@ public class Items {
    public static final Item PALE_OAK_LOG;
    public static final Item DARK_OAK_LOG;
    public static final Item MANGROVE_LOG;
+   public static final Item POPLAR_LOG;
    public static final Item MANGROVE_ROOTS;
    public static final Item MUDDY_MANGROVE_ROOTS;
    public static final Item CRIMSON_STEM;
@@ -214,6 +218,7 @@ public class Items {
    public static final Item STRIPPED_DARK_OAK_LOG;
    public static final Item STRIPPED_PALE_OAK_LOG;
    public static final Item STRIPPED_MANGROVE_LOG;
+   public static final Item STRIPPED_POPLAR_LOG;
    public static final Item STRIPPED_CRIMSON_STEM;
    public static final Item STRIPPED_WARPED_STEM;
    public static final Item STRIPPED_OAK_WOOD;
@@ -225,6 +230,7 @@ public class Items {
    public static final Item STRIPPED_DARK_OAK_WOOD;
    public static final Item STRIPPED_PALE_OAK_WOOD;
    public static final Item STRIPPED_MANGROVE_WOOD;
+   public static final Item STRIPPED_POPLAR_WOOD;
    public static final Item STRIPPED_CRIMSON_HYPHAE;
    public static final Item STRIPPED_WARPED_HYPHAE;
    public static final Item STRIPPED_BAMBOO_BLOCK;
@@ -237,6 +243,7 @@ public class Items {
    public static final Item PALE_OAK_WOOD;
    public static final Item DARK_OAK_WOOD;
    public static final Item MANGROVE_WOOD;
+   public static final Item POPLAR_WOOD;
    public static final Item CRIMSON_HYPHAE;
    public static final Item WARPED_HYPHAE;
    public static final Item OAK_LEAVES;
@@ -248,6 +255,9 @@ public class Items {
    public static final Item DARK_OAK_LEAVES;
    public static final Item PALE_OAK_LEAVES;
    public static final Item MANGROVE_LEAVES;
+   public static final Item RED_POPLAR_LEAVES;
+   public static final Item ORANGE_POPLAR_LEAVES;
+   public static final Item YELLOW_POPLAR_LEAVES;
    public static final Item AZALEA_LEAVES;
    public static final Item FLOWERING_AZALEA_LEAVES;
    public static final Item SPONGE;
@@ -262,6 +272,7 @@ public class Items {
    public static final Item SHORT_GRASS;
    public static final Item FERN;
    public static final Item BUSH;
+   public static final Item RED_SHRUB;
    public static final Item AZALEA;
    public static final Item FLOWERING_AZALEA;
    public static final Item DEAD_BUSH;
@@ -271,6 +282,8 @@ public class Items {
    public static final Item SEAGRASS;
    public static final Item SEA_PICKLE;
    public static final ColorCollection<Item> WOOL;
+   public static final ColorCollection<Item> WOOL_STAIRS;
+   public static final ColorCollection<Item> WOOL_SLAB;
    public static final Item DANDELION;
    public static final Item GOLDEN_DANDELION;
    public static final Item OPEN_EYEBLOSSOM;
@@ -292,6 +305,7 @@ public class Items {
    public static final Item SPORE_BLOSSOM;
    public static final Item BROWN_MUSHROOM;
    public static final Item RED_MUSHROOM;
+   public static final Item SHELF_MUSHROOM;
    public static final Item CRIMSON_FUNGUS;
    public static final Item WARPED_FUNGUS;
    public static final Item CRIMSON_ROOTS;
@@ -322,6 +336,7 @@ public class Items {
    public static final Item DARK_OAK_SLAB;
    public static final Item PALE_OAK_SLAB;
    public static final Item MANGROVE_SLAB;
+   public static final Item POPLAR_SLAB;
    public static final Item BAMBOO_SLAB;
    public static final Item BAMBOO_MOSAIC_SLAB;
    public static final Item CRIMSON_SLAB;
@@ -356,6 +371,7 @@ public class Items {
    public static final Item DARK_OAK_SHELF;
    public static final Item JUNGLE_SHELF;
    public static final Item MANGROVE_SHELF;
+   public static final Item POPLAR_SHELF;
    public static final Item OAK_SHELF;
    public static final Item PALE_OAK_SHELF;
    public static final Item SPRUCE_SHELF;
@@ -396,6 +412,7 @@ public class Items {
    public static final Item DARK_OAK_FENCE;
    public static final Item PALE_OAK_FENCE;
    public static final Item MANGROVE_FENCE;
+   public static final Item POPLAR_FENCE;
    public static final Item BAMBOO_FENCE;
    public static final Item CRIMSON_FENCE;
    public static final Item WARPED_FENCE;
@@ -479,6 +496,7 @@ public class Items {
    public static final Item DARK_OAK_STAIRS;
    public static final Item PALE_OAK_STAIRS;
    public static final Item MANGROVE_STAIRS;
+   public static final Item POPLAR_STAIRS;
    public static final Item BAMBOO_STAIRS;
    public static final Item BAMBOO_MOSAIC_STAIRS;
    public static final Item CRIMSON_STAIRS;
@@ -662,6 +680,7 @@ public class Items {
    public static final Item DARK_OAK_BUTTON;
    public static final Item PALE_OAK_BUTTON;
    public static final Item MANGROVE_BUTTON;
+   public static final Item POPLAR_BUTTON;
    public static final Item BAMBOO_BUTTON;
    public static final Item CRIMSON_BUTTON;
    public static final Item WARPED_BUTTON;
@@ -678,6 +697,7 @@ public class Items {
    public static final Item DARK_OAK_PRESSURE_PLATE;
    public static final Item PALE_OAK_PRESSURE_PLATE;
    public static final Item MANGROVE_PRESSURE_PLATE;
+   public static final Item POPLAR_PRESSURE_PLATE;
    public static final Item BAMBOO_PRESSURE_PLATE;
    public static final Item CRIMSON_PRESSURE_PLATE;
    public static final Item WARPED_PRESSURE_PLATE;
@@ -691,6 +711,7 @@ public class Items {
    public static final Item DARK_OAK_DOOR;
    public static final Item PALE_OAK_DOOR;
    public static final Item MANGROVE_DOOR;
+   public static final Item POPLAR_DOOR;
    public static final Item BAMBOO_DOOR;
    public static final Item CRIMSON_DOOR;
    public static final Item WARPED_DOOR;
@@ -705,6 +726,7 @@ public class Items {
    public static final Item DARK_OAK_TRAPDOOR;
    public static final Item PALE_OAK_TRAPDOOR;
    public static final Item MANGROVE_TRAPDOOR;
+   public static final Item POPLAR_TRAPDOOR;
    public static final Item BAMBOO_TRAPDOOR;
    public static final Item CRIMSON_TRAPDOOR;
    public static final Item WARPED_TRAPDOOR;
@@ -718,6 +740,7 @@ public class Items {
    public static final Item DARK_OAK_FENCE_GATE;
    public static final Item PALE_OAK_FENCE_GATE;
    public static final Item MANGROVE_FENCE_GATE;
+   public static final Item POPLAR_FENCE_GATE;
    public static final Item BAMBOO_FENCE_GATE;
    public static final Item CRIMSON_FENCE_GATE;
    public static final Item WARPED_FENCE_GATE;
@@ -754,6 +777,8 @@ public class Items {
    public static final Item PALE_OAK_CHEST_BOAT;
    public static final Item MANGROVE_BOAT;
    public static final Item MANGROVE_CHEST_BOAT;
+   public static final Item POPLAR_BOAT;
+   public static final Item POPLAR_CHEST_BOAT;
    public static final Item BAMBOO_RAFT;
    public static final Item BAMBOO_CHEST_RAFT;
    public static final Item STRUCTURE_BLOCK;
@@ -870,6 +895,7 @@ public class Items {
    public static final Item DARK_OAK_SIGN;
    public static final Item PALE_OAK_SIGN;
    public static final Item MANGROVE_SIGN;
+   public static final Item POPLAR_SIGN;
    public static final Item BAMBOO_SIGN;
    public static final Item CRIMSON_SIGN;
    public static final Item WARPED_SIGN;
@@ -882,6 +908,7 @@ public class Items {
    public static final Item DARK_OAK_HANGING_SIGN;
    public static final Item PALE_OAK_HANGING_SIGN;
    public static final Item MANGROVE_HANGING_SIGN;
+   public static final Item POPLAR_HANGING_SIGN;
    public static final Item BAMBOO_HANGING_SIGN;
    public static final Item CRIMSON_HANGING_SIGN;
    public static final Item WARPED_HANGING_SIGN;
@@ -1417,6 +1444,7 @@ public class Items {
       DARK_OAK_PLANKS = registerBlock(BlockItemIds.DARK_OAK_PLANKS, Blocks.DARK_OAK_PLANKS);
       PALE_OAK_PLANKS = registerBlock(BlockItemIds.PALE_OAK_PLANKS, Blocks.PALE_OAK_PLANKS);
       MANGROVE_PLANKS = registerBlock(BlockItemIds.MANGROVE_PLANKS, Blocks.MANGROVE_PLANKS);
+      POPLAR_PLANKS = registerBlock(BlockItemIds.POPLAR_PLANKS, Blocks.POPLAR_PLANKS);
       BAMBOO_PLANKS = registerBlock(BlockItemIds.BAMBOO_PLANKS, Blocks.BAMBOO_PLANKS);
       CRIMSON_PLANKS = registerBlock(BlockItemIds.CRIMSON_PLANKS, Blocks.CRIMSON_PLANKS);
       WARPED_PLANKS = registerBlock(BlockItemIds.WARPED_PLANKS, Blocks.WARPED_PLANKS);
@@ -1430,6 +1458,7 @@ public class Items {
       DARK_OAK_SAPLING = registerBlock(BlockItemIds.DARK_OAK_SAPLING, Blocks.DARK_OAK_SAPLING);
       PALE_OAK_SAPLING = registerBlock(BlockItemIds.PALE_OAK_SAPLING, Blocks.PALE_OAK_SAPLING);
       MANGROVE_PROPAGULE = registerBlock(BlockItemIds.MANGROVE_PROPAGULE, Blocks.MANGROVE_PROPAGULE);
+      POPLAR_SAPLING = registerBlock(BlockItemIds.POPLAR_SAPLING, Blocks.POPLAR_SAPLING);
       BEDROCK = registerBlock(BlockItemIds.BEDROCK, Blocks.BEDROCK);
       SAND = registerBlock(BlockItemIds.SAND, Blocks.SAND);
       SUSPICIOUS_SAND = registerBlock(BlockItemIds.SUSPICIOUS_SAND, Blocks.SUSPICIOUS_SAND);
@@ -1480,6 +1509,7 @@ public class Items {
       PALE_OAK_LOG = registerBlock(BlockItemIds.PALE_OAK_LOG, Blocks.PALE_OAK_LOG);
       DARK_OAK_LOG = registerBlock(BlockItemIds.DARK_OAK_LOG, Blocks.DARK_OAK_LOG);
       MANGROVE_LOG = registerBlock(BlockItemIds.MANGROVE_LOG, Blocks.MANGROVE_LOG);
+      POPLAR_LOG = registerBlock(BlockItemIds.POPLAR_LOG, Blocks.POPLAR_LOG);
       MANGROVE_ROOTS = registerBlock(BlockItemIds.MANGROVE_ROOTS, Blocks.MANGROVE_ROOTS);
       MUDDY_MANGROVE_ROOTS = registerBlock(BlockItemIds.MUDDY_MANGROVE_ROOTS, Blocks.MUDDY_MANGROVE_ROOTS);
       CRIMSON_STEM = registerBlock(BlockItemIds.CRIMSON_STEM, Blocks.CRIMSON_STEM);
@@ -1494,6 +1524,7 @@ public class Items {
       STRIPPED_DARK_OAK_LOG = registerBlock(BlockItemIds.STRIPPED_DARK_OAK_LOG, Blocks.STRIPPED_DARK_OAK_LOG);
       STRIPPED_PALE_OAK_LOG = registerBlock(BlockItemIds.STRIPPED_PALE_OAK_LOG, Blocks.STRIPPED_PALE_OAK_LOG);
       STRIPPED_MANGROVE_LOG = registerBlock(BlockItemIds.STRIPPED_MANGROVE_LOG, Blocks.STRIPPED_MANGROVE_LOG);
+      STRIPPED_POPLAR_LOG = registerBlock(BlockItemIds.STRIPPED_POPLAR_LOG, Blocks.STRIPPED_POPLAR_LOG);
       STRIPPED_CRIMSON_STEM = registerBlock(BlockItemIds.STRIPPED_CRIMSON_STEM, Blocks.STRIPPED_CRIMSON_STEM);
       STRIPPED_WARPED_STEM = registerBlock(BlockItemIds.STRIPPED_WARPED_STEM, Blocks.STRIPPED_WARPED_STEM);
       STRIPPED_OAK_WOOD = registerBlock(BlockItemIds.STRIPPED_OAK_WOOD, Blocks.STRIPPED_OAK_WOOD);
@@ -1505,6 +1536,7 @@ public class Items {
       STRIPPED_DARK_OAK_WOOD = registerBlock(BlockItemIds.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD);
       STRIPPED_PALE_OAK_WOOD = registerBlock(BlockItemIds.STRIPPED_PALE_OAK_WOOD, Blocks.STRIPPED_PALE_OAK_WOOD);
       STRIPPED_MANGROVE_WOOD = registerBlock(BlockItemIds.STRIPPED_MANGROVE_WOOD, Blocks.STRIPPED_MANGROVE_WOOD);
+      STRIPPED_POPLAR_WOOD = registerBlock(BlockItemIds.STRIPPED_POPLAR_WOOD, Blocks.STRIPPED_POPLAR_WOOD);
       STRIPPED_CRIMSON_HYPHAE = registerBlock(BlockItemIds.STRIPPED_CRIMSON_HYPHAE, Blocks.STRIPPED_CRIMSON_HYPHAE);
       STRIPPED_WARPED_HYPHAE = registerBlock(BlockItemIds.STRIPPED_WARPED_HYPHAE, Blocks.STRIPPED_WARPED_HYPHAE);
       STRIPPED_BAMBOO_BLOCK = registerBlock(BlockItemIds.STRIPPED_BAMBOO_BLOCK, Blocks.STRIPPED_BAMBOO_BLOCK);
@@ -1517,6 +1549,7 @@ public class Items {
       PALE_OAK_WOOD = registerBlock(BlockItemIds.PALE_OAK_WOOD, Blocks.PALE_OAK_WOOD);
       DARK_OAK_WOOD = registerBlock(BlockItemIds.DARK_OAK_WOOD, Blocks.DARK_OAK_WOOD);
       MANGROVE_WOOD = registerBlock(BlockItemIds.MANGROVE_WOOD, Blocks.MANGROVE_WOOD);
+      POPLAR_WOOD = registerBlock(BlockItemIds.POPLAR_WOOD, Blocks.POPLAR_WOOD);
       CRIMSON_HYPHAE = registerBlock(BlockItemIds.CRIMSON_HYPHAE, Blocks.CRIMSON_HYPHAE);
       WARPED_HYPHAE = registerBlock(BlockItemIds.WARPED_HYPHAE, Blocks.WARPED_HYPHAE);
       OAK_LEAVES = registerBlock(BlockItemIds.OAK_LEAVES, Blocks.OAK_LEAVES);
@@ -1528,6 +1561,9 @@ public class Items {
       DARK_OAK_LEAVES = registerBlock(BlockItemIds.DARK_OAK_LEAVES, Blocks.DARK_OAK_LEAVES);
       PALE_OAK_LEAVES = registerBlock(BlockItemIds.PALE_OAK_LEAVES, Blocks.PALE_OAK_LEAVES);
       MANGROVE_LEAVES = registerBlock(BlockItemIds.MANGROVE_LEAVES, Blocks.MANGROVE_LEAVES);
+      RED_POPLAR_LEAVES = registerBlock(BlockItemIds.RED_POPLAR_LEAVES, Blocks.RED_POPLAR_LEAVES);
+      ORANGE_POPLAR_LEAVES = registerBlock(BlockItemIds.ORANGE_POPLAR_LEAVES, Blocks.ORANGE_POPLAR_LEAVES);
+      YELLOW_POPLAR_LEAVES = registerBlock(BlockItemIds.YELLOW_POPLAR_LEAVES, Blocks.YELLOW_POPLAR_LEAVES);
       AZALEA_LEAVES = registerBlock(BlockItemIds.AZALEA_LEAVES, Blocks.AZALEA_LEAVES);
       FLOWERING_AZALEA_LEAVES = registerBlock(BlockItemIds.FLOWERING_AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES);
       SPONGE = registerBlock(BlockItemIds.SPONGE, Blocks.SPONGE);
@@ -1542,6 +1578,7 @@ public class Items {
       SHORT_GRASS = registerBlock(BlockItemIds.SHORT_GRASS, Blocks.SHORT_GRASS);
       FERN = registerBlock(BlockItemIds.FERN, Blocks.FERN);
       BUSH = registerBlock(BlockItemIds.BUSH, Blocks.BUSH);
+      RED_SHRUB = registerBlock(BlockItemIds.RED_SHRUB, Blocks.RED_SHRUB);
       AZALEA = registerBlock(BlockItemIds.AZALEA, Blocks.AZALEA);
       FLOWERING_AZALEA = registerBlock(BlockItemIds.FLOWERING_AZALEA, Blocks.FLOWERING_AZALEA);
       DEAD_BUSH = registerBlock(BlockItemIds.DEAD_BUSH, Blocks.DEAD_BUSH);
@@ -1551,6 +1588,8 @@ public class Items {
       SEAGRASS = registerBlock(BlockItemIds.SEAGRASS, Blocks.SEAGRASS);
       SEA_PICKLE = registerBlock(BlockItemIds.SEA_PICKLE, Blocks.SEA_PICKLE);
       WOOL = ColorCollection.registerBlockItems(BlockItemIds.WOOL, Blocks.WOOL, (id, block, var2) -> registerBlock(id, block));
+      WOOL_STAIRS = ColorCollection.registerBlockItems(BlockItemIds.WOOL_STAIRS, Blocks.WOOL_STAIRS, (id, block, var2) -> registerBlock(id, block));
+      WOOL_SLAB = ColorCollection.registerBlockItems(BlockItemIds.WOOL_SLAB, Blocks.WOOL_SLAB, (id, block, var2) -> registerBlock(id, block));
       DANDELION = registerBlock(BlockItemIds.DANDELION, Blocks.DANDELION);
       GOLDEN_DANDELION = registerBlock(BlockItemIds.GOLDEN_DANDELION, Blocks.GOLDEN_DANDELION);
       OPEN_EYEBLOSSOM = registerBlock(BlockItemIds.OPEN_EYEBLOSSOM, Blocks.OPEN_EYEBLOSSOM);
@@ -1572,6 +1611,7 @@ public class Items {
       SPORE_BLOSSOM = registerBlock(BlockItemIds.SPORE_BLOSSOM, Blocks.SPORE_BLOSSOM);
       BROWN_MUSHROOM = registerBlock(BlockItemIds.BROWN_MUSHROOM, Blocks.BROWN_MUSHROOM);
       RED_MUSHROOM = registerBlock(BlockItemIds.RED_MUSHROOM, Blocks.RED_MUSHROOM);
+      SHELF_MUSHROOM = registerBlock(BlockItemIds.SHELF_MUSHROOM, Blocks.SHELF_MUSHROOM);
       CRIMSON_FUNGUS = registerBlock(BlockItemIds.CRIMSON_FUNGUS, Blocks.CRIMSON_FUNGUS);
       WARPED_FUNGUS = registerBlock(BlockItemIds.WARPED_FUNGUS, Blocks.WARPED_FUNGUS);
       CRIMSON_ROOTS = registerBlock(BlockItemIds.CRIMSON_ROOTS, Blocks.CRIMSON_ROOTS);
@@ -1602,6 +1642,7 @@ public class Items {
       DARK_OAK_SLAB = registerBlock(BlockItemIds.DARK_OAK_SLAB, Blocks.DARK_OAK_SLAB);
       PALE_OAK_SLAB = registerBlock(BlockItemIds.PALE_OAK_SLAB, Blocks.PALE_OAK_SLAB);
       MANGROVE_SLAB = registerBlock(BlockItemIds.MANGROVE_SLAB, Blocks.MANGROVE_SLAB);
+      POPLAR_SLAB = registerBlock(BlockItemIds.POPLAR_SLAB, Blocks.POPLAR_SLAB);
       BAMBOO_SLAB = registerBlock(BlockItemIds.BAMBOO_SLAB, Blocks.BAMBOO_SLAB);
       BAMBOO_MOSAIC_SLAB = registerBlock(BlockItemIds.BAMBOO_MOSAIC_SLAB, Blocks.BAMBOO_MOSAIC_SLAB);
       CRIMSON_SLAB = registerBlock(BlockItemIds.CRIMSON_SLAB, Blocks.CRIMSON_SLAB);
@@ -1636,6 +1677,7 @@ public class Items {
       DARK_OAK_SHELF = registerBlock(BlockItemIds.DARK_OAK_SHELF, Blocks.DARK_OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       JUNGLE_SHELF = registerBlock(BlockItemIds.JUNGLE_SHELF, Blocks.JUNGLE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       MANGROVE_SHELF = registerBlock(BlockItemIds.MANGROVE_SHELF, Blocks.MANGROVE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      POPLAR_SHELF = registerBlock(BlockItemIds.POPLAR_SHELF, Blocks.POPLAR_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       OAK_SHELF = registerBlock(BlockItemIds.OAK_SHELF, Blocks.OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       PALE_OAK_SHELF = registerBlock(BlockItemIds.PALE_OAK_SHELF, Blocks.PALE_OAK_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       SPRUCE_SHELF = registerBlock(BlockItemIds.SPRUCE_SHELF, Blocks.SPRUCE_SHELF, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
@@ -1676,6 +1718,7 @@ public class Items {
       DARK_OAK_FENCE = registerBlock(BlockItemIds.DARK_OAK_FENCE, Blocks.DARK_OAK_FENCE);
       PALE_OAK_FENCE = registerBlock(BlockItemIds.PALE_OAK_FENCE, Blocks.PALE_OAK_FENCE);
       MANGROVE_FENCE = registerBlock(BlockItemIds.MANGROVE_FENCE, Blocks.MANGROVE_FENCE);
+      POPLAR_FENCE = registerBlock(BlockItemIds.POPLAR_FENCE, Blocks.POPLAR_FENCE);
       BAMBOO_FENCE = registerBlock(BlockItemIds.BAMBOO_FENCE, Blocks.BAMBOO_FENCE);
       CRIMSON_FENCE = registerBlock(BlockItemIds.CRIMSON_FENCE, Blocks.CRIMSON_FENCE);
       WARPED_FENCE = registerBlock(BlockItemIds.WARPED_FENCE, Blocks.WARPED_FENCE);
@@ -1759,6 +1802,7 @@ public class Items {
       DARK_OAK_STAIRS = registerBlock(BlockItemIds.DARK_OAK_STAIRS, Blocks.DARK_OAK_STAIRS);
       PALE_OAK_STAIRS = registerBlock(BlockItemIds.PALE_OAK_STAIRS, Blocks.PALE_OAK_STAIRS);
       MANGROVE_STAIRS = registerBlock(BlockItemIds.MANGROVE_STAIRS, Blocks.MANGROVE_STAIRS);
+      POPLAR_STAIRS = registerBlock(BlockItemIds.POPLAR_STAIRS, Blocks.POPLAR_STAIRS);
       BAMBOO_STAIRS = registerBlock(BlockItemIds.BAMBOO_STAIRS, Blocks.BAMBOO_STAIRS);
       BAMBOO_MOSAIC_STAIRS = registerBlock(BlockItemIds.BAMBOO_MOSAIC_STAIRS, Blocks.BAMBOO_MOSAIC_STAIRS);
       CRIMSON_STAIRS = registerBlock(BlockItemIds.CRIMSON_STAIRS, Blocks.CRIMSON_STAIRS);
@@ -1942,6 +1986,7 @@ public class Items {
       DARK_OAK_BUTTON = registerBlock(BlockItemIds.DARK_OAK_BUTTON, Blocks.DARK_OAK_BUTTON);
       PALE_OAK_BUTTON = registerBlock(BlockItemIds.PALE_OAK_BUTTON, Blocks.PALE_OAK_BUTTON);
       MANGROVE_BUTTON = registerBlock(BlockItemIds.MANGROVE_BUTTON, Blocks.MANGROVE_BUTTON);
+      POPLAR_BUTTON = registerBlock(BlockItemIds.POPLAR_BUTTON, Blocks.POPLAR_BUTTON);
       BAMBOO_BUTTON = registerBlock(BlockItemIds.BAMBOO_BUTTON, Blocks.BAMBOO_BUTTON);
       CRIMSON_BUTTON = registerBlock(BlockItemIds.CRIMSON_BUTTON, Blocks.CRIMSON_BUTTON);
       WARPED_BUTTON = registerBlock(BlockItemIds.WARPED_BUTTON, Blocks.WARPED_BUTTON);
@@ -1958,6 +2003,7 @@ public class Items {
       DARK_OAK_PRESSURE_PLATE = registerBlock(BlockItemIds.DARK_OAK_PRESSURE_PLATE, Blocks.DARK_OAK_PRESSURE_PLATE);
       PALE_OAK_PRESSURE_PLATE = registerBlock(BlockItemIds.PALE_OAK_PRESSURE_PLATE, Blocks.PALE_OAK_PRESSURE_PLATE);
       MANGROVE_PRESSURE_PLATE = registerBlock(BlockItemIds.MANGROVE_PRESSURE_PLATE, Blocks.MANGROVE_PRESSURE_PLATE);
+      POPLAR_PRESSURE_PLATE = registerBlock(BlockItemIds.POPLAR_PRESSURE_PLATE, Blocks.POPLAR_PRESSURE_PLATE);
       BAMBOO_PRESSURE_PLATE = registerBlock(BlockItemIds.BAMBOO_PRESSURE_PLATE, Blocks.BAMBOO_PRESSURE_PLATE);
       CRIMSON_PRESSURE_PLATE = registerBlock(BlockItemIds.CRIMSON_PRESSURE_PLATE, Blocks.CRIMSON_PRESSURE_PLATE);
       WARPED_PRESSURE_PLATE = registerBlock(BlockItemIds.WARPED_PRESSURE_PLATE, Blocks.WARPED_PRESSURE_PLATE);
@@ -1971,6 +2017,7 @@ public class Items {
       DARK_OAK_DOOR = registerBlock(BlockItemIds.DARK_OAK_DOOR, Blocks.DARK_OAK_DOOR, DoubleHighBlockItem::new);
       PALE_OAK_DOOR = registerBlock(BlockItemIds.PALE_OAK_DOOR, Blocks.PALE_OAK_DOOR, DoubleHighBlockItem::new);
       MANGROVE_DOOR = registerBlock(BlockItemIds.MANGROVE_DOOR, Blocks.MANGROVE_DOOR, DoubleHighBlockItem::new);
+      POPLAR_DOOR = registerBlock(BlockItemIds.POPLAR_DOOR, Blocks.POPLAR_DOOR, DoubleHighBlockItem::new);
       BAMBOO_DOOR = registerBlock(BlockItemIds.BAMBOO_DOOR, Blocks.BAMBOO_DOOR, DoubleHighBlockItem::new);
       CRIMSON_DOOR = registerBlock(BlockItemIds.CRIMSON_DOOR, Blocks.CRIMSON_DOOR, DoubleHighBlockItem::new);
       WARPED_DOOR = registerBlock(BlockItemIds.WARPED_DOOR, Blocks.WARPED_DOOR, DoubleHighBlockItem::new);
@@ -1985,6 +2032,7 @@ public class Items {
       DARK_OAK_TRAPDOOR = registerBlock(BlockItemIds.DARK_OAK_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR);
       PALE_OAK_TRAPDOOR = registerBlock(BlockItemIds.PALE_OAK_TRAPDOOR, Blocks.PALE_OAK_TRAPDOOR);
       MANGROVE_TRAPDOOR = registerBlock(BlockItemIds.MANGROVE_TRAPDOOR, Blocks.MANGROVE_TRAPDOOR);
+      POPLAR_TRAPDOOR = registerBlock(BlockItemIds.POPLAR_TRAPDOOR, Blocks.POPLAR_TRAPDOOR);
       BAMBOO_TRAPDOOR = registerBlock(BlockItemIds.BAMBOO_TRAPDOOR, Blocks.BAMBOO_TRAPDOOR);
       CRIMSON_TRAPDOOR = registerBlock(BlockItemIds.CRIMSON_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
       WARPED_TRAPDOOR = registerBlock(BlockItemIds.WARPED_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
@@ -1998,6 +2046,7 @@ public class Items {
       DARK_OAK_FENCE_GATE = registerBlock(BlockItemIds.DARK_OAK_FENCE_GATE, Blocks.DARK_OAK_FENCE_GATE);
       PALE_OAK_FENCE_GATE = registerBlock(BlockItemIds.PALE_OAK_FENCE_GATE, Blocks.PALE_OAK_FENCE_GATE);
       MANGROVE_FENCE_GATE = registerBlock(BlockItemIds.MANGROVE_FENCE_GATE, Blocks.MANGROVE_FENCE_GATE);
+      POPLAR_FENCE_GATE = registerBlock(BlockItemIds.POPLAR_FENCE_GATE, Blocks.POPLAR_FENCE_GATE);
       BAMBOO_FENCE_GATE = registerBlock(BlockItemIds.BAMBOO_FENCE_GATE, Blocks.BAMBOO_FENCE_GATE);
       CRIMSON_FENCE_GATE = registerBlock(BlockItemIds.CRIMSON_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
       WARPED_FENCE_GATE = registerBlock(BlockItemIds.WARPED_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
@@ -2034,6 +2083,8 @@ public class Items {
       PALE_OAK_CHEST_BOAT = registerItem((ResourceKey)ItemIds.PALE_OAK_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.PALE_OAK_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
       MANGROVE_BOAT = registerItem((ResourceKey)ItemIds.MANGROVE_BOAT, (p) -> new BoatItem(EntityTypes.MANGROVE_BOAT, p), (new Item.Properties()).stacksTo(1));
       MANGROVE_CHEST_BOAT = registerItem((ResourceKey)ItemIds.MANGROVE_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.MANGROVE_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
+      POPLAR_BOAT = registerItem((ResourceKey)ItemIds.POPLAR_BOAT, (p) -> new BoatItem(EntityTypes.POPLAR_BOAT, p), (new Item.Properties()).stacksTo(1));
+      POPLAR_CHEST_BOAT = registerItem((ResourceKey)ItemIds.POPLAR_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.POPLAR_CHEST_BOAT, p), (new Item.Properties()).stacksTo(1));
       BAMBOO_RAFT = registerItem((ResourceKey)ItemIds.BAMBOO_RAFT, (p) -> new BoatItem(EntityTypes.BAMBOO_RAFT, p), (new Item.Properties()).stacksTo(1));
       BAMBOO_CHEST_RAFT = registerItem((ResourceKey)ItemIds.BAMBOO_CHEST_RAFT, (p) -> new BoatItem(EntityTypes.BAMBOO_CHEST_RAFT, p), (new Item.Properties()).stacksTo(1));
       STRUCTURE_BLOCK = registerBlock(BlockItemIds.STRUCTURE_BLOCK, Blocks.STRUCTURE_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
@@ -2150,6 +2201,7 @@ public class Items {
       DARK_OAK_SIGN = registerBlock(BlockItemIds.DARK_OAK_SIGN, Blocks.DARK_OAK_SIGN, (b, p) -> new SignItem(b, Blocks.DARK_OAK_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
       PALE_OAK_SIGN = registerBlock(BlockItemIds.PALE_OAK_SIGN, Blocks.PALE_OAK_SIGN, (b, p) -> new SignItem(b, Blocks.PALE_OAK_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
       MANGROVE_SIGN = registerBlock(BlockItemIds.MANGROVE_SIGN, Blocks.MANGROVE_SIGN, (b, p) -> new SignItem(b, Blocks.MANGROVE_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
+      POPLAR_SIGN = registerBlock(BlockItemIds.POPLAR_SIGN, Blocks.POPLAR_SIGN, (b, p) -> new SignItem(b, Blocks.POPLAR_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
       BAMBOO_SIGN = registerBlock(BlockItemIds.BAMBOO_SIGN, Blocks.BAMBOO_SIGN, (b, p) -> new SignItem(b, Blocks.BAMBOO_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
       CRIMSON_SIGN = registerBlock(BlockItemIds.CRIMSON_SIGN, Blocks.CRIMSON_SIGN, (b, p) -> new SignItem(b, Blocks.CRIMSON_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
       WARPED_SIGN = registerBlock(BlockItemIds.WARPED_SIGN, Blocks.WARPED_SIGN, (b, p) -> new SignItem(b, Blocks.WARPED_WALL_SIGN, p), (new Item.Properties()).stacksTo(16));
@@ -2162,6 +2214,7 @@ public class Items {
       DARK_OAK_HANGING_SIGN = registerBlock(BlockItemIds.DARK_OAK_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.DARK_OAK_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
       PALE_OAK_HANGING_SIGN = registerBlock(BlockItemIds.PALE_OAK_HANGING_SIGN, Blocks.PALE_OAK_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.PALE_OAK_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
       MANGROVE_HANGING_SIGN = registerBlock(BlockItemIds.MANGROVE_HANGING_SIGN, Blocks.MANGROVE_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.MANGROVE_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
+      POPLAR_HANGING_SIGN = registerBlock(BlockItemIds.POPLAR_HANGING_SIGN, Blocks.POPLAR_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.POPLAR_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
       BAMBOO_HANGING_SIGN = registerBlock(BlockItemIds.BAMBOO_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.BAMBOO_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
       CRIMSON_HANGING_SIGN = registerBlock(BlockItemIds.CRIMSON_HANGING_SIGN, Blocks.CRIMSON_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.CRIMSON_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
       WARPED_HANGING_SIGN = registerBlock(BlockItemIds.WARPED_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN, (b, p) -> new HangingSignItem(b, Blocks.WARPED_WALL_HANGING_SIGN, p), (new Item.Properties()).stacksTo(16));
@@ -2210,7 +2263,7 @@ public class Items {
       BONE = registerItem(ItemIds.BONE);
       SUGAR = registerItem(ItemIds.SUGAR);
       CAKE = registerBlock(BlockItemIds.CAKE, Blocks.CAKE, (new Item.Properties()).stacksTo(1));
-      BED = ColorCollection.registerBlockItems(BlockItemIds.BED, Blocks.BED, (id, block, var2) -> registerBlock(id, block, BedItem::new, (new Item.Properties()).stacksTo(1)));
+      BED = ColorCollection.registerBlockItems(BlockItemIds.BED, Blocks.BED, (id, block, var2) -> registerBlock(id, block, (new Item.Properties()).stacksTo(1)));
       COOKIE = registerItem(ItemIds.COOKIE, (new Item.Properties()).food(Foods.COOKIE));
       CRAFTER = registerBlock(BlockItemIds.CRAFTER, Blocks.CRAFTER, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       FILLED_MAP = registerItem(ItemIds.FILLED_MAP, MapItem::new, (new Item.Properties()).component(DataComponents.MAP_COLOR, MapItemColor.DEFAULT).component(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY));
@@ -2520,29 +2573,29 @@ public class Items {
       HOST_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(ItemIds.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, SmithingTemplateItem::createArmorTrimTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       FLOW_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(ItemIds.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, SmithingTemplateItem::createArmorTrimTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       BOLT_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(ItemIds.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, SmithingTemplateItem::createArmorTrimTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      ANGLER_POTTERY_SHERD = registerItem(ItemIds.ANGLER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      ARCHER_POTTERY_SHERD = registerItem(ItemIds.ARCHER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      ARMS_UP_POTTERY_SHERD = registerItem(ItemIds.ARMS_UP_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      BLADE_POTTERY_SHERD = registerItem(ItemIds.BLADE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      BREWER_POTTERY_SHERD = registerItem(ItemIds.BREWER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      BURN_POTTERY_SHERD = registerItem(ItemIds.BURN_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      DANGER_POTTERY_SHERD = registerItem(ItemIds.DANGER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      EXPLORER_POTTERY_SHERD = registerItem(ItemIds.EXPLORER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      FLOW_POTTERY_SHERD = registerItem(ItemIds.FLOW_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      FRIEND_POTTERY_SHERD = registerItem(ItemIds.FRIEND_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      GUSTER_POTTERY_SHERD = registerItem(ItemIds.GUSTER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      HEART_POTTERY_SHERD = registerItem(ItemIds.HEART_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      HEARTBREAK_POTTERY_SHERD = registerItem(ItemIds.HEARTBREAK_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      HOWL_POTTERY_SHERD = registerItem(ItemIds.HOWL_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      MINER_POTTERY_SHERD = registerItem(ItemIds.MINER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      MOURNER_POTTERY_SHERD = registerItem(ItemIds.MOURNER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      PLENTY_POTTERY_SHERD = registerItem(ItemIds.PLENTY_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      PRIZE_POTTERY_SHERD = registerItem(ItemIds.PRIZE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      SCRAPE_POTTERY_SHERD = registerItem(ItemIds.SCRAPE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      SHEAF_POTTERY_SHERD = registerItem(ItemIds.SHEAF_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      SHELTER_POTTERY_SHERD = registerItem(ItemIds.SHELTER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      SKULL_POTTERY_SHERD = registerItem(ItemIds.SKULL_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      SNORT_POTTERY_SHERD = registerItem(ItemIds.SNORT_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
+      ANGLER_POTTERY_SHERD = registerItem(ItemIds.ANGLER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.ANGLER));
+      ARCHER_POTTERY_SHERD = registerItem(ItemIds.ARCHER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.ARCHER));
+      ARMS_UP_POTTERY_SHERD = registerItem(ItemIds.ARMS_UP_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.ARMS_UP));
+      BLADE_POTTERY_SHERD = registerItem(ItemIds.BLADE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.BLADE));
+      BREWER_POTTERY_SHERD = registerItem(ItemIds.BREWER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.BREWER));
+      BURN_POTTERY_SHERD = registerItem(ItemIds.BURN_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.BURN));
+      DANGER_POTTERY_SHERD = registerItem(ItemIds.DANGER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.DANGER));
+      EXPLORER_POTTERY_SHERD = registerItem(ItemIds.EXPLORER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.EXPLORER));
+      FLOW_POTTERY_SHERD = registerItem(ItemIds.FLOW_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.FLOW));
+      FRIEND_POTTERY_SHERD = registerItem(ItemIds.FRIEND_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.FRIEND));
+      GUSTER_POTTERY_SHERD = registerItem(ItemIds.GUSTER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.GUSTER));
+      HEART_POTTERY_SHERD = registerItem(ItemIds.HEART_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.HEART));
+      HEARTBREAK_POTTERY_SHERD = registerItem(ItemIds.HEARTBREAK_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.HEARTBREAK));
+      HOWL_POTTERY_SHERD = registerItem(ItemIds.HOWL_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.HOWL));
+      MINER_POTTERY_SHERD = registerItem(ItemIds.MINER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.MINER));
+      MOURNER_POTTERY_SHERD = registerItem(ItemIds.MOURNER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.MOURNER));
+      PLENTY_POTTERY_SHERD = registerItem(ItemIds.PLENTY_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.PLENTY));
+      PRIZE_POTTERY_SHERD = registerItem(ItemIds.PRIZE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.PRIZE));
+      SCRAPE_POTTERY_SHERD = registerItem(ItemIds.SCRAPE_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.SCRAPE));
+      SHEAF_POTTERY_SHERD = registerItem(ItemIds.SHEAF_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.SHEAF));
+      SHELTER_POTTERY_SHERD = registerItem(ItemIds.SHELTER_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.SHELTER));
+      SKULL_POTTERY_SHERD = registerItem(ItemIds.SKULL_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.SKULL));
+      SNORT_POTTERY_SHERD = registerItem(ItemIds.SNORT_POTTERY_SHERD, (new Item.Properties()).rarity(Rarity.UNCOMMON).potPattern(DecoratedPotPatterns.SNORT));
       COPPER_GRATE = WeatheringCopperCollection.registerItems(BlockItemIds.COPPER_GRATE, Blocks.COPPER_GRATE, Items::registerBlock);
       COPPER_BULB = WeatheringCopperCollection.registerItems(BlockItemIds.COPPER_BULB, Blocks.COPPER_BULB, Items::registerBlock);
       COPPER_CHEST = WeatheringCopperCollection.registerItems(BlockItemIds.COPPER_CHEST, Blocks.COPPER_CHEST, Items::registerBlock);

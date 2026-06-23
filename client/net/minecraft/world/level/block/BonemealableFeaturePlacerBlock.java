@@ -11,17 +11,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 
 public class BonemealableFeaturePlacerBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, BonemealableFeaturePlacerBlock::new));
-   private final ResourceKey<ConfiguredFeature<?, ?>> feature;
+   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, BonemealableFeaturePlacerBlock::new));
+   private final ResourceKey<Feature> feature;
 
    public MapCodec<BonemealableFeaturePlacerBlock> codec() {
       return CODEC;
    }
 
-   public BonemealableFeaturePlacerBlock(final ResourceKey<ConfiguredFeature<?, ?>> feature, final BlockBehaviour.Properties properties) {
+   public BonemealableFeaturePlacerBlock(final ResourceKey<Feature> feature, final BlockBehaviour.Properties properties) {
       super(properties);
       this.feature = feature;
    }
@@ -35,7 +35,7 @@ public class BonemealableFeaturePlacerBlock extends Block implements Bonemealabl
    }
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(this.feature)).ifPresent((mossPatch) -> ((ConfiguredFeature)mossPatch.value()).place(level, level.getChunkSource().getGenerator(), random, pos.above()));
+      level.registryAccess().lookup(Registries.FEATURE).flatMap((registry) -> registry.get(this.feature)).ifPresent((mossPatch) -> ((Feature)mossPatch.value()).place(level, level.getChunkSource().getGenerator(), random, pos.above()));
    }
 
    public BonemealableBlock.Type getType() {

@@ -1,0 +1,150 @@
+package net.minecraft.world.level.levelgen.structure.placement;
+
+import com.mojang.datafixers.Products;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
+
+public abstract class AbstractSpreadingStructurePlacement implements StructurePlacement {
+   private static final int HIGHLY_ARBITRARY_RANDOM_SALT = 10387320;
+   private final Vec3i locateOffset;
+   private final FrequencyReductionMethod frequencyReductionMethod;
+   private final float frequency;
+   private final int salt;
+   private final Optional<ExclusionZone> exclusionZone;
+
+   protected static <S extends AbstractSpreadingStructurePlacement> Products.P5<RecordCodecBuilder.Mu<S>, Vec3i, FrequencyReductionMethod, Float, Integer, Optional<ExclusionZone>> placementCodec(final RecordCodecBuilder.Instance<S> i) {
+      return i.group(Vec3i.offsetCodec(16).optionalFieldOf("locate_offset", Vec3i.ZERO).forGetter(AbstractSpreadingStructurePlacement::locateOffset), AbstractSpreadingStructurePlacement.FrequencyReductionMethod.CODEC.optionalFieldOf("frequency_reduction_method", AbstractSpreadingStructurePlacement.FrequencyReductionMethod.DEFAULT).forGetter(AbstractSpreadingStructurePlacement::frequencyReductionMethod), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("frequency", 1.0F).forGetter(AbstractSpreadingStructurePlacement::frequency), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("salt").forGetter(AbstractSpreadingStructurePlacement::salt), AbstractSpreadingStructurePlacement.ExclusionZone.CODEC.optionalFieldOf("exclusion_zone").forGetter(AbstractSpreadingStructurePlacement::exclusionZone));
+   }
+
+   protected AbstractSpreadingStructurePlacement(final Vec3i locateOffset, final FrequencyReductionMethod frequencyReductionMethod, final float frequency, final int salt, final Optional<ExclusionZone> exclusionZone) {
+      super();
+      this.locateOffset = locateOffset;
+      this.frequencyReductionMethod = frequencyReductionMethod;
+      this.frequency = frequency;
+      this.salt = salt;
+      this.exclusionZone = exclusionZone;
+   }
+
+   public abstract MapCodec<? extends AbstractSpreadingStructurePlacement> codec();
+
+   public Vec3i locateOffset() {
+      return this.locateOffset;
+   }
+
+   protected FrequencyReductionMethod frequencyReductionMethod() {
+      return this.frequencyReductionMethod;
+   }
+
+   protected float frequency() {
+      return this.frequency;
+   }
+
+   protected int salt() {
+      return this.salt;
+   }
+
+   protected Optional<ExclusionZone> exclusionZone() {
+      return this.exclusionZone;
+   }
+
+   public boolean isStructureChunk(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+      return this.isPlacementChunk(state, sourceX, sourceZ) && this.applyAdditionalChunkRestrictions(sourceX, sourceZ, state.getLevelSeed()) && this.applyInteractionsWithOtherStructures(state, sourceX, sourceZ);
+   }
+
+   public boolean applyAdditionalChunkRestrictions(final int sourceX, final int sourceZ, final long levelSeed) {
+      return !(this.frequency < 1.0F) || this.frequencyReductionMethod.shouldGenerate(levelSeed, this.salt, sourceX, sourceZ, this.frequency);
+   }
+
+   public boolean applyInteractionsWithOtherStructures(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+      return !this.exclusionZone.isPresent() || !((ExclusionZone)this.exclusionZone.get()).isPlacementForbidden(state, sourceX, sourceZ);
+   }
+
+   protected abstract boolean isPlacementChunk(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ);
+
+   private static boolean probabilityReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureWithSalt(seed, salt, sourceX, sourceZ);
+      return random.nextFloat() < probability;
+   }
+
+   private static boolean legacyProbabilityReducerWithDouble(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureSeed(seed, sourceX, sourceZ);
+      return random.nextDouble() < (double)probability;
+   }
+
+   private static boolean legacyArbitrarySaltProbabilityReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setLargeFeatureWithSalt(seed, sourceX, sourceZ, 10387320);
+      return random.nextFloat() < probability;
+   }
+
+   private static boolean legacyPillagerOutpostReducer(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+      int cx = sourceX >> 4;
+      int cz = sourceZ >> 4;
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+      random.setSeed((long)(cx ^ cz << 4) ^ seed);
+      random.nextInt();
+      return random.nextInt((int)(1.0F / probability)) == 0;
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
+      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(i, ExclusionZone::new));
+
+      public ExclusionZone {
+         super();
+      }
+
+      private boolean isPlacementForbidden(final ChunkGeneratorStructureState state, final int sourceX, final int sourceZ) {
+         return state.hasStructureChunkInRange(this.otherSet, sourceX, sourceZ, this.chunkCount);
+      }
+   }
+
+   public static enum FrequencyReductionMethod implements StringRepresentable {
+      DEFAULT("default", AbstractSpreadingStructurePlacement::probabilityReducer),
+      LEGACY_TYPE_1("legacy_type_1", AbstractSpreadingStructurePlacement::legacyPillagerOutpostReducer),
+      LEGACY_TYPE_2("legacy_type_2", AbstractSpreadingStructurePlacement::legacyArbitrarySaltProbabilityReducer),
+      LEGACY_TYPE_3("legacy_type_3", AbstractSpreadingStructurePlacement::legacyProbabilityReducerWithDouble);
+
+      public static final Codec<FrequencyReductionMethod> CODEC = StringRepresentable.<FrequencyReductionMethod>fromEnum(FrequencyReductionMethod::values);
+      private final String name;
+      private final FrequencyReducer reducer;
+
+      private FrequencyReductionMethod(final String name, final FrequencyReducer reducer) {
+         this.name = name;
+         this.reducer = reducer;
+      }
+
+      public boolean shouldGenerate(final long seed, final int salt, final int sourceX, final int sourceZ, final float probability) {
+         return this.reducer.shouldGenerate(seed, salt, sourceX, sourceZ, probability);
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static FrequencyReductionMethod[] $values() {
+         return new FrequencyReductionMethod[]{DEFAULT, LEGACY_TYPE_1, LEGACY_TYPE_2, LEGACY_TYPE_3};
+      }
+   }
+
+   @FunctionalInterface
+   public interface FrequencyReducer {
+      boolean shouldGenerate(long seed, final int salt, final int sourceX, final int sourceZ, float probability);
+   }
+}

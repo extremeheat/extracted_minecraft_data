@@ -101,6 +101,8 @@ import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
+import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
@@ -217,6 +219,7 @@ public class DataComponents {
    public static final DataComponentType<DyeColor> CAT_COLLAR = register("cat/collar", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyeColor> SHEEP_COLOR = register("sheep/color", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyeColor> SHULKER_COLOR = register("shulker/color", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
+   public static final DataComponentType<Holder<DecoratedPotPattern>> PROVIDES_POTTERY_PATTERN = register("provides_pottery_pattern", (b) -> b.persistent(DecoratedPotPatterns.CODEC).networkSynchronized(DecoratedPotPatterns.STREAM_CODEC));
    public static final DataComponentMap COMMON_ITEM_COMPONENTS;
 
    public DataComponents() {

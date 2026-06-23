@@ -123,7 +123,7 @@ public class BoneMealItem extends Item {
                if (stateToGrow.canSurvive(level, testPos)) {
                   BlockState testState = level.getBlockState(testPos);
                   if (testState.is(Blocks.WATER) && level.getFluidState(testPos).isFull()) {
-                     level.setBlock(testPos, stateToGrow, 3);
+                     level.setBlockAndUpdate(testPos, stateToGrow);
                   } else if (testState.is(Blocks.SEAGRASS) && ((BonemealableBlock)Blocks.SEAGRASS).isValidBonemealTarget(level, testPos, testState) && random.nextInt(10) == 0) {
                      ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal(serverLevel, random, testPos, testState);
                   }

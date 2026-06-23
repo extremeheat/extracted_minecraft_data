@@ -1,33 +1,39 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class VoidStartPlatformFeature extends Feature<NoneFeatureConfiguration> {
+public record VoidStartPlatformFeature() implements Feature {
    private static final BlockPos PLATFORM_OFFSET = new BlockPos(8, 3, 8);
    private static final ChunkPos PLATFORM_ORIGIN_CHUNK;
    private static final int PLATFORM_RADIUS = 16;
    private static final int PLATFORM_RADIUS_CHUNKS = 1;
+   public static final VoidStartPlatformFeature INSTANCE;
+   public static final MapCodec<VoidStartPlatformFeature> CODEC;
 
-   public VoidStartPlatformFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+   public VoidStartPlatformFeature() {
+      super();
+   }
+
+   public MapCodec<VoidStartPlatformFeature> codec() {
+      return CODEC;
    }
 
    private static int checkerboardDistance(final int xa, final int za, final int xb, final int zb) {
       return Math.max(Math.abs(xa - xb), Math.abs(za - zb));
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      WorldGenLevel level = context.level();
-      ChunkPos currentChunkPos = ChunkPos.containing(context.origin());
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      ChunkPos currentChunkPos = ChunkPos.containing(origin);
       if (checkerboardDistance(currentChunkPos.x(), currentChunkPos.z(), PLATFORM_ORIGIN_CHUNK.x(), PLATFORM_ORIGIN_CHUNK.z()) > 1) {
          return true;
       } else {
-         BlockPos platformOrigin = PLATFORM_OFFSET.atY(context.origin().getY() + PLATFORM_OFFSET.getY());
+         BlockPos platformOrigin = PLATFORM_OFFSET.atY(origin.getY() + PLATFORM_OFFSET.getY());
          BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
          for(int z = currentChunkPos.getMinBlockZ(); z <= currentChunkPos.getMaxBlockZ(); ++z) {
@@ -49,5 +55,7 @@ public class VoidStartPlatformFeature extends Feature<NoneFeatureConfiguration> 
 
    static {
       PLATFORM_ORIGIN_CHUNK = ChunkPos.containing(PLATFORM_OFFSET);
+      INSTANCE = new VoidStartPlatformFeature();
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -21,7 +21,7 @@ public record ApplyEntityImpulse(Vec3 direction, Vec3 coordinateScale, LevelBase
       Vec3 look = entity.getLookAngle();
       Vec3 direction = look.addLocalCoordinates(this.direction).multiply(this.coordinateScale).scale((double)this.magnitude.calculate(enchantmentLevel));
       entity.addDeltaMovement(direction);
-      entity.hurtMarked = true;
+      entity.syncVelocity = true;
       entity.needsSync = true;
       if (entity instanceof LivingEntity livingEntity) {
          livingEntity.applyPostImpulseGraceTime(10);

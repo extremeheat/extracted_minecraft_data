@@ -48,10 +48,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.InCommandFunction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -60,6 +62,7 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 
 public class TestCommand {
    public static final int TEST_NEARBY_SEARCH_RADIUS = 15;
@@ -169,7 +172,7 @@ public class TestCommand {
       }
 
       StructureGridSpawner spawner = new StructureGridSpawner(testPos, 10, true);
-      GameTestRunner runner = GameTestRunner.Builder.fromBatches(batches, level).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(spawner).existingStructureSpawner(spawner).haltOnError().clearBetweenBatches().build();
+      GameTestRunner runner = GameTestRunner.Builder.fromBatches(batches, source.getServer()).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(spawner).existingStructureSpawner(spawner).haltOnError().clearBetweenBatches().build();
       return trackAndStartRunner(source, runner);
    }
 
@@ -185,7 +188,7 @@ public class TestCommand {
       } else {
          FailedTestTracker.forgetFailedTests();
          source.sendSuccess(() -> Component.translatable("commands.test.run.running", infos.size()), false);
-         GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, level).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
+         GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, source.getServer()).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
          return trackAndStartRunner(source, runner);
       }
    }
@@ -198,9 +201,9 @@ public class TestCommand {
          BlockEntity patt0$temp = finder.source().getLevel().getBlockEntity(structurePos);
          if (patt0$temp instanceof TestInstanceBlockEntity testBlock) {
             Direction facingDirection = testBlock.getRotation().rotate(Direction.NORTH);
-            BlockPos telportPosition = testBlock.getBlockPos().relative((Direction)facingDirection, 2);
+            BlockPos teleportPosition = testBlock.getBlockPos().relative((Direction)facingDirection, 2);
             int teleportYRot = (int)facingDirection.getOpposite().toYRot();
-            String tpCommand = String.format(Locale.ROOT, "/tp @s %d %d %d %d 0", telportPosition.getX(), telportPosition.getY(), telportPosition.getZ(), teleportYRot);
+            String tpCommand = String.format(Locale.ROOT, "/tp @s %d %d %d %d 0", teleportPosition.getX(), teleportPosition.getY(), teleportPosition.getZ(), teleportYRot);
             int dx = sourcePos.getX() - structurePos.getX();
             int dz = sourcePos.getZ() - structurePos.getZ();
             int distance = Mth.floor(Mth.sqrt((float)(dx * dx + dz * dz)));
@@ -376,9 +379,42 @@ public class TestCommand {
    }
 
    private static BlockPos createTestPositionAround(final CommandSourceStack source) {
-      BlockPos playerPos = BlockPos.containing(source.getPosition());
-      int surfaceY = source.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, playerPos).getY();
-      return new BlockPos(playerPos.getX(), surfaceY, playerPos.getZ() + 3);
+      Info info = playerAndTestInfo(source);
+      return new BlockPos(info.playerPos.getX(), info.surfaceY, info.playerPos.getZ() + 3);
+   }
+
+   private static Info playerAndTestInfo(final CommandSourceStack source) {
+      ServerPlayer serverPlayer = source.getPlayer();
+      BlockPos playerPos = BlockPos.containing(serverPlayer == null ? source.getPosition() : serverPlayer.position());
+      BlockPos testPos = new BlockPos(playerPos.getX(), 384, playerPos.getZ());
+      source.getLevel().getChunk(testPos);
+      int surfaceY = source.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, testPos).getY();
+      return new Info(source.getPlayer(), playerPos, testPos, surfaceY);
+   }
+
+   private static void outputCoordinates(final CommandSourceStack source) {
+      Info info = playerAndTestInfo(source);
+      ServerPlayer player = info.player;
+      if (player != null) {
+         float playerRotation = player.getYRot();
+         float playerPitch = player.getXRot();
+         ResourceKey<Level> dimensionKey = player.level().dimension();
+         String playerDimension = dimensionKey.identifier().toString();
+         String testDimension = source.getLevel().dimension().identifier().toString();
+         if (!testDimension.equals(playerDimension)) {
+            Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", info.playerPos.getX(), info.playerPos.getY(), info.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + info.playerPos.getX() + " " + info.playerPos.getY() + " " + info.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            source.sendSuccess(() -> playerCoordinates, false);
+            Component testCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.run.coordinates", info.playerPos.getX(), info.surfaceY, info.playerPos.getZ(), testDimension.substring(testDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.YELLOW).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + testDimension + " run tp @s " + info.playerPos.getX() + " " + info.surfaceY + " " + info.playerPos.getZ() + " 0 0")).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            source.sendSuccess(() -> testCoordinates, false);
+         }
+
+      }
+   }
+
+   private static record Info(@Nullable ServerPlayer player, BlockPos playerPos, BlockPos testPos, int surfaceY) {
+      private Info {
+         super();
+      }
    }
 
    public static record TestSummaryDisplayer(CommandSourceStack source, MultipleTestTracker tracker) implements GameTestListener {
@@ -413,6 +449,8 @@ public class TestCommand {
             if (this.tracker.hasFailedOptional()) {
                this.source.sendSystemMessage(Component.translatable("commands.test.summary.optional_failed", this.tracker.getFailedOptionalCount()));
             }
+
+            TestCommand.outputCoordinates(this.source);
          }
 
       }

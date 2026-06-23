@@ -14,35 +14,35 @@ import org.jspecify.annotations.Nullable;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = false;
+   public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4903;
+   public static final int WORLD_VERSION = 4998;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 776;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 777;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 322;
-   public static final int SNBT_NAG_VERSION = 4882;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 323;
+   public static final int SNBT_NAG_VERSION = 4997;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 88;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 89;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 107;
+   public static final int DATA_PACK_FORMAT_MAJOR = 108;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 1;
-   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "3.0.0";
+   public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "3.1.0";
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -131,6 +131,7 @@ public class SharedConstants {
    public static final boolean DEBUG_WORLD_RECREATE;
    public static final boolean DEBUG_SHOW_SERVER_DEBUG_VALUES;
    public static final boolean DEBUG_FEATURE_COUNT;
+   public static final boolean DEBUG_CALCULATE_SOLID;
    public static final boolean DEBUG_FORCE_TELEMETRY;
    public static final boolean DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND;
    public static final long MAXIMUM_TICK_TIME_NANOS;
@@ -222,7 +223,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 776;
+      return 1073742147;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {
@@ -243,6 +244,7 @@ public class SharedConstants {
       DEBUG_WORLD_RECREATE = debugFlag("WORLD_RECREATE");
       DEBUG_SHOW_SERVER_DEBUG_VALUES = debugFlag("SHOW_SERVER_DEBUG_VALUES");
       DEBUG_FEATURE_COUNT = debugFlag("FEATURE_COUNT");
+      DEBUG_CALCULATE_SOLID = debugFlag("CALCULATE_SOLID");
       DEBUG_FORCE_TELEMETRY = debugFlag("FORCE_TELEMETRY");
       DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND = debugFlag("DONT_SEND_TELEMETRY_TO_BACKEND");
       MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();

@@ -1,12 +1,8 @@
 package net.minecraft.server.commands.data;
 
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
 import java.util.Locale;
-import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -17,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,21 +23,15 @@ import org.slf4j.Logger;
 public class BlockDataAccessor implements DataAccessor {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.data.block.invalid"));
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (argPrefix) -> new DataCommands.DataProvider() {
-         public DataAccessor access(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-            BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, argPrefix + "Pos");
-            BlockEntity entity = ((CommandSourceStack)context.getSource()).getLevel().getBlockEntity(pos);
-            if (entity == null) {
-               throw BlockDataAccessor.ERROR_NOT_A_BLOCK_ENTITY.create();
-            } else {
-               return new BlockDataAccessor(entity, pos);
-            }
+   public static final ArgProvider.Factory<DataAccessor> PROVIDER = (arg) -> ArgProvider.create("block", () -> Commands.argument(arg, BlockPosArgument.blockPos()), (context) -> {
+         BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, arg);
+         BlockEntity entity = ((CommandSourceStack)context.getSource()).getLevel().getBlockEntity(pos);
+         if (entity == null) {
+            throw ERROR_NOT_A_BLOCK_ENTITY.create();
+         } else {
+            return new BlockDataAccessor(entity, pos);
          }
-
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(final ArgumentBuilder<CommandSourceStack, ?> parent, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function) {
-            return parent.then(Commands.literal("block").then((ArgumentBuilder)function.apply(Commands.argument(argPrefix + "Pos", BlockPosArgument.blockPos()))));
-         }
-      };
+      });
    private final BlockEntity entity;
    private final BlockPos pos;
 

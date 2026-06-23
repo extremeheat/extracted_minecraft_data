@@ -201,7 +201,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    public void resetHoneyLevel(final Level level, final BlockState state, final BlockPos pos) {
-      level.setBlock(pos, (BlockState)state.setValue(HONEY_LEVEL, 0), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(HONEY_LEVEL, 0));
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

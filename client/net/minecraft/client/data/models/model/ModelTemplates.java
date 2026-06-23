@@ -19,6 +19,7 @@ public class ModelTemplates {
    public static final ModelTemplate CUBE_COLUMN_MIRRORED;
    public static final ModelTemplate CUBE_TOP;
    public static final ModelTemplate CUBE_BOTTOM_TOP;
+   public static final ModelTemplate CUBE_BOTTOM_TOP_INDENTED;
    public static final ModelTemplate CUBE_BOTTOM_TOP_INNER_FACES;
    public static final ModelTemplate CUBE_ORIENTABLE;
    public static final ModelTemplate CUBE_ORIENTABLE_TOP_BOTTOM;
@@ -135,7 +136,6 @@ public class ModelTemplates {
    public static final ModelTemplate[] STEMS;
    public static final ModelTemplate ATTACHED_STEM;
    public static final ModelTemplate CROP;
-   public static final ModelTemplate FARMLAND;
    public static final ModelTemplate FIRE_FLOOR;
    public static final ModelTemplate FIRE_SIDE;
    public static final ModelTemplate FIRE_SIDE_ALT;
@@ -236,6 +236,7 @@ public class ModelTemplates {
       CUBE_COLUMN_MIRRORED = create("cube_column_mirrored", "_mirrored", TextureSlot.END, TextureSlot.SIDE);
       CUBE_TOP = create("cube_top", TextureSlot.TOP, TextureSlot.SIDE);
       CUBE_BOTTOM_TOP = create("cube_bottom_top", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE);
+      CUBE_BOTTOM_TOP_INDENTED = create("template_cube_bottom_top_indented", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE);
       CUBE_BOTTOM_TOP_INNER_FACES = create("cube_bottom_top_inner_faces", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE);
       CUBE_ORIENTABLE = create("orientable", TextureSlot.TOP, TextureSlot.FRONT, TextureSlot.SIDE);
       CUBE_ORIENTABLE_TOP_BOTTOM = create("orientable_with_bottom", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.FRONT);
@@ -352,7 +353,6 @@ public class ModelTemplates {
       STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((i) -> create("stem_growth" + i, "_stage" + i, TextureSlot.STEM)).toArray((x$0) -> new ModelTemplate[x$0]);
       ATTACHED_STEM = create("stem_fruit", TextureSlot.STEM, TextureSlot.UPPER_STEM);
       CROP = create("crop", TextureSlot.CROP);
-      FARMLAND = create("template_farmland", TextureSlot.DIRT, TextureSlot.TOP);
       FIRE_FLOOR = create("template_fire_floor", TextureSlot.FIRE);
       FIRE_SIDE = create("template_fire_side", TextureSlot.FIRE);
       FIRE_SIDE_ALT = create("template_fire_side_alt", TextureSlot.FIRE);

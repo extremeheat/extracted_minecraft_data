@@ -68,6 +68,7 @@ public class Noises {
    public static final ResourceKey<NormalNoise.NoiseParameters> SOUL_SAND_LAYER = createKey("soul_sand_layer");
    public static final ResourceKey<NormalNoise.NoiseParameters> GRAVEL_LAYER = createKey("gravel_layer");
    public static final ResourceKey<NormalNoise.NoiseParameters> PATCH = createKey("patch");
+   public static final ResourceKey<NormalNoise.NoiseParameters> SMALL_PATCH = createKey("small_patch");
    public static final ResourceKey<NormalNoise.NoiseParameters> NETHERRACK = createKey("netherrack");
    public static final ResourceKey<NormalNoise.NoiseParameters> NETHER_WART = createKey("nether_wart");
    public static final ResourceKey<NormalNoise.NoiseParameters> NETHER_STATE_SELECTOR = createKey("nether_state_selector");

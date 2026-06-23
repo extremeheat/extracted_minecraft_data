@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.notifications.EmptyNotificationService;
+import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
@@ -19,24 +21,38 @@ import org.slf4j.Logger;
 public class UpgradeProgress {
    private static final Logger LOGGER = LogUtils.getLogger();
    private volatile boolean finished;
-   private final FileFixStats totalFileFixStats = new FileFixStats();
-   private final FileFixStats typeFileFixStats = new FileFixStats();
-   private final FileFixStats runningFileFixerStats = new FileFixStats();
+   private final FileFixStats totalFileFixStats;
+   private final FileFixStats typeFileFixStats;
+   private final FileFixStats runningFileFixerStats;
    private volatile float totalProgress;
-   private final AtomicInteger totalChunks = new AtomicInteger();
-   private final AtomicInteger converted = new AtomicInteger();
-   private final AtomicInteger skipped = new AtomicInteger();
-   private final Reference2FloatMap<ResourceKey<Level>> progressMap = Reference2FloatMaps.synchronize(new Reference2FloatOpenHashMap());
-   private volatile boolean canceled = false;
+   private final AtomicInteger totalChunks;
+   private final AtomicInteger converted;
+   private final AtomicInteger skipped;
+   private final Reference2FloatMap<ResourceKey<Level>> progressMap;
+   private volatile boolean canceled;
    private volatile @Nullable DataFixTypes dataFixType;
    private volatile Status status;
    private volatile @Nullable Type type;
    private final AtomicLong lastLoggedProgressTime;
+   private final NotificationService notificationService;
 
    public UpgradeProgress() {
+      this(new EmptyNotificationService());
+   }
+
+   public UpgradeProgress(final NotificationService notificationService) {
       super();
+      this.totalFileFixStats = new FileFixStats();
+      this.typeFileFixStats = new FileFixStats();
+      this.runningFileFixerStats = new FileFixStats();
+      this.totalChunks = new AtomicInteger();
+      this.converted = new AtomicInteger();
+      this.skipped = new AtomicInteger();
+      this.progressMap = Reference2FloatMaps.synchronize(new Reference2FloatOpenHashMap());
+      this.canceled = false;
       this.status = UpgradeProgress.Status.COUNTING;
       this.lastLoggedProgressTime = new AtomicLong();
+      this.notificationService = notificationService;
    }
 
    public boolean isFinished() {
@@ -166,8 +182,13 @@ public class UpgradeProgress {
          float progress = (float)this.totalFileFixStats.finishedOperations() / (float)this.totalFileFixStats.totalOperations();
          this.lastLoggedProgressTime.set(now);
          LOGGER.info("Upgrading progress: {}%", (int)(progress * 100.0F));
+         this.notificationService.worldUpgradeProgress(progress);
       }
 
+   }
+
+   public NotificationService notifications() {
+      return this.notificationService;
    }
 
    public static enum Status {

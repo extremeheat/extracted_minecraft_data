@@ -152,8 +152,8 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
       this.blockStateRule = new MaterialRuleList((BlockStateFiller[])builder.toArray(new BlockStateFiller[0]));
    }
 
-   protected Climate.Sampler cachedClimateSampler(final NoiseRouter noises, final List<Climate.ParameterPoint> spawnTarget) {
-      return new Climate.Sampler(noises.temperature().mapAll(this::wrap), noises.vegetation().mapAll(this::wrap), noises.continents().mapAll(this::wrap), noises.erosion().mapAll(this::wrap), noises.depth().mapAll(this::wrap), noises.ridges().mapAll(this::wrap), spawnTarget);
+   protected Climate.Sampler cachedClimateSampler(final NoiseRouter noises) {
+      return new Climate.Sampler(noises.temperature().mapAll(this::wrap), noises.vegetation().mapAll(this::wrap), noises.continents().mapAll(this::wrap), noises.erosion().mapAll(this::wrap), noises.depth().mapAll(this::wrap), noises.ridges().mapAll(this::wrap));
    }
 
    protected @Nullable BlockState getInterpolatedState() {

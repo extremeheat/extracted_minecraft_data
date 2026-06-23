@@ -81,7 +81,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    public void pull(BlockState state, final Level level, final BlockPos pos, final @Nullable Player player) {
       state = (BlockState)state.cycle(POWERED);
-      level.setBlock(pos, state, 3);
+      level.setBlockAndUpdate(pos, state);
       this.updateNeighbours(state, level, pos);
       playSound(player, level, pos, state);
       level.gameEvent(player, (Boolean)state.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);

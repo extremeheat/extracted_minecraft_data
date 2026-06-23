@@ -96,7 +96,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private SulfurCubeArchetype.KnockbackModifiers knockbackModifier;
    private SulfurCubeArchetype.SoundSettings soundSettings;
    private int fuse;
-   private List<SulfurCubeArchetype.ContactDamage> contactDamages;
+   private final List<SulfurCubeArchetype.ContactDamage> contactDamages;
    private static final EntityDataAccessor<Integer> MAX_FUSE;
    private static final EntityDataAccessor<Boolean> FROM_BUCKET;
    private static final boolean DEFAULT_FROM_BUCKET = false;
@@ -512,7 +512,8 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       Level var3 = this.level();
       if (var3 instanceof ServerLevel serverLevel) {
          for(SulfurCubeArchetype.ContactDamage damage : this.contactDamages) {
-            entity.hurtServer(serverLevel, new DamageSource(damage.damageType(), damage.attributeToSource() ? this : null), damage.amount().sample(this.getRandom()));
+            Entity damageSource = !damage.attributeToSource() && !(entity instanceof Player) ? null : this;
+            entity.hurtServer(serverLevel, new DamageSource(damage.damageType(), damageSource), damage.amount().sample(this.getRandom()));
          }
       }
 

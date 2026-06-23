@@ -167,6 +167,19 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.MANGROVE_TRAPDOOR);
          buildingBlocks.accept((ItemLike)Items.MANGROVE_PRESSURE_PLATE);
          buildingBlocks.accept((ItemLike)Items.MANGROVE_BUTTON);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_LOG);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_WOOD);
+         buildingBlocks.accept((ItemLike)Items.STRIPPED_POPLAR_LOG);
+         buildingBlocks.accept((ItemLike)Items.STRIPPED_POPLAR_WOOD);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_PLANKS);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_SLAB);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_FENCE);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_FENCE_GATE);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_DOOR);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_TRAPDOOR);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_PRESSURE_PLATE);
+         buildingBlocks.accept((ItemLike)Items.POPLAR_BUTTON);
          buildingBlocks.accept((ItemLike)Items.CHERRY_LOG);
          buildingBlocks.accept((ItemLike)Items.CHERRY_WOOD);
          buildingBlocks.accept((ItemLike)Items.STRIPPED_CHERRY_LOG);
@@ -464,6 +477,8 @@ public class CreativeModeTabs {
       List<DyeColor> gameplayColorOrder = List.of(DyeColor.WHITE, DyeColor.LIGHT_GRAY, DyeColor.GRAY, DyeColor.BLACK, DyeColor.BROWN, DyeColor.RED, DyeColor.ORANGE, DyeColor.YELLOW, DyeColor.LIME, DyeColor.GREEN, DyeColor.CYAN, DyeColor.LIGHT_BLUE, DyeColor.BLUE, DyeColor.PURPLE, DyeColor.MAGENTA, DyeColor.PINK);
       Registry.register(registry, (ResourceKey)COLORED_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 1).title(Component.translatable("itemGroup.coloredBlocks")).icon(() -> new ItemStack(Blocks.WOOL.cyan())).displayItems((parameters, coloredBlocks) -> {
          registerColoredItems(coloredBlocks, gameplayColorOrder, Items.WOOL);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.WOOL_STAIRS);
+         registerColoredItems(coloredBlocks, gameplayColorOrder, Items.WOOL_SLAB);
          registerColoredItems(coloredBlocks, gameplayColorOrder, Items.CARPET);
          coloredBlocks.accept((ItemLike)Items.TERRACOTTA);
          registerColoredItems(coloredBlocks, gameplayColorOrder, Items.DYED_TERRACOTTA);
@@ -573,6 +588,7 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.MANGROVE_LOG);
          naturalBlocks.accept((ItemLike)Items.MANGROVE_ROOTS);
          naturalBlocks.accept((ItemLike)Items.MUDDY_MANGROVE_ROOTS);
+         naturalBlocks.accept((ItemLike)Items.POPLAR_LOG);
          naturalBlocks.accept((ItemLike)Items.CHERRY_LOG);
          naturalBlocks.accept((ItemLike)Items.PALE_OAK_LOG);
          naturalBlocks.accept((ItemLike)Items.MUSHROOM_STEM);
@@ -585,6 +601,9 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.ACACIA_LEAVES);
          naturalBlocks.accept((ItemLike)Items.DARK_OAK_LEAVES);
          naturalBlocks.accept((ItemLike)Items.MANGROVE_LEAVES);
+         naturalBlocks.accept((ItemLike)Items.RED_POPLAR_LEAVES);
+         naturalBlocks.accept((ItemLike)Items.ORANGE_POPLAR_LEAVES);
+         naturalBlocks.accept((ItemLike)Items.YELLOW_POPLAR_LEAVES);
          naturalBlocks.accept((ItemLike)Items.CHERRY_LEAVES);
          naturalBlocks.accept((ItemLike)Items.PALE_OAK_LEAVES);
          naturalBlocks.accept((ItemLike)Items.AZALEA_LEAVES);
@@ -601,18 +620,21 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.ACACIA_SAPLING);
          naturalBlocks.accept((ItemLike)Items.DARK_OAK_SAPLING);
          naturalBlocks.accept((ItemLike)Items.MANGROVE_PROPAGULE);
+         naturalBlocks.accept((ItemLike)Items.POPLAR_SAPLING);
          naturalBlocks.accept((ItemLike)Items.CHERRY_SAPLING);
          naturalBlocks.accept((ItemLike)Items.PALE_OAK_SAPLING);
          naturalBlocks.accept((ItemLike)Items.AZALEA);
          naturalBlocks.accept((ItemLike)Items.FLOWERING_AZALEA);
          naturalBlocks.accept((ItemLike)Items.BROWN_MUSHROOM);
          naturalBlocks.accept((ItemLike)Items.RED_MUSHROOM);
+         naturalBlocks.accept((ItemLike)Items.SHELF_MUSHROOM);
          naturalBlocks.accept((ItemLike)Items.CRIMSON_FUNGUS);
          naturalBlocks.accept((ItemLike)Items.WARPED_FUNGUS);
          naturalBlocks.accept((ItemLike)Items.SHORT_GRASS);
          naturalBlocks.accept((ItemLike)Items.FERN);
          naturalBlocks.accept((ItemLike)Items.DRY_SHORT_GRASS);
          naturalBlocks.accept((ItemLike)Items.BUSH);
+         naturalBlocks.accept((ItemLike)Items.RED_SHRUB);
          naturalBlocks.accept((ItemLike)Items.DEAD_BUSH);
          naturalBlocks.accept((ItemLike)Items.DANDELION);
          naturalBlocks.accept((ItemLike)Items.POPPY);
@@ -812,6 +834,7 @@ public class CreativeModeTabs {
          functionalBlocks.accept((ItemLike)Items.MANGROVE_SHELF);
          functionalBlocks.accept((ItemLike)Items.CHERRY_SHELF);
          functionalBlocks.accept((ItemLike)Items.PALE_OAK_SHELF);
+         functionalBlocks.accept((ItemLike)Items.POPLAR_SHELF);
          functionalBlocks.accept((ItemLike)Items.BAMBOO_SHELF);
          functionalBlocks.accept((ItemLike)Items.CRIMSON_SHELF);
          functionalBlocks.accept((ItemLike)Items.WARPED_SHELF);
@@ -831,6 +854,8 @@ public class CreativeModeTabs {
          functionalBlocks.accept((ItemLike)Items.DARK_OAK_HANGING_SIGN);
          functionalBlocks.accept((ItemLike)Items.MANGROVE_SIGN);
          functionalBlocks.accept((ItemLike)Items.MANGROVE_HANGING_SIGN);
+         functionalBlocks.accept((ItemLike)Items.POPLAR_SIGN);
+         functionalBlocks.accept((ItemLike)Items.POPLAR_HANGING_SIGN);
          functionalBlocks.accept((ItemLike)Items.CHERRY_SIGN);
          functionalBlocks.accept((ItemLike)Items.CHERRY_HANGING_SIGN);
          functionalBlocks.accept((ItemLike)Items.PALE_OAK_SIGN);
@@ -1048,6 +1073,8 @@ public class CreativeModeTabs {
          toolsAndUtilities.accept((ItemLike)Items.CHERRY_CHEST_BOAT);
          toolsAndUtilities.accept((ItemLike)Items.PALE_OAK_BOAT);
          toolsAndUtilities.accept((ItemLike)Items.PALE_OAK_CHEST_BOAT);
+         toolsAndUtilities.accept((ItemLike)Items.POPLAR_BOAT);
+         toolsAndUtilities.accept((ItemLike)Items.POPLAR_CHEST_BOAT);
          toolsAndUtilities.accept((ItemLike)Items.BAMBOO_RAFT);
          toolsAndUtilities.accept((ItemLike)Items.BAMBOO_CHEST_RAFT);
          toolsAndUtilities.accept((ItemLike)Items.RAIL);

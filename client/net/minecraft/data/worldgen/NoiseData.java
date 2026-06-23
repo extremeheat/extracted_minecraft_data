@@ -68,6 +68,7 @@ public class NoiseData {
       register(context, Noises.SOUL_SAND_LAYER, -8, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.013333333333333334);
       register(context, Noises.GRAVEL_LAYER, -8, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.013333333333333334);
       register(context, Noises.PATCH, -5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.013333333333333334);
+      register(context, Noises.SMALL_PATCH, -3, 3.0);
       register(context, Noises.NETHERRACK, -3, 1.0, 0.0, 0.0, 0.35);
       register(context, Noises.NETHER_WART, -3, 1.0, 0.0, 0.0, 0.9);
       register(context, Noises.NETHER_STATE_SELECTOR, -4, 1.0);

@@ -30,6 +30,7 @@ public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
       this.tag(DamageTypeTags.IS_FREEZING).add(DamageTypes.FREEZE);
       this.tag(DamageTypeTags.IS_LIGHTNING).add(DamageTypes.LIGHTNING_BOLT);
       this.tag(DamageTypeTags.NO_ANGER).add(DamageTypes.MOB_ATTACK_NO_AGGRO);
+      this.tag(DamageTypeTags.NO_WOLF_RETALIATION).add(DamageTypes.SULFUR_CUBE_HOT);
       this.tag(DamageTypeTags.NO_IMPACT).add(DamageTypes.DROWN);
       this.tag(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL).add(DamageTypes.FELL_OUT_OF_WORLD);
       this.tag(DamageTypeTags.WITHER_IMMUNE_TO).add(DamageTypes.DROWN);

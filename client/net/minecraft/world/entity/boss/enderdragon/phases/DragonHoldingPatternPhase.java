@@ -8,8 +8,8 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
@@ -48,7 +48,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
 
    private void findNewTarget(final ServerLevel level) {
       if (this.currentPath != null && this.currentPath.isDone()) {
-         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(this.dragon.getFightOrigin()));
          int crystals = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().aliveCrystals();
          if (this.dragon.getRandom().nextInt(crystals + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);

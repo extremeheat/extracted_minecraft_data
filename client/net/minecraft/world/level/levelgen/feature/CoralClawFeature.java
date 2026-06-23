@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -9,14 +9,20 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
-public class CoralClawFeature extends CoralFeature {
-   public CoralClawFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record CoralClawFeature() implements CoralFeature {
+   public static final CoralClawFeature INSTANCE = new CoralClawFeature();
+   public static final MapCodec<CoralClawFeature> CODEC;
+
+   public CoralClawFeature() {
+      super();
    }
 
-   protected boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
+   public MapCodec<CoralClawFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
       if (!this.placeCoralBlock(level, random, origin, state)) {
          return false;
       } else {
@@ -61,5 +67,9 @@ public class CoralClawFeature extends CoralFeature {
 
          return true;
       }
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

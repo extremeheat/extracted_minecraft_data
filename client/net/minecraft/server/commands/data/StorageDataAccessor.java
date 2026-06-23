@@ -1,10 +1,8 @@
 package net.minecraft.server.commands.data;
 
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.Locale;
-import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -15,19 +13,12 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (c, p) -> SharedSuggestionProvider.suggestResource(getGlobalTags(c).keys(), p);
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (arg) -> new DataCommands.DataProvider() {
-         public DataAccessor access(final CommandContext<CommandSourceStack> context) {
-            return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(context), IdentifierArgument.getId(context, arg));
-         }
-
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(final ArgumentBuilder<CommandSourceStack, ?> parent, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function) {
-            return parent.then(Commands.literal("storage").then((ArgumentBuilder)function.apply(Commands.argument(arg, IdentifierArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
-         }
-      };
+   public static final ArgProvider.Factory<DataAccessor> PROVIDER = (arg) -> ArgProvider.create("storage", () -> Commands.argument(arg, IdentifierArgument.id()).suggests(SUGGEST_STORAGE), (c) -> new StorageDataAccessor(getGlobalTags(c), IdentifierArgument.getId(c, arg)));
    private final CommandStorage storage;
    private final Identifier id;
 

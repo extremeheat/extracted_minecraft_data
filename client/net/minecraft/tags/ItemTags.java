@@ -10,6 +10,8 @@ public final class ItemTags {
    public static final TagKey<Item> STONE_BRICKS;
    public static final TagKey<Item> WOODEN_BUTTONS;
    public static final TagKey<Item> WOOL_CARPETS;
+   public static final TagKey<Item> WOOL_STAIRS;
+   public static final TagKey<Item> WOOL_SLABS;
    public static final TagKey<Item> WOODEN_DOORS;
    public static final TagKey<Item> WOODEN_STAIRS;
    public static final TagKey<Item> WOODEN_SLABS;
@@ -26,6 +28,7 @@ public final class ItemTags {
    public static final TagKey<Item> ACACIA_LOGS;
    public static final TagKey<Item> SPRUCE_LOGS;
    public static final TagKey<Item> MANGROVE_LOGS;
+   public static final TagKey<Item> POPLAR_LOGS;
    public static final TagKey<Item> JUNGLE_LOGS;
    public static final TagKey<Item> CHERRY_LOGS;
    public static final TagKey<Item> CRIMSON_STEMS;
@@ -62,6 +65,7 @@ public final class ItemTags {
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Item> SHULKER_BOXES;
    public static final TagKey<Item> COPPER;
+   public static final TagKey<Item> SKULLS;
    public static final TagKey<Item> SIGNS;
    public static final TagKey<Item> HANGING_SIGNS;
    public static final TagKey<Item> BEE_FOOD;
@@ -124,6 +128,7 @@ public final class ItemTags {
    public static final TagKey<Item> NAUTILUS_FOOD;
    public static final TagKey<Item> NAUTILUS_TAMING_ITEMS;
    public static final TagKey<Item> SULFUR_CUBE_FOOD;
+   public static final TagKey<Item> MUSHROOMS;
    public static final TagKey<Item> NON_FLAMMABLE_WOOD;
    public static final TagKey<Item> BOATS;
    public static final TagKey<Item> CHEST_BOATS;
@@ -160,7 +165,6 @@ public final class ItemTags {
    public static final TagKey<Item> LEG_ARMOR;
    public static final TagKey<Item> CHEST_ARMOR;
    public static final TagKey<Item> HEAD_ARMOR;
-   public static final TagKey<Item> SKULLS;
    public static final TagKey<Item> TRIMMABLE_ARMOR;
    public static final TagKey<Item> TRIM_MATERIALS;
    public static final TagKey<Item> DECORATED_POT_SHERDS;
@@ -228,6 +232,8 @@ public final class ItemTags {
       STONE_BRICKS = BlockItemTags.STONE_BRICKS.item();
       WOODEN_BUTTONS = BlockItemTags.WOODEN_BUTTONS.item();
       WOOL_CARPETS = BlockItemTags.WOOL_CARPETS.item();
+      WOOL_STAIRS = BlockItemTags.WOOL_STAIRS.item();
+      WOOL_SLABS = BlockItemTags.WOOL_SLABS.item();
       WOODEN_DOORS = BlockItemTags.WOODEN_DOORS.item();
       WOODEN_STAIRS = BlockItemTags.WOODEN_STAIRS.item();
       WOODEN_SLABS = BlockItemTags.WOODEN_SLABS.item();
@@ -244,6 +250,7 @@ public final class ItemTags {
       ACACIA_LOGS = BlockItemTags.ACACIA_LOGS.item();
       SPRUCE_LOGS = BlockItemTags.SPRUCE_LOGS.item();
       MANGROVE_LOGS = BlockItemTags.MANGROVE_LOGS.item();
+      POPLAR_LOGS = BlockItemTags.POPLAR_LOGS.item();
       JUNGLE_LOGS = BlockItemTags.JUNGLE_LOGS.item();
       CHERRY_LOGS = BlockItemTags.CHERRY_LOGS.item();
       CRIMSON_STEMS = BlockItemTags.CRIMSON_STEMS.item();
@@ -280,6 +287,7 @@ public final class ItemTags {
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.item();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.item();
       COPPER = BlockItemTags.COPPER.item();
+      SKULLS = BlockItemTags.SKULLS.item();
       SIGNS = BlockItemTags.SIGNS.item();
       HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.item();
       BEE_FOOD = BlockItemTags.BEE_FOOD.item();
@@ -342,6 +350,7 @@ public final class ItemTags {
       NAUTILUS_FOOD = bind("nautilus_food");
       NAUTILUS_TAMING_ITEMS = bind("nautilus_taming_items");
       SULFUR_CUBE_FOOD = bind("sulfur_cube_food");
+      MUSHROOMS = bind("mushrooms");
       NON_FLAMMABLE_WOOD = bind("non_flammable_wood");
       BOATS = bind("boats");
       CHEST_BOATS = bind("chest_boats");
@@ -378,7 +387,6 @@ public final class ItemTags {
       LEG_ARMOR = bind("leg_armor");
       CHEST_ARMOR = bind("chest_armor");
       HEAD_ARMOR = bind("head_armor");
-      SKULLS = bind("skulls");
       TRIMMABLE_ARMOR = bind("trimmable_armor");
       TRIM_MATERIALS = bind("trim_materials");
       DECORATED_POT_SHERDS = bind("decorated_pot_sherds");

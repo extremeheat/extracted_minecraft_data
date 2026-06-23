@@ -94,7 +94,7 @@ public abstract class BasePressurePlateBlock extends Block {
       }
 
       if (isPressed) {
-         level.scheduleTick(new BlockPos(pos), this, this.getPressedTime());
+         level.scheduleTick(pos, this, this.getPressedTime());
       }
 
    }

@@ -1,20 +1,26 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
-public class CoralTreeFeature extends CoralFeature {
-   public CoralTreeFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record CoralTreeFeature() implements CoralFeature {
+   public static final CoralTreeFeature INSTANCE = new CoralTreeFeature();
+   public static final MapCodec<CoralTreeFeature> CODEC;
+
+   public CoralTreeFeature() {
+      super();
    }
 
-   protected boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
+   public MapCodec<CoralTreeFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
       BlockPos.MutableBlockPos mutPos = origin.mutable();
       int trunckHeight = random.nextInt(3) + 1;
 
@@ -47,5 +53,9 @@ public class CoralTreeFeature extends CoralFeature {
       }
 
       return true;
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

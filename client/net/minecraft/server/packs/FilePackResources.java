@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import net.minecraft.resources.Identifier;
@@ -21,7 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class FilePackResources extends AbstractPackResources {
+public class FilePackResources extends AbstractPackMetadataResources implements PackResources {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final SharedZipFileAccess zipFileAccess;
    private final String prefix;
@@ -180,17 +181,17 @@ public class FilePackResources extends AbstractPackResources {
          this.content = content;
       }
 
-      public PackResources openPrimary(final PackLocationInfo location) {
+      public PackMetadataResources openMetadata(final PackLocationInfo location) {
          SharedZipFileAccess fileAccess = new SharedZipFileAccess(this.content);
          return new FilePackResources(location, fileAccess, "");
       }
 
-      public PackResources openFull(final PackLocationInfo location, final Pack.Metadata metadata) {
+      public Stream<PackResources> openResources(final PackLocationInfo location, final Pack.Metadata metadata) {
          SharedZipFileAccess fileAccess = new SharedZipFileAccess(this.content);
          PackResources primary = new FilePackResources(location, fileAccess, "");
          List<String> overlays = metadata.overlays();
          if (overlays.isEmpty()) {
-            return primary;
+            return Stream.of(primary);
          } else {
             List<PackResources> overlayResources = new ArrayList(overlays.size());
 
@@ -198,7 +199,7 @@ public class FilePackResources extends AbstractPackResources {
                overlayResources.add(new FilePackResources(location, fileAccess, overlay));
             }
 
-            return new CompositePackResources(primary, overlayResources);
+            return Stream.of(new OverlayedPackResources(primary, overlayResources));
          }
       }
    }

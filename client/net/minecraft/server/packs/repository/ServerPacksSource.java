@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
 import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
@@ -47,8 +46,8 @@ public class ServerPacksSource extends BuiltInPackSource {
       return Component.literal(id);
    }
 
-   protected @Nullable Pack createVanillaPack(final PackResources resources) {
-      return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(resources), PackType.SERVER_DATA, VANILLA_SELECTION_CONFIG);
+   protected @Nullable Pack createVanillaPack(final Pack.ResourcesSupplier resources) {
+      return Pack.readMetaAndCreate(VANILLA_PACK_INFO, resources, PackType.SERVER_DATA, VANILLA_SELECTION_CONFIG);
    }
 
    protected @Nullable Pack createBuiltinPack(final String id, final Pack.ResourcesSupplier resources, final Component name) {

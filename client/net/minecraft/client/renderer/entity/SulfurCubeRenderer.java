@@ -7,14 +7,19 @@ import net.minecraft.client.model.monster.slime.SulfurCubeModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
+import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.SulfurCubeInnerLayer;
 import net.minecraft.client.renderer.entity.state.SulfurCubeRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -22,6 +27,8 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
    private static final Identifier SULFUR_CUBE_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_outer.png");
    private static final Identifier SULFUR_CUBE_SMALL_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_outer_small.png");
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
+   private static final float COUNTER_SKULL_SCALE = 0.84210527F;
+   public static final CustomHeadLayer.Transforms CUSTOM_HEAD_TRANSFORMS;
    private final SulfurCubeModel normalModel;
    private final SmallSulfurCubeModel smallModel;
    private final BlockModelResolver blockModelResolver;
@@ -33,6 +40,7 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
       this.smallModel = new SmallSulfurCubeModel(context.bakeLayer(ModelLayers.SULFUR_CUBE_SMALL));
       this.blockModelResolver = context.getBlockModelResolver();
       this.addLayer(new SulfurCubeInnerLayer(this, context.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache(), CUSTOM_HEAD_TRANSFORMS));
    }
 
    public void submit(final SulfurCubeRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
@@ -69,6 +77,18 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
       state.fuseRemainingTicks = entity.isPrimed() ? (float)entity.getFuse() - partialTicks + 1.0F : 0.0F;
       ItemStack containedBlock = entity.getBodyArmorItem();
       if (!containedBlock.isEmpty()) {
+         Item var7 = containedBlock.getItem();
+         if (var7 instanceof BlockItem) {
+            BlockItem blockItem = (BlockItem)var7;
+            Block var9 = blockItem.getBlock();
+            if (var9 instanceof AbstractSkullBlock) {
+               AbstractSkullBlock skullBlock = (AbstractSkullBlock)var9;
+               state.wornHeadType = skullBlock.getType();
+               state.wornHeadProfile = (ResolvableProfile)containedBlock.get(DataComponents.PROFILE);
+               return;
+            }
+         }
+
          BlockItemStateProperties blockItemState = (BlockItemStateProperties)containedBlock.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
          BlockState blockState = blockItemState.apply(Block.byItem(containedBlock.getItem()).defaultBlockState());
          this.blockModelResolver.update(state.containedBlock, blockState, BLOCK_DISPLAY_CONTEXT);
@@ -81,5 +101,9 @@ public class SulfurCubeRenderer extends AbstractCubeMobRenderer<SulfurCube, Sulf
       float ss = state.containedBlock.isEmpty() ? state.squish / (size * 0.5F + 1.0F) : 0.0F;
       float w = 1.0F / (ss + 1.0F);
       poseStack.scale(w * size, 1.0F / w * size, w * size);
+   }
+
+   static {
+      CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(0.0F, 0.625F, 0.84210527F, 0.84210527F, CustomHeadLayer.Transforms.CUTOUT_PLAYER_SKIN_RESOLVER);
    }
 }

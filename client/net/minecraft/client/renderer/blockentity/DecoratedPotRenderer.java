@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -31,14 +31,13 @@ import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
-import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -47,15 +46,6 @@ import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
    private static final Map<Direction, Transformation> TRANSFORMATIONS = Util.<Direction, Transformation>makeEnumMap(Direction.class, DecoratedPotRenderer::createModelTransformation);
-   private static final Map<ResourceKey<Item>, SpriteId> DECORATED_POT_SPRITES = (Map)Util.make(() -> {
-      ImmutableMap.Builder<ResourceKey<Item>, SpriteId> builder = ImmutableMap.builder();
-      DecoratedPotPatterns.itemToPatternMappings((itemId, patternId) -> {
-         Holder.Reference<DecoratedPotPattern> pattern = BuiltInRegistries.DECORATED_POT_PATTERN.getOrThrow(patternId);
-         builder.put(itemId, Sheets.DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)pattern.value()).assetId()));
-      });
-      return builder.buildOrThrow();
-   });
-   private final SpriteGetter sprites;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
    private static final String BACK = "back";
@@ -63,6 +53,9 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private static final String RIGHT = "right";
    private static final String TOP = "top";
    private static final String BOTTOM = "bottom";
+   private final SpriteGetter sprites;
+   private @Nullable SideSprite blankSide;
+   private final Map<Identifier, SideSprite> sideCache;
    private final ModelPart neck;
    private final ModelPart frontSide;
    private final ModelPart backSide;
@@ -82,6 +75,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    public DecoratedPotRenderer(final EntityModelSet entityModelSet, final SpriteGetter sprites) {
       super();
+      this.sideCache = new HashMap();
       this.sprites = sprites;
       ModelPart baseRoot = entityModelSet.bakeLayer(ModelLayers.DECORATED_POT_BASE);
       this.neck = baseRoot.getChild("neck");
@@ -117,15 +111,19 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return LayerDefinition.create(mesh, 16, 16);
    }
 
-   private static SpriteId getSideSprite(final Optional<Item> item) {
+   private SideSprite getSideSprite(final Optional<? extends ItemInstance> item) {
       if (item.isPresent()) {
-         SpriteId result = (SpriteId)DECORATED_POT_SPRITES.get(((Item)item.get()).builtInRegistryHolder().key());
-         if (result != null) {
-            return result;
+         Holder<DecoratedPotPattern> pattern = (Holder)((ItemInstance)item.get()).get(DataComponents.PROVIDES_POTTERY_PATTERN);
+         if (pattern != null) {
+            return (SideSprite)this.sideCache.computeIfAbsent(((DecoratedPotPattern)pattern.value()).assetId(), (id) -> DecoratedPotRenderer.SideSprite.create(this.sprites, Sheets.DECORATED_POT_MAPPER.apply(id)));
          }
       }
 
-      return Sheets.DECORATED_POT_SIDE;
+      if (this.blankSide == null) {
+         this.blankSide = DecoratedPotRenderer.SideSprite.create(this.sprites, Sheets.DECORATED_POT_SIDE);
+      }
+
+      return this.blankSide;
    }
 
    public DecoratedPotRenderState createRenderState() {
@@ -181,14 +179,14 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       submitNodeCollector.submitModelPart(this.neck, poseStack, renderType, lightCoords, overlayCoords, sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       submitNodeCollector.submitModelPart(this.top, poseStack, renderType, lightCoords, overlayCoords, sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
       submitNodeCollector.submitModelPart(this.bottom, poseStack, renderType, lightCoords, overlayCoords, sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      SpriteId frontSprite = getSideSprite(decorations.front());
-      submitNodeCollector.submitModelPart(this.frontSide, poseStack, frontSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(frontSprite), -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      SpriteId backSprite = getSideSprite(decorations.back());
-      submitNodeCollector.submitModelPart(this.backSide, poseStack, backSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(backSprite), -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      SpriteId leftSprite = getSideSprite(decorations.left());
-      submitNodeCollector.submitModelPart(this.leftSide, poseStack, leftSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(leftSprite), -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
-      SpriteId rightSprite = getSideSprite(decorations.right());
-      submitNodeCollector.submitModelPart(this.rightSide, poseStack, rightSprite.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(rightSprite), -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SideSprite frontSprite = this.getSideSprite(decorations.front());
+      submitNodeCollector.submitModelPart(this.frontSide, poseStack, frontSprite.renderType, lightCoords, overlayCoords, frontSprite.sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SideSprite backSprite = this.getSideSprite(decorations.back());
+      submitNodeCollector.submitModelPart(this.backSide, poseStack, backSprite.renderType, lightCoords, overlayCoords, backSprite.sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SideSprite leftSprite = this.getSideSprite(decorations.left());
+      submitNodeCollector.submitModelPart(this.leftSide, poseStack, leftSprite.renderType, lightCoords, overlayCoords, leftSprite.sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      SideSprite rightSprite = this.getSideSprite(decorations.right());
+      submitNodeCollector.submitModelPart(this.rightSide, poseStack, rightSprite.renderType, lightCoords, overlayCoords, rightSprite.sprite, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
@@ -196,5 +194,15 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       this.neck.getExtentsForGui(poseStack, output);
       this.top.getExtentsForGui(poseStack, output);
       this.bottom.getExtentsForGui(poseStack, output);
+   }
+
+   private static record SideSprite(RenderType renderType, TextureAtlasSprite sprite) {
+      private SideSprite {
+         super();
+      }
+
+      public static SideSprite create(final SpriteGetter sprites, final SpriteId spriteId) {
+         return new SideSprite(spriteId.renderType(RenderTypes::entitySolid), sprites.get(spriteId));
+      }
    }
 }

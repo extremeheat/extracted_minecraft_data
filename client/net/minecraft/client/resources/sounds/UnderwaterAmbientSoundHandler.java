@@ -25,13 +25,13 @@ public class UnderwaterAmbientSoundHandler implements AmbientSoundHandler {
          float rand = this.player.level().getRandom().nextFloat();
          if (rand < 1.0E-4F) {
             this.tickDelay = 0;
-            this.soundManager.play(new UnderwaterAmbientSoundInstances.SubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS_ULTRA_RARE));
+            this.soundManager.play(new UnderLiquidSubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS_ULTRA_RARE));
          } else if (rand < 0.001F) {
             this.tickDelay = 0;
-            this.soundManager.play(new UnderwaterAmbientSoundInstances.SubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS_RARE));
+            this.soundManager.play(new UnderLiquidSubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS_RARE));
          } else if (rand < 0.01F) {
             this.tickDelay = 0;
-            this.soundManager.play(new UnderwaterAmbientSoundInstances.SubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS));
+            this.soundManager.play(new UnderLiquidSubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS));
          }
       }
 

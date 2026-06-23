@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.FixedPlacement;
@@ -31,12 +31,12 @@ public class EndPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
-      Holder<ConfiguredFeature<?, ?>> endPlatform = configuredFeatures.getOrThrow(EndFeatures.END_PLATFORM);
-      Holder<ConfiguredFeature<?, ?>> endSpike = configuredFeatures.getOrThrow(EndFeatures.END_SPIKE);
-      Holder<ConfiguredFeature<?, ?>> endGatewayReturn = configuredFeatures.getOrThrow(EndFeatures.END_GATEWAY_RETURN);
-      Holder<ConfiguredFeature<?, ?>> chorusPlant = configuredFeatures.getOrThrow(EndFeatures.CHORUS_PLANT);
-      Holder<ConfiguredFeature<?, ?>> endIsland = configuredFeatures.getOrThrow(EndFeatures.END_ISLAND);
+      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      Holder<Feature> endPlatform = configuredFeatures.getOrThrow(EndFeatures.END_PLATFORM);
+      Holder<Feature> endSpike = configuredFeatures.getOrThrow(EndFeatures.END_SPIKE);
+      Holder<Feature> endGatewayReturn = configuredFeatures.getOrThrow(EndFeatures.END_GATEWAY_RETURN);
+      Holder<Feature> chorusPlant = configuredFeatures.getOrThrow(EndFeatures.CHORUS_PLANT);
+      Holder<Feature> endIsland = configuredFeatures.getOrThrow(EndFeatures.END_ISLAND);
       PlacementUtils.register(context, END_PLATFORM, endPlatform, FixedPlacement.of(ServerLevel.END_SPAWN_POINT.below()), BiomeFilter.biome());
       PlacementUtils.register(context, END_SPIKE, endSpike, BiomeFilter.biome());
       PlacementUtils.register(context, END_GATEWAY_RETURN, endGatewayReturn, RarityFilter.onAverageOnceEvery(700), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, RandomOffsetPlacement.vertical(UniformInt.of(3, 9)), BiomeFilter.biome());

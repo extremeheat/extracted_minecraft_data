@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.AquaticFeatures;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
@@ -39,14 +39,14 @@ public class AquaticPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
-      Holder.Reference<ConfiguredFeature<?, ?>> seagrassShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SHORT);
-      Holder.Reference<ConfiguredFeature<?, ?>> seagrassSlightlyLessShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SLIGHTLY_LESS_SHORT);
-      Holder.Reference<ConfiguredFeature<?, ?>> seagrassMid = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_MID);
-      Holder.Reference<ConfiguredFeature<?, ?>> seagrassTall = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_TALL);
-      Holder.Reference<ConfiguredFeature<?, ?>> seaPickle = configuredFeatures.getOrThrow(AquaticFeatures.SEA_PICKLE);
-      Holder.Reference<ConfiguredFeature<?, ?>> kelp = configuredFeatures.getOrThrow(AquaticFeatures.KELP);
-      Holder.Reference<ConfiguredFeature<?, ?>> warmOceanVegetation = configuredFeatures.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION);
+      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      Holder.Reference<Feature> seagrassShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SHORT);
+      Holder.Reference<Feature> seagrassSlightlyLessShort = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_SLIGHTLY_LESS_SHORT);
+      Holder.Reference<Feature> seagrassMid = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_MID);
+      Holder.Reference<Feature> seagrassTall = configuredFeatures.getOrThrow(AquaticFeatures.SEAGRASS_TALL);
+      Holder.Reference<Feature> seaPickle = configuredFeatures.getOrThrow(AquaticFeatures.SEA_PICKLE);
+      Holder.Reference<Feature> kelp = configuredFeatures.getOrThrow(AquaticFeatures.KELP);
+      Holder.Reference<Feature> warmOceanVegetation = configuredFeatures.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION);
       PlacementUtils.register(context, SEAGRASS_WARM, seagrassShort, seagrassPlacement(80));
       PlacementUtils.register(context, SEAGRASS_NORMAL, seagrassShort, seagrassPlacement(48));
       PlacementUtils.register(context, SEAGRASS_COLD, seagrassShort, seagrassPlacement(32));

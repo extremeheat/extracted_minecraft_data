@@ -425,6 +425,10 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return slot == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(slot);
    }
 
+   public boolean canSimulateMovement() {
+      return true;
+   }
+
    static {
       DATA_ITEM = SynchedEntityData.<ItemStack>defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
    }

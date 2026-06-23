@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.trim.TrimMaterials;
 
 public class EquipmentAssetProvider implements DataProvider {
    private final PackOutput.PathProvider pathProvider;
@@ -27,13 +28,13 @@ public class EquipmentAssetProvider implements DataProvider {
 
    private static void bootstrap(final BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> consumer) {
       consumer.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true), EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather_overlay"), false)).build());
-      consumer.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail"));
-      consumer.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper"));
-      consumer.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron"));
-      consumer.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold"));
-      consumer.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond"));
+      consumer.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail").build());
+      consumer.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper").replaceTrimPalette(TrimMaterials.Palette.COPPER.id(), TrimMaterials.Palette.COPPER_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron").replaceTrimPalette(TrimMaterials.Palette.IRON.id(), TrimMaterials.Palette.IRON_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold").replaceTrimPalette(TrimMaterials.Palette.GOLD.id(), TrimMaterials.Palette.GOLD_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond").replaceTrimPalette(TrimMaterials.Palette.DIAMOND.id(), TrimMaterials.Palette.DIAMOND_DARKER.id()).build());
       consumer.accept(EquipmentAssets.TURTLE_SCUTE, EquipmentClientInfo.builder().addMainHumanoidLayer(Identifier.withDefaultNamespace("turtle_scute"), false).build());
-      consumer.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite"));
+      consumer.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite").replaceTrimPalette(TrimMaterials.Palette.NETHERITE.id(), TrimMaterials.Palette.NETHERITE_DARKER.id()).build());
       consumer.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
       consumer.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
       EquipmentClientInfo.Layer saddleLayer = new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("saddle"));
@@ -55,12 +56,12 @@ public class EquipmentAssetProvider implements DataProvider {
       consumer.accept(EquipmentAssets.TRADER_LLAMA_BABY, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("trader_llama_baby"))).build());
    }
 
-   private static EquipmentClientInfo onlyHumanoid(final String name) {
-      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name)).build();
+   private static EquipmentClientInfo.Builder onlyHumanoid(final String name) {
+      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name));
    }
 
-   private static EquipmentClientInfo humanoidAndMountArmor(final String name) {
-      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false)).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false)).build();
+   private static EquipmentClientInfo.Builder humanoidAndMountArmor(final String name) {
+      return EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace(name)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false)).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace(name), false));
    }
 
    public CompletableFuture<?> run(final CachedOutput cache) {

@@ -27,7 +27,7 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
@@ -241,7 +241,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       model.rightSleeve.visible = hasSleeve;
       model.leftArm.zRot = -0.1F;
       model.rightArm.zRot = 0.1F;
-      submitNodeCollector.submitModelPart(arm, poseStack, RenderTypes.entityTranslucent(skinTexture), lightCoords, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
+      submitNodeCollector.submitModelPart(arm, poseStack, RenderTypes.entityTranslucent(skinTexture), lightCoords, OverlayTexture.NO_OVERLAY, (UvMapping)null);
    }
 
    protected void setupRotations(final AvatarRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {

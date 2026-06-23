@@ -6,23 +6,28 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemInstance;
+import net.minecraft.world.item.ItemProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.slot.SlotSelector;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import org.apache.commons.lang3.math.Fraction;
 import org.jspecify.annotations.Nullable;
 
-public final class BundleContents implements TooltipComponent {
+public final class BundleContents implements ContainerComponent<BundleContents>, TooltipComponent {
    public static final BundleContents EMPTY = new BundleContents(List.of());
    public static final Codec<BundleContents> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, BundleContents> STREAM_CODEC;
@@ -86,7 +91,7 @@ public final class BundleContents implements TooltipComponent {
       return Math.min(numberOfItemStacks, availableItemsToShow - emptySpaceOnNonFullRow);
    }
 
-   public Stream<ItemStack> itemCopyStream() {
+   public Stream<ItemStack> itemCopies() {
       return this.items.stream().map(ItemStackTemplate::create);
    }
 
@@ -112,6 +117,28 @@ public final class BundleContents implements TooltipComponent {
 
    public @Nullable ItemStackTemplate getSelectedItem() {
       return this.selectedItem == -1 ? null : (ItemStackTemplate)this.items.get(this.selectedItem);
+   }
+
+   public BundleContents copyWithContents(final Stream<ItemStack> newContents) {
+      Mutable builder = new Mutable();
+      Objects.requireNonNull(builder);
+      newContents.forEach(builder::tryInsert);
+      return builder.toImmutable();
+   }
+
+   public Mutable asMutable() {
+      DataResult<Fraction> currentWeight = (DataResult)this.weight.get();
+      if (currentWeight.isError()) {
+         return new Mutable();
+      } else {
+         List<ItemStack> itemsList = new ArrayList(this.items.size());
+
+         for(ItemStackTemplate item : this.items) {
+            itemsList.add(item.create());
+         }
+
+         return new Mutable(itemsList, (Fraction)currentWeight.getOrThrow(), this.selectedItem);
+      }
    }
 
    public boolean equals(final Object obj) {
@@ -140,29 +167,19 @@ public final class BundleContents implements TooltipComponent {
       BEEHIVE_WEIGHT = DataResult.success(Fraction.ONE);
    }
 
-   public static class Mutable {
-      private final List<ItemStack> items;
+   public static class Mutable extends SimpleMutableContainer<BundleContents> {
       private Fraction weight;
       private int selectedItem;
+      private boolean needsFlattening;
 
-      public Mutable(final BundleContents contents) {
-         super();
-         DataResult<Fraction> currentWeight = (DataResult)contents.weight.get();
-         if (currentWeight.isError()) {
-            this.items = new ArrayList();
-            this.weight = Fraction.ZERO;
-            this.selectedItem = -1;
-         } else {
-            this.items = new ArrayList(contents.items.size());
+      private Mutable(final List<ItemStack> items, final Fraction weight, final int selectedItem) {
+         super(items);
+         this.weight = weight;
+         this.selectedItem = selectedItem;
+      }
 
-            for(ItemStackTemplate item : contents.items) {
-               this.items.add(item.create());
-            }
-
-            this.weight = (Fraction)currentWeight.getOrThrow();
-            this.selectedItem = contents.selectedItem;
-         }
-
+      public Mutable() {
+         this(new ArrayList(), Fraction.ZERO, -1);
       }
 
       public Mutable clearItems() {
@@ -172,11 +189,14 @@ public final class BundleContents implements TooltipComponent {
          return this;
       }
 
-      private int findStackIndex(final ItemStack itemsToAdd) {
+      private int findStackIndexWithinRange(final ItemStack itemsToAdd, final int minInclusive, final int maxExclusive) {
          if (!itemsToAdd.isStackable()) {
             return -1;
          } else {
-            for(int i = 0; i < this.items.size(); ++i) {
+            int startIndex = Math.max(minInclusive, 0);
+            int endIndex = Math.min(maxExclusive, this.items.size());
+
+            for(int i = startIndex; i < endIndex; ++i) {
                if (ItemStack.isSameItemSameComponents((ItemStack)this.items.get(i), itemsToAdd)) {
                   return i;
                }
@@ -184,6 +204,10 @@ public final class BundleContents implements TooltipComponent {
 
             return -1;
          }
+      }
+
+      private int findStackIndex(final ItemStack itemsToAdd) {
+         return this.findStackIndexWithinRange(itemsToAdd, 0, this.items.size());
       }
 
       private int getMaxAmountToAdd(final Fraction itemWeight) {
@@ -204,15 +228,15 @@ public final class BundleContents implements TooltipComponent {
                if (amountToAdd == 0) {
                   return 0;
                } else {
-                  this.weight = this.weight.add(itemWeight.multiplyBy(Fraction.getFraction(amountToAdd, 1)));
+                  this.weight = this.weight.add(getStackedWeight(itemWeight, amountToAdd));
                   int stackIndex = this.findStackIndex(itemsToAdd);
                   if (stackIndex != -1) {
                      ItemStack removedStack = (ItemStack)this.items.remove(stackIndex);
                      ItemStack mergedStack = removedStack.copyWithCount(removedStack.getCount() + amountToAdd);
                      itemsToAdd.shrink(amountToAdd);
-                     this.items.add(0, mergedStack);
+                     this.items.addFirst(mergedStack);
                   } else {
-                     this.items.add(0, itemsToAdd.split(amountToAdd));
+                     this.items.addFirst(itemsToAdd.split(amountToAdd));
                   }
 
                   return amountToAdd;
@@ -246,17 +270,119 @@ public final class BundleContents implements TooltipComponent {
          } else {
             int removeIndex = this.indexIsOutsideAllowedBounds(this.selectedItem) ? 0 : this.selectedItem;
             ItemStack stack = ((ItemStack)this.items.remove(removeIndex)).copy();
-            this.weight = this.weight.subtract(((Fraction)BundleContents.getWeight(stack).getOrThrow()).multiplyBy(Fraction.getFraction(stack.getCount(), 1)));
+            this.weight = this.weight.subtract(getStackedWeight(stack));
             this.toggleSelectedItem(-1);
             return stack;
          }
+      }
+
+      private static Fraction getStackedWeight(final Fraction weight, final int count) {
+         return weight.multiplyBy(Fraction.getFraction(count, 1));
+      }
+
+      private static Fraction getStackedWeight(final ItemStack stack) {
+         return getStackedWeight((Fraction)BundleContents.getWeight(stack).getOrThrow(), stack.getCount());
       }
 
       public Fraction weight() {
          return this.weight;
       }
 
+      public int replaceSlotItems(final ItemProvider newItems, final SlotSelector slotSelector) {
+         this.mergeIdenticalStacks();
+         return super.replaceSlotItems(newItems, slotSelector);
+      }
+
+      public void modifySlots(final Consumer<? super SlotAccess> consumer, final SlotSelector slotSelector) {
+         this.mergeIdenticalStacks();
+         super.modifySlots(consumer, slotSelector);
+      }
+
+      protected int insertNewSlots(final ItemProvider newItems, final SlotSelector slotSelector) {
+         int successCount;
+         for(successCount = 0; newItems.hasNext() && this.canInsertNewSlots() && slotSelector.trySelectSlot(ItemStack.EMPTY); ++successCount) {
+            boolean success = newItems.findNextNonEmpty() && this.addSlotWithItem(newItems.peek());
+            if (!success) {
+               break;
+            }
+
+            newItems.next();
+         }
+
+         return successCount;
+      }
+
+      protected boolean setItem(final int slot, final ItemStack itemStack) {
+         ItemStack currentItem = (ItemStack)this.items.get(slot);
+         Fraction adjustedWeight = currentItem.isEmpty() ? this.weight : this.weight.subtract(getStackedWeight(currentItem));
+         Fraction newWeight = itemStack.isEmpty() ? adjustedWeight : getWeightWithAddedItems(adjustedWeight, itemStack);
+         if (newWeight != null && super.setItem(slot, itemStack)) {
+            this.weight = newWeight;
+            this.needsFlattening = true;
+            return true;
+         } else {
+            return false;
+         }
+      }
+
+      protected boolean addSlotWithItem(final ItemStack itemStack) {
+         if (itemStack.isEmpty()) {
+            return false;
+         } else {
+            Fraction newWeight = getWeightWithAddedItems(this.weight, itemStack);
+            if (newWeight != null && super.addSlotWithItem(itemStack)) {
+               this.weight = newWeight;
+               this.needsFlattening = true;
+               return true;
+            } else {
+               return false;
+            }
+         }
+      }
+
+      private static @Nullable Fraction getWeightWithAddedItems(final Fraction weight, final ItemStack itemsToAdd) {
+         if (BundleContents.canItemBeInBundle(itemsToAdd)) {
+            DataResult<Fraction> itemWeight = BundleContents.getWeight(itemsToAdd);
+            if (itemWeight.isError()) {
+               return null;
+            }
+
+            Fraction newWeight = weight.add(getStackedWeight((Fraction)itemWeight.getOrThrow(), itemsToAdd.getCount()));
+            if (newWeight.compareTo(Fraction.ONE) <= 0) {
+               return newWeight;
+            }
+         }
+
+         return null;
+      }
+
+      public boolean canInsertNewSlots() {
+         return this.weight.compareTo(Fraction.ONE) < 0;
+      }
+
+      private void mergeIdenticalStacks() {
+         if (this.needsFlattening) {
+            for(int index = 0; index < this.items.size(); ++index) {
+               ItemStack itemStack = (ItemStack)this.items.get(index);
+               if (itemStack.isEmpty()) {
+                  this.items.remove(index--);
+               } else {
+                  int stackIndex = this.findStackIndexWithinRange(itemStack, index + 1, this.items.size());
+                  if (stackIndex != -1) {
+                     ItemStack targetStack = (ItemStack)this.items.get(stackIndex);
+                     int mergedCount = itemStack.getCount() + targetStack.getCount();
+                     this.items.set(stackIndex, itemStack.copyWithCount(mergedCount));
+                     this.items.remove(index--);
+                  }
+               }
+            }
+
+            this.needsFlattening = false;
+         }
+      }
+
       public BundleContents toImmutable() {
+         this.mergeIdenticalStacks();
          ImmutableList.Builder<ItemStackTemplate> builder = ImmutableList.builder();
 
          for(ItemStack item : this.items) {

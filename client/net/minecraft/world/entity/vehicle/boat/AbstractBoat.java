@@ -295,19 +295,42 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             int diff = 60 - bubbleTime - 1;
             if (diff > 0 && bubbleTime == 0) {
                this.setBubbleTime(0);
-               Vec3 movement = this.getDeltaMovement();
                if (this.bubbleColumnDirectionIsDown) {
-                  this.setDeltaMovement(movement.add(0.0, -0.7, 0.0));
                   this.ejectPassengers();
+                  this.level().broadcastEntityEvent(this, (byte)71);
                } else {
-                  this.setDeltaMovement(movement.x, this.hasPassenger((e) -> e instanceof Player) ? 2.7 : 0.6, movement.z);
+                  this.level().broadcastEntityEvent(this, (byte)72);
                }
+
+               this.handleBubbleColumnEffect(this.bubbleColumnDirectionIsDown);
             }
 
             this.isAboveBubbleColumn = false;
          }
       }
 
+   }
+
+   public void handleEntityEvent(final byte id) {
+      super.handleEntityEvent(id);
+      if (id == 71) {
+         this.handleBubbleColumnEffect(true);
+      } else if (id == 72) {
+         this.handleBubbleColumnEffect(false);
+      }
+
+   }
+
+   protected void handleBubbleColumnEffect(final boolean dragDown) {
+      if (this.canSimulateMovement()) {
+         Vec3 movement = this.getDeltaMovement();
+         if (dragDown) {
+            this.setDeltaMovement(movement.add(0.0, -0.7, 0.0));
+         } else {
+            this.setDeltaMovement(movement.x, 0.6, movement.z);
+         }
+
+      }
    }
 
    protected @Nullable SoundEvent getPaddleSound() {

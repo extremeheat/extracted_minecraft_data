@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public abstract class RootPlacer {
@@ -39,13 +38,13 @@ public abstract class RootPlacer {
 
    protected abstract RootPlacerType<?> type();
 
-   public abstract boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeConfiguration config);
+   public abstract boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeFeature tree);
 
    protected boolean canPlaceRoot(final LevelSimulatedReader level, final BlockPos pos) {
       return TreeFeature.validTreePos(level, pos);
    }
 
-   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
       if (this.canPlaceRoot(level, pos)) {
          rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, this.rootProvider.getState(level, random, pos)));
          if (this.aboveRootPlacement.isPresent()) {

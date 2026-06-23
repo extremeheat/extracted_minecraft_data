@@ -13,7 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class FancyTrunkPlacer extends TrunkPlacer {
@@ -31,11 +31,11 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.FANCY_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       int assumedFoliageHeight = 5;
       int height = treeHeight + 2;
       int trunkHeight = Mth.floor((double)height * 0.618);
-      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), tree);
       double foliageDensity = 1.0;
       int clustersPerY = Math.min(1, Mth.floor(1.382 + Math.pow(1.0 * (double)height / 13.0, 2.0)));
       int trunkTop = origin.getY() + trunkHeight;
@@ -54,13 +54,13 @@ public class FancyTrunkPlacer extends TrunkPlacer {
                double z = radius * Math.cos(angle) + 0.5;
                BlockPos checkStart = origin.offset(Mth.floor(x), relativeY - 1, Mth.floor(z));
                BlockPos checkEnd = checkStart.above(5);
-               if (this.makeLimb(level, trunkSetter, random, checkStart, checkEnd, false, config)) {
+               if (this.makeLimb(level, trunkSetter, random, checkStart, checkEnd, false, tree)) {
                   int dx = origin.getX() - checkStart.getX();
                   int dz = origin.getZ() - checkStart.getZ();
                   double branchHeight = (double)checkStart.getY() - Math.sqrt((double)(dx * dx + dz * dz)) * 0.381;
                   int branchTop = branchHeight > (double)trunkTop ? trunkTop : (int)branchHeight;
                   BlockPos checkBranchBase = new BlockPos(origin.getX(), branchTop, origin.getZ());
-                  if (this.makeLimb(level, trunkSetter, random, checkBranchBase, checkStart, false, config)) {
+                  if (this.makeLimb(level, trunkSetter, random, checkBranchBase, checkStart, false, tree)) {
                      foliageCoords.add(new FoliageCoords(checkStart, checkBranchBase.getY()));
                   }
                }
@@ -68,8 +68,8 @@ public class FancyTrunkPlacer extends TrunkPlacer {
          }
       }
 
-      this.makeLimb(level, trunkSetter, random, origin, origin.above(trunkHeight), true, config);
-      this.makeBranches(level, trunkSetter, random, height, origin, foliageCoords, config);
+      this.makeLimb(level, trunkSetter, random, origin, origin.above(trunkHeight), true, tree);
+      this.makeBranches(level, trunkSetter, random, height, origin, foliageCoords, tree);
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
 
       for(FoliageCoords foliageCoord : foliageCoords) {
@@ -81,7 +81,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return attachments;
    }
 
-   private boolean makeLimb(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos startPos, final BlockPos endPos, final boolean doPlace, final TreeConfiguration config) {
+   private boolean makeLimb(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos startPos, final BlockPos endPos, final boolean doPlace, final TreeFeature tree) {
       if (!doPlace && Objects.equals(startPos, endPos)) {
          return true;
       } else {
@@ -94,7 +94,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
          for(int i = 0; i <= steps; ++i) {
             BlockPos blockPos = startPos.offset(Mth.floor(0.5F + (float)i * dx), Mth.floor(0.5F + (float)i * dy), Mth.floor(0.5F + (float)i * dz));
             if (doPlace) {
-               this.placeLog(level, trunkSetter, random, blockPos, config, (state) -> (BlockState)state.trySetValue(RotatedPillarBlock.AXIS, this.getLogAxis(startPos, blockPos)));
+               this.placeLog(level, trunkSetter, random, blockPos, tree, (state) -> (BlockState)state.trySetValue(RotatedPillarBlock.AXIS, this.getLogAxis(startPos, blockPos)));
             } else if (!this.isFree(level, blockPos)) {
                return false;
             }
@@ -131,12 +131,12 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       return (double)localY >= (double)height * 0.2;
    }
 
-   private void makeBranches(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int height, final BlockPos origin, final List<FoliageCoords> foliageCoords, final TreeConfiguration config) {
+   private void makeBranches(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int height, final BlockPos origin, final List<FoliageCoords> foliageCoords, final TreeFeature tree) {
       for(FoliageCoords endCoord : foliageCoords) {
          int branchBase = endCoord.getBranchBase();
          BlockPos baseCoord = new BlockPos(origin.getX(), branchBase, origin.getZ());
          if (!baseCoord.equals(endCoord.attachment.pos()) && this.trimBranches(height, branchBase - origin.getY())) {
-            this.makeLimb(level, trunkSetter, random, baseCoord, endCoord.attachment.pos(), true, config);
+            this.makeLimb(level, trunkSetter, random, baseCoord, endCoord.attachment.pos(), true, tree);
          }
       }
 

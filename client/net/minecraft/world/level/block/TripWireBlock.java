@@ -148,14 +148,14 @@ public class TripWireBlock extends Block {
 
       if (shouldBePressed != wasPressed) {
          state = (BlockState)state.setValue(POWERED, shouldBePressed);
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
          this.updateSource(level, pos, state);
       }
 
       if (shouldBePressed) {
-         level.scheduleTick(new BlockPos(pos), this, 10);
+         level.scheduleTick(pos, this, 10);
       } else if (wasPressed) {
-         level.scheduleTick(new BlockPos(pos), this, 0);
+         level.scheduleTick(pos, this, 0);
       }
 
    }

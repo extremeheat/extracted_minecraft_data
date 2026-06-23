@@ -1,24 +1,29 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NetherForestVegetationConfig;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public class NetherForestVegetationFeature extends Feature<NetherForestVegetationConfig> {
-   public NetherForestVegetationFeature(final Codec<NetherForestVegetationConfig> codec) {
-      super(codec);
+public record NetherForestVegetationFeature(BlockStateProvider stateProvider, int spreadWidth, int spreadHeight) implements Feature {
+   public static final MapCodec<NetherForestVegetationFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("state_provider").forGetter(NetherForestVegetationFeature::stateProvider), ExtraCodecs.POSITIVE_INT.fieldOf("spread_width").forGetter(NetherForestVegetationFeature::spreadWidth), ExtraCodecs.POSITIVE_INT.fieldOf("spread_height").forGetter(NetherForestVegetationFeature::spreadHeight)).apply(i, NetherForestVegetationFeature::new));
+
+   public NetherForestVegetationFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NetherForestVegetationConfig> context) {
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
+   public MapCodec<NetherForestVegetationFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       BlockState belowState = level.getBlockState(origin.below());
-      NetherForestVegetationConfig config = context.config();
-      RandomSource random = context.random();
       if (!belowState.is(BlockTags.NYLIUM)) {
          return false;
       } else {
@@ -26,9 +31,9 @@ public class NetherForestVegetationFeature extends Feature<NetherForestVegetatio
          if (y >= level.getMinY() + 1 && y + 1 <= level.getMaxY()) {
             int placed = 0;
 
-            for(int i = 0; i < config.spreadWidth * config.spreadWidth; ++i) {
-               BlockPos finalPos = origin.offset(random.nextInt(config.spreadWidth) - random.nextInt(config.spreadWidth), random.nextInt(config.spreadHeight) - random.nextInt(config.spreadHeight), random.nextInt(config.spreadWidth) - random.nextInt(config.spreadWidth));
-               BlockState state = config.stateProvider.getState(level, random, finalPos);
+            for(int i = 0; i < this.spreadWidth * this.spreadWidth; ++i) {
+               BlockPos finalPos = origin.offset(random.nextInt(this.spreadWidth) - random.nextInt(this.spreadWidth), random.nextInt(this.spreadHeight) - random.nextInt(this.spreadHeight), random.nextInt(this.spreadWidth) - random.nextInt(this.spreadWidth));
+               BlockState state = this.stateProvider.getState(level, random, finalPos);
                if (level.isEmptyBlock(finalPos) && finalPos.getY() > level.getMinY() && state.canSurvive(level, finalPos)) {
                   level.setBlock(finalPos, state, 2);
                   ++placed;

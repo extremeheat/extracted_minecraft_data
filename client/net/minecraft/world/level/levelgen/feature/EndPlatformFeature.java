@@ -1,20 +1,29 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class EndPlatformFeature extends Feature<NoneFeatureConfiguration> {
-   public EndPlatformFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record EndPlatformFeature() implements Feature {
+   public static final EndPlatformFeature INSTANCE = new EndPlatformFeature();
+   public static final MapCodec<EndPlatformFeature> CODEC;
+
+   public EndPlatformFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      createEndPlatform(context.level(), context.origin(), false);
+   public MapCodec<EndPlatformFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      createEndPlatform(level, origin, false);
       return true;
    }
 
@@ -31,11 +40,15 @@ public class EndPlatformFeature extends Feature<NoneFeatureConfiguration> {
                      newLevel.destroyBlock(blockPos, true, (Entity)null);
                   }
 
-                  newLevel.setBlock(blockPos, block.defaultBlockState(), 3);
+                  newLevel.setBlockAndUpdate(blockPos, block.defaultBlockState());
                }
             }
          }
       }
 
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

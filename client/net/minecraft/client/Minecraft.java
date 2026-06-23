@@ -161,6 +161,7 @@ import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.sounds.MusicManager;
@@ -324,6 +325,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final SkinManager skinManager;
    private final AtlasManager atlasManager;
    private final ModelManager modelManager;
+   private final PalettedTextureManager palettedTextureManager;
    private final MapTextureManager mapTextureManager;
    private final Tutorial tutorial;
    private final PlayerSocialManager playerSocialManager;
@@ -473,6 +475,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       String initialWindowTitle = this.createTitle();
+      Window.setBootErrorCallback();
 
       for(GpuBackend backend : preferredGraphicsBackend.getBackendsToTry()) {
          try {
@@ -503,6 +506,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       if (windowCandidate == null) {
+         errorMsgBuilder.append("\n\n").append("Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
          String errorMsg = errorMsgBuilder.toString();
          MessageBox.error(errorMsg);
          throw new Window.WindowInitFailed(errorMsg);
@@ -528,7 +532,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          GameLoadTimesEvent.INSTANCE.endStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS);
 
          try {
-            this.window.setIcon(this.vanillaPackResources, SharedConstants.getCurrentVersion().stable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
+            this.window.setIcon(this.vanillaPackResources.fullResources(), SharedConstants.getCurrentVersion().stable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
          } catch (IOException e) {
             LOGGER.error("Couldn't set icon", e);
          }
@@ -571,9 +575,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager.registerReloadListener(new GrassColorReloadListener());
          this.resourceManager.registerReloadListener(new FoliageColorReloadListener());
          this.resourceManager.registerReloadListener(new DryFoliageColorReloadListener());
-         this.window.setErrorSection("Startup");
          RenderSystem.setupDefaultState();
-         this.window.setErrorSection("Post startup");
          this.blockColors = BlockColors.createDefault();
          this.modelManager = new ModelManager(this.blockColors, this.atlasManager, this.playerSkinRenderCache);
          this.resourceManager.registerReloadListener(this.modelManager);
@@ -581,6 +583,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager.registerReloadListener(equipmentAssets);
          BlockModelResolver blockModelResolver = new BlockModelResolver(this.modelManager);
          this.itemModelResolver = new ItemModelResolver(this.modelManager);
+         this.palettedTextureManager = new PalettedTextureManager(this.resourceManager, this.textureManager);
+         this.resourceManager.registerReloadListener(this.palettedTextureManager);
          this.mapTextureManager = new MapTextureManager(this.textureManager);
          this.mapRenderer = new MapRenderer(this.atlasManager, this.mapTextureManager);
          FriendsService friendsService = authenticationService.createFriendsService(this.user.getAccessToken());
@@ -590,7 +594,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.remoteFriendListUpdateHandler.start();
          }
 
-         this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, blockModelResolver, this.itemModelResolver, this.mapRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache);
+         this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, blockModelResolver, this.itemModelResolver, this.mapRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache, this.palettedTextureManager);
          this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
          this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), blockModelResolver, this.itemModelResolver, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
          this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
@@ -1088,6 +1092,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.shaderManager.close();
          this.levelRenderer.close();
          this.soundManager.destroy();
+         this.palettedTextureManager.close();
          this.mapTextureManager.close();
          this.textureManager.close();
          this.resourceManager.close();
@@ -1760,6 +1765,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.level.tickEntities();
             profiler.popPush("blockEntities");
             this.level.tickBlockEntities();
+            if (this.player != null && !this.player.isRemoved()) {
+               profiler.popPush("playerSync");
+               this.player.sendChanges();
+            }
          }
       } else if (this.gameRenderer.currentPostEffect() != null) {
          this.gameRenderer.clearPostEffect();
@@ -2675,6 +2684,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public AtlasManager getAtlasManager() {
       return this.atlasManager;
+   }
+
+   public PalettedTextureManager getPalettedTextureManager() {
+      return this.palettedTextureManager;
    }
 
    public MapTextureManager getMapTextureManager() {

@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -18,15 +18,15 @@ public enum IconSet {
       this.path = path;
    }
 
-   public List<IoSupplier<InputStream>> getStandardIcons(final PackResources resources) throws IOException {
+   public List<IoSupplier<InputStream>> getStandardIcons(final PackMetadataResources resources) throws IOException {
       return List.of(this.getFile(resources, "icon_16x16.png"), this.getFile(resources, "icon_32x32.png"), this.getFile(resources, "icon_48x48.png"), this.getFile(resources, "icon_128x128.png"), this.getFile(resources, "icon_256x256.png"));
    }
 
-   public IoSupplier<InputStream> getMacIcon(final PackResources resources) throws IOException {
+   public IoSupplier<InputStream> getMacIcon(final PackMetadataResources resources) throws IOException {
       return this.getFile(resources, "minecraft.icns");
    }
 
-   private IoSupplier<InputStream> getFile(final PackResources resources, final String fileName) throws IOException {
+   private IoSupplier<InputStream> getFile(final PackMetadataResources resources, final String fileName) throws IOException {
       String[] fullPath = (String[])ArrayUtils.add(this.path, fileName);
       IoSupplier<InputStream> resource = resources.getRootResource(fullPath);
       if (resource == null) {

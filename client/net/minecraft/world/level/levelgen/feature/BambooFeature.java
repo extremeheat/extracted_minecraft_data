@@ -1,6 +1,8 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -10,31 +12,32 @@ import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 
-public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
+public record BambooFeature(float probability) implements Feature {
    private static final BlockState BAMBOO_TRUNK;
    private static final BlockState BAMBOO_FINAL_LARGE;
    private static final BlockState BAMBOO_TOP_LARGE;
    private static final BlockState BAMBOO_TOP_SMALL;
+   public static final MapCodec<BambooFeature> CODEC;
 
-   public BambooFeature(final Codec<ProbabilityFeatureConfiguration> codec) {
-      super(codec);
+   public BambooFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<ProbabilityFeatureConfiguration> context) {
+   public MapCodec<BambooFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       int placed = 0;
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
-      ProbabilityFeatureConfiguration config = context.config();
       BlockPos.MutableBlockPos bambooPos = origin.mutable();
       BlockPos.MutableBlockPos podzolPos = origin.mutable();
       if (level.isEmptyBlock(bambooPos)) {
          if (Blocks.BAMBOO.defaultBlockState().canSurvive(level, bambooPos)) {
             int height = random.nextInt(12) + 5;
-            if (random.nextFloat() < config.probability) {
+            if (random.nextFloat() < this.probability) {
                int r = random.nextInt(4) + 1;
 
                for(int xx = origin.getX() - r; xx <= origin.getX() + r; ++xx) {
@@ -74,5 +77,6 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
       BAMBOO_FINAL_LARGE = (BlockState)((BlockState)BAMBOO_TRUNK.setValue(BambooStalkBlock.LEAVES, BambooLeaves.LARGE)).setValue(BambooStalkBlock.STAGE, 1);
       BAMBOO_TOP_LARGE = (BlockState)BAMBOO_TRUNK.setValue(BambooStalkBlock.LEAVES, BambooLeaves.LARGE);
       BAMBOO_TOP_SMALL = (BlockState)BAMBOO_TRUNK.setValue(BambooStalkBlock.LEAVES, BambooLeaves.SMALL);
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter(BambooFeature::probability)).apply(i, BambooFeature::new));
    }
 }

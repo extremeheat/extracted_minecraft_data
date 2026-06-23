@@ -5,31 +5,30 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.FileSystemUtil;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class VanillaPackResourcesBuilder {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static Consumer<VanillaPackResourcesBuilder> developmentConfig = (builder) -> {
    };
+   private final FixedPathPackResources.Builder fullBuilder = new FixedPathPackResources.Builder();
+   private final List<FixedPathPackResources.Builder> layeredBuilders = new ArrayList();
+   private final Set<String> namespaces = new HashSet();
+   private @Nullable ResourceMetadata metadata;
    private static final Map<PackType, Path> ROOT_DIR_BY_TYPE = (Map)Util.make(() -> {
       synchronized(VanillaPackResources.class) {
          ImmutableMap.Builder<PackType, Path> result = ImmutableMap.builder();
@@ -58,39 +57,32 @@ public class VanillaPackResourcesBuilder {
          return result.build();
       }
    });
-   private final Set<Path> rootPaths = new LinkedHashSet();
-   private final Map<PackType, Set<Path>> pathsForType = new EnumMap(PackType.class);
-   private ResourceMetadata metadata;
-   private final Set<String> namespaces;
 
    public VanillaPackResourcesBuilder() {
       super();
-      this.metadata = ResourceMetadata.EMPTY;
-      this.namespaces = new HashSet();
+      this.layeredBuilders.add(new FixedPathPackResources.Builder());
    }
 
-   private boolean validateDirPath(final Path path) {
-      if (!Files.exists(path, new LinkOption[0])) {
-         return false;
-      } else if (!Files.isDirectory(path, new LinkOption[0])) {
-         throw new IllegalArgumentException("Path " + String.valueOf(path.toAbsolutePath()) + " is not directory");
-      } else {
-         return true;
+   private void forLastLayer(final Consumer<FixedPathPackResources.Builder> task) {
+      task.accept(this.fullBuilder);
+      task.accept((FixedPathPackResources.Builder)this.layeredBuilders.getLast());
+   }
+
+   private void forAllLayers(final Consumer<FixedPathPackResources.Builder> task) {
+      task.accept(this.fullBuilder);
+
+      for(FixedPathPackResources.Builder layeredBuilder : this.layeredBuilders) {
+         task.accept(layeredBuilder);
       }
+
    }
 
    private void pushRootPath(final Path path) {
-      if (this.validateDirPath(path)) {
-         this.rootPaths.add(path);
-      }
-
+      this.forLastLayer((builder) -> builder.pushRootPath(path));
    }
 
    private void pushPathForType(final PackType packType, final Path path) {
-      if (this.validateDirPath(path)) {
-         ((Set)this.pathsForType.computeIfAbsent(packType, (k) -> new LinkedHashSet())).add(path);
-      }
-
+      this.forLastLayer((builder) -> builder.pushPathForType(packType, path));
    }
 
    public VanillaPackResourcesBuilder pushJarResources() {
@@ -149,22 +141,30 @@ public class VanillaPackResourcesBuilder {
    }
 
    public VanillaPackResourcesBuilder setMetadata(final ResourceMetadata metadata) {
+      this.forAllLayers((builder) -> builder.setMetadata(metadata));
       this.metadata = metadata;
       return this;
    }
 
    public VanillaPackResourcesBuilder exposeNamespace(final String... namespaces) {
-      this.namespaces.addAll(Arrays.asList(namespaces));
+      List<String> namespaceList = List.of(namespaces);
+      this.forAllLayers((builder) -> builder.exposeNamespace(namespaceList));
+      this.namespaces.addAll(namespaceList);
+      return this;
+   }
+
+   public VanillaPackResourcesBuilder pushLayer() {
+      FixedPathPackResources.Builder newBuilder = new FixedPathPackResources.Builder();
+      this.layeredBuilders.add(newBuilder);
+      newBuilder.exposeNamespace(this.namespaces);
+      if (this.metadata != null) {
+         newBuilder.setMetadata(this.metadata);
+      }
+
       return this;
    }
 
    public VanillaPackResources build(final PackLocationInfo location) {
-      return new VanillaPackResources(location, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), Util.makeEnumMap(PackType.class, (packType) -> copyAndReverse((Collection)this.pathsForType.getOrDefault(packType, Set.of()))));
-   }
-
-   private static List<Path> copyAndReverse(final Collection<Path> input) {
-      List<Path> paths = new ArrayList(input);
-      Collections.reverse(paths);
-      return List.copyOf(paths);
+      return new VanillaPackResources(this.fullBuilder.build(location), (List)this.layeredBuilders.stream().map((builder) -> builder.build(location)).collect(Collectors.toUnmodifiableList()));
    }
 }

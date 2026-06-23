@@ -413,9 +413,9 @@ public class Creaking extends Monster {
       return this.getTargetFromBrain();
    }
 
-   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage, final boolean comesFromEffect) {
       if (this.canMove()) {
-         super.knockback(power, xd, zd, source, damage);
+         super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }
    }
 

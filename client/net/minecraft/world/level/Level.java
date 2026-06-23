@@ -203,10 +203,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags) {
-      return this.setBlock(pos, blockState, updateFlags, 512);
-   }
-
    public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
       if (!this.isInValidBounds(pos)) {
          return false;
@@ -284,10 +280,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void addDestroyBlockEffect(final BlockPos pos, final BlockState blockState) {
-   }
-
-   public boolean setBlockAndUpdate(final BlockPos pos, final BlockState blockState) {
-      return this.setBlock(pos, blockState, 3);
    }
 
    public abstract void sendBlockUpdated(BlockPos pos, BlockState old, BlockState current, @Block.UpdateFlags int updateFlags);

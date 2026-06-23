@@ -23,6 +23,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 class FriendsTab extends AbstractFriendsTab {
    private static final Component TAB_TITLE = Component.translatable("gui.friends.tab_friends");
@@ -36,6 +37,7 @@ class FriendsTab extends AbstractFriendsTab {
    private final LoadingDotsWidget loadingDotsWidget;
    private final AddFriendWidget addFriendWidget;
    private final ScrollableLayout scrollableLayout;
+   private @Nullable FrameLayout contentFrame;
 
    FriendsTab(final Minecraft minecraft, final LoadingDotsWidget loadingDotsWidget, final FriendsOverlayScreen screen, final int width, final int height) {
       super(width, height);
@@ -55,7 +57,8 @@ class FriendsTab extends AbstractFriendsTab {
 
    public void showLoading() {
       this.friendScrollableContent.removeChildren();
-      this.friendScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height - this.addFriendWidget.contentHeight()));
+      this.contentFrame = this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height - this.addFriendWidget.contentHeight());
+      this.friendScrollableContent.addChild(this.contentFrame);
       this.addFriendWidget.applyState(AddFriendWidget.State.SENDING);
    }
 
@@ -63,7 +66,8 @@ class FriendsTab extends AbstractFriendsTab {
       this.friendScrollableContent.removeChildren();
       int maxWidth = this.getListContentWidth();
       MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), maxWidth);
-      this.friendScrollableContent.addChild(this.createCenteredFrame(text, maxWidth, this.height - this.addFriendWidget.contentHeight()));
+      this.contentFrame = this.createCenteredFrame(text, maxWidth, this.height - this.addFriendWidget.contentHeight());
+      this.friendScrollableContent.addChild(this.contentFrame);
       this.addFriendWidget.applyState(AddFriendWidget.State.DISABLED);
    }
 
@@ -92,13 +96,18 @@ class FriendsTab extends AbstractFriendsTab {
       });
       content.addChild(textWidget);
       int frameHeight = this.scrollableLayout.getHeight();
-      this.friendScrollableContent.addChild(this.createCenteredFrame(content, maxWidth, frameHeight));
+      this.contentFrame = this.createCenteredFrame(content, maxWidth, frameHeight);
+      this.friendScrollableContent.addChild(this.contentFrame);
       this.addFriendWidget.applyState(this.addFriendWidget.getValue().isEmpty() ? AddFriendWidget.State.EMPTY_INPUT : AddFriendWidget.State.READY);
    }
 
    void rearrangeElements() {
       this.scrollableLayout.setMinHeight(this.height - this.addFriendWidget.contentHeight());
       this.scrollableLayout.setMaxHeight(this.height - this.addFriendWidget.contentHeight());
+      if (this.contentFrame != null) {
+         this.contentFrame.setMinHeight(this.height - this.addFriendWidget.contentHeight());
+      }
+
    }
 
    private void onSendFriendRequestFinished() {
@@ -128,10 +137,12 @@ class FriendsTab extends AbstractFriendsTab {
 
    void updateEntries(final List<FriendEntry> friendEntries) {
       this.friendScrollableContent.removeChildren();
+      this.contentFrame = null;
       LinearLayout var10001 = this.friendScrollableContent;
       Objects.requireNonNull(var10001);
       friendEntries.forEach(var10001::addChild);
       this.friendScrollableContent.addChild(this.createManageAccountFooter());
+      this.addFriendWidget.applyState(this.addFriendWidget.getValue().isEmpty() ? AddFriendWidget.State.EMPTY_INPUT : AddFriendWidget.State.READY);
    }
 
    void applyPresenceUpdate(final PresenceResponse latestPresence) {

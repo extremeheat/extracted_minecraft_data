@@ -98,7 +98,7 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
 
    protected void updatePose(final Level level, final BlockState state, final BlockPos pos, final Player player) {
       level.playSound((Entity)null, pos, SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
-      level.setBlock(pos, (BlockState)state.setValue(POSE, ((Pose)state.getValue(POSE)).getNextPose()), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POSE, ((Pose)state.getValue(POSE)).getNextPose()));
       level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
    }
 

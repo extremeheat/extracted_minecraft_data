@@ -15,6 +15,10 @@ public class OutgoingRpcMethods {
    public static final Holder.Reference<OutgoingRpcMethod<Void, Void>> SERVER_SAVE_STARTED = OutgoingRpcMethod.notification().description("Server save started").register("server/saving");
    public static final Holder.Reference<OutgoingRpcMethod<Void, Void>> SERVER_SAVE_COMPLETED = OutgoingRpcMethod.notification().description("Server save completed").register("server/saved");
    public static final Holder.Reference<OutgoingRpcMethod<Void, Void>> SERVER_ACTIVITY_OCCURRED = OutgoingRpcMethod.notification().description("Server activity occurred. Rate limited to 1 notification per 30 seconds").register("server/activity");
+   public static final Holder.Reference<OutgoingRpcMethod<Void, Void>> WORLD_UPGRADE_STARTED = OutgoingRpcMethod.notification().allowPreServerInit().description("World upgrade started").register("world/upgrade_started");
+   public static final Holder.Reference<OutgoingRpcMethod<Float, Void>> WORLD_UPGRADE_PROGRESS;
+   public static final Holder.Reference<OutgoingRpcMethod<Void, Void>> WORLD_UPGRADE_FINISHED;
+   public static final Holder.Reference<OutgoingRpcMethod<String, Void>> WORLD_UPGRADE_FAILED;
    public static final Holder.Reference<OutgoingRpcMethod<PlayerDto, Void>> PLAYER_JOINED;
    public static final Holder.Reference<OutgoingRpcMethod<PlayerDto, Void>> PLAYER_LEFT;
    public static final Holder.Reference<OutgoingRpcMethod<OperatorService.OperatorDto, Void>> PLAYER_OPED;
@@ -33,6 +37,9 @@ public class OutgoingRpcMethods {
    }
 
    static {
+      WORLD_UPGRADE_PROGRESS = OutgoingRpcMethod.notificationWithParams().allowPreServerInit().param("progress", Schema.NUMBER_SCHEMA).description("World upgrade progress. Rate limited to 1 notification per second").register("world/upgrade_progress");
+      WORLD_UPGRADE_FINISHED = OutgoingRpcMethod.notification().allowPreServerInit().description("World upgrade finished").register("world/upgrade_finished");
+      WORLD_UPGRADE_FAILED = OutgoingRpcMethod.notificationWithParams().allowPreServerInit().param("reason", Schema.STRING_SCHEMA).description("World upgrade failed").register("world/upgrade_failed");
       PLAYER_JOINED = OutgoingRpcMethod.notificationWithParams().param("player", Schema.PLAYER_SCHEMA.asRef()).description("Player joined").register("players/joined");
       PLAYER_LEFT = OutgoingRpcMethod.notificationWithParams().param("player", Schema.PLAYER_SCHEMA.asRef()).description("Player left").register("players/left");
       PLAYER_OPED = OutgoingRpcMethod.notificationWithParams().param("player", Schema.OPERATOR_SCHEMA.asRef()).description("Player was oped").register("operators/added");

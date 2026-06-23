@@ -23,7 +23,7 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
    default boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
          if (!level.isClientSide()) {
-            level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true));
             level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
          }
 
@@ -35,7 +35,7 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
 
    default ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
       if ((Boolean)state.getValue(BlockStateProperties.WATERLOGGED)) {
-         level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, false));
          if (!state.canSurvive(level, pos)) {
             level.destroyBlock(pos, true);
          }

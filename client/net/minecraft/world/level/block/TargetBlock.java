@@ -77,13 +77,13 @@ public class TargetBlock extends Block {
    }
 
    private static void setOutputPower(final LevelAccessor level, final BlockState state, final int outputStrength, final BlockPos pos, final int duration) {
-      level.setBlock(pos, (BlockState)state.setValue(OUTPUT_POWER, outputStrength), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(OUTPUT_POWER, outputStrength));
       level.scheduleTick(pos, state.getBlock(), duration);
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Integer)state.getValue(OUTPUT_POWER) != 0) {
-         level.setBlock(pos, (BlockState)state.setValue(OUTPUT_POWER, 0), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(OUTPUT_POWER, 0));
       }
 
    }

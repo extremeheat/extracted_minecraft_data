@@ -504,7 +504,7 @@ public class UnihexProvider implements GlyphProvider {
             }
 
             public float getAdvance() {
-               return (float)Glyph.this.width() / 2.0F + 1.0F;
+               return (float)(Glyph.this.width() / 2 + 1);
             }
 
             public float getShadowOffset() {

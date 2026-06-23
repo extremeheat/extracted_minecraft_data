@@ -352,6 +352,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return false;
    }
 
+   public boolean canSimulateMovement() {
+      return true;
+   }
+
    @FunctionalInterface
    public interface ProjectileFactory<T extends Projectile> {
       T create(final ServerLevel level, LivingEntity entity, ItemStack itemStack);

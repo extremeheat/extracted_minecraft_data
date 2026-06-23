@@ -82,7 +82,6 @@ import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -1064,9 +1063,9 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (entity instanceof ServerPlayer serverPlayer) {
-         if (entity.hurtMarked) {
+         if (entity.syncVelocity) {
             serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
-            entity.hurtMarked = false;
+            entity.syncVelocity = false;
             entity.setDeltaMovement(oldMovement);
          }
       }
@@ -1154,7 +1153,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             }
 
             boolean dismounted = false;
-            if (dismounts && target.isPassenger()) {
+            if (dismounts && target.isPassenger() && !target.is(EntityTypeTags.CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE)) {
                dismounted = true;
                target.stopRiding();
             }
@@ -1363,7 +1362,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public boolean tryToStartFallFlying() {
-      if (!this.isFallFlying() && this.canGlide() && !this.isInWater()) {
+      if (!this.isFallFlying() && this.canGlide() && !this.isInLiquid()) {
          this.startFallFlying();
          return true;
       } else {
@@ -1493,10 +1492,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    protected boolean hasEnoughFoodToDoExhaustiveManoeuvres() {
       return this.getFoodData().hasEnoughFood() || this.getAbilities().mayfly;
-   }
-
-   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
-      return Optional.empty();
    }
 
    public FoodData getFoodData() {

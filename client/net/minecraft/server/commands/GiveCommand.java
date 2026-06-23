@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import java.util.Collection;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -21,6 +22,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
 public class GiveCommand {
+   private static final Dynamic2CommandExceptionType TOO_MANY_ITEMS = new Dynamic2CommandExceptionType((maxCount, item) -> Component.translatableEscape("commands.give.failed.toomanyitems", maxCount, item));
+   private static final CommandResponseTracker.MessagesWithArgs<ServerPlayer, Integer, ItemStack> RESPONSE_GIVE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArgs)((player, var1, count, prototypeItemStack) -> Component.translatable("commands.give.success.single", count, prototypeItemStack.getDisplayName(), player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArgs)((playerCount, var1, count, prototypeItemStack) -> Component.translatable("commands.give.success.multiple", count, prototypeItemStack.getDisplayName(), playerCount)));
    public static final int MAX_ALLOWED_ITEMSTACKS = 100;
 
    public GiveCommand() {
@@ -32,12 +35,12 @@ public class GiveCommand {
    }
 
    private static int giveItem(final CommandSourceStack source, final ItemInput input, final Collection<ServerPlayer> players, final int count) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
       ItemStack prototypeItemStack = input.createItemStack(1);
       int maxStackSize = prototypeItemStack.getMaxStackSize();
       int maxAllowedCount = maxStackSize * 100;
       if (count > maxAllowedCount) {
-         source.sendFailure(Component.translatable("commands.give.failed.toomanyitems", maxAllowedCount, prototypeItemStack.getDisplayName()));
-         return 0;
+         throw TOO_MANY_ITEMS.create(maxAllowedCount, prototypeItemStack.getDisplayName());
       } else {
          for(ServerPlayer player : players) {
             int remaining = count;
@@ -63,15 +66,11 @@ public class GiveCommand {
                   }
                }
             }
+
+            tracker.track(player);
          }
 
-         if (players.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.give.success.single", count, prototypeItemStack.getDisplayName(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.give.success.single", count, prototypeItemStack.getDisplayName(), players.size()), true);
-         }
-
-         return players.size();
+         return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_GIVE, count, prototypeItemStack);
       }
    }
 }

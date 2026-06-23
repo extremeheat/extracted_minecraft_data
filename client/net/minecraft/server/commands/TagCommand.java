@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.Sets;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -8,6 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -20,6 +20,10 @@ import net.minecraft.world.entity.Entity;
 public class TagCommand {
    private static final SimpleCommandExceptionType ERROR_ADD_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.tag.add.failed"));
    private static final SimpleCommandExceptionType ERROR_REMOVE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.tag.remove.failed"));
+   private static final CommandResponseTracker.Messages<Entity> RESPONSE_NO_TAGS = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((entity, var1) -> Component.translatable("commands.tag.list.single.empty", entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, var1) -> Component.translatable("commands.tag.list.multiple.empty", entityCount)));
+   private static final CommandResponseTracker.MessagesWithArg<Entity, String> RESPONSE_REMOVE;
+   private static final CommandResponseTracker.MessagesWithArg<Entity, String> RESPONSE_ADD;
+   private static final CommandResponseTracker.MessagesWithArg<Entity, Set<String>> RESPONSE_LIST;
 
    public TagCommand() {
       super();
@@ -30,7 +34,7 @@ public class TagCommand {
    }
 
    private static Collection<String> getTags(final Collection<? extends Entity> entities) {
-      Set<String> result = Sets.newHashSet();
+      Set<String> result = new HashSet();
 
       for(Entity entity : entities) {
          result.addAll(entity.entityTags());
@@ -40,69 +44,47 @@ public class TagCommand {
    }
 
    private static int addTag(final CommandSourceStack source, final Collection<? extends Entity> targets, final String name) throws CommandSyntaxException {
-      int count = 0;
+      CommandResponseTracker<Entity> response = CommandResponseTracker.<Entity>create();
 
       for(Entity entity : targets) {
-         if (entity.addTag(name)) {
-            ++count;
-         }
+         response.track(entity, entity.addTag(name));
       }
 
-      if (count == 0) {
-         throw ERROR_ADD_FAILED.create();
-      } else {
-         if (targets.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.tag.add.success.single", name, ((Entity)targets.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.tag.add.success.multiple", name, targets.size()), true);
-         }
-
-         return count;
-      }
+      return response.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_ADD, name);
    }
 
    private static int removeTag(final CommandSourceStack source, final Collection<? extends Entity> targets, final String name) throws CommandSyntaxException {
-      int count = 0;
+      CommandResponseTracker<Entity> response = CommandResponseTracker.<Entity>create();
 
       for(Entity entity : targets) {
-         if (entity.removeTag(name)) {
-            ++count;
-         }
+         response.track(entity, entity.removeTag(name));
       }
 
-      if (count == 0) {
-         throw ERROR_REMOVE_FAILED.create();
-      } else {
-         if (targets.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.tag.remove.success.single", name, ((Entity)targets.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.tag.remove.success.multiple", name, targets.size()), true);
-         }
-
-         return count;
-      }
+      return response.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_REMOVE, name);
    }
 
-   private static int listTags(final CommandSourceStack source, final Collection<? extends Entity> targets) {
-      Set<String> tags = Sets.newHashSet();
+   private static int listTags(final CommandSourceStack source, final Collection<? extends Entity> targets) throws CommandSyntaxException {
+      CommandResponseTracker<Entity> response = CommandResponseTracker.<Entity>create();
+      Set<String> tags = new HashSet();
 
       for(Entity entity : targets) {
-         tags.addAll(entity.entityTags());
+         Set<String> entityTags = entity.entityTags();
+         tags.addAll(entityTags);
+         response.track(entity, entityTags.size());
       }
 
-      if (targets.size() == 1) {
-         Entity entity = (Entity)targets.iterator().next();
-         if (tags.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("commands.tag.list.single.empty", entity.getDisplayName()), false);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.tag.list.single.success", entity.getDisplayName(), tags.size(), ComponentUtils.formatList(tags)), false);
-         }
-      } else if (tags.isEmpty()) {
-         source.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.empty", targets.size()), false);
+      if (tags.isEmpty()) {
+         response.sendFeedback(source, false, RESPONSE_NO_TAGS);
       } else {
-         source.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.success", targets.size(), tags.size(), ComponentUtils.formatList(tags)), false);
+         response.sendFeedback(source, false, (CommandResponseTracker.MessagesWithArg)RESPONSE_LIST, tags);
       }
 
       return tags.size();
+   }
+
+   static {
+      RESPONSE_REMOVE = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_REMOVE_FAILED, (CommandResponseTracker.SingleHandlerWithArg)((entity, var1, name) -> Component.translatable("commands.tag.remove.success.single", name, entity.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((entityCount, var1, name) -> Component.translatable("commands.tag.remove.success.multiple", name, entityCount)));
+      RESPONSE_ADD = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_ADD_FAILED, (CommandResponseTracker.SingleHandlerWithArg)((entity, var1, name) -> Component.translatable("commands.tag.add.success.single", name, entity.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((entityCount, var1, name) -> Component.translatable("commands.tag.add.success.multiple", name, entityCount)));
+      RESPONSE_LIST = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((entity, var1, tags) -> Component.translatable("commands.tag.list.single.success", entity.getDisplayName(), tags.size(), ComponentUtils.formatList(tags))), (CommandResponseTracker.MultipleHandlerWithArg)((entityCount, var1, tags) -> Component.translatable("commands.tag.list.multiple.success", entityCount, tags.size(), ComponentUtils.formatList(tags))));
    }
 }

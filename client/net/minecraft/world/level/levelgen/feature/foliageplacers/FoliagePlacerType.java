@@ -16,6 +16,7 @@ public class FoliagePlacerType<P extends FoliagePlacer> {
    public static final FoliagePlacerType<DarkOakFoliagePlacer> DARK_OAK_FOLIAGE_PLACER;
    public static final FoliagePlacerType<RandomSpreadFoliagePlacer> RANDOM_SPREAD_FOLIAGE_PLACER;
    public static final FoliagePlacerType<CherryFoliagePlacer> CHERRY_FOLIAGE_PLACER;
+   public static final FoliagePlacerType<PoplarFoliagePlacer> POPLAR_FOLIAGE_PLACER;
    private final MapCodec<P> codec;
 
    private static <P extends FoliagePlacer> FoliagePlacerType<P> register(final String name, final MapCodec<P> codec) {
@@ -43,5 +44,6 @@ public class FoliagePlacerType<P extends FoliagePlacer> {
       DARK_OAK_FOLIAGE_PLACER = register("dark_oak_foliage_placer", DarkOakFoliagePlacer.CODEC);
       RANDOM_SPREAD_FOLIAGE_PLACER = register("random_spread_foliage_placer", RandomSpreadFoliagePlacer.CODEC);
       CHERRY_FOLIAGE_PLACER = register("cherry_foliage_placer", CherryFoliagePlacer.CODEC);
+      POPLAR_FOLIAGE_PLACER = register("poplar_foliage_placer", PoplarFoliagePlacer.CODEC);
    }
 }

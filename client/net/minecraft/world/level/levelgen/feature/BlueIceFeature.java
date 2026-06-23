@@ -1,23 +1,27 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
-   public BlueIceFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record BlueIceFeature() implements Feature {
+   public static final BlueIceFeature INSTANCE = new BlueIceFeature();
+   public static final MapCodec<BlueIceFeature> CODEC;
+
+   public BlueIceFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
+   public MapCodec<BlueIceFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (origin.getY() > level.getSeaLevel() - 1) {
          return false;
       } else if (!level.getBlockState(origin).is(Blocks.WATER) && !level.getBlockState(origin.below()).is(Blocks.WATER)) {
@@ -62,5 +66,9 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
             return true;
          }
       }
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

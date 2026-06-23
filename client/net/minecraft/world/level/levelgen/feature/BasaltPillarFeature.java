@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -8,17 +8,21 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
-   public BasaltPillarFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record BasaltPillarFeature() implements Feature {
+   public static final BasaltPillarFeature INSTANCE = new BasaltPillarFeature();
+   public static final MapCodec<BasaltPillarFeature> CODEC;
+
+   public BasaltPillarFeature() {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
-      BlockPos origin = context.origin();
-      WorldGenLevel level = context.level();
-      RandomSource random = context.random();
+   public MapCodec<BasaltPillarFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       if (level.isEmptyBlock(origin) && !level.isEmptyBlock(origin.above())) {
          BlockPos.MutableBlockPos pos = origin.mutable();
          BlockPos.MutableBlockPos tmpPos = origin.mutable();
@@ -90,5 +94,9 @@ public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
       } else {
          return false;
       }
+   }
+
+   static {
+      CODEC = MapCodec.unit(INSTANCE);
    }
 }

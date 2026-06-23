@@ -13,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public abstract class TrunkPlacer {
@@ -38,7 +37,7 @@ public abstract class TrunkPlacer {
 
    protected abstract TrunkPlacerType<?> type();
 
-   public abstract List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config);
+   public abstract List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree);
 
    public int getBaseHeight() {
       return this.baseHeight;
@@ -48,30 +47,30 @@ public abstract class TrunkPlacer {
       return this.baseHeight + random.nextInt(this.heightRandA + 1) + random.nextInt(this.heightRandB + 1);
    }
 
-   protected static void placeBelowTrunkBlock(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
-      BlockState blockBelowTrunk = config.belowTrunkProvider.getOptionalState(level, random, pos);
+   protected static void placeBelowTrunkBlock(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
+      BlockState blockBelowTrunk = tree.belowTrunkProvider().getOptionalState(level, random, pos);
       if (blockBelowTrunk != null) {
          trunkSetter.accept(pos, blockBelowTrunk);
       }
 
    }
 
-   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
-      return this.placeLog(level, trunkSetter, random, pos, config, Function.identity());
+   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
+      return this.placeLog(level, trunkSetter, random, pos, tree, Function.identity());
    }
 
-   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config, final Function<BlockState, BlockState> stateModifier) {
+   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree, final Function<BlockState, BlockState> stateModifier) {
       if (this.validTreePos(level, pos)) {
-         trunkSetter.accept(pos, (BlockState)stateModifier.apply(config.trunkProvider.getState(level, random, pos)));
+         trunkSetter.accept(pos, (BlockState)stateModifier.apply(tree.trunkProvider().getState(level, random, pos)));
          return true;
       } else {
          return false;
       }
    }
 
-   protected void placeLogIfFree(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos pos, final TreeConfiguration config) {
+   protected void placeLogIfFree(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos pos, final TreeFeature tree) {
       if (this.isFree(level, pos)) {
-         this.placeLog(level, trunkSetter, random, pos, config);
+         this.placeLog(level, trunkSetter, random, pos, tree);
       }
 
    }

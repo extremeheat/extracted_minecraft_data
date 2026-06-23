@@ -1,26 +1,38 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class WaterloggedVegetationPatchFeature extends VegetationPatchFeature {
-   public WaterloggedVegetationPatchFeature(final Codec<VegetationPatchConfiguration> codec) {
-      super(codec);
+   public static final MapCodec<WaterloggedVegetationPatchFeature> CODEC = makeCodec(WaterloggedVegetationPatchFeature::new);
+
+   public WaterloggedVegetationPatchFeature(final HolderSet<Block> replaceable, final BlockStateProvider groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {
+      super(replaceable, groundState, vegetationFeature, surface, depth, extraBottomBlockChance, verticalRange, vegetationChance, xzRadius, extraEdgeColumnChance);
    }
 
-   protected Set<BlockPos> placeGroundPatch(final WorldGenLevel level, final VegetationPatchConfiguration config, final RandomSource random, final BlockPos origin, final Predicate<BlockState> replaceable, final int xRadius, final int zRadius) {
-      Set<BlockPos> surface = super.placeGroundPatch(level, config, random, origin, replaceable, xRadius, zRadius);
+   public MapCodec<WaterloggedVegetationPatchFeature> codec() {
+      return CODEC;
+   }
+
+   public Set<BlockPos> placeGroundPatch(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final Predicate<BlockState> replaceable, final int xRadius, final int zRadius) {
+      Set<BlockPos> surface = super.placeGroundPatch(level, random, origin, replaceable, xRadius, zRadius);
       Set<BlockPos> waterSurface = new HashSet();
       BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
 
@@ -46,8 +58,8 @@ public class WaterloggedVegetationPatchFeature extends VegetationPatchFeature {
       return !level.getBlockState(testPos).isFaceSturdy(level, testPos, direction.getOpposite());
    }
 
-   protected boolean placeVegetation(final WorldGenLevel level, final VegetationPatchConfiguration config, final ChunkGenerator generator, final RandomSource random, final BlockPos placementPos) {
-      if (super.placeVegetation(level, config, generator, random, placementPos.below())) {
+   protected boolean placeVegetation(final WorldGenLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos placementPos) {
+      if (super.placeVegetation(level, generator, random, placementPos.below())) {
          BlockState placed = level.getBlockState(placementPos);
          if (placed.hasProperty(BlockStateProperties.WATERLOGGED) && !(Boolean)placed.getValue(BlockStateProperties.WATERLOGGED)) {
             level.setBlock(placementPos, (BlockState)placed.setValue(BlockStateProperties.WATERLOGGED, true), 2);

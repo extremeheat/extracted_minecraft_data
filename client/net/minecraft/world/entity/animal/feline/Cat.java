@@ -568,7 +568,9 @@ public class Cat extends TamableAnimal {
                BlockPos ownerPos = this.ownerPlayer.blockPosition();
                BlockState ownerPosState = this.cat.level().getBlockState(ownerPos);
                if (ownerPosState.is(BlockTags.BEDS)) {
-                  this.goalPos = (BlockPos)ownerPosState.getOptionalValue(BedBlock.FACING).map((bedDir) -> ownerPos.relative(bedDir.getOpposite())).orElseGet(() -> new BlockPos(ownerPos));
+                  Optional var10001 = ownerPosState.getOptionalValue(BedBlock.FACING).map((bedDir) -> ownerPos.relative(bedDir.getOpposite()));
+                  Objects.requireNonNull(ownerPos);
+                  this.goalPos = (BlockPos)var10001.orElseGet(ownerPos::immutable);
                   return !this.spaceIsOccupied();
                }
             }

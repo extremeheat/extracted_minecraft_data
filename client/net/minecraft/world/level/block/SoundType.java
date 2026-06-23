@@ -131,6 +131,7 @@ public class SoundType {
    public static final SoundType POTENT_SULFUR;
    public static final SoundType SULFUR_SPIKE;
    public static final SoundType CINNABAR;
+   public static final SoundType SHELF_MUSHROOM;
    public final float volume;
    public final float pitch;
    private final SoundEvent breakSound;
@@ -306,5 +307,6 @@ public class SoundType {
       POTENT_SULFUR = new SoundType(1.0F, 1.0F, SoundEvents.POTENT_SULFUR_BREAK, SoundEvents.POTENT_SULFUR_STEP, SoundEvents.POTENT_SULFUR_PLACE, SoundEvents.POTENT_SULFUR_HIT, SoundEvents.POTENT_SULFUR_FALL);
       SULFUR_SPIKE = new SoundType(1.0F, 1.0F, SoundEvents.SULFUR_SPIKE_BREAK, SoundEvents.SULFUR_SPIKE_STEP, SoundEvents.SULFUR_SPIKE_PLACE, SoundEvents.SULFUR_SPIKE_HIT, SoundEvents.SULFUR_SPIKE_FALL);
       CINNABAR = new SoundType(1.0F, 1.0F, SoundEvents.CINNABAR_BREAK, SoundEvents.CINNABAR_STEP, SoundEvents.CINNABAR_PLACE, SoundEvents.CINNABAR_HIT, SoundEvents.CINNABAR_FALL);
+      SHELF_MUSHROOM = new SoundType(1.0F, 1.0F, SoundEvents.SHELF_MUSHROOM_BREAK, SoundEvents.SHELF_MUSHROOM_STEP, SoundEvents.SHELF_MUSHROOM_PLACE, SoundEvents.EMPTY, SoundEvents.SHELF_MUSHROOM_FALL);
    }
 }

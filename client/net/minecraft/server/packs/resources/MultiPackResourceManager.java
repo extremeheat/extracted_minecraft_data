@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +29,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       for(PackResources pack : packs) {
          ResourceFilterSection filterSection = this.getPackFilterSection(pack);
          Set<String> providedNamespaces = pack.getNamespaces(type);
-         Predicate<Identifier> pathFilter = filterSection != null ? (location) -> filterSection.isPathFiltered(location.getPath()) : null;
+         PackResources.Filter pathFilter = filterSection != null ? (location) -> filterSection.isPathFiltered(location.getPath()) : null;
 
          for(String namespace : namespaces) {
             boolean packContainsNamespace = providedNamespaces.contains(namespace);
@@ -78,23 +78,23 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       return pack != null ? pack.getResourceStack(location) : List.of();
    }
 
-   public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filter) {
+   public Map<Identifier, Resource> listResources(final String directory, final ResourceManager.Selector selector) {
       checkTrailingDirectoryPath(directory);
       Map<Identifier, Resource> result = new TreeMap();
 
       for(FallbackResourceManager manager : this.namespacedManagers.values()) {
-         result.putAll(manager.listResources(directory, filter));
+         result.putAll(manager.listResources(directory, selector));
       }
 
       return result;
    }
 
-   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
+   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final ResourceManager.Selector selector) {
       checkTrailingDirectoryPath(directory);
       Map<Identifier, List<Resource>> result = new TreeMap();
 
       for(FallbackResourceManager manager : this.namespacedManagers.values()) {
-         result.putAll(manager.listResourceStacks(directory, filter));
+         result.putAll(manager.listResourceStacks(directory, selector));
       }
 
       return result;
@@ -111,6 +111,6 @@ public class MultiPackResourceManager implements CloseableResourceManager {
    }
 
    public void close() {
-      this.packs.forEach(PackResources::close);
+      this.packs.forEach(PackMetadataResources::close);
    }
 }

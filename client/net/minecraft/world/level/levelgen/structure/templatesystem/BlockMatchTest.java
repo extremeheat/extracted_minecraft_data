@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
@@ -15,7 +16,7 @@ public class BlockMatchTest extends RuleTest {
       this.block = block;
    }
 
-   public boolean test(final BlockState blockState, final RandomSource random) {
+   public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState.is(this.block);
    }
 

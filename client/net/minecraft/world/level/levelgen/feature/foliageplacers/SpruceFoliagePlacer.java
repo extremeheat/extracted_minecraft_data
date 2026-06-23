@@ -7,7 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 
 public class SpruceFoliagePlacer extends FoliagePlacer {
    public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProviders.codec(0, 24).fieldOf("trunk_height").forGetter((p) -> p.trunkHeight)).apply(i, SpruceFoliagePlacer::new));
@@ -22,14 +22,14 @@ public class SpruceFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.SPRUCE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       BlockPos foliagePos = foliageAttachment.pos();
       int currentRadius = random.nextInt(2);
       int maxRadius = 1;
       int minRadius = 0;
 
       for(int yo = offset; yo >= -foliageHeight; --yo) {
-         this.placeLeavesRow(level, foliageSetter, random, config, foliagePos, currentRadius, yo, foliageAttachment.doubleTrunk());
+         this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius, yo, foliageAttachment.doubleTrunk());
          if (currentRadius >= maxRadius) {
             currentRadius = minRadius;
             minRadius = 1;
@@ -41,7 +41,7 @@ public class SpruceFoliagePlacer extends FoliagePlacer {
 
    }
 
-   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeFeature tree) {
       return Math.max(4, treeHeight - this.trunkHeight.sample(random));
    }
 

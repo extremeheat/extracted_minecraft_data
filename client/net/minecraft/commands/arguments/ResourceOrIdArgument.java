@@ -42,7 +42,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
-   private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
+   static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
    public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((error) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", error));
    public static final Dynamic2CommandExceptionType ERROR_NO_SUCH_ELEMENT = new Dynamic2CommandExceptionType((id, registry) -> Component.translatableEscape("argument.resource_or_id.no_such_element", id, registry));
    public static final DynamicOps<Tag> OPS;

@@ -38,7 +38,7 @@ public class ProcessorRule {
    }
 
    public boolean test(final LevelReader level, final BlockState inputState, final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos reference, final RandomSource random) {
-      return this.inputPredicate.test(inputState, random) && this.locPredicate.testAgainstWorldState(level, worldPos, random) && this.posPredicate.test(inTemplatePos, worldPos, reference, random);
+      return this.inputPredicate.test(inputState, worldPos, random) && this.locPredicate.testAgainstWorldState(level, worldPos, random) && this.posPredicate.test(inTemplatePos, worldPos, reference, random);
    }
 
    public BlockState getOutputState() {

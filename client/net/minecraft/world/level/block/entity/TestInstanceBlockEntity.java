@@ -192,7 +192,8 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
 
    public BoundingBoxRenderable.RenderableBox getRenderableBox() {
       int padding = this.getPadding();
-      return new BoundingBoxRenderable.RenderableBox((new BlockPos(STRUCTURE_OFFSET)).offset(padding, padding, padding), this.getTransformedSize());
+      BlockPos offsetPos = new BlockPos(STRUCTURE_OFFSET.getX() + padding, STRUCTURE_OFFSET.getY() + padding, STRUCTURE_OFFSET.getZ() + padding);
+      return new BoundingBoxRenderable.RenderableBox(offsetPos, this.getTransformedSize());
    }
 
    public List<BeaconBeamOwner.Section> getBeamSections() {
@@ -310,7 +311,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
             feedbackOutput.accept(Component.translatable("test_instance_block.starting", ((Holder.Reference)var7.get()).getRegisteredName()));
             GameTestInfo gameTestInfo = new GameTestInfo((Holder.Reference)var7.get(), this.data.rotation(), serverLevel, RetryOptions.noRetries());
             gameTestInfo.setTestBlockPos(pos);
-            GameTestRunner runner = GameTestRunner.Builder.fromInfo(List.of(gameTestInfo), serverLevel).build();
+            GameTestRunner runner = GameTestRunner.Builder.fromInfo(List.of(gameTestInfo), serverLevel.getServer()).build();
             TestCommand.trackAndStartRunner(serverLevel.getServer().createCommandSourceStack(), runner);
          }
       }

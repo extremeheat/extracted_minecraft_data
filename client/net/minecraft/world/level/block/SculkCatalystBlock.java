@@ -40,7 +40,7 @@ public class SculkCatalystBlock extends BaseEntityBlock {
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(PULSE)) {
-         level.setBlock(pos, (BlockState)state.setValue(PULSE, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(PULSE, false));
       }
 
    }

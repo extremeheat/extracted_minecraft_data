@@ -78,6 +78,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_PLANKS = BlockItemId.create("dark_oak_planks");
    public static final BlockItemId PALE_OAK_PLANKS = BlockItemId.create("pale_oak_planks");
    public static final BlockItemId MANGROVE_PLANKS = BlockItemId.create("mangrove_planks");
+   public static final BlockItemId POPLAR_PLANKS = BlockItemId.create("poplar_planks");
    public static final BlockItemId BAMBOO_PLANKS = BlockItemId.create("bamboo_planks");
    public static final BlockItemId CRIMSON_PLANKS = BlockItemId.create("crimson_planks");
    public static final BlockItemId WARPED_PLANKS = BlockItemId.create("warped_planks");
@@ -91,6 +92,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_SAPLING = BlockItemId.create("dark_oak_sapling");
    public static final BlockItemId PALE_OAK_SAPLING = BlockItemId.create("pale_oak_sapling");
    public static final BlockItemId MANGROVE_PROPAGULE = BlockItemId.create("mangrove_propagule");
+   public static final BlockItemId POPLAR_SAPLING = BlockItemId.create("poplar_sapling");
    public static final BlockItemId BEDROCK = BlockItemId.create("bedrock");
    public static final BlockItemId SAND = BlockItemId.create("sand");
    public static final BlockItemId SUSPICIOUS_SAND = BlockItemId.create("suspicious_sand");
@@ -136,6 +138,7 @@ public class BlockItemIds {
    public static final BlockItemId PALE_OAK_LOG = BlockItemId.create("pale_oak_log");
    public static final BlockItemId DARK_OAK_LOG = BlockItemId.create("dark_oak_log");
    public static final BlockItemId MANGROVE_LOG = BlockItemId.create("mangrove_log");
+   public static final BlockItemId POPLAR_LOG = BlockItemId.create("poplar_log");
    public static final BlockItemId MANGROVE_ROOTS = BlockItemId.create("mangrove_roots");
    public static final BlockItemId MUDDY_MANGROVE_ROOTS = BlockItemId.create("muddy_mangrove_roots");
    public static final BlockItemId CRIMSON_STEM = BlockItemId.create("crimson_stem");
@@ -150,6 +153,7 @@ public class BlockItemIds {
    public static final BlockItemId STRIPPED_DARK_OAK_LOG = BlockItemId.create("stripped_dark_oak_log");
    public static final BlockItemId STRIPPED_PALE_OAK_LOG = BlockItemId.create("stripped_pale_oak_log");
    public static final BlockItemId STRIPPED_MANGROVE_LOG = BlockItemId.create("stripped_mangrove_log");
+   public static final BlockItemId STRIPPED_POPLAR_LOG = BlockItemId.create("stripped_poplar_log");
    public static final BlockItemId STRIPPED_CRIMSON_STEM = BlockItemId.create("stripped_crimson_stem");
    public static final BlockItemId STRIPPED_WARPED_STEM = BlockItemId.create("stripped_warped_stem");
    public static final BlockItemId STRIPPED_OAK_WOOD = BlockItemId.create("stripped_oak_wood");
@@ -161,6 +165,7 @@ public class BlockItemIds {
    public static final BlockItemId STRIPPED_DARK_OAK_WOOD = BlockItemId.create("stripped_dark_oak_wood");
    public static final BlockItemId STRIPPED_PALE_OAK_WOOD = BlockItemId.create("stripped_pale_oak_wood");
    public static final BlockItemId STRIPPED_MANGROVE_WOOD = BlockItemId.create("stripped_mangrove_wood");
+   public static final BlockItemId STRIPPED_POPLAR_WOOD = BlockItemId.create("stripped_poplar_wood");
    public static final BlockItemId STRIPPED_CRIMSON_HYPHAE = BlockItemId.create("stripped_crimson_hyphae");
    public static final BlockItemId STRIPPED_WARPED_HYPHAE = BlockItemId.create("stripped_warped_hyphae");
    public static final BlockItemId STRIPPED_BAMBOO_BLOCK = BlockItemId.create("stripped_bamboo_block");
@@ -173,6 +178,7 @@ public class BlockItemIds {
    public static final BlockItemId PALE_OAK_WOOD = BlockItemId.create("pale_oak_wood");
    public static final BlockItemId DARK_OAK_WOOD = BlockItemId.create("dark_oak_wood");
    public static final BlockItemId MANGROVE_WOOD = BlockItemId.create("mangrove_wood");
+   public static final BlockItemId POPLAR_WOOD = BlockItemId.create("poplar_wood");
    public static final BlockItemId CRIMSON_HYPHAE = BlockItemId.create("crimson_hyphae");
    public static final BlockItemId WARPED_HYPHAE = BlockItemId.create("warped_hyphae");
    public static final BlockItemId OAK_LEAVES = BlockItemId.create("oak_leaves");
@@ -184,6 +190,9 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_LEAVES = BlockItemId.create("dark_oak_leaves");
    public static final BlockItemId PALE_OAK_LEAVES = BlockItemId.create("pale_oak_leaves");
    public static final BlockItemId MANGROVE_LEAVES = BlockItemId.create("mangrove_leaves");
+   public static final BlockItemId RED_POPLAR_LEAVES = BlockItemId.create("red_poplar_leaves");
+   public static final BlockItemId ORANGE_POPLAR_LEAVES = BlockItemId.create("orange_poplar_leaves");
+   public static final BlockItemId YELLOW_POPLAR_LEAVES = BlockItemId.create("yellow_poplar_leaves");
    public static final BlockItemId AZALEA_LEAVES = BlockItemId.create("azalea_leaves");
    public static final BlockItemId FLOWERING_AZALEA_LEAVES = BlockItemId.create("flowering_azalea_leaves");
    public static final BlockItemId SPONGE = BlockItemId.create("sponge");
@@ -198,6 +207,7 @@ public class BlockItemIds {
    public static final BlockItemId SHORT_GRASS = BlockItemId.create("short_grass");
    public static final BlockItemId FERN = BlockItemId.create("fern");
    public static final BlockItemId BUSH = BlockItemId.create("bush");
+   public static final BlockItemId RED_SHRUB = BlockItemId.create("red_shrub");
    public static final BlockItemId AZALEA = BlockItemId.create("azalea");
    public static final BlockItemId FLOWERING_AZALEA = BlockItemId.create("flowering_azalea");
    public static final BlockItemId DEAD_BUSH = BlockItemId.create("dead_bush");
@@ -227,6 +237,7 @@ public class BlockItemIds {
    public static final BlockItemId SPORE_BLOSSOM = BlockItemId.create("spore_blossom");
    public static final BlockItemId BROWN_MUSHROOM = BlockItemId.create("brown_mushroom");
    public static final BlockItemId RED_MUSHROOM = BlockItemId.create("red_mushroom");
+   public static final BlockItemId SHELF_MUSHROOM = BlockItemId.create("shelf_mushroom");
    public static final BlockItemId CRIMSON_FUNGUS = BlockItemId.create("crimson_fungus");
    public static final BlockItemId WARPED_FUNGUS = BlockItemId.create("warped_fungus");
    public static final BlockItemId CRIMSON_ROOTS = BlockItemId.create("crimson_roots");
@@ -257,6 +268,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_SLAB = BlockItemId.create("dark_oak_slab");
    public static final BlockItemId PALE_OAK_SLAB = BlockItemId.create("pale_oak_slab");
    public static final BlockItemId MANGROVE_SLAB = BlockItemId.create("mangrove_slab");
+   public static final BlockItemId POPLAR_SLAB = BlockItemId.create("poplar_slab");
    public static final BlockItemId BAMBOO_SLAB = BlockItemId.create("bamboo_slab");
    public static final BlockItemId BAMBOO_MOSAIC_SLAB = BlockItemId.create("bamboo_mosaic_slab");
    public static final BlockItemId CRIMSON_SLAB = BlockItemId.create("crimson_slab");
@@ -291,6 +303,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_SHELF = BlockItemId.create("dark_oak_shelf");
    public static final BlockItemId JUNGLE_SHELF = BlockItemId.create("jungle_shelf");
    public static final BlockItemId MANGROVE_SHELF = BlockItemId.create("mangrove_shelf");
+   public static final BlockItemId POPLAR_SHELF = BlockItemId.create("poplar_shelf");
    public static final BlockItemId OAK_SHELF = BlockItemId.create("oak_shelf");
    public static final BlockItemId PALE_OAK_SHELF = BlockItemId.create("pale_oak_shelf");
    public static final BlockItemId SPRUCE_SHELF = BlockItemId.create("spruce_shelf");
@@ -331,6 +344,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_FENCE = BlockItemId.create("dark_oak_fence");
    public static final BlockItemId PALE_OAK_FENCE = BlockItemId.create("pale_oak_fence");
    public static final BlockItemId MANGROVE_FENCE = BlockItemId.create("mangrove_fence");
+   public static final BlockItemId POPLAR_FENCE = BlockItemId.create("poplar_fence");
    public static final BlockItemId BAMBOO_FENCE = BlockItemId.create("bamboo_fence");
    public static final BlockItemId CRIMSON_FENCE = BlockItemId.create("crimson_fence");
    public static final BlockItemId WARPED_FENCE = BlockItemId.create("warped_fence");
@@ -410,6 +424,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_STAIRS = BlockItemId.create("dark_oak_stairs");
    public static final BlockItemId PALE_OAK_STAIRS = BlockItemId.create("pale_oak_stairs");
    public static final BlockItemId MANGROVE_STAIRS = BlockItemId.create("mangrove_stairs");
+   public static final BlockItemId POPLAR_STAIRS = BlockItemId.create("poplar_stairs");
    public static final BlockItemId BAMBOO_STAIRS = BlockItemId.create("bamboo_stairs");
    public static final BlockItemId BAMBOO_MOSAIC_STAIRS = BlockItemId.create("bamboo_mosaic_stairs");
    public static final BlockItemId CRIMSON_STAIRS = BlockItemId.create("crimson_stairs");
@@ -583,6 +598,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_BUTTON = BlockItemId.create("dark_oak_button");
    public static final BlockItemId PALE_OAK_BUTTON = BlockItemId.create("pale_oak_button");
    public static final BlockItemId MANGROVE_BUTTON = BlockItemId.create("mangrove_button");
+   public static final BlockItemId POPLAR_BUTTON = BlockItemId.create("poplar_button");
    public static final BlockItemId BAMBOO_BUTTON = BlockItemId.create("bamboo_button");
    public static final BlockItemId CRIMSON_BUTTON = BlockItemId.create("crimson_button");
    public static final BlockItemId WARPED_BUTTON = BlockItemId.create("warped_button");
@@ -599,6 +615,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_PRESSURE_PLATE = BlockItemId.create("dark_oak_pressure_plate");
    public static final BlockItemId PALE_OAK_PRESSURE_PLATE = BlockItemId.create("pale_oak_pressure_plate");
    public static final BlockItemId MANGROVE_PRESSURE_PLATE = BlockItemId.create("mangrove_pressure_plate");
+   public static final BlockItemId POPLAR_PRESSURE_PLATE = BlockItemId.create("poplar_pressure_plate");
    public static final BlockItemId BAMBOO_PRESSURE_PLATE = BlockItemId.create("bamboo_pressure_plate");
    public static final BlockItemId CRIMSON_PRESSURE_PLATE = BlockItemId.create("crimson_pressure_plate");
    public static final BlockItemId WARPED_PRESSURE_PLATE = BlockItemId.create("warped_pressure_plate");
@@ -612,6 +629,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_DOOR = BlockItemId.create("dark_oak_door");
    public static final BlockItemId PALE_OAK_DOOR = BlockItemId.create("pale_oak_door");
    public static final BlockItemId MANGROVE_DOOR = BlockItemId.create("mangrove_door");
+   public static final BlockItemId POPLAR_DOOR = BlockItemId.create("poplar_door");
    public static final BlockItemId BAMBOO_DOOR = BlockItemId.create("bamboo_door");
    public static final BlockItemId CRIMSON_DOOR = BlockItemId.create("crimson_door");
    public static final BlockItemId WARPED_DOOR = BlockItemId.create("warped_door");
@@ -625,6 +643,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_TRAPDOOR = BlockItemId.create("dark_oak_trapdoor");
    public static final BlockItemId PALE_OAK_TRAPDOOR = BlockItemId.create("pale_oak_trapdoor");
    public static final BlockItemId MANGROVE_TRAPDOOR = BlockItemId.create("mangrove_trapdoor");
+   public static final BlockItemId POPLAR_TRAPDOOR = BlockItemId.create("poplar_trapdoor");
    public static final BlockItemId BAMBOO_TRAPDOOR = BlockItemId.create("bamboo_trapdoor");
    public static final BlockItemId CRIMSON_TRAPDOOR = BlockItemId.create("crimson_trapdoor");
    public static final BlockItemId WARPED_TRAPDOOR = BlockItemId.create("warped_trapdoor");
@@ -637,6 +656,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_FENCE_GATE = BlockItemId.create("dark_oak_fence_gate");
    public static final BlockItemId PALE_OAK_FENCE_GATE = BlockItemId.create("pale_oak_fence_gate");
    public static final BlockItemId MANGROVE_FENCE_GATE = BlockItemId.create("mangrove_fence_gate");
+   public static final BlockItemId POPLAR_FENCE_GATE = BlockItemId.create("poplar_fence_gate");
    public static final BlockItemId BAMBOO_FENCE_GATE = BlockItemId.create("bamboo_fence_gate");
    public static final BlockItemId CRIMSON_FENCE_GATE = BlockItemId.create("crimson_fence_gate");
    public static final BlockItemId WARPED_FENCE_GATE = BlockItemId.create("warped_fence_gate");
@@ -657,6 +677,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_SIGN = BlockItemId.create("dark_oak_sign");
    public static final BlockItemId PALE_OAK_SIGN = BlockItemId.create("pale_oak_sign");
    public static final BlockItemId MANGROVE_SIGN = BlockItemId.create("mangrove_sign");
+   public static final BlockItemId POPLAR_SIGN = BlockItemId.create("poplar_sign");
    public static final BlockItemId BAMBOO_SIGN = BlockItemId.create("bamboo_sign");
    public static final BlockItemId CRIMSON_SIGN = BlockItemId.create("crimson_sign");
    public static final BlockItemId WARPED_SIGN = BlockItemId.create("warped_sign");
@@ -669,6 +690,7 @@ public class BlockItemIds {
    public static final BlockItemId DARK_OAK_HANGING_SIGN = BlockItemId.create("dark_oak_hanging_sign");
    public static final BlockItemId PALE_OAK_HANGING_SIGN = BlockItemId.create("pale_oak_hanging_sign");
    public static final BlockItemId MANGROVE_HANGING_SIGN = BlockItemId.create("mangrove_hanging_sign");
+   public static final BlockItemId POPLAR_HANGING_SIGN = BlockItemId.create("poplar_hanging_sign");
    public static final BlockItemId BAMBOO_HANGING_SIGN = BlockItemId.create("bamboo_hanging_sign");
    public static final BlockItemId CRIMSON_HANGING_SIGN = BlockItemId.create("crimson_hanging_sign");
    public static final BlockItemId WARPED_HANGING_SIGN = BlockItemId.create("warped_hanging_sign");
@@ -749,6 +771,8 @@ public class BlockItemIds {
    public static final BlockItemId MELON_CROP = BlockItemId.create("melon_stem", "melon_seeds");
    public static final ColorCollection<BlockItemId> BED = createSimpleColored("bed");
    public static final ColorCollection<BlockItemId> WOOL = createSimpleColored("wool");
+   public static final ColorCollection<BlockItemId> WOOL_STAIRS = createSimpleColored("wool_stairs");
+   public static final ColorCollection<BlockItemId> WOOL_SLAB = createSimpleColored("wool_slab");
    public static final ColorCollection<BlockItemId> STAINED_GLASS = createSimpleColored("stained_glass");
    public static final ColorCollection<BlockItemId> DYED_TERRACOTTA = createSimpleColored("terracotta");
    public static final ColorCollection<BlockItemId> STAINED_GLASS_PANE = createSimpleColored("stained_glass_pane");
