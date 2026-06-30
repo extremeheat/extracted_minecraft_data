@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.gui.pip.GuiBannerResultRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
@@ -26,8 +25,8 @@ public class GuiBannerResultRenderer extends PictureInPictureRenderer<GuiBannerR
    protected void renderToTexture(final GuiBannerResultRenderState renderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
       Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       poseStack.translate(0.0F, 0.25F, 0.0F);
-      submitNodeCollector.submitModel(renderState.flag(), 0.0F, poseStack, 15728880, OverlayTexture.NO_OVERLAY, -1, Sheets.BANNER_BASE, this.sprites, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
-      BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, true, renderState.baseColor(), renderState.resultBannerPatterns(), (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(renderState.flag(), 0.0F, poseStack, 15728880, OverlayTexture.NO_OVERLAY, -1, Sheets.BANNER_BASE, this.sprites, 0);
+      BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, renderState.flag(), 0.0F, true, renderState.baseColor(), renderState.resultBannerPatterns());
    }
 
    protected String getTextureLabel() {

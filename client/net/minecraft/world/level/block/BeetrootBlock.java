@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -17,14 +16,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BeetrootBlock extends CropBlock {
-   public static final MapCodec<BeetrootBlock> CODEC = simpleCodec(BeetrootBlock::new);
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPES;
-
-   public MapCodec<BeetrootBlock> codec() {
-      return CODEC;
-   }
 
    public BeetrootBlock(final BlockBehaviour.Properties properties) {
       super(properties);

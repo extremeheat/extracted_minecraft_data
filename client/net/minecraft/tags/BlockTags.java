@@ -64,6 +64,8 @@ public final class BlockTags {
    public static final TagKey<Block> LANTERNS;
    public static final TagKey<Block> BARS;
    public static final TagKey<Block> SKULLS;
+   public static final TagKey<Block> WOOL_SLABS;
+   public static final TagKey<Block> WOOL_STAIRS;
    public static final TagKey<Block> CEILING_HANGING_SIGNS;
    public static final TagKey<Block> STANDING_SIGNS;
    public static final TagKey<Block> BEE_ATTRACTIVE;
@@ -122,11 +124,10 @@ public final class BlockTags {
    public static final TagKey<Block> STONE_ORE_REPLACEABLES;
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES;
    public static final TagKey<Block> BASE_STONE_NETHER;
-   public static final TagKey<Block> OVERWORLD_CARVER_REPLACEABLES;
-   public static final TagKey<Block> NETHER_CARVER_REPLACEABLES;
    public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE;
    public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE;
    public static final TagKey<Block> CANNOT_REPLACE_BELOW_TREE_TRUNK;
+   public static final TagKey<Block> CANNOT_PLACE_BASALT_PILLAR_ON;
    public static final TagKey<Block> CANDLE_CAKES;
    public static final TagKey<Block> CAULDRONS;
    public static final TagKey<Block> CRYSTAL_SOUND_BLOCKS;
@@ -155,6 +156,8 @@ public final class BlockTags {
    public static final TagKey<Block> SHEARS_EXTREME_BREAKING_SPEED;
    public static final TagKey<Block> SHEARS_MAJOR_BREAKING_SPEED;
    public static final TagKey<Block> SHEARS_MINOR_BREAKING_SPEED;
+   public static final TagKey<Block> TURNS_INTO_DIRT_PATH;
+   public static final TagKey<Block> TURNS_INTO_FARMLAND;
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL;
    public static final TagKey<Block> NEEDS_IRON_TOOL;
    public static final TagKey<Block> NEEDS_STONE_TOOL;
@@ -337,6 +340,8 @@ public final class BlockTags {
       LANTERNS = BlockItemTags.LANTERNS.block();
       BARS = BlockItemTags.BARS.block();
       SKULLS = BlockItemTags.SKULLS.block();
+      WOOL_SLABS = BlockItemTags.WOOL_SLABS.block();
+      WOOL_STAIRS = BlockItemTags.WOOL_STAIRS.block();
       CEILING_HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.block();
       STANDING_SIGNS = BlockItemTags.SIGNS.block();
       BEE_ATTRACTIVE = BlockItemTags.BEE_FOOD.block();
@@ -395,11 +400,10 @@ public final class BlockTags {
       STONE_ORE_REPLACEABLES = create("stone_ore_replaceables");
       DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
       BASE_STONE_NETHER = create("base_stone_nether");
-      OVERWORLD_CARVER_REPLACEABLES = create("overworld_carver_replaceables");
-      NETHER_CARVER_REPLACEABLES = create("nether_carver_replaceables");
       BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
       BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");
       CANNOT_REPLACE_BELOW_TREE_TRUNK = create("cannot_replace_below_tree_trunk");
+      CANNOT_PLACE_BASALT_PILLAR_ON = create("cannot_place_basalt_pillar_on");
       CANDLE_CAKES = create("candle_cakes");
       CAULDRONS = create("cauldrons");
       CRYSTAL_SOUND_BLOCKS = create("crystal_sound_blocks");
@@ -428,6 +432,8 @@ public final class BlockTags {
       SHEARS_EXTREME_BREAKING_SPEED = create("shears_extreme_breaking_speed");
       SHEARS_MAJOR_BREAKING_SPEED = create("shears_major_breaking_speed");
       SHEARS_MINOR_BREAKING_SPEED = create("shears_minor_breaking_speed");
+      TURNS_INTO_DIRT_PATH = create("turns_into_dirt_path");
+      TURNS_INTO_FARMLAND = create("turns_into_farmland");
       NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
       NEEDS_IRON_TOOL = create("needs_iron_tool");
       NEEDS_STONE_TOOL = create("needs_stone_tool");

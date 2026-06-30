@@ -18,8 +18,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public record BonusChestFeature() implements Feature {
-   public static final BonusChestFeature INSTANCE = new BonusChestFeature();
-   public static final MapCodec<BonusChestFeature> CODEC;
+   public static final MapCodec<BonusChestFeature> CODEC = MapCodec.unit(BonusChestFeature::new);
 
    public BonusChestFeature() {
       super();
@@ -62,9 +61,5 @@ public record BonusChestFeature() implements Feature {
       }
 
       return false;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

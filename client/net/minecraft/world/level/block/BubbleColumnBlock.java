@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,13 +35,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BubbleColumnBlock extends Block implements BucketPickup {
-   public static final MapCodec<BubbleColumnBlock> CODEC = simpleCodec(BubbleColumnBlock::new);
    public static final BooleanProperty DRAG_DOWN;
    private static final int CHECK_PERIOD = 5;
-
-   public MapCodec<BubbleColumnBlock> codec() {
-      return CODEC;
-   }
 
    public BubbleColumnBlock(final BlockBehaviour.Properties properties) {
       super(properties);

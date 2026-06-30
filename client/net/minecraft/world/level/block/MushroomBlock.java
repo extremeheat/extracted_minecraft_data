@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,13 +19,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, MushroomBlock::new));
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final ResourceKey<Feature> feature;
-
-   public MapCodec<MushroomBlock> codec() {
-      return CODEC;
-   }
 
    public MushroomBlock(final ResourceKey<Feature> feature, final BlockBehaviour.Properties properties) {
       super(properties);

@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Locale;
 import java.util.stream.IntStream;
+import net.minecraft.util.Interval;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -110,12 +111,8 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
       return Mth.clampedLerp(factor, blendMin / 512.0, blendMax / 512.0) / 128.0;
    }
 
-   public double minValue() {
-      return -this.maxValue();
-   }
-
-   public double maxValue() {
-      return this.maxValue;
+   public Interval range() {
+      return Interval.ofSymmetric(this.maxValue);
    }
 
    @VisibleForTesting

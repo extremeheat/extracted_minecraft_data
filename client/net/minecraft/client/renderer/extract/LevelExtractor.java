@@ -192,6 +192,7 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       this.debugRenderer.emitGizmos(cullFrustum, cameraPos.x, cameraPos.y, cameraPos.z, deltaTracker.getGameTimeDeltaPartialTick(false));
       this.gameTestBlockHighlightRenderer.emitGizmos();
       this.levelRenderState.render3dCrosshair = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR);
+      this.levelRenderState.renderWireframeTerrain = this.minecraft.wireframe;
       ClientPacketListener connection = this.minecraft.getConnection();
       if (connection != null) {
          this.levelRenderState.playerCompiledSectionCallback = connection.getPlayerCompiledSectionCallback();

@@ -31,7 +31,7 @@ public class GlslCompiler implements AutoCloseable {
       Shaderc.shaderc_compile_options_set_auto_map_locations(this.shaderOptions, true);
       Shaderc.shaderc_compile_options_set_generate_debug_info(this.shaderOptions);
       Shaderc.shaderc_compile_options_set_optimization_level(this.shaderOptions, 0);
-      this.globalDefines = ShaderDefines.builder().define("gl_VertexID", "gl_VertexIndex").define("gl_InstanceID", "gl_InstanceIndex").build();
+      this.globalDefines = ShaderDefines.builder().define("gl_VertexID", "gl_VertexIndex").define("gl_InstanceID", "gl_InstanceIndex").define("B3D_DEPTH_IS_ZERO_TO_ONE").build();
    }
 
    public IntermediaryShaderModule createIntermediary(final String filename, String source, final ShaderType type) throws ShaderCompileException {

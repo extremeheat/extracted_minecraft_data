@@ -11,8 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record VinesFeature() implements Feature {
-   public static final VinesFeature INSTANCE = new VinesFeature();
-   public static final MapCodec<VinesFeature> CODEC;
+   public static final MapCodec<VinesFeature> CODEC = MapCodec.unit(VinesFeature::new);
 
    public VinesFeature() {
       super();
@@ -35,9 +34,5 @@ public record VinesFeature() implements Feature {
 
          return false;
       }
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

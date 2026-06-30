@@ -1,23 +1,17 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
-import java.util.stream.Stream;
+import com.mojang.serialization.MapCodec;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 
-public abstract class PlacementModifier {
-   public static final Codec<PlacementModifier> CODEC;
+public interface PlacementModifier {
+   Codec<PlacementModifier> CODEC = BuiltInRegistries.PLACEMENT_MODIFIER_TYPE.byNameCodec().dispatch(PlacementModifier::codec, Function.identity());
 
-   public PlacementModifier() {
-      super();
-   }
+   void modify(PlacementContext context, RandomSource random, BlockPos origin, Consumer<BlockPos> output);
 
-   public abstract Stream<BlockPos> getPositions(PlacementContext context, RandomSource random, BlockPos origin);
-
-   public abstract PlacementModifierType<?> type();
-
-   static {
-      CODEC = BuiltInRegistries.PLACEMENT_MODIFIER_TYPE.byNameCodec().dispatch(PlacementModifier::type, PlacementModifierType::codec);
-   }
+   MapCodec<? extends PlacementModifier> codec();
 }

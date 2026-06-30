@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
@@ -20,19 +21,11 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import org.jspecify.annotations.Nullable;
 
 public class Beardifier implements DensityFunctions.BeardifierOrMarker {
+   public static final Interval RANGE;
    public static final int BEARD_KERNEL_RADIUS = 12;
    private static final int BEARD_KERNEL_SIZE = 24;
-   private static final float[] BEARD_KERNEL = (float[])Util.make(new float[13824], (kernel) -> {
-      for(int zi = 0; zi < 24; ++zi) {
-         for(int xi = 0; xi < 24; ++xi) {
-            for(int yi = 0; yi < 24; ++yi) {
-               kernel[zi * 24 * 24 + xi * 24 + yi] = (float)computeBeardContribution(xi - 12, yi - 12, zi - 12);
-            }
-         }
-      }
-
-   });
-   public static final Beardifier EMPTY = new Beardifier(List.of(), List.of(), (BoundingBox)null);
+   private static final float[] BEARD_KERNEL;
+   public static final Beardifier EMPTY;
    private final List<Rigid> pieces;
    private final List<JigsawJunction> junctions;
    private final @Nullable BoundingBox affectedBox;
@@ -181,14 +174,6 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       }
    }
 
-   public double minValue() {
-      return -1.0 / 0.0;
-   }
-
-   public double maxValue() {
-      return 1.0 / 0.0;
-   }
-
    private static double getBuryContribution(final double dx, final double dy, final double dz) {
       double distance = Mth.length(dx, dy, dz);
       return Mth.clampedMap(distance, 0.0, 6.0, 1.0, 0.0);
@@ -220,6 +205,21 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       double distanceSqr = Mth.lengthSquared((double)dx, dy, (double)dz);
       double pieceWeight = Math.pow(2.718281828459045, -distanceSqr / 16.0);
       return pieceWeight;
+   }
+
+   static {
+      RANGE = Interval.INFINITE;
+      BEARD_KERNEL = (float[])Util.make(new float[13824], (kernel) -> {
+         for(int zi = 0; zi < 24; ++zi) {
+            for(int xi = 0; xi < 24; ++xi) {
+               for(int yi = 0; yi < 24; ++yi) {
+                  kernel[zi * 24 * 24 + xi * 24 + yi] = (float)computeBeardContribution(xi - 12, yi - 12, zi - 12);
+               }
+            }
+         }
+
+      });
+      EMPTY = new Beardifier(List.of(), List.of(), (BoundingBox)null);
    }
 
    @VisibleForTesting

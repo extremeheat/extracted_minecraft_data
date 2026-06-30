@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -26,9 +26,9 @@ public abstract class BlockStateProvider {
 
    protected abstract BlockStateProviderType<?> type();
 
-   public abstract BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos);
+   public abstract BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos);
 
-   public @Nullable BlockState getOptionalState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+   public @Nullable BlockState getOptionalState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       return this.getState(level, random, pos);
    }
 

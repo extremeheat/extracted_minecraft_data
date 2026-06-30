@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +24,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BambooStalkBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<BambooStalkBlock> CODEC = simpleCodec(BambooStalkBlock::new);
    private static final VoxelShape SHAPE_SMALL = Block.column(6.0, 0.0, 16.0);
    private static final VoxelShape SHAPE_LARGE = Block.column(10.0, 0.0, 16.0);
    private static final VoxelShape SHAPE_COLLISION = Block.column(3.0, 0.0, 16.0);
@@ -37,10 +35,6 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    public static final int STAGE_DONE_GROWING = 1;
    public static final int AGE_THIN_BAMBOO = 0;
    public static final int AGE_THICK_BAMBOO = 1;
-
-   public MapCodec<BambooStalkBlock> codec() {
-      return CODEC;
-   }
 
    public BambooStalkBlock(final BlockBehaviour.Properties properties) {
       super(properties);

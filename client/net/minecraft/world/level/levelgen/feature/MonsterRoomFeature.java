@@ -25,7 +25,6 @@ public record MonsterRoomFeature() implements Feature {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityType<?>[] MOBS;
    private static final BlockState AIR;
-   public static final MonsterRoomFeature INSTANCE;
    public static final MapCodec<MonsterRoomFeature> CODEC;
 
    public MonsterRoomFeature() {
@@ -138,7 +137,6 @@ public record MonsterRoomFeature() implements Feature {
    static {
       MOBS = new EntityType[]{EntityTypes.SKELETON, EntityTypes.ZOMBIE, EntityTypes.ZOMBIE, EntityTypes.SPIDER};
       AIR = Blocks.CAVE_AIR.defaultBlockState();
-      INSTANCE = new MonsterRoomFeature();
-      CODEC = MapCodec.unit(INSTANCE);
+      CODEC = MapCodec.unit(MonsterRoomFeature::new);
    }
 }

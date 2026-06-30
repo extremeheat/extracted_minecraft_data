@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -63,14 +62,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BeehiveBlock extends BaseEntityBlock {
-   public static final MapCodec<BeehiveBlock> CODEC = simpleCodec(BeehiveBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty HONEY_LEVEL;
    public static final int MAX_HONEY_LEVELS = 5;
-
-   public MapCodec<BeehiveBlock> codec() {
-      return CODEC;
-   }
 
    public BeehiveBlock(final BlockBehaviour.Properties properties) {
       super(properties);

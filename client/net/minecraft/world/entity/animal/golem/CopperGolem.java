@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -216,12 +217,14 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       } else if (level.isClientSide()) {
          return InteractionResult.PASS;
       } else if (itemStack.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
-         level.levelEvent(this, 3003, this.blockPosition(), 0);
+         BlockPos pos = this.blockPosition();
+         level.levelEvent(this, 3003, pos, 0);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          this.nextWeatheringTick = -2L;
          this.usePlayerItem(player, hand, itemStack);
          return InteractionResult.SUCCESS_SERVER;
       } else if (itemStack.is(ItemTags.AXES) && this.nextWeatheringTick == -2L) {
-         level.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+         level.playSound((Entity)null, (Entity)this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
          level.levelEvent(this, 3004, this.blockPosition(), 0);
          this.nextWeatheringTick = -1L;
          itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
@@ -230,7 +233,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          if (itemStack.is(ItemTags.AXES)) {
             WeatheringCopper.WeatherState weatherState = this.getWeatherState();
             if (weatherState != WeatheringCopper.WeatherState.UNAFFECTED) {
-               level.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+               level.playSound((Entity)null, (Entity)this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
                level.levelEvent(this, 3005, this.blockPosition(), 0);
                this.nextWeatheringTick = -1L;
                this.entityData.set(DATA_WEATHER_STATE, weatherState.previous(), true);

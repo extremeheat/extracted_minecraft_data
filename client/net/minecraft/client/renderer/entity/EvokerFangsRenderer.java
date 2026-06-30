@@ -6,7 +6,6 @@ import net.minecraft.client.model.effects.EvokerFangsModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EvokerFangsRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -29,7 +28,7 @@ public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs, EvokerFangs
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F - state.yRot));
          poseStack.scale(-1.0F, -1.0F, 1.0F);
          poseStack.translate(0.0F, -1.501F, 0.0F);
-         submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
          super.submit(state, poseStack, submitNodeCollector, camera);
       }

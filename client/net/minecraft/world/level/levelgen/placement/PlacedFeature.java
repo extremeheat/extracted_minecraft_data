@@ -3,9 +3,7 @@ package net.minecraft.world.level.levelgen.placement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -16,8 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public record PlacedFeature(Holder<Feature> feature, List<PlacementModifier> placement) {
    public static final Codec<PlacedFeature> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Feature.CODEC.fieldOf("feature").forGetter((c) -> c.feature), PlacementModifier.CODEC.listOf().fieldOf("placement").forGetter((c) -> c.placement)).apply(i, PlacedFeature::new));
@@ -30,32 +26,8 @@ public record PlacedFeature(Holder<Feature> feature, List<PlacementModifier> pla
    }
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos origin) {
-      return this.placeWithContext(new PlacementContext(level, generator, Optional.empty()), random, origin);
-   }
-
-   public boolean placeWithBiomeCheck(final WorldGenLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos origin) {
-      return this.placeWithContext(new PlacementContext(level, generator, Optional.of(this)), random, origin);
-   }
-
-   private boolean placeWithContext(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      Stream<BlockPos> placements = Stream.of(origin);
-
-      for(PlacementModifier placementModifier : this.placement) {
-         placements = placements.flatMap((p) -> placementModifier.getPositions(context, random, p));
-      }
-
-      Feature feature = this.feature.value();
-      MutableBoolean placedAny = new MutableBoolean();
-      placements.forEach((pos) -> {
-         if (feature.place(context.getLevel(), context.generator(), random, pos)) {
-            placedAny.setTrue();
-            if (SharedConstants.DEBUG_FEATURE_COUNT) {
-               FeatureCountTracker.featurePlaced(context.getLevel().getLevel(), feature, context.topFeature());
-            }
-         }
-
-      });
-      return placedAny.isTrue();
+      FeaturePlacer placer = new FeaturePlacer(level, generator);
+      return placer.place(this, random, origin);
    }
 
    public Stream<Holder<Feature>> getFeatures() {

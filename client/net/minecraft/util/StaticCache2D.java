@@ -2,13 +2,14 @@ package net.minecraft.util;
 
 import java.util.Locale;
 import java.util.function.Consumer;
+import org.jspecify.annotations.Nullable;
 
-public class StaticCache2D<T> {
+public class StaticCache2D<T extends @Nullable Object> {
    private final int minX;
    private final int minZ;
    private final int sizeX;
    private final int sizeZ;
-   private final Object[] cache;
+   private final @Nullable Object[] cache;
 
    public static <T> StaticCache2D<T> create(final int centerX, final int centerZ, final int range, final Initializer<T> initializer) {
       int minX = centerX - range;
@@ -31,6 +32,10 @@ public class StaticCache2D<T> {
          }
       }
 
+   }
+
+   public <U extends @Nullable Object> StaticCache2D<U> map(final MappingFunction<T, U> function) {
+      return new StaticCache2D<U>(this.minX, this.minZ, this.sizeX, this.sizeZ, (x, z) -> function.apply(this.get(x, z), x, z));
    }
 
    public void forEach(final Consumer<T> consumer) {
@@ -65,7 +70,12 @@ public class StaticCache2D<T> {
    }
 
    @FunctionalInterface
-   public interface Initializer<T> {
+   public interface Initializer<T extends @Nullable Object> {
       T get(int x, int z);
+   }
+
+   @FunctionalInterface
+   public interface MappingFunction<T extends @Nullable Object, U extends @Nullable Object> {
+      U apply(T value, int x, int z);
    }
 }

@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -18,16 +16,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, SaplingBlock::new));
    public static final IntegerProperty STAGE;
    public static final int BRIGHTNESS_FOR_SAPLING_GROWTH = 9;
    public static final int TICK_CHANCE_FOR_SAPLING_GROWTH = 7;
    private static final VoxelShape SHAPE;
    protected final TreeGrower treeGrower;
-
-   public MapCodec<? extends SaplingBlock> codec() {
-      return CODEC;
-   }
 
    protected SaplingBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
       super(properties);

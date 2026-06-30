@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -35,12 +34,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class TntBlock extends Block {
-   public static final MapCodec<TntBlock> CODEC = simpleCodec(TntBlock::new);
    public static final BooleanProperty UNSTABLE;
-
-   public MapCodec<TntBlock> codec() {
-      return CODEC;
-   }
 
    public TntBlock(final BlockBehaviour.Properties properties) {
       super(properties);

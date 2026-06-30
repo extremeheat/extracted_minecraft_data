@@ -1,18 +1,21 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import com.mojang.serialization.MapCodec;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 
-public abstract class RepeatingPlacement extends PlacementModifier {
-   public RepeatingPlacement() {
-      super();
+public interface RepeatingPlacement extends PlacementModifier {
+   int count(RandomSource random, BlockPos origin);
+
+   default void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
+      int count = this.count(random, origin);
+
+      for(int i = 0; i < count; ++i) {
+         output.accept(origin);
+      }
+
    }
 
-   protected abstract int count(final RandomSource random, final BlockPos origin);
-
-   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      return IntStream.range(0, this.count(random, origin)).mapToObj((i) -> origin);
-   }
+   MapCodec<? extends RepeatingPlacement> codec();
 }

@@ -28,6 +28,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Animal;
@@ -624,15 +625,6 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          passenger.setYRot(passenger.getYRot() + this.deltaRotation);
          passenger.setYHeadRot(passenger.getYHeadRot() + this.deltaRotation);
          this.clampRotation(passenger);
-         if (passenger instanceof Animal) {
-            Animal animal = (Animal)passenger;
-            if (this.getPassengers().size() == this.getMaxPassengers()) {
-               int rotationOffset = passenger.getId() % 2 == 0 ? 90 : 270;
-               passenger.setYBodyRot(animal.yBodyRot + (float)rotationOffset);
-               passenger.setYHeadRot(passenger.getYHeadRot() + (float)rotationOffset);
-            }
-         }
-
       }
    }
 
@@ -672,12 +664,25 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    protected void clampRotation(final Entity passenger) {
-      passenger.setYBodyRot(this.getYRot());
-      float delta = Mth.wrapDegrees(passenger.getYRot() - this.getYRot());
-      float targetDelta = Mth.clamp(delta, -105.0F, 105.0F);
-      passenger.yRotO += targetDelta - delta;
-      passenger.setYRot(passenger.getYRot() + targetDelta - delta);
-      passenger.setYHeadRot(passenger.getYRot());
+      float passengerBodyYRot = this.calculatePassengerBodyYRot(passenger);
+      passenger.setYBodyRot(passengerBodyYRot);
+      if (passenger instanceof Mob mob) {
+         passenger.yRotO += Mth.wrapDegrees(passengerBodyYRot - passenger.getYRot());
+         passenger.setYRot(passengerBodyYRot);
+         mob.clampHeadRotationToBody();
+      } else {
+         float delta = Mth.wrapDegrees(passenger.getYRot() - passengerBodyYRot);
+         float maxHeadRotation = 105.0F;
+         float targetDelta = Mth.clamp(delta, -105.0F, 105.0F);
+         passenger.yRotO += targetDelta - delta;
+         passenger.setYRot(passenger.getYRot() + targetDelta - delta);
+         passenger.setYHeadRot(passenger.getYRot());
+      }
+
+   }
+
+   private float calculatePassengerBodyYRot(final Entity passenger) {
+      return passenger instanceof Animal && this.getPassengers().size() == this.getMaxPassengers() ? this.getYRot() + (passenger.getId() % 2 == 0 ? 90.0F : 270.0F) : this.getYRot();
    }
 
    public void onPassengerTurned(final Entity passenger) {

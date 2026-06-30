@@ -1,7 +1,10 @@
 package net.minecraft.client.renderer.feature;
 
+import com.mojang.blaze3d.systems.RenderPass;
 import java.util.List;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.oit.OitStage;
+import org.jspecify.annotations.Nullable;
 
 public interface FeatureRenderer<Submit extends SubmitNode> extends AutoCloseable {
    default void beginPrepare(final FeatureFrameContext context) {
@@ -12,7 +15,7 @@ public interface FeatureRenderer<Submit extends SubmitNode> extends AutoCloseabl
    default void finishPrepare(final FeatureFrameContext context) {
    }
 
-   void executeGroup(FeatureFrameContext context, int groupIndex, List<Submit> submits, boolean strictlyOrdered);
+   void executeGroup(FeatureFrameContext context, @Nullable OitStage stage, RenderPass renderPass, int groupIndex, List<Submit> submits, boolean strictlyOrdered);
 
    default void finishExecute(final FeatureFrameContext context) {
    }

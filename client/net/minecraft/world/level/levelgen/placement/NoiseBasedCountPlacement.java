@@ -7,29 +7,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
-public class NoiseBasedCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("noise_to_count_ratio").forGetter((c) -> c.noiseToCountRatio), Codec.DOUBLE.fieldOf("noise_factor").forGetter((c) -> c.noiseFactor), Codec.DOUBLE.optionalFieldOf("noise_offset", 0.0).forGetter((c) -> c.noiseOffset)).apply(i, NoiseBasedCountPlacement::new));
-   private final int noiseToCountRatio;
-   private final double noiseFactor;
-   private final double noiseOffset;
+public record NoiseBasedCountPlacement(int noiseToCountRatio, double noiseFactor, double noiseOffset) implements RepeatingPlacement {
+   public static final MapCodec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("noise_to_count_ratio").forGetter(NoiseBasedCountPlacement::noiseToCountRatio), Codec.DOUBLE.fieldOf("noise_factor").forGetter(NoiseBasedCountPlacement::noiseFactor), Codec.DOUBLE.optionalFieldOf("noise_offset", 0.0).forGetter(NoiseBasedCountPlacement::noiseOffset)).apply(i, NoiseBasedCountPlacement::new));
 
-   private NoiseBasedCountPlacement(final int noiseToCountRatio, final double noiseFactor, final double noiseOffset) {
+   public NoiseBasedCountPlacement {
       super();
-      this.noiseToCountRatio = noiseToCountRatio;
-      this.noiseFactor = noiseFactor;
-      this.noiseOffset = noiseOffset;
    }
 
    public static NoiseBasedCountPlacement of(final int noiseToCountRatio, final double noiseFactor, final double noiseOffset) {
       return new NoiseBasedCountPlacement(noiseToCountRatio, noiseFactor, noiseOffset);
    }
 
-   protected int count(final RandomSource random, final BlockPos origin) {
+   public int count(final RandomSource random, final BlockPos origin) {
       double flowerNoise = Biome.BIOME_INFO_NOISE.getValue((double)origin.getX() / this.noiseFactor, (double)origin.getZ() / this.noiseFactor, false);
       return (int)Math.ceil((flowerNoise + this.noiseOffset) * (double)this.noiseToCountRatio);
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.NOISE_BASED_COUNT;
+   public MapCodec<NoiseBasedCountPlacement> codec() {
+      return CODEC;
    }
 }

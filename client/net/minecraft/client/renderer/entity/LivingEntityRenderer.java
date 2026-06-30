@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -96,7 +95,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          int overlayCoords = getOverlayCoords(state, this.getWhiteOverlayProgress(state));
          int baseColor = forceTransparent ? 654311423 : -1;
          int tintedColor = ARGB.multiply(baseColor, this.getModelTint(state));
-         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (UvMapping)null, state.outlineColor);
       }
 
       if (this.shouldRenderLayers(state) && !this.layers.isEmpty()) {
@@ -124,7 +123,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    protected @Nullable RenderType getRenderType(final S state, final boolean isBodyVisible, final boolean forceTransparent, final boolean appearGlowing) {
       Identifier texture = this.getTextureLocation(state);
       if (forceTransparent) {
-         return RenderTypes.entityTranslucentCullItemTarget(texture);
+         return RenderTypes.entityTranslucentCull(texture);
       } else if (isBodyVisible) {
          return this.model.renderType(texture);
       } else {

@@ -10,6 +10,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.placement.FeaturePlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public record SequenceFeature(HolderSet<PlacedFeature> features) implements Feature {
@@ -28,8 +29,10 @@ public record SequenceFeature(HolderSet<PlacedFeature> features) implements Feat
    }
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      FeaturePlacer placer = new FeaturePlacer(level, chunkGenerator);
+
       for(Holder<PlacedFeature> feature : this.features) {
-         if (!((PlacedFeature)feature.value()).place(level, chunkGenerator, random, origin)) {
+         if (!placer.place(feature.value(), random, origin)) {
             return false;
          }
       }

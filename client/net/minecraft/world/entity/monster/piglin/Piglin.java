@@ -164,10 +164,6 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public boolean removeWhenFarAway(final double distSqr) {
-      return !this.isPersistenceRequired();
-   }
-
    protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
       if (this.isAdult()) {
          this.maybeWearArmor(EquipmentSlot.HEAD, new ItemStack(Items.GOLDEN_HELMET), random);

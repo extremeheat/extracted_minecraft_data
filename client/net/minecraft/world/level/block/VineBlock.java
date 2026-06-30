@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -24,7 +23,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class VineBlock extends Block {
-   public static final MapCodec<VineBlock> CODEC = simpleCodec(VineBlock::new);
    public static final BooleanProperty UP;
    public static final BooleanProperty NORTH;
    public static final BooleanProperty EAST;
@@ -32,10 +30,6 @@ public class VineBlock extends Block {
    public static final BooleanProperty WEST;
    public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<VineBlock> codec() {
-      return CODEC;
-   }
 
    public VineBlock(final BlockBehaviour.Properties properties) {
       super(properties);

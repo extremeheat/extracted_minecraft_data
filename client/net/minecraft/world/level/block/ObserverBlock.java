@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,12 +18,7 @@ import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 
 public class ObserverBlock extends DirectionalBlock {
-   public static final MapCodec<ObserverBlock> CODEC = simpleCodec(ObserverBlock::new);
    public static final BooleanProperty POWERED;
-
-   public MapCodec<ObserverBlock> codec() {
-      return CODEC;
-   }
 
    public ObserverBlock(final BlockBehaviour.Properties properties) {
       super(properties);

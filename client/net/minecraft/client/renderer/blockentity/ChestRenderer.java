@@ -95,7 +95,11 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       open = 1.0F - open * open * open;
       SpriteId spriteId = Sheets.chooseSprite(state.material, state.type);
       ChestModel model = this.models.select(state.type);
-      submitNodeCollector.submitModel(model, open, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, spriteId, this.sprites, 0, state.breakProgress);
+      submitNodeCollector.submitModel(model, open, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, spriteId, this.sprites, 0);
+      if (state.breakProgress != null) {
+         submitNodeCollector.order(1).submitCrumblingOverlay(model, open, poseStack, spriteId.renderType(model.renderType()), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+      }
+
       poseStack.popPose();
    }
 

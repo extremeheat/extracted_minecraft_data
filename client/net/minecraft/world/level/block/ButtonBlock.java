@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -40,15 +37,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
-   public static final MapCodec<ButtonBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), Codec.intRange(1, 1024).fieldOf("ticks_to_stay_pressed").forGetter((b) -> b.ticksToStayPressed), propertiesCodec()).apply(i, ButtonBlock::new));
    public static final BooleanProperty POWERED;
    private final BlockSetType type;
    private final int ticksToStayPressed;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<ButtonBlock> codec() {
-      return CODEC;
-   }
 
    protected ButtonBlock(final BlockSetType type, final int ticksToStayPressed, final BlockBehaviour.Properties properties) {
       super(properties.sound(type.soundType()));

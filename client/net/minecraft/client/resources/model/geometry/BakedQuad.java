@@ -49,7 +49,7 @@ public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc posi
       return var10000;
    }
 
-   public static record MaterialInfo(TextureAtlasSprite sprite, ChunkSectionLayer layer, RenderType itemRenderType, int tintIndex, boolean shade, int lightEmission) {
+   public static record MaterialInfo(TextureAtlasSprite sprite, ChunkSectionLayer layer, RenderType itemRenderType, RenderType itemGlintRenderType, RenderType itemGlintSpecialRenderType, int tintIndex, boolean shade, int lightEmission) {
       public MaterialInfo {
          super();
       }
@@ -57,13 +57,19 @@ public record BakedQuad(Vector3fc position0, Vector3fc position1, Vector3fc posi
       public static MaterialInfo of(final Material.Baked material, final Transparency transparency, final int tintIndex, final boolean shade, final int lightEmission) {
          ChunkSectionLayer layer = ChunkSectionLayer.byTransparency(transparency);
          RenderType itemRenderType;
+         RenderType itemGlintRenderType;
+         RenderType itemGlintSpecialRenderType;
          if (material.sprite().atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
             itemRenderType = transparency.hasTranslucent() ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet();
+            itemGlintRenderType = transparency.hasTranslucent() ? Sheets.translucentBlockItemGlintSheet() : Sheets.cutoutBlockItemGlintSheet();
+            itemGlintSpecialRenderType = transparency.hasTranslucent() ? Sheets.translucentBlockItemGlintSpecialSheet() : Sheets.cutoutBlockItemGlintSpecialSheet();
          } else {
             itemRenderType = transparency.hasTranslucent() ? Sheets.translucentItemSheet() : Sheets.cutoutItemSheet();
+            itemGlintRenderType = transparency.hasTranslucent() ? Sheets.translucentItemGlintSheet() : Sheets.cutoutItemGlintSheet();
+            itemGlintSpecialRenderType = transparency.hasTranslucent() ? Sheets.translucentItemGlintSpecialSheet() : Sheets.cutoutItemGlintSpecialSheet();
          }
 
-         return new MaterialInfo(material.sprite(), layer, itemRenderType, tintIndex, shade, lightEmission);
+         return new MaterialInfo(material.sprite(), layer, itemRenderType, itemGlintRenderType, itemGlintSpecialRenderType, tintIndex, shade, lightEmission);
       }
 
       public boolean isTinted() {

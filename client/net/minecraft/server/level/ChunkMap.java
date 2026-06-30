@@ -79,6 +79,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TicketStorage;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -99,6 +100,7 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.levelgen.NoiseRouterData;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -168,9 +170,9 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       RegistryAccess registryAccess = level.registryAccess();
       long levelSeed = level.getSeed();
       if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
-         this.randomState = RandomState.create((NoiseGeneratorSettings)((NoiseGeneratorSettings)noiseGenerator.generatorSettings().value()), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value());
       } else {
-         this.randomState = RandomState.create((NoiseGeneratorSettings)NoiseGeneratorSettings.dummy(), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none(), List.of());
       }
 
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);

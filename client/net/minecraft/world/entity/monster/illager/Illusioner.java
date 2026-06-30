@@ -173,7 +173,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
       Level var15 = this.level();
       if (var15 instanceof ServerLevel serverLevel) {
-         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, (float)(14 - serverLevel.getDifficulty().getId() * 4));
+         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, this.rangedAttackUncertainty(serverLevel));
       }
 
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));

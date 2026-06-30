@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -28,14 +27,9 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 
 public class DetectorRailBlock extends BaseRailBlock {
-   public static final MapCodec<DetectorRailBlock> CODEC = simpleCodec(DetectorRailBlock::new);
    public static final EnumProperty<RailShape> SHAPE;
    public static final BooleanProperty POWERED;
    private static final int PRESSED_CHECK_PERIOD = 20;
-
-   public MapCodec<DetectorRailBlock> codec() {
-      return CODEC;
-   }
 
    public DetectorRailBlock(final BlockBehaviour.Properties properties) {
       super(true, properties);

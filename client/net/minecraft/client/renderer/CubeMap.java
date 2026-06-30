@@ -62,7 +62,7 @@ public class CubeMap implements AutoCloseable {
       modelViewStack.popMatrix();
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-         renderPass.setPipeline(renderPipeline);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, indices.type());

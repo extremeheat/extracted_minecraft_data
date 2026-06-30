@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -26,14 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CocoaBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
-   public static final MapCodec<CocoaBlock> CODEC = simpleCodec(CocoaBlock::new);
    public static final int MAX_AGE = 2;
    public static final IntegerProperty AGE;
    private static final List<Map<Direction, VoxelShape>> SHAPES;
-
-   public MapCodec<CocoaBlock> codec() {
-      return CODEC;
-   }
 
    public CocoaBlock(final BlockBehaviour.Properties properties) {
       super(properties);

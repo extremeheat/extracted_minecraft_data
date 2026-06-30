@@ -72,13 +72,13 @@ public class DebugCrosshairRenderer implements AutoCloseable {
       GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-         renderPass.setPipeline(renderPipelineOutline);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineOutline));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setVertexBuffer(0, this.crosshairBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.crosshairIndicies.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransform);
          renderPass.drawIndexed(18, 1, 0, 0, 0);
-         renderPass.setPipeline(renderPipelineFill);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineFill));
          renderPass.drawIndexed(18, 1, 18, 0, 0);
       }
 

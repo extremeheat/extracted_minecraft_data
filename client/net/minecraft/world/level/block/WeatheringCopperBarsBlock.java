@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -9,12 +7,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringCopperBarsBlock extends IronBarsBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperBarsBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperBarsBlock::getAge), propertiesCodec()).apply(i, WeatheringCopperBarsBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
-
-   public MapCodec<WeatheringCopperBarsBlock> codec() {
-      return CODEC;
-   }
 
    protected WeatheringCopperBarsBlock(final WeatheringCopper.WeatherState weatherState, final BlockBehaviour.Properties properties) {
       super(properties);

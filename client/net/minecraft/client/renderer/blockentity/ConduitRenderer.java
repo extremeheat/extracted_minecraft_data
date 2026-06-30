@@ -101,7 +101,12 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);
          poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationY(state.activeRotation * 0.017453292F));
-         submitNodeCollector.submitModelPart(this.shell, poseStack, SHELL_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(SHELL_TEXTURE), -1, state.breakProgress);
+         RenderType shellRenderType = SHELL_TEXTURE.renderType(RenderTypes::entitySolid);
+         submitNodeCollector.submitModelPart(this.shell, poseStack, shellRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(SHELL_TEXTURE), -1);
+         if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(this.shell, poseStack, shellRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+         }
+
          poseStack.popPose();
       } else {
          float rotation = state.activeRotation * 57.295776F;
@@ -111,7 +116,12 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          poseStack.translate(0.5F, 0.3F + hh * 0.2F, 0.5F);
          Vector3f axis = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
          poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(rotation * 0.017453292F, axis));
-         submitNodeCollector.submitModelPart(this.cage, poseStack, ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutout), state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(ACTIVE_SHELL_TEXTURE), -1, state.breakProgress);
+         RenderType cageRenderType = ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutout);
+         submitNodeCollector.submitModelPart(this.cage, poseStack, cageRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(ACTIVE_SHELL_TEXTURE), -1);
+         if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(this.cage, poseStack, cageRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+         }
+
          poseStack.popPose();
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);

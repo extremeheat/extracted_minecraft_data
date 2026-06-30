@@ -39,9 +39,7 @@ public interface GpuDeviceBackend {
 
    boolean isDebuggingEnabled();
 
-   CompiledRenderPipeline precompilePipeline(RenderPipeline pipeline, @Nullable ShaderSource shaderSource);
-
-   void clearPipelineCache();
+   @Nullable CompiledRenderPipeline compilePipeline(RenderPipeline pipeline, ShaderSource shaderSource);
 
    void close();
 

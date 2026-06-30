@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustColorTransitionOptions;
@@ -44,7 +43,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<SculkSensorBlock> CODEC = simpleCodec(SculkSensorBlock::new);
    public static final int ACTIVE_TICKS = 30;
    public static final int COOLDOWN_TICKS = 10;
    public static final EnumProperty<SculkSensorPhase> PHASE;
@@ -52,10 +50,6 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
    private static final float[] RESONANCE_PITCH_BEND;
-
-   public MapCodec<? extends SculkSensorBlock> codec() {
-      return CODEC;
-   }
 
    public SculkSensorBlock(final BlockBehaviour.Properties properties) {
       super(properties);

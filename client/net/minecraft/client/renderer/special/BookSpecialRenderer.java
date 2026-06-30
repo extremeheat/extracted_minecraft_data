@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.EnchantTableRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import org.joml.Vector3fc;
 
@@ -26,7 +25,7 @@ public class BookSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      submitNodeCollector.submitModel(this.model, this.state, poseStack, lightCoords, overlayCoords, -1, EnchantTableRenderer.BOOK_TEXTURE, this.sprites, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, this.state, poseStack, lightCoords, overlayCoords, -1, EnchantTableRenderer.BOOK_TEXTURE, this.sprites, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -24,12 +23,7 @@ import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public class DoublePlantBlock extends VegetationBlock {
-   public static final MapCodec<DoublePlantBlock> CODEC = simpleCodec(DoublePlantBlock::new);
    public static final EnumProperty<DoubleBlockHalf> HALF;
-
-   public MapCodec<? extends DoublePlantBlock> codec() {
-      return CODEC;
-   }
 
    public DoublePlantBlock(final BlockBehaviour.Properties properties) {
       super(properties);

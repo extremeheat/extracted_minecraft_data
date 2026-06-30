@@ -150,6 +150,7 @@ public class DataComponents {
    public static final DataComponentType<KineticWeapon> KINETIC_WEAPON = register("kinetic_weapon", (b) -> b.persistent(KineticWeapon.CODEC).networkSynchronized(KineticWeapon.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<SwingAnimation> SWING_ANIMATION = register("swing_animation", (b) -> b.persistent(SwingAnimation.CODEC).networkSynchronized(SwingAnimation.STREAM_CODEC));
    public static final DataComponentType<Integer> ADDITIONAL_TRADE_COST = register("additional_trade_cost", (b) -> b.networkSynchronized(ByteBufCodecs.VAR_INT));
+   public static final DataComponentType<BlockTransformer> BLOCK_TRANSFORMER = register("block_transformer", (b) -> b.persistent(BlockTransformer.CODEC).networkSynchronized(BlockTransformer.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register("stored_enchantments", (b) -> b.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<DyeColor> DYE = register("dye", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyedItemColor> DYED_COLOR = register("dyed_color", (b) -> b.persistent(DyedItemColor.CODEC).networkSynchronized(DyedItemColor.STREAM_CODEC));

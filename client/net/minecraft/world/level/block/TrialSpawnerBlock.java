@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -19,13 +18,8 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
 public class TrialSpawnerBlock extends BaseEntityBlock {
-   public static final MapCodec<TrialSpawnerBlock> CODEC = simpleCodec(TrialSpawnerBlock::new);
    public static final EnumProperty<TrialSpawnerState> STATE;
    public static final BooleanProperty OMINOUS;
-
-   public MapCodec<TrialSpawnerBlock> codec() {
-      return CODEC;
-   }
 
    public TrialSpawnerBlock(final BlockBehaviour.Properties properties) {
       super(properties);

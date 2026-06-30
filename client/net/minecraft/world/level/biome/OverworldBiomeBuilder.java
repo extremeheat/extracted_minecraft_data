@@ -3,8 +3,10 @@ package net.minecraft.world.level.biome;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -19,6 +21,7 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
+import net.minecraft.world.level.levelgen.SpawnTargetPoint;
 
 public final class OverworldBiomeBuilder {
    private static final float VALLEY_SIZE = 0.05F;
@@ -76,10 +79,10 @@ public final class OverworldBiomeBuilder {
       this.SHATTERED_BIOMES = new ResourceKey[][]{{Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {null, null, null, null, null}, {null, null, null, null, null}};
    }
 
-   public List<Climate.ParameterPoint> spawnTarget() {
-      Climate.Parameter surfaceDepth = Climate.Parameter.point(0.0F);
+   public List<SpawnTargetPoint> spawnTarget(final Holder<DensityFunction> temperature, final Holder<DensityFunction> vegetation, final Holder<DensityFunction> continents, final Holder<DensityFunction> erosion, final Holder<DensityFunction> weirdness) {
+      Climate.Parameter inland = Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE);
       float riverClearance = 0.16F;
-      return List.of(new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(-1.0F, -0.16F), 0L), new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(0.16F, 1.0F), 0L));
+      return List.of(new SpawnTargetPoint(Map.of(temperature, this.FULL_RANGE, vegetation, this.FULL_RANGE, continents, inland, erosion, this.FULL_RANGE, weirdness, Climate.Parameter.span(-1.0F, -0.16F))), new SpawnTargetPoint(Map.of(temperature, this.FULL_RANGE, vegetation, this.FULL_RANGE, continents, inland, erosion, this.FULL_RANGE, weirdness, Climate.Parameter.span(0.16F, 1.0F))));
    }
 
    void addBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {

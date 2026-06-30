@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.feature;
 
+import com.mojang.blaze3d.systems.RenderPass;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
@@ -93,14 +95,11 @@ public class FeatureRenderDispatcher implements AutoCloseable {
       return frame;
    }
 
-   public void renderAllFeatures(final SubmitNodeStorage submitNodeStorage) {
-      try (PreparedFrame frame = this.prepareFrame(submitNodeStorage)) {
-         frame.executeSolid();
-         frame.executeTranslucent();
-         frame.executeTranslucentAfterTerrain();
-         frame.executeAlwaysOnTop();
-      }
-
+   public static void renderAllFeatures(final RenderPass renderPass, final PreparedFrame frame) {
+      frame.executeSolid(renderPass);
+      frame.executeTranslucent(renderPass);
+      frame.executeTranslucentAfterTerrain(renderPass);
+      frame.executeAlwaysOnTop(renderPass);
    }
 
    public void close() {
@@ -132,94 +131,125 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          }
       }
 
-      public void executeSolid() {
+      public void executeSolid(final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.solid, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.solid, context, renderPass);
          }
 
       }
 
-      public void executeTranslucent() {
+      public void executeTranslucent(final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.shadows, context);
-            this.executePhase(collection.translucentModels, context);
-            this.executePhase(collection.seeThroughNameTags, context);
-            this.executePhase(collection.nameTags, context);
-            this.executePhase(collection.texts, context);
-            this.executePhase(collection.translucentCustomGeometry, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.shadows, context, renderPass);
+            this.executePhase(collection.translucentModels, context, renderPass);
+            this.executePhase(collection.seeThroughNameTags, context, renderPass);
+            this.executePhase(collection.nameTags, context, renderPass);
+            this.executePhase(collection.texts, context, renderPass);
+            this.executePhase(collection.translucentCustomGeometry, context, renderPass);
          }
 
-         var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.shapeOutlines, context);
-            this.executePhase(collection.gizmos, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.shapeOutlines, context, renderPass);
+            this.executePhase(collection.translucentGizmos, context, renderPass);
          }
 
-         var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.translucentBlocksAndItems, context);
-            this.executePhase(collection.breakingOverlay, context);
-            this.executePhase(collection.waterMask, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.translucentBlocksAndItems, context, renderPass);
+            this.executePhase(collection.breakingOverlay, context, renderPass);
+            this.executePhase(collection.waterMask, context, renderPass);
          }
 
       }
 
-      public void executeOutline() {
+      public void executeWaterMask(final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.outline, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.waterMask, context, renderPass);
          }
 
       }
 
-      public void executeTranslucentAfterTerrain() {
+      public void executeOit(final OitStage stage, final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         ObjectIterator var5 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.afterTerrain, context);
+         while(var5.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var5.next();
+            this.executePhase(collection.oitTranslucent, context, stage, renderPass);
          }
 
       }
 
-      public void executeAlwaysOnTop() {
+      public void executeOutline(final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var3 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
 
-         while(var3.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var3.next();
-            this.executePhase(collection.alwaysOnTop, context);
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.outline, context, renderPass);
          }
 
       }
 
-      private void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context) {
+      public void executeTranslucentAfterTerrain(final RenderPass renderPass) {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.afterTerrain, context, renderPass);
+         }
+
+      }
+
+      public void executeAlwaysOnTop(final RenderPass renderPass) {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var4 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var4.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
+            this.executePhase(collection.alwaysOnTopGizmos, context, renderPass);
+         }
+
+      }
+
+      private void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context, final RenderPass renderPass) {
+         this.executePhase(phase, context, (OitStage)null, renderPass);
+      }
+
+      private void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context, final @Nullable OitStage stage, final RenderPass renderPass) {
          ProfilerFiller profiler = Profiler.get();
 
          for(PreparedGroup<?> group : (List)this.groupsByPhase.getOrDefault(phase, List.of())) {
-            profiler.push(group.featureType.toString());
-            group.execute(context, FeatureRenderDispatcher.this.featureRenderers, this.allSubmits);
+            String featureTypeName = group.featureType.toString();
+            profiler.push(featureTypeName);
+            renderPass.pushDebugGroup(() -> featureTypeName);
+            group.execute(context, stage, renderPass, FeatureRenderDispatcher.this.featureRenderers, this.allSubmits);
+            renderPass.popDebugGroup();
             profiler.pop();
          }
 
@@ -231,7 +261,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
 
          while(var2.hasNext()) {
             SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-            if (!((List)this.groupsByPhase.getOrDefault(collection.alwaysOnTop, List.of())).isEmpty()) {
+            if (!((List)this.groupsByPhase.getOrDefault(collection.alwaysOnTopGizmos, List.of())).isEmpty()) {
                return true;
             }
          }
@@ -246,6 +276,20 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          while(var2.hasNext()) {
             SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
             if (!((List)this.groupsByPhase.getOrDefault(collection.outline, List.of())).isEmpty()) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+
+      public boolean hasAnyWaterMask() {
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         ObjectIterator var2 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
+
+         while(var2.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
+            if (!((List)this.groupsByPhase.getOrDefault(collection.waterMask, List.of())).isEmpty()) {
                return true;
             }
          }
@@ -350,9 +394,9 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          featureRenderer.prepareGroup(context, this.sliceUnchecked(submits), this.strictlyOrdered);
       }
 
-      public void execute(final FeatureFrameContext context, final FeatureRendererMap featureRenderers, final List<SubmitNode> submits) {
+      public void execute(final FeatureFrameContext context, final @Nullable OitStage stage, final RenderPass renderPass, final FeatureRendererMap featureRenderers, final List<SubmitNode> submits) {
          FeatureRenderer<Submit> featureRenderer = featureRenderers.<Submit>getOrThrow(this.featureType);
-         featureRenderer.executeGroup(context, this.featureGroupIndex, this.sliceUnchecked(submits), this.strictlyOrdered);
+         featureRenderer.executeGroup(context, stage, renderPass, this.featureGroupIndex, this.sliceUnchecked(submits), this.strictlyOrdered);
       }
 
       private List<Submit> sliceUnchecked(final List<SubmitNode> submits) {

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
@@ -18,21 +19,24 @@ import org.jspecify.annotations.Nullable;
 
 public final class RenderSetup {
    final RenderPipeline pipeline;
+   final @Nullable OitPipelineSet oitPipelineSet;
+   final @Nullable RenderPipeline opaquePartsPipeline;
    final Map<String, TextureBinding> textures;
    final TextureTransform textureTransform;
-   final OutputTarget outputTarget;
    final OutlineProperty outlineProperty;
    final boolean useLightmap;
    final boolean useOverlay;
    final boolean affectsCrumbling;
    final boolean sortOnUpload;
    final LayeringTransform layeringTransform;
+   final boolean forceSolidModelPhase;
 
-   private RenderSetup(final RenderPipeline pipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final OutputTarget outputTarget, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload) {
+   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final @Nullable RenderPipeline opaquePartsPipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
       super();
       this.pipeline = pipeline;
+      this.oitPipelineSet = oitPipelineSet;
+      this.opaquePartsPipeline = opaquePartsPipeline;
       this.textures = textures;
-      this.outputTarget = outputTarget;
       this.textureTransform = textureTransform;
       this.useLightmap = useLightmap;
       this.useOverlay = useOverlay;
@@ -40,6 +44,7 @@ public final class RenderSetup {
       this.layeringTransform = layeringTransform;
       this.affectsCrumbling = affectsCrumbling;
       this.sortOnUpload = sortOnUpload;
+      this.forceSolidModelPhase = forceSolidModelPhase;
    }
 
    public String toString() {
@@ -97,15 +102,19 @@ public final class RenderSetup {
 
    public static class RenderSetupBuilder {
       private final RenderPipeline pipeline;
+      private @Nullable OitPipelineSet oitPipelineSet;
+      private @Nullable RenderPipeline opaquePartsPipeline;
       private boolean useLightmap = false;
       private boolean useOverlay = false;
       private LayeringTransform layeringTransform;
       private OutputTarget outputTarget;
+      private @Nullable OutputTarget oitOutputTarget;
       private TextureTransform textureTransform;
       private boolean affectsCrumbling;
       private boolean sortOnUpload;
       private OutlineProperty outlineProperty;
       private final Map<String, TextureBinding> textures;
+      private boolean forceSolidModelPhase;
 
       private RenderSetupBuilder(final RenderPipeline pipeline) {
          super();
@@ -154,11 +163,6 @@ public final class RenderSetup {
          return this;
       }
 
-      public RenderSetupBuilder setOutputTarget(final OutputTarget outputTarget) {
-         this.outputTarget = outputTarget;
-         return this;
-      }
-
       public RenderSetupBuilder setTextureTransform(final TextureTransform textureTransform) {
          this.textureTransform = textureTransform;
          return this;
@@ -169,8 +173,23 @@ public final class RenderSetup {
          return this;
       }
 
+      public RenderSetupBuilder setOitPipelines(final OitPipelineSet oitPipelineSet) {
+         this.oitPipelineSet = oitPipelineSet;
+         return this;
+      }
+
+      public RenderSetupBuilder setOpaquePartsPipeline(final RenderPipeline opaquePartsPipeline) {
+         this.opaquePartsPipeline = opaquePartsPipeline;
+         return this;
+      }
+
+      public RenderSetupBuilder withForcedSolidModelPhase() {
+         this.forceSolidModelPhase = true;
+         return this;
+      }
+
       public RenderSetup createRenderSetup() {
-         return new RenderSetup(this.pipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.outputTarget, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload);
+         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.opaquePartsPipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
       }
    }
 

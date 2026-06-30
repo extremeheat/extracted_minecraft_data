@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,8 +21,6 @@ public abstract class SpreadingSnowyBlock extends SnowyBlock {
       super(properties);
       this.baseBlock = baseBlock;
    }
-
-   protected abstract MapCodec<? extends SpreadingSnowyBlock> codec();
 
    private static boolean canStayAlive(final BlockState state, final LevelReader level, final BlockPos pos) {
       BlockPos above = pos.above();

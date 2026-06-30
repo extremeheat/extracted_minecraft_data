@@ -279,6 +279,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_CHERRY_LOG;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_MANGROVE_LOG;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PALE_OAK_LOG;
+   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_POPLAR_LOG;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_ENCHANTED_IRON_PICKAXE;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_LONG_INVISIBILITY_POTION;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_TROPICAL_FISH_BUCKET;
@@ -532,6 +533,7 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_CHERRY_LOG, createWanderingTraderLogSell(Items.CHERRY_LOG));
       context.register(WANDERING_TRADER_EMERALD_MANGROVE_LOG, createWanderingTraderLogSell(Items.MANGROVE_LOG));
       context.register(WANDERING_TRADER_EMERALD_PALE_OAK_LOG, createWanderingTraderLogSell(Items.PALE_OAK_LOG));
+      context.register(WANDERING_TRADER_EMERALD_POPLAR_LOG, createWanderingTraderLogSell(Items.POPLAR_LOG));
       context.register(WANDERING_TRADER_EMERALD_ENCHANTED_IRON_PICKAXE, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.IRON_PICKAXE), 1, 1, 0.2F, Optional.empty(), enchantedItem(items, enchantmentsForTradedEquipment, Items.IRON_PICKAXE)));
       context.register(WANDERING_TRADER_EMERALD_LONG_INVISIBILITY_POTION, new VillagerTrade(new TradeCost(Items.EMERALD, 5), new ItemStackTemplate(Items.POTION), 1, 1, 0.05F, Optional.empty(), List.of(SetPotionFunction.setPotion(Potions.LONG_INVISIBILITY).build())));
       context.register(WANDERING_TRADER_EMERALD_TROPICAL_FISH_BUCKET, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.TROPICAL_FISH_BUCKET), 4, 1, 0.05F, Optional.empty(), List.of()));
@@ -1000,6 +1002,7 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_CHERRY_LOG = resourceKey("wandering_trader/emerald_cherry_log");
       WANDERING_TRADER_EMERALD_MANGROVE_LOG = resourceKey("wandering_trader/emerald_mangrove_log");
       WANDERING_TRADER_EMERALD_PALE_OAK_LOG = resourceKey("wandering_trader/emerald_pale_oak_log");
+      WANDERING_TRADER_EMERALD_POPLAR_LOG = resourceKey("wandering_trader/emerald_poplar_log");
       WANDERING_TRADER_EMERALD_ENCHANTED_IRON_PICKAXE = resourceKey("wandering_trader/emerald_enchanted_iron_pickaxe");
       WANDERING_TRADER_EMERALD_LONG_INVISIBILITY_POTION = resourceKey("wandering_trader/emerald_long_invisibility_potion");
       WANDERING_TRADER_EMERALD_TROPICAL_FISH_BUCKET = resourceKey("wandering_trader/emerald_fish_bucket");

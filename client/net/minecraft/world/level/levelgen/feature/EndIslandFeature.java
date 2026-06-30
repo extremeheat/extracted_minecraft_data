@@ -9,8 +9,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record EndIslandFeature() implements Feature {
-   public static final EndIslandFeature INSTANCE = new EndIslandFeature();
-   public static final MapCodec<EndIslandFeature> CODEC;
+   public static final MapCodec<EndIslandFeature> CODEC = MapCodec.unit(EndIslandFeature::new);
 
    public EndIslandFeature() {
       super();
@@ -36,9 +35,5 @@ public record EndIslandFeature() implements Feature {
       }
 
       return true;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

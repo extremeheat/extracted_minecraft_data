@@ -109,9 +109,9 @@ public class SoundEvents {
    public static final SoundEvent ARROW_HIT = register("entity.arrow.hit");
    public static final SoundEvent ARROW_HIT_PLAYER = register("entity.arrow.hit_player");
    public static final SoundEvent ARROW_SHOOT = register("entity.arrow.shoot");
-   public static final SoundEvent AXE_STRIP = register("item.axe.strip");
-   public static final SoundEvent AXE_SCRAPE = register("item.axe.scrape");
-   public static final SoundEvent AXE_WAX_OFF = register("item.axe.wax_off");
+   public static final Holder.Reference<SoundEvent> AXE_STRIP = registerForHolder("item.axe.strip");
+   public static final Holder.Reference<SoundEvent> AXE_SCRAPE = registerForHolder("item.axe.scrape");
+   public static final Holder.Reference<SoundEvent> AXE_WAX_OFF = registerForHolder("item.axe.wax_off");
    public static final SoundEvent AXOLOTL_ATTACK = register("entity.axolotl.attack");
    public static final SoundEvent AXOLOTL_DEATH = register("entity.axolotl.death");
    public static final SoundEvent AXOLOTL_HURT = register("entity.axolotl.hurt");
@@ -816,7 +816,7 @@ public class SoundEvents {
    public static final SoundEvent HARNESS_UNEQUIP = register("entity.happy_ghast.unequip");
    public static final SoundEvent HARNESS_GOGGLES_UP = register("entity.happy_ghast.harness_goggles_up");
    public static final SoundEvent HARNESS_GOGGLES_DOWN = register("entity.happy_ghast.harness_goggles_down");
-   public static final SoundEvent HOE_TILL = register("item.hoe.till");
+   public static final Holder.Reference<SoundEvent> HOE_TILL = registerForHolder("item.hoe.till");
    public static final SoundEvent HOGLIN_AMBIENT = register("entity.hoglin.ambient");
    public static final SoundEvent HOGLIN_ANGRY = register("entity.hoglin.angry");
    public static final SoundEvent HOGLIN_ATTACK = register("entity.hoglin.attack");
@@ -1437,7 +1437,7 @@ public class SoundEvents {
    public static final SoundEvent SHROOMLIGHT_PLACE = register("block.shroomlight.place");
    public static final SoundEvent SHROOMLIGHT_HIT = register("block.shroomlight.hit");
    public static final SoundEvent SHROOMLIGHT_FALL = register("block.shroomlight.fall");
-   public static final SoundEvent SHOVEL_FLATTEN = register("item.shovel.flatten");
+   public static final Holder.Reference<SoundEvent> SHOVEL_FLATTEN = registerForHolder("item.shovel.flatten");
    public static final SoundEvent SHULKER_AMBIENT = register("entity.shulker.ambient");
    public static final SoundEvent SHULKER_BOX_CLOSE = register("block.shulker_box.close");
    public static final SoundEvent SHULKER_BOX_OPEN = register("block.shulker_box.open");

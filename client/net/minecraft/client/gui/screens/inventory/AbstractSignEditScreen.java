@@ -83,6 +83,10 @@ public abstract class AbstractSignEditScreen extends Screen {
       }
    }
 
+   public boolean isInputCaptured() {
+      return this.signField != null;
+   }
+
    public boolean charTyped(final CharacterEvent event) {
       this.signField.charTyped(event);
       return true;

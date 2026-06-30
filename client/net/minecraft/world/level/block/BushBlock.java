@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -15,14 +12,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BushBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<BushBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(propertiesCodec(), Codec.intRange(0, 16).fieldOf("shape_height").forGetter((b) -> b.shapeHeight)).apply(i, BushBlock::new));
    public static final int DEFAULT_SHAPE_HEIGHT = 13;
    private final VoxelShape shape;
    private final int shapeHeight;
-
-   public MapCodec<BushBlock> codec() {
-      return CODEC;
-   }
 
    protected BushBlock(final BlockBehaviour.Properties properties) {
       this(properties, 13);

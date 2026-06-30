@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,8 +32,6 @@ public abstract class BaseFireBlock extends Block {
       super(properties);
       this.fireDamage = fireDamage;
    }
-
-   protected abstract MapCodec<? extends BaseFireBlock> codec();
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       return getState(context.getLevel(), context.getClickedPos());

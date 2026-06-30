@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
@@ -194,22 +193,6 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    public @Nullable BlendingData getBlendingData() {
       return this.wrapped.getBlendingData();
-   }
-
-   public CarvingMask getCarvingMask() {
-      if (this.allowWrites) {
-         return super.getCarvingMask();
-      } else {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
-      }
-   }
-
-   public CarvingMask getOrCreateCarvingMask() {
-      if (this.allowWrites) {
-         return super.getOrCreateCarvingMask();
-      } else {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
-      }
    }
 
    public LevelChunk getWrapped() {

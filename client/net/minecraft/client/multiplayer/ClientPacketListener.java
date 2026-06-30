@@ -278,6 +278,7 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -361,6 +362,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private static final PermissionCheck RESTRICTED_COMMAND_CHECK;
    private static final PermissionSet ALLOW_RESTRICTED_COMMANDS;
    private static final ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider> COMMAND_NODE_BUILDER;
+   private static final EntitySpawnRequest ENTITY_SPAWN_REQUEST;
    private final GameProfile localGameProfile;
    private ClientLevel level;
    private ClientLevel.ClientLevelData levelData;
@@ -571,7 +573,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             return new RemotePlayer(this.level, playerInfo.getProfile());
          }
       } else {
-         return type.create(this.level, (EntitySpawnReason)EntitySpawnReason.LOAD);
+         return type.create(this.level, (EntitySpawnRequest)ENTITY_SPAWN_REQUEST);
       }
    }
 
@@ -901,10 +903,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity from = this.level.getEntity(packet.getItemId());
       LivingEntity to = (LivingEntity)this.level.getEntity(packet.getPlayerId());
-      if (to == null) {
-         to = this.minecraft.player;
-      }
-
       if (from != null) {
          if (from instanceof ExperienceOrb) {
             this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.35F + 0.9F, false);
@@ -913,7 +911,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
          EntityRenderState itemState = this.minecraft.getEntityRenderDispatcher().extractEntity(from, 1.0F);
-         this.minecraft.particleEngine.add(new ItemPickupParticle(this.level, itemState, to, from.getDeltaMovement()));
+         if (to != null) {
+            this.minecraft.particleEngine.add(new ItemPickupParticle(this.level, itemState, to, from.getDeltaMovement()));
+         }
+
          if (from instanceof ItemEntity) {
             ItemEntity itemEntity = (ItemEntity)from;
             ItemStack itemStack = itemEntity.getItem();
@@ -2670,6 +2671,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             return builder;
          }
       };
+      ENTITY_SPAWN_REQUEST = new EntitySpawnRequest(EntitySpawnReason.LOAD, true);
    }
 
    private static enum CommandCheckResult {

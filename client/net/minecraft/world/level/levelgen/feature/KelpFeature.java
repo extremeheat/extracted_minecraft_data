@@ -11,8 +11,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public record KelpFeature() implements Feature {
-   public static final KelpFeature INSTANCE = new KelpFeature();
-   public static final MapCodec<KelpFeature> CODEC;
+   public static final MapCodec<KelpFeature> CODEC = MapCodec.unit(KelpFeature::new);
 
    public KelpFeature() {
       super();
@@ -53,9 +52,5 @@ public record KelpFeature() implements Feature {
       }
 
       return placed > 0;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

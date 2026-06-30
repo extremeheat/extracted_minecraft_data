@@ -37,6 +37,7 @@ public class IntProviders {
       Registry.register(registry, (String)"constant", ConstantInt.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformInt.MAP_CODEC);
       Registry.register(registry, (String)"biased_to_bottom", BiasedToBottomInt.MAP_CODEC);
+      Registry.register(registry, (String)"very_biased_to_bottom", VeryBiasedToBottomInt.MAP_CODEC);
       Registry.register(registry, (String)"clamped", ClampedInt.MAP_CODEC);
       Registry.register(registry, (String)"weighted_list", WeightedListInt.MAP_CODEC);
       Registry.register(registry, (String)"clamped_normal", ClampedNormalInt.MAP_CODEC);

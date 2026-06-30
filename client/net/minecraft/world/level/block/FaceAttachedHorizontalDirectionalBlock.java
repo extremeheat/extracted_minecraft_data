@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -20,8 +19,6 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    protected FaceAttachedHorizontalDirectionalBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec();
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
       return canAttach(level, pos, getConnectedDirection(state).getOpposite());

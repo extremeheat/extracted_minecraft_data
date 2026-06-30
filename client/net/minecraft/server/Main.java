@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
@@ -130,7 +130,7 @@ public class Main {
          }
 
          File universePath = new File((String)options.valueOf(universe));
-         Services services = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), universePath);
+         Services services = Services.create(MinecraftServicesDiscoveryService.create(Proxy.NO_PROXY), universePath);
          NotificationManager notificationManager = new NotificationManager();
          ManagementServer jsonRpcServer = JsonRpc.create(settings, notificationManager);
          String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);

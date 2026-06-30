@@ -66,7 +66,7 @@ public class LevelEvent {
    public static final int ANIMATION_END_GATEWAY_SPAWN = 3000;
    public static final int ANIMATION_DRAGON_SUMMON_ROAR = 3001;
    public static final int PARTICLES_ELECTRIC_SPARK = 3002;
-   public static final int PARTICLES_AND_SOUND_WAX_ON = 3003;
+   public static final int PARTICLES_WAX_ON = 3003;
    public static final int PARTICLES_WAX_OFF = 3004;
    public static final int PARTICLES_SCRAPE = 3005;
    public static final int PARTICLES_SCULK_CHARGE = 3006;

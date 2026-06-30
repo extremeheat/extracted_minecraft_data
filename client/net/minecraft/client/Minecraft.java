@@ -7,10 +7,10 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.minecraft.BanDetails;
 import com.mojang.authlib.minecraft.UserApiService;
 import com.mojang.authlib.minecraft.UserApiService.UserFlag;
-import com.mojang.authlib.yggdrasil.FriendsService;
-import com.mojang.authlib.yggdrasil.ProfileActionType;
-import com.mojang.authlib.yggdrasil.ProfileResult;
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.services.FriendsService;
+import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
+import com.mojang.authlib.services.ProfileActionType;
+import com.mojang.authlib.services.ProfileResult;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -78,12 +78,10 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.entity.ClientMannequin;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
@@ -408,11 +406,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.vanillaPackResources = clientPackSource.getVanillaPack();
       this.proxy = gameConfig.user.proxy;
       this.offlineDeveloperMode = gameConfig.game.offlineDeveloperMode;
-      YggdrasilAuthenticationService authenticationService = this.offlineDeveloperMode ? YggdrasilAuthenticationService.createOffline(this.proxy) : new YggdrasilAuthenticationService(this.proxy);
-      this.services = Services.create(authenticationService, this.gameDirectory);
+      MinecraftServicesDiscoveryService discoveryService = MinecraftServicesDiscoveryService.create(this.proxy, this.offlineDeveloperMode);
+      this.services = Services.create(discoveryService, this.gameDirectory);
       this.user = gameConfig.user.user;
       this.profileFuture = this.offlineDeveloperMode ? CompletableFuture.completedFuture((Object)null) : CompletableFuture.supplyAsync(() -> this.services.sessionService().fetchProfile(this.user.getProfileId(), true), Util.nonCriticalIoPool());
-      this.userApiService = createUserApiService(authenticationService, gameConfig);
+      this.userApiService = createUserApiService(discoveryService, gameConfig);
       this.userPropertiesFuture = CompletableFuture.supplyAsync(() -> {
          try {
             return this.userApiService.fetchProperties();
@@ -482,7 +480,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             GLFW.glfwDefaultWindowHints();
             GLFW.glfwWindowHint(131088, GLX.glfwBool(!(Boolean)this.options.exclusiveFullscreen().get()));
             windowCandidate = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend);
-            device = windowCandidate.backend().createDevice(windowCandidate.handle(), (id, type) -> this.getShaderManager().getShader(id, type), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation), this::loadCriticalShaders);
+            device = windowCandidate.backend().createDevice(windowCandidate.handle(), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation));
             DeviceInfo deviceInfo = device.getDeviceInfo();
             int maxSize = deviceInfo.limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
             GLFW.glfwSetWindowSizeLimits(windowCandidate.handle(), -1, -1, maxSize, maxSize);
@@ -587,7 +585,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager.registerReloadListener(this.palettedTextureManager);
          this.mapTextureManager = new MapTextureManager(this.textureManager);
          this.mapRenderer = new MapRenderer(this.atlasManager, this.mapTextureManager);
-         FriendsService friendsService = authenticationService.createFriendsService(this.user.getAccessToken());
+         FriendsService friendsService = discoveryService.createFriendsService(this.user.getAccessToken());
          this.remoteFriendListUpdateHandler = new RemoteFriendListUpdateHandler(friendsService, this);
          this.playerSocialManager = new PlayerSocialManager(this, this.userApiService, friendsService, this.remoteFriendListUpdateHandler);
          if (this.playerSocialManager.isFriendListEnabled()) {
@@ -780,8 +778,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return builder.toString();
    }
 
-   private static UserApiService createUserApiService(final YggdrasilAuthenticationService authService, final GameConfig config) {
-      return config.game.offlineDeveloperMode ? UserApiService.OFFLINE : authService.createUserApiService(config.user.user.getAccessToken());
+   private static UserApiService createUserApiService(final MinecraftServicesDiscoveryService discoveryService, final GameConfig config) {
+      return config.game.offlineDeveloperMode ? UserApiService.OFFLINE : discoveryService.createUserApiService(config.user.user.getAccessToken());
    }
 
    public boolean isOfflineDeveloperMode() {
@@ -2206,7 +2204,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Screenshot.grab(this, controlDown);
          return true;
       } else {
-         return this.options.keyFriends.matches(key) ? this.toggleFriendsScreen() : false;
+         Screen current = this.gui.screen();
+         if (current != null && current.isInputCaptured()) {
+            return false;
+         } else {
+            return this.options.keyFriends.matches(key) ? this.toggleFriendsScreen() : false;
+         }
       }
    }
 
@@ -2230,14 +2233,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Screen current = this.gui.screen();
          if (current instanceof FriendsOverlayScreen) {
             FriendsOverlayScreen friends = (FriendsOverlayScreen)current;
-            ComponentPath focusPath = current.getCurrentFocusPath();
-            if (focusPath == null || !(focusPath.leafComponent() instanceof EditBox)) {
-               friends.onClose();
-               return true;
-            }
-         }
-
-         if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
+            friends.onClose();
+            return true;
+         } else if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
             return false;
          } else {
             OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(current)), current);

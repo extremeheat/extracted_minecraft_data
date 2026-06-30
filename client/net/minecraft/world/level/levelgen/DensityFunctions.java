@@ -21,6 +21,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.BoundedFloatFunction;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Interval;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -205,7 +206,7 @@ public final class DensityFunctions {
    }
 
    public static DensityFunction map(final DensityFunction function, final Mapped.Type type) {
-      return DensityFunctions.Mapped.create(type, function);
+      return new Mapped(type, function);
    }
 
    private static DensityFunction mapFromUnitTo(final DensityFunction function, final double min, final double max) {
@@ -306,12 +307,8 @@ public final class DensityFunctions {
          Arrays.fill(output, 1.0);
       }
 
-      public double minValue() {
-         return 1.0;
-      }
-
-      public double maxValue() {
-         return 1.0;
+      public Interval range() {
+         return Interval.of(0.0, 1.0);
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -340,12 +337,8 @@ public final class DensityFunctions {
          Arrays.fill(output, 0.0);
       }
 
-      public double minValue() {
-         return 0.0;
-      }
-
-      public double maxValue() {
-         return 0.0;
+      public Interval range() {
+         return Interval.INFINITE;
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -360,6 +353,10 @@ public final class DensityFunctions {
 
    public interface BeardifierOrMarker extends DensityFunction.SimpleFunction {
       KeyDispatchDataCodec<DensityFunction> CODEC = KeyDispatchDataCodec.<DensityFunction>of(MapCodec.unit(DensityFunctions.BeardifierMarker.INSTANCE));
+
+      default Interval range() {
+         return Beardifier.RANGE;
+      }
 
       default KeyDispatchDataCodec<? extends DensityFunction> codec() {
          return CODEC;
@@ -378,14 +375,6 @@ public final class DensityFunctions {
 
       public void fillArray(final double[] output, final DensityFunction.ContextProvider contextProvider) {
          Arrays.fill(output, 0.0);
-      }
-
-      public double minValue() {
-         return 0.0;
-      }
-
-      public double maxValue() {
-         return 0.0;
       }
 
       // $FF: synthetic method
@@ -412,12 +401,8 @@ public final class DensityFunctions {
          return new HolderHolder(Holder.direct(visitor.apply(this.function.value())));
       }
 
-      public double minValue() {
-         return this.function.isBound() ? ((DensityFunction)this.function.value()).minValue() : -1.0 / 0.0;
-      }
-
-      public double maxValue() {
-         return this.function.isBound() ? ((DensityFunction)this.function.value()).maxValue() : 1.0 / 0.0;
+      public Interval range() {
+         return this.function.isBound() ? ((DensityFunction)this.function.value()).range() : Interval.INFINITE;
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -452,12 +437,24 @@ public final class DensityFunctions {
          this.wrapped.fillArray(output, contextProvider);
       }
 
-      public double minValue() {
-         return this.type == DensityFunctions.Marker.Type.BlendDensity ? -1.0 / 0.0 : this.wrapped.minValue();
-      }
+      public Interval range() {
+         Interval var10000;
+         switch (this.type.ordinal()) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+               var10000 = this.wrapped.range();
+               break;
+            case 5:
+               var10000 = Interval.INFINITE;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
 
-      public double maxValue() {
-         return this.type == DensityFunctions.Marker.Type.BlendDensity ? 1.0 / 0.0 : this.wrapped.maxValue();
+         return var10000;
       }
 
       public static enum Type implements StringRepresentable {
@@ -509,12 +506,8 @@ public final class DensityFunctions {
          return new Noise(visitor.visitNoise(this.noise), this.xzScale, this.yScale);
       }
 
-      public double minValue() {
-         return -this.maxValue();
-      }
-
-      public double maxValue() {
-         return this.noise.maxValue();
+      public Interval range() {
+         return Interval.ofSymmetric(this.noise.maxValue());
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -574,12 +567,8 @@ public final class DensityFunctions {
          return ((double)getHeightValue(this.islandNoise, context.blockX() / 8, context.blockZ() / 8) - 8.0) / 128.0;
       }
 
-      public double minValue() {
-         return -0.84375;
-      }
-
-      public double maxValue() {
-         return 0.5625;
+      public Interval range() {
+         return Interval.of(-0.84375, 0.5625);
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -610,12 +599,8 @@ public final class DensityFunctions {
          return new ShiftedNoise(visitor.apply(this.shiftX), visitor.apply(this.shiftY), visitor.apply(this.shiftZ), this.xzScale, this.yScale, visitor.visitNoise(this.noise));
       }
 
-      public double minValue() {
-         return -this.maxValue();
-      }
-
-      public double maxValue() {
-         return this.noise.maxValue();
+      public Interval range() {
+         return Interval.ofSymmetric(this.noise.maxValue());
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -658,12 +643,8 @@ public final class DensityFunctions {
          return new RangeChoice(visitor.apply(this.input), this.minInclusive, this.maxExclusive, visitor.apply(this.whenInRange), visitor.apply(this.whenOutOfRange));
       }
 
-      public double minValue() {
-         return Math.min(this.whenInRange.minValue(), this.whenOutOfRange.minValue());
-      }
-
-      public double maxValue() {
-         return Math.max(this.whenInRange.maxValue(), this.whenOutOfRange.maxValue());
+      public Interval range() {
+         return Interval.encapsulating(this.whenInRange.range(), this.whenOutOfRange.range());
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -726,24 +707,8 @@ public final class DensityFunctions {
          return new IntervalSelect(var10002, var10003, List.copyOf(Lists.transform(var10004, visitor::apply)));
       }
 
-      public double minValue() {
-         double minValue = 1.7976931348623157E308;
-
-         for(DensityFunction function : this.functions) {
-            minValue = Math.min(function.minValue(), minValue);
-         }
-
-         return minValue;
-      }
-
-      public double maxValue() {
-         double maxValue = -1.7976931348623157E308;
-
-         for(DensityFunction function : this.functions) {
-            maxValue = Math.max(function.maxValue(), maxValue);
-         }
-
-         return maxValue;
+      public Interval range() {
+         return Interval.encapsulating(Lists.transform(this.functions, DensityFunction::range));
       }
 
       public KeyDispatchDataCodec<IntervalSelect> codec() {
@@ -760,12 +725,8 @@ public final class DensityFunctions {
    protected interface ShiftNoise extends DensityFunction {
       DensityFunction.NoiseHolder offsetNoise();
 
-      default double minValue() {
-         return -this.maxValue();
-      }
-
-      default double maxValue() {
-         return this.offsetNoise().maxValue() * 4.0;
+      default Interval range() {
+         return Interval.ofSymmetric(this.offsetNoise().maxValue() * 4.0);
       }
 
       default double compute(final double localX, final double localY, final double localZ) {
@@ -849,24 +810,32 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Clamp(DensityFunction input, double minValue, double maxValue) implements PureTransformer {
-      private static final MapCodec<Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(Clamp::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min").forGetter(Clamp::minValue), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max").forGetter(Clamp::maxValue)).apply(i, Clamp::new));
+   protected static record Clamp(DensityFunction input, double min, double max) implements PureTransformer {
+      private static final MapCodec<Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(Clamp::input), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min").forGetter(Clamp::min), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max").forGetter(Clamp::max)).apply(i, Clamp::new)).validate(Clamp::validate);
       public static final KeyDispatchDataCodec<Clamp> CODEC;
 
       protected Clamp {
          super();
       }
 
+      private static DataResult<Clamp> validate(final Clamp clamp) {
+         return clamp.max < clamp.min ? DataResult.error(() -> "min (" + clamp.min + ") must be less than or equal to max (" + clamp.max + ")") : DataResult.success(clamp);
+      }
+
       public double transform(final double input) {
-         return Mth.clamp(input, this.minValue, this.maxValue);
+         return Mth.clamp(input, this.min, this.max);
       }
 
       public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-         return new Clamp(visitor.apply(this.input), this.minValue, this.maxValue);
+         return new Clamp(visitor.apply(this.input), this.min, this.max);
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
          return CODEC;
+      }
+
+      public Interval range() {
+         return Interval.clamp(this.input.range(), this.min, this.max);
       }
 
       static {
@@ -874,21 +843,9 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Mapped(Type type, DensityFunction input, double minValue, double maxValue) implements PureTransformer {
+   protected static record Mapped(Type type, DensityFunction input) implements PureTransformer {
       protected Mapped {
          super();
-      }
-
-      public static Mapped create(final Type type, final DensityFunction input) {
-         double minValue = input.minValue();
-         double maxValue = input.maxValue();
-         double minImage = transform(type, minValue);
-         double maxImage = transform(type, maxValue);
-         if (type == DensityFunctions.Mapped.Type.INVERT) {
-            return minValue < 0.0 && maxValue > 0.0 ? new Mapped(type, input, -1.0 / 0.0, 1.0 / 0.0) : new Mapped(type, input, maxImage, minImage);
-         } else {
-            return type != DensityFunctions.Mapped.Type.ABS && type != DensityFunctions.Mapped.Type.SQUARE ? new Mapped(type, input, minImage, maxImage) : new Mapped(type, input, Math.max(0.0, minValue), Math.max(minImage, maxImage));
-         }
       }
 
       private static double transform(final Type type, final double input) {
@@ -928,11 +885,37 @@ public final class DensityFunctions {
       }
 
       public Mapped mapChildren(final DensityFunction.Visitor visitor) {
-         return create(this.type, visitor.apply(this.input));
+         return new Mapped(this.type, visitor.apply(this.input));
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
          return this.type.codec;
+      }
+
+      public Interval range() {
+         Interval input = this.input.range();
+         Interval var10000;
+         switch (this.type.ordinal()) {
+            case 0:
+               var10000 = Interval.abs(input);
+               break;
+            case 1:
+               var10000 = Interval.square(input);
+               break;
+            case 2:
+            case 3:
+            case 4:
+            case 6:
+               var10000 = Interval.mapMonotonic(input, (value) -> transform(this.type, value));
+               break;
+            case 5:
+               var10000 = Interval.inverse(input);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
 
       public static enum Type implements StringRepresentable {
@@ -945,7 +928,7 @@ public final class DensityFunctions {
          SQUEEZE("squeeze");
 
          private final String name;
-         private final KeyDispatchDataCodec<Mapped> codec = DensityFunctions.<Mapped>singleFunctionArgumentCodec((input) -> DensityFunctions.Mapped.create(this, input), Mapped::input);
+         private final KeyDispatchDataCodec<Mapped> codec = DensityFunctions.<Mapped>singleFunctionArgumentCodec((input) -> new Mapped(this, input), Mapped::input);
 
          private Type(final String name) {
             this.name = name;
@@ -966,50 +949,19 @@ public final class DensityFunctions {
       Logger LOGGER = LogUtils.getLogger();
 
       static TwoArgumentSimpleFunction create(final Type type, final DensityFunction argument1, final DensityFunction argument2) {
-         double min1 = argument1.minValue();
-         double min2 = argument2.minValue();
-         double max1 = argument1.maxValue();
-         double max2 = argument2.maxValue();
-         if (type == DensityFunctions.TwoArgumentSimpleFunction.Type.MIN || type == DensityFunctions.TwoArgumentSimpleFunction.Type.MAX) {
-            boolean firstAlwaysBiggerThanSecond = min1 >= max2;
-            boolean secondAlwaysBiggerThanFirst = min2 >= max1;
-            if (firstAlwaysBiggerThanSecond || secondAlwaysBiggerThanFirst) {
-               LOGGER.warn("Creating a {} function between two non-overlapping inputs: {} and {}", new Object[]{type, argument1, argument2});
-            }
-         }
-
-         double var10000;
-         switch (type.ordinal()) {
-            case 0 -> var10000 = min1 + min2;
-            case 1 -> var10000 = min1 > 0.0 && min2 > 0.0 ? min1 * min2 : (max1 < 0.0 && max2 < 0.0 ? max1 * max2 : Math.min(min1 * max2, max1 * min2));
-            case 2 -> var10000 = Math.min(min1, min2);
-            case 3 -> var10000 = Math.max(min1, min2);
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-
-         double minValue = var10000;
-         switch (type.ordinal()) {
-            case 0 -> var10000 = max1 + max2;
-            case 1 -> var10000 = min1 > 0.0 && min2 > 0.0 ? max1 * max2 : (max1 < 0.0 && max2 < 0.0 ? min1 * min2 : Math.max(min1 * min2, max1 * max2));
-            case 2 -> var10000 = Math.min(max1, max2);
-            case 3 -> var10000 = Math.max(max1, max2);
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-
-         double maxValue = var10000;
          if (type == DensityFunctions.TwoArgumentSimpleFunction.Type.MUL || type == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD) {
             if (argument1 instanceof Constant) {
                Constant constant = (Constant)argument1;
-               return new MulOrAdd(type == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD ? DensityFunctions.MulOrAdd.Type.ADD : DensityFunctions.MulOrAdd.Type.MUL, argument2, minValue, maxValue, constant.value);
+               return new MulOrAdd(type == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD ? DensityFunctions.MulOrAdd.Type.ADD : DensityFunctions.MulOrAdd.Type.MUL, argument2, constant.value);
             }
 
             if (argument2 instanceof Constant) {
                Constant constant = (Constant)argument2;
-               return new MulOrAdd(type == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD ? DensityFunctions.MulOrAdd.Type.ADD : DensityFunctions.MulOrAdd.Type.MUL, argument1, minValue, maxValue, constant.value);
+               return new MulOrAdd(type == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD ? DensityFunctions.MulOrAdd.Type.ADD : DensityFunctions.MulOrAdd.Type.MUL, argument1, constant.value);
             }
          }
 
-         return new Ap2(type, argument1, argument2, minValue, maxValue);
+         return new Ap2(type, argument1, argument2);
       }
 
       Type type();
@@ -1046,7 +998,7 @@ public final class DensityFunctions {
       }
    }
 
-   private static record MulOrAdd(Type specificType, DensityFunction input, double minValue, double maxValue, double argument) implements TwoArgumentSimpleFunction, PureTransformer {
+   private static record MulOrAdd(Type specificType, DensityFunction input, double argument) implements TwoArgumentSimpleFunction, PureTransformer {
       private MulOrAdd {
          super();
       }
@@ -1075,23 +1027,18 @@ public final class DensityFunctions {
       }
 
       public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-         DensityFunction function = visitor.apply(this.input);
-         double min = function.minValue();
-         double max = function.maxValue();
-         double minValue;
-         double maxValue;
-         if (this.specificType == DensityFunctions.MulOrAdd.Type.ADD) {
-            minValue = min + this.argument;
-            maxValue = max + this.argument;
-         } else if (this.argument >= 0.0) {
-            minValue = min * this.argument;
-            maxValue = max * this.argument;
-         } else {
-            minValue = max * this.argument;
-            maxValue = min * this.argument;
+         return new MulOrAdd(this.specificType, visitor.apply(this.input), this.argument);
+      }
+
+      public Interval range() {
+         Interval var10000;
+         switch (this.specificType.ordinal()) {
+            case 0 -> var10000 = Interval.mul(this.input.range(), Interval.ofExact(this.argument));
+            case 1 -> var10000 = Interval.add(this.input.range(), Interval.ofExact(this.argument));
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         return new MulOrAdd(this.specificType, function, minValue, maxValue, this.argument);
+         return var10000;
       }
 
       public static enum Type {
@@ -1108,7 +1055,16 @@ public final class DensityFunctions {
       }
    }
 
-   private static record Ap2(TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue) implements TwoArgumentSimpleFunction {
+   private static record Ap2(TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue2, double maxValue2) implements TwoArgumentSimpleFunction {
+      public Ap2(final TwoArgumentSimpleFunction.Type type, final DensityFunction argument1, final DensityFunction argument2) {
+         Interval range2 = argument2.range();
+         this(type, argument1, argument2, range2.min(), range2.max());
+         if ((type == DensityFunctions.TwoArgumentSimpleFunction.Type.MIN || type == DensityFunctions.TwoArgumentSimpleFunction.Type.MAX) && !argument1.range().intersects(range2)) {
+            LOGGER.warn("Creating a {} function between two non-overlapping inputs: {} and {}", new Object[]{type, argument1, argument2});
+         }
+
+      }
+
       private Ap2 {
          super();
       }
@@ -1119,8 +1075,8 @@ public final class DensityFunctions {
          switch (this.type.ordinal()) {
             case 0 -> var10000 = v1 + this.argument2.compute(context);
             case 1 -> var10000 = v1 == 0.0 ? 0.0 : v1 * this.argument2.compute(context);
-            case 2 -> var10000 = v1 < this.argument2.minValue() ? v1 : Math.min(v1, this.argument2.compute(context));
-            case 3 -> var10000 = v1 > this.argument2.maxValue() ? v1 : Math.max(v1, this.argument2.compute(context));
+            case 2 -> var10000 = v1 < this.minValue2 ? v1 : Math.min(v1, this.argument2.compute(context));
+            case 3 -> var10000 = v1 > this.maxValue2 ? v1 : Math.max(v1, this.argument2.compute(context));
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -1145,19 +1101,15 @@ public final class DensityFunctions {
                }
                break;
             case 2:
-               double min = this.argument2.minValue();
-
                for(int i = 0; i < output.length; ++i) {
                   double v = output[i];
-                  output[i] = v < min ? v : Math.min(v, this.argument2.compute(contextProvider.forIndex(i)));
+                  output[i] = v < this.minValue2 ? v : Math.min(v, this.argument2.compute(contextProvider.forIndex(i)));
                }
                break;
             case 3:
-               double max = this.argument2.maxValue();
-
                for(int i = 0; i < output.length; ++i) {
                   double v = output[i];
-                  output[i] = v > max ? v : Math.max(v, this.argument2.compute(contextProvider.forIndex(i)));
+                  output[i] = v > this.maxValue2 ? v : Math.max(v, this.argument2.compute(contextProvider.forIndex(i)));
                }
          }
 
@@ -1165,6 +1117,21 @@ public final class DensityFunctions {
 
       public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
          return DensityFunctions.TwoArgumentSimpleFunction.create(this.type, visitor.apply(this.argument1), visitor.apply(this.argument2));
+      }
+
+      public Interval range() {
+         Interval range1 = this.argument1.range();
+         Interval range2 = this.argument2.range();
+         Interval var10000;
+         switch (this.type.ordinal()) {
+            case 0 -> var10000 = Interval.add(range1, range2);
+            case 1 -> var10000 = Interval.mul(range1, range2);
+            case 2 -> var10000 = Interval.min(range1, range2);
+            case 3 -> var10000 = Interval.max(range1, range2);
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
    }
 
@@ -1185,12 +1152,8 @@ public final class DensityFunctions {
          return (double)this.sampler.apply(new Point(context));
       }
 
-      public double minValue() {
-         return (double)this.spline.minValue();
-      }
-
-      public double maxValue() {
-         return (double)this.spline.maxValue();
+      public Interval range() {
+         return this.spline.range();
       }
 
       public void fillArray(final double[] output, final DensityFunction.ContextProvider contextProvider) {
@@ -1252,12 +1215,8 @@ public final class DensityFunctions {
             return (float)this.function.compute(point.context());
          }
 
-         public float minValue() {
-            return (float)this.function.minValue();
-         }
-
-         public float maxValue() {
-            return (float)this.function.maxValue();
+         public Interval range() {
+            return this.function.range();
          }
 
          public Coordinate mapChildren(final DensityFunction.Visitor visitor) {
@@ -1292,12 +1251,8 @@ public final class DensityFunctions {
          Arrays.fill(output, this.value);
       }
 
-      public double minValue() {
-         return this.value;
-      }
-
-      public double maxValue() {
-         return this.value;
+      public Interval range() {
+         return Interval.ofExact(this.value);
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -1322,12 +1277,8 @@ public final class DensityFunctions {
          return Mth.clampedMap((double)context.blockY(), (double)this.fromY, (double)this.toY, this.fromValue, this.toValue);
       }
 
-      public double minValue() {
-         return Math.min(this.fromValue, this.toValue);
-      }
-
-      public double maxValue() {
-         return Math.max(this.fromValue, this.toValue);
+      public Interval range() {
+         return Interval.encapsulating(this.fromValue, this.toValue);
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -1370,12 +1321,8 @@ public final class DensityFunctions {
          return new FindTopSurface(visitor.apply(this.density), visitor.apply(this.upperBound), this.lowerBound, this.cellHeight);
       }
 
-      public double minValue() {
-         return (double)this.lowerBound;
-      }
-
-      public double maxValue() {
-         return Math.max((double)this.lowerBound, this.upperBound.maxValue());
+      public Interval range() {
+         return Interval.of((double)this.lowerBound, Math.max((double)this.lowerBound, this.upperBound.range().max()));
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {

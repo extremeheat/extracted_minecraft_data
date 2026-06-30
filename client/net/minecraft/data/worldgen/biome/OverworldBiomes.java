@@ -21,7 +21,7 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class OverworldBiomes {
@@ -52,7 +52,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addSurfaceFreezing(generation);
    }
 
-   public static Biome oldGrowthTaiga(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean spruce) {
+   public static Biome oldGrowthTaiga(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean spruce) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.WOLF, 4, 4));
@@ -80,28 +80,28 @@ public class OverworldBiomes {
       return baseBiome(spruce ? 0.25F : 0.3F, 0.8F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_OLD_GROWTH_TAIGA)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome sparseJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome sparseJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.baseJungleSpawns(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.WOLF, 2, 4));
       return baseJungle(placedFeatures, carvers, 0.8F, false, true, false).mobSpawnSettings(mobs.build()).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SPARSE_JUNGLE)).build();
    }
 
-   public static Biome jungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome jungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.baseJungleSpawns(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 40, new MobSpawnSettings.SpawnerData(EntityTypes.PARROT, 1, 2)).addSpawn(MobCategory.MONSTER, 2, new MobSpawnSettings.SpawnerData(EntityTypes.OCELOT, 1, 3)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.PANDA, 1, 2));
       return baseJungle(placedFeatures, carvers, 0.9F, false, false, true).mobSpawnSettings(mobs.build()).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_JUNGLE)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).build();
    }
 
-   public static Biome bambooJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome bambooJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.baseJungleSpawns(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 40, new MobSpawnSettings.SpawnerData(EntityTypes.PARROT, 1, 2)).addSpawn(MobCategory.CREATURE, 80, new MobSpawnSettings.SpawnerData(EntityTypes.PANDA, 1, 2)).addSpawn(MobCategory.MONSTER, 2, new MobSpawnSettings.SpawnerData(EntityTypes.OCELOT, 1, 1));
       return baseJungle(placedFeatures, carvers, 0.9F, true, false, true).mobSpawnSettings(mobs.build()).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_BAMBOO_JUNGLE)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).build();
    }
 
-   private static Biome.BiomeBuilder baseJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final float downfall, final boolean bamboo, final boolean sparse, final boolean core) {
+   private static Biome.BiomeBuilder baseJungle(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final float downfall, final boolean bamboo, final boolean sparse, final boolean core) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
       BiomeDefaultFeatures.addDefaultOres(generation);
@@ -134,7 +134,7 @@ public class OverworldBiomes {
       return baseBiome(0.95F, downfall).generationSettings(generation.build());
    }
 
-   public static Biome windsweptHills(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean moreTrees) {
+   public static Biome windsweptHills(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean moreTrees) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.LLAMA, 4, 6));
@@ -159,7 +159,7 @@ public class OverworldBiomes {
       return baseBiome(0.2F, 0.3F).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome desert(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome desert(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.desertSpawns(mobs);
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
@@ -176,7 +176,7 @@ public class OverworldBiomes {
       return baseBiome(2.0F, 0.0F).hasPrecipitation(false).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_DESERT)).setAttribute(EnvironmentAttributes.SNOW_GOLEM_MELTS, true).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome plains(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean sunflower, final boolean snowy, final boolean spikes) {
+   public static Biome plains(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean sunflower, final boolean snowy, final boolean spikes) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
@@ -212,7 +212,7 @@ public class OverworldBiomes {
       return baseBiome(snowy ? 0.0F : 0.8F, snowy ? 0.5F : 0.4F).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome mushroomFields(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome mushroomFields(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.mooshroomSpawns(mobs);
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
@@ -224,7 +224,7 @@ public class OverworldBiomes {
       return baseBiome(0.9F, 1.0F).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).setAttribute(EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN, false).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome savanna(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean shattered, final boolean plateau) {
+   public static Biome savanna(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean shattered, final boolean plateau) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
       if (!shattered) {
@@ -257,7 +257,7 @@ public class OverworldBiomes {
       return baseBiome(2.0F, 0.0F).hasPrecipitation(false).setAttribute(EnvironmentAttributes.SNOW_GOLEM_MELTS, true).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome badlands(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean wooded) {
+   public static Biome badlands(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean wooded) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(mobs);
       BiomeDefaultFeatures.commonSpawns(mobs);
@@ -287,7 +287,7 @@ public class OverworldBiomes {
       return baseBiome(0.5F, 0.5F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD.withUnderwater(Musics.UNDER_WATER));
    }
 
-   private static BiomeGenerationSettings.Builder baseOceanGeneration(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   private static BiomeGenerationSettings.Builder baseOceanGeneration(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
       BiomeDefaultFeatures.addDefaultOres(generation);
@@ -300,7 +300,7 @@ public class OverworldBiomes {
       return generation;
    }
 
-   public static Biome coldOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean deep) {
+   public static Biome coldOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean deep) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.oceanSpawns(mobs, 3, 4, 15);
       mobs.addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityTypes.SALMON, 1, 5));
@@ -311,7 +311,7 @@ public class OverworldBiomes {
       return baseOcean().specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4020182).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome ocean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean deep) {
+   public static Biome ocean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean deep) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.oceanSpawns(mobs, 1, 4, 10);
       mobs.addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.DOLPHIN, 1, 2)).addSpawn(MobCategory.WATER_CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.NAUTILUS, 1, 1));
@@ -321,7 +321,7 @@ public class OverworldBiomes {
       return baseOcean().mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome lukeWarmOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean deep) {
+   public static Biome lukeWarmOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean deep) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       if (deep) {
          BiomeDefaultFeatures.oceanSpawns(mobs, 8, 4, 8);
@@ -336,14 +336,14 @@ public class OverworldBiomes {
       return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -16509389).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4566514).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome warmOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome warmOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityTypes.PUFFERFISH, 1, 3)).addSpawn(MobCategory.WATER_CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.NAUTILUS, 1, 1));
       BiomeDefaultFeatures.warmOceanSpawns(mobs, 10, 4);
       BiomeGenerationSettings.Builder generation = baseOceanGeneration(placedFeatures, carvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.WARM_OCEAN_VEGETATION).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_WARM).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEA_PICKLE);
       return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -16507085).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4445678).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome frozenOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean deep) {
+   public static Biome frozenOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean deep) {
       MobSpawnSettings.Builder mobs = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.SQUID, 1, 4)).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityTypes.SALMON, 1, 5)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.POLAR_BEAR, 1, 2)).addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityTypes.NAUTILUS, 1, 1));
       BiomeDefaultFeatures.commonSpawns(mobs);
       mobs.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityTypes.DROWNED, 1, 1));
@@ -362,7 +362,7 @@ public class OverworldBiomes {
       return baseBiome(temperature, 0.5F).temperatureAdjustment(Biome.TemperatureModifier.FROZEN).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3750089).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome forest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean birch, final boolean tall, final boolean flower) {
+   public static Biome forest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean birch, final boolean tall, final boolean flower) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
       BackgroundMusic music;
@@ -411,7 +411,7 @@ public class OverworldBiomes {
       return baseBiome(birch ? 0.6F : 0.7F, birch ? 0.6F : 0.8F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, music).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome taiga(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean snowy) {
+   public static Biome taiga(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean snowy) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(mobs);
       mobs.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.WOLF, 4, 4)).addSpawn(MobCategory.CREATURE, 4, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 3)).addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.FOX, 2, 4));
@@ -435,7 +435,7 @@ public class OverworldBiomes {
       return baseBiome(snowy ? -0.5F : 0.25F, snowy ? 0.4F : 0.8F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(waterColor).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome darkForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean isPaleGarden) {
+   public static Biome darkForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean isPaleGarden) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       if (!isPaleGarden) {
          BiomeDefaultFeatures.farmAnimals(mobs);
@@ -472,7 +472,7 @@ public class OverworldBiomes {
       return baseBiome(0.7F, 0.8F).putAttributes(isPaleGarden ? paleGardenAttributes : darkForestAttributes).specialEffects(isPaleGarden ? (new BiomeSpecialEffects.Builder()).waterColor(7768221).grassColorOverride(7832178).foliageColorOverride(8883574).dryFoliageColorOverride(10528412).build() : (new BiomeSpecialEffects.Builder()).waterColor(4159204).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome swamp(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome swamp(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(mobs);
       BiomeDefaultFeatures.swampSpawns(mobs, 70);
@@ -488,7 +488,7 @@ public class OverworldBiomes {
       return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -14474473).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).foliageColorOverride(6975545).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome mangroveSwamp(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome mangroveSwamp(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.swampSpawns(mobs, 70);
       mobs.addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityTypes.TROPICAL_FISH, 8, 8));
@@ -502,7 +502,7 @@ public class OverworldBiomes {
       return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.FOG_COLOR, -4138753).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -11699616).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome river(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean frozen) {
+   public static Biome river(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean frozen) {
       MobSpawnSettings.Builder mobs = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityTypes.SQUID, 1, 4)).addSpawn(MobCategory.WATER_AMBIENT, 5, new MobSpawnSettings.SpawnerData(EntityTypes.SALMON, 1, 5));
       BiomeDefaultFeatures.commonSpawns(mobs);
       mobs.addSpawn(MobCategory.MONSTER, frozen ? 1 : 100, new MobSpawnSettings.SpawnerData(EntityTypes.DROWNED, 1, 1));
@@ -523,7 +523,7 @@ public class OverworldBiomes {
       return baseBiome(frozen ? 0.0F : 0.5F, 0.5F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD.withUnderwater(Musics.UNDER_WATER)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(frozen ? 3750089 : 4159204).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome beach(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean snowy, final boolean stony) {
+   public static Biome beach(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean snowy, final boolean stony) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       boolean sandy = !stony && !snowy;
       if (sandy) {
@@ -552,13 +552,13 @@ public class OverworldBiomes {
       return baseBiome(temperature, sandy ? 0.4F : 0.3F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(waterColor).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome theVoid(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome theVoid(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.VOID_START_PLATFORM);
       return baseBiome(0.5F, 0.5F).hasPrecipitation(false).mobSpawnSettings((new MobSpawnSettings.Builder()).build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome meadowOrCherryGrove(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers, final boolean cherryGrove) {
+   public static Biome meadowOrCherryGrove(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean cherryGrove) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(cherryGrove ? EntityTypes.PIG : EntityTypes.DONKEY, 1, 2)).addSpawn(MobCategory.CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 6)).addSpawn(MobCategory.CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityTypes.SHEEP, 2, 4));
@@ -583,7 +583,7 @@ public class OverworldBiomes {
       }
    }
 
-   public static Biome dappledForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome dappledForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
       BackgroundMusic music = new BackgroundMusic(SoundEvents.MUSIC_BIOME_FLOWER_FOREST);
@@ -599,7 +599,7 @@ public class OverworldBiomes {
       return baseBiome(0.6F, 0.6F).putAttributes(EnvironmentAttributeMap.builder().set(EnvironmentAttributes.BACKGROUND_MUSIC, music).set(EnvironmentAttributes.SKY_COLOR, 8168447).set(EnvironmentAttributes.FOG_COLOR, 13424866).set(EnvironmentAttributes.WATER_FOG_COLOR, 3625300).build()).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3625300).grassColorOverride(14641191).foliageColorOverride(15109680).dryFoliageColorOverride(9189892).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   private static Biome.BiomeBuilder basePeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   private static Biome.BiomeBuilder basePeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.GOAT, 1, 3));
@@ -613,15 +613,15 @@ public class OverworldBiomes {
       return baseBiome(-0.7F, 0.9F).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).mobSpawnSettings(mobs.build()).generationSettings(generation.build());
    }
 
-   public static Biome frozenPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome frozenPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       return basePeaks(placedFeatures, carvers).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_FROZEN_PEAKS)).build();
    }
 
-   public static Biome jaggedPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome jaggedPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       return basePeaks(placedFeatures, carvers).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_JAGGED_PEAKS)).build();
    }
 
-   public static Biome stonyPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome stonyPeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.commonSpawns(mobs);
@@ -633,7 +633,7 @@ public class OverworldBiomes {
       return baseBiome(1.0F, 0.3F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_STONY_PEAKS)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome snowySlopes(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome snowySlopes(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.CREATURE, 4, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 3)).addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.GOAT, 1, 3));
@@ -648,7 +648,7 @@ public class OverworldBiomes {
       return baseBiome(-0.3F, 0.9F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SNOWY_SLOPES)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome grove(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome grove(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.WOLF, 1, 1)).addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 3)).addSpawn(MobCategory.CREATURE, 4, new MobSpawnSettings.SpawnerData(EntityTypes.FOX, 2, 4));
@@ -664,7 +664,7 @@ public class OverworldBiomes {
       return baseBiome(-0.2F, 0.8F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_GROVE)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome sulfurCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome sulfurCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.AMBIENT, 10, new MobSpawnSettings.SpawnerData(EntityTypes.BAT, 8, 8));
       mobs.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityTypes.SULFUR_CUBE, 2, 4));
@@ -685,7 +685,7 @@ public class OverworldBiomes {
       return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.FOG_COLOR, -7555023).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SULFUR_CAVES)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -15248324).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).grassColorOverride(11249231).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome lushCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome lushCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       mobs.addSpawn(MobCategory.AXOLOTLS, 10, new MobSpawnSettings.SpawnerData(EntityTypes.AXOLOTL, 4, 6));
       mobs.addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityTypes.TROPICAL_FISH, 8, 8));
@@ -700,7 +700,7 @@ public class OverworldBiomes {
       return baseBiome(0.5F, 0.5F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_LUSH_CAVES)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome dripstoneCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome dripstoneCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.dripstoneCavesSpawns(mobs);
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
@@ -715,7 +715,7 @@ public class OverworldBiomes {
       return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_DRIPSTONE_CAVES)).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
-   public static Biome deepDark(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> carvers) {
+   public static Biome deepDark(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder noMobs = new MobSpawnSettings.Builder();
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       generation.addCarver(Carvers.CAVE);

@@ -20,7 +20,6 @@ public record DesertWellFeature() implements Feature {
    private static final BlockState SAND_SLAB;
    private static final BlockState SANDSTONE;
    private static final BlockState WATER;
-   public static final DesertWellFeature INSTANCE;
    public static final MapCodec<DesertWellFeature> CODEC;
 
    public DesertWellFeature() {
@@ -115,7 +114,6 @@ public record DesertWellFeature() implements Feature {
       SAND_SLAB = Blocks.SANDSTONE_SLAB.defaultBlockState();
       SANDSTONE = Blocks.SANDSTONE.defaultBlockState();
       WATER = Blocks.WATER.defaultBlockState();
-      INSTANCE = new DesertWellFeature();
-      CODEC = MapCodec.unit(INSTANCE);
+      CODEC = MapCodec.unit(DesertWellFeature::new);
    }
 }

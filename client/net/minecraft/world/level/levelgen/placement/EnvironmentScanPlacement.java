@@ -3,26 +3,18 @@ package net.minecraft.world.level.levelgen.placement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 
-public class EnvironmentScanPlacement extends PlacementModifier {
-   private final Direction directionOfSearch;
-   private final BlockPredicate targetCondition;
-   private final BlockPredicate allowedSearchCondition;
-   private final int maxSteps;
-   public static final MapCodec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Direction.VERTICAL_CODEC.fieldOf("direction_of_search").forGetter((c) -> c.directionOfSearch), BlockPredicate.CODEC.fieldOf("target_condition").forGetter((c) -> c.targetCondition), BlockPredicate.CODEC.optionalFieldOf("allowed_search_condition", BlockPredicate.alwaysTrue()).forGetter((c) -> c.allowedSearchCondition), Codec.intRange(1, 32).fieldOf("max_steps").forGetter((c) -> c.maxSteps)).apply(i, EnvironmentScanPlacement::new));
+public record EnvironmentScanPlacement(Direction directionOfSearch, BlockPredicate targetCondition, BlockPredicate allowedSearchCondition, int maxSteps) implements PlacementModifier {
+   public static final MapCodec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Direction.VERTICAL_CODEC.fieldOf("direction_of_search").forGetter(EnvironmentScanPlacement::directionOfSearch), BlockPredicate.CODEC.fieldOf("target_condition").forGetter(EnvironmentScanPlacement::targetCondition), BlockPredicate.CODEC.optionalFieldOf("allowed_search_condition", BlockPredicate.alwaysTrue()).forGetter(EnvironmentScanPlacement::allowedSearchCondition), Codec.intRange(1, 32).fieldOf("max_steps").forGetter(EnvironmentScanPlacement::maxSteps)).apply(i, EnvironmentScanPlacement::new));
 
-   private EnvironmentScanPlacement(final Direction directionOfSearch, final BlockPredicate targetCondition, final BlockPredicate allowedSearchCondition, final int maxSteps) {
+   public EnvironmentScanPlacement {
       super();
-      this.directionOfSearch = directionOfSearch;
-      this.targetCondition = targetCondition;
-      this.allowedSearchCondition = allowedSearchCondition;
-      this.maxSteps = maxSteps;
    }
 
    public static EnvironmentScanPlacement scanningFor(final Direction directionOfSearch, final BlockPredicate targetCondition, final BlockPredicate allowedSearchCondition, final int maxSteps) {
@@ -33,23 +25,22 @@ public class EnvironmentScanPlacement extends PlacementModifier {
       return scanningFor(directionOfSearch, targetCondition, BlockPredicate.alwaysTrue(), maxSteps);
    }
 
-   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+   public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
       BlockPos.MutableBlockPos pos = origin.mutable();
       WorldGenLevel level = context.getLevel();
-      if (!this.allowedSearchCondition.test(level, pos)) {
-         return Stream.of();
-      } else {
+      if (this.allowedSearchCondition.test(level, pos)) {
          int i = 0;
 
          while(true) {
             if (i < this.maxSteps) {
                if (this.targetCondition.test(level, pos)) {
-                  return Stream.of(pos);
+                  output.accept(pos);
+                  return;
                }
 
                pos.move(this.directionOfSearch);
                if (level.isOutsideBuildHeight(pos.getY())) {
-                  return Stream.of();
+                  return;
                }
 
                if (this.allowedSearchCondition.test(level, pos)) {
@@ -59,15 +50,15 @@ public class EnvironmentScanPlacement extends PlacementModifier {
             }
 
             if (this.targetCondition.test(level, pos)) {
-               return Stream.of(pos);
+               output.accept(pos);
             }
 
-            return Stream.of();
+            return;
          }
       }
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.ENVIRONMENT_SCAN;
+   public MapCodec<EnvironmentScanPlacement> codec() {
+      return CODEC;
    }
 }

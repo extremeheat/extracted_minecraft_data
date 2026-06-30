@@ -28,13 +28,13 @@ public class EndFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      context.register(END_PLATFORM, EndPlatformFeature.INSTANCE);
+      context.register(END_PLATFORM, new EndPlatformFeature());
       context.register(END_PODIUM_ACTIVE, new EndPodiumFeature(true));
       context.register(END_PODIUM_INACTIVE, new EndPodiumFeature(false));
       context.register(END_SPIKE, new EndSpikeFeature(List.of(), false, Optional.empty()));
       context.register(END_GATEWAY_RETURN, EndGatewayFeature.knownExit(ServerLevel.END_SPAWN_POINT, true));
       context.register(END_GATEWAY_DELAYED, EndGatewayFeature.delayedExitSearch());
-      context.register(CHORUS_PLANT, ChorusPlantFeature.INSTANCE);
-      context.register(END_ISLAND, EndIslandFeature.INSTANCE);
+      context.register(CHORUS_PLANT, new ChorusPlantFeature());
+      context.register(END_ISLAND, new EndIslandFeature());
    }
 }

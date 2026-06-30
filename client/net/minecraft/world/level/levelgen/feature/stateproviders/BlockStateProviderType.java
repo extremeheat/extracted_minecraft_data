@@ -13,6 +13,7 @@ public class BlockStateProviderType<P extends BlockStateProvider> {
    public static final BlockStateProviderType<RotatedBlockProvider> ROTATED_BLOCK_PROVIDER;
    public static final BlockStateProviderType<RandomizedIntStateProvider> RANDOMIZED_INT_STATE_PROVIDER;
    public static final BlockStateProviderType<RuleBasedStateProvider> RULE_BASED_STATE_PROVIDER;
+   public static final BlockStateProviderType<CopyPropertiesProvider> COPY_PROPERTIES_PROVIDER;
    private final MapCodec<P> codec;
 
    private static <P extends BlockStateProvider> BlockStateProviderType<P> register(final String name, final MapCodec<P> codec) {
@@ -37,5 +38,6 @@ public class BlockStateProviderType<P extends BlockStateProvider> {
       ROTATED_BLOCK_PROVIDER = register("rotated_block_provider", RotatedBlockProvider.CODEC);
       RANDOMIZED_INT_STATE_PROVIDER = register("randomized_int_state_provider", RandomizedIntStateProvider.CODEC);
       RULE_BASED_STATE_PROVIDER = register("rule_based_state_provider", RuleBasedStateProvider.CODEC);
+      COPY_PROPERTIES_PROVIDER = register("copy_properties_provider", CopyPropertiesProvider.CODEC);
    }
 }

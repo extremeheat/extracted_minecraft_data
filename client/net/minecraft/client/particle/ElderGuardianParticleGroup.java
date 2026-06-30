@@ -7,7 +7,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
@@ -34,7 +33,7 @@ public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParti
 
       public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
          for(ElderGuardianParticleRenderState state : this.states) {
-            submitNodeCollector.submitModel(state.model, Unit.INSTANCE, state.poseStack, state.renderType, 15728880, OverlayTexture.NO_OVERLAY, state.color, (UvMapping)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.submitModel(state.model, Unit.INSTANCE, state.poseStack, state.renderType, 15728880, OverlayTexture.NO_OVERLAY, state.color, (UvMapping)null, 0);
          }
 
       }

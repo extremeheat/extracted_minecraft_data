@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -28,13 +27,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, BonemealableBlock {
-   public static final MapCodec<BigDripleafStemBlock> CODEC = simpleCodec(BigDripleafStemBlock::new);
    private static final BooleanProperty WATERLOGGED;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<BigDripleafStemBlock> codec() {
-      return CODEC;
-   }
 
    protected BigDripleafStemBlock(final BlockBehaviour.Properties properties) {
       super(properties);

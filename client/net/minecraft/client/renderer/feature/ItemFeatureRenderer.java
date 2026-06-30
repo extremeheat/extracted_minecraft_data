@@ -2,20 +2,14 @@ package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
-import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.MatrixUtil;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.jspecify.annotations.Nullable;
 
 public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    public static final FeatureRendererType<Submit> TYPE = FeatureRendererType.<Submit>create("Item");
@@ -23,7 +17,7 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    public static final Identifier ENCHANTED_GLINT_ITEM = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
    private static final float SPECIAL_FOIL_UI_SCALE = 0.5F;
    private static final float SPECIAL_FOIL_FIRST_PERSON_SCALE = 0.75F;
-   private static final float SPECIAL_FOIL_TEXTURE_SCALE = 0.0078125F;
+   public static final float SPECIAL_FOIL_TEXTURE_SCALE = 0.0078125F;
    public static final int NO_TINT = -1;
    private final QuadInstance quadInstance = new QuadInstance();
 
@@ -33,19 +27,13 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
 
    protected void buildGroup(final FeatureFrameContext context, final List<Submit> submits) {
       for(Submit submit : submits) {
-         this.prepareSubmit(submit, false);
-      }
-
-      for(Submit submit : submits) {
-         this.prepareSubmit(submit, true);
+         this.prepareSubmit(submit);
       }
 
    }
 
-   private void prepareSubmit(final Submit submit, final boolean foil) {
-      if (foil) {
-         this.prepareFoilSubmit(submit);
-      } else if (submit.outlineColor() != 0) {
+   private void prepareSubmit(final Submit submit) {
+      if (submit.outlineColor() != 0) {
          this.prepareOutlineSubmit(submit);
       } else {
          this.prepareMainSubmit(submit);
@@ -56,12 +44,26 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    private void prepareMainSubmit(final Submit submit) {
       this.quadInstance.setLightCoords(submit.lightCoords());
       this.quadInstance.setOverlayCoords(submit.overlayCoords());
+      ItemStackRenderState.FoilType foilType = submit.foilType();
+      PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(submit.displayContext(), submit.pose()) : null;
 
       for(BakedQuad quad : submit.quads()) {
          BakedQuad.MaterialInfo material = quad.materialInfo();
-         RenderType renderType = material.itemRenderType();
+         RenderType var10000;
+         switch (submit.foilType()) {
+            case NONE -> var10000 = material.itemRenderType();
+            case STANDARD -> var10000 = material.itemGlintRenderType();
+            case SPECIAL -> var10000 = material.itemGlintSpecialRenderType();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         RenderType renderType = var10000;
          this.quadInstance.setColor(getLayerColorSafe(submit.tintLayers(), material));
-         this.getVertexBuilder(renderType).putBakedQuad(submit.pose(), quad, this.quadInstance);
+         if (foilType == ItemStackRenderState.FoilType.SPECIAL) {
+            this.getVertexBuilder(renderType).putBakedQuadWithGlint(submit.pose(), quad, this.quadInstance, foilDecalPose);
+         } else {
+            this.getVertexBuilder(renderType).putBakedQuad(submit.pose(), quad, this.quadInstance);
+         }
       }
 
    }
@@ -78,29 +80,6 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
 
    }
 
-   private void prepareFoilSubmit(final Submit submit) {
-      ItemStackRenderState.FoilType foilType = submit.foilType();
-      if (foilType != ItemStackRenderState.FoilType.NONE) {
-         PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(submit.displayContext(), submit.pose()) : null;
-
-         for(BakedQuad quad : submit.quads()) {
-            VertexConsumer foilBuffer = this.getFoilBuffer(quad.materialInfo().itemRenderType(), foilDecalPose);
-            foilBuffer.putBakedQuad(submit.pose(), quad, this.quadInstance);
-         }
-
-      }
-   }
-
-   private VertexConsumer getFoilBuffer(final RenderType renderType, final PoseStack.@Nullable Pose foilDecalPose) {
-      RenderType foilRenderType = useTransparentGlint(renderType) ? RenderTypes.glintTranslucent() : RenderTypes.glint();
-      VertexConsumer foilBuffer = this.getVertexBuilder(foilRenderType);
-      if (foilDecalPose != null) {
-         foilBuffer = new SheetedDecalTextureGenerator(foilBuffer, foilDecalPose, 0.0078125F);
-      }
-
-      return foilBuffer;
-   }
-
    private static PoseStack.Pose computeFoilDecalPose(final ItemDisplayContext type, final PoseStack.Pose pose) {
       PoseStack.Pose foilDecalPose = pose.copy();
       if (type == ItemDisplayContext.GUI) {
@@ -110,10 +89,6 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
       }
 
       return foilDecalPose;
-   }
-
-   private static boolean useTransparentGlint(final RenderType renderType) {
-      return Minecraft.getInstance().gameRenderer.gameRenderState().useShaderTransparency() && renderType.outputTarget() == OutputTarget.ITEM_ENTITY_TARGET;
    }
 
    private static int getLayerColorSafe(final int[] layers, final int layer) {

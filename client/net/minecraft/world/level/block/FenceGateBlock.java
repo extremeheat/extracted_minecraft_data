@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -39,7 +37,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class FenceGateBlock extends HorizontalDirectionalBlock {
-   public static final MapCodec<FenceGateBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, FenceGateBlock::new));
    public static final BooleanProperty OPEN;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty IN_WALL;
@@ -50,10 +47,6 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    private static final Map<Direction.Axis, VoxelShape> SHAPE_OCCLUSION;
    private static final Map<Direction.Axis, VoxelShape> SHAPE_OCCLUSION_WALL;
    private final WoodType type;
-
-   public MapCodec<FenceGateBlock> codec() {
-      return CODEC;
-   }
 
    public FenceGateBlock(final WoodType type, final BlockBehaviour.Properties properties) {
       super(properties.sound(type.soundType()));

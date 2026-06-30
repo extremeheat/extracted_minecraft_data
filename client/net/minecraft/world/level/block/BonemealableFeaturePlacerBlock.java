@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -14,12 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 
 public class BonemealableFeaturePlacerBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, BonemealableFeaturePlacerBlock::new));
    private final ResourceKey<Feature> feature;
-
-   public MapCodec<BonemealableFeaturePlacerBlock> codec() {
-      return CODEC;
-   }
 
    public BonemealableFeaturePlacerBlock(final ResourceKey<Feature> feature, final BlockBehaviour.Properties properties) {
       super(properties);

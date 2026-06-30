@@ -1,12 +1,9 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +26,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireBlock extends Block {
-   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter((b) -> b.hook), propertiesCodec()).apply(i, TripWireBlock::new));
    public static final BooleanProperty POWERED;
    public static final BooleanProperty ATTACHED;
    public static final BooleanProperty DISARMED;
@@ -42,10 +38,6 @@ public class TripWireBlock extends Block {
    private static final VoxelShape SHAPE_NOT_ATTACHED;
    private static final int RECHECK_PERIOD = 10;
    private final Block hook;
-
-   public MapCodec<TripWireBlock> codec() {
-      return CODEC;
-   }
 
    public TripWireBlock(final Block hook, final BlockBehaviour.Properties properties) {
       super(properties);

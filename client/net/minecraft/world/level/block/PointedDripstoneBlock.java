@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -32,7 +30,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PointedDripstoneBlock extends SpeleothemBlock {
-   public static final MapCodec<PointedDripstoneBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("block_to_grow_on").forGetter((b) -> b.blockToGrowOn), propertiesCodec()).apply(i, PointedDripstoneBlock::new));
    private static final int MAX_SEARCH_LENGTH_WHEN_CHECKING_DRIP_TYPE = 11;
    private static final float DRIP_PROBABILITY_PER_ANIMATE_TICK = 0.02F;
    private static final float DRIP_PROBABILITY_PER_ANIMATE_TICK_IF_UNDER_LIQUID_SOURCE = 0.12F;
@@ -43,10 +40,6 @@ public class PointedDripstoneBlock extends SpeleothemBlock {
    private static final int STALAGMITE_FALL_DAMAGE_MODIFIER = 2;
    private static final double STALACTITE_DRIP_START_PIXEL;
    private static final VoxelShape REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK;
-
-   public MapCodec<PointedDripstoneBlock> codec() {
-      return CODEC;
-   }
 
    public PointedDripstoneBlock(final BlockState blockToGrowOn, final BlockBehaviour.Properties properties) {
       super(blockToGrowOn, properties);

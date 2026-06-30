@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -21,12 +20,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class IronBarsBlock extends CrossCollisionBlock {
-   public static final MapCodec<IronBarsBlock> CODEC = simpleCodec(IronBarsBlock::new);
-
-   public MapCodec<? extends IronBarsBlock> codec() {
-      return CODEC;
-   }
-
    protected IronBarsBlock(final BlockBehaviour.Properties properties) {
       super(2.0F, 16.0F, 2.0F, 16.0F, 16.0F, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));

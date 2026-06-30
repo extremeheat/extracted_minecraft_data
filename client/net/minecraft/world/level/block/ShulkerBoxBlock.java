@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -42,15 +39,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
-   public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((b) -> Optional.ofNullable(b.color)), propertiesCodec()).apply(i, (color, properties) -> new ShulkerBoxBlock((DyeColor)color.orElse((Object)null), properties)));
    public static final Map<Direction, VoxelShape> SHAPES_OPEN_SUPPORT = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
    public static final EnumProperty<Direction> FACING;
    public static final Identifier CONTENTS;
    private final @Nullable DyeColor color;
-
-   public MapCodec<ShulkerBoxBlock> codec() {
-      return CODEC;
-   }
 
    public ShulkerBoxBlock(final @Nullable DyeColor color, final BlockBehaviour.Properties properties) {
       super(properties);

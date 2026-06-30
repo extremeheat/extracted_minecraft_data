@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FeatureTags;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class BiomeGenerationSettings {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final BiomeGenerationSettings EMPTY = new BiomeGenerationSettings(HolderSet.empty(), List.of());
    public static final MapCodec<BiomeGenerationSettings> CODEC = RecordCodecBuilder.mapCodec((i) -> {
-      Codec var10001 = ConfiguredWorldCarver.LIST_CODEC;
+      Codec var10001 = WorldCarver.LIST_CODEC;
       Logger var10003 = LOGGER;
       Objects.requireNonNull(var10003);
       RecordCodecBuilder var1 = var10001.promotePartial(Util.prefix("Carver: ", var10003::error)).fieldOf("carvers").forGetter((b) -> b.carvers);
@@ -38,12 +38,12 @@ public class BiomeGenerationSettings {
       Objects.requireNonNull(var10004);
       return i.group(var1, var10002.promotePartial(Util.prefix("Features: ", var10004::error)).fieldOf("features").forGetter((b) -> b.features)).apply(i, BiomeGenerationSettings::new);
    });
-   private final HolderSet<ConfiguredWorldCarver<?>> carvers;
+   private final HolderSet<WorldCarver> carvers;
    private final List<HolderSet<PlacedFeature>> features;
    private final Supplier<List<Feature>> boneMealFeatures;
    private final Supplier<Set<PlacedFeature>> featureSet;
 
-   private BiomeGenerationSettings(final HolderSet<ConfiguredWorldCarver<?>> carvers, final List<HolderSet<PlacedFeature>> features) {
+   private BiomeGenerationSettings(final HolderSet<WorldCarver> carvers, final List<HolderSet<PlacedFeature>> features) {
       super();
       this.carvers = carvers;
       this.features = features;
@@ -51,7 +51,7 @@ public class BiomeGenerationSettings {
       this.featureSet = Suppliers.memoize(() -> (Set)features.stream().flatMap(HolderSet::stream).map(Holder::value).collect(Collectors.toSet()));
    }
 
-   public Iterable<Holder<ConfiguredWorldCarver<?>>> getCarvers() {
+   public Iterable<Holder<WorldCarver>> getCarvers() {
       return this.carvers;
    }
 
@@ -68,7 +68,7 @@ public class BiomeGenerationSettings {
    }
 
    public static class PlainBuilder {
-      private final List<Holder<ConfiguredWorldCarver<?>>> carvers = new ArrayList();
+      private final List<Holder<WorldCarver>> carvers = new ArrayList();
       private final List<List<Holder<PlacedFeature>>> features = new ArrayList();
 
       public PlainBuilder() {
@@ -85,7 +85,7 @@ public class BiomeGenerationSettings {
          return this;
       }
 
-      public PlainBuilder addCarver(final Holder<ConfiguredWorldCarver<?>> carver) {
+      public PlainBuilder addCarver(final Holder<WorldCarver> carver) {
          this.carvers.add(carver);
          return this;
       }
@@ -104,9 +104,9 @@ public class BiomeGenerationSettings {
 
    public static class Builder extends PlainBuilder {
       private final HolderGetter<PlacedFeature> placedFeatures;
-      private final HolderGetter<ConfiguredWorldCarver<?>> worldCarvers;
+      private final HolderGetter<WorldCarver> worldCarvers;
 
-      public Builder(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
+      public Builder(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> worldCarvers) {
          super();
          this.placedFeatures = placedFeatures;
          this.worldCarvers = worldCarvers;
@@ -117,7 +117,7 @@ public class BiomeGenerationSettings {
          return this;
       }
 
-      public Builder addCarver(final ResourceKey<ConfiguredWorldCarver<?>> carver) {
+      public Builder addCarver(final ResourceKey<WorldCarver> carver) {
          this.addCarver(this.worldCarvers.getOrThrow(carver));
          return this;
       }

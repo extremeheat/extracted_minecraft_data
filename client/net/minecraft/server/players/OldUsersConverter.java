@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mojang.authlib.ProfileLookupCallback;
-import com.mojang.authlib.yggdrasil.ProfileNotFoundException;
+import com.mojang.authlib.services.ProfileNotFoundException;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.io.IOException;

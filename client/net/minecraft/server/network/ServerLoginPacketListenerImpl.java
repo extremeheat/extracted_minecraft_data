@@ -3,7 +3,7 @@ package net.minecraft.server.network;
 import com.google.common.primitives.Ints;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.authlib.services.ProfileResult;
 import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
 import java.net.InetAddress;

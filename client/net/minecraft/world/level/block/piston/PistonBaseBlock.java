@@ -2,9 +2,6 @@ package net.minecraft.world.level.block.piston;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -44,7 +41,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PistonBaseBlock extends DirectionalBlock {
-   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("sticky").forGetter((b) -> b.isSticky), propertiesCodec()).apply(i, PistonBaseBlock::new));
    public static final BooleanProperty EXTENDED;
    public static final int TRIGGER_EXTEND = 0;
    public static final int TRIGGER_CONTRACT = 1;
@@ -52,10 +48,6 @@ public class PistonBaseBlock extends DirectionalBlock {
    public static final int PLATFORM_THICKNESS = 4;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final boolean isSticky;
-
-   public MapCodec<PistonBaseBlock> codec() {
-      return CODEC;
-   }
 
    public PistonBaseBlock(final boolean isSticky, final BlockBehaviour.Properties properties) {
       super(properties);

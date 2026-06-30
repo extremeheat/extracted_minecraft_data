@@ -4,9 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -43,34 +42,37 @@ public class Heightmap {
    public static void primeHeightmaps(final ChunkAccess chunk, final Set<Types> types) {
       if (!types.isEmpty()) {
          int size = types.size();
-         ObjectList<Heightmap> heightmaps = new ObjectArrayList(size);
-         ObjectListIterator<Heightmap> iterator = heightmaps.iterator();
+         List<Heightmap> allHeightmaps = new ObjectArrayList(size);
+
+         for(Types type : types) {
+            allHeightmaps.add(chunk.getOrCreateHeightmapUnprimed(type));
+         }
+
+         List<Heightmap> remainingHeightmaps = new ObjectArrayList(size);
          int highestSectionPosition = chunk.getHighestSectionPosition() + 16;
          BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
          for(int x = 0; x < 16; ++x) {
             for(int z = 0; z < 16; ++z) {
-               for(Types type : types) {
-                  heightmaps.add(chunk.getOrCreateHeightmapUnprimed(type));
-               }
+               remainingHeightmaps.clear();
+               remainingHeightmaps.addAll(allHeightmaps);
 
                for(int y = highestSectionPosition - 1; y >= chunk.getMinY(); --y) {
                   pos.set(x, y, z);
                   BlockState state = chunk.getBlockState(pos);
                   if (!state.is(Blocks.AIR)) {
-                     while(iterator.hasNext()) {
-                        Heightmap heightmap = (Heightmap)iterator.next();
+                     for(int i = 0; i < remainingHeightmaps.size(); ++i) {
+                        Heightmap heightmap = (Heightmap)remainingHeightmaps.get(i);
                         if (heightmap.isOpaque.test(state)) {
                            heightmap.setHeight(x, z, y + 1);
-                           iterator.remove();
+                           remainingHeightmaps.remove(i);
+                           --i;
                         }
                      }
 
-                     if (heightmaps.isEmpty()) {
+                     if (remainingHeightmaps.isEmpty()) {
                         break;
                      }
-
-                     iterator.back(size);
                   }
                }
             }

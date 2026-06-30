@@ -212,7 +212,7 @@ public class Witch extends Raider implements RangedAttackMob {
          if (var14 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var14;
             ItemStack itemStack = PotionContents.createItemStack(Items.SPLASH_POTION, potion);
-            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, serverLevel, itemStack, this, xd, yd + dist * 0.2, zd, dist <= 2.0 ? 0.45F : 0.75F, 8.0F);
+            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, serverLevel, itemStack, this, xd, yd + dist * 0.2, zd, dist <= 2.0 ? 0.45F : 0.75F, this.rangedAttackUncertainty(serverLevel));
          }
 
          if (!this.isSilent()) {
@@ -220,6 +220,10 @@ public class Witch extends Raider implements RangedAttackMob {
          }
 
       }
+   }
+
+   public float rangedAttackUncertainty(final Level level) {
+      return 8.0F;
    }
 
    public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {

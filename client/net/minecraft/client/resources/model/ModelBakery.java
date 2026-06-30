@@ -51,10 +51,13 @@ public class ModelBakery {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final SpriteId FIRE_0;
    public static final SpriteId FIRE_1;
-   public static final int DESTROY_STAGE_COUNT = 10;
-   public static final List<Identifier> DESTROY_STAGES;
-   public static final List<Identifier> BREAKING_LOCATIONS;
+   private static final int DESTROY_STAGE_COUNT = 10;
+   private static final List<Identifier> DESTROY_STAGES;
+   private static final List<Identifier> DESTROY_STAGES_OIT;
+   private static final List<Identifier> BREAKING_LOCATIONS;
+   private static final List<Identifier> BREAKING_LOCATIONS_OIT;
    public static final List<RenderType> DESTROY_TYPES;
+   public static final List<RenderType> DESTROY_TYPES_OIT;
    private static final Matrix4fc IDENTITY;
    private final EntityModelSet entityModelSet;
    private final SpriteGetter sprites;
@@ -110,8 +113,11 @@ public class ModelBakery {
       FIRE_0 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_0");
       FIRE_1 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_1");
       DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((i) -> Identifier.withDefaultNamespace("block/destroy_stage_" + i)).collect(Collectors.toList());
+      DESTROY_STAGES_OIT = (List)IntStream.range(0, 10).mapToObj((i) -> Identifier.withDefaultNamespace("block/destroy_oit_stage_" + i)).collect(Collectors.toList());
       BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((location) -> location.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).collect(Collectors.toList());
+      BREAKING_LOCATIONS_OIT = (List)DESTROY_STAGES_OIT.stream().map((location) -> location.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
+      DESTROY_TYPES_OIT = (List)BREAKING_LOCATIONS_OIT.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
       IDENTITY = new Matrix4f();
    }
 

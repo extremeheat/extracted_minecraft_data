@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.TrailParticleOption;
@@ -27,14 +24,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeblossomBlock extends FlowerBlock {
-   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("open").forGetter((e) -> e.type.open), propertiesCodec()).apply(i, EyeblossomBlock::new));
    private static final int EYEBLOSSOM_XZ_RANGE = 3;
    private static final int EYEBLOSSOM_Y_RANGE = 2;
    private final Type type;
-
-   public MapCodec<? extends EyeblossomBlock> codec() {
-      return CODEC;
-   }
 
    public EyeblossomBlock(final Type type, final BlockBehaviour.Properties properties) {
       super(type.effect, type.effectDuration, properties);

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -17,14 +16,9 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class SpongeBlock extends Block {
-   public static final MapCodec<SpongeBlock> CODEC = simpleCodec(SpongeBlock::new);
    public static final int MAX_DEPTH = 6;
    public static final int MAX_COUNT = 64;
    private static final Direction[] ALL_DIRECTIONS = Direction.values();
-
-   public MapCodec<SpongeBlock> codec() {
-      return CODEC;
-   }
 
    protected SpongeBlock(final BlockBehaviour.Properties properties) {
       super(properties);

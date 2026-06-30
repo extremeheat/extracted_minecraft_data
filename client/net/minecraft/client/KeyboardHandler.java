@@ -20,6 +20,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
@@ -337,6 +338,13 @@ public class KeyboardHandler {
             debugAction = true;
          }
 
+         if (options.keyDebugSwitchTranslucencyMode.matches(event)) {
+            options.improvedTransparency().set(!(Boolean)this.minecraft.options.improvedTransparency().get());
+            options.save();
+            this.debugFeedbackTranslated((Boolean)options.improvedTransparency().get() ? "debug.improvedTransparency.on" : "debug.improvedTransparency.off");
+            debugAction = true;
+         }
+
          return debugAction;
       }
    }
@@ -477,7 +485,7 @@ public class KeyboardHandler {
                   options.narrator().set(NarratorStatus.byId(((NarratorStatus)options.narrator().get()).getId() + 1));
                   options.save();
                   if (screen != null) {
-                     screen.updateNarratorStatus(wasDisabled);
+                     screen.updateNarratorStatus(wasDisabled, NarrationTrigger.KEYBOARD);
                   }
                }
 

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.util.StaticCache2D;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -22,8 +24,12 @@ public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDepend
 
    public CompletableFuture<ChunkAccess> apply(final WorldGenContext context, final StaticCache2D<GenerationChunkHolder> cache, final ChunkAccess chunk) {
       if (chunk.getPersistedStatus().isBefore(this.targetStatus)) {
-         ProfiledDuration profiledDuration = JvmProfiler.INSTANCE.onChunkGenerate(chunk.getPos(), context.level().dimension(), this.targetStatus.getName());
-         return this.task.doWork(context, this, cache, chunk).thenApply((newCenterChunk) -> this.completeChunkGeneration(newCenterChunk, profiledDuration));
+         String stepName = this.targetStatus.getName();
+
+         try (Zone var5 = Profiler.get().zone(stepName)) {
+            ProfiledDuration profiledDuration = JvmProfiler.INSTANCE.onChunkGenerate(chunk.getPos(), context.level().dimension(), stepName);
+            return this.task.doWork(context, this, cache, chunk).thenApply((newCenterChunk) -> this.completeChunkGeneration(newCenterChunk, profiledDuration));
+         }
       } else {
          return this.task.doWork(context, this, cache, chunk);
       }

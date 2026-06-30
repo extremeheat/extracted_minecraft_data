@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,17 +25,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, MangrovePropaguleBlock::new));
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
    private static final int[] SHAPE_MIN_Y;
    private static final VoxelShape[] SHAPE_PER_AGE;
    private static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty HANGING;
-
-   public MapCodec<MangrovePropaguleBlock> codec() {
-      return CODEC;
-   }
 
    public MangrovePropaguleBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
       super(treeGrower, properties);

@@ -5,28 +5,26 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 
-public class RarityFilter extends PlacementFilter {
+public record RarityFilter(int chance) implements PlacementFilter {
    public static final MapCodec<RarityFilter> CODEC;
-   private final int chance;
 
-   private RarityFilter(final int chance) {
+   public RarityFilter {
       super();
-      this.chance = chance;
    }
 
    public static RarityFilter onAverageOnceEvery(final int chance) {
       return new RarityFilter(chance);
    }
 
-   protected boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+   public boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
       return random.nextFloat() < 1.0F / (float)this.chance;
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.RARITY_FILTER;
+   public MapCodec<RarityFilter> codec() {
+      return CODEC;
    }
 
    static {
-      CODEC = ExtraCodecs.POSITIVE_INT.fieldOf("chance").xmap(RarityFilter::new, (c) -> c.chance);
+      CODEC = ExtraCodecs.POSITIVE_INT.fieldOf("chance").xmap(RarityFilter::new, RarityFilter::chance);
    }
 }

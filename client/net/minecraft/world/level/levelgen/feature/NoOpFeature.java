@@ -7,8 +7,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record NoOpFeature() implements Feature {
-   public static final NoOpFeature INSTANCE = new NoOpFeature();
-   public static final MapCodec<NoOpFeature> CODEC;
+   public static final MapCodec<NoOpFeature> CODEC = MapCodec.unit(NoOpFeature::new);
 
    public NoOpFeature() {
       super();
@@ -20,9 +19,5 @@ public record NoOpFeature() implements Feature {
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       return true;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -22,13 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PathBlock extends Block {
-   public static final MapCodec<PathBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("base_block").forGetter((t) -> t.baseBlock), propertiesCodec()).apply(i, PathBlock::new));
    private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 15.0);
    private final Block baseBlock;
-
-   public MapCodec<PathBlock> codec() {
-      return CODEC;
-   }
 
    protected PathBlock(final Block baseBlock, final BlockBehaviour.Properties properties) {
       super(properties);

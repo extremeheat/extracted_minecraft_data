@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,16 +19,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(i, SkullBlock::new));
    public static final int MAX = RotationSegment.getMaxSegmentIndex();
    private static final int ROTATIONS;
    public static final IntegerProperty ROTATION;
    private static final VoxelShape SHAPE;
    private static final VoxelShape SHAPE_PIGLIN;
-
-   public MapCodec<? extends SkullBlock> codec() {
-      return CODEC;
-   }
 
    protected SkullBlock(final Type type, final BlockBehaviour.Properties properties) {
       super(type, properties);

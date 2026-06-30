@@ -114,8 +114,8 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.useDepth ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
-               renderPass.setPipeline(this.pipeline);
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.hasDepth() ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline));
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 

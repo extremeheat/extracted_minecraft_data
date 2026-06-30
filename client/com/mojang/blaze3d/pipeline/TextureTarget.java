@@ -5,8 +5,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.jspecify.annotations.Nullable;
 
 public class TextureTarget extends RenderTarget {
-   public TextureTarget(final @Nullable String label, final int width, final int height, final boolean useDepth, final GpuFormat format) {
-      super(label, useDepth, format);
+   public TextureTarget(final @Nullable String label, final int width, final int height, final @Nullable GpuFormat colorFormat, final @Nullable GpuFormat depthFormat) {
+      super(label, colorFormat, depthFormat);
       RenderSystem.assertOnRenderThread();
       this.resize(width, height);
    }

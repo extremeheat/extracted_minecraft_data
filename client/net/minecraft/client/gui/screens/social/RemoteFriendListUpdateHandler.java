@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.mojang.authlib.yggdrasil.FriendsService;
-import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
-import com.mojang.authlib.yggdrasil.response.FriendData;
-import com.mojang.authlib.yggdrasil.response.FriendDto;
+import com.mojang.authlib.services.FriendsService;
+import com.mojang.authlib.services.FriendsService.ResultCode;
+import com.mojang.authlib.services.response.FriendData;
+import com.mojang.authlib.services.response.FriendDto;
 import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.util.HashSet;

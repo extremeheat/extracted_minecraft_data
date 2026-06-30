@@ -28,11 +28,8 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -49,9 +46,6 @@ import org.slf4j.Logger;
 
 public class VulkanDevice implements GpuDeviceBackend {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final ShaderSource defaultShaderSource;
-   private final Map<RenderPipeline, VulkanRenderPipeline> pipelineCache = new IdentityHashMap();
-   private final Map<ShaderCompilationKey, IntermediaryShaderModule> shaderCache = new HashMap();
    private final VulkanInstance instance;
    private final VkDevice vkDevice;
    private final long vma;
@@ -64,9 +58,8 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final VulkanCommandEncoder commandEncoder;
    private final CheckpointExtension checkpointExtension;
 
-   public VulkanDevice(final ShaderSource defaultShaderSource, final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final FeatureSet enabledFeatureSet, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
+   public VulkanDevice(final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final FeatureSet enabledFeatureSet, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
       super();
-      this.defaultShaderSource = defaultShaderSource;
       this.instance = instance;
       this.vkDevice = vkDevice;
       this.vma = vma;
@@ -111,7 +104,6 @@ public class VulkanDevice implements GpuDeviceBackend {
    public void close() {
       this.checkpointExtension.close();
       this.commandEncoder.destroy();
-      this.clearPipelineCache();
       Vma.vmaDestroyAllocator(this.vma);
       VK12.vkDestroyDevice(this.vkDevice, (VkAllocationCallbacks)null);
       this.instance.close();
@@ -192,63 +184,46 @@ public class VulkanDevice implements GpuDeviceBackend {
       return this.instance.debug().enabled();
    }
 
-   public CompiledRenderPipeline precompilePipeline(final RenderPipeline pipeline, final @Nullable ShaderSource customShaderSource) {
-      ShaderSource shaderSource = customShaderSource == null ? this.defaultShaderSource : customShaderSource;
-      return (CompiledRenderPipeline)this.pipelineCache.computeIfAbsent(pipeline, (ignored) -> this.compilePipeline(pipeline, shaderSource));
-   }
-
-   protected VulkanRenderPipeline getOrCompilePipeline(final RenderPipeline pipeline) {
-      return (VulkanRenderPipeline)this.pipelineCache.computeIfAbsent(pipeline, (ignored) -> this.compilePipeline(pipeline, this.defaultShaderSource));
-   }
-
-   protected IntermediaryShaderModule getOrCompileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
-      ShaderCompilationKey key = new ShaderCompilationKey(id, type, defines);
-      return (IntermediaryShaderModule)this.shaderCache.computeIfAbsent(key, (ignored) -> this.compileShader(key, shaderSource));
-   }
-
-   private IntermediaryShaderModule compileShader(final ShaderCompilationKey key, final ShaderSource shaderSource) {
-      String source = shaderSource.get(key.id, key.type);
+   protected @Nullable IntermediaryShaderModule compileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
+      String source = shaderSource.get(id, type);
       if (source == null) {
-         LOGGER.error("Couldn't find source for {} shader ({})", key.type, key.id);
-         return IntermediaryShaderModule.INVALID;
+         LOGGER.error("Couldn't find source for {} shader ({})", type, id);
+         return null;
       } else {
-         String sourceWithDefines = GlslPreprocessor.injectDefines(source, key.defines);
+         String sourceWithDefines = GlslPreprocessor.injectDefines(source, defines);
 
          try {
-            return this.glslCompiler.createIntermediary(key.id.toDebugFileName(), sourceWithDefines, key.type);
+            return this.glslCompiler.createIntermediary(id.toDebugFileName(), sourceWithDefines, type);
          } catch (ShaderCompileException e) {
-            LOGGER.error("Couldn't compile {} shader {}: {}", new Object[]{key.type, key.id, e.getMessage()});
-            return IntermediaryShaderModule.INVALID;
+            LOGGER.error("Couldn't compile {} shader {}: {}", new Object[]{type, id, e.getMessage()});
+            return null;
          }
       }
    }
 
-   private VulkanRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      IntermediaryShaderModule vertexShader = this.getOrCompileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
-      IntermediaryShaderModule fragmentShader = this.getOrCompileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
-      if (vertexShader == IntermediaryShaderModule.INVALID) {
+   public @Nullable CompiledRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
+      IntermediaryShaderModule vertexShader = this.compileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
+      if (vertexShader == null) {
          LOGGER.error("Couldn't compile pipeline {}: vertex shader {} was invalid", pipeline.getLocation(), pipeline.getVertexShader());
-         return new VulkanRenderPipeline(pipeline, this, 0L, 0L, 0L, VulkanBindGroupLayout.INVALID_LAYOUT, 0L, 0L);
-      } else if (fragmentShader == IntermediaryShaderModule.INVALID) {
-         LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", pipeline.getLocation(), pipeline.getFragmentShader());
-         return new VulkanRenderPipeline(pipeline, this, 0L, 0L, 0L, VulkanBindGroupLayout.INVALID_LAYOUT, 0L, 0L);
+         return null;
       } else {
-         try {
-            GlslCompiler.CompiledModules modules = this.glslCompiler.compile(this, pipeline, vertexShader, fragmentShader);
-            return VulkanRenderPipeline.compile(this, modules.layout(), pipeline, modules.vertex(), modules.fragment());
-         } catch (ShaderCompileException e) {
-            LOGGER.error("Couldn't compile pipeline {}: {}", pipeline.getLocation(), e.getMessage());
-            return new VulkanRenderPipeline(pipeline, this, 0L, 0L, 0L, VulkanBindGroupLayout.INVALID_LAYOUT, 0L, 0L);
+         IntermediaryShaderModule fragmentShader = this.compileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
+         if (fragmentShader == null) {
+            LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", pipeline.getLocation(), pipeline.getFragmentShader());
+            vertexShader.close();
+            return null;
+         } else {
+            try {
+               GlslCompiler.CompiledModules modules = this.glslCompiler.compile(this, pipeline, vertexShader, fragmentShader);
+               return VulkanRenderPipeline.compile(this, modules.layout(), pipeline, modules.vertex(), modules.fragment());
+            } catch (ShaderCompileException e) {
+               LOGGER.error("Couldn't compile pipeline {}: {}", pipeline.getLocation(), e.getMessage());
+               vertexShader.close();
+               fragmentShader.close();
+               return null;
+            }
          }
       }
-   }
-
-   public void clearPipelineCache() {
-      this.graphicsQueue.waitIdle();
-      this.pipelineCache.values().forEach(VulkanRenderPipeline::destroy);
-      this.pipelineCache.clear();
-      this.shaderCache.values().forEach(IntermediaryShaderModule::close);
-      this.shaderCache.clear();
    }
 
    public GpuQueryPool createTimestampQueryPool(final int size) {
@@ -261,17 +236,5 @@ public class VulkanDevice implements GpuDeviceBackend {
 
    public CheckpointExtension checkpointExtension() {
       return this.checkpointExtension;
-   }
-
-   private static record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {
-      private ShaderCompilationKey {
-         super();
-      }
-
-      public String toString() {
-         String var10000 = String.valueOf(this.id);
-         String string = var10000 + " (" + String.valueOf(this.type) + ")";
-         return !this.defines.isEmpty() ? string + " with " + String.valueOf(this.defines) : string;
-      }
    }
 }

@@ -45,7 +45,6 @@ public class ProtoChunk extends ChunkAccess {
    private volatile @Nullable LevelLightEngine lightEngine;
    private volatile ChunkStatus status;
    private final List<CompoundTag> entities;
-   private @Nullable CarvingMask carvingMask;
    private @Nullable BelowZeroRetrogen belowZeroRetrogen;
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
@@ -134,15 +133,13 @@ public class ProtoChunk extends ChunkAccess {
                   }
 
                   toPrime.add(type);
+               } else {
+                  heightmap.update(localX, y, localZ, state);
                }
             }
 
             if (toPrime != null) {
                Heightmap.primeHeightmaps(this, toPrime);
-            }
-
-            for(Heightmap.Types type : heightmapsAfter) {
-               ((Heightmap)this.heightmaps.get(type)).update(localX, y, localZ, state);
             }
 
             return oldState;
@@ -256,22 +253,6 @@ public class ProtoChunk extends ChunkAccess {
    public void removeBlockEntity(final BlockPos pos) {
       this.blockEntities.remove(pos);
       this.pendingBlockEntities.remove(pos);
-   }
-
-   public @Nullable CarvingMask getCarvingMask() {
-      return this.carvingMask;
-   }
-
-   public CarvingMask getOrCreateCarvingMask() {
-      if (this.carvingMask == null) {
-         this.carvingMask = new CarvingMask(this.getHeight(), this.getMinY());
-      }
-
-      return this.carvingMask;
-   }
-
-   public void setCarvingMask(final CarvingMask data) {
-      this.carvingMask = data;
    }
 
    public void setLightEngine(final LevelLightEngine lightEngine) {

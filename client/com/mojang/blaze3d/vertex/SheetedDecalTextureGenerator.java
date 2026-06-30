@@ -2,7 +2,9 @@ package com.mojang.blaze3d.vertex;
 
 import net.minecraft.core.Direction;
 import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
 public class SheetedDecalTextureGenerator implements VertexConsumer {
@@ -56,6 +58,11 @@ public class SheetedDecalTextureGenerator implements VertexConsumer {
       return this;
    }
 
+   public VertexConsumer setUv3(final float u, final float v) {
+      this.delegate.setUv3(u, v);
+      return this;
+   }
+
    public VertexConsumer setNormal(final float x, final float y, final float z) {
       this.delegate.setNormal(x, y, z);
       Vector3f normal = this.normalInversePose.transform(x, y, z, this.normal);
@@ -66,6 +73,16 @@ public class SheetedDecalTextureGenerator implements VertexConsumer {
       worldPos.rotate(direction.getRotation());
       this.delegate.setUv(-worldPos.x() * this.textureScale, -worldPos.y() * this.textureScale);
       return this;
+   }
+
+   public static void setSheetedDecalUv(final Vector3f position, final Vector3f normal, final Matrix4fc cameraInversePose, final Matrix3fc normalInversePose, final float textureScale, final VertexConsumer delegate) {
+      Vector3f transformedNormal = normalInversePose.transform(normal.x(), normal.y(), normal.z(), new Vector3f());
+      Direction direction = Direction.getApproximateNearest(transformedNormal.x(), transformedNormal.y(), transformedNormal.z());
+      Vector3f worldPos = cameraInversePose.transformPosition(position.x, position.y, position.z, new Vector3f());
+      worldPos.rotateY(3.1415927F);
+      worldPos.rotateX(-1.5707964F);
+      worldPos.rotate(direction.getRotation());
+      delegate.setUv3(-worldPos.x() * textureScale, -worldPos.y() * textureScale);
    }
 
    public VertexConsumer setLineWidth(final float width) {

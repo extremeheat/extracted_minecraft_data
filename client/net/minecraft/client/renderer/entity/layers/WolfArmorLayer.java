@@ -10,7 +10,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -45,7 +45,7 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
       Crackiness.Level crackiness = Crackiness.WOLF_ARMOR.byDamage(armorItem);
       if (crackiness != Crackiness.Level.NONE) {
          Identifier damageTexture = (Identifier)ARMOR_CRACK_LOCATIONS.get(crackiness);
-         submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.armorTranslucent(damageTexture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.order(1).submitModel(model, state, poseStack, (RenderType)RenderTypes.wolfArmorCracks(damageTexture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
    }
 

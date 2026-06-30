@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -29,8 +28,6 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, true));
    }
-
-   protected abstract MapCodec<? extends BaseCoralPlantTypeBlock> codec();
 
    protected void tryScheduleDieTick(final BlockState state, final BlockGetter level, final ScheduledTickAccess ticks, final RandomSource random, final BlockPos pos) {
       if (!scanForWater(state, level, pos)) {

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.MapCodec;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -13,13 +13,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 /** @deprecated */
 @Deprecated
-public class CountOnEveryLayerPlacement extends PlacementModifier {
-   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProviders.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, (c) -> c.count);
-   private final IntProvider count;
+public record CountOnEveryLayerPlacement(IntProvider count) implements PlacementModifier {
+   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProviders.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, CountOnEveryLayerPlacement::count);
 
-   private CountOnEveryLayerPlacement(final IntProvider count) {
+   public CountOnEveryLayerPlacement {
       super();
-      this.count = count;
    }
 
    public static CountOnEveryLayerPlacement of(final IntProvider count) {
@@ -30,8 +28,7 @@ public class CountOnEveryLayerPlacement extends PlacementModifier {
       return of(ConstantInt.of(count));
    }
 
-   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      Stream.Builder<BlockPos> positions = Stream.builder();
+   public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
       int layer = 0;
 
       boolean foundAny;
@@ -44,7 +41,7 @@ public class CountOnEveryLayerPlacement extends PlacementModifier {
             int startY = context.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
             int y = findOnGroundYPosition(context, x, startY, z, layer);
             if (y != 2147483647) {
-               positions.add(new BlockPos(x, y, z));
+               output.accept(new BlockPos(x, y, z));
                foundAny = true;
             }
          }
@@ -52,11 +49,10 @@ public class CountOnEveryLayerPlacement extends PlacementModifier {
          ++layer;
       } while(foundAny);
 
-      return positions.build();
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.COUNT_ON_EVERY_LAYER;
+   public MapCodec<CountOnEveryLayerPlacement> codec() {
+      return CODEC;
    }
 
    private static int findOnGroundYPosition(final PlacementContext context, final int xStart, final int yStart, final int zStart, final int layerToPlaceOn) {

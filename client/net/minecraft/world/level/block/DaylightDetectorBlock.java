@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
@@ -26,14 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DaylightDetectorBlock extends BaseEntityBlock {
-   public static final MapCodec<DaylightDetectorBlock> CODEC = simpleCodec(DaylightDetectorBlock::new);
    public static final IntegerProperty POWER;
    public static final BooleanProperty INVERTED;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<DaylightDetectorBlock> codec() {
-      return CODEC;
-   }
 
    public DaylightDetectorBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
@@ -116,13 +116,13 @@ public class VulkanRenderPass implements RenderPassBackend {
       }
    }
 
-   public void setPipeline(final RenderPipeline pipeline) {
-      this.pipeline = this.device.getOrCompilePipeline(pipeline);
-      if (!this.pipeline.isValid()) {
-         throw new IllegalStateException("Pipeline is not valid (may contain invalid shaders?)");
-      } else {
+   public void setPipeline(final CompiledRenderPipeline pipeline) {
+      if (pipeline instanceof VulkanRenderPipeline vulkanRenderPipeline) {
+         this.pipeline = vulkanRenderPipeline;
          this.anyDescriptorDirty = true;
          VK12.vkCmdBindPipeline(this.commandBuffer(), 0, this.hasDepth ? this.pipeline.withDepthPipeline() : this.pipeline.withoutDepthPipeline());
+      } else {
+         throw new IllegalArgumentException("Pipeline must be instance of VulkanRenderPipeline");
       }
    }
 
@@ -187,28 +187,30 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void setVertexBuffer(final int slot, final @Nullable GpuBufferSlice vertexBuffer) {
-      MemoryStack stack = MemoryStack.stackPush();
+      if (vertexBuffer != null) {
+         MemoryStack stack = MemoryStack.stackPush();
 
-      try {
-         long buffer = vertexBuffer != null ? ((VulkanGpuBuffer)vertexBuffer.buffer()).vkBuffer() : 0L;
-         long offset = vertexBuffer != null ? vertexBuffer.offset() : 0L;
-         VK12.vkCmdBindVertexBuffers(this.commandBuffer(), slot, stack.longs(buffer), stack.longs(offset));
-      } catch (Throwable var9) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var8) {
-               var9.addSuppressed(var8);
+         try {
+            long buffer = ((VulkanGpuBuffer)vertexBuffer.buffer()).vkBuffer();
+            long offset = vertexBuffer.offset();
+            VK12.vkCmdBindVertexBuffers(this.commandBuffer(), slot, stack.longs(buffer), stack.longs(offset));
+         } catch (Throwable var9) {
+            if (stack != null) {
+               try {
+                  stack.close();
+               } catch (Throwable var8) {
+                  var9.addSuppressed(var8);
+               }
             }
+
+            throw var9;
          }
 
-         throw var9;
-      }
+         if (stack != null) {
+            stack.close();
+         }
 
-      if (stack != null) {
-         stack.close();
       }
-
    }
 
    public void setIndexBuffer(final GpuBuffer indexBuffer, final IndexType indexType) {
@@ -224,20 +226,20 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void drawIndexed(final int indexCount, final int instanceCount, final int firstIndex, final int vertexOffset, final int firstInstance) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline == null) {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      } else {
          this.pushDescriptors();
          VK12.vkCmdDrawIndexed(this.commandBuffer(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
-      } else {
-         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 
    public void multiDrawIndexed(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline == null) {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      } else {
          this.pushDescriptors();
          EXTMultiDraw.nvkCmdDrawMultiIndexedEXT(this.commandBuffer(), drawCount, MemoryUtil.memAddress(drawParameters), instanceCount, firstInstance, VkMultiDrawIndexedInfoEXT.SIZEOF, 0L);
-      } else {
-         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 
@@ -246,11 +248,11 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void drawIndexedIndirect(final GpuBufferSlice commands, final int drawCount) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline == null) {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      } else {
          this.pushDescriptors();
          VK12.vkCmdDrawIndexedIndirect(this.commandBuffer(), ((VulkanGpuBuffer)commands.buffer()).vkBuffer(), commands.offset(), drawCount, VkDrawIndexedIndirectCommand.SIZEOF);
-      } else {
-         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 
@@ -273,18 +275,18 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void draw(final int vertexCount, final int instanceCount, final int firstVertex, final int firstInstance) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline != null) {
          this.pushDescriptors();
          VK12.vkCmdDraw(this.commandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
       }
    }
 
    public void multiDraw(final IntBuffer drawParameters, final int instanceCount, final int firstInstance, final int drawCount) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline == null) {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      } else {
          this.pushDescriptors();
          EXTMultiDraw.nvkCmdDrawMultiEXT(this.commandBuffer(), drawCount, MemoryUtil.memAddress(drawParameters), instanceCount, firstInstance, VkMultiDrawInfoEXT.SIZEOF);
-      } else {
-         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 
@@ -293,11 +295,11 @@ public class VulkanRenderPass implements RenderPassBackend {
    }
 
    public void drawIndirect(final GpuBufferSlice commands, final int drawCount) {
-      if (this.pipeline != null && this.pipeline.isValid()) {
+      if (this.pipeline == null) {
+         throw new IllegalStateException("Pipeline is missing or not valid");
+      } else {
          this.pushDescriptors();
          VK12.vkCmdDrawIndirect(this.commandBuffer(), ((VulkanGpuBuffer)commands.buffer()).vkBuffer(), commands.offset(), drawCount, VkDrawIndirectCommand.SIZEOF);
-      } else {
-         throw new IllegalStateException("Pipeline is missing or not valid");
       }
    }
 

@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,15 +20,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock, SegmentableBlock {
-   public static final MapCodec<FlowerBedBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(propertiesCodec(), Codec.intRange(0, 16).fieldOf("shape_height").forGetter((b) -> b.shapeHeight)).apply(i, FlowerBedBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty AMOUNT;
    private final int shapeHeight;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<FlowerBedBlock> codec() {
-      return CODEC;
-   }
 
    protected FlowerBedBlock(final BlockBehaviour.Properties properties, final int shapeHeight) {
       super(properties);

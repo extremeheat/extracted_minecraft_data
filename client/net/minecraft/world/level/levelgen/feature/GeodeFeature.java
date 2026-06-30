@@ -105,44 +105,47 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
       for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(this.minGenOffset, this.minGenOffset, this.minGenOffset), origin.offset(this.maxGenOffset, this.maxGenOffset, this.maxGenOffset))) {
          double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * this.noiseMultiplier;
          double distSumShell = 0.0;
-         double distSumCrack = 0.0;
 
          for(Pair<BlockPos, Integer> point : points) {
             distSumShell += Mth.invSqrt(pointInside.distSqr((Vec3i)point.getFirst()) + (double)(Integer)point.getSecond()) + noiseOffset;
          }
 
-         for(BlockPos point : crackPoints) {
-            distSumCrack += Mth.invSqrt(pointInside.distSqr(point) + (double)this.crackSettings.crackPointOffset) + noiseOffset;
-         }
-
          if (!(distSumShell < outerCrust)) {
-            if (shouldGenerateCrack && distSumCrack >= crackSize && distSumShell < innerAir) {
-               this.safeSetBlock(level, pointInside, Blocks.AIR.defaultBlockState(), canReplace);
-
-               for(Direction direction : DIRECTIONS) {
-                  BlockPos adjacentPos = pointInside.relative(direction);
-                  FluidState adjacentFluidState = level.getFluidState(adjacentPos);
-                  if (!adjacentFluidState.isEmpty()) {
-                     level.scheduleTick(adjacentPos, adjacentFluidState.getType(), 0);
-                  }
-               }
-            } else if (distSumShell >= innerAir) {
+            if (distSumShell >= innerAir) {
                this.safeSetBlock(level, pointInside, this.blockSettings.fillingProvider().getState(level, random, pointInside), canReplace);
-            } else if (distSumShell >= innermostBlockLayer) {
-               boolean useAlternateLayer = (double)random.nextFloat() < this.useAlternateLayer0Chance;
-               if (useAlternateLayer) {
-                  this.safeSetBlock(level, pointInside, this.blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
-               } else {
-                  this.safeSetBlock(level, pointInside, this.blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
+            } else {
+               double distSumCrack = 0.0;
+
+               for(BlockPos point : crackPoints) {
+                  distSumCrack += Mth.invSqrt(pointInside.distSqr(point) + (double)this.crackSettings.crackPointOffset) + noiseOffset;
                }
 
-               if ((!this.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < this.usePotentialPlacementsChance) {
-                  potentialCrystalPlacements.add(pointInside.immutable());
+               if (shouldGenerateCrack && distSumCrack >= crackSize) {
+                  this.safeSetBlock(level, pointInside, Blocks.AIR.defaultBlockState(), canReplace);
+
+                  for(Direction direction : DIRECTIONS) {
+                     BlockPos adjacentPos = pointInside.relative(direction);
+                     FluidState adjacentFluidState = level.getFluidState(adjacentPos);
+                     if (!adjacentFluidState.isEmpty()) {
+                        level.scheduleTick(adjacentPos, adjacentFluidState.getType(), 0);
+                     }
+                  }
+               } else if (distSumShell >= innermostBlockLayer) {
+                  boolean useAlternateLayer = (double)random.nextFloat() < this.useAlternateLayer0Chance;
+                  if (useAlternateLayer) {
+                     this.safeSetBlock(level, pointInside, this.blockSettings.alternateInnerLayerProvider().getState(level, random, pointInside), canReplace);
+                  } else {
+                     this.safeSetBlock(level, pointInside, this.blockSettings.innerLayerProvider().getState(level, random, pointInside), canReplace);
+                  }
+
+                  if ((!this.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < this.usePotentialPlacementsChance) {
+                     potentialCrystalPlacements.add(pointInside.immutable());
+                  }
+               } else if (distSumShell >= innerCrust) {
+                  this.safeSetBlock(level, pointInside, this.blockSettings.middleLayerProvider().getState(level, random, pointInside), canReplace);
+               } else if (distSumShell >= outerCrust) {
+                  this.safeSetBlock(level, pointInside, this.blockSettings.outerLayerProvider().getState(level, random, pointInside), canReplace);
                }
-            } else if (distSumShell >= innerCrust) {
-               this.safeSetBlock(level, pointInside, this.blockSettings.middleLayerProvider().getState(level, random, pointInside), canReplace);
-            } else if (distSumShell >= outerCrust) {
-               this.safeSetBlock(level, pointInside, this.blockSettings.outerLayerProvider().getState(level, random, pointInside), canReplace);
             }
          }
       }

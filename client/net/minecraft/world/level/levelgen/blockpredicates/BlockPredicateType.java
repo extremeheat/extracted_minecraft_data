@@ -19,6 +19,7 @@ public interface BlockPredicateType<P extends BlockPredicate> {
    BlockPredicateType<NotPredicate> NOT = register("not", NotPredicate.CODEC);
    BlockPredicateType<TrueBlockPredicate> TRUE = register("true", TrueBlockPredicate.CODEC);
    BlockPredicateType<UnobstructedPredicate> UNOBSTRUCTED = register("unobstructed", UnobstructedPredicate.CODEC);
+   BlockPredicateType<HeightRangePredicate> HEIGHT_RANGE = register("height_range", HeightRangePredicate.CODEC);
 
    MapCodec<P> codec();
 

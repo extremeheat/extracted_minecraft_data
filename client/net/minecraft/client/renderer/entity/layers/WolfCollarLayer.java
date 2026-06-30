@@ -5,7 +5,6 @@ import net.minecraft.client.model.animal.wolf.WolfModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.UvMapping;
@@ -25,7 +24,7 @@ public class WolfCollarLayer extends RenderLayer<WolfRenderState, WolfModel> {
       if (collarColor != null && !state.isInvisible) {
          int color = collarColor.getTextureDiffuseColor();
          Identifier collarLocation = state.isBaby ? WOLF_BABY_COLLAR_LOCATION : WOLF_COLLAR_LOCATION;
-         submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, RenderTypes.entityCutout(collarLocation), lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, RenderTypes.entityCutout(collarLocation), lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor);
       }
    }
 }

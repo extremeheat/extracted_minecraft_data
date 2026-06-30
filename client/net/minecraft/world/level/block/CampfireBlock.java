@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -13,6 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -57,7 +55,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((b) -> b.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((b) -> b.fireDamage), propertiesCodec()).apply(i, CampfireBlock::new));
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED;
@@ -67,10 +64,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    private static final int SMOKE_DISTANCE = 5;
    private final boolean spawnParticles;
    private final int fireDamage;
-
-   public MapCodec<CampfireBlock> codec() {
-      return CODEC;
-   }
 
    public CampfireBlock(final boolean spawnParticles, final int fireDamage, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -96,7 +89,17 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
       }
 
-      return InteractionResult.TRY_WITH_EMPTY_HAND;
+      if (itemStack.is(ItemTags.DOWSES_CAMPFIRES) && (Boolean)state.getValue(LIT)) {
+         if (!level.isClientSide()) {
+            level.levelEvent((Entity)null, 1009, pos, 0);
+         }
+
+         dowse(player, level, pos, state);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
+         return InteractionResult.SUCCESS;
+      } else {
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
+      }
    }
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {

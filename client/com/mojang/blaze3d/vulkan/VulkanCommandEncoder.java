@@ -275,11 +275,9 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          VkRect2D vkRenderArea = VkRect2D.calloc(stack);
-
-         assert descriptor.renderArea != null;
-
-         vkRenderArea.extent().set(descriptor.renderArea.width(), descriptor.renderArea.height());
-         vkRenderArea.offset().set(descriptor.renderArea.x(), descriptor.renderArea.y());
+         RenderPass.RenderArea renderArea = descriptor.renderArea();
+         vkRenderArea.extent().set(renderArea.width(), renderArea.height());
+         vkRenderArea.offset().set(renderArea.x(), renderArea.y());
          VkRenderingAttachmentInfo.Buffer colorAttachmentInfo = VkRenderingAttachmentInfo.calloc(colorAttachments.size(), stack);
 
          for(int i = 0; i < colorAttachments.size(); ++i) {
@@ -333,17 +331,17 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          KHRDynamicRendering.vkCmdBeginRenderingKHR(this.commandBuffer(), renderingInfo);
-         this.currentRenderPass = new VulkanRenderPass(this.device, this, this.commandBuffer(), this.checkpointStorage, descriptor.renderArea, width, height, depthAttachment != null, descriptor.label());
-      } catch (Throwable var18) {
+         this.currentRenderPass = new VulkanRenderPass(this.device, this, this.commandBuffer(), this.checkpointStorage, renderArea, width, height, depthAttachment != null, descriptor.label());
+      } catch (Throwable var19) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var17) {
-               var18.addSuppressed(var17);
+            } catch (Throwable var18) {
+               var19.addSuppressed(var18);
             }
          }
 
-         throw var18;
+         throw var19;
       }
 
       if (stack != null) {
@@ -463,7 +461,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            this.createRenderPass(RenderPassDescriptor.create(() -> "ClearColorDepthTextures").withColorAttachment(colorTextureView).withDepthAttachment(depthTextureView).withRenderArea(new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0))));
+            this.createRenderPass(RenderPassDescriptor.builder(() -> "ClearColorDepthTextures").withColorAttachment(colorTextureView).withDepthAttachment(depthTextureView).withRenderArea(new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0))).build());
 
             assert this.currentRenderPass != null;
 

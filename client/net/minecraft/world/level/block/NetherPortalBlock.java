@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -46,13 +45,8 @@ import org.slf4j.Logger;
 
 public class NetherPortalBlock extends Block implements Portal {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<NetherPortalBlock> CODEC = simpleCodec(NetherPortalBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
    private static final Map<Direction.Axis, VoxelShape> SHAPES;
-
-   public MapCodec<NetherPortalBlock> codec() {
-      return CODEC;
-   }
 
    public NetherPortalBlock(final BlockBehaviour.Properties properties) {
       super(properties);

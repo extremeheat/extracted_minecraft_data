@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -18,12 +17,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LilyPadBlock extends VegetationBlock {
-   public static final MapCodec<LilyPadBlock> CODEC = simpleCodec(LilyPadBlock::new);
    private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 1.5);
-
-   public MapCodec<LilyPadBlock> codec() {
-      return CODEC;
-   }
 
    protected LilyPadBlock(final BlockBehaviour.Properties properties) {
       super(properties);

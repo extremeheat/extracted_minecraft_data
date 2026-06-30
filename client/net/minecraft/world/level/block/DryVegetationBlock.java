@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -13,12 +12,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DryVegetationBlock extends VegetationBlock {
-   public static final MapCodec<DryVegetationBlock> CODEC = simpleCodec(DryVegetationBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 13.0);
-
-   public MapCodec<? extends DryVegetationBlock> codec() {
-      return CODEC;
-   }
 
    protected DryVegetationBlock(final BlockBehaviour.Properties properties) {
       super(properties);

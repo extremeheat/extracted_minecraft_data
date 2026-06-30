@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -19,12 +18,6 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class IceBlock extends HalfTransparentBlock {
-   public static final MapCodec<IceBlock> CODEC = simpleCodec(IceBlock::new);
-
-   public MapCodec<? extends IceBlock> codec() {
-      return CODEC;
-   }
-
    public IceBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

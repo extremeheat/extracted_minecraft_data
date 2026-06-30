@@ -336,6 +336,7 @@ public interface DispenseItemBehavior {
             if (maybeWaxed.isPresent()) {
                level.setBlockAndUpdate(pos, (BlockState)maybeWaxed.get());
                level.levelEvent(3003, pos, 0);
+               level.playSound((Entity)null, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
                dispensed.shrink(1);
                this.setSuccess(true);
                return dispensed;

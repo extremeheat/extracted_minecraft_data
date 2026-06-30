@@ -24,9 +24,11 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import org.jspecify.annotations.Nullable;
 
 public class DebugLevelSource extends ChunkGenerator {
    public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(i, i.stable(DebugLevelSource::new)));
@@ -99,7 +101,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return state;
    }
 
-   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
+   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final CarvingMask.@Nullable Filter filter) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

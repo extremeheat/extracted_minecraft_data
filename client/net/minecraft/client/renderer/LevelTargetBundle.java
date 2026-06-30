@@ -2,46 +2,37 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final Identifier MAIN_TARGET_ID;
-   public static final Identifier TRANSLUCENT_TARGET_ID;
-   public static final Identifier ITEM_ENTITY_TARGET_ID;
-   public static final Identifier PARTICLES_TARGET_ID;
-   public static final Identifier WEATHER_TARGET_ID;
-   public static final Identifier CLOUDS_TARGET_ID;
    public static final Identifier ENTITY_OUTLINE_TARGET_ID;
    public static final Set<Identifier> MAIN_TARGETS;
    public static final Set<Identifier> OUTLINE_TARGETS;
-   public static final Set<Identifier> SORTING_TARGETS;
    public ResourceHandle<RenderTarget> main = ResourceHandle.<RenderTarget>invalid();
-   public @Nullable ResourceHandle<RenderTarget> translucent;
-   public @Nullable ResourceHandle<RenderTarget> itemEntity;
-   public @Nullable ResourceHandle<RenderTarget> particles;
-   public @Nullable ResourceHandle<RenderTarget> weather;
-   public @Nullable ResourceHandle<RenderTarget> clouds;
+   public ResourceHandle<RenderTarget> depthBounds = ResourceHandle.<RenderTarget>invalid();
+   public final List<ResourceHandle<RenderTarget>> transmittance = new ArrayList();
+   public ResourceHandle<RenderTarget> accumulate = ResourceHandle.<RenderTarget>invalid();
+   public ResourceHandle<RenderTarget> oitCloudDepth = ResourceHandle.<RenderTarget>invalid();
+   public ResourceHandle<RenderTarget> oitTerrainWithWaterPatchDepth = ResourceHandle.<RenderTarget>invalid();
    public @Nullable ResourceHandle<RenderTarget> entityOutline;
 
    public LevelTargetBundle() {
       super();
+
+      for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+         this.transmittance.add(ResourceHandle.invalid());
+      }
+
    }
 
    public void replace(final Identifier id, final ResourceHandle<RenderTarget> handle) {
       if (id.equals(MAIN_TARGET_ID)) {
          this.main = handle;
-      } else if (id.equals(TRANSLUCENT_TARGET_ID)) {
-         this.translucent = handle;
-      } else if (id.equals(ITEM_ENTITY_TARGET_ID)) {
-         this.itemEntity = handle;
-      } else if (id.equals(PARTICLES_TARGET_ID)) {
-         this.particles = handle;
-      } else if (id.equals(WEATHER_TARGET_ID)) {
-         this.weather = handle;
-      } else if (id.equals(CLOUDS_TARGET_ID)) {
-         this.clouds = handle;
       } else {
          if (!id.equals(ENTITY_OUTLINE_TARGET_ID)) {
             throw new IllegalArgumentException("No target with id " + String.valueOf(id));
@@ -55,16 +46,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public @Nullable ResourceHandle<RenderTarget> get(final Identifier id) {
       if (id.equals(MAIN_TARGET_ID)) {
          return this.main;
-      } else if (id.equals(TRANSLUCENT_TARGET_ID)) {
-         return this.translucent;
-      } else if (id.equals(ITEM_ENTITY_TARGET_ID)) {
-         return this.itemEntity;
-      } else if (id.equals(PARTICLES_TARGET_ID)) {
-         return this.particles;
-      } else if (id.equals(WEATHER_TARGET_ID)) {
-         return this.weather;
-      } else if (id.equals(CLOUDS_TARGET_ID)) {
-         return this.clouds;
       } else {
          return id.equals(ENTITY_OUTLINE_TARGET_ID) ? this.entityOutline : null;
       }
@@ -72,24 +53,13 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
 
    public void clear() {
       this.main = ResourceHandle.<RenderTarget>invalid();
-      this.translucent = null;
-      this.itemEntity = null;
-      this.particles = null;
-      this.weather = null;
-      this.clouds = null;
       this.entityOutline = null;
    }
 
    static {
       MAIN_TARGET_ID = PostChain.MAIN_TARGET_ID;
-      TRANSLUCENT_TARGET_ID = Identifier.withDefaultNamespace("translucent");
-      ITEM_ENTITY_TARGET_ID = Identifier.withDefaultNamespace("item_entity");
-      PARTICLES_TARGET_ID = Identifier.withDefaultNamespace("particles");
-      WEATHER_TARGET_ID = Identifier.withDefaultNamespace("weather");
-      CLOUDS_TARGET_ID = Identifier.withDefaultNamespace("clouds");
       ENTITY_OUTLINE_TARGET_ID = Identifier.withDefaultNamespace("entity_outline");
       MAIN_TARGETS = Set.of(MAIN_TARGET_ID);
       OUTLINE_TARGETS = Set.of(MAIN_TARGET_ID, ENTITY_OUTLINE_TARGET_ID);
-      SORTING_TARGETS = Set.of(MAIN_TARGET_ID, TRANSLUCENT_TARGET_ID, ITEM_ENTITY_TARGET_ID, PARTICLES_TARGET_ID, WEATHER_TARGET_ID, CLOUDS_TARGET_ID);
    }
 }

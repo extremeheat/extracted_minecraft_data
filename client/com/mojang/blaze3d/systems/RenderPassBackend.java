@@ -3,7 +3,7 @@ package com.mojang.blaze3d.systems;
 import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.IntBuffer;
@@ -17,7 +17,7 @@ public interface RenderPassBackend {
 
    void popDebugGroup();
 
-   void setPipeline(final RenderPipeline pipeline);
+   void setPipeline(final CompiledRenderPipeline pipeline);
 
    void bindTexture(final String name, final @Nullable GpuTextureView textureView, final @Nullable GpuSampler sampler);
 

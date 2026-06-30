@@ -5,12 +5,10 @@ import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -18,11 +16,9 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.level.WeatherRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -45,7 +41,13 @@ public class WeatherEffectRenderer implements AutoCloseable {
    private static final int INDICES_PER_COLUMN = 6;
    private final float[] columnSizeX = new float[1024];
    private final float[] columnSizeZ = new float[1024];
+   private final GameRenderer gameRenderer;
+   private final TextureManager textureManager;
+   private AbstractTexture rainTexture;
+   private AbstractTexture snowTexture;
    private @Nullable GpuBuffer vertexBuffer;
+   private @Nullable PrimitiveTopology primitiveTopology;
+   private int indexCount;
 
    public WeatherEffectRenderer() {
       super();
@@ -60,6 +62,11 @@ public class WeatherEffectRenderer implements AutoCloseable {
          }
       }
 
+      Minecraft minecraft = Minecraft.getInstance();
+      this.gameRenderer = minecraft.gameRenderer;
+      this.textureManager = minecraft.getTextureManager();
+      this.rainTexture = this.textureManager.getTexture(RAIN_LOCATION);
+      this.snowTexture = this.textureManager.getTexture(SNOW_LOCATION);
    }
 
    public void extractRenderState(final ClientLevel level, final float partialTicks, final Vec3 cameraPos, final WeatherRenderState renderState) {
@@ -102,7 +109,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
       renderPass.drawIndexed(columnCount * 6, 1, startColumn * 6, 0, 0);
    }
 
-   private GpuBuffer uploadVertexBuffer(final ByteBuffer buffer) {
+   private void uploadVertexBuffer(final ByteBuffer buffer) {
       GpuDevice device = RenderSystem.getDevice();
       if (this.vertexBuffer == null || this.vertexBuffer.size() < (long)buffer.remaining()) {
          if (this.vertexBuffer != null) {
@@ -113,49 +120,56 @@ public class WeatherEffectRenderer implements AutoCloseable {
       }
 
       device.createCommandEncoder().writeToBuffer(this.vertexBuffer.slice(), buffer);
-      return this.vertexBuffer;
    }
 
-   public void render(final Vec3 cameraPos, final WeatherRenderState renderState) {
+   public void prepare(final Vec3 cameraPos, final WeatherRenderState renderState) {
       int columnCount = renderState.rainColumns.size() + renderState.snowColumns.size();
       if (columnCount != 0) {
-         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-         AbstractTexture rainTexture = textureManager.getTexture(RAIN_LOCATION);
-         AbstractTexture snowTexture = textureManager.getTexture(SNOW_LOCATION);
-         RenderTarget weatherRenderTarget = OutputTarget.WEATHER_TARGET.getRenderTarget();
-         GpuTextureView colorTexture = weatherRenderTarget.getColorTextureView();
-         GpuTextureView depthTexture = weatherRenderTarget.getDepthTextureView();
-         RenderPipeline renderPipeline = Minecraft.getInstance().gameRenderer.gameRenderState().useShaderTransparency() ? RenderPipelines.WEATHER_DEPTH_WRITE : RenderPipelines.WEATHER_NO_DEPTH_WRITE;
-
-         GpuBuffer vertexBuffer;
-         GpuBuffer indexBuffer;
-         IndexType indexType;
          try (ByteBufferBuilder builder = ByteBufferBuilder.exactlySized(columnCount * DefaultVertexFormat.PARTICLE.getVertexSize() * 4)) {
             BufferBuilder bufferBuilder = new BufferBuilder(builder, PrimitiveTopology.QUADS, DefaultVertexFormat.PARTICLE);
-            this.renderInstances(bufferBuilder, renderState.rainColumns, cameraPos, 1.0F, renderState.radius, renderState.intensity);
-            this.renderInstances(bufferBuilder, renderState.snowColumns, cameraPos, 0.8F, renderState.radius, renderState.intensity);
+            this.prepareInstances(bufferBuilder, renderState.rainColumns, cameraPos, 1.0F, renderState.radius, renderState.intensity);
+            this.prepareInstances(bufferBuilder, renderState.snowColumns, cameraPos, 0.8F, renderState.radius, renderState.intensity);
 
             try (MeshData mesh = bufferBuilder.buildOrThrow()) {
-               vertexBuffer = this.uploadVertexBuffer(mesh.vertexBuffer());
-               RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(mesh.drawState().primitiveTopology());
-               indexBuffer = autoIndices.getBuffer(mesh.drawState().indexCount());
-               indexType = autoIndices.type();
+               this.uploadVertexBuffer(mesh.vertexBuffer());
+               this.primitiveTopology = mesh.drawState().primitiveTopology();
+               this.indexCount = mesh.drawState().indexCount();
             }
          }
 
+         RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(this.primitiveTopology);
+         autoIndices.requestIndexCount(this.indexCount);
+         this.rainTexture = this.textureManager.getTexture(RAIN_LOCATION);
+         this.snowTexture = this.textureManager.getTexture(SNOW_LOCATION);
+      }
+   }
+
+   public void render(final WeatherRenderState renderState, final RenderPass renderPass) {
+      RenderPipeline renderPipeline = RenderPipelines.WEATHER;
+      this.render(renderState, renderPass, renderPipeline);
+   }
+
+   public void renderOit(final OitStage stage, final WeatherRenderState renderState, final RenderPass renderPass) {
+      RenderPipeline renderPipeline = RenderPipelines.OIT_WEATHER.getPipeline(stage);
+      this.render(renderState, renderPass, renderPipeline);
+   }
+
+   private void render(final WeatherRenderState renderState, final RenderPass renderPass, final RenderPipeline renderPipeline) {
+      int columnCount = renderState.rainColumns.size() + renderState.snowColumns.size();
+      if (this.vertexBuffer != null && columnCount != 0) {
+         renderPass.pushDebugGroup(() -> "Weather");
          GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
-
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Weather Effect", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-            renderPass.setPipeline(renderPipeline);
-            RenderSystem.bindDefaultUniforms(renderPass);
-            renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-            renderPass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-            renderPass.setIndexBuffer(indexBuffer, indexType);
-            renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            this.renderWeather(renderPass, rainTexture, 0, renderState.rainColumns.size());
-            this.renderWeather(renderPass, snowTexture, renderState.rainColumns.size(), renderState.snowColumns.size());
-         }
-
+         RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(this.primitiveTopology);
+         GpuBuffer indexBuffer = autoIndices.getBuffer();
+         IndexType indexType = autoIndices.type();
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+         renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+         renderPass.bindTexture("Sampler2", this.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+         renderPass.setIndexBuffer(indexBuffer, indexType);
+         renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
+         this.renderWeather(renderPass, this.rainTexture, 0, renderState.rainColumns.size());
+         this.renderWeather(renderPass, this.snowTexture, renderState.rainColumns.size(), renderState.snowColumns.size());
+         renderPass.popDebugGroup();
       }
    }
 
@@ -178,7 +192,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
       return new ColumnInstance(x, z, bottomY, topY, u, vOffset + v, brightenedLightCoords);
    }
 
-   private void renderInstances(final VertexConsumer builder, final List<ColumnInstance> columns, final Vec3 cameraPos, final float maxAlpha, final int radius, final float intensity) {
+   private void prepareInstances(final VertexConsumer builder, final List<ColumnInstance> columns, final Vec3 cameraPos, final float maxAlpha, final int radius, final float intensity) {
       if (!columns.isEmpty()) {
          float radiusSq = (float)(radius * radius);
 

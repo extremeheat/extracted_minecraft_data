@@ -79,7 +79,11 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final float progress, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final SpriteId sprite, final int outlineColor) {
       this.model.setupAnim(progress);
-      submitNodeCollector.submitModel(this.model, progress, poseStack, lightCoords, overlayCoords, -1, sprite, this.sprites, outlineColor, breakProgress);
+      submitNodeCollector.submitModel(this.model, progress, poseStack, lightCoords, overlayCoords, -1, sprite, this.sprites, outlineColor);
+      if (breakProgress != null) {
+         submitNodeCollector.order(1).submitCrumblingOverlay(this.model, progress, poseStack, sprite.renderType(this.model.renderType()), lightCoords, overlayCoords, -1, breakProgress);
+      }
+
    }
 
    private static Transformation createModelTransform(final Direction direction) {

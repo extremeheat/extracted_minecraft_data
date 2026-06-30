@@ -120,10 +120,14 @@ public class SnowGolem extends AbstractGolem implements RangedAttackMob, Shearab
       Level var12 = this.level();
       if (var12 instanceof ServerLevel serverLevel) {
          ItemStack itemStack = new ItemStack(Items.SNOWBALL);
-         Projectile.spawnProjectile(new Snowball(serverLevel, this, itemStack), serverLevel, itemStack, (projectile) -> projectile.shoot(xd, yd + yo - projectile.getY(), zd, 1.6F, 12.0F));
+         Projectile.spawnProjectile(new Snowball(serverLevel, this, itemStack), serverLevel, itemStack, (projectile) -> projectile.shoot(xd, yd + yo - projectile.getY(), zd, 1.6F, this.rangedAttackUncertainty(serverLevel)));
       }
 
       this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+   }
+
+   public float rangedAttackUncertainty(final Level level) {
+      return 12.0F;
    }
 
    protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {

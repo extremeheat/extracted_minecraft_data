@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -33,16 +32,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SweetBerryBushBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<SweetBerryBushBlock> CODEC = simpleCodec(SweetBerryBushBlock::new);
    private static final float HURT_SPEED_THRESHOLD = 0.003F;
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
    private static final VoxelShape SHAPE_SAPLING;
    private static final VoxelShape SHAPE_GROWING;
-
-   public MapCodec<SweetBerryBushBlock> codec() {
-      return CODEC;
-   }
 
    public SweetBerryBushBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -14,8 +14,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record WeepingVinesFeature() implements Feature {
    private static final Direction[] DIRECTIONS = Direction.values();
-   public static final WeepingVinesFeature INSTANCE = new WeepingVinesFeature();
-   public static final MapCodec<WeepingVinesFeature> CODEC;
+   public static final MapCodec<WeepingVinesFeature> CODEC = MapCodec.unit(WeepingVinesFeature::new);
 
    public WeepingVinesFeature() {
       super();
@@ -109,9 +108,5 @@ public record WeepingVinesFeature() implements Feature {
          placePos.move(Direction.DOWN);
       }
 
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

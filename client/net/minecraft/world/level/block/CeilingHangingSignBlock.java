@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,15 +40,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlock {
-   public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(i, CeilingHangingSignBlock::new));
    public static final IntegerProperty ROTATION;
    public static final BooleanProperty ATTACHED;
    private static final VoxelShape SHAPE_DEFAULT;
    private static final Map<Integer, VoxelShape> SHAPES;
-
-   public MapCodec<CeilingHangingSignBlock> codec() {
-      return CODEC;
-   }
 
    public CeilingHangingSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
       super(type, properties.sound(type.hangingSignSoundType()));

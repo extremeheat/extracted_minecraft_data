@@ -6,6 +6,7 @@ import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
@@ -79,8 +80,9 @@ public class PostChain implements AutoCloseable {
       }
 
       pipelineBuilder.withBindGroupLayout(bindGroupLayoutBuilder.build());
+      pipelineBuilder.withColorTargetState(ColorTargetState.DEFAULT);
       RenderPipeline pipeline = pipelineBuilder.build();
-      if (!RenderSystem.getDevice().precompilePipeline(pipeline).isValid()) {
+      if (RenderSystem.getCompiledPipelineNullable(pipeline) == null) {
          throw new ShaderManager.CompilationException("Failed to compile post processing pipeline " + String.valueOf(pipeline.getLocation()));
       } else {
          List<PostPass.Input> inputs = new ArrayList();
@@ -232,7 +234,7 @@ public class PostChain implements AutoCloseable {
       for(Map.Entry<Identifier, PostChainConfig.InternalTarget> entry : this.internalTargets.entrySet()) {
          Identifier id = (Identifier)entry.getKey();
          PostChainConfig.InternalTarget target = (PostChainConfig.InternalTarget)entry.getValue();
-         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), true, ARGB.vector4fFromARGB32(target.clearColor()), GpuFormat.RGBA8_UNORM);
+         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), new RenderTargetDescriptor.TextureProperties(ARGB.vector4fFromARGB32(target.clearColor()), GpuFormat.RGBA8_UNORM), RenderTargetDescriptor.TextureProperties.DEFAULT_DEPTH);
          if (target.persistent()) {
             RenderTarget persistentTarget = this.getOrCreatePersistentTarget(id, descriptor);
             targets.put(id, frame.importExternal(id.toString(), persistentTarget));

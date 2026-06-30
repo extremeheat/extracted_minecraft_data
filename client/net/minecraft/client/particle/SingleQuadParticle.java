@@ -4,6 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -12,6 +13,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public abstract class SingleQuadParticle extends Particle {
    protected float quadSize;
@@ -125,13 +127,17 @@ public abstract class SingleQuadParticle extends Particle {
       void setRotation(final Quaternionf target, final Camera camera, final float partialTickTime);
    }
 
-   public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline) {
+   public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline, @Nullable OitPipelineSet oitPipelineSet) {
       public static final Layer OPAQUE_TERRAIN;
       public static final Layer TRANSLUCENT_TERRAIN;
       public static final Layer OPAQUE_ITEMS;
       public static final Layer TRANSLUCENT_ITEMS;
       public static final Layer OPAQUE;
       public static final Layer TRANSLUCENT;
+
+      public Layer(final boolean translucent, final Identifier textureAtlasLocation, final RenderPipeline pipeline) {
+         this(translucent, textureAtlasLocation, pipeline, (OitPipelineSet)null);
+      }
 
       public Layer {
          super();
@@ -150,11 +156,11 @@ public abstract class SingleQuadParticle extends Particle {
 
       static {
          OPAQUE_TERRAIN = new Layer(false, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT_TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         TRANSLUCENT_TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
          OPAQUE_ITEMS = new Layer(false, TextureAtlas.LOCATION_ITEMS, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT_ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         TRANSLUCENT_ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
          OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE);
+         TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
       }
    }
 }

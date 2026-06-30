@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.base.MoreObjects;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -33,7 +32,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class TripWireHookBlock extends Block {
-   public static final MapCodec<TripWireHookBlock> CODEC = simpleCodec(TripWireHookBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty ATTACHED;
@@ -41,10 +39,6 @@ public class TripWireHookBlock extends Block {
    protected static final int WIRE_DIST_MAX = 42;
    private static final int RECHECK_PERIOD = 10;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<TripWireHookBlock> codec() {
-      return CODEC;
-   }
 
    public TripWireHookBlock(final BlockBehaviour.Properties properties) {
       super(properties);

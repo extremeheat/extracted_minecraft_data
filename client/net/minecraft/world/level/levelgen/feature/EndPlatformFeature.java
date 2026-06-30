@@ -11,8 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record EndPlatformFeature() implements Feature {
-   public static final EndPlatformFeature INSTANCE = new EndPlatformFeature();
-   public static final MapCodec<EndPlatformFeature> CODEC;
+   public static final MapCodec<EndPlatformFeature> CODEC = MapCodec.unit(EndPlatformFeature::new);
 
    public EndPlatformFeature() {
       super();
@@ -46,9 +45,5 @@ public record EndPlatformFeature() implements Feature {
          }
       }
 
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -14,12 +13,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TallDryGrassBlock extends DryVegetationBlock implements BonemealableBlock {
-   public static final MapCodec<TallDryGrassBlock> CODEC = simpleCodec(TallDryGrassBlock::new);
    private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 16.0);
-
-   public MapCodec<TallDryGrassBlock> codec() {
-      return CODEC;
-   }
 
    protected TallDryGrassBlock(final BlockBehaviour.Properties properties) {
       super(properties);

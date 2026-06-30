@@ -3,6 +3,7 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.MainTarget;
+import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.MessageBox;
@@ -11,6 +12,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -265,10 +269,11 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
             return null;
          }
       };
-      device.precompilePipeline(RenderPipelines.GUI, shaderSource);
-      device.precompilePipeline(RenderPipelines.GUI_TEXTURED, shaderSource);
+      RenderSystem.setFallbackPipelineCache(new PipelineCache(device, shaderSource));
+      RenderSystem.getCompiledPipeline(RenderPipelines.GUI);
+      RenderSystem.getCompiledPipeline(RenderPipelines.GUI_TEXTURED);
       if (TracyClient.isAvailable()) {
-         device.precompilePipeline(RenderPipelines.TRACY_BLIT, shaderSource);
+         RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT);
       }
 
    }
@@ -363,7 +368,15 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
             }
 
             this.itemInHandRenderer.submitHandsWithItems(deltaPartialTick, poseStack, this.handAndScreenSubmitNodeStorage, this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, deltaPartialTick));
-            this.featureRenderDispatcher.renderAllFeatures(this.handAndScreenSubmitNodeStorage);
+
+            try (
+               FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.handAndScreenSubmitNodeStorage);
+               RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item in hand", this.mainRenderTarget.getColorTextureView(), Optional.empty(), this.mainRenderTarget.getDepthTextureView(), OptionalDouble.empty());
+            ) {
+               RenderSystem.bindDefaultUniforms(renderPass);
+               FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+            }
+
             modelViewStack.popMatrix();
             poseStack.popPose();
          }
@@ -577,7 +590,15 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       this.renderItemInHand(cameraState, cameraEntityPartialTicks, modelViewMatrix);
       profiler.popPush("screenEffects");
       this.screenEffectRenderer.submit(optionsState.cameraType.isFirstPerson(), isSleeping, worldPartialTicks, this.handAndScreenSubmitNodeStorage, this.gameRenderState.guiRenderState.isHudHidden);
-      this.featureRenderDispatcher.renderAllFeatures(this.handAndScreenSubmitNodeStorage);
+
+      try (
+         FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.handAndScreenSubmitNodeStorage);
+         RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Screen effects", this.mainRenderTarget.getColorTextureView(), Optional.empty(), this.mainRenderTarget.getDepthTextureView(), OptionalDouble.empty());
+      ) {
+         RenderSystem.bindDefaultUniforms(renderPass);
+         FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+      }
+
       profiler.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
       if (this.gameRenderState.levelRenderState.render3dCrosshair && optionsState.cameraType.isFirstPerson() && !this.gameRenderState.guiRenderState.isHudHidden) {
@@ -702,5 +723,9 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
    public void registerPanoramaTextures(final TextureManager textureManager) {
       this.guiRenderer.registerPanoramaTextures(textureManager);
+   }
+
+   public boolean useImprovedTransparency() {
+      return this.gameRenderState.optionsRenderState.improvedTransparency && !this.gameRenderState.levelRenderState.renderWireframeTerrain;
    }
 }

@@ -1,17 +1,19 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import java.util.stream.Stream;
+import com.mojang.serialization.MapCodec;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 
-public abstract class PlacementFilter extends PlacementModifier {
-   public PlacementFilter() {
-      super();
+public interface PlacementFilter extends PlacementModifier {
+   default void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
+      if (this.shouldPlace(context, random, origin)) {
+         output.accept(origin);
+      }
+
    }
 
-   public final Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      return this.shouldPlace(context, random, origin) ? Stream.of(origin) : Stream.of();
-   }
+   boolean shouldPlace(PlacementContext context, RandomSource random, BlockPos origin);
 
-   protected abstract boolean shouldPlace(PlacementContext context, RandomSource random, BlockPos origin);
+   MapCodec<? extends PlacementFilter> codec();
 }

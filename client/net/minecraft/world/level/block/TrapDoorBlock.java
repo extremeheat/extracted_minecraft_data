@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -39,17 +37,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<TrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, TrapDoorBlock::new));
    public static final BooleanProperty OPEN;
    public static final EnumProperty<Half> HALF;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty WATERLOGGED;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final BlockSetType type;
-
-   public MapCodec<? extends TrapDoorBlock> codec() {
-      return CODEC;
-   }
 
    protected TrapDoorBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
       super(properties.sound(type.soundType()));

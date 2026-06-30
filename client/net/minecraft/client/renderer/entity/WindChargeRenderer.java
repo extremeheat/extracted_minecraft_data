@@ -5,7 +5,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.WindChargeModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -22,7 +21,7 @@ public class WindChargeRenderer extends EntityRenderer<AbstractWindCharge, Entit
    }
 
    public void submit(final EntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
-      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(state.ageInTicks) % 1.0F, 0.0F), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(state.ageInTicks) % 1.0F, 0.0F), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       super.submit(state, poseStack, submitNodeCollector, camera);
    }
 

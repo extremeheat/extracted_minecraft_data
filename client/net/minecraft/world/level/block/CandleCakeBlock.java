@@ -1,13 +1,10 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -31,16 +28,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CandleCakeBlock extends AbstractCandleBlock {
-   public static final MapCodec<CandleCakeBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("candle").forGetter((b) -> b.candleBlock), propertiesCodec()).apply(i, CandleCakeBlock::new));
    public static final BooleanProperty LIT;
    private static final VoxelShape SHAPE;
    private static final Map<CandleBlock, CandleCakeBlock> BY_CANDLE;
    private static final Iterable<Vec3> PARTICLE_OFFSETS;
    private final CandleBlock candleBlock;
-
-   public MapCodec<CandleCakeBlock> codec() {
-      return CODEC;
-   }
 
    protected CandleCakeBlock(final Block block, final BlockBehaviour.Properties properties) {
       super(properties);

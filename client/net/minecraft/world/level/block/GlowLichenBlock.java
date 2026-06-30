@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,12 +11,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class GlowLichenBlock extends MultifaceSpreadeableBlock implements BonemealableBlock {
-   public static final MapCodec<GlowLichenBlock> CODEC = simpleCodec(GlowLichenBlock::new);
    private final MultifaceSpreader spreader = new MultifaceSpreader(this);
-
-   public MapCodec<GlowLichenBlock> codec() {
-      return CODEC;
-   }
 
    public GlowLichenBlock(final BlockBehaviour.Properties properties) {
       super(properties);

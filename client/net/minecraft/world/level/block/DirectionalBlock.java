@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -12,8 +11,6 @@ public abstract class DirectionalBlock extends Block {
    protected DirectionalBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends DirectionalBlock> codec();
 
    static {
       FACING = BlockStateProperties.FACING;

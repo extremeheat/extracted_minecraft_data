@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
@@ -28,13 +29,34 @@ import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeStorage implements SubmitNodeCollector {
    private final Int2ObjectAVLTreeMap<SubmitNodeCollection> submitsPerOrder = new Int2ObjectAVLTreeMap();
+   private boolean useImprovedTransparency;
 
    public SubmitNodeStorage() {
       super();
    }
 
+   public void setUseImprovedTransparency(final boolean useImprovedTransparency) {
+      if (this.useImprovedTransparency != useImprovedTransparency) {
+         ObjectIterator var2 = this.submitsPerOrder.values().iterator();
+
+         while(var2.hasNext()) {
+            SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
+
+            for(FeatureRenderPhase<?> phase : collection.allPhases()) {
+               if (!phase.isEmpty()) {
+                  throw new IllegalStateException("Storage is not empty. Improved transparency is likely toggled in a wrong place.");
+               }
+            }
+         }
+
+         this.submitsPerOrder.clear();
+         this.useImprovedTransparency = useImprovedTransparency;
+      }
+
+   }
+
    public SubmitNodeCollection order(final int order) {
-      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (var0) -> new SubmitNodeCollection());
+      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (var1) -> new SubmitNodeCollection(this.useImprovedTransparency));
    }
 
    public void submitShadow(final PoseStack poseStack, final float radius, final List<EntityRenderState.ShadowPiece> pieces) {
@@ -57,8 +79,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitLeash(poseStack, leashState);
    }
 
-   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable UvMapping uvMapping, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
-      this.order(0).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, uvMapping, outlineColor, crumblingOverlay);
+   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable UvMapping uvMapping, final int outlineColor) {
+      this.order(0).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, uvMapping, outlineColor);
+   }
+
+   public <S> void submitCrumblingOverlay(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+      this.order(0).submitCrumblingOverlay(model, state, poseStack, renderType, lightCoords, overlayCoords, tintedColor, crumblingOverlay);
    }
 
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState, final int outlineColor) {
@@ -69,8 +95,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitBlockModel(poseStack, renderType, modelParts, tintLayers, lightCoords, overlayCoords, outlineColor);
    }
 
-   public void submitBreakingBlockModel(final PoseStack poseStack, final List<BlockStateModelPart> parts, final int progress) {
-      this.order(0).submitBreakingBlockModel(poseStack, parts, progress);
+   public void submitBreakingBlockModel(final PoseStack poseStack, final List<BlockStateModelPart> parts, final int progress, final boolean isBlockTranslucent) {
+      this.order(0).submitBreakingBlockModel(poseStack, parts, progress, isBlockTranslucent);
    }
 
    public void submitShapeOutline(final PoseStack poseStack, final VoxelShape shape, final RenderType renderType, final int color, final float width, final boolean afterTerrain) {

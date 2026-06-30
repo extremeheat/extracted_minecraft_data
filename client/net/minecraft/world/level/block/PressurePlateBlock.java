@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,12 +12,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class PressurePlateBlock extends BasePressurePlateBlock {
-   public static final MapCodec<PressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, PressurePlateBlock::new));
    public static final BooleanProperty POWERED;
-
-   public MapCodec<PressurePlateBlock> codec() {
-      return CODEC;
-   }
 
    protected PressurePlateBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
       super(properties, type);

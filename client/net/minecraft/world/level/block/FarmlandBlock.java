@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -30,15 +27,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class FarmlandBlock extends Block {
-   public static final MapCodec<FarmlandBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter((t) -> t.baseBlock), propertiesCodec()).apply(i, FarmlandBlock::new));
    private final Block baseBlock;
    public static final IntegerProperty MOISTURE;
    private static final VoxelShape SHAPE;
    public static final int MAX_MOISTURE = 7;
-
-   public MapCodec<FarmlandBlock> codec() {
-      return CODEC;
-   }
 
    protected FarmlandBlock(final Block baseBlock, final BlockBehaviour.Properties properties) {
       super(properties);

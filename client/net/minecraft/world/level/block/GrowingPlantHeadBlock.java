@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,8 +26,6 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       this.growPerTickProbability = growPerTickProbability;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
-
-   protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
 
    public BlockState getStateForPlacement(final RandomSource random) {
       return (BlockState)this.defaultBlockState().setValue(AGE, random.nextInt(25));

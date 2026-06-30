@@ -38,6 +38,10 @@ public record SpriteCoordinateExpander(VertexConsumer delegate, UvMapping mappin
       return this;
    }
 
+   public VertexConsumer setUv3(final float u, final float v) {
+      return this.delegate.setUv3(u, v);
+   }
+
    public VertexConsumer setNormal(final float x, final float y, final float z) {
       this.delegate.setNormal(x, y, z);
       return this;

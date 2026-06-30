@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,12 +23,6 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class PumpkinBlock extends Block {
-   public static final MapCodec<PumpkinBlock> CODEC = simpleCodec(PumpkinBlock::new);
-
-   public MapCodec<PumpkinBlock> codec() {
-      return CODEC;
-   }
-
    protected PumpkinBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

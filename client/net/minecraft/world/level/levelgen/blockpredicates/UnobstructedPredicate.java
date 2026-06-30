@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.shapes.Shapes;
 
 public record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
@@ -19,7 +19,7 @@ public record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
       return BlockPredicateType.UNOBSTRUCTED;
    }
 
-   public boolean test(final WorldGenLevel worldGenLevel, final BlockPos pos) {
+   public boolean test(final LevelAccessor worldGenLevel, final BlockPos pos) {
       return worldGenLevel.isUnobstructed((Entity)null, Shapes.block().move((Vec3i)pos));
    }
 }

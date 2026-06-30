@@ -13,7 +13,6 @@ public record VoidStartPlatformFeature() implements Feature {
    private static final ChunkPos PLATFORM_ORIGIN_CHUNK;
    private static final int PLATFORM_RADIUS = 16;
    private static final int PLATFORM_RADIUS_CHUNKS = 1;
-   public static final VoidStartPlatformFeature INSTANCE;
    public static final MapCodec<VoidStartPlatformFeature> CODEC;
 
    public VoidStartPlatformFeature() {
@@ -55,7 +54,6 @@ public record VoidStartPlatformFeature() implements Feature {
 
    static {
       PLATFORM_ORIGIN_CHUNK = ChunkPos.containing(PLATFORM_OFFSET);
-      INSTANCE = new VoidStartPlatformFeature();
-      CODEC = MapCodec.unit(INSTANCE);
+      CODEC = MapCodec.unit(VoidStartPlatformFeature::new);
    }
 }

@@ -67,6 +67,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
+import net.minecraft.world.level.levelgen.placement.FeaturePlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -123,7 +124,7 @@ public abstract class ChunkGenerator {
       }, Util.backgroundExecutor().forName("init_biomes"));
    }
 
-   public abstract void applyCarvers(WorldGenRegion region, long seed, final RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunk);
+   public abstract void applyCarvers(WorldGenRegion region, long seed, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunk, CarvingMask.@Nullable Filter filter);
 
    public @Nullable Pair<BlockPos, Holder<Structure>> findNearestMapStructure(final ServerLevel level, final HolderSet<Structure> wantedStructures, final BlockPos pos, final int maxSearchRadius, final boolean createReference) {
       if (SharedConstants.DEBUG_DISABLE_FEATURES) {
@@ -297,6 +298,7 @@ public abstract class ChunkGenerator {
          });
          possibleBiomes.retainAll(this.biomeSource.possibleBiomes());
          int featureStepCount = featureList.size();
+         FeaturePlacer placer = new FeaturePlacer(level, this);
 
          try {
             Registry<PlacedFeature> featureRegistry = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
@@ -357,12 +359,12 @@ public abstract class ChunkGenerator {
 
                      try {
                         level.setCurrentlyGenerating(currentlyGenerating);
-                        feature.placeWithBiomeCheck(level, this, random, origin);
+                        placer.placeWithBiomeCheck(feature, random, origin);
                      } catch (Exception e) {
                         CrashReport report = CrashReport.forThrowable(e, "Feature placement");
-                        CrashReportCategory var43 = report.addCategory("Feature");
+                        CrashReportCategory var44 = report.addCategory("Feature");
                         Objects.requireNonNull(currentlyGenerating);
-                        var43.setDetail("Description", currentlyGenerating::get);
+                        var44.setDetail("Description", currentlyGenerating::get);
                         throw new ReportedException(report);
                      }
                   }

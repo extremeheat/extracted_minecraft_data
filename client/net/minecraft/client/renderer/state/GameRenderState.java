@@ -14,8 +14,4 @@ public class GameRenderState {
    public GameRenderState() {
       super();
    }
-
-   public boolean useShaderTransparency() {
-      return !this.levelRenderState.cameraRenderState.isPanoramicMode && this.optionsRenderState.improvedTransparency;
-   }
 }

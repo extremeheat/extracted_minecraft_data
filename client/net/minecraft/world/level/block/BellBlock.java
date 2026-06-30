@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -43,7 +42,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BellBlock extends BaseEntityBlock {
-   public static final MapCodec<BellBlock> CODEC = simpleCodec(BellBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<BellAttachType> ATTACHMENT;
    public static final BooleanProperty POWERED;
@@ -53,10 +51,6 @@ public class BellBlock extends BaseEntityBlock {
    private static final Map<Direction.Axis, VoxelShape> SHAPE_DOUBLE_WALL;
    private static final Map<Direction, VoxelShape> SHAPE_SINGLE_WALL;
    public static final int EVENT_BELL_RING = 1;
-
-   public MapCodec<BellBlock> codec() {
-      return CODEC;
-   }
 
    public BellBlock(final BlockBehaviour.Properties properties) {
       super(properties);

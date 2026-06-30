@@ -1,13 +1,16 @@
 package net.minecraft.client.renderer.feature;
 
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.rendertype.PreparedRenderType;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import org.jspecify.annotations.Nullable;
@@ -34,17 +37,28 @@ public abstract class RenderTypeFeatureRenderer<Submit extends SubmitNode> imple
       this.currentGroup = new Group(context.stagedVertexBuffer(), !strictlyOrdered);
       this.buildGroup(context, submits);
       this.groups.add(this.currentGroup);
+
+      for(Group group : this.groups) {
+         for(StagedVertexBuffer.Draw draw : group.draws) {
+            context.stagedVertexBuffer().requestIndexCount(draw);
+         }
+      }
+
       this.currentGroup = null;
    }
 
-   public void executeGroup(final FeatureFrameContext context, final int groupIndex, final List<Submit> submits, final boolean strictlyOrdered) {
+   public void executeGroup(final FeatureFrameContext context, final @Nullable OitStage stage, final RenderPass renderPass, final int groupIndex, final List<Submit> submits, final boolean strictlyOrdered) {
       Group group = (Group)this.groups.get(groupIndex);
 
       for(int i = 0; i < group.draws.size(); ++i) {
          PreparedRenderType renderType = (PreparedRenderType)group.drawRenderTypes.get(i);
          StagedVertexBuffer.ExecuteInfo info = context.stagedVertexBuffer().getExecuteInfo((StagedVertexBuffer.Draw)group.draws.get(i));
          if (info != null) {
-            renderType.drawFromBuffer(info);
+            if (stage != null) {
+               renderType.drawFromBufferOit(info, stage, renderPass);
+            } else {
+               renderType.drawFromBuffer(info, renderPass);
+            }
          }
       }
 
@@ -83,7 +97,8 @@ public abstract class RenderTypeFeatureRenderer<Submit extends SubmitNode> imple
          if (existingIndex != -1) {
             return (StagedVertexBuffer.Draw)this.draws.get(existingIndex);
          } else {
-            VertexSorting quadSorting = renderType.sortOnUpload() ? RenderSystem.getProjectionType().vertexSorting() : null;
+            boolean useImprovedTransparency = Minecraft.getInstance().gameRenderer.useImprovedTransparency();
+            VertexSorting quadSorting = renderType.sortOnUpload() && !useImprovedTransparency ? RenderSystem.getProjectionType().vertexSorting() : null;
             StagedVertexBuffer.Draw draw = this.stagedBuffer.appendDraw(renderType.format(), renderType.primitiveTopology(), quadSorting);
             this.draws.add(draw);
             this.drawRenderTypes.add(preparedRenderType);

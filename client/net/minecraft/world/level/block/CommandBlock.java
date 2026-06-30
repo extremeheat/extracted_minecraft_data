@@ -1,9 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -32,15 +29,10 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("automatic").forGetter((b) -> b.automatic), propertiesCodec()).apply(i, CommandBlock::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty CONDITIONAL;
    private final boolean automatic;
-
-   public MapCodec<CommandBlock> codec() {
-      return CODEC;
-   }
 
    public CommandBlock(final boolean automatic, final BlockBehaviour.Properties properties) {
       super(properties);

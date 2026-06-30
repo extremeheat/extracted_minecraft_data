@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Collection;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -21,13 +20,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBehaviour {
-   public static final MapCodec<SculkVeinBlock> CODEC = simpleCodec(SculkVeinBlock::new);
    private final MultifaceSpreader veinSpreader;
    private final MultifaceSpreader sameSpaceSpreader;
-
-   public MapCodec<SculkVeinBlock> codec() {
-      return CODEC;
-   }
 
    public SculkVeinBlock(final BlockBehaviour.Properties properties) {
       super(properties);

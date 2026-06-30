@@ -15,7 +15,6 @@ public class VanillaMaterialConditions {
    public static final ResourceKey<SurfaceRules.ConditionSource> ON_CEILING = createKey("on_ceiling");
    public static final ResourceKey<SurfaceRules.ConditionSource> UNDER_CEILING = createKey("under_ceiling");
    public static final ResourceKey<SurfaceRules.ConditionSource> NOT_UNDERWATER = createKey("not_underwater");
-   public static final ResourceKey<SurfaceRules.ConditionSource> ABOVE_WATER = createKey("above_water");
    public static final ResourceKey<SurfaceRules.ConditionSource> NOT_UNDER_DEEP_WATER = createKey("not_under_deep_water");
 
    public VanillaMaterialConditions() {
@@ -34,7 +33,6 @@ public class VanillaMaterialConditions {
       context.register(ON_CEILING, SurfaceRules.stoneDepthCheck(0, false, CaveSurface.CEILING));
       context.register(UNDER_CEILING, SurfaceRules.stoneDepthCheck(0, true, CaveSurface.CEILING));
       context.register(NOT_UNDERWATER, SurfaceRules.waterBlockCheck(-1, 0));
-      context.register(ABOVE_WATER, SurfaceRules.waterBlockCheck(0, 0));
       context.register(NOT_UNDER_DEEP_WATER, SurfaceRules.waterStartCheck(-6, -1));
    }
 }

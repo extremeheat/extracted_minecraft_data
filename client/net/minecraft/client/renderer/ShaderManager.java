@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
+import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.ShaderType;
@@ -207,24 +208,29 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       Set<RenderPipeline> pipelinesToPreload = new HashSet(RenderPipelines.getStaticPipelines());
       List<Identifier> failedLoads = new ArrayList();
       GpuDevice device = RenderSystem.getDevice();
-      device.clearPipelineCache();
+      Objects.requireNonNull(newCompilationCache);
+      PipelineCache pipelineCache = new PipelineCache(device, newCompilationCache::getShaderSource);
+      pipelineCache.clear();
 
       for(RenderPipeline pipeline : pipelinesToPreload) {
-         Objects.requireNonNull(newCompilationCache);
-         CompiledRenderPipeline compiled = device.precompilePipeline(pipeline, newCompilationCache::getShaderSource);
-         if (!compiled.isValid()) {
+         CompiledRenderPipeline compiled = pipelineCache.get(pipeline);
+         if (compiled == null) {
             failedLoads.add(pipeline.getLocation());
          }
       }
 
       if (!failedLoads.isEmpty()) {
-         device.clearPipelineCache();
-         device.loadCriticalShaders();
+         pipelineCache.close();
          Stream var10002 = failedLoads.stream().map((entry) -> " - " + String.valueOf(entry));
          throw new RuntimeException("Failed to load required shader programs:\n" + (String)var10002.collect(Collectors.joining("\n")));
       } else {
          this.compilationCache.close();
          this.compilationCache = newCompilationCache;
+         PipelineCache oldPipelineCache = RenderSystem.setCurrentPipelineCache(pipelineCache);
+         if (oldPipelineCache != null) {
+            oldPipelineCache.close();
+         }
+
       }
    }
 
@@ -253,10 +259,6 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    public void close() {
       this.compilationCache.close();
       this.postChainProjectionMatrixBuffer.close();
-   }
-
-   public @Nullable String getShader(final Identifier id, final ShaderType type) {
-      return this.compilationCache.getShaderSource(id, type);
    }
 
    public static record Configs(Map<ShaderSourceKey, String> shaderSources, Map<Identifier, PostChainConfig> postChains) {

@@ -152,6 +152,7 @@ public class Dolphin extends AgeableWaterCreature {
       this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(5, new DolphinJumpGoal(this, 10));
       this.goalSelector.addGoal(6, new MeleeAttackGoal(this, 1.2000000476837158, true));
+      this.goalSelector.addGoal(7, new MoveToItemGoal());
       this.goalSelector.addGoal(8, new PlayWithItemsGoal());
       this.goalSelector.addGoal(8, new FollowPlayerRiddenEntityGoal(this, AbstractBoat.class));
       this.goalSelector.addGoal(8, new FollowPlayerRiddenEntityGoal(this, AbstractNautilus.class));
@@ -336,10 +337,42 @@ public class Dolphin extends AgeableWaterCreature {
       BABY_DIMENSIONS = EntityTypes.DOLPHIN.getDimensions().scale(0.65F).withEyeHeight(0.09375F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, 0.3125F, 0.0F));
    }
 
-   private class PlayWithItemsGoal extends Goal {
+   private abstract class ItemGoal extends Goal {
+      private ItemGoal() {
+         Objects.requireNonNull(Dolphin.this);
+         super();
+      }
+
+      protected void drop(final ItemStack itemStack) {
+         if (!itemStack.isEmpty()) {
+            double yHandPos = Dolphin.this.getEyeY() - 0.30000001192092896;
+            ItemEntity thrownItem = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), yHandPos, Dolphin.this.getZ(), itemStack);
+            thrownItem.setPickUpDelay(40);
+            thrownItem.setThrower(Dolphin.this);
+            float pow = 0.3F;
+            float dir = Dolphin.this.random.nextFloat() * 6.2831855F;
+            float pow2 = 0.02F * Dolphin.this.random.nextFloat();
+            thrownItem.setDeltaMovement((double)(0.3F * -Mth.sin((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.cos((double)dir) * pow2), (double)(0.3F * Mth.sin((double)(Dolphin.this.getXRot() * 0.017453292F)) * 1.5F), (double)(0.3F * Mth.cos((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.sin((double)dir) * pow2));
+            Dolphin.this.level().addFreshEntity(thrownItem);
+         }
+      }
+
+      protected boolean dropItem() {
+         ItemStack itemStack = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (itemStack.isEmpty()) {
+            return false;
+         } else {
+            this.drop(itemStack);
+            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            return true;
+         }
+      }
+   }
+
+   private class MoveToItemGoal extends ItemGoal {
       private int cooldown;
 
-      public PlayWithItemsGoal() {
+      public MoveToItemGoal() {
          Objects.requireNonNull(Dolphin.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -350,8 +383,15 @@ public class Dolphin extends AgeableWaterCreature {
             return false;
          } else {
             List<ItemEntity> items = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
-            return !items.isEmpty() || !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
+            return !items.isEmpty();
          }
+      }
+
+      public void stop() {
+         if (this.dropItem()) {
+            this.cooldown = Dolphin.this.tickCount + Dolphin.this.random.nextInt(100);
+         }
+
       }
 
       public void start() {
@@ -364,40 +404,31 @@ public class Dolphin extends AgeableWaterCreature {
          this.cooldown = 0;
       }
 
-      public void stop() {
-         ItemStack itemStack = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (!itemStack.isEmpty()) {
-            this.drop(itemStack);
-            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            this.cooldown = Dolphin.this.tickCount + Dolphin.this.random.nextInt(100);
-         }
-
-      }
-
       public void tick() {
          List<ItemEntity> items = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
-         ItemStack itemStack = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (!itemStack.isEmpty()) {
-            this.drop(itemStack);
-            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-         } else if (!items.isEmpty()) {
+         if (!items.isEmpty()) {
             Dolphin.this.getNavigation().moveTo((Entity)items.get(0), 1.2000000476837158);
          }
 
       }
+   }
 
-      private void drop(final ItemStack itemStack) {
-         if (!itemStack.isEmpty()) {
-            double yHandPos = Dolphin.this.getEyeY() - 0.30000001192092896;
-            ItemEntity thrownItem = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), yHandPos, Dolphin.this.getZ(), itemStack);
-            thrownItem.setPickUpDelay(40);
-            thrownItem.setThrower(Dolphin.this);
-            float pow = 0.3F;
-            float dir = Dolphin.this.random.nextFloat() * 6.2831855F;
-            float pow2 = 0.02F * Dolphin.this.random.nextFloat();
-            thrownItem.setDeltaMovement((double)(0.3F * -Mth.sin((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.cos((double)dir) * pow2), (double)(0.3F * Mth.sin((double)(Dolphin.this.getXRot() * 0.017453292F)) * 1.5F), (double)(0.3F * Mth.cos((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.sin((double)dir) * pow2));
-            Dolphin.this.level().addFreshEntity(thrownItem);
-         }
+   private class PlayWithItemsGoal extends ItemGoal {
+      private PlayWithItemsGoal() {
+         Objects.requireNonNull(Dolphin.this);
+         super();
+      }
+
+      public boolean canUse() {
+         return !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
+      }
+
+      public void stop() {
+         this.dropItem();
+      }
+
+      public void tick() {
+         this.dropItem();
       }
    }
 

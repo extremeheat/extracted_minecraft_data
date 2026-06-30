@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -17,8 +16,6 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       super(properties);
       this.color = color;
    }
-
-   protected abstract MapCodec<? extends AbstractBannerBlock> codec();
 
    public boolean isPossibleToRespawnInThis(final BlockState state) {
       return true;

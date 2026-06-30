@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -18,12 +17,7 @@ import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<MangroveRootsBlock> CODEC = simpleCodec(MangroveRootsBlock::new);
    public static final BooleanProperty WATERLOGGED;
-
-   public MapCodec<MangroveRootsBlock> codec() {
-      return CODEC;
-   }
 
    protected MangroveRootsBlock(final BlockBehaviour.Properties properties) {
       super(properties);

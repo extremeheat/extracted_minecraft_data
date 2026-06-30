@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -14,12 +13,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class RedstoneLampBlock extends Block {
-   public static final MapCodec<RedstoneLampBlock> CODEC = simpleCodec(RedstoneLampBlock::new);
    public static final BooleanProperty LIT;
-
-   public MapCodec<RedstoneLampBlock> codec() {
-      return CODEC;
-   }
 
    public RedstoneLampBlock(final BlockBehaviour.Properties properties) {
       super(properties);

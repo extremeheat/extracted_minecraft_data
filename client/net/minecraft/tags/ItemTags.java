@@ -194,6 +194,7 @@ public final class ItemTags {
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS;
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM;
    public static final TagKey<Item> METAL_NUGGETS;
+   public static final TagKey<Item> DOWSES_CAMPFIRES;
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE;
@@ -416,6 +417,7 @@ public final class ItemTags {
       WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
       SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
       METAL_NUGGETS = bind("metal_nuggets");
+      DOWSES_CAMPFIRES = bind("dowses_campfires");
       FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
       LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
       CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

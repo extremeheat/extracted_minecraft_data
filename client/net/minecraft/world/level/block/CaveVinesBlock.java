@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -17,12 +16,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class CaveVinesBlock extends GrowingPlantHeadBlock implements CaveVines {
-   public static final MapCodec<CaveVinesBlock> CODEC = simpleCodec(CaveVinesBlock::new);
    private static final float CHANCE_OF_BERRIES_ON_GROWTH = 0.11F;
-
-   public MapCodec<CaveVinesBlock> codec() {
-      return CODEC;
-   }
 
    public CaveVinesBlock(final BlockBehaviour.Properties properties) {
       super(properties, Direction.DOWN, SHAPE, false, 0.1);

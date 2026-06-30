@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.BiMap;
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -30,7 +29,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
 public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
-   public static final MapCodec<CarvedPumpkinBlock> CODEC = simpleCodec(CarvedPumpkinBlock::new);
    public static final EnumProperty<Direction> FACING;
    private @Nullable BlockPattern snowGolemBase;
    private @Nullable BlockPattern snowGolemFull;
@@ -39,10 +37,6 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    private @Nullable BlockPattern copperGolemBase;
    private @Nullable BlockPattern copperGolemFull;
    private static final Predicate<BlockState> PUMPKINS_PREDICATE;
-
-   public MapCodec<? extends CarvedPumpkinBlock> codec() {
-      return CODEC;
-   }
 
    protected CarvedPumpkinBlock(final BlockBehaviour.Properties properties) {
       super(properties);

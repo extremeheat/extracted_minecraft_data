@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.TntRenderer;
 import net.minecraft.client.renderer.entity.state.SulfurCubeRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -47,7 +46,7 @@ public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, Sul
             Identifier location = state.isBaby ? SULFUR_CUBE_SMALL_INNER_LOCATION : SULFUR_CUBE_INNER_LOCATION;
             SulfurCubeModel model = state.isBaby ? this.smallModel : this.normalModel;
             RenderType renderType = RenderTypes.entityTranslucent(location);
-            submitNodeCollector.order(-1).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.order(-1).submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (UvMapping)null, state.outlineColor);
          }
 
       }

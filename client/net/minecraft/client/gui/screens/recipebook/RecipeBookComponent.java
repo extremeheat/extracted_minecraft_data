@@ -433,7 +433,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
          } else if (this.searchBox.keyPressed(event)) {
             this.checkSearchStringUpdate();
             return true;
-         } else if (this.searchBox.isFocused() && this.searchBox.isVisible() && !event.isEscape()) {
+         } else if (this.searchBox.capturesInput() && !event.isEscape()) {
             return true;
          } else if (this.minecraft.options.keyChat.matches(event) && !this.searchBox.isFocused()) {
             this.ignoreTextInput = true;
@@ -489,6 +489,10 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
 
    public boolean isFocused() {
       return false;
+   }
+
+   public boolean capturesInput() {
+      return this.searchBox != null && this.searchBox.capturesInput();
    }
 
    private void checkSearchStringUpdate() {

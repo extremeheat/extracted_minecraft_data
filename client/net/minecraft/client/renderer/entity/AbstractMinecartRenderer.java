@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -67,7 +66,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       poseStack.scale(-1.0F, -1.0F, 1.0F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();
    }
 

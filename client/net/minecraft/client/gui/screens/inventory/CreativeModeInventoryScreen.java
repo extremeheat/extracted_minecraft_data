@@ -388,7 +388,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
                return true;
             } else {
-               return this.searchBox.isFocused() && this.searchBox.isVisible() && !event.isEscape() ? true : super.keyPressed(event);
+               return this.searchBox.capturesInput() && !event.isEscape() ? true : super.keyPressed(event);
             }
          }
       }
@@ -397,6 +397,10 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    public boolean keyReleased(final KeyEvent event) {
       this.ignoreTextInput = false;
       return super.keyReleased(event);
+   }
+
+   public boolean isInputCaptured() {
+      return super.isInputCaptured() || this.searchBox.capturesInput();
    }
 
    private void refreshSearchResults() {

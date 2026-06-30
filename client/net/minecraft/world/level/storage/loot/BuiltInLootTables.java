@@ -104,6 +104,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> HARVEST_SWEET_BERRY_BUSH;
    public static final ResourceKey<LootTable> HARVEST_BEEHIVE;
    public static final ResourceKey<LootTable> CARVE_PUMPKIN;
+   public static final ResourceKey<LootTable> TILL_ROOTED_DIRT;
    public static final ResourceKey<LootTable> PIGLIN_BARTERING;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_KEY;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_CONSUMABLES;
@@ -249,6 +250,7 @@ public class BuiltInLootTables {
       HARVEST_SWEET_BERRY_BUSH = register("harvest/sweet_berry_bush");
       HARVEST_BEEHIVE = register("harvest/beehive");
       CARVE_PUMPKIN = register("carve/pumpkin");
+      TILL_ROOTED_DIRT = register("till/rooted_dirt");
       PIGLIN_BARTERING = register("gameplay/piglin_bartering");
       SPAWNER_TRIAL_CHAMBER_KEY = register("spawners/trial_chamber/key");
       SPAWNER_TRIAL_CHAMBER_CONSUMABLES = register("spawners/trial_chamber/consumables");

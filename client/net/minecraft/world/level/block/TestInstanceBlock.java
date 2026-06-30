@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -13,8 +12,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class TestInstanceBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<TestInstanceBlock> CODEC = simpleCodec(TestInstanceBlock::new);
-
    public TestInstanceBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
@@ -38,9 +35,5 @@ public class TestInstanceBlock extends BaseEntityBlock implements GameMasterBloc
       } else {
          return InteractionResult.PASS;
       }
-   }
-
-   protected MapCodec<TestInstanceBlock> codec() {
-      return CODEC;
    }
 }

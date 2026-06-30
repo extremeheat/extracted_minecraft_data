@@ -1,5 +1,6 @@
 package net.minecraft.client.model.monster.zombie;
 
+import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -47,6 +48,12 @@ public class DrownedModel extends ZombieModel<ZombieRenderState> {
          var10000 = this.rightLeg;
          var10000.xRot += swimAmount * 0.55F * Mth.sin((double)(0.1F * state.ageInTicks));
          this.head.xRot = 0.0F;
+      }
+
+      if (state.attackTime > 0.0F) {
+         AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, state.isAggressive, state);
+         --this.rightArm.xRot;
+         --this.leftArm.xRot;
       }
 
    }

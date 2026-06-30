@@ -59,10 +59,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       super(lastScreen, options, TITLE);
       this.gpuWarnlistManager = minecraft.getGpuWarnlistManager();
       this.gpuWarnlistManager.resetWarnings();
-      if ((Boolean)options.improvedTransparency().get()) {
-         this.gpuWarnlistManager.dismissWarning();
-      }
-
       this.oldMipmaps = (Integer)options.mipmapLevels().get();
       this.oldAnisotropyBit = (Integer)options.maxAnisotropyBit().get();
       this.oldTextureFiltering = (TextureFilteringMethod)options.textureFiltering().get();

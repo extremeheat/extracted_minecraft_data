@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -21,13 +20,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jspecify.annotations.Nullable;
 
 public class SculkCatalystBlock extends BaseEntityBlock {
-   public static final MapCodec<SculkCatalystBlock> CODEC = simpleCodec(SculkCatalystBlock::new);
    public static final BooleanProperty PULSE;
    private final IntProvider xpRange = ConstantInt.of(5);
-
-   public MapCodec<SculkCatalystBlock> codec() {
-      return CODEC;
-   }
 
    public SculkCatalystBlock(final BlockBehaviour.Properties properties) {
       super(properties);

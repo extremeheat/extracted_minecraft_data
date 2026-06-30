@@ -68,6 +68,8 @@ public class TeleportCommand {
          } else {
             performTeleport(source, entity, level, pos.x, pos.y, pos.z, relatives, rot.y, rot.x, lookAt);
          }
+
+         tracker.track(entity);
       }
 
       return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_TELEPORT_TO_POS, pos);

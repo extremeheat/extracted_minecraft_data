@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -23,13 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockContainer {
-   public static final MapCodec<TallSeagrassBlock> CODEC = simpleCodec(TallSeagrassBlock::new);
    public static final EnumProperty<DoubleBlockHalf> HALF;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<TallSeagrassBlock> codec() {
-      return CODEC;
-   }
 
    public TallSeagrassBlock(final BlockBehaviour.Properties properties) {
       super(properties);

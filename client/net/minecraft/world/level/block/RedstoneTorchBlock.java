@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -22,17 +21,12 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class RedstoneTorchBlock extends BaseTorchBlock {
-   public static final MapCodec<RedstoneTorchBlock> CODEC = simpleCodec(RedstoneTorchBlock::new);
    public static final BooleanProperty LIT;
    private static final Map<BlockGetter, List<Toggle>> RECENT_TOGGLES;
    public static final int RECENT_TOGGLE_TIMER = 60;
    public static final int MAX_RECENT_TOGGLES = 8;
    public static final int RESTART_DELAY = 160;
    private static final int TOGGLE_DELAY = 2;
-
-   public MapCodec<? extends RedstoneTorchBlock> codec() {
-      return CODEC;
-   }
 
    protected RedstoneTorchBlock(final BlockBehaviour.Properties properties) {
       super(properties);

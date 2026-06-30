@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -20,14 +19,9 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock {
-   public static final MapCodec<GrassBlock> CODEC = simpleCodec(GrassBlock::new);
    private static final int ATTEMPT_COUNT = 128;
    private static final float GROW_TALL_GRASS_CHANCE = 0.1F;
    private static final float PLACE_FLOWER_CHANCE = 0.125F;
-
-   public MapCodec<GrassBlock> codec() {
-      return CODEC;
-   }
 
    public GrassBlock(final BlockBehaviour.Properties properties) {
       super(properties, BlockItemIds.DIRT.block());

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.piston;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,17 +32,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PistonHeadBlock extends DirectionalBlock {
-   public static final MapCodec<PistonHeadBlock> CODEC = simpleCodec(PistonHeadBlock::new);
    public static final EnumProperty<PistonType> TYPE;
    public static final BooleanProperty SHORT;
    public static final int PLATFORM_THICKNESS = 4;
    private static final VoxelShape SHAPE_PLATFORM;
    private static final Map<Direction, VoxelShape> SHAPES_SHORT;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   protected MapCodec<PistonHeadBlock> codec() {
-      return CODEC;
-   }
 
    public PistonHeadBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -133,11 +133,24 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
       RenderPassDescriptor.Attachment<OptionalDouble> depthAttachment = descriptor.depthAttachment();
       int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), this.renderPassColorTextures, depthAttachment == null ? null : (GlTextureView)depthAttachment.textureView());
       GlStateManager._glBindFramebuffer(36160, fbo);
+      int width = 0;
+      int height = 0;
+      if (!colorAttachments.isEmpty()) {
+         for(RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
+            if (colorAttachment != null) {
+               GpuTextureView colorTexture = colorAttachment.textureView();
+               width = colorTexture.getWidth(0);
+               height = colorTexture.getHeight(0);
+            }
+         }
+      } else if (depthAttachment != null) {
+         width = depthAttachment.textureView().getWidth(0);
+         height = depthAttachment.textureView().getHeight(0);
+      }
 
-      assert descriptor.renderArea != null;
-
+      RenderPass.RenderArea renderArea = descriptor.renderArea();
       GlStateManager._enableScissorTest();
-      GlStateManager._scissorBox(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
+      GlStateManager._scissorBox(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
 
       for(int i = 0; i < colorAttachments.size(); ++i) {
          RenderPassDescriptor.Attachment<Optional<Vector4fc>> attachment = (RenderPassDescriptor.Attachment)colorAttachments.get(i);
@@ -158,25 +171,10 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
          }
       }
 
-      int width = 0;
-      int height = 0;
-      if (!colorAttachments.isEmpty()) {
-         for(RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
-            if (colorAttachment != null) {
-               GpuTextureView colorTexture = colorAttachment.textureView();
-               width = colorTexture.getWidth(0);
-               height = colorTexture.getHeight(0);
-            }
-         }
-      } else if (depthAttachment != null) {
-         width = depthAttachment.textureView().getWidth(0);
-         height = depthAttachment.textureView().getHeight(0);
-      }
-
       GlStateManager._viewport(0, 0, width, height);
       this.lastPipeline = null;
       ScissorState scissorState = new ScissorState();
-      scissorState.enable(descriptor.renderArea.x(), descriptor.renderArea.y(), descriptor.renderArea.width(), descriptor.renderArea.height());
+      scissorState.enable(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
       return new GlRenderPass(this, this.device, depthAttachment != null, this.renderPassColorTextures.size(), scissorState);
    }
 
@@ -508,16 +506,12 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
 
    private boolean trySetup(final GlRenderPass renderPass, final Collection<String> dynamicUniforms) {
       if (!GlRenderPass.VALIDATION) {
-         if (renderPass.pipeline == null || renderPass.pipeline.program() == GlProgram.INVALID_PROGRAM) {
+         if (renderPass.pipeline == null) {
             return false;
          }
       } else {
          if (renderPass.pipeline == null) {
             throw new IllegalStateException("Can't draw without a render pipeline");
-         }
-
-         if (renderPass.pipeline.program() == GlProgram.INVALID_PROGRAM) {
-            throw new IllegalStateException("Pipeline contains invalid shader program");
          }
 
          for(BindGroupLayout.UniformDescription uniform : BindGroupLayout.flattenUniforms(renderPass.pipeline.info().getBindGroupLayouts())) {
@@ -592,7 +586,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
          this.lastProgram = glProgram;
       }
 
-      label216:
+      label212:
       for(Map.Entry<String, Uniform> entry : glProgram.getUniforms().entrySet()) {
          String name = (String)entry.getKey();
          boolean isDirty = renderPass.dirtyUniforms.contains(name);
@@ -623,7 +617,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                         GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
                         GL33C.glBindBufferRange(35345, blockBinding, ((GlBuffer)bufferView.buffer()).handle(), bufferView.offset(), bufferView.length());
                      }
-                     continue label216;
+                     continue label212;
                   }
 
                   var11 = 1;
@@ -679,7 +673,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                               GpuBufferSlice bufferView = (GpuBufferSlice)renderPass.uniforms.get(name);
                               GL33C.glTexBuffer(35882, GlConst.toGlInternalId(texture), ((GlBuffer)bufferView.buffer()).handle());
                            }
-                           continue label216;
+                           continue label212;
                         }
                      }
                   }
@@ -710,7 +704,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                      if (true) {
                         GlRenderPass.TextureViewAndSampler viewAndSampler = (GlRenderPass.TextureViewAndSampler)renderPass.samplers.get(name);
                         if (viewAndSampler == null) {
-                           continue label216;
+                           continue label212;
                         }
 
                         GlTextureView textureView = viewAndSampler.view();
@@ -732,7 +726,7 @@ class GlCommandEncoder implements CommandEncoderBackend, AutoCloseable {
                         GL33C.glBindSampler(location, viewAndSampler.sampler().getId());
                         GlStateManager._texParameter(target, 33084, textureView.baseMipLevel());
                         GlStateManager._texParameter(target, 33085, textureView.baseMipLevel() + textureView.mipLevels() - 1);
-                        continue label216;
+                        continue label212;
                      }
                   }
 

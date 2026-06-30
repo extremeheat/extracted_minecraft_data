@@ -6,7 +6,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.ShulkerBulletModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -40,9 +39,9 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos((double)(tc * 0.1F)) * 180.0F));
       poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin((double)(tc * 0.15F)) * 360.0F));
       poseStack.scale(-0.5F, -0.5F, 0.5F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.scale(1.5F, 1.5F, 1.5F);
-      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.order(1).submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (UvMapping)null, state.outlineColor);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }

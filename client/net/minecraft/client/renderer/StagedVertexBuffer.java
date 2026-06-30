@@ -177,13 +177,21 @@ public class StagedVertexBuffer implements AutoCloseable {
          if (this.currentIndexBuffer != null && draw.quadSorting != null) {
             IndexType indexType = draw.indexType();
             int firstIndex = draw.indexOffset / indexType.bytes;
-            return new ExecuteInfo(this.currentVertexBuffer, this.currentIndexBuffer, indexType, baseVertex, firstIndex, draw.indexCount);
+            return new ExecuteInfo(this.currentVertexBuffer, this.currentIndexBuffer, indexType, baseVertex, firstIndex, draw.indexCount, draw.primitiveTopology);
          } else {
             RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
-            GpuBuffer indexBuffer = autoIndices.getBuffer(draw.indexCount);
-            return new ExecuteInfo(this.currentVertexBuffer, indexBuffer, autoIndices.type(), baseVertex, 0, draw.indexCount);
+            autoIndices.requestIndexCount(draw.indexCount);
+            return new ExecuteInfo(this.currentVertexBuffer, (GpuBuffer)null, autoIndices.type(), baseVertex, 0, draw.indexCount, draw.primitiveTopology);
          }
       }
+   }
+
+   public void requestIndexCount(final Draw draw) {
+      if (this.currentIndexBuffer == null || draw.quadSorting == null) {
+         RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
+         autoIndices.requestIndexCount(draw.indexCount);
+      }
+
    }
 
    public void endDraw() {
@@ -354,9 +362,18 @@ public class StagedVertexBuffer implements AutoCloseable {
       }
    }
 
-   public static record ExecuteInfo(GpuBuffer vertexBuffer, GpuBuffer indexBuffer, IndexType indexType, int baseVertex, int firstIndex, int indexCount) {
+   public static record ExecuteInfo(GpuBuffer vertexBuffer, @Nullable GpuBuffer customIndexBuffer, IndexType indexType, int baseVertex, int firstIndex, int indexCount, PrimitiveTopology topology) {
       public ExecuteInfo {
          super();
+      }
+
+      public GpuBuffer indexBuffer() {
+         if (this.customIndexBuffer == null) {
+            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(this.topology);
+            return autoIndices.getBuffer();
+         } else {
+            return this.customIndexBuffer;
+         }
       }
    }
 }

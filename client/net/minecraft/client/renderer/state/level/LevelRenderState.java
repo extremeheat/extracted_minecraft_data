@@ -22,6 +22,7 @@ public class LevelRenderState {
    public int cloudColor;
    public float cloudHeight;
    public boolean render3dCrosshair;
+   public boolean renderWireframeTerrain;
    public @Nullable Runnable playerCompiledSectionCallback;
    public ChunkLoadingRenderState chunkLoadingRenderState = new ChunkLoadingRenderState();
    public boolean shouldResetChunkLayerSampler;

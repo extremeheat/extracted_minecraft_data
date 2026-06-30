@@ -21,11 +21,8 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -58,15 +55,14 @@ class GlDevice implements GpuDeviceBackend {
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
    private final DirectStateAccess directStateAccess;
-   private final ShaderSource defaultShaderSource;
-   private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
-   private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final FrameBufferCache frameBufferCache = new FrameBufferCache();
    private final VertexArrayCache vertexArrayCache;
    private final BufferStorage bufferStorage;
    private final DeviceInfo deviceInfo;
+   private final ShaderDefines globalDefines;
+   private boolean shaderCompilerRequiresSacrifice = true;
 
-   public GlDevice(final long windowHandle, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions) {
+   public GlDevice(final long windowHandle, final GpuDebugOptions debugOptions) {
       super();
       GLFW.glfwMakeContextCurrent(windowHandle);
       GLCapabilities capabilities = GL.createCapabilities();
@@ -85,7 +81,6 @@ class GlDevice implements GpuDeviceBackend {
       this.vertexArrayCache = VertexArrayCache.create(capabilities, this.debugLabels, enabledExtensions);
       this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions);
       this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
-      this.defaultShaderSource = defaultShaderSource;
       GL33C.glEnable(34895);
       GL33C.glEnable(34370);
       if (capabilities.GL_ARB_clip_control) {
@@ -110,6 +105,12 @@ class GlDevice implements GpuDeviceBackend {
 
       this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
       this.encoder = new GlCommandEncoder(this);
+      ShaderDefines.Builder globalDefinesBuilder = ShaderDefines.builder();
+      if (this.deviceInfo.isZZeroToOne()) {
+         globalDefinesBuilder.define("B3D_DEPTH_IS_ZERO_TO_ONE");
+      }
+
+      this.globalDefines = globalDefinesBuilder.build();
    }
 
    public GlDebugLabel debugLabels() {
@@ -232,39 +233,25 @@ class GlDevice implements GpuDeviceBackend {
       return this.debugLog != null;
    }
 
-   public void clearPipelineCache() {
-      for(GlRenderPipeline pipeline : this.pipelineCache.values()) {
-         if (pipeline.program() != GlProgram.INVALID_PROGRAM) {
-            pipeline.program().close();
+   private void sacrificeShaderToOpenGlAndAmd() {
+      if (this.shaderCompilerRequiresSacrifice) {
+         this.shaderCompilerRequiresSacrifice = false;
+         String glRenderer = GlStateManager._getString(7937);
+         if (glRenderer.contains("AMD")) {
+            int shader = GlStateManager.glCreateShader(35633);
+            int program = GlStateManager.glCreateProgram();
+            GlStateManager.glAttachShader(program, shader);
+            GlStateManager.glDeleteShader(shader);
+            GlStateManager.glDeleteProgram(program);
          }
       }
-
-      this.pipelineCache.clear();
-
-      for(GlShaderModule shader : this.shaderCache.values()) {
-         if (shader != GlShaderModule.INVALID_SHADER) {
-            shader.close();
-         }
-      }
-
-      this.shaderCache.clear();
-      String glRenderer = GlStateManager._getString(7937);
-      if (glRenderer.contains("AMD")) {
-         sacrificeShaderToOpenGlAndAmd();
-      }
-
    }
 
-   private static void sacrificeShaderToOpenGlAndAmd() {
-      int shader = GlStateManager.glCreateShader(35633);
-      int program = GlStateManager.glCreateProgram();
-      GlStateManager.glAttachShader(program, shader);
-      GlStateManager.glDeleteShader(shader);
-      GlStateManager.glDeleteProgram(program);
+   void markAmdShaderCompilerAngry() {
+      this.shaderCompilerRequiresSacrifice = true;
    }
 
    public void close() {
-      this.clearPipelineCache();
       this.encoder.close();
    }
 
@@ -272,51 +259,38 @@ class GlDevice implements GpuDeviceBackend {
       return this.directStateAccess;
    }
 
-   protected GlRenderPipeline getOrCompilePipeline(final RenderPipeline pipeline) {
-      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(pipeline, (p) -> this.compilePipeline(p, this.defaultShaderSource));
-   }
-
-   protected GlShaderModule getOrCompileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
-      ShaderCompilationKey key = new ShaderCompilationKey(id, type, defines);
-      return (GlShaderModule)this.shaderCache.computeIfAbsent(key, (k) -> this.compileShader(k, shaderSource));
-   }
-
-   public GlRenderPipeline precompilePipeline(final RenderPipeline pipeline, final @Nullable ShaderSource customShaderSource) {
-      ShaderSource shaderSource = customShaderSource == null ? this.defaultShaderSource : customShaderSource;
-      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(pipeline, (p) -> this.compilePipeline(p, shaderSource));
-   }
-
-   private GlShaderModule compileShader(final ShaderCompilationKey key, final ShaderSource shaderSource) {
-      String source = shaderSource.get(key.id, key.type);
+   protected GlShaderModule compileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
+      String source = shaderSource.get(id, type);
       if (source == null) {
-         LOGGER.error("Couldn't find source for {} shader ({})", key.type, key.id);
+         LOGGER.error("Couldn't find source for {} shader ({})", type, id);
          return GlShaderModule.INVALID_SHADER;
       } else {
-         String sourceWithDefines = GlslPreprocessor.injectDefines(source, key.defines);
-         int shaderId = GlStateManager.glCreateShader(GlConst.toGl(key.type));
+         String sourceWithDefines = GlslPreprocessor.injectDefines(source, defines);
+         sourceWithDefines = GlslPreprocessor.injectDefines(sourceWithDefines, this.globalDefines);
+         int shaderId = GlStateManager.glCreateShader(GlConst.toGl(type));
          GlStateManager.glShaderSource(shaderId, sourceWithDefines);
          GlStateManager.glCompileShader(shaderId);
          if (GlStateManager.glGetShaderi(shaderId, 35713) == 0) {
             String logInfo = StringUtils.trim(GlStateManager.glGetShaderInfoLog(shaderId, 32768));
-            LOGGER.error("Couldn't compile {} shader ({}): {}", new Object[]{key.type.getName(), key.id, logInfo});
+            LOGGER.error("Couldn't compile {} shader ({}): {}", new Object[]{type.getName(), id, logInfo});
             return GlShaderModule.INVALID_SHADER;
          } else {
-            GlShaderModule module = new GlShaderModule(shaderId, key.id, key.type);
+            GlShaderModule module = new GlShaderModule(shaderId, id, type);
             this.debugLabels.applyLabel(module);
             return module;
          }
       }
    }
 
-   private GlProgram compileProgram(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      GlShaderModule vertexShader = this.getOrCompileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
-      GlShaderModule fragmentShader = this.getOrCompileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
+   private @Nullable GlProgram compileProgram(final RenderPipeline pipeline, final ShaderSource shaderSource) {
+      GlShaderModule vertexShader = this.compileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
+      GlShaderModule fragmentShader = this.compileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
       if (vertexShader == GlShaderModule.INVALID_SHADER) {
          LOGGER.error("Couldn't compile pipeline {}: vertex shader {} was invalid", pipeline.getLocation(), pipeline.getVertexShader());
-         return GlProgram.INVALID_PROGRAM;
+         return null;
       } else if (fragmentShader == GlShaderModule.INVALID_SHADER) {
          LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", pipeline.getLocation(), pipeline.getFragmentShader());
-         return GlProgram.INVALID_PROGRAM;
+         return null;
       } else {
          try {
             GlProgram compiled = GlProgram.link(vertexShader, fragmentShader, pipeline.getVertexFormatBindings(), pipeline.getLocation().toString());
@@ -325,16 +299,18 @@ class GlDevice implements GpuDeviceBackend {
             return compiled;
          } catch (IllegalArgumentException e) {
             LOGGER.error("Couldn't compile program for pipeline {}: {}", pipeline.getLocation(), e.getMessage());
-            return GlProgram.INVALID_PROGRAM;
+            return null;
          } catch (ShaderManager.CompilationException e) {
             LOGGER.error("Couldn't compile program for pipeline {}: {}", pipeline.getLocation(), e);
-            return GlProgram.INVALID_PROGRAM;
+            return null;
          }
       }
    }
 
-   private GlRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      return new GlRenderPipeline(pipeline, this.compileProgram(pipeline, shaderSource));
+   public @Nullable GlRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
+      this.sacrificeShaderToOpenGlAndAmd();
+      GlProgram glProgram = this.compileProgram(pipeline, shaderSource);
+      return glProgram == null ? null : new GlRenderPipeline(this, pipeline, glProgram);
    }
 
    public VertexArrayCache vertexArrayCache() {
@@ -359,17 +335,5 @@ class GlDevice implements GpuDeviceBackend {
 
    public DeviceInfo getDeviceInfo() {
       return this.deviceInfo;
-   }
-
-   private static record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {
-      private ShaderCompilationKey {
-         super();
-      }
-
-      public String toString() {
-         String var10000 = String.valueOf(this.id);
-         String string = var10000 + " (" + String.valueOf(this.type) + ")";
-         return !this.defines.isEmpty() ? string + " with " + String.valueOf(this.defines) : string;
-      }
    }
 }

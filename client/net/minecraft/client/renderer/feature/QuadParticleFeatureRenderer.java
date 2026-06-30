@@ -2,12 +2,10 @@ package net.minecraft.client.renderer.feature;
 
 import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
@@ -15,12 +13,10 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -47,6 +43,8 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
                   if (layer.translucent() == submit.translucent()) {
                      StagedVertexBuffer.Draw draw = (StagedVertexBuffer.Draw)drawByLayer.computeIfAbsent(layer, (var1) -> stagedVertexBuffer.appendDraw(DefaultVertexFormat.PARTICLE, PrimitiveTopology.QUADS, (VertexSorting)null));
                      particles.buildLayer(layer, stagedVertexBuffer.getVertexBuilder(draw));
+                     context.textureManager().getTexture(layer.textureAtlasLocation());
+                     stagedVertexBuffer.requestIndexCount(draw);
                   }
                }
             }
@@ -61,30 +59,20 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
       this.dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
    }
 
-   public void executeGroup(final FeatureFrameContext context, final int groupIndex, final List<Submit> submits, final boolean strictlyOrdered) {
+   public void executeGroup(final FeatureFrameContext context, final @Nullable OitStage stage, final RenderPass renderPass, final int groupIndex, final List<Submit> submits, final boolean strictlyOrdered) {
       PreparedGroup group = (PreparedGroup)this.groups.get(groupIndex);
-      GpuDevice device = RenderSystem.getDevice();
-      Minecraft minecraft = Minecraft.getInstance();
-      RenderTarget mainTarget = minecraft.gameRenderer.mainRenderTarget();
-      RenderTarget particleTarget = minecraft.levelRenderer.particlesTarget();
-      boolean useParticleTarget = particleTarget != null && group.translucent;
-      GpuTextureView colorTextureView = useParticleTarget ? particleTarget.getColorTextureView() : mainTarget.getColorTextureView();
-      GpuTextureView depthTextureView = useParticleTarget ? particleTarget.getDepthTextureView() : mainTarget.getDepthTextureView();
-
-      try (RenderPass renderPass = device.createCommandEncoder().createRenderPass(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"), colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
-         RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setUniform("DynamicTransforms", (GpuBufferSlice)Objects.requireNonNull(this.dynamicTransforms));
-         renderPass.bindTexture("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-         drawLayers(context.stagedVertexBuffer(), group.layers, renderPass, context.textureManager());
-      }
-
+      renderPass.pushDebugGroup(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"));
+      renderPass.setUniform("DynamicTransforms", (GpuBufferSlice)Objects.requireNonNull(this.dynamicTransforms));
+      renderPass.bindTexture("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+      drawLayers(context.stagedVertexBuffer(), group.layers, renderPass, context.textureManager(), stage);
+      renderPass.popDebugGroup();
    }
 
-   private static void drawLayers(final StagedVertexBuffer stagedBuffer, final Map<SingleQuadParticle.Layer, StagedVertexBuffer.Draw> layers, final RenderPass renderPass, final TextureManager textureManager) {
+   private static void drawLayers(final StagedVertexBuffer stagedBuffer, final Map<SingleQuadParticle.Layer, StagedVertexBuffer.Draw> layers, final RenderPass renderPass, final TextureManager textureManager, final @Nullable OitStage stage) {
       for(Map.Entry<SingleQuadParticle.Layer, StagedVertexBuffer.Draw> entry : layers.entrySet()) {
          StagedVertexBuffer.ExecuteInfo executeInfo = stagedBuffer.getExecuteInfo((StagedVertexBuffer.Draw)entry.getValue());
          if (executeInfo != null) {
-            renderPass.setPipeline(((SingleQuadParticle.Layer)entry.getKey()).pipeline());
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(stage != null ? getOitPipeline(stage, (SingleQuadParticle.Layer)entry.getKey()) : ((SingleQuadParticle.Layer)entry.getKey()).pipeline()));
             renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             AbstractTexture texture = textureManager.getTexture(((SingleQuadParticle.Layer)entry.getKey()).textureAtlasLocation());
@@ -93,6 +81,14 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
          }
       }
 
+   }
+
+   private static RenderPipeline getOitPipeline(final OitStage stage, final SingleQuadParticle.Layer layer) {
+      if (layer.oitPipelineSet() == null) {
+         throw new IllegalStateException("OIT pipeline set for particle layer not specified.");
+      } else {
+         return layer.oitPipelineSet().getPipeline(stage);
+      }
    }
 
    public void finishExecute(final FeatureFrameContext context) {

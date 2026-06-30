@@ -36,6 +36,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -144,48 +145,42 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    private void fetchTemplatesAsync(final WorldTemplatePaginatedList startPage) {
-      (new Thread("realms-template-fetcher") {
-         {
-            Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this);
-         }
+      Util.nonCriticalIoPool().execute(() -> {
+         WorldTemplatePaginatedList page = startPage;
 
-         public void run() {
-            WorldTemplatePaginatedList page = startPage;
+         Either<WorldTemplatePaginatedList, Exception> result;
+         for(RealmsClient client = RealmsClient.getOrCreate(); page != null; page = (WorldTemplatePaginatedList)this.minecraft.submit(() -> {
+            if (result.right().isPresent()) {
+               LOGGER.error("Couldn't fetch templates", (Throwable)result.right().get());
+               if (this.worldTemplateList.isEmpty()) {
+                  this.noTemplatesMessage = TextRenderingUtils.decompose(I18n.get("mco.template.select.failure"));
+               }
 
-            Either<WorldTemplatePaginatedList, Exception> result;
-            for(RealmsClient client = RealmsClient.getOrCreate(); page != null; page = (WorldTemplatePaginatedList)RealmsSelectWorldTemplateScreen.this.minecraft.submit(() -> {
-               if (result.right().isPresent()) {
-                  RealmsSelectWorldTemplateScreen.LOGGER.error("Couldn't fetch templates", (Throwable)result.right().get());
-                  if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
-                     RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(I18n.get("mco.template.select.failure"));
+               return null;
+            } else {
+               WorldTemplatePaginatedList currentPage = (WorldTemplatePaginatedList)result.left().get();
+
+               for(WorldTemplate template : currentPage.templates()) {
+                  this.worldTemplateList.addEntry(template);
+               }
+
+               if (currentPage.templates().isEmpty()) {
+                  if (this.worldTemplateList.isEmpty()) {
+                     String withoutLink = I18n.get("mco.template.select.none", "%link");
+                     TextRenderingUtils.LineSegment link = TextRenderingUtils.LineSegment.link(I18n.get("mco.template.select.none.linkTitle"), CommonLinks.REALMS_CONTENT_CREATION.toString());
+                     this.noTemplatesMessage = TextRenderingUtils.decompose(withoutLink, link);
                   }
 
                   return null;
                } else {
-                  WorldTemplatePaginatedList currentPage = (WorldTemplatePaginatedList)result.left().get();
-
-                  for(WorldTemplate template : currentPage.templates()) {
-                     RealmsSelectWorldTemplateScreen.this.worldTemplateList.addEntry(template);
-                  }
-
-                  if (currentPage.templates().isEmpty()) {
-                     if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
-                        String withoutLink = I18n.get("mco.template.select.none", "%link");
-                        TextRenderingUtils.LineSegment link = TextRenderingUtils.LineSegment.link(I18n.get("mco.template.select.none.linkTitle"), CommonLinks.REALMS_CONTENT_CREATION.toString());
-                        RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(withoutLink, link);
-                     }
-
-                     return null;
-                  } else {
-                     return currentPage;
-                  }
+                  return currentPage;
                }
-            }).join()) {
-               result = RealmsSelectWorldTemplateScreen.this.fetchTemplates(page, client);
             }
-
+         }).join()) {
+            result = this.fetchTemplates(page, client);
          }
-      }).start();
+
+      });
    }
 
    private Either<WorldTemplatePaginatedList, Exception> fetchTemplates(final WorldTemplatePaginatedList paginatedList, final RealmsClient client) {

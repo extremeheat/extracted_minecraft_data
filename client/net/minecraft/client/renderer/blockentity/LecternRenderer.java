@@ -45,7 +45,11 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-state.yRot));
          poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          poseStack.translate(0.0F, -0.125F, 0.0F);
-         submitNodeCollector.submitModel(this.bookModel, BOOK_STATE, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, EnchantTableRenderer.BOOK_TEXTURE, this.sprites, 0, state.breakProgress);
+         submitNodeCollector.submitModel(this.bookModel, BOOK_STATE, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, EnchantTableRenderer.BOOK_TEXTURE, this.sprites, 0);
+         if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(this.bookModel, BOOK_STATE, poseStack, EnchantTableRenderer.BOOK_TEXTURE.renderType(this.bookModel.renderType()), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+         }
+
          poseStack.popPose();
       }
    }

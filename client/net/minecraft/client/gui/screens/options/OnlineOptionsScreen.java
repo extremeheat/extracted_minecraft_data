@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
-import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
+import com.mojang.authlib.services.FriendsService.ResultCode;
 import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;

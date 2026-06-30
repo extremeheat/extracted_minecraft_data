@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.friends;
 
-import com.mojang.authlib.yggdrasil.response.PresenceStatus;
-import com.mojang.authlib.yggdrasil.response.PresenceStatusDto;
+import com.mojang.authlib.services.response.PresenceStatus;
+import com.mojang.authlib.services.response.PresenceStatusDto;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

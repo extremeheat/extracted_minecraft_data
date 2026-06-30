@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -24,15 +21,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ChorusFlowerBlock extends Block {
-   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((b) -> b.plant), propertiesCodec()).apply(i, ChorusFlowerBlock::new));
    public static final int DEAD_AGE = 5;
    public static final IntegerProperty AGE;
    private static final VoxelShape SHAPE_BLOCK_SUPPORT;
    private final Block plant;
-
-   public MapCodec<ChorusFlowerBlock> codec() {
-      return CODEC;
-   }
 
    protected ChorusFlowerBlock(final Block plant, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -230,7 +222,7 @@ public class ChorusFlowerBlock extends Block {
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
       BlockPos pos = blockHit.getBlockPos();
       if (level instanceof ServerLevel serverLevel) {
-         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel)) {
+         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel, pos)) {
             level.destroyBlock(pos, true, projectile);
          }
       }

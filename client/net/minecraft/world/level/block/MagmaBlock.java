@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,12 +8,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class MagmaBlock extends Block {
-   public static final MapCodec<MagmaBlock> CODEC = simpleCodec(MagmaBlock::new);
-
-   public MapCodec<MagmaBlock> codec() {
-      return CODEC;
-   }
-
    public MagmaBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

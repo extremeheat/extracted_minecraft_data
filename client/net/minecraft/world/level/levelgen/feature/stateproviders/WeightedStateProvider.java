@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeightedStateProvider extends BlockStateProvider {
@@ -29,7 +29,7 @@ public class WeightedStateProvider extends BlockStateProvider {
       return BlockStateProviderType.WEIGHTED_STATE_PROVIDER;
    }
 
-   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+   public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       return this.weightedList.getRandomOrThrow(random);
    }
 }

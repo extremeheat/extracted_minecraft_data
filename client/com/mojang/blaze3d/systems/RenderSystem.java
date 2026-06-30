@@ -7,8 +7,10 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
+import com.mojang.blaze3d.pipeline.PipelineCache;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.util.Locale;
@@ -64,12 +66,13 @@ public class RenderSystem {
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
-   public static @Nullable GpuTextureView outputColorTextureOverride;
-   public static @Nullable GpuTextureView outputDepthTextureOverride;
+   public static boolean isRenderingLevel;
    private static @Nullable GpuBuffer globalSettingsUniform;
    private static @Nullable DynamicUniforms dynamicUniforms;
    private static final ScissorState scissorStateForRenderTypeDraws;
    private static final SamplerCache samplerCache;
+   private static @Nullable PipelineCache fallbackPipelineCache;
+   private static @Nullable PipelineCache currentPipelineCache;
 
    public RenderSystem() {
       super();
@@ -77,6 +80,44 @@ public class RenderSystem {
 
    public static SamplerCache getSamplerCache() {
       return samplerCache;
+   }
+
+   public static void setFallbackPipelineCache(final PipelineCache pipelineCache) {
+      if (fallbackPipelineCache != null) {
+         throw new IllegalStateException("Fallback pipeline cache already set");
+      } else {
+         fallbackPipelineCache = pipelineCache;
+      }
+   }
+
+   public static @Nullable PipelineCache setCurrentPipelineCache(final PipelineCache pipelineCache) {
+      PipelineCache oldCache = currentPipelineCache;
+      currentPipelineCache = pipelineCache;
+      return oldCache;
+   }
+
+   public static @Nullable CompiledRenderPipeline getCompiledPipelineNullable(final RenderPipeline pipeline) {
+      if (currentPipelineCache != null) {
+         CompiledRenderPipeline cachedPipeline = currentPipelineCache.get(pipeline);
+         if (cachedPipeline != null) {
+            return cachedPipeline;
+         }
+      }
+
+      if (fallbackPipelineCache == null) {
+         throw new IllegalStateException("Fallback pipeline cache not yet set");
+      } else {
+         return fallbackPipelineCache.get(pipeline);
+      }
+   }
+
+   public static CompiledRenderPipeline getCompiledPipeline(final RenderPipeline pipeline) {
+      CompiledRenderPipeline compiledPipeline = getCompiledPipelineNullable(pipeline);
+      if (compiledPipeline != null) {
+         return compiledPipeline;
+      } else {
+         throw new IllegalStateException("Failed to find or load pipeline " + String.valueOf(pipeline.getLocation()));
+      }
    }
 
    public static void initRenderThread() {
@@ -161,6 +202,14 @@ public class RenderSystem {
    }
 
    public static void shutdownRenderer() {
+      if (currentPipelineCache != null) {
+         currentPipelineCache.close();
+      }
+
+      if (fallbackPipelineCache != null) {
+         fallbackPipelineCache.close();
+      }
+
       sharedSequential.close();
       sharedSequentialQuad.close();
       sharedSequentialLines.close();
@@ -305,6 +354,12 @@ public class RenderSystem {
 
    }
 
+   public static void resizeAllAutoStorageIndexBuffers() {
+      sharedSequential.resizeToRequestedIndexCount();
+      sharedSequentialQuad.resizeToRequestedIndexCount();
+      sharedSequentialLines.resizeToRequestedIndexCount();
+   }
+
    static {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
@@ -313,6 +368,7 @@ public class RenderSystem {
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
+      isRenderingLevel = false;
       scissorStateForRenderTypeDraws = new ScissorState();
       samplerCache = new SamplerCache();
    }
@@ -324,6 +380,7 @@ public class RenderSystem {
       private @Nullable GpuBuffer buffer;
       private IndexType type;
       private int indexCount;
+      private int maxRequestedIndexCount;
 
       private AutoStorageIndexBuffer(final int vertexStride, final int indexStride, final IndexGenerator generator) {
          super();
@@ -344,8 +401,21 @@ public class RenderSystem {
          return indexCount <= this.indexCount;
       }
 
+      public void requestIndexCount(final int indexCount) {
+         this.maxRequestedIndexCount = Math.max(this.maxRequestedIndexCount, indexCount);
+      }
+
+      public void resizeToRequestedIndexCount() {
+         this.ensureStorage(this.maxRequestedIndexCount);
+      }
+
       public GpuBuffer getBuffer(final int indexCount) {
+         this.requestIndexCount(indexCount);
          this.ensureStorage(indexCount);
+         return this.buffer;
+      }
+
+      public GpuBuffer getBuffer() {
          return this.buffer;
       }
 

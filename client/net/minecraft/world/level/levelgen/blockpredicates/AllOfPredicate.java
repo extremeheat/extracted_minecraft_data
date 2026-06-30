@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen.blockpredicates;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 
 public class AllOfPredicate extends CombiningPredicate {
    public static final MapCodec<AllOfPredicate> CODEC = codec(AllOfPredicate::new);
@@ -12,7 +12,7 @@ public class AllOfPredicate extends CombiningPredicate {
       super(predicates);
    }
 
-   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public boolean test(final LevelAccessor level, final BlockPos origin) {
       for(BlockPredicate predicate : this.predicates) {
          if (!predicate.test(level, origin)) {
             return false;

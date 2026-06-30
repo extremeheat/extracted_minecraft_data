@@ -59,13 +59,13 @@ public class CommandEncoder {
    }
 
    public RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
-      RenderPassDescriptor descriptor = RenderPassDescriptor.create(label).withColorAttachment(colorTexture, clearColor);
+      RenderPassDescriptor.Builder descriptor = RenderPassDescriptor.builder(label).withColorAttachment(colorTexture, clearColor);
       if (depthTexture != null) {
          descriptor.withDepthAttachment(depthTexture, clearDepth);
       }
 
       descriptor.withRenderArea(renderArea);
-      return this.createRenderPass(descriptor);
+      return this.createRenderPass(descriptor.build());
    }
 
    public RenderPass createRenderPass(final RenderPassDescriptor descriptor) {
@@ -73,33 +73,32 @@ public class CommandEncoder {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
          int maxColorAttachments = RenderSystem.getDevice().getDeviceInfo().limits().maxColorAttachments();
-         int colorAttachmentCount = descriptor.colorAttachments.size();
+         int colorAttachmentCount = descriptor.colorAttachments().size();
          if (colorAttachmentCount > maxColorAttachments) {
             throw new IllegalStateException("Render pass created with " + colorAttachmentCount + " color attachments but device only supports " + maxColorAttachments);
          } else {
-            int totalAttachments = colorAttachmentCount + (descriptor.depthAttachment != null ? 1 : 0);
+            int totalAttachments = colorAttachmentCount + (descriptor.depthAttachment() != null ? 1 : 0);
             if (totalAttachments == 0) {
                throw new IllegalArgumentException("At least one attachment (depth or color) must be specified");
             } else {
                int attachmentWidth;
                int attachmentHeight;
                if (colorAttachmentCount != 0) {
-                  RenderPassDescriptor.Attachment<Optional<Vector4fc>> firstAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.getFirst();
+                  RenderPassDescriptor.Attachment<Optional<Vector4fc>> firstAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments().getFirst();
 
                   assert firstAttachment != null;
 
                   attachmentWidth = firstAttachment.textureView().getWidth(0);
                   attachmentHeight = firstAttachment.textureView().getHeight(0);
                } else {
-                  attachmentWidth = descriptor.depthAttachment.textureView().getWidth(0);
-                  attachmentHeight = descriptor.depthAttachment.textureView().getHeight(0);
+                  attachmentWidth = descriptor.depthAttachment().textureView().getWidth(0);
+                  attachmentHeight = descriptor.depthAttachment().textureView().getHeight(0);
                }
 
-               if (descriptor.renderArea == null) {
-                  throw new IllegalArgumentException("RenderPassDescriptor.renderArea must be provided");
-               } else if (descriptor.renderArea.x() >= 0 && descriptor.renderArea.y() >= 0 && descriptor.renderArea.x() + descriptor.renderArea.width() <= attachmentWidth && descriptor.renderArea.y() + descriptor.renderArea.height() <= attachmentHeight) {
+               RenderPass.RenderArea renderArea = descriptor.renderArea();
+               if (renderArea.x() >= 0 && renderArea.y() >= 0 && renderArea.x() + renderArea.width() <= attachmentWidth && renderArea.y() + renderArea.height() <= attachmentHeight) {
                   for(int i = 0; i < colorAttachmentCount; ++i) {
-                     RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments.get(i);
+                     RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment = (RenderPassDescriptor.Attachment)descriptor.colorAttachments().get(i);
                      if (colorAttachment != null) {
                         GpuTextureView colorTexture = colorAttachment.textureView();
                         if (colorTexture.isClosed()) {
@@ -120,8 +119,8 @@ public class CommandEncoder {
                      }
                   }
 
-                  if (descriptor.depthAttachment != null) {
-                     GpuTextureView depthTexture = descriptor.depthAttachment.textureView();
+                  if (descriptor.depthAttachment() != null) {
+                     GpuTextureView depthTexture = descriptor.depthAttachment().textureView();
                      if (depthTexture.isClosed()) {
                         throw new IllegalStateException("Depth texture is closed");
                      }
@@ -145,9 +144,9 @@ public class CommandEncoder {
                      this.profiler.pushZone(this, (String)descriptor.label().get());
                   }
 
-                  return new RenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments, this::submitRenderPass, descriptor.renderArea);
+                  return new RenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments(), this::submitRenderPass, renderArea);
                } else {
-                  throw new IllegalArgumentException("RenderPass render area " + String.valueOf(descriptor.renderArea) + " is out of bounds for texture of " + attachmentWidth + "x" + attachmentHeight);
+                  throw new IllegalArgumentException("RenderPass render area " + String.valueOf(renderArea) + " is out of bounds for texture of " + attachmentWidth + "x" + attachmentHeight);
                }
             }
          }

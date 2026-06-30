@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import org.joml.Vector3fc;
@@ -23,7 +22,7 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      submitNodeCollector.submitModelPart(this.model, poseStack, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(ConduitRenderer.SHELL_TEXTURE), -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
+      submitNodeCollector.submitModelPart(this.model, poseStack, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(ConduitRenderer.SHELL_TEXTURE), -1, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

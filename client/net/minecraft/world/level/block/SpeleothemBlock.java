@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -13,12 +12,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -26,7 +23,6 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -61,8 +57,6 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    private static final int MAX_GROWTH_LENGTH = 7;
    private static final int MAX_STALAGMITE_SEARCH_RANGE_WHEN_GROWING = 10;
    protected final BlockState blockToGrowOn;
-
-   public abstract MapCodec<? extends SpeleothemBlock> codec();
 
    public SpeleothemBlock(final BlockState blockToGrowOn, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -167,19 +161,8 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
          BlockPos blockPos = blockHit.getBlockPos();
          if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
-            if (projectile.mayInteract(serverLevel, blockPos) && projectile.mayBreak(serverLevel) && projectile instanceof ThrownTrident) {
-               ThrownTrident trident = (ThrownTrident)projectile;
-               if (projectile.getDeltaMovement().length() > 0.6) {
-                  Entity owner = projectile.getOwner();
-                  if (owner instanceof Player) {
-                     Player player = (Player)owner;
-                     if (player.gameMode() == GameType.ADVENTURE && !trident.getWeaponItem().canBreakBlockInAdventureMode(new BlockInWorld(level, blockPos, false))) {
-                        return;
-                     }
-                  }
-
-                  level.destroyBlock(blockPos, true);
-               }
+            if (projectile.mayInteract(serverLevel, blockPos) && projectile.mayBreak(serverLevel, blockPos) && projectile instanceof ThrownTrident && projectile.getDeltaMovement().length() > 0.6) {
+               level.destroyBlock(blockPos, true);
             }
          }
 

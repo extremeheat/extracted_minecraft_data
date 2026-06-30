@@ -15,6 +15,7 @@ import net.minecraft.util.StaticCache2D;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -97,17 +98,21 @@ public class ChunkStatusTasks {
    public static CompletableFuture<ChunkAccess> generateCarvers(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
+      CarvingMask.Filter var10000;
       if (chunk instanceof ProtoChunk protoChunk) {
-         Blender.addAroundOldChunksCarvingMaskFilter(region, protoChunk);
+         var10000 = Blender.createAroundOldChunksCarvingMaskFilter(region, protoChunk);
+      } else {
+         var10000 = null;
       }
 
-      context.generator().applyCarvers(region, level.getSeed(), level.getChunkSource().randomState(), level.getBiomeManager(), level.structureManager().forWorldGenRegion(region), chunk);
+      CarvingMask.Filter filter = var10000;
+      context.generator().applyCarvers(region, level.getSeed(), level.getChunkSource().randomState(), level.getBiomeManager(), level.structureManager().forWorldGenRegion(region), chunk, filter);
+      Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
       return CompletableFuture.completedFuture(chunk);
    }
 
    public static CompletableFuture<ChunkAccess> generateFeatures(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
-      Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
       if (!SharedConstants.DEBUG_DISABLE_FEATURES) {
          context.generator().applyBiomeDecoration(region, chunk, level.structureManager().forWorldGenRegion(region));

@@ -11,7 +11,9 @@ import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ColumnPos;
+import net.minecraft.util.Interval;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
@@ -138,7 +140,7 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
       } else {
          int chunkX = SectionPos.blockToSectionCoord(chunkMinBlockX);
          int chunkZ = SectionPos.blockToSectionCoord(chunkMinBlockZ);
-         this.aquifer = Aquifer.create(this, new ChunkPos(chunkX, chunkZ), wrappedRouter, randomState.aquiferRandom(), noiseSettings.minY(), noiseSettings.height(), globalFluidPicker);
+         this.aquifer = Aquifer.create(this, new ChunkPos(chunkX, chunkZ), wrappedRouter, randomState.getOrCreateRandomFactory(Identifier.withDefaultNamespace("aquifer")), noiseSettings.minY(), noiseSettings.height(), globalFluidPicker);
       }
 
       List<BlockStateFiller> builder = new ArrayList();
@@ -146,7 +148,7 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
       this.fullNoiseDensity = fullNoiseValue;
       builder.add((BlockStateFiller)(context) -> this.aquifer.computeSubstance(context, fullNoiseValue.compute(context)));
       if (settings.oreVeinsEnabled()) {
-         builder.add(OreVeinifier.create(wrappedRouter.veinToggle(), wrappedRouter.veinRidged(), wrappedRouter.veinGap(), randomState.oreRandom()));
+         builder.add(OreVeinifier.create(wrappedRouter.veinToggle(), wrappedRouter.veinRidged(), wrappedRouter.veinGap(), randomState.getOrCreateRandomFactory(Identifier.withDefaultNamespace("ore"))));
       }
 
       this.blockStateRule = new MaterialRuleList((BlockStateFiller[])builder.toArray(new BlockStateFiller[0]));
@@ -427,12 +429,8 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
    private interface NoiseChunkDensityFunction extends DensityFunction {
       DensityFunction wrapped();
 
-      default double minValue() {
-         return this.wrapped().minValue();
-      }
-
-      default double maxValue() {
-         return this.wrapped().maxValue();
+      default Interval range() {
+         return this.wrapped().range();
       }
    }
 
@@ -734,14 +732,6 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
          contextProvider.fillAllDirectly(output, this);
       }
 
-      public double minValue() {
-         return 0.0;
-      }
-
-      public double maxValue() {
-         return 1.0;
-      }
-
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
          return DensityFunctions.BlendAlpha.CODEC;
       }
@@ -767,14 +757,6 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
 
       public void fillArray(final double[] output, final DensityFunction.ContextProvider contextProvider) {
          contextProvider.fillAllDirectly(output, this);
-      }
-
-      public double minValue() {
-         return -1.0 / 0.0;
-      }
-
-      public double maxValue() {
-         return 1.0 / 0.0;
       }
 
       public KeyDispatchDataCodec<? extends DensityFunction> codec() {
@@ -805,12 +787,8 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
 
       }
 
-      public double minValue() {
-         return -1.0 / 0.0;
-      }
-
-      public double maxValue() {
-         return 1.0 / 0.0;
+      public Interval range() {
+         return Interval.INFINITE;
       }
 
       public DensityFunction wrapped() {

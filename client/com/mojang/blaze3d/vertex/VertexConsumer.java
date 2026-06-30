@@ -2,6 +2,7 @@ package com.mojang.blaze3d.vertex;
 
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import org.joml.Matrix3f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -21,6 +22,8 @@ public interface VertexConsumer {
    VertexConsumer setUv1(int u, int v);
 
    VertexConsumer setUv2(int u, int v);
+
+   VertexConsumer setUv3(float u, float v);
 
    VertexConsumer setNormal(float x, float y, float z);
 
@@ -78,6 +81,28 @@ public interface VertexConsumer {
          float u = UVPair.unpackU(packedUv);
          float v = UVPair.unpackV(packedUv);
          this.addVertex(pos.x(), pos.y(), pos.z(), vertexColor, u, v, instance.overlayCoords(), light, normal.x(), normal.y(), normal.z());
+      }
+
+   }
+
+   default void putBakedQuadWithGlint(final PoseStack.Pose pose, final BakedQuad quad, final QuadInstance instance, final PoseStack.Pose sheetedDecalPose) {
+      Vector3fc normalVec = quad.direction().getUnitVec3f();
+      Matrix4f matrix = pose.pose();
+      Vector3f normal = pose.transformNormal(normalVec, new Vector3f());
+      int lightEmission = quad.materialInfo().lightEmission();
+      Matrix4f cameraInversePose = (new Matrix4f(sheetedDecalPose.pose())).invert();
+      Matrix3f normalInversePose = (new Matrix3f(sheetedDecalPose.normal())).invert();
+
+      for(int vertex = 0; vertex < 4; ++vertex) {
+         Vector3fc position = quad.position(vertex);
+         long packedUv = quad.packedUV(vertex);
+         int vertexColor = instance.getColor(vertex);
+         int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
+         Vector3f pos = matrix.transformPosition(position, new Vector3f());
+         float u = UVPair.unpackU(packedUv);
+         float v = UVPair.unpackV(packedUv);
+         this.addVertex(pos.x(), pos.y(), pos.z(), vertexColor, u, v, instance.overlayCoords(), light, normal.x(), normal.y(), normal.z());
+         SheetedDecalTextureGenerator.setSheetedDecalUv(pos, normal, cameraInversePose, normalInversePose, 0.0078125F, this);
       }
 
    }

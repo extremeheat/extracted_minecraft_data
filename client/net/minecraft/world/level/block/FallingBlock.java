@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -21,8 +20,6 @@ public abstract class FallingBlock extends Block implements Fallable {
    public FallingBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends FallingBlock> codec();
 
    protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
       level.scheduleTick(pos, this, this.getDelayAfterPlace());

@@ -6,7 +6,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.dragon.EnderDragonModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -57,12 +56,12 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       int overlayCoords = OverlayTexture.pack(0.0F, state.hasRedOverlay);
       if (state.deathTime > 0.0F) {
          int color = ARGB.white(1.0F - state.deathTime / 200.0F);
-         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor);
       } else {
-         submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor);
       }
 
-      submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       if (state.deathTime > 0.0F) {
          float deathTime = state.deathTime / 200.0F;
          poseStack.pushPose();

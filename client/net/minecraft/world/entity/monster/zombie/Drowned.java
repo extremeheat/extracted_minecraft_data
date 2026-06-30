@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster.zombie;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -70,6 +71,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
    private static final EntityDimensions BABY_DIMENSIONS;
    private boolean searchingForLand;
+   private float rangedAttackUncertainty = -1.0F;
 
    public Drowned(final EntityType<? extends Drowned> type, final Level level) {
       super(type, level);
@@ -266,10 +268,19 @@ public class Drowned extends Zombie implements RangedAttackMob {
       double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
       Level var15 = this.level();
       if (var15 instanceof ServerLevel serverLevel) {
-         Projectile.spawnProjectileUsingShoot(trident, serverLevel, tridentItemStack, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+         Projectile.spawnProjectileUsingShoot(trident, serverLevel, tridentItemStack, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, this.rangedAttackUncertainty(serverLevel));
       }
 
       this.playSound(SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+   }
+
+   public float rangedAttackUncertainty(final Level level) {
+      return this.rangedAttackUncertainty < 0.0F ? RangedAttackMob.super.rangedAttackUncertainty(level) : this.rangedAttackUncertainty;
+   }
+
+   @VisibleForTesting
+   public void setRangedAttackUncertainty(final float rangedAttackUncertainty) {
+      this.rangedAttackUncertainty = rangedAttackUncertainty;
    }
 
    public TagKey<Item> getPreferredWeaponType() {
@@ -310,7 +321,11 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public boolean canUse() {
-         return super.canUse() && this.drowned.getMainHandItem().is(Items.TRIDENT);
+         return super.canUse() && this.drowned.getMainHandItem().is(Items.TRIDENT) && this.drowned.hasTargetInRangedDistance();
+      }
+
+      public boolean canContinueToUse() {
+         return super.canContinueToUse() && this.drowned.hasTargetInRangedDistance();
       }
 
       public void start() {
@@ -467,11 +482,21 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public boolean canUse() {
-         return super.canUse() && this.drowned.okTarget(this.drowned.getTarget());
+         return super.canUse() && this.drowned.okTarget(this.drowned.getTarget()) && !this.drowned.hasTargetInRangedDistance();
       }
 
       public boolean canContinueToUse() {
-         return super.canContinueToUse() && this.drowned.okTarget(this.drowned.getTarget());
+         return super.canContinueToUse() && this.drowned.okTarget(this.drowned.getTarget()) && !this.drowned.hasTargetInRangedDistance();
+      }
+
+      public void start() {
+         super.start();
+         this.drowned.startUsingItem(InteractionHand.MAIN_HAND);
+      }
+
+      public void stop() {
+         super.stop();
+         this.drowned.stopUsingItem();
       }
    }
 

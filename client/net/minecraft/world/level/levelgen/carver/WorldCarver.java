@@ -1,68 +1,30 @@
 package net.minecraft.world.level.levelgen.carver;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.Set;
 import java.util.function.Function;
-import net.minecraft.SharedConstants;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.chunk.CarvingMask;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.Aquifer;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.level.chunk.CarverOutput;
+import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
-public abstract class WorldCarver<C extends CarverConfiguration> {
-   public static final WorldCarver<CaveCarverConfiguration> CAVE;
-   public static final WorldCarver<CaveCarverConfiguration> NETHER_CAVE;
-   public static final WorldCarver<CanyonCarverConfiguration> CANYON;
-   protected static final BlockState AIR;
-   protected static final BlockState CAVE_AIR;
-   protected static final FluidState WATER;
-   protected static final FluidState LAVA;
-   protected Set<Fluid> liquids;
-   private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
+public interface WorldCarver {
+   Codec<WorldCarver> DIRECT_CODEC = BuiltInRegistries.CARVER_TYPE.byNameCodec().dispatch(WorldCarver::codec, Function.identity());
+   Codec<Holder<WorldCarver>> CODEC = RegistryFileCodec.<Holder<WorldCarver>>create(Registries.CARVER, DIRECT_CODEC);
+   Codec<HolderSet<WorldCarver>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CARVER, DIRECT_CODEC);
 
-   private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(final String name, final F carver) {
-      return (F)(Registry.register(BuiltInRegistries.CARVER, (String)name, carver));
-   }
-
-   public WorldCarver(final Codec<C> codec) {
-      super();
-      this.liquids = ImmutableSet.of(Fluids.WATER);
-      this.configuredCodec = codec.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
-   }
-
-   public ConfiguredWorldCarver<C> configured(final C configuration) {
-      return new ConfiguredWorldCarver<C>(this, configuration);
-   }
-
-   public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {
-      return this.configuredCodec;
-   }
-
-   public int getRange() {
+   default int getRange() {
       return 4;
    }
 
-   protected boolean carveEllipsoid(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final Aquifer aquifer, final double x, final double y, final double z, final double horizontalRadius, final double verticalRadius, final CarvingMask mask, final CarveSkipChecker skipChecker) {
-      ChunkPos chunkPos = chunk.getPos();
+   static void carveEllipsoid(final ChunkPos chunkPos, final double x, final double y, final double z, final double horizontalRadius, final double verticalRadius, final CarverOutput output, final CarveSkipChecker skipChecker) {
       double centerX = (double)chunkPos.getMiddleBlockX();
       double centerZ = (double)chunkPos.getMiddleBlockZ();
       double maxDelta = 16.0 + horizontalRadius * 2.0;
@@ -71,14 +33,10 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
          int chunkMinZ = chunkPos.getMinBlockZ();
          int minXIndex = Math.max(Mth.floor(x - horizontalRadius) - chunkMinX - 1, 0);
          int maxXIndex = Math.min(Mth.floor(x + horizontalRadius) - chunkMinX, 15);
-         int minY = Math.max(Mth.floor(y - verticalRadius) - 1, context.getMinGenY() + 1);
-         int protectedBlocksOnTop = chunk.isUpgrading() ? 0 : 7;
-         int maxY = Math.min(Mth.floor(y + verticalRadius) + 1, context.getMinGenY() + context.getGenDepth() - 1 - protectedBlocksOnTop);
+         int minY = Math.max(Mth.floor(y - verticalRadius) - 1, output.minY());
+         int maxY = Math.min(Mth.floor(y + verticalRadius) + 1, output.maxY());
          int minZIndex = Math.max(Mth.floor(z - horizontalRadius) - chunkMinZ - 1, 0);
          int maxZIndex = Math.min(Mth.floor(z + horizontalRadius) - chunkMinZ, 15);
-         boolean carved = false;
-         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
-         BlockPos.MutableBlockPos helperPos = new BlockPos.MutableBlockPos();
 
          for(int xIndex = minXIndex; xIndex <= maxXIndex; ++xIndex) {
             int worldX = chunkPos.getBlockX(xIndex);
@@ -88,95 +46,26 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
                int worldZ = chunkPos.getBlockZ(zIndex);
                double zd = ((double)worldZ + 0.5 - z) / horizontalRadius;
                if (!(xd * xd + zd * zd >= 1.0)) {
-                  MutableBoolean hasGrass = new MutableBoolean(false);
-
                   for(int worldY = maxY; worldY > minY; --worldY) {
                      double yd = ((double)worldY - 0.5 - y) / verticalRadius;
-                     if (!skipChecker.shouldSkip(context, xd, yd, zd, worldY) && (!mask.get(xIndex, worldY, zIndex) || isDebugEnabled(configuration))) {
-                        mask.set(xIndex, worldY, zIndex);
-                        blockPos.set(worldX, worldY, worldZ);
-                        carved |= this.carveBlock(context, configuration, chunk, biomeGetter, mask, blockPos, helperPos, aquifer, hasGrass);
+                     if (!skipChecker.shouldSkip(xd, yd, zd, worldY)) {
+                        output.carve(xIndex, worldY, zIndex);
                      }
                   }
                }
             }
          }
 
-         return carved;
-      } else {
-         return false;
       }
    }
 
-   protected boolean carveBlock(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask mask, final BlockPos.MutableBlockPos blockPos, final BlockPos.MutableBlockPos helperPos, final Aquifer aquifer, final MutableBoolean hasGrass) {
-      BlockState blockState = chunk.getBlockState(blockPos);
-      if (blockState.is(Blocks.GRASS_BLOCK) || blockState.is(Blocks.MYCELIUM)) {
-         hasGrass.setTrue();
-      }
+   boolean carve(WorldGenerationContext context, RandomSource random, ChunkPos chunkPos, ChunkPos sourceChunkPos, CarverOutput output);
 
-      if (!this.canReplaceBlock(configuration, blockState) && !isDebugEnabled(configuration)) {
-         return false;
-      } else {
-         BlockState state = this.getCarveState(context, configuration, blockPos, aquifer);
-         if (state == null) {
-            return false;
-         } else {
-            chunk.setBlockState(blockPos, state);
-            if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
-               chunk.markPosForPostProcessing(blockPos);
-            }
+   boolean isStartChunk(RandomSource random);
 
-            if (hasGrass.isTrue()) {
-               helperPos.setWithOffset(blockPos, (Direction)Direction.DOWN);
-               if (chunk.getBlockState(helperPos).is(Blocks.DIRT)) {
-                  context.topMaterial(biomeGetter, chunk, helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
-                     chunk.setBlockState(helperPos, topMaterial);
-                     if (!topMaterial.getFluidState().isEmpty()) {
-                        chunk.markPosForPostProcessing(helperPos);
-                     }
+   MapCodec<? extends WorldCarver> codec();
 
-                  });
-               }
-            }
-
-            return true;
-         }
-      }
-   }
-
-   private @Nullable BlockState getCarveState(final CarvingContext context, final C configuration, final BlockPos blockPos, final Aquifer aquifer) {
-      if (blockPos.getY() <= configuration.lavaLevel.resolveY(context)) {
-         return LAVA.createLegacyBlock();
-      } else {
-         BlockState state = aquifer.computeSubstance(new DensityFunction.SinglePointContext(blockPos.getX(), blockPos.getY(), blockPos.getZ()), 0.0);
-         if (state == null) {
-            return isDebugEnabled(configuration) ? configuration.debugSettings.getBarrierState() : null;
-         } else {
-            return isDebugEnabled(configuration) ? getDebugState(configuration, state) : state;
-         }
-      }
-   }
-
-   private static BlockState getDebugState(final CarverConfiguration configuration, final BlockState state) {
-      if (state.is(Blocks.AIR)) {
-         return configuration.debugSettings.getAirState();
-      } else if (state.is(Blocks.WATER)) {
-         BlockState debugState = configuration.debugSettings.getWaterState();
-         return debugState.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)debugState.setValue(BlockStateProperties.WATERLOGGED, true) : debugState;
-      } else {
-         return state.is(Blocks.LAVA) ? configuration.debugSettings.getLavaState() : state;
-      }
-   }
-
-   public abstract boolean carve(final CarvingContext context, final C configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, CarvingMask mask);
-
-   public abstract boolean isStartChunk(final C configuration, final RandomSource random);
-
-   protected boolean canReplaceBlock(final C configuration, final BlockState state) {
-      return state.is(configuration.replaceable);
-   }
-
-   protected static boolean canReach(final ChunkPos chunkPos, final double x, final double z, final int currentStep, final int totalSteps, final float thickness) {
+   static boolean canReach(final ChunkPos chunkPos, final double x, final double z, final int currentStep, final int totalSteps, final float thickness) {
       double xMid = (double)chunkPos.getMiddleBlockX();
       double zMid = (double)chunkPos.getMiddleBlockZ();
       double xd = x - xMid;
@@ -186,21 +75,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       return xd * xd + zd * zd - remaining * remaining <= rr * rr;
    }
 
-   private static boolean isDebugEnabled(final CarverConfiguration configuration) {
-      return SharedConstants.DEBUG_CARVERS || configuration.debugSettings.isDebugMode();
-   }
-
-   static {
-      CAVE = register("cave", new CaveWorldCarver(CaveCarverConfiguration.CODEC));
-      NETHER_CAVE = register("nether_cave", new NetherWorldCarver(CaveCarverConfiguration.CODEC));
-      CANYON = register("canyon", new CanyonWorldCarver(CanyonCarverConfiguration.CODEC));
-      AIR = Blocks.AIR.defaultBlockState();
-      CAVE_AIR = Blocks.CAVE_AIR.defaultBlockState();
-      WATER = Fluids.WATER.defaultFluidState();
-      LAVA = Fluids.LAVA.defaultFluidState();
-   }
-
    public interface CarveSkipChecker {
-      boolean shouldSkip(CarvingContext context, double xd, double yd, double zd, int y);
+      boolean shouldSkip(double xd, double yd, double zd, int y);
    }
 }

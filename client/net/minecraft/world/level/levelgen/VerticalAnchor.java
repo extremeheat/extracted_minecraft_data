@@ -6,7 +6,7 @@ import java.util.function.Function;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public interface VerticalAnchor {
-   Codec<VerticalAnchor> CODEC = Codec.xor(VerticalAnchor.Absolute.CODEC, Codec.xor(VerticalAnchor.AboveBottom.CODEC, VerticalAnchor.BelowTop.CODEC)).xmap(VerticalAnchor::merge, VerticalAnchor::split);
+   Codec<VerticalAnchor> CODEC = Codec.xor(VerticalAnchor.Absolute.CODEC, Codec.xor(VerticalAnchor.AboveBottom.CODEC, Codec.xor(VerticalAnchor.BelowTop.CODEC, VerticalAnchor.RelativeToSeaLevel.CODEC))).xmap(VerticalAnchor::merge, VerticalAnchor::split);
    VerticalAnchor BOTTOM = aboveBottom(0);
    VerticalAnchor TOP = belowTop(0);
 
@@ -30,22 +30,27 @@ public interface VerticalAnchor {
       return TOP;
    }
 
-   private static VerticalAnchor merge(final Either<Absolute, Either<AboveBottom, BelowTop>> either) {
-      return (VerticalAnchor)either.map(Function.identity(), Either::unwrap);
+   static VerticalAnchor relativeToSeaLevel(final int offset) {
+      return new RelativeToSeaLevel(offset);
    }
 
-   private static Either<Absolute, Either<AboveBottom, BelowTop>> split(final VerticalAnchor anchor) {
+   static VerticalAnchor seaLevel() {
+      return relativeToSeaLevel(0);
+   }
+
+   private static VerticalAnchor merge(final Either<Absolute, Either<AboveBottom, Either<BelowTop, RelativeToSeaLevel>>> either) {
+      return (VerticalAnchor)either.map(Function.identity(), (e) -> (Record)e.map(Function.identity(), Either::unwrap));
+   }
+
+   private static Either<Absolute, Either<AboveBottom, Either<BelowTop, RelativeToSeaLevel>>> split(final VerticalAnchor anchor) {
       if (anchor instanceof Absolute absolute) {
          return Either.left(absolute);
+      } else if (anchor instanceof AboveBottom aboveBottom) {
+         return Either.right(Either.left(aboveBottom));
+      } else if (anchor instanceof BelowTop belowTop) {
+         return Either.right(Either.right(Either.left(belowTop)));
       } else {
-         Either var10000;
-         if (anchor instanceof AboveBottom aboveBottom) {
-            var10000 = Either.left(aboveBottom);
-         } else {
-            var10000 = Either.right((BelowTop)anchor);
-         }
-
-         return Either.right(var10000);
+         return Either.right(Either.right(Either.right((RelativeToSeaLevel)anchor)));
       }
    }
 
@@ -108,6 +113,26 @@ public interface VerticalAnchor {
 
       static {
          CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("below_top").xmap(BelowTop::new, BelowTop::offset).codec();
+      }
+   }
+
+   public static record RelativeToSeaLevel(int offset) implements VerticalAnchor {
+      public static final Codec<RelativeToSeaLevel> CODEC;
+
+      public RelativeToSeaLevel {
+         super();
+      }
+
+      public int resolveY(final WorldGenerationContext heightAccessor) {
+         return heightAccessor.seaLevel() + this.offset;
+      }
+
+      public String toString() {
+         return this.offset + " relative to sea level";
+      }
+
+      static {
+         CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("relative_to_sea_level").xmap(RelativeToSeaLevel::new, RelativeToSeaLevel::offset).codec();
       }
    }
 }

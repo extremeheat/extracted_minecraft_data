@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,12 +28,7 @@ import net.minecraft.world.ticks.TickPriority;
 import org.jspecify.annotations.Nullable;
 
 public class ComparatorBlock extends DiodeBlock implements EntityBlock {
-   public static final MapCodec<ComparatorBlock> CODEC = simpleCodec(ComparatorBlock::new);
    public static final EnumProperty<ComparatorMode> MODE;
-
-   public MapCodec<ComparatorBlock> codec() {
-      return CODEC;
-   }
 
    public ComparatorBlock(final BlockBehaviour.Properties properties) {
       super(properties);

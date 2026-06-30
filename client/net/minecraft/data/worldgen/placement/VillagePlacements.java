@@ -15,8 +15,8 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
 
 public class VillagePlacements {
    public static final ResourceKey<PlacedFeature> PILE_HAY_VILLAGE = PlacementUtils.createKey("pile_hay");
@@ -61,9 +61,9 @@ public class VillagePlacements {
       PlacementUtils.register(context, ACACIA_VILLAGE, acacia, PlacementUtils.filteredByBlockSurvival(Blocks.ACACIA_SAPLING));
       PlacementUtils.register(context, SPRUCE_VILLAGE, spruce, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
       PlacementUtils.register(context, PINE_VILLAGE, pine, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
-      PlacementUtils.register(context, PATCH_CACTUS_VILLAGE, cactus, CountPlacement.of(10), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(Blocks.CACTUS))));
-      PlacementUtils.register(context, FLOWER_PLAIN_VILLAGE, flowerPlain, CountPlacement.of(64), RandomOffsetPlacement.ofTriangle(6, 2), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
-      PlacementUtils.register(context, PATCH_TAIGA_GRASS_VILLAGE, taigaGrass, CountPlacement.of(32), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
-      PlacementUtils.register(context, PATCH_BERRY_BUSH_VILLAGE, berryBush, CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.GRASS_BLOCK))));
+      PlacementUtils.register(context, PATCH_CACTUS_VILLAGE, cactus, CountPlacement.of(10), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(Blocks.CACTUS))));
+      PlacementUtils.register(context, FLOWER_PLAIN_VILLAGE, flowerPlain, CountPlacement.of(64), OffsetPlacement.ofTriangle(6, 2), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, PATCH_TAIGA_GRASS_VILLAGE, taigaGrass, CountPlacement.of(32), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, PATCH_BERRY_BUSH_VILLAGE, berryBush, CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.GRASS_BLOCK))));
    }
 }

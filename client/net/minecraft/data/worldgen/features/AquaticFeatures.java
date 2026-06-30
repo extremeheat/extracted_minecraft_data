@@ -32,7 +32,7 @@ public class AquaticFeatures {
       context.register(SEAGRASS_MID, new SeagrassFeature(0.6F));
       context.register(SEAGRASS_TALL, new SeagrassFeature(0.8F));
       context.register(SEA_PICKLE, new SeaPickleFeature(20));
-      context.register(KELP, KelpFeature.INSTANCE);
-      context.register(WARM_OCEAN_VEGETATION, new SimpleRandomSelectorFeature(HolderSet.direct(PlacementUtils.inlinePlaced(CoralTreeFeature.INSTANCE), PlacementUtils.inlinePlaced(CoralClawFeature.INSTANCE), PlacementUtils.inlinePlaced(CoralMushroomFeature.INSTANCE))));
+      context.register(KELP, new KelpFeature());
+      context.register(WARM_OCEAN_VEGETATION, new SimpleRandomSelectorFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new CoralTreeFeature()), PlacementUtils.inlinePlaced(new CoralClawFeature()), PlacementUtils.inlinePlaced(new CoralMushroomFeature()))));
    }
 }

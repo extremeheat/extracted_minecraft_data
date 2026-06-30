@@ -6,8 +6,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.TridentModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -30,9 +28,10 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       poseStack.pushPose();
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
       poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot + 90.0F));
-      submitNodeCollector.order(0).submitModel(this.model, Unit.INSTANCE, poseStack, (Identifier)TRIDENT_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       if (state.isFoil) {
-         submitNodeCollector.order(1).submitModel(this.model, Unit.INSTANCE, poseStack, (RenderType)RenderTypes.entityGlint(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(TRIDENT_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+      } else {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, TRIDENT_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
 
       poseStack.popPose();

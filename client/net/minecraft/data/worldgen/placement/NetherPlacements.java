@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.NetherFeatures;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.valueproviders.BiasedToBottomInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
@@ -20,9 +21,9 @@ import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountOnEveryLayerPlacement;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
-import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
 
 public class NetherPlacements {
    public static final ResourceKey<PlacedFeature> DELTA = PlacementUtils.createKey("delta");
@@ -75,15 +76,15 @@ public class NetherPlacements {
       PlacementUtils.register(context, LARGE_BASALT_COLUMNS, largeBasaltColumns, CountOnEveryLayerPlacement.of(2), BiomeFilter.biome());
       PlacementUtils.register(context, BASALT_BLOBS, basaltBlobs, CountPlacement.of(75), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
       PlacementUtils.register(context, BLACKSTONE_BLOBS, blackstoneBlobs, CountPlacement.of(25), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
-      PlacementUtils.register(context, GLOWSTONE_EXTRA, glowstoneExtra, CountPlacement.of(BiasedToBottomInt.of(0, 9)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome());
-      PlacementUtils.register(context, GLOWSTONE, glowstoneExtra, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
+      PlacementUtils.register(context, GLOWSTONE_EXTRA, glowstoneExtra, CountPlacement.of(BiasedToBottomInt.of(0, 9)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.NETHERRACK, Blocks.BASALT, Blocks.BLACKSTONE))), BiomeFilter.biome());
+      PlacementUtils.register(context, GLOWSTONE, glowstoneExtra, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.NETHERRACK, Blocks.BASALT, Blocks.BLACKSTONE))), BiomeFilter.biome());
       PlacementUtils.register(context, CRIMSON_FOREST_VEGETATION, crimsonForestVegetation, CountOnEveryLayerPlacement.of(6), BiomeFilter.biome());
       PlacementUtils.register(context, WARPED_FOREST_VEGETATION, warpedForestVegetion, CountOnEveryLayerPlacement.of(5), BiomeFilter.biome());
       PlacementUtils.register(context, NETHER_SPROUTS, netherSprouts, CountOnEveryLayerPlacement.of(4), BiomeFilter.biome());
       PlacementUtils.register(context, TWISTING_VINES, twistingVines, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
       PlacementUtils.register(context, WEEPING_VINES, weepingVines, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
-      PlacementUtils.register(context, PATCH_CRIMSON_ROOTS, crimsonRoots, PlacementUtils.FULL_RANGE, BiomeFilter.biome(), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
-      PlacementUtils.register(context, BASALT_PILLAR, basaltPillar, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
+      PlacementUtils.register(context, PATCH_CRIMSON_ROOTS, crimsonRoots, PlacementUtils.FULL_RANGE, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, BASALT_PILLAR, basaltPillar, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.not(BlockPredicate.matchesTag((Directional)Direction.UP, BlockTags.AIR)))), BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_DELTA, springLavaNether, CountPlacement.of(16), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_CLOSED, springNetherClosed, CountPlacement.of(16), InSquarePlacement.spread(), PlacementUtils.RANGE_10_10, BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_CLOSED_DOUBLE, springNetherClosed, CountPlacement.of(32), InSquarePlacement.spread(), PlacementUtils.RANGE_10_10, BiomeFilter.biome());
@@ -93,6 +94,6 @@ public class NetherPlacements {
    }
 
    private static List<PlacementModifier> firePlacement(final Block onlyOnBlock) {
-      return List.of(CountPlacement.of(UniformInt.of(0, 5)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome(), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, onlyOnBlock))));
+      return List.of(CountPlacement.of(UniformInt.of(0, 5)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, onlyOnBlock))));
    }
 }

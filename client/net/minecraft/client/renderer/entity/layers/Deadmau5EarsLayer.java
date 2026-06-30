@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public class Deadmau5EarsLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
@@ -24,7 +23,7 @@ public class Deadmau5EarsLayer extends RenderLayer<AvatarRenderState, PlayerMode
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
       if (state.showExtraEars && !state.isInvisible) {
          int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
-         submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entitySolid(state.skin.body().texturePath()), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entitySolid(state.skin.body().texturePath()), lightCoords, overlayCoords, state.outlineColor);
       }
    }
 }

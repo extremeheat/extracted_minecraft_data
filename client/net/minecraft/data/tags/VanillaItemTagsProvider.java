@@ -182,6 +182,7 @@ public class VanillaItemTagsProvider extends TagsProvider<Item> {
       this.tag(ItemTags.LOOM_PATTERNS).add(ItemIds.FLOWER_BANNER_PATTERN, ItemIds.CREEPER_BANNER_PATTERN, ItemIds.SKULL_BANNER_PATTERN, ItemIds.MOJANG_BANNER_PATTERN, ItemIds.GLOBE_BANNER_PATTERN, ItemIds.PIGLIN_BANNER_PATTERN, ItemIds.FLOW_BANNER_PATTERN, ItemIds.GUSTER_BANNER_PATTERN, ItemIds.FIELD_MASONED_BANNER_PATTERN, ItemIds.BORDURE_INDENTED_BANNER_PATTERN);
       this.tag(ItemTags.CAT_COLLAR_DYES).addTag(ItemTags.DYES);
       this.tag(ItemTags.WOLF_COLLAR_DYES).addTag(ItemTags.DYES);
+      this.tag(ItemTags.DOWSES_CAMPFIRES).addTag(ItemTags.SHOVELS);
    }
 
    private static ColorCollection<ResourceKey<Item>> toIds(final ColorCollection<BlockItemId> ids) {

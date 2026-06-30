@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,16 +48,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<DecoratedPotBlock> CODEC = simpleCodec(DecoratedPotBlock::new);
    public static final Identifier SHERDS_DYNAMIC_DROP_ID = Identifier.withDefaultNamespace("sherds");
    public static final EnumProperty<Direction> HORIZONTAL_FACING;
    public static final BooleanProperty CRACKED;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<DecoratedPotBlock> codec() {
-      return CODEC;
-   }
 
    protected DecoratedPotBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -184,7 +178,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
       BlockPos pos = blockHit.getBlockPos();
       if (level instanceof ServerLevel serverLevel) {
-         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel)) {
+         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel, pos)) {
             level.setBlock(pos, (BlockState)state.setValue(CRACKED, true), 260);
             level.destroyBlock(pos, true, projectile);
          }

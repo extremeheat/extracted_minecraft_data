@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -20,15 +19,10 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class FrostedIceBlock extends IceBlock {
-   public static final MapCodec<FrostedIceBlock> CODEC = simpleCodec(FrostedIceBlock::new);
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
    private static final int NEIGHBORS_TO_AGE = 4;
    private static final int NEIGHBORS_TO_MELT = 2;
-
-   public MapCodec<FrostedIceBlock> codec() {
-      return CODEC;
-   }
 
    public FrostedIceBlock(final BlockBehaviour.Properties properties) {
       super(properties);

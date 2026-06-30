@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -38,16 +37,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DriedGhastBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<DriedGhastBlock> CODEC = simpleCodec(DriedGhastBlock::new);
    public static final int MAX_HYDRATION_LEVEL = 3;
    public static final IntegerProperty HYDRATION_LEVEL;
    public static final BooleanProperty WATERLOGGED;
    public static final int HYDRATION_TICK_DELAY = 5000;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<DriedGhastBlock> codec() {
-      return CODEC;
-   }
 
    public DriedGhastBlock(final BlockBehaviour.Properties properties) {
       super(properties);

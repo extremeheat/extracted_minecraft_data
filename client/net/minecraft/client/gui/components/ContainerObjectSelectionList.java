@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenDirection;
@@ -91,7 +92,8 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
 
    public void updateWidgetNarration(final NarrationElementOutput output) {
       E hovered = (E)(this.getHovered());
-      if (hovered != null) {
+      NarrationTrigger narrationTrigger = output.narrationTrigger();
+      if ((narrationTrigger == NarrationTrigger.MOUSE || narrationTrigger == NarrationTrigger.SYSTEM) && hovered != null) {
          hovered.updateNarration(output.nest());
          this.narrateListElementPosition(output, hovered);
       } else {

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -29,14 +28,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ShelfMushroomBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
-   public static final MapCodec<ShelfMushroomBlock> CODEC = simpleCodec(ShelfMushroomBlock::new);
    public static final int MAX_AGE = 1;
    public static final IntegerProperty AGE;
    private static final List<Map<Direction, VoxelShape>> SHAPES;
-
-   public MapCodec<ShelfMushroomBlock> codec() {
-      return CODEC;
-   }
 
    public ShelfMushroomBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -104,6 +98,6 @@ public class ShelfMushroomBlock extends HorizontalDirectionalBlock implements Bo
 
    static {
       AGE = BlockStateProperties.AGE_1;
-      SHAPES = IntStream.rangeClosed(0, 1).mapToObj((i) -> Shapes.rotateHorizontal(Block.column((double)(10 + i * 4), (double)(7 + i * 3), (double)(9 - i * 2), 12.0).move(0.0, (double)(i - 2) / 16.0, -((double)i * 1.5 - 4.5) / 16.0).optimize())).toList();
+      SHAPES = IntStream.rangeClosed(0, 1).mapToObj((i) -> Shapes.rotateHorizontal(Shapes.or(Block.column((double)(10 + i * 4), (double)(7 + i * 3), (double)(1 + i), (double)(3 + i * 2)).move(0.0, (double)(8 - i * 2) / 16.0, -((double)i * 1.5 - 4.5) / 16.0).optimize(), Block.column((double)(6 + i * 2), (double)(4 + i * 2), 0.0, (double)(1 + i)).move(0.0, (double)(8 - i * 2) / 16.0, (double)(-(i - 6)) / 16.0).optimize()))).toList();
    }
 }

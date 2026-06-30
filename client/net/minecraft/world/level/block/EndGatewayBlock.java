@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,12 +25,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class EndGatewayBlock extends BaseEntityBlock implements Portal {
-   public static final MapCodec<EndGatewayBlock> CODEC = simpleCodec(EndGatewayBlock::new);
-
-   public MapCodec<EndGatewayBlock> codec() {
-      return CODEC;
-   }
-
    protected EndGatewayBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

@@ -31,9 +31,17 @@ public class Sheets {
    public static final Identifier PAINTINGS_SHEET = Identifier.withDefaultNamespace("textures/atlas/paintings.png");
    public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
    private static final RenderType CUTOUT_BLOCK_ITEM_SHEET;
+   private static final RenderType CUTOUT_BLOCK_ITEM_GLINT_SHEET;
+   private static final RenderType CUTOUT_BLOCK_ITEM_GLINT_SPECIAL_SHEET;
    private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
+   private static final RenderType TRANSLUCENT_BLOCK_ITEM_GLINT_SHEET;
+   private static final RenderType TRANSLUCENT_BLOCK_ITEM_GLINT_SPECIAL_SHEET;
    private static final RenderType CUTOUT_ITEM_SHEET;
+   private static final RenderType CUTOUT_ITEM_GLINT_SHEET;
+   private static final RenderType CUTOUT_ITEM_GLINT_SPECIAL_SHEET;
    private static final RenderType TRANSLUCENT_ITEM_SHEET;
+   private static final RenderType TRANSLUCENT_ITEM_GLINT_SHEET;
+   private static final RenderType TRANSLUCENT_ITEM_GLINT_SPECIAL_SHEET;
    public static final SpriteMapper ITEMS_MAPPER;
    public static final SpriteMapper BLOCKS_MAPPER;
    public static final SpriteMapper BLOCK_ENTITIES_MAPPER;
@@ -67,16 +75,48 @@ public class Sheets {
       return CUTOUT_BLOCK_ITEM_SHEET;
    }
 
+   public static RenderType cutoutBlockItemGlintSheet() {
+      return CUTOUT_BLOCK_ITEM_GLINT_SHEET;
+   }
+
+   public static RenderType cutoutBlockItemGlintSpecialSheet() {
+      return CUTOUT_BLOCK_ITEM_GLINT_SPECIAL_SHEET;
+   }
+
    public static RenderType cutoutItemSheet() {
       return CUTOUT_ITEM_SHEET;
+   }
+
+   public static RenderType cutoutItemGlintSheet() {
+      return CUTOUT_ITEM_GLINT_SHEET;
+   }
+
+   public static RenderType cutoutItemGlintSpecialSheet() {
+      return CUTOUT_ITEM_GLINT_SPECIAL_SHEET;
    }
 
    public static RenderType translucentItemSheet() {
       return TRANSLUCENT_ITEM_SHEET;
    }
 
+   public static RenderType translucentItemGlintSheet() {
+      return TRANSLUCENT_ITEM_GLINT_SHEET;
+   }
+
+   public static RenderType translucentItemGlintSpecialSheet() {
+      return TRANSLUCENT_ITEM_GLINT_SPECIAL_SHEET;
+   }
+
    public static RenderType translucentBlockItemSheet() {
       return TRANSLUCENT_BLOCK_ITEM_SHEET;
+   }
+
+   public static RenderType translucentBlockItemGlintSheet() {
+      return TRANSLUCENT_BLOCK_ITEM_GLINT_SHEET;
+   }
+
+   public static RenderType translucentBlockItemGlintSpecialSheet() {
+      return TRANSLUCENT_BLOCK_ITEM_GLINT_SPECIAL_SHEET;
    }
 
    public static SpriteId getShulkerBoxSprite(final DyeColor color) {
@@ -126,9 +166,17 @@ public class Sheets {
 
    static {
       CUTOUT_BLOCK_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_BLOCK_ITEM_GLINT_SHEET = RenderTypes.itemCutoutGlint(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_BLOCK_ITEM_GLINT_SPECIAL_SHEET = RenderTypes.itemCutoutGlintSpecial(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_ITEM_GLINT_SHEET = RenderTypes.itemTranslucentGlint(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_ITEM_GLINT_SPECIAL_SHEET = RenderTypes.itemTranslucentGlintSpecial(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_ITEMS);
+      CUTOUT_ITEM_GLINT_SHEET = RenderTypes.itemCutoutGlint(TextureAtlas.LOCATION_ITEMS);
+      CUTOUT_ITEM_GLINT_SPECIAL_SHEET = RenderTypes.itemCutoutGlintSpecial(TextureAtlas.LOCATION_ITEMS);
       TRANSLUCENT_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_ITEMS);
+      TRANSLUCENT_ITEM_GLINT_SHEET = RenderTypes.itemTranslucentGlint(TextureAtlas.LOCATION_ITEMS);
+      TRANSLUCENT_ITEM_GLINT_SPECIAL_SHEET = RenderTypes.itemTranslucentGlintSpecial(TextureAtlas.LOCATION_ITEMS);
       ITEMS_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_ITEMS, "item");
       BLOCKS_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_BLOCKS, "block");
       BLOCK_ENTITIES_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_BLOCKS, "entity");

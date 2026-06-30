@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -17,14 +15,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHolder {
-   protected static final MapCodec<SuspiciousStewEffects> EFFECTS_FIELD;
-   public static final MapCodec<FlowerBlock> CODEC;
-   private static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 10.0);
    private final SuspiciousStewEffects suspiciousStewEffects;
-
-   public MapCodec<? extends FlowerBlock> codec() {
-      return CODEC;
-   }
 
    public FlowerBlock(final Holder<MobEffect> suspiciousStewEffect, final float effectSeconds, final BlockBehaviour.Properties properties) {
       this(makeEffectList(suspiciousStewEffect, effectSeconds), properties);
@@ -49,11 +41,5 @@ public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHold
 
    public @Nullable MobEffectInstance getBeeInteractionEffect() {
       return null;
-   }
-
-   static {
-      EFFECTS_FIELD = SuspiciousStewEffects.CODEC.fieldOf("suspicious_stew_effects");
-      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(i, FlowerBlock::new));
-      SHAPE = Block.column(6.0, 0.0, 10.0);
    }
 }

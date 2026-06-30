@@ -11,13 +11,14 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
+public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
    Codec<BlockPredicate> CODEC = BuiltInRegistries.BLOCK_PREDICATE_TYPE.byNameCodec().dispatch(BlockPredicate::type, BlockPredicateType::codec);
    BlockPredicate ONLY_IN_AIR_PREDICATE = matchesTag(BlockTags.AIR);
    BlockPredicate ONLY_IN_AIR_OR_WATER_PREDICATE = anyOf(ONLY_IN_AIR_PREDICATE, matchesBlocks(Blocks.WATER));
@@ -122,5 +123,9 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
 
    static BlockPredicate unobstructed() {
       return new UnobstructedPredicate(Vec3i.ZERO);
+   }
+
+   static BlockPredicate heightRange(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
+      return new HeightRangePredicate(minInclusive, maxInclusive);
    }
 }

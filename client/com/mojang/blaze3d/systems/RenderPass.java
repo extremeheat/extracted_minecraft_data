@@ -4,7 +4,7 @@ import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.IntBuffer;
@@ -70,8 +70,8 @@ public class RenderPass implements AutoCloseable {
       }
    }
 
-   public void setPipeline(final RenderPipeline pipeline) {
-      ColorTargetState[] colorTargetStates = pipeline.getColorTargetStates();
+   public void setPipeline(final CompiledRenderPipeline pipeline) {
+      ColorTargetState[] colorTargetStates = pipeline.info().getColorTargetStates();
       if (colorTargetStates.length != this.colorAttachments.size()) {
          throw new IllegalStateException("Render pass color attachment count must match pipeline color target state count.");
       } else {

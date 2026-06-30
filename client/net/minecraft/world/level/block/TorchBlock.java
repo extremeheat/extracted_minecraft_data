@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -14,12 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class TorchBlock extends BaseTorchBlock {
    protected static final MapCodec<SimpleParticleType> PARTICLE_OPTIONS_FIELD;
-   public static final MapCodec<TorchBlock> CODEC;
    protected final SimpleParticleType flameParticle;
-
-   public MapCodec<? extends TorchBlock> codec() {
-      return CODEC;
-   }
 
    protected TorchBlock(final SimpleParticleType flameParticle, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -45,6 +39,5 @@ public class TorchBlock extends BaseTorchBlock {
 
          return var10000;
       }, (type) -> type).fieldOf("particle_options");
-      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PARTICLE_OPTIONS_FIELD.forGetter((b) -> b.flameParticle), propertiesCodec()).apply(i, TorchBlock::new));
    }
 }

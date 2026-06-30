@@ -101,6 +101,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       }
    }
 
+   public boolean capturesInput() {
+      return this.visible && this.isFocused();
+   }
+
    public boolean preeditUpdated(final @Nullable PreeditEvent event) {
       IMEPreeditOverlay var10001;
       if (event != null) {

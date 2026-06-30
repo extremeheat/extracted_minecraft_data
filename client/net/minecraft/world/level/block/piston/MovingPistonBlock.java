@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.piston;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -37,13 +36,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MovingPistonBlock extends BaseEntityBlock {
-   public static final MapCodec<MovingPistonBlock> CODEC = simpleCodec(MovingPistonBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<PistonType> TYPE;
-
-   public MapCodec<MovingPistonBlock> codec() {
-      return CODEC;
-   }
 
    public MovingPistonBlock(final BlockBehaviour.Properties properties) {
       super(properties);

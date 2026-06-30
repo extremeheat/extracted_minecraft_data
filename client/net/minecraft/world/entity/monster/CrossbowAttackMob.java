@@ -21,7 +21,7 @@ public interface CrossbowAttackMob extends RangedAttackMob {
       ItemStack usedItem = body.getItemInHand(hand);
       Item var6 = usedItem.getItem();
       if (var6 instanceof CrossbowItem crossbow) {
-         crossbow.performShooting(body.level(), body, hand, usedItem, crossbowPower, (float)(14 - body.level().getDifficulty().getId() * 4), this.getTarget());
+         crossbow.performShooting(body.level(), body, hand, usedItem, crossbowPower, this.rangedAttackUncertainty(body.level()), this.getTarget());
       }
 
       this.onCrossbowAttackPerformed();

@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -22,13 +20,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BannerBlock extends AbstractBannerBlock {
-   public static final MapCodec<BannerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(i, BannerBlock::new));
    public static final IntegerProperty ROTATION;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<BannerBlock> codec() {
-      return CODEC;
-   }
 
    public BannerBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
       super(color, properties);

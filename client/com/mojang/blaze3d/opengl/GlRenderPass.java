@@ -3,7 +3,7 @@ package com.mojang.blaze3d.opengl;
 import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
@@ -64,13 +64,17 @@ class GlRenderPass implements RenderPassBackend {
       this.device.debugLabels().popDebugGroup();
    }
 
-   public void setPipeline(final RenderPipeline pipeline) {
-      if (this.pipeline == null || this.pipeline.info() != pipeline) {
-         this.dirtyUniforms.addAll(this.uniforms.keySet());
-         this.dirtyUniforms.addAll(this.samplers.keySet());
-      }
+   public void setPipeline(final CompiledRenderPipeline pipeline) {
+      if (!(pipeline instanceof GlRenderPipeline glRenderPipeline)) {
+         throw new IllegalArgumentException("Pipeline must be instance of GlRenderPipeline");
+      } else {
+         if (this.pipeline == null || this.pipeline != pipeline) {
+            this.dirtyUniforms.addAll(this.uniforms.keySet());
+            this.dirtyUniforms.addAll(this.samplers.keySet());
+         }
 
-      this.pipeline = this.device.getOrCompilePipeline(pipeline);
+         this.pipeline = glRenderPipeline;
+      }
    }
 
    public void bindTexture(final String name, final @Nullable GpuTextureView textureView, final @Nullable GpuSampler sampler) {

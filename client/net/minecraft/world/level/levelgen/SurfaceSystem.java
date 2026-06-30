@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.BlockColumn;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
@@ -66,7 +65,7 @@ public class SurfaceSystem {
       this.icebergSurfaceNoise = randomState.getOrCreateNoise(Noises.ICEBERG_SURFACE);
    }
 
-   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final boolean useLegacyRandom, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final SurfaceRules.RuleSource ruleSource, final @Nullable Set<Holder<Biome>> possibleBiomes) {
+   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final SurfaceRules.RuleSource ruleSource, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       final BlockPos.MutableBlockPos columnPos = new BlockPos.MutableBlockPos();
       final ChunkPos chunkPos = protoChunk.getPos();
       int minBlockX = chunkPos.getMinBlockX();
@@ -106,7 +105,7 @@ public class SurfaceSystem {
             int blockZ = minBlockZ + z;
             int startingHeight = protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) + 1;
             columnPos.setX(blockX).setZ(blockZ);
-            Holder<Biome> surfaceBiome = biomeManager.getBiome(blockPos.set(blockX, useLegacyRandom ? 0 : startingHeight, blockZ));
+            Holder<Biome> surfaceBiome = biomeManager.getBiome(blockPos.set(blockX, startingHeight, blockZ));
             if (surfaceBiome.is(Biomes.ERODED_BADLANDS)) {
                this.erodedBadlandsExtension(column, blockX, blockZ, startingHeight, protoChunk);
             }
@@ -179,8 +178,8 @@ public class SurfaceSystem {
 
    /** @deprecated */
    @Deprecated
-   public Optional<BlockState> topMaterial(final SurfaceRules.RuleSource ruleSource, final CarvingContext carvingContext, final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final NoiseChunk noiseChunk, final BlockPos pos, final boolean underFluid) {
-      SurfaceRules.Context context = new SurfaceRules.Context(this, carvingContext.randomState(), chunk, noiseChunk, biomeGetter, carvingContext, (Set)null);
+   public Optional<BlockState> topMaterial(final SurfaceRules.RuleSource ruleSource, final RandomState randomState, final WorldGenerationContext worldGenerationContext, final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final NoiseChunk noiseChunk, final BlockPos pos, final boolean underFluid) {
+      SurfaceRules.Context context = new SurfaceRules.Context(this, randomState, chunk, noiseChunk, biomeGetter, worldGenerationContext, (Set)null);
       SurfaceRules.SurfaceRule rule = (SurfaceRules.SurfaceRule)ruleSource.apply(context);
       int blockX = pos.getX();
       int blockY = pos.getY();

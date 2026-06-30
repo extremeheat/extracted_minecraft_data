@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -29,8 +28,6 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractCandleBlock extends Block {
    public static final int LIGHT_PER_CANDLE = 3;
    public static final BooleanProperty LIT;
-
-   protected abstract MapCodec<? extends AbstractCandleBlock> codec();
 
    protected AbstractCandleBlock(final BlockBehaviour.Properties properties) {
       super(properties);

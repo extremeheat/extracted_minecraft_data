@@ -3,7 +3,6 @@ package com.mojang.blaze3d.opengl;
 import com.mojang.blaze3d.GLFWErrorCapture;
 import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.shaders.GpuDebugOptions;
-import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.systems.BackendCreationException;
 import com.mojang.blaze3d.systems.GpuBackend;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -46,11 +45,11 @@ public class GlBackend implements GpuBackend {
       }
    }
 
-   public GpuDevice createDevice(final long window, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions, final Runnable criticalShaderLoader) {
+   public GpuDevice createDevice(final long window, final GpuDebugOptions debugOptions) {
       if (MacosUtil.IS_MACOS) {
          MacosUtil.setWindowColorSpaceForOpenGLBecauseGLFWDoesnt(window);
       }
 
-      return new GpuDevice(new GlDevice(window, defaultShaderSource, debugOptions), criticalShaderLoader);
+      return new GpuDevice(new GlDevice(window, debugOptions));
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,7 +30,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBlock {
-   public static final MapCodec<PitcherCropBlock> CODEC = simpleCodec(PitcherCropBlock::new);
    public static final int MAX_AGE = 4;
    public static final IntegerProperty AGE;
    public static final EnumProperty<DoubleBlockHalf> HALF;
@@ -40,10 +38,6 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    private static final VoxelShape SHAPE_BULB;
    private static final VoxelShape SHAPE_CROP;
    private final Function<BlockState, VoxelShape> shapes = this.makeShapes();
-
-   public MapCodec<PitcherCropBlock> codec() {
-      return CODEC;
-   }
 
    public PitcherCropBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -11,8 +11,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record CoralClawFeature() implements CoralFeature {
-   public static final CoralClawFeature INSTANCE = new CoralClawFeature();
-   public static final MapCodec<CoralClawFeature> CODEC;
+   public static final MapCodec<CoralClawFeature> CODEC = MapCodec.unit(CoralClawFeature::new);
 
    public CoralClawFeature() {
       super();
@@ -67,9 +66,5 @@ public record CoralClawFeature() implements CoralFeature {
 
          return true;
       }
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

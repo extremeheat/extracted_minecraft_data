@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,8 +24,6 @@ public abstract class GrowingPlantBlock extends Block {
       this.shape = shape;
       this.scheduleFluidTicks = scheduleFluidTicks;
    }
-
-   protected abstract MapCodec<? extends GrowingPlantBlock> codec();
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       BlockState growthDirectionState = context.getLevel().getBlockState(context.getClickedPos().relative(this.growthDirection));

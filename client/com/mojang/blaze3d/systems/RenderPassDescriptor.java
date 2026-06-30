@@ -2,6 +2,7 @@ package com.mojang.blaze3d.systems;
 
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -11,47 +12,20 @@ import org.jspecify.annotations.Nullable;
 
 public class RenderPassDescriptor {
    private final Supplier<String> label;
-   public List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments = new ArrayList();
-   public @Nullable Attachment<OptionalDouble> depthAttachment;
-   public RenderPass.@Nullable RenderArea renderArea;
+   private final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments;
+   private final @Nullable Attachment<OptionalDouble> depthAttachment;
+   private final RenderPass.RenderArea renderArea;
 
-   public static RenderPassDescriptor create(final Supplier<String> label) {
-      return new RenderPassDescriptor(label);
-   }
-
-   private RenderPassDescriptor(final Supplier<String> label) {
+   private RenderPassDescriptor(final Supplier<String> label, final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable Attachment<OptionalDouble> depthAttachment, final RenderPass.RenderArea renderArea) {
       super();
       this.label = label;
-   }
-
-   public RenderPassDescriptor withColorAttachment(final GpuTextureView textureView) {
-      this.colorAttachments.add(new Attachment(textureView, Optional.empty()));
-      return this;
-   }
-
-   public RenderPassDescriptor withColorAttachment(final GpuTextureView textureView, final Optional<Vector4fc> clearValue) {
-      this.colorAttachments.add(new Attachment(textureView, clearValue));
-      return this;
-   }
-
-   public RenderPassDescriptor withUnusedColorAttachment() {
-      this.colorAttachments.add((Object)null);
-      return this;
-   }
-
-   public RenderPassDescriptor withDepthAttachment(final GpuTextureView textureView) {
-      this.depthAttachment = new Attachment<OptionalDouble>(textureView, OptionalDouble.empty());
-      return this;
-   }
-
-   public RenderPassDescriptor withDepthAttachment(final GpuTextureView textureView, final OptionalDouble clearValue) {
-      this.depthAttachment = new Attachment<OptionalDouble>(textureView, clearValue);
-      return this;
-   }
-
-   public RenderPassDescriptor withRenderArea(final RenderPass.RenderArea renderArea) {
+      this.colorAttachments = Collections.unmodifiableList(new ArrayList(colorAttachments));
+      this.depthAttachment = depthAttachment;
       this.renderArea = renderArea;
-      return this;
+   }
+
+   public static Builder builder(final Supplier<String> label) {
+      return new Builder(label);
    }
 
    public Supplier<String> label() {
@@ -66,9 +40,79 @@ public class RenderPassDescriptor {
       return this.depthAttachment;
    }
 
+   public RenderPass.RenderArea renderArea() {
+      return this.renderArea;
+   }
+
    public static record Attachment<T>(GpuTextureView textureView, T clearValue) {
       public Attachment {
          super();
+      }
+   }
+
+   public static class Builder {
+      private final Supplier<String> label;
+      private final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments = new ArrayList();
+      private @Nullable Attachment<OptionalDouble> depthAttachment;
+      private RenderPass.@Nullable RenderArea renderArea;
+
+      private Builder(final Supplier<String> label) {
+         super();
+         this.label = label;
+      }
+
+      public Builder withColorAttachment(final GpuTextureView textureView) {
+         this.colorAttachments.add(new Attachment(textureView, Optional.empty()));
+         return this;
+      }
+
+      public Builder withColorAttachment(final GpuTextureView textureView, final Optional<Vector4fc> clearValue) {
+         this.colorAttachments.add(new Attachment(textureView, clearValue));
+         return this;
+      }
+
+      public Builder withUnusedColorAttachment() {
+         this.colorAttachments.add((Object)null);
+         return this;
+      }
+
+      public Builder withDepthAttachment(final GpuTextureView textureView) {
+         this.depthAttachment = new Attachment<OptionalDouble>(textureView, OptionalDouble.empty());
+         return this;
+      }
+
+      public Builder withDepthAttachment(final GpuTextureView textureView, final OptionalDouble clearValue) {
+         this.depthAttachment = new Attachment<OptionalDouble>(textureView, clearValue);
+         return this;
+      }
+
+      public Builder withRenderArea(final RenderPass.RenderArea renderArea) {
+         this.renderArea = renderArea;
+         return this;
+      }
+
+      public RenderPassDescriptor build() {
+         RenderPass.RenderArea renderArea = this.renderArea != null ? this.renderArea : defaultRenderArea(this.colorAttachments, this.depthAttachment);
+         return new RenderPassDescriptor(this.label, this.colorAttachments, this.depthAttachment, renderArea);
+      }
+
+      private static RenderPass.RenderArea defaultRenderArea(final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable Attachment<OptionalDouble> depthAttachment) {
+         int width = 0;
+         int height = 0;
+         if (!colorAttachments.isEmpty()) {
+            for(Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
+               if (colorAttachment != null) {
+                  GpuTextureView textureView = colorAttachment.textureView();
+                  width = textureView.getWidth(0);
+                  height = textureView.getHeight(0);
+               }
+            }
+         } else if (depthAttachment != null) {
+            width = depthAttachment.textureView().getWidth(0);
+            height = depthAttachment.textureView().getHeight(0);
+         }
+
+         return new RenderPass.RenderArea(0, 0, width, height);
       }
    }
 }

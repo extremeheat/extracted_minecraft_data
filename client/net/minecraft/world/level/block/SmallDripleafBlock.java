@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,14 +27,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterloggedBlock, BonemealableBlock {
-   public static final MapCodec<SmallDripleafBlock> CODEC = simpleCodec(SmallDripleafBlock::new);
    private static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<SmallDripleafBlock> codec() {
-      return CODEC;
-   }
 
    public SmallDripleafBlock(final BlockBehaviour.Properties properties) {
       super(properties);

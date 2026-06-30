@@ -4,7 +4,7 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class StateTestingPredicate implements BlockPredicate {
@@ -19,7 +19,7 @@ public abstract class StateTestingPredicate implements BlockPredicate {
       this.offset = offset;
    }
 
-   public final boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public final boolean test(final LevelAccessor level, final BlockPos origin) {
       return this.test(level.getBlockState(origin.offset(this.offset)));
    }
 

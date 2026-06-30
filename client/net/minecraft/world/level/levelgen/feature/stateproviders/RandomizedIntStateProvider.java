@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -50,7 +50,7 @@ public class RandomizedIntStateProvider extends BlockStateProvider {
       return BlockStateProviderType.RANDOMIZED_INT_STATE_PROVIDER;
    }
 
-   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+   public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       BlockState unmodifiedState = this.source.getState(level, random, pos);
       if (this.property == null || !unmodifiedState.hasProperty(this.property)) {
          IntegerProperty property = findProperty(unmodifiedState, this.propertyName);

@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,13 +21,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class WallTorchBlock extends TorchBlock {
-   public static final MapCodec<WallTorchBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PARTICLE_OPTIONS_FIELD.forGetter((b) -> b.flameParticle), propertiesCodec()).apply(i, WallTorchBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<WallTorchBlock> codec() {
-      return CODEC;
-   }
 
    protected WallTorchBlock(final SimpleParticleType flameParticle, final BlockBehaviour.Properties properties) {
       super(flameParticle, properties);

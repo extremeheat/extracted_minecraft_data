@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
@@ -50,16 +49,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContainer, SideChainPartBlock, SimpleWaterloggedBlock {
-   public static final MapCodec<ShelfBlock> CODEC = simpleCodec(ShelfBlock::new);
    public static final BooleanProperty POWERED;
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<SideChainPart> SIDE_CHAIN_PART;
    public static final BooleanProperty WATERLOGGED;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<ShelfBlock> codec() {
-      return CODEC;
-   }
 
    public ShelfBlock(final BlockBehaviour.Properties properties) {
       super(properties);

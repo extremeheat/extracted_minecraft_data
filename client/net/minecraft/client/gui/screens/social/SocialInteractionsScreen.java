@@ -224,7 +224,7 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    public boolean keyPressed(final KeyEvent event) {
-      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(event)) {
+      if (!this.isInputCaptured() && this.minecraft.options.keySocialInteractions.matches(event)) {
          this.onClose();
          return true;
       } else {

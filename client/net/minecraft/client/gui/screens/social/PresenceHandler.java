@@ -1,12 +1,13 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.mojang.authlib.yggdrasil.FriendsService;
-import com.mojang.authlib.yggdrasil.response.PresenceResponse;
-import com.mojang.authlib.yggdrasil.response.PresenceStatus;
+import com.mojang.authlib.services.FriendsService;
+import com.mojang.authlib.services.response.PresenceResponse;
+import com.mojang.authlib.services.response.PresenceStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.PresenceSharing;
@@ -58,7 +59,8 @@ public class PresenceHandler {
       PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
       if (socialManager.isFriendListEnabled() && !socialManager.getFriends().isEmpty()) {
          Duration sinceLastPresence = Duration.between(this.lastPresencePost, Instant.now());
-         Duration interval = (Duration)this.friendsService.getPresencePollInterval().orElse(PRESENCE_UPDATE_INTERVAL);
+         Optional<Duration> presencePollInterval = this.friendsService.getPresencePollInterval();
+         Duration interval = !presencePollInterval.isEmpty() && ((Duration)presencePollInterval.get()).isPositive() ? (Duration)presencePollInterval.get() : PRESENCE_UPDATE_INTERVAL;
          Duration maxInterval = interval.multipliedBy(5L);
          return this.updatePresence && sinceLastPresence.compareTo(interval) >= 0 || sinceLastPresence.compareTo(maxInterval) >= 0;
       } else {

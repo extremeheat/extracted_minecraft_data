@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -41,7 +39,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DoorBlock extends Block {
-   public static final MapCodec<DoorBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), propertiesCodec()).apply(i, DoorBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<DoubleBlockHalf> HALF;
    public static final EnumProperty<DoorHingeSide> HINGE;
@@ -49,10 +46,6 @@ public class DoorBlock extends Block {
    public static final BooleanProperty POWERED;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final BlockSetType type;
-
-   public MapCodec<? extends DoorBlock> codec() {
-      return CODEC;
-   }
 
    protected DoorBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
       super(properties.sound(type.soundType()));

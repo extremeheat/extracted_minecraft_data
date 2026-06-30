@@ -1,16 +1,17 @@
 package net.minecraft.world.level.levelgen;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
@@ -20,29 +21,26 @@ public final class RandomState {
    private final NoiseRouter router;
    private final Climate.Sampler sampler;
    private final SurfaceSystem surfaceSystem;
-   private final PositionalRandomFactory aquiferRandom;
-   private final PositionalRandomFactory oreRandom;
    private final Map<ResourceKey<NormalNoise.NoiseParameters>, NormalNoise> noiseIntances;
    private final Map<Identifier, PositionalRandomFactory> positionalRandoms;
+   private final List<SpawnTargetPoint.Wired> spawnTarget;
 
-   public static RandomState create(final HolderGetter.Provider holders, final ResourceKey<NoiseGeneratorSettings> noiseSettings, final long seed) {
-      return create((NoiseGeneratorSettings)holders.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(noiseSettings).value(), holders.lookupOrThrow(Registries.NOISE), seed);
+   public static RandomState create(final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed, final NoiseGeneratorSettings settings) {
+      return create(noises, seed, settings.useLegacyRandomSource(), settings.defaultBlock(), settings.seaLevel(), settings.noiseRouter(), settings.spawnTarget());
    }
 
-   public static RandomState create(final NoiseGeneratorSettings settings, final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed) {
-      return new RandomState(settings, noises, seed);
+   public static RandomState create(final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter noiseRouter, final List<SpawnTargetPoint> spawnTarget) {
+      return new RandomState(noises, seed, useLegacyRandom, defaultBlock, seaLevel, noiseRouter, spawnTarget);
    }
 
-   private RandomState(final NoiseGeneratorSettings settings, final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed) {
+   private RandomState(final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter noiseRouter, final List<SpawnTargetPoint> spawnTarget) {
       super();
-      this.random = settings.getRandomSource().newInstance(seed).forkPositional();
+      WorldgenRandom.Algorithm randomAlgorithm = useLegacyRandom ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
+      this.random = randomAlgorithm.newInstance(seed).forkPositional();
       this.noises = noises;
-      this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional();
-      this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional();
       this.noiseIntances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
-      this.surfaceSystem = new SurfaceSystem(this, settings.defaultBlock(), settings.seaLevel(), this.random);
-      final boolean useLegacyInit = settings.useLegacyRandomSource();
+      this.surfaceSystem = new SurfaceSystem(this, defaultBlock, seaLevel, this.random);
 
       class NoiseWiringHelper implements DensityFunction.Visitor {
          private final Map<DensityFunction, DensityFunction> wrapped;
@@ -73,7 +71,7 @@ public final class RandomState {
 
          private DensityFunction wrapNew(final DensityFunction function) {
             if (function instanceof BlendedNoise noise) {
-               RandomSource terrainRandom = useLegacyInit ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(Identifier.withDefaultNamespace("terrain"));
+               RandomSource terrainRandom = useLegacyRandom ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(Identifier.withDefaultNamespace("terrain"));
                return noise.withNewRandom(terrainRandom);
             } else {
                return (DensityFunction)(function instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(seed) : function);
@@ -85,7 +83,8 @@ public final class RandomState {
          }
       }
 
-      this.router = settings.noiseRouter().mapAll(new NoiseWiringHelper());
+      NoiseWiringHelper noiseWirer = new NoiseWiringHelper();
+      this.router = noiseRouter.mapAll(noiseWirer);
       DensityFunction.Visitor noiseFlattener = new DensityFunction.Visitor() {
          private final Map<DensityFunction, DensityFunction> wrapped;
 
@@ -109,6 +108,7 @@ public final class RandomState {
          }
       };
       this.sampler = new Climate.Sampler(this.router.temperature().mapAll(noiseFlattener), this.router.vegetation().mapAll(noiseFlattener), this.router.continents().mapAll(noiseFlattener), this.router.erosion().mapAll(noiseFlattener), this.router.depth().mapAll(noiseFlattener), this.router.ridges().mapAll(noiseFlattener));
+      this.spawnTarget = spawnTarget.stream().map((point) -> point.wire(noiseWirer, noiseFlattener)).toList();
    }
 
    public NormalNoise getOrCreateNoise(final ResourceKey<NormalNoise.NoiseParameters> noise) {
@@ -131,11 +131,7 @@ public final class RandomState {
       return this.surfaceSystem;
    }
 
-   public PositionalRandomFactory aquiferRandom() {
-      return this.aquiferRandom;
-   }
-
-   public PositionalRandomFactory oreRandom() {
-      return this.oreRandom;
+   public List<SpawnTargetPoint.Wired> spawnTarget() {
+      return this.spawnTarget;
    }
 }

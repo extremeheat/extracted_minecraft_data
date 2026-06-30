@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block.state;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -120,16 +117,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
    public Properties properties() {
       return this.properties;
-   }
-
-   protected abstract MapCodec<? extends Block> codec();
-
-   protected static <B extends Block> RecordCodecBuilder<B, Properties> propertiesCodec() {
-      return BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter(BlockBehaviour::properties);
-   }
-
-   public static <B extends Block> MapCodec<B> simpleCodec(final Function<Properties, B> constructor) {
-      return RecordCodecBuilder.mapCodec((i) -> i.group(propertiesCodec()).apply(i, constructor));
    }
 
    protected void updateIndirectNeighbourShapes(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
@@ -414,7 +401,6 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
-      public static final Codec<Properties> CODEC = MapCodec.unitCodec(() -> of());
       private Function<BlockState, MapColor> mapColor = (state) -> MapColor.NONE;
       private boolean hasCollision = true;
       private SoundType soundType;
@@ -1235,6 +1221,20 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean shouldSpawnTerrainParticles() {
          return this.spawnTerrainParticles;
+      }
+
+      public BlockState withPropertiesOf(final BlockState source) {
+         BlockState result = this.asState();
+
+         for(Property<?> property : source.getBlock().getStateDefinition().getProperties()) {
+            result = copyProperty(source, result, property);
+         }
+
+         return result;
+      }
+
+      public static <T extends Comparable<T>> BlockState copyProperty(final BlockState from, final BlockState to, final Property<T> property) {
+         return (BlockState)to.trySetValue(property, from.getValue(property));
       }
 
       public NoteBlockInstrument instrument() {

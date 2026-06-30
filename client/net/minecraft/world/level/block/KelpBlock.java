@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -19,13 +18,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockContainer {
-   public static final MapCodec<KelpBlock> CODEC = simpleCodec(KelpBlock::new);
    private static final double GROW_PER_TICK_PROBABILITY = 0.14;
    private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 9.0);
-
-   public MapCodec<KelpBlock> codec() {
-      return CODEC;
-   }
 
    protected KelpBlock(final BlockBehaviour.Properties properties) {
       super(properties, Direction.UP, SHAPE, true, 0.14);

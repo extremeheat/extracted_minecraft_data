@@ -31,15 +31,38 @@ import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDivisorDescriptionEXT;
 
-public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, long withDepthPipeline, long withoutDepthPipeline, long pipelineLayout, VulkanBindGroupLayout layout, long vertexModule, long fragmentModule) implements CompiledRenderPipeline, Destroyable {
-   public static final long INVALID_PIPELINE = 0L;
+public final class VulkanRenderPipeline implements CompiledRenderPipeline, Destroyable {
+   private final VulkanDevice device;
+   private final RenderPipeline info;
+   private final long withDepthPipeline;
+   private final long withoutDepthPipeline;
+   private final long pipelineLayout;
+   private final VulkanBindGroupLayout layout;
+   private final long vertexModule;
+   private final long fragmentModule;
+   private boolean closed;
 
-   public VulkanRenderPipeline {
+   public VulkanRenderPipeline(final VulkanDevice device, final RenderPipeline info, final long withDepthPipeline, final long withoutDepthPipeline, final long pipelineLayout, final VulkanBindGroupLayout layout, final long vertexModule, final long fragmentModule) {
       super();
+      this.info = info;
+      this.device = device;
+      this.withDepthPipeline = withDepthPipeline;
+      this.withoutDepthPipeline = withoutDepthPipeline;
+      this.pipelineLayout = pipelineLayout;
+      this.layout = layout;
+      this.vertexModule = vertexModule;
+      this.fragmentModule = fragmentModule;
    }
 
-   public boolean isValid() {
-      return this.withDepthPipeline != 0L;
+   public boolean isClosed() {
+      return this.closed;
+   }
+
+   public void close() {
+      if (!this.closed) {
+         this.closed = true;
+         this.device.createCommandEncoder().queueForDestroy(this);
+      }
    }
 
    public static VulkanRenderPipeline compile(final VulkanDevice device, final VulkanBindGroupLayout layout, final RenderPipeline pipeline, final long vertexModule, final long fragmentModule) {
@@ -164,7 +187,7 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
             withoutDepthPipeline = 0L;
          }
 
-         var38 = new VulkanRenderPipeline(pipeline, device, withDepthPipeline, withoutDepthPipeline, pipelineLayout, layout, vertexModule, fragmentModule);
+         var38 = new VulkanRenderPipeline(device, pipeline, withDepthPipeline, withoutDepthPipeline, pipelineLayout, layout, vertexModule, fragmentModule);
       } catch (Throwable var42) {
          if (stack != null) {
             try {
@@ -197,5 +220,37 @@ public record VulkanRenderPipeline(RenderPipeline info, VulkanDevice device, lon
 
    private static void applyBlendInformation(final VkPipelineColorBlendAttachmentState.Buffer blendAttachments, final BlendFunction blendFunction) {
       blendAttachments.blendEnable(true).colorBlendOp(VulkanConst.toVk(blendFunction.color().op())).alphaBlendOp(VulkanConst.toVk(blendFunction.alpha().op())).dstAlphaBlendFactor(VulkanConst.toVk(blendFunction.alpha().destFactor())).dstColorBlendFactor(VulkanConst.toVk(blendFunction.color().destFactor())).srcAlphaBlendFactor(VulkanConst.toVk(blendFunction.alpha().sourceFactor())).srcColorBlendFactor(VulkanConst.toVk(blendFunction.color().sourceFactor()));
+   }
+
+   public RenderPipeline info() {
+      return this.info;
+   }
+
+   public VulkanDevice device() {
+      return this.device;
+   }
+
+   public long withDepthPipeline() {
+      return this.withDepthPipeline;
+   }
+
+   public long withoutDepthPipeline() {
+      return this.withoutDepthPipeline;
+   }
+
+   public long pipelineLayout() {
+      return this.pipelineLayout;
+   }
+
+   public VulkanBindGroupLayout layout() {
+      return this.layout;
+   }
+
+   public long vertexModule() {
+      return this.vertexModule;
+   }
+
+   public long fragmentModule() {
+      return this.fragmentModule;
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.rendertype;
 
 import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
@@ -38,17 +39,21 @@ public class RenderType {
    }
 
    public boolean hasBlending() {
-      return this.state.pipeline.getColorTargetState().blendFunction().isPresent();
-   }
+      ColorTargetState[] colorTargetStates = this.state.pipeline.getColorTargetStates();
 
-   public OutputTarget outputTarget() {
-      return this.state.outputTarget;
+      for(ColorTargetState colorTargetState : colorTargetStates) {
+         if (colorTargetState != null && colorTargetState.blendFunction().isPresent()) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public PreparedRenderType prepare() {
       Minecraft minecraft = Minecraft.getInstance();
       List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
-      return new PreparedRenderType(this.state.pipeline, this.state.outputTarget, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
+      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.state.opaquePartsPipeline, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
    }
 
    private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {
@@ -90,5 +95,13 @@ public class RenderType {
 
    public boolean sortOnUpload() {
       return this.state.sortOnUpload;
+   }
+
+   public boolean bothSolidAndTranslucent() {
+      return this.state.opaquePartsPipeline != null && Minecraft.getInstance().gameRenderer.useImprovedTransparency() && RenderSystem.isRenderingLevel;
+   }
+
+   public boolean forceSolidModelPhase() {
+      return this.state.forceSolidModelPhase;
    }
 }

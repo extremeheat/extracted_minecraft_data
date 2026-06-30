@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
@@ -41,12 +41,12 @@ public class RuleBasedStateProvider extends BlockStateProvider {
       return BlockStateProviderType.RULE_BASED_STATE_PROVIDER;
    }
 
-   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+   public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       BlockState result = this.getOptionalState(level, random, pos);
       return result != null ? result : level.getBlockState(pos);
    }
 
-   public @Nullable BlockState getOptionalState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
+   public @Nullable BlockState getOptionalState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       for(Rule rule : this.rules) {
          if (rule.ifTrue().test(level, pos)) {
             return rule.then().getState(level, random, pos);

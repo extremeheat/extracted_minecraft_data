@@ -47,7 +47,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
@@ -282,6 +281,7 @@ public class Options {
    public final KeyMapping keyDebugFpsCharts;
    public final KeyMapping keyDebugNetworkCharts;
    public final KeyMapping keyDebugLightmapTexture;
+   public final KeyMapping keyDebugSwitchTranslucencyMode;
    public final KeyMapping[] debugKeys;
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
@@ -863,14 +863,8 @@ public class Options {
       });
       this.vignette = OptionInstance.createBoolean("options.vignette", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_VIGNETTE), true);
       this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (value) -> {
-         Minecraft minecraft = Minecraft.getInstance();
-         GpuWarnlistManager gpuWarnlistManager = minecraft.getGpuWarnlistManager();
-         if (!this.isApplyingGraphicsPreset && value && gpuWarnlistManager.willShowWarning()) {
-            gpuWarnlistManager.showWarning();
-         } else {
-            operateOnLevelExtractor(LevelExtractor::allChanged);
-            this.setGraphicsPresetToCustom();
-         }
+         operateOnLevelExtractor(LevelExtractor::allChanged);
+         this.setGraphicsPresetToCustom();
       });
       this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (var1) -> {
          operateOnLevelExtractor(LevelExtractor::allChanged);
@@ -1094,7 +1088,8 @@ public class Options {
       this.keyDebugFpsCharts = new KeyMapping("key.debug.fpsCharts", InputConstants.Type.KEYSYM, 50, KeyMapping.Category.DEBUG, 2);
       this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYSYM, 51, KeyMapping.Category.DEBUG, 3);
       this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYSYM, 52, KeyMapping.Category.DEBUG, 4);
-      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture};
+      this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYSYM, 88, KeyMapping.Category.DEBUG);
+      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode};
       this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";

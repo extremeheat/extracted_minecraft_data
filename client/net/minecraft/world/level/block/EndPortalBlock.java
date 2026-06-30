@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,12 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class EndPortalBlock extends BaseEntityBlock implements Portal {
-   public static final MapCodec<EndPortalBlock> CODEC = simpleCodec(EndPortalBlock::new);
    private static final VoxelShape SHAPE = Block.column(16.0, 6.0, 12.0);
-
-   public MapCodec<EndPortalBlock> codec() {
-      return CODEC;
-   }
 
    protected EndPortalBlock(final BlockBehaviour.Properties properties) {
       super(properties);

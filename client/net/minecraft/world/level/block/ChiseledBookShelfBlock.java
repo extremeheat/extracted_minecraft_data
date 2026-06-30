@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -35,7 +34,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class ChiseledBookShelfBlock extends BaseEntityBlock implements SelectableSlotContainer {
-   public static final MapCodec<ChiseledBookShelfBlock> CODEC = simpleCodec(ChiseledBookShelfBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty SLOT_0_OCCUPIED;
    public static final BooleanProperty SLOT_1_OCCUPIED;
@@ -46,10 +44,6 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    private static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final int BOOKS_PER_ROW = 3;
    public static final List<BooleanProperty> SLOT_OCCUPIED_PROPERTIES;
-
-   public MapCodec<ChiseledBookShelfBlock> codec() {
-      return CODEC;
-   }
 
    public int getRows() {
       return 2;

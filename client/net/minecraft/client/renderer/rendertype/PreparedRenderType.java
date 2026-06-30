@@ -1,52 +1,57 @@
 package net.minecraft.client.renderer.rendertype;
 
-import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
+import net.minecraft.client.renderer.oit.OitStage;
+import org.jspecify.annotations.Nullable;
 
-public record PreparedRenderType(RenderPipeline pipeline, OutputTarget outputTarget, GpuBufferSlice dynamicTransforms, ScissorState scissorState, List<Texture> textures) {
+public record PreparedRenderType(String name, RenderPipeline pipeline, @Nullable OitPipelineSet oitPipelineSet, @Nullable RenderPipeline opaquePartsPipeline, GpuBufferSlice dynamicTransforms, ScissorState scissorState, List<Texture> textures) {
    public PreparedRenderType {
       super();
    }
 
-   public void drawFromBuffer(final StagedVertexBuffer.ExecuteInfo info) {
-      this.drawFromBuffer(info.vertexBuffer(), info.indexBuffer(), info.indexType(), info.baseVertex(), info.firstIndex(), info.indexCount());
+   public void drawFromBuffer(final StagedVertexBuffer.ExecuteInfo info, final RenderPass renderPass) {
+      boolean useImprovedTransparency = Minecraft.getInstance().gameRenderer.useImprovedTransparency();
+      RenderPipeline renderPipeline = useImprovedTransparency && RenderSystem.isRenderingLevel && this.opaquePartsPipeline != null ? this.opaquePartsPipeline : this.pipeline;
+      this.draw(info, renderPass, renderPipeline);
    }
 
-   public void drawFromBuffer(final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final IndexType indexType, final int baseVertex, final int firstIndex, final int indexCount) {
-      RenderTarget renderTarget = this.outputTarget.getRenderTarget();
-      GpuTextureView colorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : renderTarget.getColorTextureView();
-      GpuTextureView depthTexture = renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null;
+   public void drawFromBufferOit(final StagedVertexBuffer.ExecuteInfo info, final OitStage stage, final RenderPass renderPass) {
+      if (this.oitPipelineSet == null) {
+         throw new IllegalStateException("Render type " + this.name + " does not have OIT pipelines set up.");
+      } else {
+         this.draw(info, renderPass, this.oitPipelineSet.getPipeline(stage));
+      }
+   }
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw with " + String.valueOf(this.pipeline), colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-         renderPass.setPipeline(this.pipeline);
-         if (this.scissorState.enabled()) {
-            renderPass.enableScissor(this.scissorState.x(), this.scissorState.y(), this.scissorState.width(), this.scissorState.height());
-         }
-
-         RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setUniform("DynamicTransforms", this.dynamicTransforms);
-         renderPass.setVertexBuffer(0, vertexBuffer.slice());
-
-         for(Texture texture : this.textures) {
-            renderPass.bindTexture(texture.name, texture.textureView, texture.sampler);
-         }
-
-         renderPass.setIndexBuffer(indexBuffer, indexType);
-         renderPass.drawIndexed(indexCount, 1, firstIndex, baseVertex, 0);
+   private void draw(final StagedVertexBuffer.ExecuteInfo info, final RenderPass renderPass, final RenderPipeline renderPipeline) {
+      renderPass.pushDebugGroup(() -> "Render Type " + this.name);
+      GpuBuffer indexBuffer = info.indexBuffer();
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+      if (this.scissorState.enabled()) {
+         renderPass.enableScissor(this.scissorState.x(), this.scissorState.y(), this.scissorState.width(), this.scissorState.height());
       }
 
+      renderPass.setUniform("DynamicTransforms", this.dynamicTransforms);
+      renderPass.setVertexBuffer(0, info.vertexBuffer().slice());
+
+      for(Texture texture : this.textures) {
+         renderPass.bindTexture(texture.name, texture.textureView, texture.sampler);
+      }
+
+      renderPass.setIndexBuffer(indexBuffer, info.indexType());
+      renderPass.drawIndexed(info.indexCount(), 1, info.firstIndex(), info.baseVertex(), 0);
+      renderPass.popDebugGroup();
    }
 
    public static record Texture(String name, GpuTextureView textureView, GpuSampler sampler) {

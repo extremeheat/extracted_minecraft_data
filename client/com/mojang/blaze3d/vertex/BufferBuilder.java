@@ -31,8 +31,9 @@ public class BufferBuilder implements VertexConsumer {
    private static final int UV0_SEMANTIC_ID = 2;
    private static final int UV1_SEMANTIC_ID = 3;
    private static final int UV2_SEMANTIC_ID = 4;
-   private static final int NORMAL_SEMANTIC_ID = 5;
-   private static final int LINE_WIDTH_SEMANTIC_ID = 6;
+   private static final int UV3_SEMANTIC_ID = 5;
+   private static final int NORMAL_SEMANTIC_ID = 6;
+   private static final int LINE_WIDTH_SEMANTIC_ID = 7;
    private static final String[] elementNames;
    private final @Nullable VertexFormatElement[] elements;
 
@@ -220,6 +221,16 @@ public class BufferBuilder implements VertexConsumer {
       return this.uvShort((short)u, (short)v, 4);
    }
 
+   public VertexConsumer setUv3(final float u, final float v) {
+      long pointer = this.beginElement(5);
+      if (pointer != -1L) {
+         MemoryUtil.memPutFloat(pointer, u);
+         MemoryUtil.memPutFloat(pointer + 4L, v);
+      }
+
+      return this;
+   }
+
    public VertexConsumer setLight(final int packedLightCoords) {
       long pointer = this.beginElement(4);
       if (pointer != -1L) {
@@ -240,7 +251,7 @@ public class BufferBuilder implements VertexConsumer {
    }
 
    public VertexConsumer setNormal(final float x, final float y, final float z) {
-      long pointer = this.beginElement(5);
+      long pointer = this.beginElement(6);
       if (pointer != -1L) {
          putNormals(pointer, x, y, z);
       }
@@ -249,7 +260,7 @@ public class BufferBuilder implements VertexConsumer {
    }
 
    public VertexConsumer setLineWidth(final float width) {
-      long pointer = this.beginElement(6);
+      long pointer = this.beginElement(7);
       if (pointer != -1L) {
          MemoryUtil.memPutFloat(pointer, width);
       }
@@ -298,6 +309,6 @@ public class BufferBuilder implements VertexConsumer {
 
    static {
       IS_LITTLE_ENDIAN = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN;
-      elementNames = new String[]{"Position", "Color", "UV0", "UV1", "UV2", "Normal", "LineWidth"};
+      elementNames = new String[]{"Position", "Color", "UV0", "UV1", "UV2", "UV3", "Normal", "LineWidth"};
    }
 }

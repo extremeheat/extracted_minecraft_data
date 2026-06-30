@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -41,15 +40,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<EnderChestBlock> CODEC = simpleCodec(EnderChestBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
    private static final Component CONTAINER_TITLE;
-
-   public MapCodec<EnderChestBlock> codec() {
-      return CODEC;
-   }
 
    protected EnderChestBlock(final BlockBehaviour.Properties properties) {
       super(properties, () -> BlockEntityTypes.ENDER_CHEST);

@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -56,10 +55,6 @@ public class Climate {
    public static Sampler empty() {
       DensityFunction zero = DensityFunctions.zero();
       return new Sampler(zero, zero, zero, zero, zero, zero);
-   }
-
-   public static BlockPos findSpawnPosition(final List<ParameterPoint> targetClimates, final Sampler sampler) {
-      return (new SpawnFinder(targetClimates, sampler)).result.location();
    }
 
    protected static final class RTree<T> {
@@ -345,7 +340,7 @@ public class Climate {
          super();
       }
 
-      private long fitness(final TargetPoint target) {
+      public long fitness(final TargetPoint target) {
          return Mth.square(this.temperature.distance(target.temperature)) + Mth.square(this.humidity.distance(target.humidity)) + Mth.square(this.continentalness.distance(target.continentalness)) + Mth.square(this.erosion.distance(target.erosion)) + Mth.square(this.depth.distance(target.depth)) + Mth.square(this.weirdness.distance(target.weirdness)) + Mth.square(this.offset);
       }
 
@@ -392,12 +387,6 @@ public class Climate {
          return above > 0L ? above : Math.max(below, 0L);
       }
 
-      public long distance(final Parameter target) {
-         long above = target.min() - this.max;
-         long below = this.min - target.max();
-         return above > 0L ? above : Math.max(below, 0L);
-      }
-
       public Parameter span(final @Nullable Parameter other) {
          return other == null ? this : new Parameter(Math.min(this.min, other.min()), Math.max(this.max, other.max()));
       }
@@ -414,60 +403,6 @@ public class Climate {
          int blockZ = QuartPos.toBlock(quartZ);
          DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
          return Climate.target((float)this.temperature.compute(context), (float)this.humidity.compute(context), (float)this.continentalness.compute(context), (float)this.erosion.compute(context), (float)this.depth.compute(context), (float)this.weirdness.compute(context));
-      }
-   }
-
-   private static class SpawnFinder {
-      private static final long MAX_RADIUS = 2048L;
-      private Result result;
-
-      private SpawnFinder(final List<ParameterPoint> targetClimates, final Sampler sampler) {
-         super();
-         this.result = getSpawnPositionAndFitness(targetClimates, sampler, 0, 0);
-         this.radialSearch(targetClimates, sampler, 2048.0F, 512.0F);
-         this.radialSearch(targetClimates, sampler, 512.0F, 32.0F);
-      }
-
-      private void radialSearch(final List<ParameterPoint> targetClimates, final Sampler sampler, final float maxRadius, final float radiusIncrement) {
-         float angle = 0.0F;
-         float radius = radiusIncrement;
-         BlockPos searchOrigin = this.result.location();
-
-         while(radius <= maxRadius) {
-            int x = searchOrigin.getX() + (int)(Math.sin((double)angle) * (double)radius);
-            int z = searchOrigin.getZ() + (int)(Math.cos((double)angle) * (double)radius);
-            Result candidate = getSpawnPositionAndFitness(targetClimates, sampler, x, z);
-            if (candidate.fitness() < this.result.fitness()) {
-               this.result = candidate;
-            }
-
-            angle += radiusIncrement / radius;
-            if ((double)angle > 6.283185307179586) {
-               angle = 0.0F;
-               radius += radiusIncrement;
-            }
-         }
-
-      }
-
-      private static Result getSpawnPositionAndFitness(final List<ParameterPoint> targetClimates, final Sampler sampler, final int blockX, final int blockZ) {
-         TargetPoint targetPoint = sampler.sample(QuartPos.fromBlock(blockX), 0, QuartPos.fromBlock(blockZ));
-         TargetPoint zeroDepthTargetPoint = new TargetPoint(targetPoint.temperature(), targetPoint.humidity(), targetPoint.continentalness(), targetPoint.erosion(), 0L, targetPoint.weirdness());
-         long minFitness = 9223372036854775807L;
-
-         for(ParameterPoint point : targetClimates) {
-            minFitness = Math.min(minFitness, point.fitness(zeroDepthTargetPoint));
-         }
-
-         long distanceBiasToWorldOrigin = Mth.square((long)blockX) + Mth.square((long)blockZ);
-         long fitnessWithDistance = minFitness * Mth.square(2048L) + distanceBiasToWorldOrigin;
-         return new Result(new BlockPos(blockX, 0, blockZ), fitnessWithDistance);
-      }
-
-      private static record Result(BlockPos location, long fitness) {
-         private Result {
-            super();
-         }
       }
    }
 

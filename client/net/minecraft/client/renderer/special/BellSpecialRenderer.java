@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.bell.BellModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BellRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.core.Direction;
 import org.joml.Vector3fc;
@@ -24,7 +23,7 @@ public class BellSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      submitNodeCollector.submitModel(this.model, STATE, poseStack, lightCoords, overlayCoords, -1, BellRenderer.BELL_TEXTURE, this.sprites, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, STATE, poseStack, lightCoords, overlayCoords, -1, BellRenderer.BELL_TEXTURE, this.sprites, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

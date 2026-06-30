@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 
 public class MatchingBiomesPredicate implements BlockPredicate {
@@ -18,7 +18,7 @@ public class MatchingBiomesPredicate implements BlockPredicate {
       this.biomes = biomes;
    }
 
-   public boolean test(final WorldGenLevel worldGenLevel, final BlockPos blockPos) {
+   public boolean test(final LevelAccessor worldGenLevel, final BlockPos blockPos) {
       return this.biomes.contains(worldGenLevel.getBiome(blockPos));
    }
 

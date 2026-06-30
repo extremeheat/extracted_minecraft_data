@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -10,12 +9,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class WitherWallSkullBlock extends WallSkullBlock {
-   public static final MapCodec<WitherWallSkullBlock> CODEC = simpleCodec(WitherWallSkullBlock::new);
-
-   public MapCodec<WitherWallSkullBlock> codec() {
-      return CODEC;
-   }
-
    protected WitherWallSkullBlock(final BlockBehaviour.Properties properties) {
       super(SkullBlock.Types.WITHER_SKELETON, properties);
    }

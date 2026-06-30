@@ -1,12 +1,9 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -33,14 +30,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerPotBlock extends Block {
-   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((b) -> b.potted), propertiesCodec()).apply(i, FlowerPotBlock::new));
    private static final Map<Block, Block> POTTED_BY_CONTENT = Maps.newHashMap();
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final Block potted;
-
-   public MapCodec<FlowerPotBlock> codec() {
-      return CODEC;
-   }
 
    public FlowerPotBlock(final Block potted, final BlockBehaviour.Properties properties) {
       super(properties);

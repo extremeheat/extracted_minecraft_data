@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -21,17 +20,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HeavyCoreBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<HeavyCoreBlock> CODEC = simpleCodec(HeavyCoreBlock::new);
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
 
    public HeavyCoreBlock(final BlockBehaviour.Properties properties) {
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, false));
-   }
-
-   public MapCodec<HeavyCoreBlock> codec() {
-      return CODEC;
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

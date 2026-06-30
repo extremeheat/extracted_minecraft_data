@@ -105,7 +105,7 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    }
 
    private void showResetWorldScreen(final RealmsServer server) {
-      RealmCreationTask realmCreationTask = new RealmCreationTask(server.id, this.nameBox.getValue(), this.descriptionBox.getValue());
+      RealmCreationTask realmCreationTask = new RealmCreationTask(server.id, this.nameBox.getValue().trim(), this.descriptionBox.getValue().trim());
       RealmsResetWorldScreen resetWorldScreen = RealmsResetWorldScreen.forNewRealm(this, server, realmCreationTask, () -> this.minecraft.execute(() -> {
             RealmsMainScreen.refreshServerList();
             this.minecraft.gui.setScreen(this.lastScreen);

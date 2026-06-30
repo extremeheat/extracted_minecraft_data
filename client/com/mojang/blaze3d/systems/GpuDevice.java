@@ -20,19 +20,19 @@ import org.jspecify.annotations.Nullable;
 
 public class GpuDevice {
    private final GpuDeviceBackend backend;
-   private final Runnable criticalShaderLoader;
    private final @Nullable TracyGpuProfiler profiler;
+   private final CommandEncoder encoder;
 
-   public GpuDevice(final GpuDeviceBackend backend, final Runnable criticalShaderLoader) {
+   public GpuDevice(final GpuDeviceBackend backend) {
       super();
       this.backend = backend;
-      this.criticalShaderLoader = criticalShaderLoader;
       if (TracyClient.isAvailable()) {
          this.profiler = new TracyGpuProfiler(this);
       } else {
          this.profiler = null;
       }
 
+      this.encoder = new CommandEncoder(this.profiler, backend, backend.createCommandEncoder());
    }
 
    public GpuSurface createSurface(final long windowHandle) {
@@ -40,7 +40,7 @@ public class GpuDevice {
    }
 
    public CommandEncoder createCommandEncoder() {
-      return new CommandEncoder(this.profiler, this.backend, this.backend.createCommandEncoder());
+      return this.encoder;
    }
 
    public GpuSampler createSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {
@@ -136,20 +136,8 @@ public class GpuDevice {
       return this.backend.isDebuggingEnabled();
    }
 
-   public CompiledRenderPipeline precompilePipeline(final RenderPipeline pipeline) {
-      return this.precompilePipeline(pipeline, (ShaderSource)null);
-   }
-
-   public CompiledRenderPipeline precompilePipeline(final RenderPipeline pipeline, final @Nullable ShaderSource shaderSource) {
-      return this.backend.precompilePipeline(pipeline, shaderSource);
-   }
-
-   public void clearPipelineCache() {
-      this.backend.clearPipelineCache();
-   }
-
-   public void loadCriticalShaders() {
-      this.criticalShaderLoader.run();
+   public @Nullable CompiledRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
+      return this.backend.compilePipeline(pipeline, shaderSource);
    }
 
    public void close() {

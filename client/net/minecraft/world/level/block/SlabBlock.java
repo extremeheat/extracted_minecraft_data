@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -29,15 +28,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SlabBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<SlabBlock> CODEC = simpleCodec(SlabBlock::new);
    public static final EnumProperty<SlabType> TYPE;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE_BOTTOM;
    private static final VoxelShape SHAPE_TOP;
-
-   public MapCodec<? extends SlabBlock> codec() {
-      return CODEC;
-   }
 
    public SlabBlock(final BlockBehaviour.Properties properties) {
       super(properties);

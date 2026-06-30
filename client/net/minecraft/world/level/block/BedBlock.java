@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,15 +47,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.Nullable;
 
 public class BedBlock extends HorizontalDirectionalBlock {
-   public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(i, BedBlock::new));
    public static final EnumProperty<BedPart> PART;
    public static final BooleanProperty OCCUPIED;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final DyeColor color;
-
-   public MapCodec<BedBlock> codec() {
-      return CODEC;
-   }
 
    public BedBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
       super(properties);

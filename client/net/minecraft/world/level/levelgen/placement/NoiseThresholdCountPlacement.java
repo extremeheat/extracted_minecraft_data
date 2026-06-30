@@ -7,29 +7,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
-public class NoiseThresholdCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((c) -> c.noiseLevel), Codec.INT.fieldOf("below_noise").forGetter((c) -> c.belowNoise), Codec.INT.fieldOf("above_noise").forGetter((c) -> c.aboveNoise)).apply(i, NoiseThresholdCountPlacement::new));
-   private final double noiseLevel;
-   private final int belowNoise;
-   private final int aboveNoise;
+public record NoiseThresholdCountPlacement(double noiseLevel, int belowNoise, int aboveNoise) implements RepeatingPlacement {
+   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.DOUBLE.fieldOf("noise_level").forGetter(NoiseThresholdCountPlacement::noiseLevel), Codec.INT.fieldOf("below_noise").forGetter(NoiseThresholdCountPlacement::belowNoise), Codec.INT.fieldOf("above_noise").forGetter(NoiseThresholdCountPlacement::aboveNoise)).apply(i, NoiseThresholdCountPlacement::new));
 
-   private NoiseThresholdCountPlacement(final double noiseLevel, final int belowNoise, final int aboveNoise) {
+   public NoiseThresholdCountPlacement {
       super();
-      this.noiseLevel = noiseLevel;
-      this.belowNoise = belowNoise;
-      this.aboveNoise = aboveNoise;
    }
 
    public static NoiseThresholdCountPlacement of(final double noiseLevel, final int belowNoise, final int aboveNoise) {
       return new NoiseThresholdCountPlacement(noiseLevel, belowNoise, aboveNoise);
    }
 
-   protected int count(final RandomSource random, final BlockPos origin) {
+   public int count(final RandomSource random, final BlockPos origin) {
       double flowerNoise = Biome.BIOME_INFO_NOISE.getValue((double)origin.getX() / 200.0, (double)origin.getZ() / 200.0, false);
       return flowerNoise < this.noiseLevel ? this.belowNoise : this.aboveNoise;
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.NOISE_THRESHOLD_COUNT;
+   public MapCodec<NoiseThresholdCountPlacement> codec() {
+      return CODEC;
    }
 }

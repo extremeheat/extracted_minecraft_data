@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,8 +17,6 @@ public abstract class RodBlock extends DirectionalBlock {
    protected RodBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends RodBlock> codec();
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return (VoxelShape)SHAPES.get(((Direction)state.getValue(FACING)).getAxis());

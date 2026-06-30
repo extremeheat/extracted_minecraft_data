@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -26,7 +25,7 @@ public class HorseMarkingLayer extends RenderLayer<HorseRenderState, HorseModel>
       HorseMarkingTextures variant = (HorseMarkingTextures)LOCATION_BY_MARKINGS.get(state.markings);
       Identifier texture = state.isBaby ? variant.baby : variant.adult;
       if (texture != INVISIBLE_TEXTURE && !state.isInvisible) {
-         submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, (RenderType)RenderTypes.entityTranslucent(texture), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, (RenderType)RenderTypes.entityTranslucent(texture), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), state.outlineColor);
       }
    }
 

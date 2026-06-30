@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -11,12 +10,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class NetherrackBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<NetherrackBlock> CODEC = simpleCodec(NetherrackBlock::new);
-
-   public MapCodec<NetherrackBlock> codec() {
-      return CODEC;
-   }
-
    public NetherrackBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

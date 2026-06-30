@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,16 +24,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<AmethystClusterBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("height").forGetter((b) -> b.height), Codec.FLOAT.fieldOf("width").forGetter((b) -> b.width), propertiesCodec()).apply(i, AmethystClusterBlock::new));
    public static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
    private final float height;
    private final float width;
    private final Map<Direction, VoxelShape> shapes;
-
-   public MapCodec<AmethystClusterBlock> codec() {
-      return CODEC;
-   }
 
    public AmethystClusterBlock(final float height, final float width, final BlockBehaviour.Properties props) {
       super(props);

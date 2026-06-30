@@ -10,8 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record BlueIceFeature() implements Feature {
-   public static final BlueIceFeature INSTANCE = new BlueIceFeature();
-   public static final MapCodec<BlueIceFeature> CODEC;
+   public static final MapCodec<BlueIceFeature> CODEC = MapCodec.unit(BlueIceFeature::new);
 
    public BlueIceFeature() {
       super();
@@ -66,9 +65,5 @@ public record BlueIceFeature() implements Feature {
             return true;
          }
       }
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

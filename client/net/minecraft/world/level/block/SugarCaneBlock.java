@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -20,13 +19,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SugarCaneBlock extends Block {
-   public static final MapCodec<SugarCaneBlock> CODEC = simpleCodec(SugarCaneBlock::new);
    public static final IntegerProperty AGE;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<SugarCaneBlock> codec() {
-      return CODEC;
-   }
 
    protected SugarCaneBlock(final BlockBehaviour.Properties properties) {
       super(properties);

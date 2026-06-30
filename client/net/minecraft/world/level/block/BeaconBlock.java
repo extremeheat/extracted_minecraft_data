@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
@@ -18,12 +17,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
-   public static final MapCodec<BeaconBlock> CODEC = simpleCodec(BeaconBlock::new);
-
-   public MapCodec<BeaconBlock> codec() {
-      return CODEC;
-   }
-
    public BeaconBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

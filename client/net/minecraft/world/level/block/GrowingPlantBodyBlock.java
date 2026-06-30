@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,8 +22,6 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    protected GrowingPlantBodyBlock(final BlockBehaviour.Properties properties, final Direction growthDirection, final VoxelShape shape, final boolean scheduleFluidTicks) {
       super(properties, growthDirection, shape, scheduleFluidTicks);
    }
-
-   protected abstract MapCodec<? extends GrowingPlantBodyBlock> codec();
 
    protected BlockState updateHeadAfterConvertedFromBody(final BlockState bodyState, final BlockState headState) {
       return headState;

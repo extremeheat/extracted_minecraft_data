@@ -6,19 +6,17 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import net.minecraft.client.CloudStatus;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.oit.OitRenderPassProvider;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -147,7 +145,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       return (cellData >> 0 & 1L) != 0L;
    }
 
-   public void render(final int color, final CloudStatus cloudStatus, final float bottomY, final int range, final Vec3 cameraPosition, final long gameTime, final float partialTicks) {
+   public void prepare(final int color, final CloudStatus cloudStatus, final float bottomY, final int range, final Vec3 cameraPosition, final long gameTime, final float partialTicks) {
       if (this.texture != null) {
          int radiusBlocks = range * 16;
          int radiusCells = Mth.ceil((float)radiusBlocks / 12.0F);
@@ -183,7 +181,6 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          float xInCell = (float)(cloudX - (double)((float)cellX * 12.0F));
          float zInCell = (float)(cloudZ - (double)((float)cellZ * 12.0F));
          boolean fancyClouds = cloudStatus == CloudStatus.FANCY;
-         RenderPipeline renderPipeline = fancyClouds ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
          if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || relativeCameraPos != this.prevRelativeCameraPos || cloudStatus != this.prevCloudStatus) {
             this.needsRebuild = false;
             this.prevCellX = cellX;
@@ -199,37 +196,48 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          }
 
          if (this.quadCount != 0) {
+            RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
+            indices.requestIndexCount(6 * this.quadCount);
+
             try (GpuBufferSlice.MappedView view = this.ubo.currentBuffer().map(false, true)) {
                Std140Builder.intoBuffer(view.data()).putVec4(ARGB.vector4fFromARGB32(color)).putVec3(-xInCell, relativeBottomY, -zInCell).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
-            RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-            RenderTarget cloudTarget = Minecraft.getInstance().levelRenderer.cloudsTarget();
-            RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
-            GpuBuffer indexBuffer = indices.getBuffer(6 * this.quadCount);
-            GpuTextureView colorTexture;
-            GpuTextureView depthTexture;
-            if (cloudTarget != null) {
-               colorTexture = cloudTarget.getColorTextureView();
-               depthTexture = cloudTarget.getDepthTextureView();
-            } else {
-               colorTexture = mainRenderTarget.getColorTextureView();
-               depthTexture = mainRenderTarget.getDepthTextureView();
-            }
-
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-               renderPass.setPipeline(renderPipeline);
-               RenderSystem.bindDefaultUniforms(renderPass);
-               renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-               renderPass.setIndexBuffer(indexBuffer, indices.type());
-               renderPass.setUniform("CloudInfo", this.ubo.currentBuffer());
-               renderPass.setUniform("CloudFaces", this.utb.currentBuffer());
-               renderPass.drawIndexed(6 * this.quadCount, 1, 0, 0, 0);
-            }
-
          }
       }
+   }
+
+   public void render(final CloudStatus cloudStatus, final RenderPass renderPass) {
+      if (this.texture != null && this.quadCount != 0) {
+         RenderPipeline renderPipeline = cloudStatus == CloudStatus.FANCY ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
+         renderPass.pushDebugGroup(() -> "Clouds");
+         this.render(renderPass, renderPipeline);
+         renderPass.popDebugGroup();
+      }
+   }
+
+   public void renderOit(final CloudStatus cloudStatus, final OitStage stage, final OitRenderPassProvider.Parameters params) {
+      if (this.texture != null && this.quadCount != 0) {
+         RenderPipeline renderPipeline = (cloudStatus == CloudStatus.FANCY ? RenderPipelines.OIT_CLOUDS : RenderPipelines.OIT_FLAT_CLOUDS).getPipeline(stage);
+
+         try (RenderPass renderPass = OitRenderPassProvider.createRenderPass(stage, () -> "Clouds", params)) {
+            this.render(renderPass, renderPipeline);
+         }
+
+      }
+   }
+
+   private void render(final RenderPass renderPass, final RenderPipeline renderPipeline) {
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
+      RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
+      GpuBuffer indexBuffer = indices.getBuffer();
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+      renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+      renderPass.setIndexBuffer(indexBuffer, indices.type());
+      renderPass.setVertexBuffer(0, (GpuBufferSlice)null);
+      renderPass.setUniform("CloudInfo", this.ubo.currentBuffer());
+      renderPass.setUniform("CloudFaces", this.utb.currentBuffer());
+      renderPass.drawIndexed(6 * this.quadCount, 1, 0, 0, 0);
    }
 
    private void buildMesh(final RelativeCameraPos relativePos, final ByteBuffer faceBuffer, final int centerCellX, final int centerCellZ, final boolean extrude, final int radiusCells) {

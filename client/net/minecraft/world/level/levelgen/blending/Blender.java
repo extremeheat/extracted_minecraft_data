@@ -295,8 +295,10 @@ public class Blender {
 
    }
 
-   public static void addAroundOldChunksCarvingMaskFilter(final WorldGenLevel region, final ProtoChunk chunk) {
-      if (!SharedConstants.DEBUG_DISABLE_BLENDING) {
+   public static CarvingMask.@Nullable Filter createAroundOldChunksCarvingMaskFilter(final WorldGenLevel region, final ProtoChunk chunk) {
+      if (SharedConstants.DEBUG_DISABLE_BLENDING) {
+         return null;
+      } else {
          ChunkPos chunkPos = chunk.getPos();
          ImmutableMap.Builder<CompositeDirection.Direction8, BlendingData> builder = ImmutableMap.builder();
 
@@ -310,15 +312,16 @@ public class Blender {
          }
 
          ImmutableMap<CompositeDirection.Direction8, BlendingData> oldSidesBlendingData = builder.build();
-         if (chunk.isOldNoiseGeneration() || !oldSidesBlendingData.isEmpty()) {
+         if (!chunk.isOldNoiseGeneration() && oldSidesBlendingData.isEmpty()) {
+            return null;
+         } else {
             DistanceGetter distanceGetter = makeOldChunkDistanceGetter(chunk.getBlendingData(), oldSidesBlendingData);
-            CarvingMask.Mask filter = (x, y, z) -> {
+            return (x, y, z) -> {
                double shiftedX = (double)x + 0.5 + SHIFT_NOISE.getValue((double)x, (double)y, (double)z) * 4.0;
                double shiftedY = (double)y + 0.5 + SHIFT_NOISE.getValue((double)y, (double)z, (double)x) * 4.0;
                double shiftedZ = (double)z + 0.5 + SHIFT_NOISE.getValue((double)z, (double)x, (double)y) * 4.0;
                return distanceGetter.getDistance(shiftedX, shiftedY, shiftedZ) < 4.0;
             };
-            chunk.getOrCreateCarvingMask().setAdditionalMask(filter);
          }
       }
    }

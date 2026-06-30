@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -16,12 +15,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class SpawnerBlock extends BaseEntityBlock {
-   public static final MapCodec<SpawnerBlock> CODEC = simpleCodec(SpawnerBlock::new);
-
-   public MapCodec<SpawnerBlock> codec() {
-      return CODEC;
-   }
-
    protected SpawnerBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

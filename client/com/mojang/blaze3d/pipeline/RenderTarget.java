@@ -18,18 +18,18 @@ public abstract class RenderTarget {
    public int width;
    public int height;
    protected final String label;
-   public final boolean useDepth;
-   protected final GpuFormat format;
+   protected final @Nullable GpuFormat colorFormat;
+   protected final @Nullable GpuFormat depthFormat;
    protected @Nullable GpuTexture colorTexture;
    protected @Nullable GpuTextureView colorTextureView;
    protected @Nullable GpuTexture depthTexture;
    protected @Nullable GpuTextureView depthTextureView;
 
-   public RenderTarget(final @Nullable String label, final boolean useDepth, final GpuFormat format) {
+   public RenderTarget(final @Nullable String label, final @Nullable GpuFormat colorFormat, final @Nullable GpuFormat depthFormat) {
       super();
       this.label = label == null ? "FBO " + UNNAMED_RENDER_TARGETS++ : label;
-      this.useDepth = useDepth;
-      this.format = format;
+      this.colorFormat = colorFormat;
+      this.depthFormat = depthFormat;
    }
 
    public void resize(final int width, final int height) {
@@ -80,13 +80,16 @@ public abstract class RenderTarget {
       if (width > 0 && width <= maxTextureSize && height > 0 && height <= maxTextureSize) {
          this.width = width;
          this.height = height;
-         if (this.useDepth) {
-            this.depthTexture = device.createTexture((Supplier)(() -> this.label + " / Depth"), 15, GpuFormat.D32_FLOAT, width, height, 1, 1);
+         if (this.depthFormat != null) {
+            this.depthTexture = device.createTexture((Supplier)(() -> this.label + " / Depth"), 15, this.depthFormat, width, height, 1, 1);
             this.depthTextureView = device.createTextureView(this.depthTexture);
          }
 
-         this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, this.format, width, height, 1, 1);
-         this.colorTextureView = device.createTextureView(this.colorTexture);
+         if (this.colorFormat != null) {
+            this.colorTexture = device.createTexture((Supplier)(() -> this.label + " / Color"), 15, this.colorFormat, width, height, 1, 1);
+            this.colorTextureView = device.createTextureView(this.colorTexture);
+         }
+
       } else {
          throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + maxTextureSize + ")");
       }
@@ -96,7 +99,7 @@ public abstract class RenderTarget {
       RenderSystem.assertOnRenderThread();
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, Optional.empty(), outputDepth, OptionalDouble.empty())) {
-         renderPass.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
          renderPass.draw(3, 1, 0, 0);
@@ -118,5 +121,9 @@ public abstract class RenderTarget {
 
    public @Nullable GpuTextureView getDepthTextureView() {
       return this.depthTextureView;
+   }
+
+   public boolean hasDepth() {
+      return this.depthFormat != null;
    }
 }

@@ -6,8 +6,6 @@ import net.minecraft.core.Registry;
 public interface FeatureTypes {
    static MapCodec<? extends Feature> bootstrap(final Registry<MapCodec<? extends Feature>> registry) {
       Registry.register(registry, (String)"bamboo", BambooFeature.CODEC);
-      Registry.register(registry, (String)"basalt_columns", BasaltColumnsFeature.CODEC);
-      Registry.register(registry, (String)"basalt_pillar", BasaltPillarFeature.CODEC);
       Registry.register(registry, (String)"block_blob", BlockBlobFeature.CODEC);
       Registry.register(registry, (String)"block_column", BlockColumnFeature.CODEC);
       Registry.register(registry, (String)"block_pile", BlockPileFeature.CODEC);
@@ -30,7 +28,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"fossil", FossilFeature.CODEC);
       Registry.register(registry, (String)"freeze_top_layer", SnowAndFreezeFeature.CODEC);
       Registry.register(registry, (String)"geode", GeodeFeature.CODEC);
-      Registry.register(registry, (String)"glowstone_blob", GlowstoneFeature.CODEC);
       Registry.register(registry, (String)"huge_brown_mushroom", HugeBrownMushroomFeature.CODEC);
       Registry.register(registry, (String)"huge_fungus", HugeFungusFeature.CODEC);
       Registry.register(registry, (String)"huge_red_mushroom", HugeRedMushroomFeature.CODEC);
@@ -44,7 +41,10 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"netherrack_replace_blobs", ReplaceBlobsFeature.CODEC);
       Registry.register(registry, (String)"no_op", NoOpFeature.CODEC);
       Registry.register(registry, (String)"ore", OreFeature.CODEC);
+      Registry.register(registry, (String)"overlay", OverlayFeature.CODEC);
+      Registry.register(registry, (String)"projected_random_patchy_square", ProjectedRandomPatchySquare.CODEC);
       Registry.register(registry, (String)"random_boolean_selector", RandomBooleanSelectorFeature.CODEC);
+      Registry.register(registry, (String)"random_neighbor_spread", RandomNeighborSpreadFeature.CODEC);
       Registry.register(registry, (String)"random_selector", RandomSelectorFeature.CODEC);
       Registry.register(registry, (String)"replace_single_block", ReplaceBlockFeature.CODEC);
       Registry.register(registry, (String)"root_system", RootSystemFeature.CODEC);
@@ -55,10 +55,12 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"sequence", SequenceFeature.CODEC);
       Registry.register(registry, (String)"simple_block", SimpleBlockFeature.CODEC);
       Registry.register(registry, (String)"simple_random_selector", SimpleRandomSelectorFeature.CODEC);
+      Registry.register(registry, (String)"single_block_pillar", SingleBlockPillarFeature.CODEC);
       Registry.register(registry, (String)"speleothem", SpeleothemFeature.CODEC);
       Registry.register(registry, (String)"speleothem_cluster", SpeleothemClusterFeature.CODEC);
       Registry.register(registry, (String)"spike", SpikeFeature.CODEC);
       Registry.register(registry, (String)"spring_feature", SpringFeature.CODEC);
+      Registry.register(registry, (String)"stepped_column_cluster", SteppedColumnClusterFeature.CODEC);
       Registry.register(registry, (String)"template", TemplateFeature.CODEC);
       Registry.register(registry, (String)"tree", TreeFeature.CODEC);
       Registry.register(registry, (String)"twisting_vines", TwistingVinesFeature.CODEC);

@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -52,25 +53,53 @@ import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public final SimpleFeatureRenderPhase solid = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase shadows = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase nameTags = new SimpleFeatureRenderPhase();
-   public final TranslucentFeatureRenderPhase seeThroughNameTags = new TranslucentFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase texts = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase shapeOutlines = new SimpleFeatureRenderPhase();
-   public final TranslucentFeatureRenderPhase translucentBlocksAndItems = new TranslucentFeatureRenderPhase();
-   public final TranslucentFeatureRenderPhase translucentModels = new TranslucentFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase translucentCustomGeometry = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase gizmos = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase breakingOverlay = new SimpleFeatureRenderPhase();
    public final SimpleFeatureRenderPhase waterMask = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase afterTerrain = new SimpleFeatureRenderPhase();
-   public final SimpleFeatureRenderPhase alwaysOnTop = new SimpleFeatureRenderPhase();
    public final SimpleFeatureRenderPhase outline = new SimpleFeatureRenderPhase();
+   public final SimpleFeatureRenderPhase alwaysOnTopGizmos = new SimpleFeatureRenderPhase();
+   public final SimpleFeatureRenderPhase oitTranslucent = new SimpleFeatureRenderPhase();
+   public final SimpleFeatureRenderPhase shadows;
+   public final SimpleFeatureRenderPhase nameTags;
+   public final FeatureRenderPhase<? super TranslucentSubmit> seeThroughNameTags;
+   public final SimpleFeatureRenderPhase texts;
+   public final SimpleFeatureRenderPhase shapeOutlines;
+   public final FeatureRenderPhase<? super TranslucentSubmit> translucentBlocksAndItems;
+   public final FeatureRenderPhase<? super TranslucentSubmit> translucentModels;
+   public final SimpleFeatureRenderPhase translucentCustomGeometry;
+   public final SimpleFeatureRenderPhase breakingOverlay;
+   public final SimpleFeatureRenderPhase afterTerrain;
+   public final SimpleFeatureRenderPhase translucentGizmos;
    private final List<FeatureRenderPhase<?>> allPhases;
 
-   public SubmitNodeCollection() {
+   public SubmitNodeCollection(final boolean useImprovedTransparency) {
       super();
-      this.allPhases = List.of(this.solid, this.shadows, this.nameTags, this.seeThroughNameTags, this.texts, this.shapeOutlines, this.translucentBlocksAndItems, this.translucentModels, this.translucentCustomGeometry, this.gizmos, this.breakingOverlay, this.waterMask, this.afterTerrain, this.alwaysOnTop, this.outline);
+      if (useImprovedTransparency) {
+         this.shadows = this.oitTranslucent;
+         this.nameTags = this.oitTranslucent;
+         this.seeThroughNameTags = this.oitTranslucent;
+         this.texts = this.oitTranslucent;
+         this.shapeOutlines = this.oitTranslucent;
+         this.translucentBlocksAndItems = this.oitTranslucent;
+         this.translucentModels = this.oitTranslucent;
+         this.translucentCustomGeometry = this.oitTranslucent;
+         this.breakingOverlay = this.oitTranslucent;
+         this.afterTerrain = this.oitTranslucent;
+         this.translucentGizmos = this.oitTranslucent;
+         this.allPhases = List.of(this.solid, this.waterMask, this.outline, this.alwaysOnTopGizmos, this.oitTranslucent);
+      } else {
+         this.shadows = new SimpleFeatureRenderPhase();
+         this.nameTags = new SimpleFeatureRenderPhase();
+         this.seeThroughNameTags = new TranslucentFeatureRenderPhase();
+         this.texts = new SimpleFeatureRenderPhase();
+         this.shapeOutlines = new SimpleFeatureRenderPhase();
+         this.translucentBlocksAndItems = new TranslucentFeatureRenderPhase();
+         this.translucentModels = new TranslucentFeatureRenderPhase();
+         this.translucentCustomGeometry = new SimpleFeatureRenderPhase();
+         this.breakingOverlay = new SimpleFeatureRenderPhase();
+         this.afterTerrain = new SimpleFeatureRenderPhase();
+         this.translucentGizmos = new SimpleFeatureRenderPhase();
+         this.allPhases = List.of(this.solid, this.shadows, this.nameTags, this.seeThroughNameTags, this.texts, this.shapeOutlines, this.translucentBlocksAndItems, this.translucentModels, this.translucentCustomGeometry, this.translucentGizmos, this.breakingOverlay, this.waterMask, this.afterTerrain, this.alwaysOnTopGizmos, this.outline);
+      }
+
    }
 
    public void submitShadow(final PoseStack poseStack, final float radius, final List<EntityRenderState.ShadowPiece> pieces) {
@@ -89,18 +118,37 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
          float x = (float)(-minecraft.font.width((FormattedText)name)) / 2.0F;
          int backgroundColor = ARGB.color(minecraft.gameRenderer.gameRenderState().optionsRenderState.getBackgroundOpacity(0.25F), -16777216);
          if (seeThrough) {
-            this.nameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, LightCoordsUtil.lightCoordsWithEmission(lightCoords, 2), -1, 0, Font.DisplayMode.NORMAL));
-            this.seeThroughNameTags.submit((TranslucentSubmit)(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, lightCoords, -2130706433, backgroundColor, Font.DisplayMode.SEE_THROUGH)));
+            this.submitNameTagPart(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, LightCoordsUtil.lightCoordsWithEmission(lightCoords, 2), -1, 0, Font.DisplayMode.NORMAL));
+            this.seeThroughNameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, lightCoords, -2130706433, backgroundColor, Font.DisplayMode.SEE_THROUGH));
          } else {
-            this.nameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, lightCoords, -2130706433, backgroundColor, Font.DisplayMode.NORMAL));
+            this.submitNameTagPart(new NameTagFeatureRenderer.Submit(pose, x, (float)offset, name, lightCoords, -2130706433, backgroundColor, Font.DisplayMode.NORMAL));
          }
 
          poseStack.popPose();
       }
    }
 
+   private void submitNameTagPart(final NameTagFeatureRenderer.Submit nameTag) {
+      if (shouldRenderTextAsSolid(nameTag.color(), nameTag.backgroundColor())) {
+         this.solid.submit(nameTag);
+      } else {
+         this.nameTags.submit(nameTag);
+      }
+
+   }
+
+   private static boolean shouldRenderTextAsSolid(final int color, final int backgroundColor) {
+      return ARGB.alpha(color) == 255 && ARGB.alpha(backgroundColor) == 0 && RenderSystem.isRenderingLevel;
+   }
+
    public void submitText(final PoseStack poseStack, final float x, final float y, final FormattedCharSequence string, final boolean dropShadow, final Font.DisplayMode displayMode, final int lightCoords, final int color, final int backgroundColor, final int outlineColor) {
-      this.texts.submit(new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), x, y, string, dropShadow, displayMode, lightCoords, color, backgroundColor, outlineColor));
+      TextFeatureRenderer.Submit submit = new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), x, y, string, dropShadow, displayMode, lightCoords, color, backgroundColor, outlineColor);
+      if (displayMode != Font.DisplayMode.SEE_THROUGH && shouldRenderTextAsSolid(color, backgroundColor)) {
+         this.solid.submit(submit);
+      } else {
+         this.texts.submit(submit);
+      }
+
    }
 
    public void submitFlame(final PoseStack poseStack, final EntityRenderState renderState, final Quaternionf rotation) {
@@ -111,16 +159,22 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.solid.submit(new LeashFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), leashState));
    }
 
-   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable UvMapping uvMapping, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+   public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final @Nullable UvMapping uvMapping, final int outlineColor) {
       PoseStack.Pose pose = poseStack.last().copy();
       if (!renderType.isOutline()) {
          ModelFeatureRenderer.Submit<S> submit = new ModelFeatureRenderer.Submit<S>(renderType, pose, model, state, lightCoords, overlayCoords, tintedColor, uvMapping, (PoseStack.Pose)null);
          if (renderType == RenderTypes.waterMask()) {
             this.waterMask.submit(submit);
-         } else if (renderType.hasBlending()) {
-            this.translucentModels.submit((TranslucentSubmit)submit);
-         } else {
+         } else if (renderType.forceSolidModelPhase()) {
             this.solid.submit(submit);
+         } else {
+            if (!renderType.hasBlending() || renderType.bothSolidAndTranslucent()) {
+               this.solid.submit(submit);
+            }
+
+            if (renderType.hasBlending()) {
+               this.translucentModels.submit(submit);
+            }
          }
       }
 
@@ -131,18 +185,29 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
          }
       }
 
-      if (crumblingOverlay != null && renderType.affectsCrumbling()) {
-         RenderType crumblingRenderType = (RenderType)ModelBakery.DESTROY_TYPES.get(crumblingOverlay.progress());
-         this.breakingOverlay.submit(new ModelFeatureRenderer.Submit(crumblingRenderType, pose, model, state, lightCoords, overlayCoords, tintedColor, (UvMapping)null, crumblingOverlay.cameraPose()));
-      }
+   }
 
+   public <S> void submitCrumblingOverlay(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int tintedColor, final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+      if (renderType.affectsCrumbling()) {
+         boolean translucent = renderType.hasBlending();
+         List<RenderType> destroyTypes;
+         if (Minecraft.getInstance().gameRenderer.useImprovedTransparency() && translucent) {
+            destroyTypes = ModelBakery.DESTROY_TYPES_OIT;
+         } else {
+            destroyTypes = ModelBakery.DESTROY_TYPES;
+         }
+
+         RenderType crumblingRenderType = (RenderType)destroyTypes.get(crumblingOverlay.progress());
+         SimpleFeatureRenderPhase targetPhase = translucent ? this.breakingOverlay : this.solid;
+         targetPhase.submit(new ModelFeatureRenderer.Submit(crumblingRenderType, poseStack.last().copy(), model, state, lightCoords, overlayCoords, tintedColor, (UvMapping)null, crumblingOverlay.cameraPose()));
+      }
    }
 
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState, final int outlineColor) {
       MovingBlockFeatureRenderer.Submit submit = new MovingBlockFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState, 0);
       BlockStateModel model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(movingBlockRenderState.blockState);
       if (model.hasMaterialFlag(1)) {
-         this.translucentBlocksAndItems.submit((TranslucentSubmit)submit);
+         this.translucentBlocksAndItems.submit(submit);
       } else {
          this.solid.submit(submit);
       }
@@ -158,7 +223,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       if (!renderType.isOutline()) {
          BlockModelFeatureRenderer.Submit submit = new BlockModelFeatureRenderer.Submit(pose, renderType, modelParts, tintLayers, lightCoords, overlayCoords, -1, (PoseStack.Pose)null);
          if (renderType.hasBlending()) {
-            this.translucentBlocksAndItems.submit((TranslucentSubmit)submit);
+            this.translucentBlocksAndItems.submit(submit);
          } else {
             this.solid.submit(submit);
          }
@@ -181,14 +246,18 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       }
    }
 
-   public void submitBreakingBlockModel(final PoseStack poseStack, final List<BlockStateModelPart> parts, final int progress) {
+   public void submitBreakingBlockModel(final PoseStack poseStack, final List<BlockStateModelPart> parts, final int progress, final boolean isBlockTranslucent) {
       PoseStack.Pose pose = poseStack.last().copy();
-      this.breakingOverlay.submit(new BlockModelFeatureRenderer.Submit(pose, (RenderType)ModelBakery.DESTROY_TYPES.get(progress), List.copyOf(parts), BlockModelRenderState.EMPTY_TINTS, 15728880, OverlayTexture.NO_OVERLAY, 0, pose));
+      List<RenderType> destroyTypes = Minecraft.getInstance().gameRenderer.useImprovedTransparency() && isBlockTranslucent ? ModelBakery.DESTROY_TYPES_OIT : ModelBakery.DESTROY_TYPES;
+      SimpleFeatureRenderPhase targetPhase = isBlockTranslucent ? this.breakingOverlay : this.solid;
+      targetPhase.submit(new BlockModelFeatureRenderer.Submit(pose, (RenderType)destroyTypes.get(progress), List.copyOf(parts), BlockModelRenderState.EMPTY_TINTS, 15728880, OverlayTexture.NO_OVERLAY, 0, pose));
    }
 
    public void submitShapeOutline(final PoseStack poseStack, final VoxelShape shape, final RenderType renderType, final int color, final float width, final boolean afterTerrain) {
       ShapeOutlineFeatureRenderer.Submit submit = new ShapeOutlineFeatureRenderer.Submit(poseStack.last().copy(), shape, renderType, color, width);
-      if (afterTerrain) {
+      if (ARGB.alpha(color) == 255) {
+         this.solid.submit(submit);
+      } else if (afterTerrain) {
          this.afterTerrain.submit(submit);
       } else {
          this.shapeOutlines.submit(submit);
@@ -200,8 +269,10 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       PoseStack.Pose pose = poseStack.last().copy();
       ItemFeatureRenderer.Submit submit = new ItemFeatureRenderer.Submit(pose, displayContext, lightCoords, overlayCoords, 0, tintLayers, quads, foilType);
       if (submit.hasTranslucency()) {
-         this.translucentBlocksAndItems.submit((TranslucentSubmit)submit);
-      } else {
+         this.translucentBlocksAndItems.submit(submit);
+      }
+
+      if (shouldRenderAsSolid(submit)) {
          this.solid.submit(submit);
       }
 
@@ -209,6 +280,31 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
          this.outline.submit(new ItemFeatureRenderer.Submit(pose, displayContext, 15728880, OverlayTexture.NO_OVERLAY, outlineColor, ItemStackRenderState.LayerRenderState.EMPTY_TINTS, quads, ItemStackRenderState.FoilType.NONE));
       }
 
+   }
+
+   private static boolean shouldRenderAsSolid(final ItemFeatureRenderer.Submit submit) {
+      boolean hasBlending = false;
+
+      for(BakedQuad quad : submit.quads()) {
+         RenderType var10000;
+         switch (submit.foilType()) {
+            case NONE -> var10000 = quad.materialInfo().itemRenderType();
+            case STANDARD -> var10000 = quad.materialInfo().itemGlintRenderType();
+            case SPECIAL -> var10000 = quad.materialInfo().itemGlintSpecialRenderType();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         RenderType renderType = var10000;
+         if (renderType.hasBlending()) {
+            hasBlending = true;
+         }
+
+         if (renderType.bothSolidAndTranslucent()) {
+            return true;
+         }
+      }
+
+      return !hasBlending;
    }
 
    public void submitCustomGeometry(final PoseStack poseStack, final RenderType renderType, final SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
@@ -231,9 +327,11 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public void submitGizmoPrimitives(final DrawableGizmoPrimitives.Group group, final CameraRenderState camera, final boolean onTop) {
       GizmoFeatureRenderer.Submit submit = new GizmoFeatureRenderer.Submit(group, camera);
       if (onTop) {
-         this.alwaysOnTop.submit(submit);
+         this.alwaysOnTopGizmos.submit(submit);
+      } else if (group.opaque()) {
+         this.solid.submit(submit);
       } else {
-         this.gizmos.submit(submit);
+         this.translucentGizmos.submit(submit);
       }
 
    }

@@ -1,44 +1,50 @@
 package net.minecraft.world.level.levelgen.carver;
 
 import com.mojang.serialization.Codec;
-import java.util.function.Function;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantFloat;
+import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.util.valueproviders.FloatProviders;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.CarvingMask;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.Aquifer;
+import net.minecraft.world.level.chunk.CarverOutput;
+import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 
-public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
-   public CaveWorldCarver(final Codec<CaveCarverConfiguration> configurationFactory) {
-      super(configurationFactory);
+public record CaveWorldCarver(float probability, HeightProvider y, IntProvider count, FloatProvider thickness, boolean weirdThicknessBias, FloatProvider roomVerticalRadiusMultiplier, FloatProvider horizontalRadiusMultiplier, FloatProvider verticalRadiusMultiplier, FloatProvider startVerticalRadiusMultiplier, FloatProvider floorLevel) implements WorldCarver {
+   public static final MapCodec<CaveWorldCarver> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter((c) -> c.probability), HeightProvider.CODEC.fieldOf("y").forGetter((c) -> c.y), IntProviders.NON_NEGATIVE_CODEC.fieldOf("count").forGetter((c) -> c.count), FloatProviders.codec(0.0F).fieldOf("thickness").forGetter((c) -> c.thickness), Codec.BOOL.optionalFieldOf("weird_thickness_bias", false).forGetter((c) -> c.weirdThicknessBias), FloatProviders.CODEC.fieldOf("room_vertical_radius_multiplier").forGetter((c) -> c.roomVerticalRadiusMultiplier), FloatProviders.CODEC.fieldOf("horizontal_radius_multiplier").forGetter((c) -> c.horizontalRadiusMultiplier), FloatProviders.CODEC.fieldOf("vertical_radius_multiplier").forGetter((c) -> c.verticalRadiusMultiplier), FloatProviders.CODEC.optionalFieldOf("start_vertical_radius_multiplier", ConstantFloat.of(1.0F)).forGetter((c) -> c.startVerticalRadiusMultiplier), FloatProviders.codec(-1.0F, 1.0F).fieldOf("floor_level").forGetter((c) -> c.floorLevel)).apply(i, CaveWorldCarver::new));
+
+   public CaveWorldCarver {
+      super();
    }
 
-   public boolean isStartChunk(final CaveCarverConfiguration configuration, final RandomSource random) {
-      return random.nextFloat() <= configuration.probability;
+   public boolean isStartChunk(final RandomSource random) {
+      return random.nextFloat() <= this.probability;
    }
 
-   public boolean carve(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, final CarvingMask mask) {
+   public boolean carve(final WorldGenerationContext context, final RandomSource random, final ChunkPos chunkPos, final ChunkPos sourceChunkPos, final CarverOutput output) {
       int maxDistance = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
-      int caveCount = random.nextInt(random.nextInt(random.nextInt(this.getCaveBound()) + 1) + 1);
+      int caveCount = this.count.sample(random);
 
       for(int cave = 0; cave < caveCount; ++cave) {
          double x = (double)sourceChunkPos.getBlockX(random.nextInt(16));
-         double y = (double)configuration.y.sample(random, context);
+         double y = (double)this.y.sample(random, context);
          double z = (double)sourceChunkPos.getBlockZ(random.nextInt(16));
-         double horizontalRadiusMultiplier = (double)configuration.horizontalRadiusMultiplier.sample(random);
-         double verticalRadiusMultiplier = (double)configuration.verticalRadiusMultiplier.sample(random);
-         double floorLevel = (double)configuration.floorLevel.sample(random);
-         WorldCarver.CarveSkipChecker skipChecker = (c, xd, yd, zd, worldY) -> shouldSkip(xd, yd, zd, floorLevel);
+         double horizontalRadiusMultiplier = (double)this.horizontalRadiusMultiplier.sample(random);
+         double verticalRadiusMultiplier = (double)this.verticalRadiusMultiplier.sample(random);
+         double startVerticalRadiusMultiplier = (double)this.startVerticalRadiusMultiplier.sample(random);
+         double floorLevel = (double)this.floorLevel.sample(random);
+         WorldCarver.CarveSkipChecker skipChecker = (xd, yd, zd, worldY) -> shouldSkip(xd, yd, zd, floorLevel);
          int tunnels = 1;
          if (random.nextInt(4) == 0) {
-            double yScale = (double)configuration.yScale.sample(random);
+            double yScale = (double)this.roomVerticalRadiusMultiplier.sample(random);
             float thickness = 1.0F + random.nextFloat() * 6.0F;
-            this.createRoom(context, configuration, chunk, biomeGetter, aquifer, x, y, z, thickness, yScale, mask, skipChecker);
+            this.createRoom(chunkPos, x, y, z, thickness, yScale, output, skipChecker);
             tunnels += random.nextInt(4);
          }
 
@@ -48,37 +54,29 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
             float thickness = this.getThickness(random);
             int distance = maxDistance - random.nextInt(maxDistance / 4);
             int initialStep = 0;
-            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, thickness, horizontalRotation, verticalRotation, 0, distance, this.getYScale(), mask, skipChecker);
+            this.createTunnel(chunkPos, random.nextLong(), x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, thickness, horizontalRotation, verticalRotation, 0, distance, startVerticalRadiusMultiplier, output, skipChecker);
          }
       }
 
       return true;
    }
 
-   protected int getCaveBound() {
-      return 15;
-   }
-
-   protected float getThickness(final RandomSource random) {
-      float thickness = random.nextFloat() * 2.0F + random.nextFloat();
-      if (random.nextInt(10) == 0) {
+   private float getThickness(final RandomSource random) {
+      float thickness = this.thickness.sample(random);
+      if (this.weirdThicknessBias && random.nextInt(10) == 0) {
          thickness *= random.nextFloat() * random.nextFloat() * 3.0F + 1.0F;
       }
 
       return thickness;
    }
 
-   protected double getYScale() {
-      return 1.0;
-   }
-
-   protected void createRoom(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final Aquifer aquifer, final double x, final double y, final double z, final float thickness, final double yScale, final CarvingMask mask, final WorldCarver.CarveSkipChecker skipChecker) {
+   private void createRoom(final ChunkPos chunkPos, final double x, final double y, final double z, final float thickness, final double yScale, final CarverOutput output, final WorldCarver.CarveSkipChecker skipChecker) {
       double horizontalRadius = 1.5 + (double)(Mth.sin(1.5707963705062866) * thickness);
       double verticalRadius = horizontalRadius * yScale;
-      this.carveEllipsoid(context, configuration, chunk, biomeGetter, aquifer, x + 1.0, y, z, horizontalRadius, verticalRadius, mask, skipChecker);
+      WorldCarver.carveEllipsoid(chunkPos, x + 1.0, y, z, horizontalRadius, verticalRadius, output, skipChecker);
    }
 
-   protected void createTunnel(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final long tunnelSeed, final Aquifer aquifer, double x, double y, double z, final double horizontalRadiusMultiplier, final double verticalRadiusMultiplier, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int dist, final double yScale, final CarvingMask mask, final WorldCarver.CarveSkipChecker skipChecker) {
+   private void createTunnel(final ChunkPos chunkPos, final long tunnelSeed, double x, double y, double z, final double horizontalRadiusMultiplier, final double verticalRadiusMultiplier, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int dist, final double yScale, final CarverOutput output, final WorldCarver.CarveSkipChecker skipChecker) {
       RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
       int splitPoint = random.nextInt(dist / 2) + dist / 4;
       boolean steep = random.nextInt(6) == 0;
@@ -100,17 +98,17 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
          xRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 2.0F;
          yRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 4.0F;
          if (currentStep == splitPoint && thickness > 1.0F) {
-            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation - 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, mask, skipChecker);
-            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation + 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, mask, skipChecker);
+            this.createTunnel(chunkPos, random.nextLong(), x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation - 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, output, skipChecker);
+            this.createTunnel(chunkPos, random.nextLong(), x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation + 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, output, skipChecker);
             return;
          }
 
          if (random.nextInt(4) != 0) {
-            if (!canReach(chunk.getPos(), x, z, currentStep, dist, thickness)) {
+            if (!WorldCarver.canReach(chunkPos, x, z, currentStep, dist, thickness)) {
                return;
             }
 
-            this.carveEllipsoid(context, configuration, chunk, biomeGetter, aquifer, x, y, z, horizontalRadius * horizontalRadiusMultiplier, verticalRadius * verticalRadiusMultiplier, mask, skipChecker);
+            WorldCarver.carveEllipsoid(chunkPos, x, y, z, horizontalRadius * horizontalRadiusMultiplier, verticalRadius * verticalRadiusMultiplier, output, skipChecker);
          }
       }
 
@@ -122,5 +120,9 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       } else {
          return xd * xd + yd * yd + zd * zd >= 1.0;
       }
+   }
+
+   public MapCodec<CaveWorldCarver> codec() {
+      return MAP_CODEC;
    }
 }

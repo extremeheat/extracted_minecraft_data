@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -29,13 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<ConduitBlock> CODEC = simpleCodec(ConduitBlock::new);
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<ConduitBlock> codec() {
-      return CODEC;
-   }
 
    public ConduitBlock(final BlockBehaviour.Properties properties) {
       super(properties);

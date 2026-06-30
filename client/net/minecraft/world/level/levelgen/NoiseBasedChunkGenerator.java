@@ -14,10 +14,12 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.resources.ResourceKey;
@@ -34,18 +36,15 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.blending.Blender;
-import net.minecraft.world.level.levelgen.carver.CarvingContext;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 
@@ -93,8 +92,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    public ChunkPos getOrigin(final RandomState randomState) {
-      List<Climate.ParameterPoint> spawnTarget = ((NoiseGeneratorSettings)this.settings.value()).spawnTarget();
-      return spawnTarget.isEmpty() ? super.getOrigin(randomState) : ChunkPos.containing(Climate.findSpawnPosition(spawnTarget, randomState.sampler()));
+      List<SpawnTargetPoint.Wired> spawnTarget = randomState.spawnTarget();
+      return spawnTarget.isEmpty() ? super.getOrigin(randomState) : ChunkPos.containing(NoiseSpawnFinder.findSpawnPosition(spawnTarget));
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
@@ -234,34 +233,33 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public void buildSurface(final ChunkAccess protoChunk, final WorldGenerationContext context, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final Blender blender, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
       NoiseGeneratorSettings settings = this.settings.value();
-      randomState.surfaceSystem().buildSurface(randomState, biomeManager, settings.useLegacyRandomSource(), context, protoChunk, noiseChunk, (SurfaceRules.RuleSource)settings.materialRule().value(), possibleBiomes);
+      randomState.surfaceSystem().buildSurface(randomState, biomeManager, context, protoChunk, noiseChunk, (SurfaceRules.RuleSource)settings.materialRule().value(), possibleBiomes);
    }
 
-   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
-      if (!SharedConstants.DEBUG_DISABLE_CARVERS) {
-         BiomeManager correctBiomeManager = biomeManager.withDifferentSource((quartX, quartY, quartZ) -> this.biomeSource.getNoiseBiome(quartX, quartY, quartZ, randomState.sampler()));
+   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final CarvingMask.@Nullable Filter filter) {
+      if (!SharedConstants.DEBUG_DISABLE_CARVERS && !SharedConstants.debugVoidTerrain(chunk.getPos())) {
          WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
          int range = 8;
          ChunkPos pos = chunk.getPos();
          NoiseChunk noiseChunk = chunk.getOrCreateNoiseChunk((c) -> this.createNoiseChunk(c, structureManager, Blender.of(region), randomState));
-         Aquifer aquifer = noiseChunk.aquifer();
-         CarvingContext context = new CarvingContext(this, region.registryAccess(), chunk.getHeightAccessorForGeneration(), noiseChunk, randomState, (SurfaceRules.RuleSource)(this.settings.value()).materialRule().value());
-         CarvingMask mask = ((ProtoChunk)chunk).getOrCreateCarvingMask();
+         WorldGenerationContext context = new WorldGenerationContext(this, chunk.getHeightAccessorForGeneration());
+         int protectedBlocksOnTop = chunk.isUpgrading() ? 0 : 7;
+         int maxY = context.getMinGenY() + context.getGenDepth() - 1 - protectedBlocksOnTop;
+         CarvingMask mask = new CarvingMask(context.getMinGenY() + 1, maxY);
 
          for(int dx = -8; dx <= 8; ++dx) {
             for(int dz = -8; dz <= 8; ++dz) {
                ChunkPos sourcePos = new ChunkPos(pos.x() + dx, pos.z() + dz);
                ChunkAccess carverCenterChunk = region.getChunk(sourcePos.x(), sourcePos.z());
                BiomeGenerationSettings sourceBiomeGenerationSettings = carverCenterChunk.carverBiome(() -> this.getBiomeGenerationSettings(this.biomeSource.getNoiseBiome(QuartPos.fromBlock(sourcePos.getMinBlockX()), 0, QuartPos.fromBlock(sourcePos.getMinBlockZ()), randomState.sampler())));
-               Iterable<Holder<ConfiguredWorldCarver<?>>> carvers = sourceBiomeGenerationSettings.getCarvers();
+               Iterable<Holder<WorldCarver>> carvers = sourceBiomeGenerationSettings.getCarvers();
                int index = 0;
 
-               for(Holder<ConfiguredWorldCarver<?>> carverHolder : carvers) {
-                  ConfiguredWorldCarver<?> carver = carverHolder.value();
+               for(Holder<WorldCarver> carverHolder : carvers) {
+                  WorldCarver carver = carverHolder.value();
                   random.setLargeFeatureSeed(seed + (long)index, sourcePos.x(), sourcePos.z());
                   if (carver.isStartChunk(random)) {
-                     Objects.requireNonNull(correctBiomeManager);
-                     carver.carve(context, chunk, correctBiomeManager::getBiome, random, aquifer, sourcePos, mask);
+                     carver.carve(context, random, chunk.getPos(), sourcePos, mask);
                   }
 
                   ++index;
@@ -269,7 +267,58 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
             }
          }
 
+         if (!mask.isEmpty()) {
+            BiomeManager correctBiomeManager = biomeManager.withDifferentSource((quartX, quartY, quartZ) -> this.biomeSource.getNoiseBiome(quartX, quartY, quartZ, randomState.sampler()));
+            Objects.requireNonNull(correctBiomeManager);
+            this.applyCarvingMask(chunk, mask, randomState, context, noiseChunk, correctBiomeManager::getBiome, filter);
+         }
+
       }
+   }
+
+   private void applyCarvingMask(final ChunkAccess chunk, final CarvingMask mask, final RandomState randomState, final WorldGenerationContext context, final NoiseChunk noiseChunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask.@Nullable Filter filter) {
+      ChunkPos chunkPos = chunk.getPos();
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+      BlockPos.MutableBlockPos helperPos = new BlockPos.MutableBlockPos();
+      Aquifer aquifer = noiseChunk.aquifer();
+      SurfaceRules.RuleSource materialRule = (SurfaceRules.RuleSource)(this.settings.value()).materialRule().value();
+      mask.visit((x, z, bottomY, topY) -> {
+         boolean hasGrass = false;
+         int worldX = chunkPos.getBlockX(x);
+         int worldZ = chunkPos.getBlockZ(z);
+
+         for(int worldY = topY; worldY >= bottomY; --worldY) {
+            if (filter == null || filter.test(x, worldY, z)) {
+               blockPos.set(worldX, worldY, worldZ);
+               BlockState blockState = chunk.getBlockState(blockPos);
+               if (blockState.is(Blocks.GRASS_BLOCK) || blockState.is(Blocks.MYCELIUM)) {
+                  hasGrass = true;
+               }
+
+               BlockState state = aquifer.computeSubstance(new DensityFunction.SinglePointContext(worldX, worldY, worldZ), 0.0);
+               if (state != null) {
+                  chunk.setBlockState(blockPos, state);
+                  if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
+                     chunk.markPosForPostProcessing(blockPos);
+                  }
+
+                  if (hasGrass) {
+                     helperPos.setWithOffset(blockPos, (Direction)Direction.DOWN);
+                     if (chunk.getBlockState(helperPos).is(Blocks.DIRT)) {
+                        randomState.surfaceSystem().topMaterial(materialRule, randomState, context, biomeGetter, chunk, noiseChunk, helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
+                           chunk.setBlockState(helperPos, topMaterial);
+                           if (!topMaterial.getFluidState().isEmpty()) {
+                              chunk.markPosForPostProcessing(helperPos);
+                           }
+
+                        });
+                     }
+                  }
+               }
+            }
+         }
+
+      });
    }
 
    public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {

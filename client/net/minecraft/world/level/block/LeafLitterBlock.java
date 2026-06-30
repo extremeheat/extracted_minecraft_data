@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,7 +15,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LeafLitterBlock extends VegetationBlock implements SegmentableBlock {
-   public static final MapCodec<LeafLitterBlock> CODEC = simpleCodec(LeafLitterBlock::new);
    public static final EnumProperty<Direction> FACING;
    private final Function<BlockState, VoxelShape> shapes;
 
@@ -28,10 +26,6 @@ public class LeafLitterBlock extends VegetationBlock implements SegmentableBlock
 
    private Function<BlockState, VoxelShape> makeShapes() {
       return this.getShapeForEachState(this.getShapeCalculator(FACING, this.getSegmentAmountProperty()));
-   }
-
-   protected MapCodec<LeafLitterBlock> codec() {
-      return CODEC;
    }
 
    public BlockState rotate(final BlockState state, final Rotation rotation) {

@@ -15,8 +15,8 @@ import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.FixedPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
 
 public class EndPlacements {
@@ -39,7 +39,7 @@ public class EndPlacements {
       Holder<Feature> endIsland = configuredFeatures.getOrThrow(EndFeatures.END_ISLAND);
       PlacementUtils.register(context, END_PLATFORM, endPlatform, FixedPlacement.of(ServerLevel.END_SPAWN_POINT.below()), BiomeFilter.biome());
       PlacementUtils.register(context, END_SPIKE, endSpike, BiomeFilter.biome());
-      PlacementUtils.register(context, END_GATEWAY_RETURN, endGatewayReturn, RarityFilter.onAverageOnceEvery(700), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, RandomOffsetPlacement.vertical(UniformInt.of(3, 9)), BiomeFilter.biome());
+      PlacementUtils.register(context, END_GATEWAY_RETURN, endGatewayReturn, RarityFilter.onAverageOnceEvery(700), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, OffsetPlacement.vertical(UniformInt.of(3, 9)), BiomeFilter.biome());
       PlacementUtils.register(context, CHORUS_PLANT, chorusPlant, CountPlacement.of(UniformInt.of(0, 4)), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome());
       PlacementUtils.register(context, END_ISLAND_DECORATED, endIsland, RarityFilter.onAverageOnceEvery(14), PlacementUtils.countExtra(1, 0.25F, 1), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.absolute(55), VerticalAnchor.absolute(70)), BiomeFilter.biome());
    }

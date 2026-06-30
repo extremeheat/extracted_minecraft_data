@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +28,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<LeavesBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(AmbientLeavesBlockSoundPlayer.CODEC.fieldOf("ambient_leaves_block_sound_player").forGetter((e) -> e.ambientLeavesBlockSoundPlayer), propertiesCodec()).apply(i, LeavesBlock::new));
    public static final int DECAY_DISTANCE = 7;
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty PERSISTENT;
@@ -38,10 +35,6 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    protected final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer;
    private static final int TICK_DELAY = 1;
    private static volatile boolean cutoutLeaves;
-
-   public MapCodec<? extends LeavesBlock> codec() {
-      return CODEC;
-   }
 
    public LeavesBlock(final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(properties);

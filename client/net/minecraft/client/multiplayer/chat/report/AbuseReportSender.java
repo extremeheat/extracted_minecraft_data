@@ -5,7 +5,7 @@ import com.mojang.authlib.exceptions.MinecraftClientHttpException;
 import com.mojang.authlib.minecraft.UserApiService;
 import com.mojang.authlib.minecraft.report.AbuseReport;
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
-import com.mojang.authlib.yggdrasil.request.AbuseReportRequest;
+import com.mojang.authlib.services.request.AbuseReportRequest;
 import com.mojang.datafixers.util.Unit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

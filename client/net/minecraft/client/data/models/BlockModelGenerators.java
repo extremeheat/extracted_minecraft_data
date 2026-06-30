@@ -1181,7 +1181,7 @@ public class BlockModelGenerators {
    }
 
    private void createShelfMushroom() {
-      Identifier shelfMushroom = ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage1");
+      Identifier shelfMushroom = ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage0");
       this.registerSimpleItemModel(Blocks.SHELF_MUSHROOM, shelfMushroom);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.SHELF_MUSHROOM).with(PropertyDispatch.initial(BlockStateProperties.AGE_1).select(0, plainVariant(ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage0"))).select(1, plainVariant(ModelLocationUtils.getModelLocation(Blocks.SHELF_MUSHROOM, "_stage1")))).with(ROTATION_HORIZONTAL_FACING));
    }

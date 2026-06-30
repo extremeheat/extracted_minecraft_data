@@ -5,6 +5,9 @@ import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -21,11 +24,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
@@ -41,6 +47,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private static final boolean DEFAULT_LEFT_OWNER = false;
    private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
    protected @Nullable EntityReference<Entity> owner;
+   private @Nullable AdventureModePredicate canBreak;
    private boolean leftOwner = false;
    private boolean leftOwnerChecked;
    private boolean hasBeenShot = false;
@@ -48,6 +55,20 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    protected Projectile(final EntityType<? extends Projectile> type, final Level level) {
       super(type, level);
+   }
+
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.CAN_BREAK);
+      super.applyImplicitComponents(components);
+   }
+
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.CAN_BREAK) {
+         this.canBreak = (AdventureModePredicate)castComponentValue(DataComponents.CAN_BREAK, value);
+         return true;
+      } else {
+         return super.applyImplicitComponent(type, value);
+      }
    }
 
    protected void setOwner(final @Nullable EntityReference<Entity> owner) {
@@ -156,6 +177,17 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       double yd = dragDown ? -0.03 : 0.06;
       this.setDeltaMovement(this.getDeltaMovement().add(0.0, yd, 0.0));
       this.resetFallDistance();
+   }
+
+   public boolean canBreakBlockInAdventureMode(final BlockInWorld blockInWorld) {
+      Entity var3 = this.getOwner();
+      if (var3 instanceof Player player) {
+         if (player.gameMode() != GameType.ADVENTURE) {
+            return true;
+         }
+      }
+
+      return this.canBreak != null && this.canBreak.test(blockInWorld);
    }
 
    public static <T extends Projectile> T spawnProjectileFromRotation(final ProjectileFactory<T> creator, final ServerLevel serverLevel, final ItemStack itemStack, final LivingEntity source, final float yOffset, final float pow, final float uncertainty) {
@@ -322,8 +354,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       }
    }
 
-   public boolean mayBreak(final ServerLevel level) {
-      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS);
+   public boolean mayBreak(final ServerLevel level, final BlockPos pos) {
+      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS) && this.canBreakBlockInAdventureMode(new BlockInWorld(level, pos, false));
    }
 
    public boolean isPickable() {

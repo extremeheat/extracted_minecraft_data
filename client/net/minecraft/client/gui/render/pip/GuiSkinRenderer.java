@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.gui.pip.GuiSkinRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Unit;
@@ -28,7 +27,7 @@ public class GuiSkinRenderer extends PictureInPictureRenderer<GuiSkinRenderState
       RenderSystem.getModelViewStack().rotateAround(Axis.XP.rotationDegrees(skinState.rotationX()), 0.0F, scale * -skinState.pivotY(), 0.0F);
       modelStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-skinState.rotationY()));
       modelStack.translate(0.0F, -1.6010001F, 0.0F);
-      submitNodeCollector.submitModel(skinState.playerModel(), Unit.INSTANCE, modelStack, skinState.texture(), 15728880, OverlayTexture.NO_OVERLAY, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(skinState.playerModel(), Unit.INSTANCE, modelStack, skinState.texture(), 15728880, OverlayTexture.NO_OVERLAY, 0);
    }
 
    protected String getTextureLabel() {

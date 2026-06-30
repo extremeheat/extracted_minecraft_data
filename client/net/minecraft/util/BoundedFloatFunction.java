@@ -9,33 +9,24 @@ public interface BoundedFloatFunction<C> {
          return value;
       }
 
-      public float minValue() {
-         return -1.0F / 0.0F;
-      }
-
-      public float maxValue() {
-         return 1.0F / 0.0F;
+      public Interval range() {
+         return Interval.INFINITE;
       }
    };
 
    float apply(final C c);
 
-   float minValue();
-
-   float maxValue();
+   Interval range();
 
    static <C> BoundedFloatFunction<C> constant(final float value) {
+      final Interval range = Interval.ofExact((double)value);
       return new BoundedFloatFunction<C>() {
          public float apply(final C c) {
             return value;
          }
 
-         public float minValue() {
-            return value;
-         }
-
-         public float maxValue() {
-            return value;
+         public Interval range() {
+            return range;
          }
       };
    }
@@ -50,12 +41,8 @@ public interface BoundedFloatFunction<C> {
             return BoundedFloatFunction.this.apply(function.apply(c2));
          }
 
-         public float minValue() {
-            return BoundedFloatFunction.this.minValue();
-         }
-
-         public float maxValue() {
-            return BoundedFloatFunction.this.maxValue();
+         public Interval range() {
+            return BoundedFloatFunction.this.range();
          }
       };
    }

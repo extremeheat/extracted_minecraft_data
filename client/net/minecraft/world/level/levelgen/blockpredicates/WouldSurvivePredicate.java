@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WouldSurvivePredicate implements BlockPredicate {
@@ -18,7 +18,7 @@ public class WouldSurvivePredicate implements BlockPredicate {
       this.state = state;
    }
 
-   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public boolean test(final LevelAccessor level, final BlockPos origin) {
       return this.state.canSurvive(level, origin.offset(this.offset));
    }
 

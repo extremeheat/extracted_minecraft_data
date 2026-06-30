@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -53,8 +52,6 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       super(properties);
       this.type = type;
    }
-
-   protected abstract MapCodec<? extends SignBlock> codec();
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
       if ((Boolean)state.getValue(WATERLOGGED)) {

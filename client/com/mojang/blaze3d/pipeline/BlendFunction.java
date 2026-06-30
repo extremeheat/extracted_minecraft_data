@@ -12,6 +12,7 @@ public record BlendFunction(BlendEquation color, BlendEquation alpha) {
    public static final BlendFunction ADDITIVE;
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
    public static final BlendFunction INVERT;
+   public static final BlendFunction MAX;
 
    public BlendFunction(final BlendFactor srcColorFactor, final BlendFactor dstColorFactor, final BlendOp colorOp, final BlendFactor srcAlphaFactor, final BlendFactor dstAlphaFactor, final BlendOp alphaOp) {
       this(new BlendEquation(srcColorFactor, dstColorFactor, colorOp), new BlendEquation(srcAlphaFactor, dstAlphaFactor, alphaOp));
@@ -46,5 +47,6 @@ public record BlendFunction(BlendEquation color, BlendEquation alpha) {
       ADDITIVE = new BlendFunction(BlendFactor.ONE, BlendFactor.ONE);
       ENTITY_OUTLINE_BLIT = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA, BlendFactor.ZERO, BlendFactor.ONE);
       INVERT = new BlendFunction(BlendFactor.ONE_MINUS_DST_COLOR, BlendFactor.ONE_MINUS_SRC_COLOR, BlendFactor.ONE, BlendFactor.ZERO);
+      MAX = new BlendFunction(BlendFactor.ONE, BlendFactor.ONE, BlendOp.MAX);
    }
 }

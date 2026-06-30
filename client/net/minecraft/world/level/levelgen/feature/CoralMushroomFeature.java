@@ -8,8 +8,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record CoralMushroomFeature() implements CoralFeature {
-   public static final CoralMushroomFeature INSTANCE = new CoralMushroomFeature();
-   public static final MapCodec<CoralMushroomFeature> CODEC;
+   public static final MapCodec<CoralMushroomFeature> CODEC = MapCodec.unit(CoralMushroomFeature::new);
 
    public CoralMushroomFeature() {
       super();
@@ -38,9 +37,5 @@ public record CoralMushroomFeature() implements CoralFeature {
       }
 
       return true;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

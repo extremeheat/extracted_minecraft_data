@@ -3,7 +3,6 @@ package com.mojang.blaze3d.vulkan;
 import com.mojang.blaze3d.GLFWErrorCapture;
 import com.mojang.blaze3d.platform.NativeLibrariesBootstrap;
 import com.mojang.blaze3d.shaders.GpuDebugOptions;
-import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.systems.BackendCreationException;
 import com.mojang.blaze3d.systems.GpuBackend;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -89,7 +88,7 @@ public class VulkanBackend implements GpuBackend {
       }
    }
 
-   public GpuDevice createDevice(final long window, final ShaderSource defaultShaderSource, final GpuDebugOptions debugOptions, final Runnable criticalShaderLoader) throws BackendCreationException {
+   public GpuDevice createDevice(final long window, final GpuDebugOptions debugOptions) throws BackendCreationException {
       if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
          throw new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
       } else if (!GLFWVulkan.glfwVulkanSupported()) {
@@ -161,7 +160,7 @@ public class VulkanBackend implements GpuBackend {
             throw e;
          }
 
-         return new GpuDevice(new VulkanDevice(defaultShaderSource, instance, physicalDevice, enabledFeatures, device, vma, checkpointExtension), criticalShaderLoader);
+         return new GpuDevice(new VulkanDevice(instance, physicalDevice, enabledFeatures, device, vma, checkpointExtension));
       }
    }
 

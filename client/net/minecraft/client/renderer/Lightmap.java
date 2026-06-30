@@ -57,7 +57,7 @@ public class Lightmap implements AutoCloseable {
          }
 
          try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Update light", this.textureView, Optional.empty())) {
-            renderPass.setPipeline(RenderPipelines.LIGHTMAP);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.LIGHTMAP));
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("LightmapInfo", this.ubo.currentBuffer());
             renderPass.draw(3, 1, 0, 0);

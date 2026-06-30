@@ -3,13 +3,15 @@ package com.mojang.blaze3d.pipeline;
 import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.Identifier;
@@ -70,10 +72,6 @@ public class RenderPipeline {
       return this.colorTargetStates;
    }
 
-   public @Nullable ColorTargetState getColorTargetState() {
-      return this.colorTargetStates[0];
-   }
-
    public @Nullable DepthStencilState getDepthStencilState() {
       return this.depthStencilState;
    }
@@ -130,7 +128,7 @@ public class RenderPipeline {
       private Optional<Identifier> fragmentShader = Optional.empty();
       private Optional<Identifier> vertexShader = Optional.empty();
       private Optional<ShaderDefines.Builder> definesBuilder = Optional.empty();
-      private Optional<List<BindGroupLayout>> bindGroupLayouts = Optional.empty();
+      private Optional<Set<BindGroupLayout>> bindGroupLayouts = Optional.empty();
       private Optional<DepthStencilState> depthStencilState = Optional.empty();
       private Optional<PolygonMode> polygonMode = Optional.empty();
       private Optional<Boolean> cull = Optional.empty();
@@ -202,10 +200,10 @@ public class RenderPipeline {
 
       public Builder withBindGroupLayout(final BindGroupLayout bindGroupLayout) {
          if (this.bindGroupLayouts.isEmpty()) {
-            this.bindGroupLayouts = Optional.of(new ArrayList());
+            this.bindGroupLayouts = Optional.of(new ObjectOpenHashSet());
          }
 
-         ((List)this.bindGroupLayouts.get()).add(bindGroupLayout);
+         ((Set)this.bindGroupLayouts.get()).add(bindGroupLayout);
          return this;
       }
 
@@ -222,6 +220,15 @@ public class RenderPipeline {
       public Builder withColorTargetState(final int index, final ColorTargetState colorTargetState) {
          this.colorTargetStates[index] = colorTargetState;
          this.activeColorTargetStateCount = Math.max(this.activeColorTargetStateCount, index + 1);
+         return this;
+      }
+
+      public Builder withColorTargetStates(final int startIindex, final int endIndex, final Supplier<ColorTargetState> colorTargetState) {
+         for(int i = startIindex; i <= endIndex; ++i) {
+            this.colorTargetStates[i] = (ColorTargetState)colorTargetState.get();
+            this.activeColorTargetStateCount = Math.max(this.activeColorTargetStateCount, i + 1);
+         }
+
          return this;
       }
 
@@ -282,9 +289,9 @@ public class RenderPipeline {
 
          snippet.bindGroupLayouts.ifPresent((snippetLayouts) -> {
             if (this.bindGroupLayouts.isPresent()) {
-               ((List)this.bindGroupLayouts.get()).addAll(snippetLayouts);
+               ((Set)this.bindGroupLayouts.get()).addAll(snippetLayouts);
             } else {
-               this.bindGroupLayouts = Optional.of(new ArrayList(snippetLayouts));
+               this.bindGroupLayouts = Optional.of(new ObjectOpenHashSet(snippetLayouts));
             }
 
          });
@@ -322,7 +329,7 @@ public class RenderPipeline {
       }
 
       public Snippet buildSnippet() {
-         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.bindGroupLayouts.map(Collections::unmodifiableList), this.colorTargetStates, this.activeColorTargetStateCount, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormatPerBuffer, this.primitiveTopology);
+         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.bindGroupLayouts.map(List::copyOf), this.colorTargetStates, this.activeColorTargetStateCount, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormatPerBuffer, this.primitiveTopology);
       }
 
       public RenderPipeline build() {
@@ -337,7 +344,7 @@ public class RenderPipeline {
          } else {
             ColorTargetState[] activeColorTargetStates;
             if (this.activeColorTargetStateCount == 0) {
-               activeColorTargetStates = new ColorTargetState[]{ColorTargetState.DEFAULT};
+               activeColorTargetStates = new ColorTargetState[0];
             } else {
                activeColorTargetStates = (ColorTargetState[])Arrays.copyOf(this.colorTargetStates, this.activeColorTargetStateCount);
                Optional<BlendFunction> lastBlend = Optional.empty();
@@ -367,7 +374,7 @@ public class RenderPipeline {
             if (boundVertexAttribCount > 16) {
                throw new IllegalStateException("Binding more than 16 vertex attributes is not supported");
             } else {
-               return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.bindGroupLayouts.orElse(new ArrayList())), activeColorTargetStates, (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), this.vertexFormatPerBuffer, (PrimitiveTopology)this.primitiveTopology.get(), nextPipelineSortKey++);
+               return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.bindGroupLayouts.orElse(Collections.emptySet())), activeColorTargetStates, (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), this.vertexFormatPerBuffer, (PrimitiveTopology)this.primitiveTopology.get(), nextPipelineSortKey++);
             }
          }
       }

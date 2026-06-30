@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.cauldron.CauldronInteractions;
@@ -15,13 +14,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LavaCauldronBlock extends AbstractCauldronBlock {
-   public static final MapCodec<LavaCauldronBlock> CODEC = simpleCodec(LavaCauldronBlock::new);
    private static final VoxelShape SHAPE_INSIDE = Block.column(12.0, 4.0, 15.0);
    private static final VoxelShape FILLED_SHAPE;
-
-   public MapCodec<LavaCauldronBlock> codec() {
-      return CODEC;
-   }
 
    public LavaCauldronBlock(final BlockBehaviour.Properties properties) {
       super(properties, CauldronInteractions.LAVA);

@@ -22,8 +22,6 @@ import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 
 public record IntermediaryShaderModule(String name, @Nullable ByteBuffer spirv, List<SpvUniformBuffer> uniformBuffers, List<SpvSampler> samplers, List<SpvVariable> outputs, List<SpvVariable> inputs) implements AutoCloseable {
-   public static final IntermediaryShaderModule INVALID = new IntermediaryShaderModule("invalid", (ByteBuffer)null, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
-
    public IntermediaryShaderModule {
       super();
    }

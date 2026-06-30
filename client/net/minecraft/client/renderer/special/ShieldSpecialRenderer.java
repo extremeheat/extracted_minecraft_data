@@ -10,7 +10,6 @@ import net.minecraft.client.model.object.equipment.ShieldModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
@@ -45,13 +44,17 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       DyeColor baseColor = components != null ? (DyeColor)components.get(DataComponents.BASE_COLOR) : null;
       boolean hasPatterns = !patterns.layers().isEmpty() || baseColor != null;
       SpriteId base = hasPatterns ? Sheets.SHIELD_BASE : Sheets.SHIELD_BASE_NO_PATTERN;
-      submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, lightCoords, overlayCoords, -1, base, this.sprites, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      if (hasPatterns) {
-         BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, Unit.INSTANCE, false, (DyeColor)Objects.requireNonNullElse(baseColor, DyeColor.WHITE), patterns, (ModelFeatureRenderer.CrumblingOverlay)null);
+      if (hasFoil && !hasPatterns) {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(base.atlasLocation()), lightCoords, overlayCoords, -1, this.sprites.get(base), outlineColor);
+      } else {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, lightCoords, overlayCoords, -1, base, this.sprites, outlineColor);
       }
 
-      if (hasFoil) {
-         submitNodeCollector.order(patterns.layers().size() + 1).submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entityGlint(), lightCoords, overlayCoords, -1, this.sprites.get(base), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      if (hasPatterns) {
+         BannerRenderer.submitPatterns(this.sprites, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.model, Unit.INSTANCE, false, (DyeColor)Objects.requireNonNullElse(baseColor, DyeColor.WHITE), patterns);
+         if (hasFoil) {
+            submitNodeCollector.order(patterns.layers().size() + 2).submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.patternedShieldGlint(), lightCoords, overlayCoords, -1, this.sprites.get(base), 0);
+         }
       }
 
    }

@@ -353,6 +353,10 @@ public class EditBox extends AbstractWidget {
       return this.isActive() && this.isFocused() && this.isEditable();
    }
 
+   public boolean capturesInput() {
+      return this.canConsumeInput();
+   }
+
    public boolean charTyped(final CharacterEvent event) {
       if (!this.canConsumeInput()) {
          return false;

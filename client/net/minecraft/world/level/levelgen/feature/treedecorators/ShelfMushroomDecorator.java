@@ -114,8 +114,7 @@ public class ShelfMushroomDecorator extends TreeDecorator {
    }
 
    private static BlockPos mushroomPosFor(final BlockPos logPos, final Direction facing) {
-      Direction opposite = facing.getOpposite();
-      return logPos.offset(opposite.getStepX(), 0, opposite.getStepZ());
+      return logPos.offset(facing.getStepX(), 0, facing.getStepZ());
    }
 
    private static void placeMushroom(final TreeDecorator.Context context, final BlockPos pos, final Direction facing, final RandomSource random) {

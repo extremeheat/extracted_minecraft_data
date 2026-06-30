@@ -3,8 +3,8 @@ package net.minecraft.gametest.framework;
 import com.google.common.base.Stopwatch;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ServicesKeySet;
+import com.mojang.authlib.minecraft.SessionService;
+import com.mojang.authlib.services.ServicesKeySet;
 import com.mojang.brigadier.StringReader;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
@@ -337,7 +337,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    static {
-      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver(), new MockProfileResolver());
+      NO_SERVICES = new Services((SessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver(), new MockProfileResolver());
       ENABLED_FEATURES = FeatureFlags.REGISTRY.allFlags().subtract(FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS));
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
    }

@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +9,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -40,7 +37,6 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -63,7 +59,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<ChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, (openSound, closeSound, p) -> new ChestBlock(() -> BlockEntityTypes.CHEST, openSound, closeSound, p)));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
@@ -74,10 +69,6 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    private final SoundEvent closeSound;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER;
-
-   public MapCodec<? extends ChestBlock> codec() {
-      return CODEC;
-   }
 
    protected ChestBlock(final Supplier<BlockEntityType<? extends ChestBlockEntity>> blockEntityType, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
       super(properties, blockEntityType);

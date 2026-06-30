@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,7 +27,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FrogspawnBlock extends Block {
-   public static final MapCodec<FrogspawnBlock> CODEC = simpleCodec(FrogspawnBlock::new);
    private static final int MIN_TADPOLES_SPAWN = 2;
    private static final int MAX_TADPOLES_SPAWN = 5;
    private static final int DEFAULT_MIN_HATCH_TICK_DELAY = 3600;
@@ -36,10 +34,6 @@ public class FrogspawnBlock extends Block {
    private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 1.5);
    private static int minHatchTickDelay = 3600;
    private static int maxHatchTickDelay = 12000;
-
-   public MapCodec<FrogspawnBlock> codec() {
-      return CODEC;
-   }
 
    public FrogspawnBlock(final BlockBehaviour.Properties properties) {
       super(properties);

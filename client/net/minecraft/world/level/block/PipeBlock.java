@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -31,8 +30,6 @@ public abstract class PipeBlock extends Block {
       super(properties);
       this.shapes = this.makeShapes(size);
    }
-
-   protected abstract MapCodec<? extends PipeBlock> codec();
 
    private Function<BlockState, VoxelShape> makeShapes(final float size) {
       VoxelShape core = Block.cube((double)size);

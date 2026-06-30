@@ -13,8 +13,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public record SnowAndFreezeFeature() implements Feature {
-   public static final SnowAndFreezeFeature INSTANCE = new SnowAndFreezeFeature();
-   public static final MapCodec<SnowAndFreezeFeature> CODEC;
+   public static final MapCodec<SnowAndFreezeFeature> CODEC = MapCodec.unit(SnowAndFreezeFeature::new);
 
    public SnowAndFreezeFeature() {
       super();
@@ -51,9 +50,5 @@ public record SnowAndFreezeFeature() implements Feature {
       }
 
       return true;
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

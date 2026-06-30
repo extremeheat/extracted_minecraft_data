@@ -5,11 +5,14 @@ import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.util.Interval;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
 public interface DensityFunction {
+   Codec<Holder<DensityFunction>> REFERENCE_CODEC = RegistryFixedCodec.<Holder<DensityFunction>>create(Registries.DENSITY_FUNCTION);
    Codec<DensityFunction> CODEC = RegistryFileCodec.create(Registries.DENSITY_FUNCTION, DensityFunctions.DIRECT_CODEC).xmap((holder) -> {
       Objects.requireNonNull(holder);
       int index$1 = 0;
@@ -83,9 +86,7 @@ public interface DensityFunction {
       return (new RecursiveVisitor()).apply(this);
    }
 
-   double minValue();
-
-   double maxValue();
+   Interval range();
 
    KeyDispatchDataCodec<? extends DensityFunction> codec();
 

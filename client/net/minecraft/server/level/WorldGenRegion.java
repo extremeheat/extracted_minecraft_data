@@ -64,7 +64,7 @@ import org.slf4j.Logger;
 
 public class WorldGenRegion implements WorldGenLevel {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final StaticCache2D<GenerationChunkHolder> cache;
+   private final StaticCache2D<@Nullable ChunkAccess> cache;
    private final ChunkAccess center;
    private final ServerLevel level;
    private final long seed;
@@ -85,7 +85,11 @@ public class WorldGenRegion implements WorldGenLevel {
    public WorldGenRegion(final ServerLevel level, final StaticCache2D<GenerationChunkHolder> cache, final ChunkStep generatingStep, final ChunkAccess center) {
       super();
       this.generatingStep = generatingStep;
-      this.cache = cache;
+      this.cache = cache.<ChunkAccess>map((holder, x, z) -> {
+         int distance = center.getPos().getChessboardDistance(x, z);
+         ChunkStatus maxAllowedStatus = distance >= generatingStep.directDependencies().size() ? null : generatingStep.directDependencies().get(distance);
+         return maxAllowedStatus == null ? null : holder.getChunkIfPresentUnchecked(maxAllowedStatus);
+      });
       this.center = center;
       this.level = level;
       this.seed = level.getSeed();
@@ -118,17 +122,14 @@ public class WorldGenRegion implements WorldGenLevel {
    public @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate) {
       int distance = this.center.getPos().getChessboardDistance(chunkX, chunkZ);
       ChunkStatus maxAllowedStatus = distance >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(distance);
-      GenerationChunkHolder chunkHolder;
+      ChunkAccess chunk;
       if (maxAllowedStatus != null) {
-         chunkHolder = this.cache.get(chunkX, chunkZ);
-         if (targetStatus.isOrBefore(maxAllowedStatus)) {
-            ChunkAccess chunk = chunkHolder.getChunkIfPresentUnchecked(maxAllowedStatus);
-            if (chunk != null) {
-               return chunk;
-            }
+         chunk = this.cache.get(chunkX, chunkZ);
+         if (chunk != null && targetStatus.isOrBefore(maxAllowedStatus)) {
+            return chunk;
          }
       } else {
-         chunkHolder = null;
+         chunk = null;
       }
 
       CrashReport report = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
@@ -137,15 +138,15 @@ public class WorldGenRegion implements WorldGenLevel {
       category.setDetail("Generating status", (CrashReportDetail)(() -> this.generatingStep.targetStatus().getName()));
       Objects.requireNonNull(targetStatus);
       category.setDetail("Requested status", targetStatus::getName);
-      category.setDetail("Actual status", (CrashReportDetail)(() -> chunkHolder == null ? "[out of cache bounds]" : chunkHolder.getPersistedStatus().getName()));
+      category.setDetail("Actual status", (CrashReportDetail)(() -> chunk == null ? "[out of cache bounds]" : chunk.getPersistedStatus().getName()));
       category.setDetail("Maximum allowed status", (CrashReportDetail)(() -> maxAllowedStatus == null ? "null" : maxAllowedStatus.getName()));
       ChunkDependencies var10002 = this.generatingStep.directDependencies();
       Objects.requireNonNull(var10002);
       category.setDetail("Dependencies", var10002::toString);
       category.setDetail("Requested distance", distance);
-      ChunkPos var11 = this.center.getPos();
-      Objects.requireNonNull(var11);
-      category.setDetail("Generating chunk", var11::toString);
+      ChunkPos var10 = this.center.getPos();
+      Objects.requireNonNull(var10);
+      category.setDetail("Generating chunk", var10::toString);
       throw new ReportedException(report);
    }
 

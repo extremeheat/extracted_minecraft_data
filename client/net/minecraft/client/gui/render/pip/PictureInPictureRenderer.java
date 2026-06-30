@@ -3,11 +3,14 @@ package net.minecraft.client.gui.render.pip;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -45,8 +48,6 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.blitTexture(renderState, guiRenderState);
       } else {
          this.prepareTexturesAndProjection(needsAResize, width, height);
-         RenderSystem.outputColorTextureOverride = this.textureView;
-         RenderSystem.outputDepthTextureOverride = this.depthTextureView;
          Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
          modelViewStack.pushMatrix();
          PoseStack poseStack = new PoseStack();
@@ -54,10 +55,16 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          float scale = (float)guiScale * renderState.scale();
          poseStack.scale(scale, scale, -scale);
          this.renderToTexture(renderState, poseStack, this.submitNodeStorage);
-         featureRenderDispatcher.renderAllFeatures(this.submitNodeStorage);
+
+         try (
+            FeatureRenderDispatcher.PreparedFrame frame = featureRenderDispatcher.prepareFrame(this.submitNodeStorage);
+            RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Picture in picture", this.textureView, Optional.empty(), this.depthTextureView, OptionalDouble.empty());
+         ) {
+            RenderSystem.bindDefaultUniforms(renderPass);
+            FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+         }
+
          modelViewStack.popMatrix();
-         RenderSystem.outputColorTextureOverride = null;
-         RenderSystem.outputDepthTextureOverride = null;
          this.blitTexture(renderState, guiRenderState);
       }
    }

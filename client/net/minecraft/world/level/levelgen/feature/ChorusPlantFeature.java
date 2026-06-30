@@ -9,8 +9,7 @@ import net.minecraft.world.level.block.ChorusFlowerBlock;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record ChorusPlantFeature() implements Feature {
-   public static final ChorusPlantFeature INSTANCE = new ChorusPlantFeature();
-   public static final MapCodec<ChorusPlantFeature> CODEC;
+   public static final MapCodec<ChorusPlantFeature> CODEC = MapCodec.unit(ChorusPlantFeature::new);
 
    public ChorusPlantFeature() {
       super();
@@ -27,9 +26,5 @@ public record ChorusPlantFeature() implements Feature {
       } else {
          return false;
       }
-   }
-
-   static {
-      CODEC = MapCodec.unit(INSTANCE);
    }
 }

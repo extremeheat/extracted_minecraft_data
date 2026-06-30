@@ -2,32 +2,33 @@ package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
-public class HeightmapPlacement extends PlacementModifier {
-   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((c) -> c.heightmap)).apply(i, HeightmapPlacement::new));
-   private final Heightmap.Types heightmap;
+public record HeightmapPlacement(Heightmap.Types heightmap) implements PlacementModifier {
+   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter(HeightmapPlacement::heightmap)).apply(i, HeightmapPlacement::new));
 
-   private HeightmapPlacement(final Heightmap.Types heightmap) {
+   public HeightmapPlacement {
       super();
-      this.heightmap = heightmap;
    }
 
    public static HeightmapPlacement onHeightmap(final Heightmap.Types heightmap) {
       return new HeightmapPlacement(heightmap);
    }
 
-   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+   public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
       int x = origin.getX();
       int z = origin.getZ();
       int height = context.getHeight(this.heightmap, x, z);
-      return height > context.getMinY() ? Stream.of(new BlockPos(x, height, z)) : Stream.of();
+      if (height > context.getMinY()) {
+         output.accept(new BlockPos(x, height, z));
+      }
+
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.HEIGHTMAP;
+   public MapCodec<HeightmapPlacement> codec() {
+      return CODEC;
    }
 }

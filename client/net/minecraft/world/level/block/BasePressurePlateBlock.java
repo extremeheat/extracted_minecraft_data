@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -32,8 +31,6 @@ public abstract class BasePressurePlateBlock extends Block {
       super(properties.sound(type.soundType()));
       this.type = type;
    }
-
-   protected abstract MapCodec<? extends BasePressurePlateBlock> codec();
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return this.getSignalForState(state) > 0 ? SHAPE_PRESSED : SHAPE;

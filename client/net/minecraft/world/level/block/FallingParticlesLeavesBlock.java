@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -11,8 +10,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class FallingParticlesLeavesBlock extends LeavesBlock {
    protected final float leafParticleChance;
-
-   public abstract MapCodec<? extends FallingParticlesLeavesBlock> codec();
 
    public FallingParticlesLeavesBlock(final float leafParticleChance, final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(ambientLeavesBlockSoundPlayer, properties);

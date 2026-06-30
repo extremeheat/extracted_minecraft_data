@@ -48,8 +48,8 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStatePr
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.placement.RandomOffsetPlacement;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluids;
 
@@ -169,7 +169,7 @@ public class VegetationFeatures {
       Holder<PlacedFeature> fallenPoplar = placedFeatures.getOrThrow(TreePlacements.FALLEN_POPLAR_TREE);
       context.register(BAMBOO_NO_PODZOL, new BambooFeature(0.0F));
       context.register(BAMBOO_SOME_PODZOL, new BambooFeature(0.2F));
-      context.register(VINES, VinesFeature.INSTANCE);
+      context.register(VINES, new VinesFeature());
       context.register(BROWN_MUSHROOM, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.BROWN_MUSHROOM)));
       context.register(RED_MUSHROOM, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.RED_MUSHROOM)));
       context.register(SUNFLOWER, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SUNFLOWER)));
@@ -199,7 +199,7 @@ public class VegetationFeatures {
       context.register(FLOWER_CHERRY, new SimpleBlockFeature(new WeightedStateProvider(flowerBedPatchBuilder(Blocks.PINK_PETALS))));
       context.register(WILDFLOWER, new SimpleBlockFeature(new WeightedStateProvider(flowerBedPatchBuilder(Blocks.WILDFLOWERS))));
       context.register(FLOWER_PALE_GARDEN, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.CLOSED_EYEBLOSSOM), true));
-      context.register(FOREST_FLOWERS, new SimpleRandomSelectorFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.LILAC)), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.ROSE_BUSH)), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.PEONY)), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.LILY_OF_THE_VALLEY)), CountPlacement.of(96), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)))));
+      context.register(FOREST_FLOWERS, new SimpleRandomSelectorFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.LILAC)), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.ROSE_BUSH)), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.PEONY)), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)), PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.LILY_OF_THE_VALLEY)), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)))));
       context.register(PALE_FOREST_FLOWER, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.CLOSED_EYEBLOSSOM), true));
       context.register(DARK_FOREST_VEGETATION, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(PlacementUtils.inlinePlaced(hugeBrownMushroom), 0.025F), new WeightedPlacedFeature(PlacementUtils.inlinePlaced(hugeRedMushroom), 0.05F), new WeightedPlacedFeature(darkOakLeafLitter, 0.6666667F), new WeightedPlacedFeature(fallenBirch, 0.0025F), new WeightedPlacedFeature(birchLeafLitter, 0.2F), new WeightedPlacedFeature(fallenOak, 0.0125F), new WeightedPlacedFeature(fancyOakLeafLitter, 0.1F)), oakLeafLitter));
       context.register(TREES_DAPPLED_FOREST, new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(redPoplarLeafLitter, 200), new Weighted(orangePoplarLeafLitter, 240), new Weighted(yellowPoplarLeafLitter, 90), new Weighted(spruceChecked, 27), new Weighted(fallenPoplar, 120))));
@@ -224,7 +224,7 @@ public class VegetationFeatures {
       context.register(TREES_OLD_GROWTH_SPRUCE_TAIGA, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(megaSpruceChecked, 0.33333334F), new WeightedPlacedFeature(pineChecked, 0.33333334F), new WeightedPlacedFeature(fallenSpruce, 0.0125F)), spruceChecked));
       context.register(TREES_OLD_GROWTH_PINE_TAIGA, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(megaSpruceChecked, 0.025641026F), new WeightedPlacedFeature(megaPineChecked, 0.30769232F), new WeightedPlacedFeature(pineChecked, 0.33333334F), new WeightedPlacedFeature(fallenSpruce, 0.0125F)), spruceChecked));
       context.register(TREES_JUNGLE, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(fancyOakChecked, 0.1F), new WeightedPlacedFeature(jungleBush, 0.5F), new WeightedPlacedFeature(megaJungleTreeChecked, 0.33333334F), new WeightedPlacedFeature(fallenJungle, 0.0125F)), jungleTreeChecked));
-      context.register(BAMBOO_VEGETATION, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(fancyOakChecked, 0.05F), new WeightedPlacedFeature(jungleBush, 0.15F), new WeightedPlacedFeature(megaJungleTreeChecked, 0.7F)), PlacementUtils.inlinePlaced(grassJungle, CountPlacement.of(32), RandomOffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.not(BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.PODZOL)))))));
+      context.register(BAMBOO_VEGETATION, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(fancyOakChecked, 0.05F), new WeightedPlacedFeature(jungleBush, 0.15F), new WeightedPlacedFeature(megaJungleTreeChecked, 0.7F)), PlacementUtils.inlinePlaced(grassJungle, CountPlacement.of(32), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.not(BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.PODZOL)))))));
       context.register(MUSHROOM_ISLAND_VEGETATION, new RandomBooleanSelectorFeature(PlacementUtils.inlinePlaced(hugeRedMushroom), PlacementUtils.inlinePlaced(hugeBrownMushroom)));
       context.register(MANGROVE_VEGETATION, new RandomSelectorFeature(List.of(new WeightedPlacedFeature(tallMangroveChecked, 0.85F)), mangroveChecked));
    }

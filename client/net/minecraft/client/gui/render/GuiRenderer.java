@@ -113,6 +113,7 @@ public class GuiRenderer implements AutoCloseable {
       this.prepare();
       profiler.popPush("upload");
       this.vertexBuffer.upload();
+      RenderSystem.resizeAllAutoStorageIndexBuffers();
       profiler.popPush("draw");
       this.draw();
       profiler.popPush("endFrame");
@@ -154,6 +155,11 @@ public class GuiRenderer implements AutoCloseable {
       this.addElementsToMeshes(GuiRenderState.TraverseRange.BEFORE_BLUR);
       this.firstDrawIndexAfterBlur = this.draws.size();
       this.addElementsToMeshes(GuiRenderState.TraverseRange.AFTER_BLUR);
+
+      for(Draw draw : this.draws) {
+         this.vertexBuffer.requestIndexCount(draw.draw);
+      }
+
    }
 
    private void addElementsToMeshes(final GuiRenderState.TraverseRange range) {
@@ -185,7 +191,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final int startIndex, final int endIndex) {
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty(), mainRenderTarget.hasDepth() ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
@@ -324,7 +330,7 @@ public class GuiRenderer implements AutoCloseable {
       StagedVertexBuffer.ExecuteInfo executeInfo = this.vertexBuffer.getExecuteInfo(draw.draw);
       if (executeInfo != null) {
          RenderPipeline pipeline = draw.pipeline();
-         renderPass.setPipeline(pipeline);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
          renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          ScreenRectangle scissorArea = draw.scissorArea();
          if (scissorArea != null) {
