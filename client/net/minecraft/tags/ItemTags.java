@@ -187,6 +187,7 @@ public final class ItemTags {
    public static final TagKey<Item> CAULDRON_CAN_REMOVE_DYE;
    public static final TagKey<Item> CAT_COLLAR_DYES;
    public static final TagKey<Item> WOLF_COLLAR_DYES;
+   public static final TagKey<Item> CUSHIONS;
    public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS;
    public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS;
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS;
@@ -194,7 +195,7 @@ public final class ItemTags {
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS;
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM;
    public static final TagKey<Item> METAL_NUGGETS;
-   public static final TagKey<Item> DOWSES_CAMPFIRES;
+   public static final TagKey<Item> DOUSES_CAMPFIRES;
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE;
@@ -410,6 +411,7 @@ public final class ItemTags {
       CAULDRON_CAN_REMOVE_DYE = bind("cauldron_can_remove_dye");
       CAT_COLLAR_DYES = bind("cat_collar_dyes");
       WOLF_COLLAR_DYES = bind("wolf_collar_dyes");
+      CUSHIONS = bind("cushions");
       SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
       DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
       PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");
@@ -417,7 +419,7 @@ public final class ItemTags {
       WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
       SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
       METAL_NUGGETS = bind("metal_nuggets");
-      DOWSES_CAMPFIRES = bind("dowses_campfires");
+      DOUSES_CAMPFIRES = bind("douses_campfires");
       FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
       LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
       CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

@@ -2,10 +2,12 @@ package net.minecraft.world.level.block.entity;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -18,8 +20,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.crafting.BrewingInput;
+import net.minecraft.world.item.crafting.BrewingRecipe;
+import net.minecraft.world.item.crafting.RecipeAccess;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.BrewingStandBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -45,6 +52,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    private Item ingredient;
    private int fuel;
    protected final ContainerData dataAccess;
+   private final RecipeManager.CachedCheck<BrewingInput, BrewingRecipe> quickCheck;
 
    public BrewingStandBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       super(BlockEntityTypes.BREWING_STAND, worldPosition, blockState);
@@ -77,6 +85,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
             return 2;
          }
       };
+      this.quickCheck = RecipeManager.<BrewingInput, BrewingRecipe>createCheck(RecipeType.BREWING);
    }
 
    protected Component getDefaultName() {
@@ -95,7 +104,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       this.items = items;
    }
 
-   public static void serverTick(final Level level, final BlockPos pos, final BlockState selfState, final BrewingStandBlockEntity entity) {
+   public static void serverTick(final ServerLevel level, final BlockPos pos, final BlockState selfState, final BrewingStandBlockEntity entity) {
       ItemStack fuel = entity.items.get(4);
       if (entity.fuel <= 0 && fuel.is(ItemTags.BREWING_FUEL)) {
          entity.fuel = 20;
@@ -103,14 +112,14 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
          setChanged(level, pos, selfState);
       }
 
-      boolean brewable = isBrewable(level.potionBrewing(), entity.items);
+      boolean brewable = isBrewable(level, entity);
       boolean isBrewing = entity.brewTime > 0;
       ItemStack ingredient = entity.items.get(3);
       if (isBrewing) {
          --entity.brewTime;
          boolean isDoneBrewing = entity.brewTime == 0;
          if (isDoneBrewing && brewable) {
-            doBrew(level, pos, entity.items);
+            doBrew(level, pos, entity);
          } else if (!brewable || !ingredient.is(entity.ingredient)) {
             entity.brewTime = 0;
          }
@@ -152,34 +161,44 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       return result;
    }
 
-   private static boolean isBrewable(final PotionBrewing potionBrewing, final NonNullList<ItemStack> items) {
+   private static boolean isBrewable(final ServerLevel serverLevel, final BrewingStandBlockEntity entity) {
+      NonNullList<ItemStack> items = entity.getItems();
       ItemStack ingredient = items.get(3);
       if (ingredient.isEmpty()) {
          return false;
-      } else if (!potionBrewing.isIngredient(ingredient)) {
-         return false;
       } else {
-         for(int dest = 0; dest < 3; ++dest) {
-            ItemStack itemStack = items.get(dest);
-            if (!itemStack.isEmpty() && potionBrewing.hasMix(itemStack, ingredient)) {
-               return true;
+         RecipeManager recipeManager = serverLevel.recipeAccess();
+         if (!recipeManager.propertySet(RecipePropertySet.BREWING_REAGENTS).test(ingredient)) {
+            return false;
+         } else {
+            for(int dest = 0; dest < 3; ++dest) {
+               ItemStack itemStack = items.get(dest);
+               if (!itemStack.isEmpty()) {
+                  Optional<RecipeHolder<BrewingRecipe>> recipe = entity.quickCheck.getRecipeFor(new BrewingInput(itemStack, ingredient), serverLevel);
+                  if (recipe.isPresent()) {
+                     return true;
+                  }
+               }
             }
-         }
 
-         return false;
+            return false;
+         }
       }
    }
 
-   private static void doBrew(final Level level, final BlockPos pos, final NonNullList<ItemStack> items) {
+   private static void doBrew(final ServerLevel level, final BlockPos pos, final BrewingStandBlockEntity entity) {
+      NonNullList<ItemStack> items = entity.getItems();
       ItemStack ingredient = items.get(3);
-      PotionBrewing potionBrewing = level.potionBrewing();
 
       for(int dest = 0; dest < 3; ++dest) {
-         items.set(dest, potionBrewing.mix(ingredient, items.get(dest)));
+         ItemStack container = items.get(dest);
+         BrewingInput input = new BrewingInput(container, ingredient);
+         Optional<RecipeHolder<BrewingRecipe>> recipe = entity.quickCheck.getRecipeFor(input, level);
+         items.set(dest, recipe.isPresent() ? ((BrewingRecipe)((RecipeHolder)recipe.get()).value()).assemble(input) : container);
       }
 
-      ingredient.shrink(1);
       ItemStackTemplate remainder = ingredient.getItem().getCraftingRemainder();
+      ingredient.shrink(1);
       if (remainder != null) {
          if (ingredient.isEmpty()) {
             ingredient = remainder.create();
@@ -212,13 +231,17 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
-      if (slot == 3) {
-         PotionBrewing potionBrewing = this.level != null ? this.level.potionBrewing() : PotionBrewing.EMPTY;
-         return potionBrewing.isIngredient(itemStack);
-      } else if (slot == 4) {
+      if (slot == 4) {
          return itemStack.is(ItemTags.BREWING_FUEL);
+      } else if (this.level == null) {
+         return false;
       } else {
-         return (itemStack.is(Items.POTION) || itemStack.is(Items.SPLASH_POTION) || itemStack.is(Items.LINGERING_POTION) || itemStack.is(Items.GLASS_BOTTLE)) && this.getItem(slot).isEmpty();
+         RecipeAccess recipeAccess = this.level.recipeAccess();
+         if (slot == 3) {
+            return recipeAccess.propertySet(RecipePropertySet.BREWING_REAGENTS).test(itemStack);
+         } else {
+            return recipeAccess.propertySet(RecipePropertySet.BREWING_INPUTS).test(itemStack) && this.getItem(slot).isEmpty();
+         }
       }
    }
 

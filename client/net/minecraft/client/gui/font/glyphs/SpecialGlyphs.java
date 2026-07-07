@@ -4,7 +4,7 @@ import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.font.GlyphStitcher;

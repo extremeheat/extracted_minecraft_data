@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +57,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.attribute.BedRule;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -71,6 +71,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
@@ -106,6 +107,8 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractBedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
@@ -122,7 +125,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
 
 public abstract class Player extends Avatar implements ContainerUser {
@@ -167,6 +169,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    private ItemStack lastItemInMainHand;
    private final ItemCooldowns cooldowns;
    private Optional<GlobalPos> lastDeathLocation;
+   protected final List<Identifier> postEffects;
    public @Nullable FishingHook fishing;
    protected float hurtDir;
 
@@ -175,6 +178,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
+      this.postEffects = new ArrayList();
       this.setUUID(gameProfile.id());
       this.gameProfile = gameProfile;
       this.inventory = new Inventory(this, this.equipment);
@@ -227,8 +231,14 @@ public abstract class Player extends Avatar implements ContainerUser {
             this.sleepCounter = 100;
          }
 
-         if (!this.level().isClientSide() && !((BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, this.position())).canSleep(this.level())) {
-            this.stopSleepInBed(false, true);
+         if (!this.level().isClientSide()) {
+            Block var2 = this.getInBlockState().getBlock();
+            if (var2 instanceof AbstractBedBlock) {
+               AbstractBedBlock abstractBedBlock = (AbstractBedBlock)var2;
+               if (!abstractBedBlock.getBedRule(this.level(), this.blockPosition()).canSleep(this.level())) {
+                  this.stopSleepInBed(false, true);
+               }
+            }
          }
       } else if (this.sleepCounter > 0) {
          ++this.sleepCounter;
@@ -565,15 +575,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (this.hasEffect(MobEffects.MINING_FATIGUE)) {
-         float var10000;
-         switch (this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
-            case 0 -> var10000 = 0.3F;
-            case 1 -> var10000 = 0.09F;
-            case 2 -> var10000 = 0.0027F;
-            default -> var10000 = 8.1E-4F;
-         }
-
-         float scale = var10000;
+         int amplifier = this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier();
+         float scale = (float)Math.pow(0.3, (double)(amplifier + 1));
          speed *= scale;
       }
 
@@ -697,13 +700,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public boolean canHarmPlayer(final Player target) {
-      Team team = this.getTeam();
-      Team otherTeam = target.getTeam();
-      if (team == null) {
-         return true;
-      } else {
-         return !team.isAlliedTo(otherTeam) ? true : team.isAllowFriendlyFire();
-      }
+      return this.doTeamsAllowDamage(target);
    }
 
    protected void hurtArmor(final DamageSource damageSource, final float damage) {
@@ -1196,8 +1193,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   public boolean canSimulateMovement() {
-      return !this.level().isClientSide() || this.isLocalPlayer();
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.AUTHORITATIVE_SIDE_AND_SERVER;
    }
 
    public boolean isEffectiveAi() {
@@ -1239,7 +1236,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return true;
    }
 
-   public Either<BedSleepingProblem, Unit> startSleepInBed(final BlockPos pos) {
+   public Either<BedSleepingProblem, Unit> startSleepInBed(final AbstractBedBlock bedBlock, final BlockState bedBlockState, final BedRule rule, final BlockPos pos) {
       this.startSleeping(pos);
       this.sleepCounter = 0;
       return Either.right(Unit.INSTANCE);

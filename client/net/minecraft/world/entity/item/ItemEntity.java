@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.TraceableEntity;
@@ -425,8 +426,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return slot == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(slot);
    }
 
-   public boolean canSimulateMovement() {
-      return true;
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    static {

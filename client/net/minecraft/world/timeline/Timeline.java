@@ -112,7 +112,7 @@ public class Timeline {
    }
 
    public long getTotalTicks(final ClockManager clockManager) {
-      return clockManager.getTotalTicks(this.clock);
+      return clockManager.getInstance(this.clock).totalTicks();
    }
 
    public Holder<WorldClock> clock() {

@@ -21,7 +21,8 @@ import org.slf4j.Logger;
 
 public abstract class BlockAttachedEntity extends Entity {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private int checkInterval;
+   private static final int CHECK_INTERVAL = 100;
+   private int ticksSinceLastCheck;
    protected BlockPos pos;
 
    protected BlockAttachedEntity(final EntityType<? extends BlockAttachedEntity> type, final Level level) {
@@ -39,8 +40,9 @@ public abstract class BlockAttachedEntity extends Entity {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel level) {
          this.checkBelowWorld();
-         if (this.checkInterval++ == 100) {
-            this.checkInterval = 0;
+         if (this.ticksSinceLastCheck++ >= 100) {
+            this.ticksSinceLastCheck = 0;
+            this.tickAtCheckInterval();
             if (!this.isRemoved() && !this.survives()) {
                this.discard();
                this.dropItem(level, (Entity)null);
@@ -48,6 +50,9 @@ public abstract class BlockAttachedEntity extends Entity {
          }
       }
 
+   }
+
+   protected void tickAtCheckInterval() {
    }
 
    public abstract boolean survives();

@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.IndexType;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.Direction;

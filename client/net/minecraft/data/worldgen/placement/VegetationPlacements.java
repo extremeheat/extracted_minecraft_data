@@ -36,6 +36,7 @@ import org.jspecify.annotations.Nullable;
 public class VegetationPlacements {
    public static final ResourceKey<PlacedFeature> BAMBOO_LIGHT = PlacementUtils.createKey("bamboo_light");
    public static final ResourceKey<PlacedFeature> BAMBOO = PlacementUtils.createKey("bamboo");
+   public static final ResourceKey<PlacedFeature> BAMBOO_IN_STRUCTURE = PlacementUtils.createKey("bamboo_in_structure");
    public static final ResourceKey<PlacedFeature> VINES = PlacementUtils.createKey("vines");
    public static final ResourceKey<PlacedFeature> PATCH_SUNFLOWER = PlacementUtils.createKey("patch_sunflower");
    public static final ResourceKey<PlacedFeature> PATCH_PUMPKIN = PlacementUtils.createKey("patch_pumpkin");
@@ -168,7 +169,7 @@ public class VegetationPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> bambooNoPodzol = configuredFeatures.getOrThrow(VegetationFeatures.BAMBOO_NO_PODZOL);
       Holder<Feature> bambooSomePodzol = configuredFeatures.getOrThrow(VegetationFeatures.BAMBOO_SOME_PODZOL);
       Holder<Feature> vines = configuredFeatures.getOrThrow(VegetationFeatures.VINES);
@@ -230,6 +231,7 @@ public class VegetationPlacements {
       Holder<Feature> mangroveVegetation = configuredFeatures.getOrThrow(VegetationFeatures.MANGROVE_VEGETATION);
       PlacementUtils.register(context, BAMBOO_LIGHT, bambooNoPodzol, RarityFilter.onAverageOnceEvery(4), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome());
       PlacementUtils.register(context, BAMBOO, bambooSomePodzol, NoiseBasedCountPlacement.of(160, 80.0, 0.3), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_WORLD_SURFACE, BiomeFilter.biome());
+      PlacementUtils.register(context, BAMBOO_IN_STRUCTURE, bambooNoPodzol, PlacementUtils.isEmpty());
       PlacementUtils.register(context, VINES, vines, CountPlacement.of(127), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(100)), BiomeFilter.biome());
       PlacementUtils.register(context, PATCH_SUNFLOWER, sunflower, RarityFilter.onAverageOnceEvery(3), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
       PlacementUtils.register(context, PATCH_PUMPKIN, pumpkin, RarityFilter.onAverageOnceEvery(300), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.GRASS_BLOCK))));

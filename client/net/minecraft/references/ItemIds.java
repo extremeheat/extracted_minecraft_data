@@ -42,10 +42,10 @@ public class ItemIds {
    public static final ResourceKey<Item> DARK_OAK_CHEST_BOAT = create("dark_oak_chest_boat");
    public static final ResourceKey<Item> PALE_OAK_BOAT = create("pale_oak_boat");
    public static final ResourceKey<Item> PALE_OAK_CHEST_BOAT = create("pale_oak_chest_boat");
-   public static final ResourceKey<Item> MANGROVE_BOAT = create("mangrove_boat");
-   public static final ResourceKey<Item> MANGROVE_CHEST_BOAT = create("mangrove_chest_boat");
    public static final ResourceKey<Item> POPLAR_BOAT = create("poplar_boat");
    public static final ResourceKey<Item> POPLAR_CHEST_BOAT = create("poplar_chest_boat");
+   public static final ResourceKey<Item> MANGROVE_BOAT = create("mangrove_boat");
+   public static final ResourceKey<Item> MANGROVE_CHEST_BOAT = create("mangrove_chest_boat");
    public static final ResourceKey<Item> BAMBOO_RAFT = create("bamboo_raft");
    public static final ResourceKey<Item> BAMBOO_CHEST_RAFT = create("bamboo_chest_raft");
    public static final ResourceKey<Item> TURTLE_HELMET = create("turtle_helmet");
@@ -456,6 +456,7 @@ public class ItemIds {
    public static final ColorCollection<ResourceKey<Item>> HARNESS;
    public static final ColorCollection<ResourceKey<Item>> DYED_BUNDLE;
    public static final ColorCollection<ResourceKey<Item>> DYE;
+   public static final ColorCollection<ResourceKey<Item>> CUSHION;
 
    public ItemIds() {
       super();
@@ -733,5 +734,6 @@ public class ItemIds {
       HARNESS = createSimpleColored("harness");
       DYED_BUNDLE = createSimpleColored("bundle");
       DYE = createSimpleColored("dye");
+      CUSHION = createSimpleColored("cushion");
    }
 }

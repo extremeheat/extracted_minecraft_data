@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record UniformGenerator(NumberProvider min, NumberProvider max) implements NumberProvider {
-   public static final MapCodec<UniformGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(i, UniformGenerator::new));
+   public static final MapCodec<UniformGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.DIRECT_CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(i, UniformGenerator::new));
 
    public UniformGenerator {
       super();

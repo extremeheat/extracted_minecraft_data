@@ -1,17 +1,20 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public record CoralTreeFeature() implements CoralFeature {
-   public static final MapCodec<CoralTreeFeature> CODEC = MapCodec.unit(CoralTreeFeature::new);
+public record CoralTreeFeature(Holder<PlacedFeature> feature) implements Feature {
+   public static final MapCodec<CoralTreeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter(CoralTreeFeature::feature)).apply(i, CoralTreeFeature::new));
 
-   public CoralTreeFeature() {
+   public CoralTreeFeature {
       super();
    }
 
@@ -19,12 +22,12 @@ public record CoralTreeFeature() implements CoralFeature {
       return CODEC;
    }
 
-   public boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       BlockPos.MutableBlockPos mutPos = origin.mutable();
       int trunckHeight = random.nextInt(3) + 1;
 
       for(int i = 0; i < trunckHeight; ++i) {
-         if (!this.placeCoralBlock(level, random, mutPos, state)) {
+         if (!((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, mutPos)) {
             return true;
          }
 
@@ -41,7 +44,7 @@ public record CoralTreeFeature() implements CoralFeature {
          int branchHeight = random.nextInt(5) + 2;
          int segmentLength = 0;
 
-         for(int j = 0; j < branchHeight && this.placeCoralBlock(level, random, mutPos, state); ++j) {
+         for(int j = 0; j < branchHeight && ((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, mutPos); ++j) {
             ++segmentLength;
             mutPos.move(Direction.UP);
             if (j == 0 || segmentLength >= 2 && random.nextFloat() < 0.25F) {

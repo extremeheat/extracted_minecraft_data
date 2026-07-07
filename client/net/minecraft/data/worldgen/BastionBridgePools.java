@@ -15,12 +15,12 @@ public class BastionBridgePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> entranceReplacement = processorLists.getOrThrow(ProcessorLists.ENTRANCE_REPLACEMENT);
       Holder<StructureProcessorList> bastionGenericDegradation = processorLists.getOrThrow(ProcessorLists.BASTION_GENERIC_DEGRADATION);
       Holder<StructureProcessorList> bridge = processorLists.getOrThrow(ProcessorLists.BRIDGE);
       Holder<StructureProcessorList> rampartDegradation = processorLists.getOrThrow(ProcessorLists.RAMPART_DEGRADATION);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Pools.register(context, "bastion/bridge/starting_pieces", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/bridge/starting_pieces/entrance", entranceReplacement), 1), Pair.of(StructurePoolElement.single("bastion/bridge/starting_pieces/entrance_face", bastionGenericDegradation), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "bastion/bridge/bridge_pieces", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/bridge/bridge_pieces/bridge", bridge), 1)), StructureTemplatePool.Projection.RIGID));

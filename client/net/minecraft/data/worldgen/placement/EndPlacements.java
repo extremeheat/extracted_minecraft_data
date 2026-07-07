@@ -31,7 +31,7 @@ public class EndPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> endPlatform = configuredFeatures.getOrThrow(EndFeatures.END_PLATFORM);
       Holder<Feature> endSpike = configuredFeatures.getOrThrow(EndFeatures.END_SPIKE);
       Holder<Feature> endGatewayReturn = configuredFeatures.getOrThrow(EndFeatures.END_GATEWAY_RETURN);

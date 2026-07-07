@@ -122,6 +122,7 @@ public final class BlockTags {
    public static final TagKey<Block> SUBSTRATE_OVERWORLD;
    public static final TagKey<Block> BASE_STONE_OVERWORLD;
    public static final TagKey<Block> STONE_ORE_REPLACEABLES;
+   public static final TagKey<Block> HEIGHT_SPECIFIC_ORE_REPLACEABLES;
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES;
    public static final TagKey<Block> BASE_STONE_NETHER;
    public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE;
@@ -172,6 +173,7 @@ public final class BlockTags {
    public static final TagKey<Block> LAVA_POOL_STONE_CANNOT_REPLACE;
    public static final TagKey<Block> GEODE_INVALID_BLOCKS;
    public static final TagKey<Block> FROG_PREFER_JUMP_TO;
+   public static final TagKey<Block> SCULK_GROWTH_INHIBITORS;
    public static final TagKey<Block> SCULK_REPLACEABLE;
    public static final TagKey<Block> SCULK_REPLACEABLE_WORLD_GEN;
    public static final TagKey<Block> ANCIENT_CITY_REPLACEABLE;
@@ -190,7 +192,7 @@ public final class BlockTags {
    public static final TagKey<Block> BATS_SPAWNABLE_ON;
    public static final TagKey<Block> CAMELS_SPAWNABLE_ON;
    public static final TagKey<Block> AZALEA_GROWS_ON;
-   public static final TagKey<Block> CONVERTABLE_TO_MUD;
+   public static final TagKey<Block> CONVERTIBLE_TO_MUD;
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH;
    public static final TagKey<Block> MANGROVE_ROOTS_CAN_GROW_THROUGH;
    public static final TagKey<Block> SNAPS_GOAT_HORN;
@@ -198,6 +200,11 @@ public final class BlockTags {
    public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS;
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_DRAG_DOWN;
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_PUSH_UP;
+   public static final TagKey<Block> CATS_CAN_SIT_ON;
+   public static final TagKey<Block> CATS_CAN_LIE_ON;
+   public static final TagKey<Block> SPEEDS_UP_ZOMBIE_VILLAGER_CURING;
+   public static final TagKey<Block> VILLAGERS_CAN_SLEEP_ON_BED;
+   public static final TagKey<Block> VILLAGER_BABIES_CAN_JUMP_ON_BED;
    public static final TagKey<Block> SUPPORTS_VEGETATION;
    public static final TagKey<Block> SUPPORTS_DRY_VEGETATION;
    public static final TagKey<Block> SUPPORTS_CROPS;
@@ -398,6 +405,7 @@ public final class BlockTags {
       SUBSTRATE_OVERWORLD = create("substrate_overworld");
       BASE_STONE_OVERWORLD = create("base_stone_overworld");
       STONE_ORE_REPLACEABLES = create("stone_ore_replaceables");
+      HEIGHT_SPECIFIC_ORE_REPLACEABLES = create("height_specific_ore_replaceables");
       DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
       BASE_STONE_NETHER = create("base_stone_nether");
       BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
@@ -448,6 +456,7 @@ public final class BlockTags {
       LAVA_POOL_STONE_CANNOT_REPLACE = create("lava_pool_stone_cannot_replace");
       GEODE_INVALID_BLOCKS = create("geode_invalid_blocks");
       FROG_PREFER_JUMP_TO = create("frog_prefer_jump_to");
+      SCULK_GROWTH_INHIBITORS = create("sculk_growth_inhibitors");
       SCULK_REPLACEABLE = create("sculk_replaceable");
       SCULK_REPLACEABLE_WORLD_GEN = create("sculk_replaceable_world_gen");
       ANCIENT_CITY_REPLACEABLE = create("ancient_city_replaceable");
@@ -466,7 +475,7 @@ public final class BlockTags {
       BATS_SPAWNABLE_ON = create("bats_spawnable_on");
       CAMELS_SPAWNABLE_ON = create("camels_spawnable_on");
       AZALEA_GROWS_ON = create("azalea_grows_on");
-      CONVERTABLE_TO_MUD = create("convertable_to_mud");
+      CONVERTIBLE_TO_MUD = create("convertible_to_mud");
       MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");
       MANGROVE_ROOTS_CAN_GROW_THROUGH = create("mangrove_roots_can_grow_through");
       SNAPS_GOAT_HORN = create("snaps_goat_horn");
@@ -474,6 +483,11 @@ public final class BlockTags {
       REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");
       ENABLES_BUBBLE_COLUMN_DRAG_DOWN = create("enables_bubble_column_drag_down");
       ENABLES_BUBBLE_COLUMN_PUSH_UP = create("enables_bubble_column_push_up");
+      CATS_CAN_SIT_ON = create("cats_can_sit_on");
+      CATS_CAN_LIE_ON = create("cats_can_lie_on");
+      SPEEDS_UP_ZOMBIE_VILLAGER_CURING = create("speeds_up_zombie_villager_curing");
+      VILLAGERS_CAN_SLEEP_ON_BED = create("villagers_can_sleep_on_bed");
+      VILLAGER_BABIES_CAN_JUMP_ON_BED = create("villager_babies_can_jump_on_bed");
       SUPPORTS_VEGETATION = create("supports_vegetation");
       SUPPORTS_DRY_VEGETATION = create("supports_dry_vegetation");
       SUPPORTS_CROPS = create("supports_crops");

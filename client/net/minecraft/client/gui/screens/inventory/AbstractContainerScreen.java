@@ -168,7 +168,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
          ItemStack item = this.hoveredSlot.getItem();
          if (this.menu.getCarried().isEmpty() || this.showTooltipWithItemInHand(item)) {
-            graphics.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(item), item.getTooltipImage(), mouseX, mouseY, (Identifier)item.get(DataComponents.TOOLTIP_STYLE));
+            graphics.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(item), item.getTooltipImage(), mouseX, mouseY, (Identifier)item.get(DataComponents.TOOLTIP_STYLE), true);
          }
 
       }

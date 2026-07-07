@@ -79,6 +79,7 @@ import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -286,6 +287,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.PositionPath;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -294,6 +296,7 @@ import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.decoration.Cushion;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Inventory;
@@ -315,7 +318,6 @@ import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -380,7 +382,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private Set<ResourceKey<Level>> levels;
    private final RegistryAccess.Frozen registryAccess;
    private final FeatureFlagSet enabledFeatures;
-   private final PotionBrewing potionBrewing;
    private FuelValues fuelValues;
    private final HashedPatchMap.HashGenerator decoratedHashOpsGenerator;
    private OptionalInt removedPlayerVehicleId = OptionalInt.empty();
@@ -436,7 +437,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          minecraft.gui.hud.getChat().restoreState(cookie.chatState());
       }
 
-      this.potionBrewing = PotionBrewing.bootstrap(this.enabledFeatures);
       this.fuelValues = FuelValues.vanillaBurnTimes(cookie.receivedRegistries(), this.enabledFeatures);
       this.levelLoadTracker = cookie.levelLoadTracker();
       this.clockManager = new ClientClockManager();
@@ -615,14 +615,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity entity = this.level.getEntity(packet.id());
       if (entity != null) {
-         Vec3 pos = packet.values().position();
+         PositionPath positionPath = packet.position();
+         Vec3 pos = positionPath.endPosition();
          entity.getPositionCodec().setBase(pos);
          if (!entity.isLocalInstanceAuthoritative()) {
-            float yRot = packet.values().yRot();
-            float xRot = packet.values().xRot();
+            float yRot = packet.yRot();
+            float xRot = packet.xRot();
             boolean tooBigToInterpolate = entity.position().distanceToSqr(pos) > 4096.0;
             if (this.level.isTickingEntity(entity) && !tooBigToInterpolate) {
-               entity.moveOrInterpolateTo(pos, yRot, xRot);
+               entity.moveOrInterpolateTo(positionPath, yRot, xRot);
             } else {
                entity.snapTo(pos, yRot, xRot);
             }
@@ -693,14 +694,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity entity = packet.getEntity(this.level);
       if (entity != null) {
          if (entity.isLocalInstanceAuthoritative()) {
-            VecDeltaCodec positionCodec = entity.getPositionCodec();
-            Vec3 pos = positionCodec.decode((long)packet.getXa(), (long)packet.getYa(), (long)packet.getZa());
-            positionCodec.setBase(pos);
+            if (packet.hasPosition()) {
+               VecDeltaCodec positionCodec = entity.getPositionCodec();
+               PositionPath pos = packet.getPositionDelta().decode(positionCodec);
+               positionCodec.setBase(pos.endPosition());
+            }
+
          } else {
             if (packet.hasPosition()) {
                VecDeltaCodec positionCodec = entity.getPositionCodec();
-               Vec3 pos = positionCodec.decode((long)packet.getXa(), (long)packet.getYa(), (long)packet.getZa());
-               positionCodec.setBase(pos);
+               PositionPath pos = packet.getPositionDelta().decode(positionCodec);
+               positionCodec.setBase(pos.endPosition());
                if (packet.hasRotation()) {
                   entity.moveOrInterpolateTo(pos, packet.getYRot(), packet.getXRot());
                } else {
@@ -904,10 +908,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity from = this.level.getEntity(packet.getItemId());
       LivingEntity to = (LivingEntity)this.level.getEntity(packet.getPlayerId());
       if (from != null) {
-         if (from instanceof ExperienceOrb) {
-            this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.35F + 0.9F, false);
-         } else {
-            this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, (this.random.nextFloat() - this.random.nextFloat()) * 1.4F + 2.0F, false);
+         if (!from.isSilent()) {
+            if (from instanceof ExperienceOrb) {
+               this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.35F + 0.9F, false);
+            } else {
+               this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, (this.random.nextFloat() - this.random.nextFloat()) * 1.4F + 2.0F, false);
+            }
          }
 
          EntityRenderState itemState = this.minecraft.getEntityRenderDispatcher().extractEntity(from, 1.0F);
@@ -1067,7 +1073,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                         this.minecraft.player.setYHeadRot(vehicle.getYRot());
                      }
 
-                     Component message = Component.translatable("mount.onboard", this.minecraft.options.keyShift.getTranslatedKeyMessage());
+                     Component shiftKey = this.minecraft.options.keyShift.getTranslatedKeyMessage();
+                     String messageKey = vehicle instanceof Cushion ? "mount.sit" : "mount.onboard";
+                     Component message = Component.translatable(messageKey, shiftKey);
                      this.minecraft.gui.hud.setOverlayMessage(message, false);
                      this.minecraft.getNarrator().saySystemNow(message);
                   }
@@ -1241,7 +1249,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleExplosion(final ClientboundExplodePacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Vec3 center = packet.center();
-      this.minecraft.level.playLocalSound(center.x(), center.y(), center.z(), (SoundEvent)packet.explosionSound().value(), SoundSource.BLOCKS, 4.0F, (1.0F + (this.minecraft.level.getRandom().nextFloat() - this.minecraft.level.getRandom().nextFloat()) * 0.2F) * 0.7F, false);
+      if (packet.playSound()) {
+         this.minecraft.level.playLocalSound(center.x(), center.y(), center.z(), (SoundEvent)packet.explosionSound().value(), SoundSource.BLOCKS, 4.0F, (1.0F + (this.minecraft.level.getRandom().nextFloat() - this.minecraft.level.getRandom().nextFloat()) * 0.2F) * 0.7F, false);
+      }
+
       this.minecraft.level.addParticle(packet.explosionParticle(), center.x(), center.y(), center.z(), 1.0, 0.0, 0.0);
       this.minecraft.level.trackExplosionEffects(center, packet.radius(), packet.blockCount(), packet.blockParticles());
       Optional var10000 = packet.playerKnockback();
@@ -1958,20 +1969,21 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity vehicle = this.minecraft.player.getRootVehicle();
       if (vehicle != this.minecraft.player && vehicle.isLocalInstanceAuthoritative()) {
-         Vec3 target = packet.position();
+         PositionAndRotation target = packet.movingTo();
          Vec3 currentTarget;
          if (vehicle.isInterpolating()) {
-            currentTarget = vehicle.getInterpolation().position();
+            currentTarget = vehicle.getInterpolation().getCurrentPositionAndRotation().position();
          } else {
             currentTarget = vehicle.position();
          }
 
-         if (target.distanceTo(currentTarget) > 9.999999747378752E-6) {
+         Vec3 targetPos = target.position();
+         if (targetPos.distanceTo(currentTarget) > 9.999999747378752E-6) {
             if (vehicle.isInterpolating()) {
                vehicle.getInterpolation().cancel();
             }
 
-            vehicle.absSnapTo(target.x(), target.y(), target.z(), packet.yRot(), packet.xRot());
+            vehicle.absSnapTo(targetPos.x(), targetPos.y(), targetPos.z(), target.yRot(), target.xRot());
          }
 
          this.connection.send(ServerboundMoveVehiclePacket.fromEntity(vehicle));
@@ -2596,10 +2608,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public Scoreboard scoreboard() {
       return this.scoreboard;
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.potionBrewing;
    }
 
    public FuelValues fuelValues() {

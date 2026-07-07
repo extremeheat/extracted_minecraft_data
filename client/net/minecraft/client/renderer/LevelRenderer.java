@@ -1,10 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -13,15 +8,20 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderPassDescriptor;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -134,6 +134,7 @@ public class LevelRenderer implements AutoCloseable {
    private @Nullable BlockPos lastTranslucentSortBlockPos;
    private int translucencyResortIterationIndex;
    private @Nullable GpuSampler chunkLayerSampler;
+   private boolean currentFrameRendersEntityOutline;
    private final SimpleGizmoCollector renderThreadGizmos = new SimpleGizmoCollector();
    private FinalizedGizmos finalizedGizmos = new FinalizedGizmos(new DrawableGizmoPrimitives(), new DrawableGizmoPrimitives());
 
@@ -167,13 +168,14 @@ public class LevelRenderer implements AutoCloseable {
       this.submitFeatures(this.levelRenderState, this.submitNodeStorage, renderOutline);
       profiler.popPush("prepareFeatures");
       FeatureRenderDispatcher.PreparedFrame featureFrame = this.featureRenderDispatcher.prepareFrame(this.submitNodeStorage);
+      this.currentFrameRendersEntityOutline = featureFrame.hasAnyOutline() && this.levelRenderState.shouldShowEntityOutlines;
       profiler.popPush("setupFrameGraph");
       FrameGraphBuilder frame = new FrameGraphBuilder();
       this.targets.main = frame.<RenderTarget>importExternal("main", this.gameRenderer.mainRenderTarget());
       int screenWidth = this.gameRenderer.mainRenderTarget().width;
       int screenHeight = this.gameRenderer.mainRenderTarget().height;
       if (this.gameRenderer.useImprovedTransparency()) {
-         RenderTargetDescriptor depthBoundsTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(DEPTH_BOUNDS_CLEAR_COLOR, GpuFormat.RG32_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
+         RenderTargetDescriptor depthBoundsTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(DEPTH_BOUNDS_CLEAR_COLOR, GpuFormat.RGBA32_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
          this.targets.depthBounds = frame.<RenderTarget>createInternal("depth_bounds", depthBoundsTargetDescriptor);
          RenderTargetDescriptor transmittanceTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(ZERO_CLEAR_COLOR, GpuFormat.RGBA16_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
 
@@ -202,7 +204,7 @@ public class LevelRenderer implements AutoCloseable {
       ChunkSectionsToRender chunkSectionsToRender = this.prepareChunkRenders(this.levelRenderState.cameraRenderState.viewRotationMatrix);
       this.addMainPass(frame, featureFrame, terrainFog, chunkSectionsToRender, deltaPartialTick);
       PostChain entityOutlineChain = this.shaderManager.getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
-      if (featureFrame.hasAnyOutline() && entityOutlineChain != null) {
+      if (this.currentFrameRendersEntityOutline && entityOutlineChain != null) {
          entityOutlineChain.addToFrame(frame, screenWidth, screenHeight, this.targets);
       }
 
@@ -349,7 +351,7 @@ public class LevelRenderer implements AutoCloseable {
          }
       }
 
-      if (featureFrame.hasAnyOutline() && this.targets.entityOutline != null) {
+      if (this.currentFrameRendersEntityOutline && this.targets.entityOutline != null) {
          this.targets.entityOutline = pass.<RenderTarget>readsAndWrites(this.targets.entityOutline);
       }
 
@@ -365,6 +367,7 @@ public class LevelRenderer implements AutoCloseable {
          }
 
          this.prepareTranslucents(deltaPartialTick);
+         this.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
          RenderTarget mainTarget = this.targets.main.get();
 
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> useImprovedTransparency ? "Solid" : "Main", mainTarget.getColorTextureView(), Optional.empty(), mainTarget.getDepthTextureView(), OptionalDouble.empty())) {
@@ -399,7 +402,6 @@ public class LevelRenderer implements AutoCloseable {
       ProfilerFiller profiler = Profiler.get();
       profiler.push("solidTerrain");
       chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.OPAQUE, renderPass, this.chunkLayerSampler, this.levelRenderState.renderWireframeTerrain);
-      this.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
       profiler.popPush("renderSolidFeatures");
       featureFrame.executeSolid(renderPass);
       profiler.pop();
@@ -521,7 +523,7 @@ public class LevelRenderer implements AutoCloseable {
    }
 
    private void executeOutline(final FeatureRenderDispatcher.PreparedFrame featureFrame) {
-      if (featureFrame.hasAnyOutline()) {
+      if (this.currentFrameRendersEntityOutline) {
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Outline", this.entityOutlineTarget.getColorTextureView(), Optional.of(ZERO_CLEAR_COLOR), (GpuTextureView)null, OptionalDouble.empty())) {
             RenderSystem.bindDefaultUniforms(renderPass);
             featureFrame.executeOutline(renderPass);
@@ -773,8 +775,8 @@ public class LevelRenderer implements AutoCloseable {
       this.weatherEffectRenderer.close();
    }
 
-   public void doEntityOutline() {
-      if (this.levelRenderState.shouldShowEntityOutlines) {
+   public void blitEntityOutline() {
+      if (this.currentFrameRendersEntityOutline) {
          this.entityOutlineTarget.blitAndBlendToTexture(this.gameRenderer.mainRenderTarget().getColorTextureView(), this.gameRenderer.mainRenderTarget().getDepthTextureView());
       }
 

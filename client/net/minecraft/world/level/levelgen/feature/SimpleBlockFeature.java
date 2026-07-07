@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -31,9 +32,12 @@ public record SimpleBlockFeature(BlockStateProvider toPlace, boolean scheduleTic
       BlockState stateToPlace = this.toPlace.getOptionalState(level, random, origin);
       if (stateToPlace == null) {
          return false;
-      } else if (stateToPlace.canSurvive(level, origin)) {
+      } else if (!stateToPlace.canSurvive(level, origin)) {
+         return false;
+      } else {
          if (stateToPlace.getBlock() instanceof DoublePlantBlock) {
-            if (!level.isEmptyBlock(origin.above())) {
+            BlockState aboveState = level.getBlockState(origin.above());
+            if (!aboveState.isAir() && (!Objects.equals(stateToPlace.getFluidState(), aboveState.getFluidState()) || !aboveState.canBeReplaced())) {
                return false;
             }
 
@@ -49,8 +53,6 @@ public record SimpleBlockFeature(BlockStateProvider toPlace, boolean scheduleTic
          }
 
          return true;
-      } else {
-         return false;
       }
    }
 }

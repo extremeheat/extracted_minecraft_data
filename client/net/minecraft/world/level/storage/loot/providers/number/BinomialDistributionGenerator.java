@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) implements NumberProvider {
-   public static final MapCodec<BinomialDistributionGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(i, BinomialDistributionGenerator::new));
+   public static final MapCodec<BinomialDistributionGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.DIRECT_CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(i, BinomialDistributionGenerator::new));
 
    public BinomialDistributionGenerator {
       super();

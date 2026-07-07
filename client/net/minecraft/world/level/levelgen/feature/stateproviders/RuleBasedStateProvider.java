@@ -14,19 +14,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import org.jspecify.annotations.Nullable;
 
-public class RuleBasedStateProvider extends BlockStateProvider {
+public record RuleBasedStateProvider(@Nullable BlockStateProvider fallback, List<Rule> rules) implements BlockStateProvider {
    public static final MapCodec<RuleBasedStateProvider> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.optionalFieldOf("fallback").forGetter((provider) -> Optional.ofNullable(provider.fallback)), RuleBasedStateProvider.Rule.CODEC.listOf().fieldOf("rules").forGetter((p) -> p.rules)).apply(i, RuleBasedStateProvider::new));
-   private final @Nullable BlockStateProvider fallback;
-   private final List<Rule> rules;
-
-   public RuleBasedStateProvider(final @Nullable BlockStateProvider fallback, final List<Rule> rules) {
-      super();
-      this.fallback = fallback;
-      this.rules = rules;
-   }
 
    private RuleBasedStateProvider(final Optional<BlockStateProvider> fallback, final List<Rule> rules) {
       this((BlockStateProvider)fallback.orElse((Object)null), rules);
+   }
+
+   public RuleBasedStateProvider {
+      super();
    }
 
    public static RuleBasedStateProvider ifTrueThenProvide(final BlockPredicate ifTrue, final Block thenProvide) {
@@ -37,8 +33,8 @@ public class RuleBasedStateProvider extends BlockStateProvider {
       return new RuleBasedStateProvider((BlockStateProvider)null, List.of(new Rule(ifTrue, thenProvide)));
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.RULE_BASED_STATE_PROVIDER;
+   public MapCodec<RuleBasedStateProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

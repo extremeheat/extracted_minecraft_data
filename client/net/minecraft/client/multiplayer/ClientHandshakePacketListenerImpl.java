@@ -130,7 +130,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   return;
                }
 
-               LOGGER.warn(error.getString());
+               LOGGER.warn("Authentication failed: {}", error.getString());
             }
 
             this.setEncryption(setKeyPacket, decryptCipher, encryptCipher);

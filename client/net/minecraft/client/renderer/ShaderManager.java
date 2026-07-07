@@ -4,14 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.PipelineCache;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
-import com.mojang.blaze3d.shaders.ShaderType;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.IOException;
@@ -130,7 +130,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
                   location = Identifier.parse(path).withPrefix("shaders/include/");
                }
             } catch (IdentifierException e) {
-               ShaderManager.LOGGER.error("Malformed GLSL import {}: {}", path, e.getMessage());
+               ShaderManager.LOGGER.error("Malformed GLSL import {}", path, e);
                return "#error " + e.getMessage();
             }
 
@@ -161,7 +161,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
                   return var5;
                } catch (IOException e) {
-                  ShaderManager.LOGGER.error("Could not open GLSL import {}: {}", location, e.getMessage());
+                  ShaderManager.LOGGER.error("Could not open GLSL import {}", location, e);
                   return "#error " + e.getMessage();
                }
             }
@@ -261,6 +261,10 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       this.postChainProjectionMatrixBuffer.close();
    }
 
+   public Stream<Identifier> getAvailablePostEffects() {
+      return this.compilationCache.getKnownPostEffects();
+   }
+
    public static record Configs(Map<ShaderSourceKey, String> shaderSources, Map<Identifier, PostChainConfig> postChains) {
       public static final Configs EMPTY = new Configs(Map.of(), Map.of());
 
@@ -287,15 +291,19 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
             return (PostChain)cached.orElse((Object)null);
          } else {
             PostChain postChain = this.loadPostChain(id, allowedTargets);
-            this.postChains.put(id, Optional.of(postChain));
+            this.postChains.put(id, Optional.ofNullable(postChain));
             return postChain;
          }
       }
 
-      private PostChain loadPostChain(final Identifier id, final Set<Identifier> allowedTargets) throws CompilationException {
+      private @Nullable PostChain loadPostChain(final Identifier id, final Set<Identifier> allowedTargets) throws CompilationException {
          PostChainConfig config = (PostChainConfig)this.configs.postChains.get(id);
          if (config == null) {
-            throw new CompilationException("Could not find post chain with id: " + String.valueOf(id));
+            if (!id.equals(GameRenderer.END_OF_FRAME_POST_EFFECT)) {
+               ShaderManager.LOGGER.warn("Attempted to load a non-existent post effect {}", id);
+            }
+
+            return null;
          } else {
             return PostChain.load(config, ShaderManager.this.textureManager, allowedTargets, id, ShaderManager.this.postChainProjection, ShaderManager.this.postChainProjectionMatrixBuffer);
          }
@@ -308,6 +316,10 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
       public @Nullable String getShaderSource(final Identifier id, final ShaderType type) {
          return (String)this.configs.shaderSources.get(new ShaderSourceKey(id, type));
+      }
+
+      public Stream<Identifier> getKnownPostEffects() {
+         return this.configs.postChains.keySet().stream();
       }
    }
 

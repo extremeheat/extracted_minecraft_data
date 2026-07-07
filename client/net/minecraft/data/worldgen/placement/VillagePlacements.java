@@ -38,7 +38,7 @@ public class VillagePlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> pileHay = configuredFeatures.getOrThrow(PileFeatures.PILE_HAY);
       Holder<Feature> pileMelon = configuredFeatures.getOrThrow(PileFeatures.PILE_MELON);
       Holder<Feature> pileSnow = configuredFeatures.getOrThrow(PileFeatures.PILE_SNOW);

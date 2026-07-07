@@ -1,10 +1,10 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import java.nio.ByteBuffer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.CardinalLighting;

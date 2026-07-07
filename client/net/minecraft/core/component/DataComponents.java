@@ -57,6 +57,7 @@ import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
@@ -191,6 +192,7 @@ public class DataComponents {
    public static final DataComponentType<LockCode> LOCK = register("lock", (b) -> b.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", (b) -> b.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentType<Holder<SoundEvent>> BREAK_SOUND = register("break_sound", (b) -> b.persistent(SoundEvent.CODEC).networkSynchronized(SoundEvent.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<Compostable> COMPOSTABLE = register("compostable", (b) -> b.persistent(Compostable.CODEC).networkSynchronized(Compostable.STREAM_CODEC));
    public static final DataComponentType<Holder<VillagerType>> VILLAGER_VARIANT = register("villager/variant", (b) -> b.persistent(VillagerType.CODEC).networkSynchronized(VillagerType.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfVariant>> WOLF_VARIANT = register("wolf/variant", (b) -> b.persistent(WolfVariant.CODEC).networkSynchronized(WolfVariant.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT = register("wolf/sound_variant", (b) -> b.persistent(WolfSoundVariant.CODEC).networkSynchronized(WolfSoundVariant.STREAM_CODEC));

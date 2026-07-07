@@ -21,18 +21,18 @@ public class TaigaVillagePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
       Holder<PlacedFeature> spruceVillage = placedFeatures.getOrThrow(VillagePlacements.SPRUCE_VILLAGE);
       Holder<PlacedFeature> pineVillage = placedFeatures.getOrThrow(VillagePlacements.PINE_VILLAGE);
       Holder<PlacedFeature> pilePumpkinVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_PUMPKIN_VILLAGE);
       Holder<PlacedFeature> patchTaigaGrassVillage = placedFeatures.getOrThrow(VillagePlacements.PATCH_TAIGA_GRASS_VILLAGE);
       Holder<PlacedFeature> patchBerryBushVillage = placedFeatures.getOrThrow(VillagePlacements.PATCH_BERRY_BUSH_VILLAGE);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> mossify10Percent = processorLists.getOrThrow(ProcessorLists.MOSSIFY_10_PERCENT);
       Holder<StructureProcessorList> zombieTaiga = processorLists.getOrThrow(ProcessorLists.ZOMBIE_TAIGA);
       Holder<StructureProcessorList> streetSnowyOrTaiga = processorLists.getOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
       Holder<StructureProcessorList> farmTaiga = processorLists.getOrThrow(ProcessorLists.FARM_TAIGA);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Holder<StructureTemplatePool> terminators = pools.getOrThrow(TERMINATORS_KEY);
       context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.legacy("village/taiga/town_centers/taiga_meeting_point_1", mossify10Percent), 49), Pair.of(StructurePoolElement.legacy("village/taiga/town_centers/taiga_meeting_point_2", mossify10Percent), 49), Pair.of(StructurePoolElement.legacy("village/taiga/zombie/town_centers/taiga_meeting_point_1", zombieTaiga), 1), Pair.of(StructurePoolElement.legacy("village/taiga/zombie/town_centers/taiga_meeting_point_2", zombieTaiga), 1)), StructureTemplatePool.Projection.RIGID));

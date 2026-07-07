@@ -21,7 +21,7 @@ public class TpsDebugChart extends AbstractDebugChart {
 
    protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
       float tps = (float)TimeUtil.MILLISECONDS_PER_SECOND / (Float)this.msptSupplier.get();
-      this.extractStringWithShade(graphics, String.format(Locale.ROOT, "%.1f TPS", tps), left + 1, bottom - 60 + 1);
+      this.extractStringWithShade(graphics, String.format(Locale.ROOT, "%.1f tps", tps), left + 1, bottom - 60 + 1);
    }
 
    protected void extractAdditionalSampleBars(final GuiGraphicsExtractor graphics, final int bottom, final int currentX, final int sampleIndex) {

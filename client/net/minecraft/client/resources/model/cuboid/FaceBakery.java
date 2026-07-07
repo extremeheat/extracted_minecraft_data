@@ -46,7 +46,7 @@ public class FaceBakery {
       return material.forceTranslucent() ? Transparency.TRANSLUCENT : material.sprite().contents().computeTransparency(Math.min(uvs.minU(), uvs.maxU()) / 16.0F, Math.min(uvs.minV(), uvs.maxV()) / 16.0F, Math.max(uvs.minU(), uvs.maxU()) / 16.0F, Math.max(uvs.minV(), uvs.maxV()) / 16.0F);
    }
 
-   public static BakedQuad bakeQuad(final ModelBaker modelBaker, final Vector3fc from, final Vector3fc to, final CuboidFace face, final Material.Baked material, final Direction facing, final ModelState modelState, final @Nullable CuboidRotation elementRotation, final boolean shade, final int lightEmission) {
+   public static BakedQuad bakeQuad(final ModelBaker modelBaker, final Vector3fc from, final Vector3fc to, final CuboidFace face, final Material.Baked material, final Direction facing, final ModelState modelState, final @Nullable CuboidRotation elementRotation, final @Nullable Direction shadeDirectionOverride, final int lightEmission) {
       CuboidFace.UVs uvs = face.uvs();
       if (uvs == null) {
          uvs = defaultFaceUV(from, to, facing);
@@ -54,7 +54,7 @@ public class FaceBakery {
 
       Transparency transparency = computeMaterialTransparency(material, uvs);
       ModelBaker.Interner interner = modelBaker.interner();
-      BakedQuad.MaterialInfo materialInfo = interner.materialInfo(BakedQuad.MaterialInfo.of(material, transparency, face.tintIndex(), shade, lightEmission));
+      BakedQuad.MaterialInfo materialInfo = interner.materialInfo(BakedQuad.MaterialInfo.of(material, transparency, face.tintIndex(), shadeDirectionOverride, lightEmission));
       return bakeQuad(interner, from, to, uvs, face.rotation(), materialInfo, facing, modelState, elementRotation);
    }
 

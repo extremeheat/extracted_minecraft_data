@@ -27,6 +27,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.Leashable;
+import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -65,7 +66,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    private final float[] paddlePositions = new float[2];
    private float outOfControlTicks;
    private float deltaRotation;
-   private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
+   private final InterpolationHandler interpolation = new LinearInterpolationHandler(this, 3);
    private boolean inputLeft;
    private boolean inputRight;
    private boolean inputUp;

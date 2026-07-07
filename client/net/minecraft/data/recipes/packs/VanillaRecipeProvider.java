@@ -5,23 +5,27 @@ import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
 import java.util.stream.Stream;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
+import net.minecraft.advancements.triggers.ImpossibleTrigger;
 import net.minecraft.advancements.triggers.InventoryChangeTrigger;
 import net.minecraft.advancements.triggers.PlayerTrigger;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.MultiRegistryBootstrap;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.BrewingProvider;
 import net.minecraft.data.recipes.CustomCraftingRecipeBuilder;
+import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.TransmuteRecipeBuilder;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
@@ -65,13 +69,27 @@ public class VanillaRecipeProvider extends RecipeProvider {
    private static final ImmutableList<ItemLike> LAPIS_SMELTABLES;
    private static final ImmutableList<ItemLike> REDSTONE_SMELTABLES;
    private static final ImmutableList<ItemLike> EMERALD_SMELTABLES;
+   private final BrewingProvider brewingProvider;
 
-   private VanillaRecipeProvider(final HolderLookup.Provider registries, final RecipeOutput output) {
-      super(registries, output);
+   public VanillaRecipeProvider(final BootstrapContext<Recipe<?>> recipeOutput, final BootstrapContext<Advancement> advancementOutput) {
+      super(recipeOutput, advancementOutput);
+      this.brewingProvider = new VanillaBrewingProvider(this.output);
+   }
+
+   public static MultiRegistryBootstrap create() {
+      return new MultiRegistryBootstrap() {
+         public Set<ResourceKey<? extends Registry<?>>> requestedRegistries() {
+            return Set.of(Registries.RECIPE, Registries.ADVANCEMENT);
+         }
+
+         public void run(final MultiRegistryBootstrap.BootstrapGetter registries) {
+            (new VanillaRecipeProvider(registries.get(Registries.RECIPE), registries.get(Registries.ADVANCEMENT))).buildRecipes();
+         }
+      };
    }
 
    protected void buildRecipes() {
-      this.output.includeRootAdvancement();
+      Advancement.Builder.recipeAdvancement().addCriterion("impossible", CriteriaTriggers.IMPOSSIBLE.createCriterion(new ImpossibleTrigger.TriggerInstance())).build(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT).register(this.advancementOutput);
       this.generateForEnabledBlockFamilies(FeatureFlagSet.of(FeatureFlags.VANILLA));
       this.planksFromLog(Blocks.ACACIA_PLANKS, ItemTags.ACACIA_LOGS, 4);
       this.planksFromLogs(Blocks.BIRCH_PLANKS, ItemTags.BIRCH_LOGS, 4);
@@ -135,6 +153,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.colorItemWithDye(dyes, Items.BED.asList(), "bed_dye", RecipeCategory.DECORATIONS);
       this.colorItemWithDye(dyes, Items.CARPET.asList(), "carpet_dye", RecipeCategory.DECORATIONS);
       this.colorItemWithDye(dyes, Items.HARNESS.asList(), "harness_dye", RecipeCategory.COMBAT);
+      this.colorItemWithDye(dyes, Items.CUSHION.asList(), "cushion_dye", RecipeCategory.DECORATIONS);
       ColorCollection.zipApply(Items.BED, Blocks.WOOL, (x$0, x$1) -> this.bedFromPlanksAndWool(x$0, x$1));
       ColorCollection.zipApply(Items.BANNER, Blocks.WOOL, (x$0, x$1) -> this.banner(x$0, x$1));
       this.carpet(Blocks.MOSS_CARPET, Blocks.MOSS_BLOCK);
@@ -290,6 +309,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.COMBAT, Items.IRON_SWORD).define('#', Items.STICK).define('X', ItemTags.IRON_TOOL_MATERIALS).pattern("X").pattern("X").pattern("#").unlockedBy("has_iron_ingot", this.has(ItemTags.IRON_TOOL_MATERIALS)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.IRON_SPEAR).define('#', Items.STICK).define('X', ItemTags.IRON_TOOL_MATERIALS).pattern("  X").pattern(" # ").pattern("#  ").unlockedBy("has_iron_ingot", this.has(ItemTags.IRON_TOOL_MATERIALS)).save(this.output);
       this.twoByTwoPacker(RecipeCategory.REDSTONE, Blocks.IRON_TRAPDOOR, Items.IRON_INGOT);
+      this.shaped(RecipeCategory.DECORATIONS, Items.STRAW_BED, 4).define('X', Items.HAY_BLOCK).pattern("XXX").unlockedBy("has_hay_block", this.has(Items.HAY_BLOCK)).unlockedBy("has_straw_bed", this.has(Items.STRAW_BED)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Items.ITEM_FRAME).define('#', Items.STICK).define('X', Items.LEATHER).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.JUKEBOX).define('#', ItemTags.PLANKS).define('X', Items.DIAMOND).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_diamond", this.has(Items.DIAMOND)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.LADDER, 3).define('#', Items.STICK).pattern("# #").pattern("###").pattern("# #").unlockedBy("has_stick", this.has(Items.STICK)).save(this.output);
@@ -633,6 +653,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.TOOLS, Items.BUNDLE).define('-', Items.STRING).define('#', Items.LEATHER).pattern("-").pattern("#").unlockedBy("has_string", this.has(Items.STRING)).save(this.output);
       this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.POTENT_SULFUR, Items.SULFUR);
       ColorCollection.zipApply(Items.DYE, Items.DYED_BUNDLE, (x$0, x$1) -> this.dyedBundleRecipe(x$0, x$1));
+      ColorCollection.zipApply(Items.WOOL_SLAB, Items.CUSHION, (x$0, x$1) -> this.cushionRecipe(x$0, x$1));
+      this.brewingProvider.buildRecipes();
    }
 
    public static Stream<TrimTemplate> smithingTrims() {
@@ -653,20 +675,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
       LAPIS_SMELTABLES = ImmutableList.of(Items.LAPIS_ORE, Items.DEEPSLATE_LAPIS_ORE);
       REDSTONE_SMELTABLES = ImmutableList.of(Items.REDSTONE_ORE, Items.DEEPSLATE_REDSTONE_ORE);
       EMERALD_SMELTABLES = ImmutableList.of(Items.EMERALD_ORE, Items.DEEPSLATE_EMERALD_ORE);
-   }
-
-   public static class Runner extends RecipeProvider.Runner {
-      public Runner(final PackOutput packOutput, final CompletableFuture<HolderLookup.Provider> registries) {
-         super(packOutput, registries);
-      }
-
-      protected RecipeProvider createRecipeProvider(final HolderLookup.Provider registries, final RecipeOutput output) {
-         return new VanillaRecipeProvider(registries, output);
-      }
-
-      public String getName() {
-         return "Vanilla Recipes";
-      }
    }
 
    public static record TrimTemplate(Item template, ResourceKey<TrimPattern> patternId, ResourceKey<Recipe<?>> recipeId) {

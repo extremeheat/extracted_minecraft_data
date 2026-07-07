@@ -34,7 +34,7 @@ public class JoinMultiplayerScreen extends Screen {
    protected ServerSelectionList serverSelectionList;
    private ServerList servers;
    private Button editButton;
-   private Button selectButton;
+   private Button joinButton;
    private Button deleteButton;
    private ServerData editingServer;
    private LanServerDetection.LanServerList lanServerList;
@@ -55,7 +55,7 @@ public class JoinMultiplayerScreen extends Screen {
          this.lanServerDetector = new LanServerDetection.LanServerDetector(this.lanServerList);
          this.lanServerDetector.start();
       } catch (Exception e) {
-         LOGGER.warn("Unable to start LAN server detection: {}", e.getMessage());
+         LOGGER.warn("Unable to start LAN server detection", e);
       }
 
       this.serverSelectionList = (ServerSelectionList)this.layout.addToContents(new ServerSelectionList(this, this.minecraft, this.width, this.layout.getContentHeight(), this.layout.getHeaderHeight(), 36));
@@ -64,22 +64,22 @@ public class JoinMultiplayerScreen extends Screen {
       footer.defaultCellSetting().alignHorizontallyCenter();
       LinearLayout topFooterButtons = (LinearLayout)footer.addChild(LinearLayout.horizontal().spacing(4));
       LinearLayout bottomFooterButtons = (LinearLayout)footer.addChild(LinearLayout.horizontal().spacing(4));
-      this.selectButton = (Button)topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.select"), (button) -> {
+      this.joinButton = (Button)topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.select"), (var1) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
          if (entry != null) {
             entry.join();
          }
 
       }).width(100).build());
-      topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.direct"), (button) -> {
+      topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.direct"), (var1) -> {
          this.editingServer = new ServerData(I18n.get("selectServer.defaultName"), "", ServerData.Type.OTHER);
          this.minecraft.gui.setScreen(new DirectJoinServerScreen(this, this::directJoinCallback, this.editingServer));
       }).width(100).build());
-      topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.add"), (button) -> {
+      topFooterButtons.addChild(Button.builder(Component.translatable("selectServer.add"), (var1) -> {
          this.editingServer = new ServerData("", "", ServerData.Type.OTHER);
          this.minecraft.gui.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.add.title"), this::addServerCallback, this.editingServer));
       }).width(100).build());
-      this.editButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.edit"), (button) -> {
+      this.editButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.edit"), (var1) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
          if (entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
             ServerData current = onlineServerEntry.getServerData();
@@ -89,7 +89,7 @@ public class JoinMultiplayerScreen extends Screen {
          }
 
       }).width(74).build());
-      this.deleteButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.delete"), (button) -> {
+      this.deleteButton = (Button)bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.delete"), (var1) -> {
          ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
          if (entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
             String serverName = onlineServerEntry.getServerData().name;
@@ -103,8 +103,8 @@ public class JoinMultiplayerScreen extends Screen {
          }
 
       }).width(74).build());
-      bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.refresh"), (button) -> this.refreshServerList()).width(74).build());
-      bottomFooterButtons.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(74).build());
+      bottomFooterButtons.addChild(Button.builder(Component.translatable("selectServer.refresh"), (var1) -> this.refreshServerList()).width(74).build());
+      bottomFooterButtons.addChild(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(74).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
       this.onSelectedChange();
@@ -222,12 +222,12 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    protected void onSelectedChange() {
-      this.selectButton.active = false;
+      this.joinButton.active = false;
       this.editButton.active = false;
       this.deleteButton.active = false;
       ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
       if (entry != null && !(entry instanceof ServerSelectionList.LANHeader)) {
-         this.selectButton.active = true;
+         this.joinButton.active = true;
          if (entry instanceof ServerSelectionList.OnlineServerEntry) {
             this.editButton.active = true;
             this.deleteButton.active = true;

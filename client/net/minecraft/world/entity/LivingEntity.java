@@ -106,7 +106,9 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffe
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractBedBlock;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HoneyBlock;
 import net.minecraft.world.level.block.LadderBlock;
@@ -129,8 +131,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
@@ -235,7 +235,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public float xxa;
    public float yya;
    public float zza;
-   protected final InterpolationHandler interpolation = new InterpolationHandler(this);
+   protected final InterpolationHandler interpolation = new SteppedInterpolationHandler(this);
    protected double lerpYHeadRot;
    protected int lerpHeadSteps;
    private boolean effectsDirty = true;
@@ -774,15 +774,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.setHealth(input.getFloatOr("Health", this.getMaxHealth()));
       this.hurtTime = input.getShortOr("HurtTime", (short)0);
       this.deathTime = input.getShortOr("DeathTime", (short)0);
-      input.getString("Team").ifPresent((teamName) -> {
-         Scoreboard scoreboard = this.level().getScoreboard();
-         PlayerTeam team = scoreboard.getPlayerTeam(teamName);
-         boolean success = team != null && scoreboard.addPlayerToTeam(this.getStringUUID(), team);
-         if (!success) {
-            LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", teamName);
-         }
-
-      });
       this.setSharedFlag(7, input.getBooleanOr("FallFlying", false));
       input.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((sleepingPos) -> {
          this.setSleepingPos(sleepingPos);
@@ -3704,23 +3695,37 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       BlockState blockState = this.level().getBlockState(bedPosition);
-      if (blockState.getBlock() instanceof BedBlock) {
+      if (blockState.getBlock() instanceof AbstractBedBlock) {
          this.level().setBlockAndUpdate(bedPosition, (BlockState)blockState.setValue(BedBlock.OCCUPIED, true));
       }
 
       this.setPose(Pose.SLEEPING);
-      this.setPosToBed(bedPosition);
+      this.setPosToBed(blockState, bedPosition);
       this.setSleepingPos(bedPosition);
       this.setDeltaMovement(Vec3.ZERO);
       this.needsSync = true;
    }
 
    private void setPosToBed(final BlockPos bedPosition) {
-      this.setPos((double)bedPosition.getX() + 0.5, (double)bedPosition.getY() + 0.6875, (double)bedPosition.getZ() + 0.5);
+      BlockState state = this.level().getBlockState(bedPosition);
+      this.setPosToBed(state, bedPosition);
+   }
+
+   private void setPosToBed(final BlockState state, final BlockPos bedPosition) {
+      Block var6 = state.getBlock();
+      double sleepHeight;
+      if (var6 instanceof AbstractBedBlock bed) {
+         sleepHeight = bed.getSleepHeight(state, this.level(), bedPosition);
+      } else {
+         sleepHeight = state.getShape(this.level(), bedPosition).max(Direction.Axis.Y);
+      }
+
+      double adjustHeight = 0.125;
+      this.setPos((double)bedPosition.getX() + 0.5, (double)bedPosition.getY() + sleepHeight + 0.125, (double)bedPosition.getZ() + 0.5);
    }
 
    private boolean checkBedExists() {
-      return (Boolean)this.getSleepingPos().map((bedPosition) -> this.level().getBlockState(bedPosition).getBlock() instanceof BedBlock).orElse(false);
+      return (Boolean)this.getSleepingPos().map((bedPosition) -> this.level().getBlockState(bedPosition).getBlock() instanceof AbstractBedBlock).orElse(false);
    }
 
    public void stopSleeping() {
@@ -3729,10 +3734,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       java.util.Objects.requireNonNull(var10001);
       var10000.filter(var10001::hasChunkAt).ifPresent((bedPosition) -> {
          BlockState state = this.level().getBlockState(bedPosition);
-         if (state.getBlock() instanceof BedBlock) {
+         Block patt0$temp = state.getBlock();
+         if (patt0$temp instanceof AbstractBedBlock bedBlock) {
             Direction facing = (Direction)state.getValue(BedBlock.FACING);
             this.level().setBlockAndUpdate(bedPosition, (BlockState)state.setValue(BedBlock.OCCUPIED, false));
-            Vec3 standUp = (Vec3)BedBlock.findStandUpPosition(this.getType(), this.level(), bedPosition, facing, this.getYRot()).orElseGet(() -> {
+            Vec3 standUp = (Vec3)AbstractBedBlock.findStandUpPosition(this.getType(), this.level(), bedPosition, facing, this.getYRot()).orElseGet(() -> {
                BlockPos above = bedPosition.above();
                return new Vec3((double)above.getX() + 0.5, (double)above.getY() + 0.1, (double)above.getZ() + 0.5);
             });
@@ -3741,6 +3747,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.setPos(standUp.x, standUp.y, standUp.z);
             this.setYRot(yaw);
             this.setXRot(0.0F);
+            bedBlock.onStopSleeping(this.level(), bedPosition);
          }
 
       });

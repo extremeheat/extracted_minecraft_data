@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
-public class RandomizedIntStateProvider extends BlockStateProvider {
+public class RandomizedIntStateProvider implements BlockStateProvider {
    public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((c) -> c.source), Codec.STRING.fieldOf("property").forGetter((c) -> c.propertyName), IntProviders.CODEC.fieldOf("values").forGetter((c) -> c.values)).apply(i, RandomizedIntStateProvider::new));
    private final BlockStateProvider source;
    private final String propertyName;
@@ -46,8 +46,8 @@ public class RandomizedIntStateProvider extends BlockStateProvider {
       this.values = values;
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.RANDOMIZED_INT_STATE_PROVIDER;
+   public MapCodec<RandomizedIntStateProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

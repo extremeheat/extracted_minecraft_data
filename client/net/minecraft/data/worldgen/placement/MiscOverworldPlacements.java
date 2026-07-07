@@ -55,7 +55,7 @@ public class MiscOverworldPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> iceSpike = configuredFeatures.getOrThrow(MiscOverworldFeatures.ICE_SPIKE);
       Holder<Feature> icePatch = configuredFeatures.getOrThrow(MiscOverworldFeatures.ICE_PATCH);
       Holder<Feature> forestRock = configuredFeatures.getOrThrow(MiscOverworldFeatures.FOREST_ROCK);

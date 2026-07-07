@@ -29,13 +29,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_INVALID_FEATURE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("commands.place.feature.invalid", value));
    private static final DynamicCommandExceptionType ERROR_INVALID_STRUCTURE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("commands.place.structure.invalid", value));
    private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType((value) -> Component.translatableEscape("commands.place.jigsaw.invalid", value));
    private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("recipe.notFound", value));
@@ -64,10 +62,6 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    private static <T> Holder.Reference<T> resolveKey(final CommandContext<CommandSourceStack> context, final String name, final ResourceKey<Registry<T>> registryKey, final DynamicCommandExceptionType exception) throws CommandSyntaxException {
       ResourceKey<T> key = getRegistryKey(context, name, registryKey, exception);
       return (Holder.Reference)getRegistry(context, registryKey).get(key).orElseThrow(() -> exception.create(key.identifier()));
-   }
-
-   public static Holder.Reference<Feature> getConfiguredFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return resolveKey(context, name, Registries.FEATURE, ERROR_INVALID_FEATURE);
    }
 
    public static Holder.Reference<Structure> getStructure(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {

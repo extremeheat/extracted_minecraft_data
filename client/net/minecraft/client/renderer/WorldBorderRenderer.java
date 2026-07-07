@@ -1,16 +1,16 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -168,6 +168,7 @@ public class WorldBorderRenderer implements AutoCloseable {
    }
 
    private void prepareRenderPass(final RenderPass renderPass, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final AbstractTexture abstractTexture) {
+      RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setIndexBuffer(indexBuffer, this.indices.type());
       renderPass.bindTexture("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());

@@ -73,7 +73,7 @@ public class ShelfMushroomDecorator extends TreeDecorator {
 
    private static boolean tryPlaceMushroomOnStandingTree(final TreeDecorator.Context context, final BlockPos logPos, final Direction facing, final RandomSource random) {
       BlockPos mushroomPos = mushroomPosFor(logPos, facing);
-      if (!context.isReplaceable(mushroomPos)) {
+      if (!isBlockReplaceableWithShelfMushroom(context, mushroomPos)) {
          return false;
       } else if (hasShelfMushroomAt(context, mushroomPos.below())) {
          return false;
@@ -85,7 +85,7 @@ public class ShelfMushroomDecorator extends TreeDecorator {
 
    private static void tryPlaceMushroomOnFallenTree(final TreeDecorator.Context context, final BlockPos logPos, final Direction facing, final RandomSource random) {
       BlockPos mushroomPos = mushroomPosFor(logPos, facing);
-      if (context.isReplaceable(mushroomPos)) {
+      if (isBlockReplaceableWithShelfMushroom(context, mushroomPos)) {
          if (!hasHorizontallyAdjacentShelfMushroom(context, mushroomPos) && !hasHorizontallyAdjacentShelfMushroom(context, logPos)) {
             placeMushroom(context, mushroomPos, facing, random);
          }
@@ -133,5 +133,9 @@ public class ShelfMushroomDecorator extends TreeDecorator {
       }
 
       return false;
+   }
+
+   public static boolean isBlockReplaceableWithShelfMushroom(final TreeDecorator.Context context, final BlockPos pos) {
+      return context.isReplaceable(pos) && !context.isWaterOrWaterNearby(pos);
    }
 }

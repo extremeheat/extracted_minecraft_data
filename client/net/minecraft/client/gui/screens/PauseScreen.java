@@ -115,7 +115,7 @@ public class PauseScreen extends Screen {
          playerSocialManager.addFriendListUpdateListener(this.friendListUpdateListener);
       }
 
-      this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo());
+      this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode());
       iconButtonRow.addChild(this.friends);
       SpriteIconButton playerReportingButton = SpriteIconButton.builder(PLAYER_REPORTING, (var1) -> this.minecraft.gui.setScreen(new SocialInteractionsScreen(this)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/player_reporting"), 15, 15).withTootip().build();
       iconButtonRow.addChild(playerReportingButton);

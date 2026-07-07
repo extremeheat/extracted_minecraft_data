@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.components.debug;
 
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.systems.DeviceInfo;
-import com.mojang.blaze3d.systems.DeviceType;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.device.DeviceInfo;
+import com.mojang.renderpearl.api.device.DeviceType;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;

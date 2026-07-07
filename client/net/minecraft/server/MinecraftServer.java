@@ -150,7 +150,6 @@ import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.CustomSpawner;
@@ -287,7 +286,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final ServerDebugSubscribers debugSubscribers;
    protected final WorldData worldData;
    private LevelData.RespawnData effectiveRespawnData;
-   private final PotionBrewing potionBrewing;
    private FuelValues fuelValues;
    private int emptyTicks;
    private volatile boolean isSaving;
@@ -359,7 +357,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.structureTemplateManager = new StructureTemplateManager(worldStem.resourceManager(), storageSource, fixerUpper, blockLookup);
          this.serverThread = serverThread;
          this.executor = Util.backgroundExecutor();
-         this.potionBrewing = PotionBrewing.bootstrap(this.worldData.enabledFeatures());
          this.resources.managers.getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
          this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
@@ -1258,7 +1255,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void sendSystemMessage(final Component message) {
-      LOGGER.info(message.getString());
+      LOGGER.info("System chat: {}", message.getString());
    }
 
    public KeyPair getKeyPair() {
@@ -2281,10 +2278,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public void reportPacketHandlingException(final Throwable throwable, final PacketType<?> packetType) {
       this.suppressedExceptions.addEntry("packet/" + String.valueOf(packetType), throwable);
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.potionBrewing;
    }
 
    public FuelValues fuelValues() {

@@ -4,20 +4,27 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.loot.packs.TradeRebalanceLootTableProvider;
 import net.minecraft.world.item.trading.TradeRebalanceVillagerTrades;
 
 public class TradeRebalanceRegistries {
-   private static final RegistrySetBuilder BUILDER;
+   private static final RegistrySetBuilder WORLD_BUILDER;
+   private static final RegistrySetBuilder RELOADABLE_BUILDER;
 
    public TradeRebalanceRegistries() {
       super();
    }
 
-   public static CompletableFuture<RegistrySetBuilder.PatchedRegistries> createLookup(final CompletableFuture<HolderLookup.Provider> vanilla) {
-      return RegistryPatchGenerator.createLookup(vanilla, BUILDER);
+   public static CompletableFuture<RegistrySetBuilder.PatchedRegistries> createPatchedWorldRegistries(final CompletableFuture<HolderLookup.Provider> vanillaWorld) {
+      return RegistryPatchGenerator.createWorldLookup(vanillaWorld, WORLD_BUILDER);
+   }
+
+   public static CompletableFuture<RegistrySetBuilder.PatchedRegistries> createPatchedReloadable(final CompletableFuture<HolderLookup.Provider> context, final CompletableFuture<HolderLookup.Provider> vanilla) {
+      return RegistryPatchGenerator.createReloadableLookup(context, vanilla, RELOADABLE_BUILDER);
    }
 
    static {
-      BUILDER = (new RegistrySetBuilder()).add(Registries.VILLAGER_TRADE, TradeRebalanceVillagerTrades::bootstrap);
+      WORLD_BUILDER = (new RegistrySetBuilder()).add(Registries.VILLAGER_TRADE, TradeRebalanceVillagerTrades::bootstrap);
+      RELOADABLE_BUILDER = (new RegistrySetBuilder()).add(Registries.LOOT_TABLE, TradeRebalanceLootTableProvider.create());
    }
 }

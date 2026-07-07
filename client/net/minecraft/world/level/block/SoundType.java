@@ -132,6 +132,9 @@ public class SoundType {
    public static final SoundType SULFUR_SPIKE;
    public static final SoundType CINNABAR;
    public static final SoundType SHELF_MUSHROOM;
+   public static final SoundType POPLAR_LEAVES;
+   public static final SoundType STRAW_BED;
+   public static final SoundType RED_SHRUB;
    public final float volume;
    public final float pitch;
    private final SoundEvent breakSound;
@@ -308,5 +311,8 @@ public class SoundType {
       SULFUR_SPIKE = new SoundType(1.0F, 1.0F, SoundEvents.SULFUR_SPIKE_BREAK, SoundEvents.SULFUR_SPIKE_STEP, SoundEvents.SULFUR_SPIKE_PLACE, SoundEvents.SULFUR_SPIKE_HIT, SoundEvents.SULFUR_SPIKE_FALL);
       CINNABAR = new SoundType(1.0F, 1.0F, SoundEvents.CINNABAR_BREAK, SoundEvents.CINNABAR_STEP, SoundEvents.CINNABAR_PLACE, SoundEvents.CINNABAR_HIT, SoundEvents.CINNABAR_FALL);
       SHELF_MUSHROOM = new SoundType(1.0F, 1.0F, SoundEvents.SHELF_MUSHROOM_BREAK, SoundEvents.SHELF_MUSHROOM_STEP, SoundEvents.SHELF_MUSHROOM_PLACE, SoundEvents.EMPTY, SoundEvents.SHELF_MUSHROOM_FALL);
+      POPLAR_LEAVES = new SoundType(1.0F, 1.0F, SoundEvents.POPLAR_LEAVES_BREAK, SoundEvents.POPLAR_LEAVES_STEP, SoundEvents.POPLAR_LEAVES_PLACE, SoundEvents.POPLAR_LEAVES_HIT, SoundEvents.POPLAR_LEAVES_FALL);
+      STRAW_BED = new SoundType(1.0F, 1.0F, SoundEvents.STRAW_BED_BREAK, SoundEvents.STRAW_BED_STEP, SoundEvents.STRAW_BED_PLACE, SoundEvents.STRAW_BED_HIT, SoundEvents.STRAW_BED_FALL);
+      RED_SHRUB = new SoundType(1.0F, 1.0F, SoundEvents.RED_SHRUB_BREAK, SoundEvents.EMPTY, SoundEvents.RED_SHRUB_PLACE, SoundEvents.EMPTY, SoundEvents.EMPTY);
    }
 }

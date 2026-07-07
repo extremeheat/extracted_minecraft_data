@@ -448,12 +448,16 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.jumpFactor;
    }
 
-   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
-      level.levelEvent(player, 2001, pos, getId(state));
+   public void spawnDestroyByEntityParticles(final Level level, final @Nullable Entity entity, final BlockPos pos, final BlockState state) {
+      level.levelEvent(entity, 2001, pos, getId(state));
+   }
+
+   public void spawnDestroyParticles(final Level level, final BlockPos pos, final BlockState state) {
+      this.spawnDestroyByEntityParticles(level, (Entity)null, pos, state);
    }
 
    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
-      this.spawnDestroyParticles(level, player, pos, state);
+      this.spawnDestroyByEntityParticles(level, player, pos, state);
       if (state.is(BlockTags.GUARDED_BY_PIGLINS) && level instanceof ServerLevel serverLevel) {
          PiglinAi.angerNearbyPiglins(serverLevel, player, false);
       }

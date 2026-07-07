@@ -6,8 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +24,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction {
    public static final int NO_LIMIT = 0;
-   public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
+   public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), NumberProviders.DIRECT_CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
    private final Holder<Enchantment> enchantment;
    private final NumberProvider count;
    private final int limit;
@@ -72,8 +71,7 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
       return itemStack;
    }
 
-   public static Builder lootingMultiplier(final HolderLookup.Provider registries, final NumberProvider count) {
-      HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
+   public static Builder lootingMultiplier(final HolderGetter<Enchantment> enchantments, final NumberProvider count) {
       return new Builder(enchantments.getOrThrow(Enchantments.LOOTING), count);
    }
 

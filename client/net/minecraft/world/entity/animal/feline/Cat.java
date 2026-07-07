@@ -41,7 +41,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.CatLieOnBedGoal;
+import net.minecraft.world.entity.ai.goal.CatLieOnBlockGoal;
 import net.minecraft.world.entity.ai.goal.CatSitOnBlockGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
@@ -107,7 +107,7 @@ public class Cat extends TamableAnimal {
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
       this.goalSelector.addGoal(3, new CatRelaxOnOwnerGoal(this));
       this.goalSelector.addGoal(4, this.temptGoal);
-      this.goalSelector.addGoal(5, new CatLieOnBedGoal(this, 1.1, 8));
+      this.goalSelector.addGoal(5, new CatLieOnBlockGoal(this, 1.1, 8));
       this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0, 10.0F, 5.0F));
       this.goalSelector.addGoal(7, new CatSitOnBlockGoal(this, 0.8));
       this.goalSelector.addGoal(8, new LeapAtTargetGoal(this, 0.3F));
@@ -567,7 +567,7 @@ public class Cat extends TamableAnimal {
 
                BlockPos ownerPos = this.ownerPlayer.blockPosition();
                BlockState ownerPosState = this.cat.level().getBlockState(ownerPos);
-               if (ownerPosState.is(BlockTags.BEDS)) {
+               if (ownerPosState.is(BlockTags.CATS_CAN_LIE_ON)) {
                   Optional var10001 = ownerPosState.getOptionalValue(BedBlock.FACING).map((bedDir) -> ownerPos.relative(bedDir.getOpposite()));
                   Objects.requireNonNull(ownerPos);
                   this.goalPos = (BlockPos)var10001.orElseGet(ownerPos::immutable);

@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
@@ -356,8 +357,8 @@ public class FallingBlockEntity extends Entity {
       return newEntity;
    }
 
-   public boolean canSimulateMovement() {
-      return true;
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    static {

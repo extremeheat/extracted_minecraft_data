@@ -22,7 +22,7 @@ public class PileFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      context.register(PILE_HAY, new BlockPileFeature(new RotatedBlockProvider(Blocks.HAY_BLOCK)));
+      context.register(PILE_HAY, new BlockPileFeature(new RotatedBlockProvider(BlockStateProvider.simple(Blocks.HAY_BLOCK))));
       context.register(PILE_MELON, new BlockPileFeature(BlockStateProvider.simple(Blocks.MELON)));
       context.register(PILE_SNOW, new BlockPileFeature(BlockStateProvider.simple(Blocks.SNOW)));
       context.register(PILE_ICE, new BlockPileFeature(new WeightedStateProvider(WeightedList.builder().add(Blocks.BLUE_ICE.defaultBlockState(), 1).add(Blocks.PACKED_ICE.defaultBlockState(), 5))));

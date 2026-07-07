@@ -64,7 +64,10 @@ public class ServerScoreboard extends Scoreboard {
 
    public void onPlayerRemoved(final ScoreHolder player) {
       super.onPlayerRemoved(player);
-      this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(player.getScoreboardName(), (String)null));
+      if (!this.trackedObjectives.isEmpty()) {
+         this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(player.getScoreboardName(), (String)null));
+      }
+
       this.setDirty();
    }
 

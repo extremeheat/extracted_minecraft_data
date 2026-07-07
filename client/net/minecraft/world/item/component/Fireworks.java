@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -29,7 +28,7 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
 
    public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
       if (this.flightDuration > 0) {
-         consumer.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
+         consumer.accept(Component.translatable("item.minecraft.firework_rocket.flight", this.flightDuration).withStyle(ChatFormatting.GRAY));
       }
 
       FireworkExplosion current = null;

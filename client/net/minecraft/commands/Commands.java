@@ -94,6 +94,7 @@ import net.minecraft.server.commands.ParticleCommand;
 import net.minecraft.server.commands.PerfCommand;
 import net.minecraft.server.commands.PlaceCommand;
 import net.minecraft.server.commands.PlaySoundCommand;
+import net.minecraft.server.commands.PostEffectCommand;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.server.commands.RaidCommand;
 import net.minecraft.server.commands.RandomCommand;
@@ -209,8 +210,9 @@ public class Commands {
       MsgCommand.register(this.dispatcher);
       SwingCommand.register(this.dispatcher);
       ParticleCommand.register(this.dispatcher, context);
-      PlaceCommand.register(this.dispatcher);
+      PlaceCommand.register(this.dispatcher, context);
       PlaySoundCommand.register(this.dispatcher);
+      PostEffectCommand.register(this.dispatcher);
       RandomCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
       RecipeCommand.register(this.dispatcher);
@@ -503,7 +505,7 @@ public class Commands {
    }
 
    public static void validate() {
-      CommandBuildContext context = createValidationContext(VanillaRegistries.createLookup());
+      CommandBuildContext context = createValidationContext(VanillaRegistries.createWorldLookup());
       CommandDispatcher<CommandSourceStack> dispatcher = (new Commands(Commands.CommandSelection.ALL, context)).getDispatcher();
       RootCommandNode<CommandSourceStack> root = dispatcher.getRoot();
       dispatcher.findAmbiguities((parent, child, sibling, ambiguities) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{dispatcher.getPath(child), dispatcher.getPath(sibling), ambiguities}));

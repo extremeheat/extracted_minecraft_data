@@ -55,9 +55,9 @@ public class FlatLevelGeneratorPresets {
       }
 
       private void register(final ResourceKey<FlatLevelGeneratorPreset> key, final ItemLike icon, final ResourceKey<Biome> biome, final Set<ResourceKey<StructureSet>> structures, final boolean decoration, final boolean addLakes, final FlatLayerInfo... layers) {
-         HolderGetter<StructureSet> structureSets = this.context.<StructureSet>lookup(Registries.STRUCTURE_SET);
-         HolderGetter<PlacedFeature> placedFeatures = this.context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
-         HolderGetter<Biome> biomes = this.context.<Biome>lookup(Registries.BIOME);
+         HolderGetter<StructureSet> structureSets = this.context.lookup(Registries.STRUCTURE_SET);
+         HolderGetter<PlacedFeature> placedFeatures = this.context.lookup(Registries.PLACED_FEATURE);
+         HolderGetter<Biome> biomes = this.context.lookup(Registries.BIOME);
          Stream var10000 = structures.stream();
          Objects.requireNonNull(structureSets);
          HolderSet.Direct<StructureSet> structuresHolder = HolderSet.direct((List)var10000.map(structureSets::getOrThrow).collect(Collectors.toList()));

@@ -110,7 +110,7 @@ public class Phantom extends Mob implements Enemy {
          float anim = Mth.cos((double)((float)(this.getUniqueFlapTickOffset() + this.tickCount) * 7.448451F * 0.017453292F + 3.1415927F));
          float nextAnim = Mth.cos((double)((float)(this.getUniqueFlapTickOffset() + this.tickCount + 1) * 7.448451F * 0.017453292F + 3.1415927F));
          if (anim > 0.0F && nextAnim <= 0.0F) {
-            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.PHANTOM_FLAP, this.getSoundSource(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F, false);
+            this.level().playLocalSound(this, SoundEvents.PHANTOM_FLAP, this.getSoundSource(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F);
          }
 
          float width = this.getBbWidth() * 1.48F;

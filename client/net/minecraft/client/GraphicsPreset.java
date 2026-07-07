@@ -1,7 +1,7 @@
 package net.minecraft.client;
 
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.server.level.ParticleStatus;

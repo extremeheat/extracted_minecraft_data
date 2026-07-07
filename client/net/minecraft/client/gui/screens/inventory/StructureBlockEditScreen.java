@@ -403,10 +403,6 @@ public class StructureBlockEditScreen extends Screen {
       graphics.text(this.font, (Component)mode.getDisplayName(), this.width / 2 - 153, 174, -6250336);
    }
 
-   public boolean isPauseScreen() {
-      return false;
-   }
-
    public boolean isInGameUi() {
       return true;
    }

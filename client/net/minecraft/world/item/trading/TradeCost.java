@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public record TradeCost(Holder<Item> item, NumberProvider count, DataComponentExactPredicate components) implements Validatable {
-   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), NumberProviders.CODEC.optionalFieldOf("count", ConstantValue.exactly(1.0F)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
+   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), NumberProviders.DIRECT_CODEC.optionalFieldOf("count", ConstantValue.exactly(1.0F)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
 
    public TradeCost(final ItemLike item, final int count) {
       this(item.asItem().builtInRegistryHolder(), ConstantValue.exactly((float)count), DataComponentExactPredicate.EMPTY);

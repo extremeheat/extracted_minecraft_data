@@ -1,10 +1,10 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.GpuOutOfMemoryException;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;

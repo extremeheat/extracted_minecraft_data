@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 
 public class UiLightmap implements AutoCloseable {

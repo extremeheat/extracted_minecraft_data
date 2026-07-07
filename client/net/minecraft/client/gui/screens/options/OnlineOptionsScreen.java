@@ -85,7 +85,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
       OptionInstance<Boolean> inGameNotificationOpt = this.options.inGameNotification();
       this.friendsListButton = CycleButton.onOffBuilder(playerSocialManager.isFriendListEnabled()).create(0, 0, 150, 20, FRIENDS_LIST_LABEL, (var3, newValue) -> this.onFriendsListToggled(newValue, playerSocialManager, inGameNotificationOpt));
-      this.friendsListButton.active = !this.minecraft.isDemo();
+      this.friendsListButton.active = !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode();
       this.allowFriendRequestsButton = CycleButton.onOffBuilder(playerSocialManager.isAllowFriendRequests()).withTooltip((var0) -> ALLOW_FRIEND_REQUESTS_TOOLTIP).create(0, 0, 150, 20, ALLOW_FRIEND_REQUESTS_LABEL, (var2, enabled) -> applyFriendSettings(this.minecraft, playerSocialManager.isFriendListEnabled(), enabled, (var1) -> this.updateFriendListDependentButtons()));
       this.list.addSmall(this.friendsListButton, this.allowFriendRequestsButton);
       this.inGameNotificationButton = CycleButton.onOffBuilder((Boolean)inGameNotificationOpt.get()).withTooltip((var0) -> IN_GAME_NOTIFICATIONS_TOOLTIP).create(0, 0, 150, 20, IN_GAME_NOTIFICATIONS_LABEL, (var1, enabled) -> inGameNotificationOpt.set(enabled));
@@ -103,7 +103,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       if (newValue) {
          this.minecraft.gui.setScreen(new FriendsListConfirmScreen((accepted) -> {
             this.minecraft.gui.setScreen(this);
-            if (accepted) {
+            if (accepted && !this.minecraft.isOfflineDeveloperMode()) {
                playerSocialManager.setFriendListEnabled(true);
                playerSocialManager.setAllowFriendRequests(true);
                applyFriendSettings(this.minecraft, true, true, (var1) -> this.updateFriendListDependentButtons());

@@ -97,7 +97,7 @@ public class MagmaCube extends AbstractCubeMob implements Enemy {
 
    }
 
-   protected boolean isDealsDamage() {
+   protected boolean canDealDamage() {
       return this.isEffectiveAi();
    }
 

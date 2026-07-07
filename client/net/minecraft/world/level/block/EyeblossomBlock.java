@@ -73,14 +73,12 @@ public class EyeblossomBlock extends FlowerBlock {
          level.setBlockAndUpdate(pos, newType.state());
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
          newType.spawnTransformParticle(level, pos, random);
-         BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 2, 3)).forEach((nearby) -> {
-            BlockState nearbyState = level.getBlockState(nearby);
-            if (nearbyState == state) {
-               double distance = Math.sqrt(pos.distSqr(nearby));
-               int delay = random.nextIntBetweenInclusive((int)(distance * 5.0), (int)(distance * 10.0));
-               level.scheduleTick(nearby, state.getBlock(), delay);
-            }
-
+         BlockPos minPos = pos.offset(-3, -2, -3);
+         BlockPos maxPos = pos.offset(3, 2, 3);
+         level.findBlocksIn(minPos, maxPos).filterState((nearbyState) -> nearbyState == state).forEach((nearbyPos, var5) -> {
+            double distance = Math.sqrt(pos.distSqr(nearbyPos));
+            int delay = random.nextIntBetweenInclusive((int)(distance * 5.0), (int)(distance * 10.0));
+            level.scheduleTick(nearbyPos, state.getBlock(), delay);
          });
          return true;
       }

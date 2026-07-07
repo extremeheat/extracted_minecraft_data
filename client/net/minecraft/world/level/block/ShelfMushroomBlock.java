@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -66,7 +67,7 @@ public class ShelfMushroomBlock extends HorizontalDirectionalBlock implements Bo
    }
 
    public void bounceOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
-      if (!(entity instanceof ItemEntity)) {
+      if (!(entity instanceof ItemEntity) && !(entity instanceof PrimedTnt)) {
          level.playSound((Entity)null, (BlockPos)pos, SoundEvents.SHELF_MUSHROOM_BOUNCE, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 

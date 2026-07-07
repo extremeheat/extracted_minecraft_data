@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SlotLoot extends LootPoolSingletonContainer {
-   public static final MapCodec<SlotLoot> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotSources.CODEC.fieldOf("slot_source").forGetter((t) -> t.slotSource)).and(singletonFields(i)).apply(i, SlotLoot::new));
+   public static final MapCodec<SlotLoot> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SlotSources.DIRECT_CODEC.fieldOf("slot_source").forGetter((t) -> t.slotSource)).and(singletonFields(i)).apply(i, SlotLoot::new));
    private final SlotSource slotSource;
 
    private SlotLoot(final SlotSource slotSource, final int weight, final int quality, final List<LootItemCondition> conditions, final List<LootItemFunction> functions) {

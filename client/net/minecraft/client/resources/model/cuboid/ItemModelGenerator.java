@@ -235,7 +235,7 @@ public class ItemModelGenerator implements UnbakedModel {
 
       public QuadCollection compute(final ModelBaker modelBakery) {
          QuadCollection.Builder builder = new QuadCollection.Builder();
-         BakedQuad.MaterialInfo materialInfo = modelBakery.interner().materialInfo(BakedQuad.MaterialInfo.of(this.material, this.material.sprite().transparency(), this.layerIndex, true, 0));
+         BakedQuad.MaterialInfo materialInfo = modelBakery.interner().materialInfo(BakedQuad.MaterialInfo.of(this.material, this.material.sprite().transparency(), this.layerIndex, (Direction)null, 0));
          ItemModelGenerator.bakeExtrudedSprite(builder, modelBakery.interner(), this.modelState, materialInfo);
          return builder.build();
       }

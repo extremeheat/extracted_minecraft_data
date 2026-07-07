@@ -2,11 +2,11 @@ package net.minecraft.client.renderer.rendertype;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.SamplerCache;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

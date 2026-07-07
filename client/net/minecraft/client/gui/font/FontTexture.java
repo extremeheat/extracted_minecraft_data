@@ -1,12 +1,12 @@
 package net.minecraft.client.gui.font;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;

@@ -39,6 +39,7 @@ import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import net.minecraft.world.entity.npc.villager.VillagerData;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.Block;
@@ -95,6 +96,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Quaternionfc> QUATERNION;
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
    public static final EntityDataSerializer<HumanoidArm> HUMANOID_ARM;
+   public static final EntityDataSerializer<DyeColor> DYE_COLOR;
 
    public static void registerSerializer(final EntityDataSerializer<?> serializer) {
       SERIALIZERS.add(serializer);
@@ -189,6 +191,7 @@ public class EntityDataSerializers {
       QUATERNION = EntityDataSerializer.<Quaternionfc>forValueType(ByteBufCodecs.QUATERNIONF);
       RESOLVABLE_PROFILE = EntityDataSerializer.<ResolvableProfile>forValueType(ResolvableProfile.STREAM_CODEC);
       HUMANOID_ARM = EntityDataSerializer.<HumanoidArm>forValueType(HumanoidArm.STREAM_CODEC);
+      DYE_COLOR = EntityDataSerializer.<DyeColor>forValueType(DyeColor.STREAM_CODEC);
       registerSerializer(BYTE);
       registerSerializer(INT);
       registerSerializer(LONG);
@@ -232,5 +235,6 @@ public class EntityDataSerializers {
       registerSerializer(QUATERNION);
       registerSerializer(RESOLVABLE_PROFILE);
       registerSerializer(HUMANOID_ARM);
+      registerSerializer(DYE_COLOR);
    }
 }

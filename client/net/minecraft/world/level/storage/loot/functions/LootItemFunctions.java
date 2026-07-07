@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 
 public class LootItemFunctions {
    public static final BiFunction<ItemStack, LootContext, ItemStack> IDENTITY = (stack, context) -> stack;
-   public static final Codec<LootItemFunction> TYPED_CODEC;
+   public static final Codec<LootItemFunction> DIRECT_CODEC;
    public static final Codec<LootItemFunction> ROOT_CODEC;
    public static final Codec<Holder<LootItemFunction>> CODEC;
 
@@ -97,8 +97,8 @@ public class LootItemFunctions {
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE.byNameCodec().dispatch("function", LootItemFunction::codec, (c) -> c);
-      ROOT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, SequenceFunction.INLINE_CODEC));
+      DIRECT_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE.byNameCodec().dispatch("function", LootItemFunction::codec, (c) -> c);
+      ROOT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(DIRECT_CODEC, SequenceFunction.INLINE_CODEC));
       CODEC = RegistryFileCodec.<Holder<LootItemFunction>>create(Registries.ITEM_MODIFIER, ROOT_CODEC);
    }
 }

@@ -70,6 +70,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
@@ -111,7 +112,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
@@ -890,11 +890,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          if (selector.test(entity)) {
             result.add(entity);
             if (result.size() >= maxResults) {
-               return AbortableIterationConsumer.Continuation.ABORT;
+               return Continuation.ABORT;
             }
          }
 
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       }));
    }
 
@@ -1160,7 +1160,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       for(ServerPlayer player : this.players) {
          if (player.distanceToSqr(center) < 4096.0) {
             Optional<Vec3> playerKnockback = Optional.ofNullable((Vec3)explosion.getHitPlayers().get(player));
-            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, playerKnockback, explosionParticle, explosionSound, blockParticles));
+            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, playerKnockback, explosionParticle, explosionSound, blockParticles, source == null || !source.isSilent()));
          }
       }
 
@@ -1734,10 +1734,6 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    public FeatureFlagSet enabledFeatures() {
       return this.server.getWorldData().enabledFeatures();
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.server.potionBrewing();
    }
 
    public FuelValues fuelValues() {

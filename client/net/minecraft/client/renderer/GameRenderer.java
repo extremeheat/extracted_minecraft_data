@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -10,20 +9,22 @@ import com.mojang.blaze3d.platform.MessageBox;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.resource.CrossFrameResourcePool;
-import com.mojang.blaze3d.shaders.ShaderSource;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.ShaderSource;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -58,11 +59,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
+import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -93,6 +97,7 @@ import org.slf4j.Logger;
 
 public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
    private static final Identifier BLUR_POST_CHAIN_ID = Identifier.withDefaultNamespace("blur");
+   public static Identifier END_OF_FRAME_POST_EFFECT = Identifier.withDefaultNamespace("end_of_frame");
    public static final int MAX_BLUR_RADIUS = 10;
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final float PROJECTION_3D_HUD_Z_FAR = 100.0F;
@@ -124,14 +129,18 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
    private final GuiRenderer guiRenderer;
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final SubmitNodeStorage handAndScreenSubmitNodeStorage = new SubmitNodeStorage();
-   private @Nullable Identifier postEffectId;
-   private boolean effectActive;
+   private @Nullable Identifier spectatedEntityPostEffect;
+   private boolean spectatedEntityEffectActive;
    private final Camera mainCamera = new Camera();
    private final Projection hudProjection = new Projection();
    private final Lighting lighting = new Lighting();
    private final GlobalSettingsUniform globalSettingsUniform = new GlobalSettingsUniform();
    private final ProjectionMatrixBuffer levelProjectionMatrixBuffer = new ProjectionMatrixBuffer("level");
    private final ProjectionMatrixBuffer hud3dProjectionMatrixBuffer = new ProjectionMatrixBuffer("3d hud");
+   private final List<Identifier> requestedPostEffects = new ArrayList();
+   private final List<Identifier> appliedPostEffects = new ArrayList();
+   private final List<Identifier> failedPostEffects = new ArrayList();
+   private volatile boolean shouldResetFailedPostEffects;
 
    public GameRenderer(final Minecraft minecraft, final ItemInHandRenderer itemInHandRenderer, final ModelManager modelManager) {
       super();
@@ -188,13 +197,13 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       this.renderBlockOutline = renderBlockOutline;
    }
 
-   public void clearPostEffect() {
-      this.postEffectId = null;
-      this.effectActive = false;
+   public void clearSpectatedEntityPostEffect() {
+      this.spectatedEntityPostEffect = null;
+      this.spectatedEntityEffectActive = false;
    }
 
-   public void togglePostEffect() {
-      this.effectActive = !this.effectActive;
+   public void toggleSpectatorPostEffect() {
+      this.spectatedEntityEffectActive = !this.spectatedEntityEffectActive;
    }
 
    public void checkEntityPostEffect(final @Nullable Entity cameraEntity) {
@@ -206,26 +215,26 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       switch (cameraEntity.typeSwitch<invokedynamic>(cameraEntity, var3)) {
          case -1:
          default:
-            this.clearPostEffect();
+            this.clearSpectatedEntityPostEffect();
             break;
          case 0:
             Creeper ignored = (Creeper)cameraEntity;
-            this.setPostEffect(Identifier.withDefaultNamespace("creeper"));
+            this.setSpectatedEntityPostEffect(Identifier.withDefaultNamespace("creeper"));
             break;
          case 1:
             Spider ignored = (Spider)cameraEntity;
-            this.setPostEffect(Identifier.withDefaultNamespace("spider"));
+            this.setSpectatedEntityPostEffect(Identifier.withDefaultNamespace("spider"));
             break;
          case 2:
             EnderMan ignored = (EnderMan)cameraEntity;
-            this.setPostEffect(Identifier.withDefaultNamespace("invert"));
+            this.setSpectatedEntityPostEffect(Identifier.withDefaultNamespace("invert"));
       }
 
    }
 
-   private void setPostEffect(final Identifier id) {
-      this.postEffectId = id;
-      this.effectActive = true;
+   private void setSpectatedEntityPostEffect(final Identifier id) {
+      this.spectatedEntityPostEffect = id;
+      this.spectatedEntityEffectActive = true;
    }
 
    public void processBlurEffect() {
@@ -265,7 +274,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
 
             return var5;
          } catch (IOException exception) {
-            LOGGER.error("Coudln't preload {} shader {}: {}", new Object[]{type, id, exception});
+            LOGGER.error("Couldn't preload {} shader {}", new Object[]{type, id, exception});
             return null;
          }
       };
@@ -311,8 +320,21 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       }
    }
 
-   public @Nullable Identifier currentPostEffect() {
-      return this.postEffectId;
+   public @Nullable Identifier spectatedEntityPostEffect() {
+      return this.spectatedEntityPostEffect;
+   }
+
+   public List<Identifier> getRequestedPostEffects() {
+      return this.requestedPostEffects;
+   }
+
+   @VisibleForDebug
+   public List<Identifier> getAppliedPostEffects() {
+      return this.appliedPostEffects;
+   }
+
+   public PreparableReloadListener createReloadListener() {
+      return (ResourceManagerReloadListener)(var1) -> this.shouldResetFailedPostEffects = true;
    }
 
    public void resize(final int width, final int height) {
@@ -393,6 +415,16 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       profiler.push("camera");
       this.mainCamera.update(deltaTracker);
       profiler.pop();
+      this.requestedPostEffects.clear();
+      this.requestedPostEffects.add(END_OF_FRAME_POST_EFFECT);
+      if (this.minecraft.player != null) {
+         this.requestedPostEffects.addAll(this.minecraft.player.getActivePostEffects());
+      }
+
+      if (this.spectatedEntityPostEffect != null && this.spectatedEntityEffectActive) {
+         this.requestedPostEffects.add(this.spectatedEntityPostEffect);
+      }
+
    }
 
    public void extract(final DeltaTracker deltaTracker, final boolean advanceGameTime) {
@@ -409,6 +441,15 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       }
 
       this.minecraft.gui.extractRenderState(deltaTracker, readyForLevelRendering, resourcesLoaded);
+      this.gameRenderState.requestedPostEffects.clear();
+      if (this.minecraft.player != null) {
+         for(Identifier postEffect : this.requestedPostEffects) {
+            if (!this.failedPostEffects.contains(postEffect)) {
+               this.gameRenderState.requestedPostEffects.add(postEffect);
+            }
+         }
+      }
+
       this.minecraft.getMetricsRecorder().sampleDuringExtract();
    }
 
@@ -429,14 +470,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
          profiler.push("world");
          this.renderLevel(deltaTracker);
          this.tryTakeScreenshotIfNeeded();
-         this.minecraft.levelRenderer.doEntityOutline();
-         if (this.postEffectId != null && this.effectActive) {
-            PostChain postChain = this.minecraft.getShaderManager().getPostChain(this.postEffectId, LevelTargetBundle.MAIN_TARGETS);
-            if (postChain != null) {
-               postChain.process(this.mainRenderTarget, this.resourcePool);
-            }
-         }
-
+         this.minecraft.levelRenderer.blitEntityOutline();
+         this.applyPostEffects();
          profiler.pop();
       }
 
@@ -452,6 +487,28 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       this.renderBuffers.endFrame();
       this.resourcePool.endFrame();
       profiler.pop();
+   }
+
+   private void applyPostEffects() {
+      this.appliedPostEffects.clear();
+      if (this.shouldResetFailedPostEffects) {
+         this.failedPostEffects.clear();
+         this.shouldResetFailedPostEffects = false;
+      }
+
+      for(Identifier postEffect : this.gameRenderState.requestedPostEffects) {
+         try {
+            PostChain postChain = this.minecraft.getShaderManager().getPostChain(postEffect, LevelTargetBundle.MAIN_TARGETS);
+            if (postChain != null) {
+               postChain.process(this.mainRenderTarget, this.resourcePool);
+               this.appliedPostEffects.add(postEffect);
+            }
+         } catch (RuntimeException e) {
+            LOGGER.warn("Failed to apply post effect {}", postEffect, e);
+            this.failedPostEffects.add(postEffect);
+         }
+      }
+
    }
 
    private void tryTakeScreenshotIfNeeded() {

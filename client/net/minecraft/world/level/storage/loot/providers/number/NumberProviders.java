@@ -2,43 +2,72 @@ package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import net.minecraft.core.Registry;
+import java.util.List;
+import net.minecraft.advancements.predicates.StatePropertiesPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ComposterBlock;
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 
 public class NumberProviders {
-   private static final Codec<NumberProvider> TYPED_CODEC;
-   public static final Codec<NumberProvider> CODEC;
+   public static final Codec<NumberProvider> DIRECT_CODEC = Codec.lazyInitialized(() -> {
+      Codec<NumberProvider> typedCodecWithFallback = Codec.withAlternative(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE.byNameCodec().dispatch(NumberProvider::codec, (c) -> c), UniformGenerator.MAP_CODEC.codec());
+      return Codec.either(ConstantValue.INLINE_CODEC, typedCodecWithFallback).xmap(Either::unwrap, (provider) -> {
+         Either var10000;
+         if (provider instanceof ConstantValue constant) {
+            var10000 = Either.left(constant);
+         } else {
+            var10000 = Either.right(provider);
+         }
+
+         return var10000;
+      });
+   });
+   public static final Codec<Holder<NumberProvider>> CODEC;
+   public static final ResourceKey<NumberProvider> COMPOSTABLE_LOW;
+   public static final ResourceKey<NumberProvider> COMPOSTABLE_LOW_MEDIUM;
+   public static final ResourceKey<NumberProvider> COMPOSTABLE_MEDIUM;
+   public static final ResourceKey<NumberProvider> COMPOSTABLE_MEDIUM_HIGH;
+   public static final ResourceKey<NumberProvider> COMPOSTABLE_ALWAYS_ADD_ONE;
 
    public NumberProviders() {
       super();
    }
 
-   public static MapCodec<? extends NumberProvider> bootstrap(final Registry<MapCodec<? extends NumberProvider>> registry) {
-      Registry.register(registry, (String)"constant", ConstantValue.MAP_CODEC);
-      Registry.register(registry, (String)"uniform", UniformGenerator.MAP_CODEC);
-      Registry.register(registry, (String)"binomial", BinomialDistributionGenerator.MAP_CODEC);
-      Registry.register(registry, (String)"score", ScoreboardValue.MAP_CODEC);
-      Registry.register(registry, (String)"storage", StorageValue.MAP_CODEC);
-      Registry.register(registry, (String)"sum", Sum.MAP_CODEC);
-      Registry.register(registry, (String)"enchantment_level", EnchantmentLevelProvider.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"environment_attribute", EnvironmentAttributeValue.MAP_CODEC);
+   private static ResourceKey<NumberProvider> createKey(final String location) {
+      return ResourceKey.create(Registries.NUMBER_PROVIDER, Identifier.withDefaultNamespace(location));
+   }
+
+   public static void bootstrap(final BootstrapContext<NumberProvider> context) {
+      context.register(COMPOSTABLE_LOW, compostable(30));
+      context.register(COMPOSTABLE_LOW_MEDIUM, compostable(50));
+      context.register(COMPOSTABLE_MEDIUM, compostable(65));
+      context.register(COMPOSTABLE_MEDIUM_HIGH, compostable(85));
+      context.register(COMPOSTABLE_ALWAYS_ADD_ONE, compostable(100));
+   }
+
+   private static NumberProvider compostable(final int layerIncreaseChance) {
+      if (layerIncreaseChance >= 100) {
+         return ConstantValue.exactly(1.0F);
+      } else {
+         NumberDispatcher.Case emptyCase = new NumberDispatcher.Case((new LootItemBlockStatePropertyCondition.Builder(Blocks.COMPOSTER)).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(ComposterBlock.LEVEL, 0)).build(), ConstantValue.exactly(1.0F));
+         return new NumberDispatcher(List.of(emptyCase), new WeightedListValue(WeightedList.builder().add(ConstantValue.exactly(1.0F), layerIncreaseChance).add(ConstantValue.exactly(0.0F), 100 - layerIncreaseChance).build()));
+      }
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE.byNameCodec().dispatch(NumberProvider::codec, (c) -> c);
-      CODEC = Codec.lazyInitialized(() -> {
-         Codec<NumberProvider> typedCodecWithFallback = Codec.withAlternative(TYPED_CODEC, UniformGenerator.MAP_CODEC.codec());
-         return Codec.either(ConstantValue.INLINE_CODEC, typedCodecWithFallback).xmap(Either::unwrap, (provider) -> {
-            Either var10000;
-            if (provider instanceof ConstantValue constant) {
-               var10000 = Either.left(constant);
-            } else {
-               var10000 = Either.right(provider);
-            }
-
-            return var10000;
-         });
-      });
+      CODEC = RegistryFileCodec.<Holder<NumberProvider>>create(Registries.NUMBER_PROVIDER, DIRECT_CODEC);
+      COMPOSTABLE_LOW = createKey("compostable/low");
+      COMPOSTABLE_LOW_MEDIUM = createKey("compostable/low_medium");
+      COMPOSTABLE_MEDIUM = createKey("compostable/medium");
+      COMPOSTABLE_MEDIUM_HIGH = createKey("compostable/medium_high");
+      COMPOSTABLE_ALWAYS_ADD_ONE = createKey("compostable/always_add_one");
    }
 }

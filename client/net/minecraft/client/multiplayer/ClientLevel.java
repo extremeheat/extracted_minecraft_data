@@ -94,7 +94,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.CardinalLighting;
@@ -664,13 +663,13 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    }
 
-   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions) {
+   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions, final boolean playSound) {
       if (explosions.isEmpty()) {
          for(int i = 0; i < this.random.nextInt(3) + 2; ++i) {
             this.addParticle(ParticleTypes.POOF, x, y, z, this.random.nextGaussian() * 0.05, 0.005, this.random.nextGaussian() * 0.05);
          }
       } else {
-         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, x, y, z, xd, yd, zd, this.minecraft.particleEngine, explosions));
+         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, x, y, z, xd, yd, zd, this.minecraft.particleEngine, explosions, playSound));
       }
 
    }
@@ -689,6 +688,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public TickRateManager tickRateManager() {
       return this.tickRateManager;
+   }
+
+   public float getRelativeTickSpeed() {
+      float tickrate = this.tickRateManager.tickrate();
+      return tickrate > 20.0F ? tickrate / 20.0F : 1.0F;
    }
 
    public ClientClockManager clockManager() {
@@ -998,10 +1002,6 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public FeatureFlagSet enabledFeatures() {
       return this.connection.enabledFeatures();
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.connection.potionBrewing();
    }
 
    public FuelValues fuelValues() {

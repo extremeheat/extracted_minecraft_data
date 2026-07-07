@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.feature;
 
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

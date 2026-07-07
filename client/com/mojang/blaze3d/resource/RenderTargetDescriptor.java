@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.resource;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.GpuFormat;
 import java.util.Objects;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;

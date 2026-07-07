@@ -90,8 +90,8 @@ public class OverworldMaterialRules {
    }
 
    public static void bootstrap(final BootstrapContext<SurfaceRules.RuleSource> context) {
-      HolderGetter<SurfaceRules.RuleSource> rules = context.<SurfaceRules.RuleSource>lookup(Registries.MATERIAL_RULE);
-      HolderGetter<Biome> biomes = context.<Biome>lookup(Registries.BIOME);
+      HolderGetter<SurfaceRules.RuleSource> rules = context.lookup(Registries.MATERIAL_RULE);
+      HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
       SurfaceRules.RuleSource sulfurCaveBands = SurfaceRules.registerAndWrap(context, SULFUR_CAVE_BANDS, SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.noiseCondition3d(Noises.SULFUR_CAVE_GRADIENT, -0.4000000059604645, -0.10000000149011612), CINNABAR), SurfaceRules.ifTrue(SurfaceRules.noiseCondition3d(Noises.SULFUR_CAVE_GRADIENT, 0.0, 0.4000000059604645), SULFUR), SurfaceRules.ifTrue(SurfaceRules.noiseCondition3d(Noises.SULFUR_CAVE_GRADIENT, 0.4000000059604645), CINNABAR)));
       SurfaceRules.RuleSource underground = SurfaceRules.registerAndWrap(context, UNDERGROUND, SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.SULFUR_CAVES), sulfurCaveBands), SurfaceRules.ifTrue(SurfaceRules.verticalGradient("deepslate", VerticalAnchor.absolute(0), VerticalAnchor.absolute(8)), DEEPSLATE)));
       SurfaceRules.RuleSource surface = registerSurface(context, sulfurCaveBands);
@@ -101,8 +101,8 @@ public class OverworldMaterialRules {
    }
 
    private static SurfaceRules.RuleSource registerSurface(final BootstrapContext<SurfaceRules.RuleSource> context, final SurfaceRules.RuleSource sulfurCaveBands) {
-      HolderGetter<SurfaceRules.ConditionSource> conditions = context.<SurfaceRules.ConditionSource>lookup(Registries.MATERIAL_CONDITION);
-      HolderGetter<Biome> biomes = context.<Biome>lookup(Registries.BIOME);
+      HolderGetter<SurfaceRules.ConditionSource> conditions = context.lookup(Registries.MATERIAL_CONDITION);
+      HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
       SurfaceRules.ConditionSource woodedBadlandsTop = SurfaceRules.yBlockCheck(VerticalAnchor.absolute(97), 2);
       SurfaceRules.ConditionSource badlandsTop = SurfaceRules.yBlockCheck(VerticalAnchor.absolute(256), 0);
       SurfaceRules.ConditionSource badlandsHeightCondition = SurfaceRules.yStartCheck(VerticalAnchor.absolute(63), -1);

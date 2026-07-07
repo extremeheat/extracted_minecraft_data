@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -373,7 +374,7 @@ public class EnderDragon extends Mob implements Enemy {
             double zd = entity.getZ() - zm;
             double dd = Math.max(xd * xd + zd * zd, 0.1);
             entity.push(xd / dd * 4.0, 0.20000000298023224, zd / dd * 4.0);
-            if (!this.phaseManager.getCurrentPhase().isSitting() && livingTarget.getLastHurtByMobTimestamp() < entity.tickCount - 2) {
+            if (!this.phaseManager.getCurrentPhase().isSitting() && livingTarget.getLastHurtByMobTimestamp() < entity.tickCount - 2 && this.doTeamsAllowDamage(livingTarget)) {
                DamageSource damageSource = this.damageSources().mobAttack(this);
                entity.hurtServer(serverLevel, damageSource, 5.0F);
                EnchantmentHelper.doPostAttackEffects(serverLevel, entity, damageSource);
@@ -385,7 +386,7 @@ public class EnderDragon extends Mob implements Enemy {
 
    private void hurt(final ServerLevel level, final List<Entity> entities) {
       for(Entity target : entities) {
-         if (target instanceof LivingEntity) {
+         if (target instanceof LivingEntity && this.doTeamsAllowDamage(target)) {
             DamageSource damageSource = this.damageSources().mobAttack(this);
             target.hurtServer(level, damageSource, 10.0F);
             EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
@@ -851,8 +852,8 @@ public class EnderDragon extends Mob implements Enemy {
       return 1.0F;
    }
 
-   public boolean canSimulateMovement() {
-      return super.canSimulateMovement() || this.isDeadOrDying();
+   public MoveSimulationType getMoveSimulationType() {
+      return this.isDeadOrDying() ? MoveSimulationType.SERVER_AND_CLIENT : super.getMoveSimulationType();
    }
 
    static {

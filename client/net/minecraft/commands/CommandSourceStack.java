@@ -324,6 +324,10 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
       return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
    }
 
+   public Stream<Identifier> getAvailablePostEffects() {
+      return Stream.empty();
+   }
+
    public CompletableFuture<Suggestions> customSuggestion(final CommandContext<?> context) {
       return Suggestions.empty();
    }

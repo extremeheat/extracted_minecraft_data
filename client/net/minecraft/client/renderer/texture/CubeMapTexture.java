@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;

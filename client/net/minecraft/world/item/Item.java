@@ -65,6 +65,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlockTransformerMappings;
+import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DamageResistant;
@@ -94,6 +95,7 @@ import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -394,7 +396,7 @@ public class Item implements ItemLike, FeatureElement {
    public static class Properties {
       private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("block", id.identifier());
       private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("item", id.identifier());
-      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, context, id) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, var1, var2) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
       private @Nullable ItemStackTemplate craftingRemainingItem;
       private FeatureFlagSet requiredFeatures;
       private @Nullable ResourceKey<Item> id;
@@ -592,7 +594,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public <T> Properties delayedHolderComponent(final DataComponentType<Holder<T>> type, final ResourceKey<T> valueKey) {
-         this.componentInitializer = this.componentInitializer.andThen((components, context, key) -> components.set(type, context.getOrThrow(valueKey)));
+         this.componentInitializer = this.componentInitializer.andThen((components, context, var4) -> components.set(type, context.getOrThrow(valueKey)));
          return this;
       }
 
@@ -600,8 +602,12 @@ public class Item implements ItemLike, FeatureElement {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, attributes);
       }
 
+      public Properties compostable(final ResourceKey<NumberProvider> layers) {
+         return this.component(DataComponents.COMPOSTABLE, new Compostable(layers));
+      }
+
       private DataComponentInitializers.Initializer<Item> finalizeInitializer(final Component name, final Identifier model) {
-         return this.componentInitializer.andThen((components, context, key) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
+         return this.componentInitializer.andThen((components, var3, var4) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
                if (c.has(DataComponents.DAMAGE) && (Integer)c.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
                   throw new IllegalStateException("Item cannot have both durability and be stackable");
                }
@@ -646,7 +652,7 @@ public class Item implements ItemLike, FeatureElement {
                return level.tickRateManager().tickrate();
             }
 
-            public MapItemSavedData mapData(final MapId id) {
+            public @Nullable MapItemSavedData mapData(final MapId id) {
                return level.getMapData(id);
             }
 

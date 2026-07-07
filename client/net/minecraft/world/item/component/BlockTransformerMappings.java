@@ -16,6 +16,7 @@ import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CopperChestBlock;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
@@ -44,8 +45,12 @@ public class BlockTransformerMappings {
 
       for(Map.Entry<Block, Block> entry : blocks) {
          BlockTransformer.BlockTransformData.Builder builder = BlockTransformer.BlockTransformData.builder(BlockPredicate.matchesBlocks((Block)entry.getKey()), (BlockStateProvider)(new CopyPropertiesProvider((Block)entry.getValue()))).sound(sound).particle(particle);
+         if (entry.getKey() instanceof DoorBlock) {
+            builder.updateFromNeighbors(false);
+         }
+
          if (entry.getKey() instanceof CopperChestBlock) {
-            builder.transformType(BlockTransformer.TransformType.COPPER_CHEST);
+            builder.transformType(BlockTransformer.TransformType.COPPER_CHEST).updateFromNeighbors(false);
          }
 
          transforms.add(builder.build());

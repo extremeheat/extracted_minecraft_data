@@ -41,7 +41,7 @@ public class LanServerPinger extends Thread {
             DatagramPacket packet = new DatagramPacket(ping, ping.length, group, 4445);
             this.socket.send(packet);
          } catch (IOException e) {
-            LOGGER.warn("LanServerPinger: {}", e.getMessage());
+            LOGGER.warn("LanServerPinger failed to run", e);
             break;
          }
 

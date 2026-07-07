@@ -118,7 +118,7 @@ public class TitleScreen extends Screen {
       int numberOfButtons = 3;
       int currentButton = 0;
       topPos += 24;
-      this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo()));
+      this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode()));
       ++currentButton;
       this.friends.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
       SpriteIconButton language = (SpriteIconButton)this.addRenderableWidget(CommonButtons.language(20, (var1) -> this.minecraft.gui.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true));

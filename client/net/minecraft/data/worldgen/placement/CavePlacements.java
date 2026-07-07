@@ -55,7 +55,7 @@ public class CavePlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> monsterRoom = configuredFeatures.getOrThrow(CaveFeatures.MONSTER_ROOM);
       Holder<Feature> fossilCoal = configuredFeatures.getOrThrow(CaveFeatures.FOSSIL_COAL);
       Holder<Feature> fossilDiamonds = configuredFeatures.getOrThrow(CaveFeatures.FOSSIL_DIAMONDS);

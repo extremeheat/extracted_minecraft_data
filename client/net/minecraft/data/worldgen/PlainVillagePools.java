@@ -21,18 +21,18 @@ public class PlainVillagePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
       Holder<PlacedFeature> oakVillage = placedFeatures.getOrThrow(VillagePlacements.OAK_VILLAGE);
       Holder<PlacedFeature> flowerPlainVillage = placedFeatures.getOrThrow(VillagePlacements.FLOWER_PLAIN_VILLAGE);
       Holder<PlacedFeature> pileHayVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_HAY_VILLAGE);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> mossify10Percent = processorLists.getOrThrow(ProcessorLists.MOSSIFY_10_PERCENT);
       Holder<StructureProcessorList> mossify20Percent = processorLists.getOrThrow(ProcessorLists.MOSSIFY_20_PERCENT);
       Holder<StructureProcessorList> mossify70Percent = processorLists.getOrThrow(ProcessorLists.MOSSIFY_70_PERCENT);
       Holder<StructureProcessorList> zombiePlains = processorLists.getOrThrow(ProcessorLists.ZOMBIE_PLAINS);
       Holder<StructureProcessorList> streetPlains = processorLists.getOrThrow(ProcessorLists.STREET_PLAINS);
       Holder<StructureProcessorList> farmPlains = processorLists.getOrThrow(ProcessorLists.FARM_PLAINS);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Holder<StructureTemplatePool> terminators = pools.getOrThrow(TERMINATORS_KEY);
       context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.legacy("village/plains/town_centers/plains_fountain_01", mossify20Percent), 50), Pair.of(StructurePoolElement.legacy("village/plains/town_centers/plains_meeting_point_1", mossify20Percent), 50), Pair.of(StructurePoolElement.legacy("village/plains/town_centers/plains_meeting_point_2"), 50), Pair.of(StructurePoolElement.legacy("village/plains/town_centers/plains_meeting_point_3", mossify70Percent), 50), Pair.of(StructurePoolElement.legacy("village/plains/zombie/town_centers/plains_fountain_01", zombiePlains), 1), Pair.of(StructurePoolElement.legacy("village/plains/zombie/town_centers/plains_meeting_point_1", zombiePlains), 1), Pair.of(StructurePoolElement.legacy("village/plains/zombie/town_centers/plains_meeting_point_2", zombiePlains), 1), Pair.of(StructurePoolElement.legacy("village/plains/zombie/town_centers/plains_meeting_point_3", zombiePlains), 1)), StructureTemplatePool.Projection.RIGID));

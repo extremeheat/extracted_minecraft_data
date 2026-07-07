@@ -9,9 +9,10 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-public record BedRule(Rule canSleep, Rule canSetSpawn, boolean explodes, Optional<Component> errorMessage) {
+public record BedRule(Rule canSleep, Rule canSetSpawn, boolean destroyOnUse, boolean destroyOnLeave, Optional<Component> errorMessage) {
    public static final BedRule CAN_SLEEP_WHEN_DARK;
-   public static final BedRule EXPLODES;
+   public static final BedRule DESTROY_ON_USE;
+   public static final BedRule DESTROY_ON_LEAVE;
    public static final Codec<BedRule> CODEC;
 
    public BedRule {
@@ -31,9 +32,10 @@ public record BedRule(Rule canSleep, Rule canSetSpawn, boolean explodes, Optiona
    }
 
    static {
-      CAN_SLEEP_WHEN_DARK = new BedRule(BedRule.Rule.WHEN_DARK, BedRule.Rule.ALWAYS, false, Optional.of(Component.translatable("block.minecraft.bed.no_sleep")));
-      EXPLODES = new BedRule(BedRule.Rule.NEVER, BedRule.Rule.NEVER, true, Optional.empty());
-      CODEC = RecordCodecBuilder.create((i) -> i.group(BedRule.Rule.CODEC.fieldOf("can_sleep").forGetter(BedRule::canSleep), BedRule.Rule.CODEC.fieldOf("can_set_spawn").forGetter(BedRule::canSetSpawn), Codec.BOOL.optionalFieldOf("explodes", false).forGetter(BedRule::explodes), ComponentSerialization.CODEC.optionalFieldOf("error_message").forGetter(BedRule::errorMessage)).apply(i, BedRule::new));
+      CAN_SLEEP_WHEN_DARK = new BedRule(BedRule.Rule.WHEN_DARK, BedRule.Rule.ALWAYS, false, false, Optional.of(Component.translatable("block.minecraft.bed.no_sleep")));
+      DESTROY_ON_USE = new BedRule(BedRule.Rule.NEVER, BedRule.Rule.NEVER, true, false, Optional.empty());
+      DESTROY_ON_LEAVE = new BedRule(BedRule.Rule.WHEN_DARK, BedRule.Rule.NEVER, false, true, Optional.of(Component.translatable("block.minecraft.bed.no_sleep")));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(BedRule.Rule.CODEC.fieldOf("can_sleep").forGetter(BedRule::canSleep), BedRule.Rule.CODEC.fieldOf("can_set_spawn").forGetter(BedRule::canSetSpawn), Codec.BOOL.optionalFieldOf("destroy_on_use", false).forGetter(BedRule::destroyOnUse), Codec.BOOL.optionalFieldOf("destroy_on_leave", false).forGetter(BedRule::destroyOnLeave), ComponentSerialization.CODEC.optionalFieldOf("error_message").forGetter(BedRule::errorMessage)).apply(i, BedRule::new));
    }
 
    public static enum Rule implements StringRepresentable {

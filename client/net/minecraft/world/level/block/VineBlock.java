@@ -23,6 +23,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class VineBlock extends Block {
+   private static final int SEARCH_RADIUS = 4;
+   private static final int MAX_NEIGHBORS_TO_GROW = 4;
    public static final BooleanProperty UP;
    public static final BooleanProperty NORTH;
    public static final BooleanProperty EAST;
@@ -234,21 +236,10 @@ public class VineBlock extends Block {
       return (Boolean)state.getValue(NORTH) || (Boolean)state.getValue(EAST) || (Boolean)state.getValue(SOUTH) || (Boolean)state.getValue(WEST);
    }
 
-   private boolean canSpread(final BlockGetter level, final BlockPos pos) {
-      int radius = 4;
-      Iterable<BlockPos> iterable = BlockPos.betweenClosed(pos.getX() - 4, pos.getY() - 1, pos.getZ() - 4, pos.getX() + 4, pos.getY() + 1, pos.getZ() + 4);
-      int max = 5;
-
-      for(BlockPos blockPos : iterable) {
-         if (level.getBlockState(blockPos).is(this)) {
-            --max;
-            if (max <= 0) {
-               return false;
-            }
-         }
-      }
-
-      return true;
+   private boolean canSpread(final LevelReader level, final BlockPos pos) {
+      BlockPos minPos = pos.offset(-4, -1, -4);
+      BlockPos maxPos = pos.offset(4, 1, 4);
+      return level.findBlocksIn(minPos, maxPos).filterState((state) -> state.is(this)).atMostMatched(4);
    }
 
    protected boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {

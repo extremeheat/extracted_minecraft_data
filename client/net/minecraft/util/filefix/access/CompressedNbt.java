@@ -47,7 +47,7 @@ public abstract class CompressedNbt implements AutoCloseable {
          FileUtil.createDirectoriesSafe(this.path.getParent());
          NbtIo.writeCompressed(cast, this.path);
       } catch (IOException e) {
-         LOGGER.error("Failed to write to {}: {}", this.path, e);
+         LOGGER.error("Failed to write to {}", this.path, e);
       }
 
    }

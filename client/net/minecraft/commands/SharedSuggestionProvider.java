@@ -45,6 +45,8 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
 
    Stream<Identifier> getAvailableSounds();
 
+   Stream<Identifier> getAvailablePostEffects();
+
    CompletableFuture<Suggestions> customSuggestion(CommandContext<?> context);
 
    default Collection<TextCoordinates> getRelevantCoordinates() {

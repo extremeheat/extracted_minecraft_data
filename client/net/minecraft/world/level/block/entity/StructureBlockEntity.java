@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,10 +34,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 
 public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
-   private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
+   private static final int SCAN_CORNER_BLOCKS_RANGE = 80;
    public static final int MAX_OFFSET_PER_AXIS = 48;
    public static final int MAX_SIZE_PER_AXIS = 48;
    public static final String AUTHOR_TAG = "author";
@@ -277,11 +278,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
          return false;
       } else {
          BlockPos pos = this.getBlockPos();
-         int radius = 80;
-         BlockPos corner1 = new BlockPos(pos.getX() - 80, this.level.getMinY(), pos.getZ() - 80);
-         BlockPos corner2 = new BlockPos(pos.getX() + 80, this.level.getMaxY(), pos.getZ() + 80);
-         Stream<BlockPos> relatedCorners = this.getRelatedCorners(corner1, corner2);
-         return calculateEnclosingBoundingBox(pos, relatedCorners).filter((bb) -> {
+         return getEnclosingBoundingBox(this.level, pos, this.structureName).filter((bb) -> {
             int deltaX = bb.maxX() - bb.minX();
             int deltaY = bb.maxY() - bb.minY();
             int deltaZ = bb.maxZ() - bb.minZ();
@@ -299,29 +296,31 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       }
    }
 
-   private Stream<BlockPos> getRelatedCorners(final BlockPos corner1, final BlockPos corner2) {
-      Stream var10000 = BlockPos.betweenClosedStream(corner1, corner2).filter((pos) -> this.level.getBlockState(pos).is(Blocks.STRUCTURE_BLOCK));
-      Level var10001 = this.level;
-      Objects.requireNonNull(var10001);
-      return var10000.map(var10001::getBlockEntity).filter((e) -> e instanceof StructureBlockEntity).map((e) -> (StructureBlockEntity)e).filter((input) -> input.mode == StructureMode.CORNER && Objects.equals(this.structureName, input.structureName)).map(BlockEntity::getBlockPos);
-   }
+   private static Optional<BoundingBox> getEnclosingBoundingBox(final Level level, final BlockPos selfPos, final Identifier structureName) {
+      MutableInt cornerCount = new MutableInt();
+      MutableObject<BoundingBox> result = new MutableObject();
+      BlockPos corner1 = new BlockPos(selfPos.getX() - 80, level.getMinY(), selfPos.getZ() - 80);
+      BlockPos corner2 = new BlockPos(selfPos.getX() + 80, level.getMaxY(), selfPos.getZ() + 80);
+      level.findBlocksIn(corner1, corner2).filterState((state) -> state.is(Blocks.STRUCTURE_BLOCK)).forEach((pos, var5) -> level.getBlockEntity(pos, BlockEntityTypes.STRUCTURE_BLOCK).ifPresent((blockEntity) -> {
+            if (blockEntity.mode == StructureMode.CORNER && Objects.equals(structureName, blockEntity.structureName)) {
+               cornerCount.increment();
+               BoundingBox boundingBox = (BoundingBox)result.get();
+               if (boundingBox == null) {
+                  result.setValue(new BoundingBox(pos));
+               } else {
+                  boundingBox.encapsulate(pos);
+               }
+            }
 
-   private static Optional<BoundingBox> calculateEnclosingBoundingBox(final BlockPos pos, final Stream<BlockPos> relatedCorners) {
-      Iterator<BlockPos> iterator = relatedCorners.iterator();
-      if (!iterator.hasNext()) {
-         return Optional.empty();
-      } else {
-         BlockPos firstCorner = (BlockPos)iterator.next();
-         BoundingBox result = new BoundingBox(firstCorner);
-         if (iterator.hasNext()) {
-            Objects.requireNonNull(result);
-            iterator.forEachRemaining(result::encapsulate);
-         } else {
-            result.encapsulate(pos);
-         }
-
-         return Optional.of(result);
+         }));
+      Optional var10000;
+      switch (((Number)cornerCount.get()).intValue()) {
+         case 0 -> var10000 = Optional.empty();
+         case 1 -> var10000 = Optional.of(((BoundingBox)Objects.requireNonNull((BoundingBox)result.get())).encapsulate(selfPos));
+         default -> var10000 = Optional.of((BoundingBox)Objects.requireNonNull((BoundingBox)result.get()));
       }
+
+      return var10000;
    }
 
    public boolean saveStructure() {

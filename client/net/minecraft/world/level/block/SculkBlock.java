@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -61,24 +62,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
 
    private static boolean canPlaceGrowth(final LevelAccessor level, final BlockPos pos) {
       BlockState stateAbove = level.getBlockState(pos.above());
-      if (stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().is(Fluids.WATER)) {
-         int growthCount = 0;
-
-         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 2, 4))) {
-            BlockState state = level.getBlockState(blockPos);
-            if (state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER)) {
-               ++growthCount;
-            }
-
-            if (growthCount > 2) {
-               return false;
-            }
-         }
-
-         return true;
-      } else {
-         return false;
-      }
+      return stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().is(Fluids.WATER) ? level.findBlocksIn(pos.offset(-4, 0, -4), pos.offset(4, 2, 4)).filterState((state) -> state.is(BlockTags.SCULK_GROWTH_INHIBITORS)).atMostMatched(2) : false;
    }
 
    public boolean canChangeBlockStateOnSpread() {

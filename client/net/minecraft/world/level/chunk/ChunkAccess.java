@@ -30,9 +30,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockScanUtils;
+import net.minecraft.world.level.BlockStateConsumer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -315,23 +318,17 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
    }
 
    public void findBlocks(final Predicate<BlockState> predicate, final BiConsumer<BlockPos, BlockState> consumer) {
-      BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+      BlockStateConsumer blockStateConsumer = (pos, state) -> {
+         consumer.accept(pos, state);
+         return Continuation.CONTINUE;
+      };
+      int max = 15;
 
       for(int sectionY = this.getMinSectionY(); sectionY <= this.getMaxSectionY(); ++sectionY) {
          LevelChunkSection section = this.getSection(this.getSectionIndexFromSectionY(sectionY));
          if (section.maybeHas(predicate)) {
             BlockPos origin = SectionPos.of(this.chunkPos, sectionY).origin();
-
-            for(int y = 0; y < 16; ++y) {
-               for(int z = 0; z < 16; ++z) {
-                  for(int x = 0; x < 16; ++x) {
-                     BlockState state = section.getBlockState(x, y, z);
-                     if (predicate.test(state)) {
-                        consumer.accept(mutablePos.setWithOffset(origin, x, y, z), state);
-                     }
-                  }
-               }
-            }
+            BlockScanUtils.findBlocksInSection(section, origin, 0, 0, 0, 15, 15, 15, predicate, blockStateConsumer);
          }
       }
 

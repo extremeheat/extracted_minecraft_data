@@ -27,7 +27,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class LootPool implements Validatable {
-   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((i) -> i.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((p) -> p.entries), LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((p) -> p.conditions), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((p) -> p.functions), NumberProviders.CODEC.fieldOf("rolls").forGetter((p) -> p.rolls), NumberProviders.CODEC.optionalFieldOf("bonus_rolls", ConstantValue.exactly(0.0F)).forGetter((p) -> p.bonusRolls)).apply(i, LootPool::new));
+   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((i) -> i.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((p) -> p.entries), LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((p) -> p.conditions), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((p) -> p.functions), NumberProviders.DIRECT_CODEC.fieldOf("rolls").forGetter((p) -> p.rolls), NumberProviders.DIRECT_CODEC.optionalFieldOf("bonus_rolls", ConstantValue.exactly(0.0F)).forGetter((p) -> p.bonusRolls)).apply(i, LootPool::new));
    private final List<LootPoolEntryContainer> entries;
    private final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositeCondition;

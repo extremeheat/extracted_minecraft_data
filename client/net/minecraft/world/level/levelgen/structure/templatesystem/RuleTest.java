@@ -31,6 +31,22 @@ public abstract class RuleTest {
       return allOf(List.of(predicates));
    }
 
+   public static RuleTest anyOf(final List<RuleTest> predicates) {
+      return new AnyOfRuleTest(predicates);
+   }
+
+   public static RuleTest anyOf(final RuleTest... predicates) {
+      return anyOf(List.of(predicates));
+   }
+
+   public static RuleTest not(final RuleTest predicate) {
+      return new NotRuleTest(predicate);
+   }
+
+   public static RuleTest either(final RuleTest condition, final RuleTest ifTrue, final RuleTest ifFalse) {
+      return anyOf(allOf(condition, ifTrue), allOf(not(condition), ifFalse));
+   }
+
    static {
       CODEC = BuiltInRegistries.RULE_TEST.byNameCodec().dispatch("predicate_type", RuleTest::getType, RuleTestType::codec);
    }

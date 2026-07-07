@@ -958,12 +958,6 @@ public class GameTestHelper {
       level.clockManager().setTotalTicks(clock, ticks);
    }
 
-   public void setTimeInDimension(final long ticks, final ResourceKey<Level> levelDimension) {
-      ServerLevel level = this.getLevel().getServer().getLevel(levelDimension);
-      Holder<WorldClock> clock = (Holder)level.dimensionType().defaultClock().orElseThrow();
-      level.clockManager().setTotalTicks(clock, ticks);
-   }
-
    public void randomTick(final BlockPos pos) {
       BlockPos absolutePos = this.absolutePos(pos);
       ServerLevel level = this.getLevel();

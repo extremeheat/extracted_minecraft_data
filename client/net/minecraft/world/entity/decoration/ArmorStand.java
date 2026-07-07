@@ -602,7 +602,7 @@ public class ArmorStand extends LivingEntity {
          BlockPos probePos = this.blockPosition();
          int brightestLight = -2147483648;
 
-         for(BlockPos pos : BlockPos.betweenClosed(BlockPos.containing(box.minX, box.minY, box.minZ), BlockPos.containing(box.maxX, box.maxY, box.maxZ))) {
+         for(BlockPos pos : BlockPos.betweenClosed(box)) {
             int blockBrightness = Math.max(this.level().getBrightness(LightLayer.BLOCK, pos), this.level().getBrightness(LightLayer.SKY, pos));
             if (blockBrightness == 15) {
                return Vec3.atCenterOf(pos);

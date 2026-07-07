@@ -87,7 +87,7 @@ public class RealmsUtil {
    }
 
    public static Consumer<RealmsServiceException> openScreenAndLogOnFailure(final Function<RealmsServiceException, Screen> errorScreen, final String errorMessage) {
-      return openScreenOnFailure(errorScreen).andThen((e) -> LOGGER.error(errorMessage, e));
+      return openScreenOnFailure(errorScreen).andThen((e) -> LOGGER.error("{}", errorMessage, e));
    }
 
    @FunctionalInterface

@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.jspecify.annotations.Nullable;
 
 public class IntRange implements LootContextUser {
-   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(NumberProviders.CODEC.optionalFieldOf("min").forGetter((r) -> Optional.ofNullable(r.min)), NumberProviders.CODEC.optionalFieldOf("max").forGetter((r) -> Optional.ofNullable(r.max))).apply(i, IntRange::new));
+   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(NumberProviders.DIRECT_CODEC.optionalFieldOf("min").forGetter((r) -> Optional.ofNullable(r.min)), NumberProviders.DIRECT_CODEC.optionalFieldOf("max").forGetter((r) -> Optional.ofNullable(r.max))).apply(i, IntRange::new));
    public static final Codec<IntRange> CODEC;
    private final @Nullable NumberProvider min;
    private final @Nullable NumberProvider max;

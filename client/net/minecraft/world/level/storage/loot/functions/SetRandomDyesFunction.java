@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetRandomDyesFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetRandomDyesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.CODEC.fieldOf("number_of_dyes").forGetter((f) -> f.numberOfDyes)).apply(i, SetRandomDyesFunction::new));
+   public static final MapCodec<SetRandomDyesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.DIRECT_CODEC.fieldOf("number_of_dyes").forGetter((f) -> f.numberOfDyes)).apply(i, SetRandomDyesFunction::new));
    private final NumberProvider numberOfDyes;
 
    private SetRandomDyesFunction(final List<LootItemCondition> predicates, final NumberProvider numberOfDyes) {

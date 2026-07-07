@@ -120,14 +120,14 @@ public class VegetationFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      HolderGetter<Block> blocks = context.<Block>lookup(Registries.BLOCK);
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> hugeBrownMushroom = configuredFeatures.getOrThrow(TreeFeatures.HUGE_BROWN_MUSHROOM);
       Holder<Feature> hugeRedMushroom = configuredFeatures.getOrThrow(TreeFeatures.HUGE_RED_MUSHROOM);
       Holder<Feature> fancyOakBees005 = configuredFeatures.getOrThrow(TreeFeatures.FANCY_OAK_BEES_005);
       Holder<Feature> oakBees005 = configuredFeatures.getOrThrow(TreeFeatures.OAK_BEES_005);
       Holder<Feature> grassJungle = configuredFeatures.getOrThrow(GRASS_JUNGLE);
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
       Holder<PlacedFeature> paleOakChecked = placedFeatures.getOrThrow(TreePlacements.PALE_OAK_CHECKED);
       Holder<PlacedFeature> paleOakCreakingChecked = placedFeatures.getOrThrow(TreePlacements.PALE_OAK_CREAKING_CHECKED);
       Holder<PlacedFeature> fancyOakChecked = placedFeatures.getOrThrow(TreePlacements.FANCY_OAK_CHECKED);

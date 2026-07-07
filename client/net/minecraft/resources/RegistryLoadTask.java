@@ -56,10 +56,6 @@ public abstract class RegistryLoadTask<T> {
 
    public abstract CompletableFuture<?> load(RegistryOps.RegistryInfoLookup context, Executor executor);
 
-   public RegistryOps.RegistryInfo<?> createRegistryInfo() {
-      return new RegistryOps.RegistryInfo(this.registry, this.concurrentRegistrationGetter, this.registry.registryLifecycle());
-   }
-
    protected void registerElements(final Stream<PendingRegistration<T>> elements) {
       synchronized(this.registryWriteLock) {
          elements.forEach((element) -> element.value.ifLeft((value) -> this.registry.register(element.key, value, element.registrationInfo)).ifRight((error) -> this.loadingErrors.put(element.key, error)));

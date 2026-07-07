@@ -397,6 +397,7 @@ import net.minecraft.util.datafix.schemas.V4885;
 import net.minecraft.util.datafix.schemas.V4996;
 import net.minecraft.util.datafix.schemas.V4996_1;
 import net.minecraft.util.datafix.schemas.V4997;
+import net.minecraft.util.datafix.schemas.V5000;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -906,9 +907,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var312 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var312);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var312::contains));
+      Set var313 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var313);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var313::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1215,6 +1216,8 @@ public class DataFixers {
       fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4997 = fixerUpper.addSchema(4997, V4997::new);
       fixerUpper.addFixer(new AddNewChoices(v4997, "Added Poplar Boat and Poplar Chest Boat", References.ENTITY));
+      Schema v5000 = fixerUpper.addSchema(5000, V5000::new);
+      fixerUpper.addFixer(new AddNewChoices(v5000, "Added Cushion", References.ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

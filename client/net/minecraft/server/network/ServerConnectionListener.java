@@ -25,7 +25,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -48,6 +50,7 @@ public class ServerConnectionListener {
    private volatile @Nullable UUID sessionId;
    private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
+   private final Queue<Connection> pendingConnections = new ConcurrentLinkedQueue();
 
    public ServerConnectionListener(final MinecraftServer server) {
       super();
@@ -77,7 +80,7 @@ public class ServerConnectionListener {
                Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
                int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
                Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
-               ServerConnectionListener.this.connections.add(connection);
+               ServerConnectionListener.this.pendingConnections.add(connection);
                connection.configurePacketHandler(pipeline);
                connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
             }
@@ -147,6 +150,7 @@ public class ServerConnectionListener {
 
    public void tick() {
       synchronized(this.connections) {
+         this.addPendingConnections();
          Iterator<Connection> iterator = this.connections.iterator();
 
          while(iterator.hasNext()) {
@@ -183,6 +187,14 @@ public class ServerConnectionListener {
 
    public MinecraftServer getServer() {
       return this.server;
+   }
+
+   private void addPendingConnections() {
+      Connection connection;
+      while((connection = (Connection)this.pendingConnections.poll()) != null) {
+         this.connections.add(connection);
+      }
+
    }
 
    public List<Connection> getConnections() {

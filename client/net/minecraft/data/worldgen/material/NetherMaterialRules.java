@@ -40,9 +40,9 @@ public class NetherMaterialRules {
    }
 
    public static void bootstrap(final BootstrapContext<SurfaceRules.RuleSource> context) {
-      HolderGetter<SurfaceRules.RuleSource> rules = context.<SurfaceRules.RuleSource>lookup(Registries.MATERIAL_RULE);
-      HolderGetter<SurfaceRules.ConditionSource> conditions = context.<SurfaceRules.ConditionSource>lookup(Registries.MATERIAL_CONDITION);
-      HolderGetter<Biome> biomes = context.<Biome>lookup(Registries.BIOME);
+      HolderGetter<SurfaceRules.RuleSource> rules = context.lookup(Registries.MATERIAL_RULE);
+      HolderGetter<SurfaceRules.ConditionSource> conditions = context.lookup(Registries.MATERIAL_CONDITION);
+      HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
       SurfaceRules.ConditionSource onFloor = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.ON_FLOOR);
       SurfaceRules.ConditionSource underCeiling = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.UNDER_CEILING);
       SurfaceRules.ConditionSource underFloor = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.UNDER_FLOOR);

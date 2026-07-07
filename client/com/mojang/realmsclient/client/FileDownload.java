@@ -438,7 +438,7 @@ public class FileDownload {
                this.error = true;
             }
          } catch (IOException e) {
-            LOGGER.error("Error copying resourcepack file: {}", e.getMessage());
+            LOGGER.error("Error copying resourcepack file", e);
             this.error = true;
          }
       }

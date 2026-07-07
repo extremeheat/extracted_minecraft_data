@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -52,8 +53,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -256,7 +255,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
             for(int yy = (int)this.getY() - 4; yy < (int)this.getY() + 4 && specialBlocksCount < 14; ++yy) {
                for(int zz = (int)this.getZ() - 4; zz < (int)this.getZ() + 4 && specialBlocksCount < 14; ++zz) {
                   BlockState state = this.level().getBlockState(blockPos.set(xx, yy, zz));
-                  if (state.is(Blocks.IRON_BARS) || state.getBlock() instanceof BedBlock) {
+                  if (state.is(BlockTags.SPEEDS_UP_ZOMBIE_VILLAGER_CURING)) {
                      if (this.random.nextFloat() < 0.3F) {
                         ++amount;
                      }

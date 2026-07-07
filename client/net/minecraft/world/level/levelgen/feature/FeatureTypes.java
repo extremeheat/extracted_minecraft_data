@@ -13,7 +13,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"bonus_chest", BonusChestFeature.CODEC);
       Registry.register(registry, (String)"chorus_plant", ChorusPlantFeature.CODEC);
       Registry.register(registry, (String)"coral_claw", CoralClawFeature.CODEC);
-      Registry.register(registry, (String)"coral_mushroom", CoralMushroomFeature.CODEC);
       Registry.register(registry, (String)"coral_tree", CoralTreeFeature.CODEC);
       Registry.register(registry, (String)"delta_feature", DeltaFeature.CODEC);
       Registry.register(registry, (String)"desert_well", DesertWellFeature.CODEC);
@@ -32,7 +31,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"huge_fungus", HugeFungusFeature.CODEC);
       Registry.register(registry, (String)"huge_red_mushroom", HugeRedMushroomFeature.CODEC);
       Registry.register(registry, (String)"iceberg", IcebergFeature.CODEC);
-      Registry.register(registry, (String)"kelp", KelpFeature.CODEC);
       Registry.register(registry, (String)"lake", LakeFeature.CODEC);
       Registry.register(registry, (String)"large_dripstone", LargeDripstoneFeature.CODEC);
       Registry.register(registry, (String)"monster_room", MonsterRoomFeature.CODEC);
@@ -50,8 +48,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"root_system", RootSystemFeature.CODEC);
       Registry.register(registry, (String)"scattered_ore", ScatteredOreFeature.CODEC);
       Registry.register(registry, (String)"sculk_patch", SculkPatchFeature.CODEC);
-      Registry.register(registry, (String)"sea_pickle", SeaPickleFeature.CODEC);
-      Registry.register(registry, (String)"seagrass", SeagrassFeature.CODEC);
       Registry.register(registry, (String)"sequence", SequenceFeature.CODEC);
       Registry.register(registry, (String)"simple_block", SimpleBlockFeature.CODEC);
       Registry.register(registry, (String)"simple_random_selector", SimpleRandomSelectorFeature.CODEC);

@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.player.Player;
@@ -36,14 +37,14 @@ public class OldMinecartBehavior extends MinecartBehavior {
    public OldMinecartBehavior(final AbstractMinecart minecart) {
       super(minecart);
       this.targetDeltaMovement = Vec3.ZERO;
-      this.interpolation = new InterpolationHandler(minecart, this::onInterpolation);
+      this.interpolation = new LinearInterpolationHandler(minecart);
    }
 
    public InterpolationHandler getInterpolation() {
       return this.interpolation;
    }
 
-   public void onInterpolation(final InterpolationHandler interpolation) {
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
       this.setDeltaMovement(this.targetDeltaMovement);
    }
 

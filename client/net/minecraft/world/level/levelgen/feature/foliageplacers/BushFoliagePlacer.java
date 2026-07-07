@@ -19,8 +19,10 @@ public class BushFoliagePlacer extends BlobFoliagePlacer {
    }
 
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
-      for(int yo = offset; yo >= offset - foliageHeight; --yo) {
-         int currentRadius = leafRadius + foliageAttachment.radiusOffset() - 1 - yo;
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
+
+      for(int yo = offset; yo >= offset - foliageHeightWithOffset; --yo) {
+         int currentRadius = leafRadius + foliageAttachment.radiusOffsetXZ() - 1 - yo;
          this.placeLeavesRow(level, foliageSetter, random, tree, foliageAttachment.pos(), currentRadius, yo, foliageAttachment.doubleTrunk());
       }
 

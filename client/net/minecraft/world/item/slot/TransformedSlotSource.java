@@ -18,7 +18,7 @@ public abstract class TransformedSlotSource implements SlotSource {
    public abstract MapCodec<? extends TransformedSlotSource> codec();
 
    protected static <T extends TransformedSlotSource> Products.P1<RecordCodecBuilder.Mu<T>, SlotSource> commonFields(final RecordCodecBuilder.Instance<T> i) {
-      return i.group(SlotSources.CODEC.fieldOf("slot_source").forGetter((t) -> t.slotSource));
+      return i.group(SlotSources.DIRECT_CODEC.fieldOf("slot_source").forGetter((t) -> t.slotSource));
    }
 
    protected abstract SlotCollection transform(SlotCollection slots);

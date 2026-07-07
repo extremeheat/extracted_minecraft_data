@@ -111,7 +111,7 @@ public class ActiveProfiler implements ProfileCollector {
          currentEntry.maxDuration = Math.max(currentEntry.maxDuration, time);
          currentEntry.minDuration = Math.min(currentEntry.minDuration, time);
          if (time > WARNING_TIME_NANOS && !this.suppressWarnings.getAsBoolean()) {
-            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)time / 1000000.0));
+            LOGGER.warn("Something's taking too long! '{}' took approximately {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)time / 1000000.0));
          }
 
          this.path = this.paths.isEmpty() ? "" : (String)this.paths.getLast();

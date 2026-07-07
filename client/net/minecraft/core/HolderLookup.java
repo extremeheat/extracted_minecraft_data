@@ -27,7 +27,7 @@ public interface HolderLookup<T> extends HolderGetter<T> {
       return this.listTags().map(HolderSet.Named::key);
    }
 
-   public interface RegistryLookup<T> extends HolderLookup<T>, HolderOwner<T> {
+   public interface RegistryLookup<T> extends HolderLookup<T> {
       ResourceKey<? extends Registry<? extends T>> key();
 
       Lifecycle registryLifecycle();
@@ -81,6 +81,10 @@ public interface HolderLookup<T> extends HolderGetter<T> {
 
          default Stream<HolderSet.Named<T>> listTags() {
             return this.parent().listTags();
+         }
+
+         default boolean canSerialize(final HolderOwner<T> owner) {
+            return this.parent().canSerialize(owner);
          }
       }
    }

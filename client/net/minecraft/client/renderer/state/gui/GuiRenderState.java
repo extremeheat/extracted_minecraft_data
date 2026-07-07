@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.state.gui;
 
+import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -26,6 +28,7 @@ public class GuiRenderState {
    public @Nullable PanoramaRenderState panoramaRenderState;
    public Vector4f clearColorOverride = new Vector4f(0.0F);
    public boolean isHudHidden;
+   private @Nullable ScreenRectangle windowRectangleForDebug;
 
    public GuiRenderState() {
       super();
@@ -85,7 +88,16 @@ public class GuiRenderState {
    private void addDebugRectangleIfEnabled(final @Nullable ScreenRectangle bounds) {
       if (SharedConstants.DEBUG_RENDER_UI_LAYERING_RECTANGLES && bounds != null) {
          this.up();
-         this.current.addGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, bounds));
+         if (this.windowRectangleForDebug == null) {
+            Window window = Minecraft.getInstance().getWindow();
+            this.windowRectangleForDebug = new ScreenRectangle(0, 0, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+         }
+
+         ScreenRectangle clippedBounds = this.windowRectangleForDebug.intersection(bounds);
+         if (clippedBounds != null) {
+            this.current.addGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, clippedBounds));
+         }
+
       }
    }
 
@@ -262,6 +274,7 @@ public class GuiRenderState {
       this.nextStratum();
       this.panoramaRenderState = null;
       this.clearColorOverride.set(0.0F);
+      this.windowRectangleForDebug = null;
    }
 
    private static class Node {

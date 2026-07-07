@@ -111,7 +111,7 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Conta
       if (count == 1) {
          consumer.accept(Component.translatable("item.minecraft.crossbow.projectile.single", projectile.getDisplayName()));
       } else {
-         consumer.accept(Component.translatable("item.minecraft.crossbow.projectile.multiple", count, projectile.getDisplayName()));
+         consumer.accept(Component.translatable("item.minecraft.crossbow.projectile.multiple", count, projectile.getHoverName()));
       }
 
       TooltipDisplay projectileDisplay = (TooltipDisplay)projectile.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);

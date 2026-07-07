@@ -30,7 +30,7 @@ public record TimeCheck(Holder<WorldClock> clock, Optional<Long> period, IntRang
 
    public boolean test(final LootContext context) {
       ServerLevel level = context.getLevel();
-      long time = level.clockManager().getTotalTicks(this.clock);
+      long time = level.clockManager().getInstance(this.clock).totalTicks();
       if (this.period.isPresent()) {
          time %= (Long)this.period.get();
       }

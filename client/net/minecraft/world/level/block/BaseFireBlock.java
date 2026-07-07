@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BaseFireBlock extends Block {
    private static final int SECONDS_ON_FIRE = 8;
@@ -155,7 +156,7 @@ public abstract class BaseFireBlock extends Block {
       return level.dimension() == Level.OVERWORLD || level.dimension() == Level.NETHER;
    }
 
-   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
+   public void spawnDestroyByEntityParticles(final Level level, final @Nullable Entity entity, final BlockPos pos, final BlockState state) {
    }
 
    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {

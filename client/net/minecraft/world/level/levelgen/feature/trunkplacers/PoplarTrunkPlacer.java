@@ -40,7 +40,9 @@ public class PoplarTrunkPlacer extends TrunkPlacer {
          this.placeLog(level, trunkSetter, random, origin.above(y), tree);
          List<Direction> directions = getShuffledBranchDirections(random);
          if (trunkHeightUpToFoliageBranches - 1 == y) {
-            for(int x = 0; x < this.branchAmount.sample(random); ++x) {
+            int branches = this.branchAmount.sample(random);
+
+            for(int x = 0; x < branches; ++x) {
                Direction branchDirection = (Direction)directions.get(x);
                this.placeLog(level, trunkSetter, random, origin.above(y).relative((Direction)branchDirection, 1), tree, getSidewaysStateModifier(branchDirection));
             }

@@ -1,10 +1,13 @@
 package net.minecraft.advancements;
 
 import java.util.List;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 public record AdvancementHolder(Identifier id, Advancement value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, AdvancementHolder> STREAM_CODEC;
@@ -12,6 +15,10 @@ public record AdvancementHolder(Identifier id, Advancement value) {
 
    public AdvancementHolder {
       super();
+   }
+
+   public void register(final BootstrapContext<Advancement> output) {
+      output.register(ResourceKey.create(Registries.ADVANCEMENT, this.id), this.value);
    }
 
    public boolean equals(final Object obj) {

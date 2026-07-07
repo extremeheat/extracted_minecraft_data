@@ -56,11 +56,11 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
          BlockPos blockEffectPos = blockHitPos.relative(hitDirection);
          PotionContents potion = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
          if (potion.is(Potions.WATER)) {
-            this.dowseFire(blockEffectPos);
-            this.dowseFire(blockEffectPos.relative(hitDirection.getOpposite()));
+            this.douseFire(blockEffectPos);
+            this.douseFire(blockEffectPos.relative(hitDirection.getOpposite()));
 
             for(Direction direction : Direction.Plane.HORIZONTAL) {
-               this.dowseFire(blockEffectPos.relative(direction));
+               this.douseFire(blockEffectPos.relative(direction));
             }
          }
 
@@ -79,8 +79,18 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
             this.onHitAsPotion(level, potionItemStack, hitResult);
          }
 
-         int type = potion.potion().isPresent() && ((Potion)((Holder)potion.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
-         level.levelEvent(type, this.blockPosition(), potion.getColor());
+         if (potion.potion().isPresent() && ((Potion)((Holder)potion.potion().get()).value()).hasInstantEffects()) {
+            level.levelEvent(2007, this.blockPosition(), potion.getColor());
+            if (!this.isSilent()) {
+               level.levelEvent(1054, this.blockPosition(), 0);
+            }
+         } else {
+            level.levelEvent(2002, this.blockPosition(), potion.getColor());
+            if (!this.isSilent()) {
+               level.levelEvent(1053, this.blockPosition(), 0);
+            }
+         }
+
          this.discard();
       }
    }
@@ -109,7 +119,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
 
    protected abstract void onHitAsPotion(ServerLevel level, ItemStack potionItem, HitResult hitResult);
 
-   private void dowseFire(final BlockPos pos) {
+   private void douseFire(final BlockPos pos) {
       BlockState blockState = this.level().getBlockState(pos);
       if (blockState.is(BlockTags.FIRE)) {
          this.level().destroyBlock(pos, false, this);
@@ -117,7 +127,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
          AbstractCandleBlock.extinguish((Player)null, blockState, this.level(), pos);
       } else if (CampfireBlock.isLitCampfire(blockState)) {
          this.level().levelEvent((Entity)null, 1009, pos, 0);
-         CampfireBlock.dowse(this.getOwner(), this.level(), pos, blockState);
+         CampfireBlock.douse(this.getOwner(), this.level(), pos, blockState);
          this.level().setBlockAndUpdate(pos, (BlockState)blockState.setValue(CampfireBlock.LIT, false));
       }
 

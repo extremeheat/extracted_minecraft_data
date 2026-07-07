@@ -106,9 +106,9 @@ public class TradeRebalanceVillagerTrades extends VillagerTrades {
    }
 
    public static Holder<VillagerTrade> bootstrap(final BootstrapContext<VillagerTrade> context) {
-      HolderGetter<Item> items = context.<Item>lookup(Registries.ITEM);
-      HolderGetter<VillagerType> villagerVariants = context.<VillagerType>lookup(Registries.VILLAGER_TYPE);
-      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
+      HolderGetter<Item> items = context.lookup(Registries.ITEM);
+      HolderGetter<VillagerType> villagerVariants = context.lookup(Registries.VILLAGER_TYPE);
+      HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
       HolderSet<Enchantment> doubleTradePrice = enchantments.getOrThrow(EnchantmentTags.DOUBLE_TRADE_PRICE);
       HolderSet<VillagerType> desertType = villagerTypeHolderSet(villagerVariants, VillagerType.DESERT);
       HolderSet<Enchantment> enchantmentsDesertCommon = enchantments.getOrThrow(EnchantmentTags.TRADES_DESERT_COMMON);

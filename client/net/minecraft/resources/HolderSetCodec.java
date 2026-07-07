@@ -63,7 +63,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
 
    public <T> DataResult<T> encode(final HolderSet<E> input, final DynamicOps<T> ops, final T prefix) {
       if (ops instanceof RegistryOps<T> registryOps) {
-         Optional<HolderOwner<E>> maybeOwner = registryOps.owner(this.registryKey);
+         Optional<? extends HolderOwner<E>> maybeOwner = registryOps.getter(this.registryKey);
          if (maybeOwner.isPresent()) {
             if (!input.canSerializeIn((HolderOwner)maybeOwner.get())) {
                return DataResult.error(() -> "HolderSet " + String.valueOf(input) + " is not valid in current registry set");

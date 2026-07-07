@@ -170,7 +170,7 @@ public class BlockModelLighter {
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      outputInstance.scaleColor(quad.materialInfo().shade() ? cardinalLighting.byFace(direction) : cardinalLighting.up());
+      outputInstance.scaleColor(getDirectionalBrightness(cardinalLighting, quad, direction));
    }
 
    public void prepareQuadFlat(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final int lightCoords, final BakedQuad quad, final QuadInstance outputInstance) {
@@ -183,8 +183,7 @@ public class BlockModelLighter {
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      float directionalBrightness = quad.materialInfo().shade() ? cardinalLighting.byFace(quad.direction()) : cardinalLighting.up();
-      outputInstance.setColor(ARGB.gray(directionalBrightness));
+      outputInstance.setColor(ARGB.gray(getDirectionalBrightness(cardinalLighting, quad, quad.direction())));
    }
 
    private void prepareQuadShape(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final BakedQuad quad, final boolean ambientOcclusion) {
@@ -255,6 +254,11 @@ public class BlockModelLighter {
       }
 
       this.faceCubic = var10001;
+   }
+
+   private static float getDirectionalBrightness(final CardinalLighting cardinalLighting, final BakedQuad quad, final Direction actualDirection) {
+      Direction shadeDirectionOverride = quad.materialInfo().shadeDirectionOverride();
+      return shadeDirectionOverride != null ? cardinalLighting.byFace(shadeDirectionOverride) : cardinalLighting.byFace(actualDirection);
    }
 
    public static void enableCaching() {

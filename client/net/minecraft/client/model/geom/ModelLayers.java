@@ -81,6 +81,7 @@ public class ModelLayers {
    public static final ModelLayerLocation CREEPER = register("creeper");
    public static final ModelLayerLocation CREEPER_ARMOR = register("creeper", "armor");
    public static final ModelLayerLocation CREEPER_HEAD = register("creeper_head");
+   public static final ModelLayerLocation CUSHION = register("cushion");
    public static final ModelLayerLocation DARK_OAK_BOAT = register("boat/dark_oak");
    public static final ModelLayerLocation DARK_OAK_CHEST_BOAT = register("chest_boat/dark_oak");
    public static final ModelLayerLocation DECORATED_POT_BASE = register("decorated_pot_base");

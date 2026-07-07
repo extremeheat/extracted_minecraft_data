@@ -2,16 +2,12 @@ package net.minecraft.data.recipes;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -21,21 +17,18 @@ import net.minecraft.advancements.triggers.BredAnimalsTrigger;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.advancements.triggers.EnterBlockTrigger;
-import net.minecraft.advancements.triggers.ImpossibleTrigger;
 import net.minecraft.advancements.triggers.InventoryChangeTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.PackOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
@@ -61,17 +54,49 @@ import net.minecraft.world.level.block.SuspiciousEffectHolder;
 import org.jspecify.annotations.Nullable;
 
 public abstract class RecipeProvider {
-   protected final HolderLookup.Provider registries;
    private final HolderGetter<Item> items;
+   private final HolderGetter<TrimPattern> trimPatterns;
    protected final RecipeOutput output;
+   protected final BootstrapContext<Advancement> advancementOutput;
    private static final Map<BlockFamily.Variant, FamilyCraftingRecipeProvider> SHAPE_BUILDERS;
    private static final Map<BlockFamily.Variant, FamilyStonecutterRecipeProvider> STONECUTTER_RECIPE_BUILDERS;
 
-   protected RecipeProvider(final HolderLookup.Provider registries, final RecipeOutput output) {
+   protected RecipeProvider(final BootstrapContext<Recipe<?>> recipeOutput, final BootstrapContext<Advancement> advancementOutput) {
       super();
-      this.registries = registries;
-      this.items = registries.lookupOrThrow(Registries.ITEM);
-      this.output = output;
+      this.advancementOutput = advancementOutput;
+      this.output = new RecipeOutput() {
+         {
+            Objects.requireNonNull(RecipeProvider.this);
+         }
+
+         public void accept(final ResourceKey<Recipe<?>> id, final Recipe<?> recipe, final @Nullable AdvancementHolder advancementHolder) {
+            recipeOutput.register(id, recipe);
+            if (advancementHolder != null) {
+               this.acceptAdvancement(advancementHolder);
+            }
+
+         }
+
+         private void acceptAdvancement(final AdvancementHolder advancementHolder) {
+            advancementHolder.register(advancementOutput);
+         }
+
+         public Advancement.Builder advancement() {
+            return Advancement.Builder.recipeAdvancement().parent(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
+         }
+
+         public <S> HolderGetter<S> lookup(final ResourceKey<? extends Registry<? extends S>> key) {
+            return recipeOutput.lookup(key);
+         }
+
+         /** @deprecated */
+         @Deprecated
+         public <S> Stream<Holder.Reference<S>> listContextElements(final ResourceKey<? extends Registry<? extends S>> key) {
+            return recipeOutput.listContextElements(key);
+         }
+      };
+      this.items = recipeOutput.lookup(Registries.ITEM);
+      this.trimPatterns = recipeOutput.lookup(Registries.TRIM_PATTERN);
    }
 
    protected abstract void buildRecipes();
@@ -108,7 +133,7 @@ public abstract class RecipeProvider {
    }
 
    protected void trimSmithing(final Item trimTemplate, final ResourceKey<TrimPattern> patternId, final ResourceKey<Recipe<?>> id) {
-      Holder.Reference<TrimPattern> pattern = this.registries.lookupOrThrow(Registries.TRIM_PATTERN).getOrThrow(patternId);
+      Holder.Reference<TrimPattern> pattern = this.trimPatterns.getOrThrow(patternId);
       SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of((ItemLike)trimTemplate), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), pattern, RecipeCategory.MISC).unlocks("has_smithing_trim_template", this.has(trimTemplate)).save(this.output, id);
    }
 
@@ -415,6 +440,10 @@ public abstract class RecipeProvider {
       TransmuteRecipeBuilder.transmute(RecipeCategory.TOOLS, this.tag(ItemTags.BUNDLES), Ingredient.of((ItemLike)dye), dyedResult).group("bundle_dye").unlockedBy(getHasName(dye), this.has(dye)).save(this.output);
    }
 
+   protected void cushionRecipe(final Item woolSlab, final Item result) {
+      this.shaped(RecipeCategory.DECORATIONS, result, 1).define('#', woolSlab).group("cushion").unlockedBy(getHasName(woolSlab), this.has(woolSlab)).pattern("###").save(this.output);
+   }
+
    protected void generateRecipes(final BlockFamily family, final FeatureFlagSet flagSet) {
       family.getVariants().forEach((variant, result) -> {
          if (result.requiredFeatures().isSubsetOf(flagSet)) {
@@ -568,64 +597,6 @@ public abstract class RecipeProvider {
    static {
       SHAPE_BUILDERS = ImmutableMap.builder().put(BlockFamily.Variant.BUTTON, (FamilyCraftingRecipeProvider)(context, result, base) -> context.buttonBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.CHISELED, (FamilyCraftingRecipeProvider)(context, result, base) -> context.chiseledBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.CARPET, (FamilyCraftingRecipeProvider)(context, result, base) -> context.carpetBuilder(RecipeCategory.DECORATIONS, result, Ingredient.of(base))).put(BlockFamily.Variant.CUT, (FamilyCraftingRecipeProvider)(context, result, base) -> context.cutBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.DOOR, (FamilyCraftingRecipeProvider)(context, result, base) -> context.doorBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.CUSTOM_FENCE, (FamilyCraftingRecipeProvider)(context, result, base) -> context.fenceBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.FENCE, (FamilyCraftingRecipeProvider)(context, result, base) -> context.fenceBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.CUSTOM_FENCE_GATE, (FamilyCraftingRecipeProvider)(context, result, base) -> context.fenceGateBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.FENCE_GATE, (FamilyCraftingRecipeProvider)(context, result, base) -> context.fenceGateBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.SIGN, (FamilyCraftingRecipeProvider)(context, result, base) -> context.signBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.CUSTOM_HANGING_SIGN, (FamilyCraftingRecipeProvider)(context, result, base) -> context.hangingSignBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.HANGING_SIGN, (FamilyCraftingRecipeProvider)(context, result, base) -> context.hangingSignBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.SLAB, (FamilyCraftingRecipeProvider)(context, result, base) -> context.slabBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.STAIRS, (FamilyCraftingRecipeProvider)(context, result, base) -> context.stairBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.PRESSURE_PLATE, (FamilyCraftingRecipeProvider)(context, result, base) -> context.pressurePlateBuilder(RecipeCategory.REDSTONE, result, Ingredient.of(base))).put(BlockFamily.Variant.POLISHED, (FamilyCraftingRecipeProvider)(context, result, base) -> context.polishedBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.TRAPDOOR, (FamilyCraftingRecipeProvider)(context, result, base) -> context.trapdoorBuilder(result, Ingredient.of(base))).put(BlockFamily.Variant.WALL, (FamilyCraftingRecipeProvider)(context, result, base) -> context.wallBuilder(RecipeCategory.DECORATIONS, result, Ingredient.of(base))).put(BlockFamily.Variant.BRICKS, (FamilyCraftingRecipeProvider)(context, result, base) -> context.bricksBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.TILES, (FamilyCraftingRecipeProvider)(context, result, base) -> context.tilesBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).put(BlockFamily.Variant.PILLAR, (FamilyCraftingRecipeProvider)(context, result, base) -> context.pillarBuilder(RecipeCategory.BUILDING_BLOCKS, result, Ingredient.of(base))).build();
       STONECUTTER_RECIPE_BUILDERS = ImmutableMap.builder().put(BlockFamily.Variant.SLAB, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 2)).put(BlockFamily.Variant.STAIRS, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.BRICKS, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.WALL, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.DECORATIONS, result, base, 1)).put(BlockFamily.Variant.CHISELED, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.POLISHED, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.CUT, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.TILES, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.PILLAR, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).put(BlockFamily.Variant.COBBLED, (FamilyStonecutterRecipeProvider)(context, result, base) -> context.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, result, base, 1)).build();
-   }
-
-   protected abstract static class Runner implements DataProvider {
-      private final PackOutput packOutput;
-      private final CompletableFuture<HolderLookup.Provider> registries;
-
-      protected Runner(final PackOutput packOutput, final CompletableFuture<HolderLookup.Provider> registries) {
-         super();
-         this.packOutput = packOutput;
-         this.registries = registries;
-      }
-
-      public final CompletableFuture<?> run(final CachedOutput cache) {
-         return this.registries.thenCompose((registries) -> {
-            final PackOutput.PathProvider recipePathProvider = this.packOutput.createRegistryElementsPathProvider(Registries.RECIPE);
-            final PackOutput.PathProvider advancementPathProvider = this.packOutput.createRegistryElementsPathProvider(Registries.ADVANCEMENT);
-            final Set<ResourceKey<Recipe<?>>> allRecipes = Sets.newHashSet();
-            final List<CompletableFuture<?>> tasks = new ArrayList();
-            RecipeOutput recipeOutput = new RecipeOutput() {
-               {
-                  Objects.requireNonNull(Runner.this);
-               }
-
-               public void accept(final ResourceKey<Recipe<?>> id, final Recipe<?> recipe, final @Nullable AdvancementHolder advancementHolder) {
-                  if (!allRecipes.add(id)) {
-                     throw new IllegalStateException("Duplicate recipe " + String.valueOf(id.identifier()));
-                  } else {
-                     this.saveRecipe(id, recipe);
-                     if (advancementHolder != null) {
-                        this.saveAdvancement(advancementHolder);
-                     }
-
-                  }
-               }
-
-               public Advancement.Builder advancement() {
-                  return Advancement.Builder.recipeAdvancement().parent(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
-               }
-
-               public void includeRootAdvancement() {
-                  AdvancementHolder root = Advancement.Builder.recipeAdvancement().addCriterion("impossible", CriteriaTriggers.IMPOSSIBLE.createCriterion(new ImpossibleTrigger.TriggerInstance())).build(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
-                  this.saveAdvancement(root);
-               }
-
-               private void saveRecipe(final ResourceKey<Recipe<?>> id, final Recipe<?> recipe) {
-                  tasks.add(DataProvider.saveStable(cache, registries, Recipe.CODEC, recipe, recipePathProvider.json(id.identifier())));
-               }
-
-               private void saveAdvancement(final AdvancementHolder advancementHolder) {
-                  tasks.add(DataProvider.saveStable(cache, registries, Advancement.CODEC, advancementHolder.value(), advancementPathProvider.json(advancementHolder.id())));
-               }
-            };
-            this.createRecipeProvider(registries, recipeOutput).buildRecipes();
-            return CompletableFuture.allOf((CompletableFuture[])tasks.toArray((x$0) -> new CompletableFuture[x$0]));
-         });
-      }
-
-      protected abstract RecipeProvider createRecipeProvider(HolderLookup.Provider registries, RecipeOutput output);
    }
 
    @FunctionalInterface

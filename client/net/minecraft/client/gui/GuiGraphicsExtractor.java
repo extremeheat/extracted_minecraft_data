@@ -1,11 +1,11 @@
 package net.minecraft.client.gui;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -600,7 +600,7 @@ public class GuiGraphicsExtractor {
    }
 
    public void setTooltipForNextFrame(final Font font, final ItemStack itemStack, final int xo, final int yo) {
-      this.setTooltipForNextFrame(font, Screen.getTooltipFromItem(this.minecraft, itemStack), itemStack.getTooltipImage(), xo, yo, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE));
+      this.setTooltipForNextFrame(font, Screen.getTooltipFromItem(this.minecraft, itemStack), itemStack.getTooltipImage(), xo, yo, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE), true);
    }
 
    public void setTooltipForNextFrame(final Font font, final List<Component> texts, final Optional<TooltipComponent> optionalImage, final int xo, final int yo) {
@@ -608,9 +608,13 @@ public class GuiGraphicsExtractor {
    }
 
    public void setTooltipForNextFrame(final Font font, final List<Component> texts, final Optional<TooltipComponent> optionalImage, final int xo, final int yo, final @Nullable Identifier style) {
+      this.setTooltipForNextFrame(font, texts, optionalImage, xo, yo, style, false);
+   }
+
+   public void setTooltipForNextFrame(final Font font, final List<Component> texts, final Optional<TooltipComponent> optionalImage, final int xo, final int yo, final @Nullable Identifier style, final boolean extraSpaceAfterFirstLine) {
       List<ClientTooltipComponent> components = (List)texts.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
       optionalImage.ifPresent((image) -> components.add(components.isEmpty() ? 0 : 1, ClientTooltipComponent.create(image)));
-      this.setTooltipForNextFrameInternal(font, components, xo, yo, DefaultTooltipPositioner.INSTANCE, style, false);
+      this.setTooltipForNextFrameInternal(font, components, xo, yo, DefaultTooltipPositioner.INSTANCE, style, false, extraSpaceAfterFirstLine);
    }
 
    public void setTooltipForNextFrame(final Font font, final List<FormattedCharSequence> tooltip, final Optional<TooltipComponent> component, final ClientTooltipPositioner positioner, final int xo, final int yo, final boolean replaceExisting, final @Nullable Identifier style) {
@@ -648,17 +652,21 @@ public class GuiGraphicsExtractor {
    }
 
    private void setTooltipForNextFrameInternal(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, final boolean replaceExisting) {
+      this.setTooltipForNextFrameInternal(font, lines, xo, yo, positioner, style, replaceExisting, false);
+   }
+
+   private void setTooltipForNextFrameInternal(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, final boolean replaceExisting, final boolean extraSpaceAfterFirstLine) {
       if (!lines.isEmpty()) {
          if (this.deferredTooltip == null || replaceExisting) {
-            this.deferredTooltip = () -> this.tooltip(font, lines, xo, yo, positioner, style);
+            this.deferredTooltip = () -> this.tooltip(font, lines, xo, yo, positioner, style, extraSpaceAfterFirstLine);
          }
 
       }
    }
 
-   public void tooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style) {
+   public void tooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, boolean extraSpaceAfterFirstLine) {
       int textWidth = 0;
-      int tempHeight = lines.size() == 1 ? -2 : 0;
+      int tempHeight = extraSpaceAfterFirstLine && lines.size() != 1 ? 0 : -2;
 
       for(ClientTooltipComponent line : lines) {
          int lineWidth = line.getWidth(font);
@@ -681,7 +689,7 @@ public class GuiGraphicsExtractor {
       for(int i = 0; i < lines.size(); ++i) {
          ClientTooltipComponent line = (ClientTooltipComponent)lines.get(i);
          line.extractText(this, font, x, localY);
-         localY += line.getHeight(font) + (i == 0 ? 2 : 0);
+         localY += line.getHeight(font) + (extraSpaceAfterFirstLine && i == 0 ? 2 : 0);
       }
 
       localY = y;
@@ -689,7 +697,7 @@ public class GuiGraphicsExtractor {
       for(int i = 0; i < lines.size(); ++i) {
          ClientTooltipComponent line = (ClientTooltipComponent)lines.get(i);
          line.extractImage(font, x, localY, w, h, this);
-         localY += line.getHeight(font) + (i == 0 ? 2 : 0);
+         localY += line.getHeight(font) + (extraSpaceAfterFirstLine && i == 0 ? 2 : 0);
       }
 
       this.pose.popMatrix();

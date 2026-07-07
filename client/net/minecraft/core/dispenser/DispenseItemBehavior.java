@@ -356,7 +356,7 @@ public interface DispenseItemBehavior {
                ServerLevel level = source.level();
                BlockPos pos = source.pos();
                BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
-               if (!level.getBlockState(target).is(BlockTags.CONVERTABLE_TO_MUD)) {
+               if (!level.getBlockState(target).is(BlockTags.CONVERTIBLE_TO_MUD)) {
                   return this.defaultDispenseItemBehavior.dispense(source, dispensed);
                } else {
                   if (!level.isClientSide()) {

@@ -51,7 +51,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
       }
    }
 
-   public static LootItemCondition.Builder conditionReference(final ResourceKey<LootItemCondition> name) {
-      return () -> new ConditionReference(name);
+   public static LootItemCondition.Builder conditionReference(final Holder.Reference<LootItemCondition> name) {
+      return () -> new ConditionReference(name.key());
    }
 }

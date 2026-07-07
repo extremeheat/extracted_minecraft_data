@@ -6,12 +6,12 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -174,9 +174,9 @@ public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> dis
          return new AdvancementHolder(id, new Advancement(this.parent, this.display, this.rewards, criteria, requirements, this.sendsTelemetryEvent));
       }
 
-      public AdvancementHolder save(final Consumer<AdvancementHolder> output, final String name) {
+      public AdvancementHolder save(final BootstrapContext<Advancement> output, final String name) {
          AdvancementHolder advancement = this.build(Identifier.parse(name));
-         output.accept(advancement);
+         advancement.register(output);
          return advancement;
       }
    }

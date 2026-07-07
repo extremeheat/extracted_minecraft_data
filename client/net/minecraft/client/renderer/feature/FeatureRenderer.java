@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.feature;
 
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import java.util.List;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.oit.OitStage;

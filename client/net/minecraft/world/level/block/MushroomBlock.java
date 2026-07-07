@@ -19,6 +19,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
+   private static final int SEARCH_RADIUS = 4;
+   private static final int MAX_NEIGHBORS_TO_GROW = 4;
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final ResourceKey<Feature> feature;
 
@@ -33,16 +35,8 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    protected void randomTick(final BlockState state, final ServerLevel level, BlockPos pos, final RandomSource random) {
       if (random.nextInt(25) == 0) {
-         int max = 5;
-         int r = 4;
-
-         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 1, 4))) {
-            if (level.getBlockState(blockPos).is(this)) {
-               --max;
-               if (max <= 0) {
-                  return;
-               }
-            }
+         if (!this.canSpread(level, pos)) {
+            return;
          }
 
          BlockPos offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
@@ -60,6 +54,12 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
          }
       }
 
+   }
+
+   private boolean canSpread(final ServerLevel level, final BlockPos pos) {
+      BlockPos minPos = pos.offset(-4, -1, -4);
+      BlockPos maxPos = pos.offset(4, 1, 4);
+      return level.findBlocksIn(minPos, maxPos).filterState((state) -> state.is(this)).atMostMatched(4);
    }
 
    protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {

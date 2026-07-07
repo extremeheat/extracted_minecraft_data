@@ -136,26 +136,7 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
    }
 
    default boolean containsAnyLiquid(final AABB box) {
-      int x0 = Mth.floor(box.minX);
-      int x1 = Mth.ceil(box.maxX);
-      int y0 = Mth.floor(box.minY);
-      int y1 = Mth.ceil(box.maxY);
-      int z0 = Mth.floor(box.minZ);
-      int z1 = Mth.ceil(box.maxZ);
-      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-      for(int x = x0; x < x1; ++x) {
-         for(int y = y0; y < y1; ++y) {
-            for(int z = z0; z < z1; ++z) {
-               BlockState blockState = this.getBlockState(pos.set(x, y, z));
-               if (!blockState.getFluidState().isEmpty()) {
-                  return true;
-               }
-            }
-         }
-      }
-
-      return false;
+      return this.findBlocksIn(box).filterState((state) -> !state.getFluidState().isEmpty()).anyMatched();
    }
 
    default int getMaxLocalRawBrightness(final BlockPos pos) {
@@ -168,6 +149,14 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
 
    default int getEffectiveSkyBrightness(final BlockPos pos) {
       return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
+   }
+
+   default BlockScanUtils.BlockMatcher findBlocksIn(final AABB box) {
+      return new BlockScanUtils.BlockMatcher(this, box);
+   }
+
+   default BlockScanUtils.BlockMatcher findBlocksIn(final BlockPos from, final BlockPos to) {
+      return new BlockScanUtils.BlockMatcher(this, from, to);
    }
 
    /** @deprecated */

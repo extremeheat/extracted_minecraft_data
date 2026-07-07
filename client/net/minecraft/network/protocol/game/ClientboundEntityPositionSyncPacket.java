@@ -3,20 +3,23 @@ package net.minecraft.network.protocol.game;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.PositionPath;
 
-public record ClientboundEntityPositionSyncPacket(int id, PositionMoveRotation values, boolean onGround) implements Packet<ClientGamePacketListener> {
+public record ClientboundEntityPositionSyncPacket(int id, PositionPath position, float yRot, float xRot, boolean onGround) implements MovementPacket<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundEntityPositionSyncPacket> STREAM_CODEC;
 
    public ClientboundEntityPositionSyncPacket {
       super();
    }
 
+   public static ClientboundEntityPositionSyncPacket of(final Entity entity, final PositionPath position) {
+      return new ClientboundEntityPositionSyncPacket(entity.getId(), position, entity.getYRot(), entity.getXRot(), entity.onGround());
+   }
+
    public static ClientboundEntityPositionSyncPacket of(final Entity entity) {
-      return new ClientboundEntityPositionSyncPacket(entity.getId(), new PositionMoveRotation(entity.trackingPosition(), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot()), entity.onGround());
+      return of(entity, PositionPath.of(entity.trackingPosition()));
    }
 
    public PacketType<ClientboundEntityPositionSyncPacket> type() {
@@ -27,7 +30,15 @@ public record ClientboundEntityPositionSyncPacket(int id, PositionMoveRotation v
       listener.handleEntityPositionSync(this);
    }
 
+   public boolean hasPosition() {
+      return true;
+   }
+
+   public boolean hasRotation() {
+      return true;
+   }
+
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundEntityPositionSyncPacket::id, PositionMoveRotation.STREAM_CODEC, ClientboundEntityPositionSyncPacket::values, ByteBufCodecs.BOOL, ClientboundEntityPositionSyncPacket::onGround, ClientboundEntityPositionSyncPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundEntityPositionSyncPacket::id, PositionPath.STREAM_CODEC, ClientboundEntityPositionSyncPacket::position, ByteBufCodecs.FLOAT, ClientboundEntityPositionSyncPacket::yRot, ByteBufCodecs.FLOAT, ClientboundEntityPositionSyncPacket::xRot, ByteBufCodecs.BOOL, ClientboundEntityPositionSyncPacket::onGround, ClientboundEntityPositionSyncPacket::new);
    }
 }

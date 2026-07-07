@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.AbstractBedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Node;
 
@@ -43,7 +43,7 @@ public class SleepInBed extends Behavior<LivingEntity> {
             }
 
             BlockState blockState = level.getBlockState(target.pos());
-            return target.pos().closerToCenterThan(body.position(), 2.0) && blockState.is(BlockTags.BEDS) && !(Boolean)blockState.getValue(BedBlock.OCCUPIED);
+            return target.pos().closerToCenterThan(body.position(), 2.0) && blockState.is(BlockTags.VILLAGERS_CAN_SLEEP_ON_BED) && !(Boolean)blockState.getValue(AbstractBedBlock.OCCUPIED);
          }
       }
    }

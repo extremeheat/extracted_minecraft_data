@@ -78,6 +78,10 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.minecraft.getSoundManager().getAvailableSounds().stream();
    }
 
+   public Stream<Identifier> getAvailablePostEffects() {
+      return this.minecraft.getShaderManager().getAvailablePostEffects();
+   }
+
    public PermissionSet permissions() {
       return this.permissions;
    }

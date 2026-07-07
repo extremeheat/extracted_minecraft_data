@@ -77,7 +77,7 @@ public class OrePlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> oreMagma = configuredFeatures.getOrThrow(OreFeatures.ORE_MAGMA);
       Holder<Feature> oreSoulSand = configuredFeatures.getOrThrow(OreFeatures.ORE_SOUL_SAND);
       Holder<Feature> oreNetherGold = configuredFeatures.getOrThrow(OreFeatures.ORE_NETHER_GOLD);

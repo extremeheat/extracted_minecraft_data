@@ -4,6 +4,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.equine.TraderLlama;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -136,13 +136,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
       return spawnPosition;
    }
 
-   private boolean hasEnoughSpace(final BlockGetter level, final BlockPos spawnPos) {
-      for(BlockPos pos : BlockPos.betweenClosed(spawnPos, spawnPos.offset(1, 2, 1))) {
-         if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
-            return false;
-         }
-      }
-
-      return true;
+   private boolean hasEnoughSpace(final LevelReader level, final BlockPos spawnPos) {
+      return !level.findBlocksIn(spawnPos, spawnPos.offset(1, 2, 1)).forEachUntil((pos, state) -> Continuation.continueIf(state.getCollisionShape(level, pos).isEmpty()));
    }
 }

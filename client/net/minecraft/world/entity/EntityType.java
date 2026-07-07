@@ -287,6 +287,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return entity;
    }
 
+   public AABB getSpawnAABB(final Vec3 at) {
+      return this.getSpawnAABB(at.x, at.y, at.z);
+   }
+
    public AABB getSpawnAABB(final double x, final double y, final double z) {
       float halfWidth = this.spawnDimensionsScale * this.getWidth() / 2.0F;
       float height = this.spawnDimensionsScale * this.getHeight();

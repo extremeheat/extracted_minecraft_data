@@ -55,6 +55,7 @@ import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundPostEffectsPacket;
 import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -118,7 +119,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.attribute.BedRule;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -179,7 +179,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.AbstractBedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
@@ -271,6 +271,7 @@ public class ServerPlayer extends Player {
    private Vec3 lastKnownClientMovement;
    private Input lastClientInput;
    private final Set<ThrownEnderpearl> enderPearls;
+   private boolean postEffectsDirty;
    private long timeEntitySatOnShoulder;
    private CompoundTag shoulderEntityLeft;
    private CompoundTag shoulderEntityRight;
@@ -299,6 +300,7 @@ public class ServerPlayer extends Player {
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
+      this.postEffectsDirty = true;
       this.shoulderEntityLeft = new CompoundTag();
       this.shoulderEntityRight = new CompoundTag();
       this.containerSynchronizer = new ContainerSynchronizer() {
@@ -428,6 +430,10 @@ public class ServerPlayer extends Player {
       this.spawnExtraParticlesOnFall = input.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)input.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(input, "playerGameType")), readPlayerMode(input, "previousPlayerGameType"));
+      Optional var10000 = input.read("post_effects", Codec.list(Identifier.CODEC));
+      List var10001 = this.postEffects;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::addAll);
       this.setShoulderEntityLeft((CompoundTag)input.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
       this.setShoulderEntityRight((CompoundTag)input.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
    }
@@ -446,6 +452,7 @@ public class ServerPlayer extends Player {
       output.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       output.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
       this.saveEnderPearls(output);
+      output.store("post_effects", Codec.list(Identifier.CODEC), this.postEffects);
       if (!this.getShoulderEntityLeft().isEmpty()) {
          output.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
       }
@@ -629,6 +636,10 @@ public class ServerPlayer extends Player {
       this.trackEnteredOrExitedLavaOnVehicle();
       this.updatePlayerAttributes();
       this.advancements.flushDirty(this, true);
+      if (this.postEffectsDirty) {
+         this.sendPostEffects();
+      }
+
    }
 
    private void updatePlayerAttributes() {
@@ -1044,6 +1055,44 @@ public class ServerPlayer extends Player {
       super.onAttributeUpdated(attribute);
    }
 
+   public void sendPostEffects() {
+      this.postEffectsDirty = false;
+      this.connection.send(new ClientboundPostEffectsPacket(this.postEffects));
+   }
+
+   public boolean addPostEffect(final Identifier postEffect) {
+      if (this.postEffects.contains(postEffect)) {
+         return false;
+      } else {
+         this.postEffects.add(postEffect);
+         this.postEffectsDirty = true;
+         return true;
+      }
+   }
+
+   public boolean clearPostEffects() {
+      if (this.postEffects.isEmpty()) {
+         return false;
+      } else {
+         this.postEffects.clear();
+         this.postEffectsDirty = true;
+         return true;
+      }
+   }
+
+   public List<Identifier> getPostEffects() {
+      return this.postEffects;
+   }
+
+   public boolean removePostEffect(final Identifier postEffect) {
+      if (this.postEffects.remove(postEffect)) {
+         this.postEffectsDirty = true;
+         return true;
+      } else {
+         return false;
+      }
+   }
+
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(final ServerLevel level, final RespawnConfig respawnConfig, final boolean consumeSpawnBlock) {
       LevelData.RespawnData respawnData = respawnConfig.respawnData;
       BlockPos pos = respawnData.pos();
@@ -1059,15 +1108,22 @@ public class ServerPlayer extends Player {
          }
 
          return standUpPosition.map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
-      } else if (block instanceof BedBlock && ((BedRule)level.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos)).canSetSpawn(level)) {
-         return BedBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos, (Direction)blockState.getValue(BedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
-      } else if (!forced) {
-         return Optional.empty();
       } else {
-         boolean freeBottom = block.isPossibleToRespawnInThis(blockState);
-         BlockState topState = level.getBlockState(pos.above());
-         boolean freeTop = topState.getBlock().isPossibleToRespawnInThis(topState);
-         return freeBottom && freeTop ? Optional.of(new RespawnPosAngle(new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5), yaw, pitch)) : Optional.empty();
+         if (block instanceof AbstractBedBlock) {
+            AbstractBedBlock abstractBedBlock = (AbstractBedBlock)block;
+            if (abstractBedBlock.getBedRule(level, pos).canSetSpawn(level)) {
+               return AbstractBedBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos, (Direction)blockState.getValue(AbstractBedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
+            }
+         }
+
+         if (!forced) {
+            return Optional.empty();
+         } else {
+            boolean freeBottom = block.isPossibleToRespawnInThis(blockState);
+            BlockState topState = level.getBlockState(pos.above());
+            boolean freeTop = topState.getBlock().isPossibleToRespawnInThis(topState);
+            return freeBottom && freeTop ? Optional.of(new RespawnPosAngle(new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5), yaw, pitch)) : Optional.empty();
+         }
       }
    }
 
@@ -1130,6 +1186,7 @@ public class ServerPlayer extends Player {
             playerList.sendLevelInfo(this, newLevel);
             playerList.sendAllPlayerInfo(this);
             playerList.sendActivePlayerEffects(this);
+            this.sendPostEffects();
             transition.postTeleportTransition().onTransition(this);
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
@@ -1172,10 +1229,9 @@ public class ServerPlayer extends Player {
       this.containerMenu.broadcastChanges();
    }
 
-   public Either<Player.BedSleepingProblem, Unit> startSleepInBed(final BlockPos pos) {
-      Direction direction = (Direction)this.level().getBlockState(pos).getValue(HorizontalDirectionalBlock.FACING);
+   public Either<Player.BedSleepingProblem, Unit> startSleepInBed(final AbstractBedBlock bedBlock, final BlockState bedBlockState, final BedRule rule, final BlockPos pos) {
+      Direction direction = (Direction)bedBlockState.getValue(HorizontalDirectionalBlock.FACING);
       if (!this.isSleeping() && this.isAlive()) {
-         BedRule rule = (BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos);
          boolean canSleep = rule.canSleep(this.level());
          boolean canSetSpawn = rule.canSetSpawn(this.level());
          if (!canSetSpawn && !canSleep) {
@@ -1202,9 +1258,12 @@ public class ServerPlayer extends Player {
                   }
                }
 
-               Either<Player.BedSleepingProblem, Unit> result = super.startSleepInBed(pos).ifRight((unit) -> {
-                  this.awardStat(Stats.SLEEP_IN_BED);
-                  CriteriaTriggers.SLEPT_IN_BED.trigger(this);
+               Either<Player.BedSleepingProblem, Unit> result = super.startSleepInBed(bedBlock, bedBlockState, rule, pos).ifRight((unit) -> {
+                  this.awardStat(bedBlock.getSleptInBedStatType());
+                  if (canSetSpawn) {
+                     CriteriaTriggers.SLEPT_IN_BED.trigger(this);
+                  }
+
                });
                if (!this.level().canSleepThroughNights()) {
                   this.sendOverlayMessage(Component.translatable("sleep.not_possible"));

@@ -20,11 +20,11 @@ public abstract class CompositeSlotSource implements SlotSource {
    }
 
    protected static <T extends CompositeSlotSource> MapCodec<T> createCodec(final Function<List<SlotSource>, T> factory) {
-      return RecordCodecBuilder.mapCodec((i) -> i.group(SlotSources.CODEC.listOf().fieldOf("terms").forGetter((t) -> t.terms)).apply(i, factory));
+      return RecordCodecBuilder.mapCodec((i) -> i.group(SlotSources.DIRECT_CODEC.listOf().fieldOf("terms").forGetter((t) -> t.terms)).apply(i, factory));
    }
 
    protected static <T extends CompositeSlotSource> Codec<T> createInlineCodec(final Function<List<SlotSource>, T> factory) {
-      return SlotSources.CODEC.listOf().xmap(factory, (t) -> t.terms);
+      return SlotSources.DIRECT_CODEC.listOf().xmap(factory, (t) -> t.terms);
    }
 
    public abstract MapCodec<? extends CompositeSlotSource> codec();

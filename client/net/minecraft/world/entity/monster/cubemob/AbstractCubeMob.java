@@ -79,7 +79,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
       this.entityData.set(ID_SIZE, actualSize);
       this.reapplyPosition();
       this.refreshDimensions();
-      this.setcubeMobHealth(actualSize);
+      this.setCubeMobHealth(actualSize);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)(0.2F + 0.1F * (float)actualSize));
       if (updateHealth) {
          this.setHealth(this.getMaxHealth());
@@ -87,7 +87,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
 
    }
 
-   protected void setcubeMobHealth(final int actualSize) {
+   protected void setCubeMobHealth(final int actualSize) {
       this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(actualSize * actualSize));
    }
 
@@ -205,14 +205,14 @@ public abstract class AbstractCubeMob extends AgeableMob {
 
    public void push(final Entity entity) {
       super.push(entity);
-      if (entity instanceof IronGolem && this.isDealsDamage()) {
+      if (entity instanceof IronGolem && this.canDealDamage()) {
          this.dealDamage((LivingEntity)entity);
       }
 
    }
 
    public void playerTouch(final Player player) {
-      if (this.isDealsDamage()) {
+      if (this.canDealDamage()) {
          this.dealDamage(player);
       }
 
@@ -221,7 +221,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
    protected void dealDamage(final LivingEntity target) {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel level) {
-         if (this.isAlive() && this.isWithinMeleeAttackRange(target) && this.hasLineOfSight(target)) {
+         if (this.isAlive() && this.doTeamsAllowDamage(target) && this.isWithinMeleeAttackRange(target) && this.hasLineOfSight(target)) {
             DamageSource damageSource = this.damageSources().mobAttack(this);
             if (target.hurtServer(level, damageSource, this.getAttackDamage())) {
                this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
@@ -236,7 +236,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
       return new Vec3(0.0, (double)dimensions.height() - 0.015625 * (double)this.getSize() * (double)scale, 0.0);
    }
 
-   protected boolean isDealsDamage() {
+   protected boolean canDealDamage() {
       return !this.isTiny() && this.isEffectiveAi();
    }
 
@@ -408,7 +408,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
 
          MoveControl var3 = this.cubeMob.getMoveControl();
          if (var3 instanceof CubeMobMoveControl cubeMobMoveControl) {
-            cubeMobMoveControl.setDirection(this.cubeMob.getYRot(), this.cubeMob.isDealsDamage());
+            cubeMobMoveControl.setDirection(this.cubeMob.getYRot(), this.cubeMob.canDealDamage());
          }
 
       }

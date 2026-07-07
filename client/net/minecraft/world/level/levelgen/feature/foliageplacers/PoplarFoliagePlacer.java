@@ -33,19 +33,20 @@ public class PoplarFoliagePlacer extends FoliagePlacer {
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       boolean doubleTrunk = foliageAttachment.doubleTrunk();
       BlockPos foliagePos = foliageAttachment.pos().above(offset);
-      int currentRadius = leafRadius + foliageAttachment.radiusOffset() - 1;
+      int currentRadius = leafRadius + foliageAttachment.radiusOffsetXZ() - 1;
       boolean flipRhombusShape = random.nextBoolean();
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 2, foliageHeight - 1, doubleTrunk, foliageHeight, flipRhombusShape);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeight - 2, doubleTrunk, foliageHeight, flipRhombusShape);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeight - 3, doubleTrunk, foliageHeight, flipRhombusShape);
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 2, foliageHeightWithOffset - 1, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeightWithOffset - 2, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeightWithOffset - 3, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
 
-      for(int y = foliageHeight - 4; y >= 1; --y) {
-         this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius, y, doubleTrunk, foliageHeight, flipRhombusShape);
+      for(int y = foliageHeightWithOffset - 4; y >= 1; --y) {
+         this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius, y, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
       }
 
-      this.replaceLeavesWithLog(level, foliageSetter, tree, random, foliagePos, currentRadius, foliageHeight - 4, doubleTrunk, foliageHeight, flipRhombusShape);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, 0, doubleTrunk, foliageHeight, flipRhombusShape);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, Mth.clamp(currentRadius - 2, 1, 2), -1, doubleTrunk, foliageHeight, flipRhombusShape);
+      this.replaceLeavesWithLog(level, foliageSetter, tree, random, foliagePos, currentRadius, foliageHeightWithOffset - 4, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, 0, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, Mth.clamp(currentRadius - 2, 1, 2), -1, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
    }
 
    private void replaceLeavesWithLog(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final TreeFeature tree, final RandomSource random, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk, final int foliageHeight, final boolean flipRhombusShape) {

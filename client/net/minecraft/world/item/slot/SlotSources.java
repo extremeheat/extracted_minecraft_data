@@ -7,13 +7,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public interface SlotSources {
-   Codec<SlotSource> TYPED_CODEC = BuiltInRegistries.SLOT_SOURCE_TYPE.byNameCodec().dispatch(SlotSource::codec, (c) -> c);
-   Codec<SlotSource> CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, GroupSlotSource.INLINE_CODEC));
+   Codec<SlotSource> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(BuiltInRegistries.SLOT_SOURCE_TYPE.byNameCodec().dispatch(SlotSource::codec, (c) -> c), GroupSlotSource.INLINE_CODEC));
+   Codec<Holder<SlotSource>> CODEC = RegistryFileCodec.<Holder<SlotSource>>create(Registries.SLOT_SOURCE, DIRECT_CODEC);
 
    static MapCodec<? extends SlotSource> bootstrap(final Registry<MapCodec<? extends SlotSource>> registry) {
       Registry.register(registry, (String)"group", GroupSlotSource.MAP_CODEC);

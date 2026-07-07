@@ -112,6 +112,10 @@ public final class Ingredient implements Predicate<ItemStack>, StackedContents.I
       }
    }
 
+   public Optional<Holder<Item>> getSingleItem() {
+      return this.values.size() != 1 ? Optional.empty() : Optional.of(this.values.get(0));
+   }
+
    static {
       CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM).map(Ingredient::new, (i) -> i.values);
       OPTIONAL_CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM).map((ingredient) -> ingredient.size() == 0 ? Optional.empty() : Optional.of(new Ingredient(ingredient)), (ingredient) -> (HolderSet)ingredient.map((i) -> i.values).orElse(HolderSet.empty()));

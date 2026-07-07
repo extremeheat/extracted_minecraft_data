@@ -26,6 +26,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -63,6 +64,7 @@ public class FishingHook extends Projectile {
    private int timeUntilHooked;
    private float fishAngle;
    private boolean openWater;
+   private static final float GRAVITY = 0.03F;
    private @Nullable Entity hookedIn;
    private FishHookState currentState;
    private final int luck;
@@ -74,7 +76,7 @@ public class FishingHook extends Projectile {
       this.syncronizedRandom = RandomSource.create();
       this.openWater = true;
       this.currentState = FishingHook.FishHookState.FLYING;
-      this.interpolationHandler = new InterpolationHandler(this);
+      this.interpolationHandler = new LinearInterpolationHandler(this);
       this.luck = Math.max(0, luck);
       this.lureSpeed = Math.max(0, lureSpeed);
    }
@@ -224,7 +226,7 @@ public class FishingHook extends Projectile {
          }
 
          if (!fluidState.is(FluidTags.WATER) && !this.onGround() && this.hookedIn == null) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03, 0.0));
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -this.getDefaultGravity(), 0.0));
          }
 
          this.move(MoverType.SELF, this.getDeltaMovement());
@@ -463,6 +465,10 @@ public class FishingHook extends Projectile {
       }
 
       super.handleEntityEvent(id);
+   }
+
+   protected double getDefaultGravity() {
+      return 0.029999999329447746;
    }
 
    protected void pullEntity(final Entity entity) {

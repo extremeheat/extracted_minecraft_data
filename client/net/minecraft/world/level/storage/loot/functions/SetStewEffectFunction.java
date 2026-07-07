@@ -100,7 +100,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    }
 
    private static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) implements LootContextUser {
-      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(i, EffectEntry::new));
+      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.DIRECT_CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(i, EffectEntry::new));
 
       private EffectEntry {
          super();

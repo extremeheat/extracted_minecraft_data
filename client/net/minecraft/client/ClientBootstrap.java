@@ -1,6 +1,6 @@
 package net.minecraft.client;
 
-import com.mojang.blaze3d.vulkan.VulkanFeatureSets;
+import com.mojang.renderpearl.backend.vulkan.VulkanFeatureSets;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.dialog.DialogScreens;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;

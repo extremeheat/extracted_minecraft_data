@@ -204,7 +204,7 @@ public sealed interface Holder<T> {
       }
 
       public boolean canSerializeIn(final HolderOwner<T> context) {
-         return this.owner.canSerializeIn(context);
+         return context.canSerialize(this.owner);
       }
 
       public Either<ResourceKey<T>, T> unwrap() {

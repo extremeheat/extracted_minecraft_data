@@ -135,6 +135,7 @@ public class ArgumentTypeInfos {
       register(registry, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
       register(registry, "slot_source", SlotSourceArgument.class, SingletonArgumentInfo.contextAware(SlotSourceArgument::slotSource));
       register(registry, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
+      register(registry, "feature", ResourceOrIdArgument.FeatureArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::feature));
       return register(registry, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 

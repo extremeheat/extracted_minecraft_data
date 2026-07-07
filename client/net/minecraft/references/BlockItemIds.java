@@ -755,6 +755,7 @@ public class BlockItemIds {
    public static final BlockItemId FROGSPAWN = BlockItemId.create("frogspawn");
    public static final BlockItemId TRIAL_SPAWNER = BlockItemId.create("trial_spawner");
    public static final BlockItemId VAULT = BlockItemId.create("vault");
+   public static final BlockItemId STRAW_BED = BlockItemId.create("straw_bed");
    public static final BlockItemId REDSTONE_DUST = BlockItemId.create("redstone_wire", "redstone");
    public static final BlockItemId TRIPWIRE = BlockItemId.create("tripwire", "string");
    public static final BlockItemId POWDER_SNOW = BlockItemId.create("powder_snow", "powder_snow_bucket");

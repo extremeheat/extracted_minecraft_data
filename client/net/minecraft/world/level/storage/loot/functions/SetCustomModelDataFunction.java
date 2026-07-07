@@ -62,7 +62,7 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
    }
 
    static {
-      COLOR_PROVIDER_CODEC = Codec.withAlternative(NumberProviders.CODEC, ExtraCodecs.RGB_COLOR_CODEC, ConstantValue::new);
-      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ListOperation.StandAlone.codec(NumberProviders.CODEC, 2147483647).optionalFieldOf("floats").forGetter((o) -> o.floats), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((o) -> o.flags), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((o) -> o.strings), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((o) -> o.colors))).apply(i, SetCustomModelDataFunction::new));
+      COLOR_PROVIDER_CODEC = Codec.withAlternative(NumberProviders.DIRECT_CODEC, ExtraCodecs.RGB_COLOR_CODEC, ConstantValue::new);
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ListOperation.StandAlone.codec(NumberProviders.DIRECT_CODEC, 2147483647).optionalFieldOf("floats").forGetter((o) -> o.floats), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((o) -> o.flags), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((o) -> o.strings), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((o) -> o.colors))).apply(i, SetCustomModelDataFunction::new));
    }
 }

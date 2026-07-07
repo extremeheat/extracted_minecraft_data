@@ -351,14 +351,14 @@ public class VillagerTrades {
    }
 
    public static Holder<VillagerTrade> bootstrap(final BootstrapContext<VillagerTrade> context) {
-      HolderGetter<Item> items = context.<Item>lookup(Registries.ITEM);
-      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
+      HolderGetter<Item> items = context.lookup(Registries.ITEM);
+      HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
       HolderSet<Enchantment> enchantmentsForTradedEquipment = enchantments.getOrThrow(EnchantmentTags.ON_TRADED_EQUIPMENT);
       HolderSet<Enchantment> enchantmentsForBooks = enchantments.getOrThrow(EnchantmentTags.TRADEABLE);
       HolderSet<Enchantment> doubleTradePrice = enchantments.getOrThrow(EnchantmentTags.DOUBLE_TRADE_PRICE);
-      HolderGetter<Potion> potions = context.<Potion>lookup(Registries.POTION);
+      HolderGetter<Potion> potions = context.lookup(Registries.POTION);
       HolderSet<Potion> potionsForTippedArrows = potions.getOrThrow(PotionTags.TRADEABLE);
-      HolderGetter<VillagerType> villagerVariants = context.<VillagerType>lookup(Registries.VILLAGER_TYPE);
+      HolderGetter<VillagerType> villagerVariants = context.lookup(Registries.VILLAGER_TYPE);
       register(context, FARMER_1_WHEAT_EMERALD, new VillagerTrade(new TradeCost(Items.WHEAT, 20), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));
       register(context, FARMER_1_POTATO_EMERALD, new VillagerTrade(new TradeCost(Items.POTATO, 26), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));
       register(context, FARMER_1_CARROT_EMERALD, new VillagerTrade(new TradeCost(Items.CARROT, 22), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));

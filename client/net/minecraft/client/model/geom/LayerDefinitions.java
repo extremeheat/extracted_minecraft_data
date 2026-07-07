@@ -138,6 +138,7 @@ import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.model.object.cart.MinecartModel;
 import net.minecraft.client.model.object.chest.ChestModel;
 import net.minecraft.client.model.object.crystal.EndCrystalModel;
+import net.minecraft.client.model.object.cushion.CushionModel;
 import net.minecraft.client.model.object.equipment.ElytraModel;
 import net.minecraft.client.model.object.equipment.ShieldModel;
 import net.minecraft.client.model.object.leash.LeashKnotModel;
@@ -308,6 +309,7 @@ public class LayerDefinitions {
       result.put(ModelLayers.CREEPER, CreeperModel.createBodyLayer(CubeDeformation.NONE));
       result.put(ModelLayers.CREEPER_ARMOR, CreeperModel.createBodyLayer(new CubeDeformation(2.0F)));
       result.put(ModelLayers.CREEPER_HEAD, mobHeadLayer);
+      result.put(ModelLayers.CUSHION, CushionModel.createBodyLayer());
       result.put(ModelLayers.DECORATED_POT_BASE, DecoratedPotRenderer.createBaseLayer());
       result.put(ModelLayers.DECORATED_POT_SIDES, DecoratedPotRenderer.createSidesLayer());
       result.put(ModelLayers.DOLPHIN, dolphinBodyLayer);

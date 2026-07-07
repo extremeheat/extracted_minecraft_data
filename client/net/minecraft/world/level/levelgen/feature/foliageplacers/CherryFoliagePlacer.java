@@ -34,11 +34,12 @@ public class CherryFoliagePlacer extends FoliagePlacer {
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       boolean doubleTrunk = foliageAttachment.doubleTrunk();
       BlockPos foliagePos = foliageAttachment.pos().above(offset);
-      int currentRadius = leafRadius + foliageAttachment.radiusOffset() - 1;
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 2, foliageHeight - 3, doubleTrunk);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeight - 4, doubleTrunk);
+      int currentRadius = leafRadius + foliageAttachment.radiusOffsetXZ() - 1;
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 2, foliageHeightWithOffset - 3, doubleTrunk);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, foliageHeightWithOffset - 4, doubleTrunk);
 
-      for(int y = foliageHeight - 5; y >= 0; --y) {
+      for(int y = foliageHeightWithOffset - 5; y >= 0; --y) {
          this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius, y, doubleTrunk);
       }
 

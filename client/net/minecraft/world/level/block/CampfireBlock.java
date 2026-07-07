@@ -89,12 +89,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
       }
 
-      if (itemStack.is(ItemTags.DOWSES_CAMPFIRES) && (Boolean)state.getValue(LIT)) {
+      if (itemStack.is(ItemTags.DOUSES_CAMPFIRES) && (Boolean)state.getValue(LIT)) {
          if (!level.isClientSide()) {
             level.levelEvent((Entity)null, 1009, pos, 0);
          }
 
-         dowse(player, level, pos, state);
+         douse(player, level, pos, state);
          level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
          return InteractionResult.SUCCESS;
       } else {
@@ -148,7 +148,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       }
    }
 
-   public static void dowse(final @Nullable Entity source, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+   public static void douse(final @Nullable Entity source, final LevelAccessor level, final BlockPos pos, final BlockState state) {
       if (level.isClientSide()) {
          for(int j = 0; j < 20; ++j) {
             makeParticles((Level)level, pos, (Boolean)state.getValue(SIGNAL_FIRE), true);
@@ -166,7 +166,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
                level.playSound((Entity)null, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
-            dowse((Entity)null, level, pos, state);
+            douse((Entity)null, level, pos, state);
          }
 
          level.setBlockAndUpdate(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false));

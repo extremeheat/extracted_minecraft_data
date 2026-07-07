@@ -64,7 +64,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
             if (!transformData.disallowedFaces().contains(clickedFace)) {
                BlockState newBlockState = transformData.blockStateProvider.getOptionalState(level, level.getRandom(), pos);
                if (newBlockState != null) {
-                  BlockState updatedShape = transformData.transformType != BlockTransformer.TransformType.COPPER_CHEST ? Block.updateFromNeighbourShapes(newBlockState, level, pos) : newBlockState;
+                  BlockState updatedShape = transformData.updateFromNeighbors ? Block.updateFromNeighbourShapes(newBlockState, level, pos) : newBlockState;
                   Player player = context.getPlayer();
                   ItemStack itemInHand = context.getItemInHand();
                   if (player instanceof ServerPlayer) {
@@ -113,8 +113,8 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       STREAM_CODEC = StreamCodec.composite(BlockTransformer.BlockTransformData.STREAM_CODEC.apply(ByteBufCodecs.list()), BlockTransformer::transforms, BlockTransformer::new);
    }
 
-   public static record BlockTransformData(BlockStateProvider blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {
-      public static final Codec<BlockTransformData> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter(BlockTransformData::blockStateProvider), SoundEvent.CODEC.optionalFieldOf("sound", BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY)).forGetter(BlockTransformData::sound), BlockTransformer.TransformParticle.CODEC.optionalFieldOf("particle", BlockTransformer.TransformParticle.NONE).forGetter(BlockTransformData::particle), Direction.CODEC.listOf().optionalFieldOf("disallowed_faces", List.of()).forGetter(BlockTransformData::disallowedFaces), LootTable.KEY_CODEC.optionalFieldOf("loot").forGetter(BlockTransformData::loot), BlockTransformer.DropStrategy.CODEC.optionalFieldOf("drop_strategy", BlockTransformer.DropStrategy.FROM_MIDDLE).forGetter(BlockTransformData::dropStrategy), BlockTransformer.TransformType.CODEC.optionalFieldOf("transform_type", BlockTransformer.TransformType.SINGLE_BLOCK).forGetter(BlockTransformData::transformType), Codec.BOOL.optionalFieldOf("consume_on_use", true).forGetter(BlockTransformData::consumeOnUse), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("item_damage_per_use", 0).forGetter(BlockTransformData::itemDamagePerUse)).apply(i, BlockTransformData::new));
+   public static record BlockTransformData(BlockStateProvider blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, boolean updateFromNeighbors, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {
+      public static final Codec<BlockTransformData> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter(BlockTransformData::blockStateProvider), SoundEvent.CODEC.optionalFieldOf("sound", BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY)).forGetter(BlockTransformData::sound), BlockTransformer.TransformParticle.CODEC.optionalFieldOf("particle", BlockTransformer.TransformParticle.NONE).forGetter(BlockTransformData::particle), Direction.CODEC.listOf().optionalFieldOf("disallowed_faces", List.of()).forGetter(BlockTransformData::disallowedFaces), LootTable.KEY_CODEC.optionalFieldOf("loot").forGetter(BlockTransformData::loot), BlockTransformer.DropStrategy.CODEC.optionalFieldOf("drop_strategy", BlockTransformer.DropStrategy.FROM_MIDDLE).forGetter(BlockTransformData::dropStrategy), Codec.BOOL.optionalFieldOf("update_from_neighbors", true).forGetter(BlockTransformData::updateFromNeighbors), BlockTransformer.TransformType.CODEC.optionalFieldOf("transform_type", BlockTransformer.TransformType.SINGLE_BLOCK).forGetter(BlockTransformData::transformType), Codec.BOOL.optionalFieldOf("consume_on_use", true).forGetter(BlockTransformData::consumeOnUse), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("item_damage_per_use", 0).forGetter(BlockTransformData::itemDamagePerUse)).apply(i, BlockTransformData::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, BlockTransformData> STREAM_CODEC;
 
       public BlockTransformData {
@@ -134,7 +134,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.fromCodec(BlockStateProvider.CODEC), BlockTransformData::blockStateProvider, SoundEvent.STREAM_CODEC, BlockTransformData::sound, BlockTransformer.TransformParticle.STREAM_CODEC, BlockTransformData::particle, Direction.STREAM_CODEC.apply(ByteBufCodecs.list()), BlockTransformData::disallowedFaces, ResourceKey.streamCodec(Registries.LOOT_TABLE).apply(ByteBufCodecs::optional), BlockTransformData::loot, BlockTransformer.DropStrategy.STREAM_CODEC, BlockTransformData::dropStrategy, BlockTransformer.TransformType.STREAM_CODEC, BlockTransformData::transformType, ByteBufCodecs.BOOL, BlockTransformData::consumeOnUse, ByteBufCodecs.VAR_INT, BlockTransformData::itemDamagePerUse, BlockTransformData::new);
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.fromCodecWithRegistries(BlockStateProvider.CODEC), BlockTransformData::blockStateProvider, SoundEvent.STREAM_CODEC, BlockTransformData::sound, BlockTransformer.TransformParticle.STREAM_CODEC, BlockTransformData::particle, Direction.STREAM_CODEC.apply(ByteBufCodecs.list()), BlockTransformData::disallowedFaces, ResourceKey.streamCodec(Registries.LOOT_TABLE).apply(ByteBufCodecs::optional), BlockTransformData::loot, BlockTransformer.DropStrategy.STREAM_CODEC, BlockTransformData::dropStrategy, ByteBufCodecs.BOOL, BlockTransformData::updateFromNeighbors, BlockTransformer.TransformType.STREAM_CODEC, BlockTransformData::transformType, ByteBufCodecs.BOOL, BlockTransformData::consumeOnUse, ByteBufCodecs.VAR_INT, BlockTransformData::itemDamagePerUse, BlockTransformData::new);
       }
 
       public static class Builder {
@@ -144,6 +144,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          private List<Direction> disallowedFaces;
          private Optional<ResourceKey<LootTable>> loot;
          private DropStrategy dropStrategy;
+         private boolean updateFromNeighbors;
          private TransformType transformType;
          private boolean consumeOnUse;
          private int itemDamagePerUse;
@@ -155,6 +156,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
             this.disallowedFaces = List.of();
             this.loot = Optional.empty();
             this.dropStrategy = BlockTransformer.DropStrategy.FROM_MIDDLE;
+            this.updateFromNeighbors = true;
             this.transformType = BlockTransformer.TransformType.SINGLE_BLOCK;
             this.consumeOnUse = true;
             this.itemDamagePerUse = 1;
@@ -186,6 +188,11 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
             return this;
          }
 
+         public Builder updateFromNeighbors(final boolean updateFromNeighbors) {
+            this.updateFromNeighbors = updateFromNeighbors;
+            return this;
+         }
+
          public Builder transformType(final TransformType transformType) {
             this.transformType = transformType;
             return this;
@@ -202,7 +209,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          }
 
          public BlockTransformData build() {
-            return new BlockTransformData(this.targetStateProvider, this.sound, this.particle, this.disallowedFaces, this.loot, this.dropStrategy, this.transformType, this.consumeOnUse, this.itemDamagePerUse);
+            return new BlockTransformData(this.targetStateProvider, this.sound, this.particle, this.disallowedFaces, this.loot, this.dropStrategy, this.updateFromNeighbors, this.transformType, this.consumeOnUse, this.itemDamagePerUse);
          }
       }
    }

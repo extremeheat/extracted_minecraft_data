@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -37,6 +38,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 public class FillBiomeCommand {
    public static final SimpleCommandExceptionType ERROR_NOT_LOADED = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
    private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.fillbiome.toobig", max, count));
+   private static final SimpleCommandExceptionType ERROR_NO_BIOMES_SET = new SimpleCommandExceptionType(Component.translatable("commands.fillbiome.no_changes"));
 
    public FillBiomeCommand() {
       super();
@@ -55,13 +57,16 @@ public class FillBiomeCommand {
    }
 
    private static BiomeResolver makeResolver(final MutableInt count, final ChunkAccess chunk, final BoundingBox region, final Holder<Biome> toFill, final Predicate<Holder<Biome>> filter) {
-      return (quartX, quartY, quartZ, sampler) -> {
+      return (quartX, quartY, quartZ, var8) -> {
          int blockX = QuartPos.toBlock(quartX);
          int blockY = QuartPos.toBlock(quartY);
          int blockZ = QuartPos.toBlock(quartZ);
          Holder<Biome> currentBiome = chunk.getNoiseBiome(quartX, quartY, quartZ);
          if (region.isInside(blockX, blockY, blockZ) && filter.test(currentBiome)) {
-            count.increment();
+            if (!currentBiome.is(toFill)) {
+               count.increment();
+            }
+
             return toFill;
          } else {
             return currentBiome;
@@ -70,7 +75,7 @@ public class FillBiomeCommand {
    }
 
    public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos rawFrom, final BlockPos rawTo, final Holder<Biome> biome) {
-      return fill(level, rawFrom, rawTo, biome, (b) -> true, (m) -> {
+      return fill(level, rawFrom, rawTo, biome, (var0) -> true, (var0) -> {
       });
    }
 
@@ -97,15 +102,27 @@ public class FillBiomeCommand {
          }
 
          MutableInt changedCount = new MutableInt(0);
+         Iterator<ChunkAccess> iterator = chunks.iterator();
 
-         for(ChunkAccess chunk : chunks) {
+         while(iterator.hasNext()) {
+            ChunkAccess chunk = (ChunkAccess)iterator.next();
+            int previousChangedCount = changedCount.intValue();
             chunk.fillBiomesFromNoise(makeResolver(changedCount, chunk, region, biome, filter), level.getChunkSource().randomState().sampler());
-            chunk.markUnsaved();
+            if (previousChangedCount != changedCount.intValue()) {
+               chunk.markUnsaved();
+            } else {
+               iterator.remove();
+            }
          }
 
-         level.getChunkSource().chunkMap.resendBiomesForChunks(chunks);
-         successMessageConsumer.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", changedCount.intValue(), region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ()));
-         return Either.left(changedCount.intValue());
+         int finalChangedCount = changedCount.intValue();
+         if (finalChangedCount > 0) {
+            level.getChunkSource().chunkMap.resendBiomesForChunks(chunks);
+            successMessageConsumer.accept((Supplier)() -> Component.translatable("commands.fillbiome.success.count", finalChangedCount, region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ()));
+            return Either.left(finalChangedCount);
+         } else {
+            return Either.right(ERROR_NO_BIOMES_SET.create());
+         }
       }
    }
 

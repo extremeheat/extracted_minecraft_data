@@ -181,6 +181,7 @@ public class Blocks {
    public static final Block CUT_SANDSTONE;
    public static final Block NOTE_BLOCK;
    public static final ColorCollection<Block> BED;
+   public static final Block STRAW_BED;
    public static final Block POWERED_RAIL;
    public static final Block DETECTOR_RAIL;
    public static final Block STICKY_PISTON;
@@ -231,9 +232,9 @@ public class Blocks {
    public static final Block DARK_OAK_SHELF;
    public static final Block JUNGLE_SHELF;
    public static final Block MANGROVE_SHELF;
-   public static final Block POPLAR_SHELF;
    public static final Block OAK_SHELF;
    public static final Block PALE_OAK_SHELF;
+   public static final Block POPLAR_SHELF;
    public static final Block SPRUCE_SHELF;
    public static final Block WARPED_SHELF;
    public static final Block MOSSY_COBBLESTONE;
@@ -1196,9 +1197,9 @@ public class Blocks {
       DARK_OAK_LEAVES = register(BlockItemIds.DARK_OAK_LEAVES, (p) -> new TintedParticleLeavesBlock(0.01F, p), leavesProperties(SoundType.GRASS));
       PALE_OAK_LEAVES = register(BlockItemIds.PALE_OAK_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.02F, ParticleTypes.PALE_OAK_LEAVES, AmbientLeavesBlockSoundPlayer.noAmbientSound(), p), BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.2F).randomTicks().sound(SoundType.GRASS).noOcclusion().isValidSpawn(Blocks::ocelotOrParrot).isSuffocating(Blocks::never).isViewBlocking(Blocks::never).ignitedByLava().pushReaction(PushReaction.DESTROY).isRedstoneConductor(Blocks::never));
       MANGROVE_LEAVES = register(BlockItemIds.MANGROVE_LEAVES, (p) -> new MangroveLeavesBlock(0.01F, p), leavesProperties(SoundType.GRASS));
-      RED_POPLAR_LEAVES = register(BlockItemIds.RED_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.RED_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.LEAF_LITTER).mapColor(MapColor.COLOR_RED));
-      ORANGE_POPLAR_LEAVES = register(BlockItemIds.ORANGE_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.ORANGE_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.LEAF_LITTER).mapColor(MapColor.COLOR_ORANGE));
-      YELLOW_POPLAR_LEAVES = register(BlockItemIds.YELLOW_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.YELLOW_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.LEAF_LITTER).mapColor(MapColor.COLOR_YELLOW));
+      RED_POPLAR_LEAVES = register(BlockItemIds.RED_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.RED_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.POPLAR_LEAVES).mapColor(MapColor.COLOR_RED));
+      ORANGE_POPLAR_LEAVES = register(BlockItemIds.ORANGE_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.ORANGE_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.POPLAR_LEAVES).mapColor(MapColor.COLOR_ORANGE));
+      YELLOW_POPLAR_LEAVES = register(BlockItemIds.YELLOW_POPLAR_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ParticleTypes.YELLOW_POPLAR_LEAVES, AmbientLeavesBlockSoundPlayer.of(SoundEvents.POPLAR_LEAVES_AMBIENT, BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE), p), leavesProperties(SoundType.POPLAR_LEAVES).mapColor(MapColor.COLOR_YELLOW));
       AZALEA_LEAVES = register(BlockItemIds.AZALEA_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ColorParticleOption.create(ParticleTypes.TINTED_LEAVES, -9399763), AmbientLeavesBlockSoundPlayer.noAmbientSound(), p), leavesProperties(SoundType.AZALEA_LEAVES));
       FLOWERING_AZALEA_LEAVES = register(BlockItemIds.FLOWERING_AZALEA_LEAVES, (p) -> new UntintedParticleLeavesBlock(0.01F, ColorParticleOption.create(ParticleTypes.TINTED_LEAVES, -9399763), AmbientLeavesBlockSoundPlayer.noAmbientSound(), p), leavesProperties(SoundType.AZALEA_LEAVES));
       SPONGE = register(BlockItemIds.SPONGE, SpongeBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.SPONGE));
@@ -1213,6 +1214,7 @@ public class Blocks {
       CUT_SANDSTONE = register(BlockItemIds.CUT_SANDSTONE, BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(0.8F));
       NOTE_BLOCK = register(BlockItemIds.NOTE_BLOCK, NoteBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
       BED = ColorCollection.registerBlocks(BlockItemIds.BED, Blocks::register, BedBlock::new, (color) -> BlockBehaviour.Properties.of().mapColor((Function)((state) -> state.getValue(BedBlock.PART) == BedPart.FOOT ? color.getMapColor() : MapColor.WOOL)).sound(SoundType.WOOD).strength(0.2F).bounceRestitution(0.75F).fallDistanceReduction(0.5F).noOcclusion().ignitedByLava().pushReaction(PushReaction.DESTROY));
+      STRAW_BED = register(BlockItemIds.STRAW_BED, StrawBedBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).sound(SoundType.STRAW_BED).strength(0.2F).noOcclusion().ignitedByLava().pushReaction(PushReaction.DESTROY));
       POWERED_RAIL = register(BlockItemIds.POWERED_RAIL, PoweredRailBlock::new, BlockBehaviour.Properties.of().noCollision().strength(0.7F).sound(SoundType.METAL));
       DETECTOR_RAIL = register(BlockItemIds.DETECTOR_RAIL, DetectorRailBlock::new, BlockBehaviour.Properties.of().noCollision().strength(0.7F).sound(SoundType.METAL));
       STICKY_PISTON = register(BlockItemIds.STICKY_PISTON, (p) -> new PistonBaseBlock(true, p), pistonProperties());
@@ -1221,7 +1223,7 @@ public class Blocks {
       FERN = register(BlockItemIds.FERN, TallGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
       DEAD_BUSH = register(BlockItemIds.DEAD_BUSH, DryVegetationBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).replaceable().noCollision().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
       BUSH = register(BlockItemIds.BUSH, BushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
-      RED_SHRUB = register(BlockItemIds.RED_SHRUB, BushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      RED_SHRUB = register(BlockItemIds.RED_SHRUB, BushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().instabreak().sound(SoundType.RED_SHRUB).ignitedByLava().pushReaction(PushReaction.DESTROY));
       SHORT_DRY_GRASS = register(BlockItemIds.SHORT_DRY_GRASS, ShortDryGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).replaceable().noCollision().instabreak().sound(SoundType.GRASS).ignitedByLava().offsetType(BlockBehaviour.OffsetType.XYZ).pushReaction(PushReaction.DESTROY));
       TALL_DRY_GRASS = register(BlockItemIds.TALL_DRY_GRASS, TallDryGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).replaceable().noCollision().instabreak().sound(SoundType.GRASS).ignitedByLava().offsetType(BlockBehaviour.OffsetType.XYZ).pushReaction(PushReaction.DESTROY));
       SEAGRASS = register(BlockItemIds.SEAGRASS, SeagrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollision().instabreak().sound(SoundType.WET_GRASS).pushReaction(PushReaction.DESTROY));
@@ -1263,9 +1265,9 @@ public class Blocks {
       DARK_OAK_SHELF = register(BlockItemIds.DARK_OAK_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(DARK_OAK_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       JUNGLE_SHELF = register(BlockItemIds.JUNGLE_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(JUNGLE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       MANGROVE_SHELF = register(BlockItemIds.MANGROVE_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MANGROVE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      POPLAR_SHELF = register(BlockItemIds.POPLAR_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(POPLAR_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       OAK_SHELF = register(BlockItemIds.OAK_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(OAK_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       PALE_OAK_SHELF = register(BlockItemIds.PALE_OAK_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(PALE_OAK_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      POPLAR_SHELF = register(BlockItemIds.POPLAR_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(POPLAR_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       SPRUCE_SHELF = register(BlockItemIds.SPRUCE_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(SPRUCE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       WARPED_SHELF = register(BlockItemIds.WARPED_SHELF, ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WARPED_STEM).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       MOSSY_COBBLESTONE = register(BlockItemIds.MOSSY_COBBLESTONE, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F));

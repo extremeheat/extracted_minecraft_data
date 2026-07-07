@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -113,26 +112,20 @@ public class StructureTemplate {
          this.size = size;
 
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-            for(BlockPos pos : BlockPos.betweenClosed(minCorner, maxCorner)) {
+            level.findBlocksIn(minCorner, maxCorner).filterState((state) -> !ignoreBlocks.contains(state.getBlock())).forEach((pos, state) -> {
                BlockPos relativePos = pos.subtract(minCorner);
-               BlockState blockState = level.getBlockState(pos);
-               Stream var10000 = ignoreBlocks.stream();
-               Objects.requireNonNull(blockState);
-               if (!var10000.anyMatch(blockState::is)) {
-                  BlockEntity blockEntity = level.getBlockEntity(pos);
-                  StructureBlockInfo info;
-                  if (blockEntity != null) {
-                     TagValueOutput output = TagValueOutput.createWithContext(reporter, level.registryAccess());
-                     blockEntity.saveWithId(output);
-                     info = new StructureBlockInfo(relativePos, blockState, output.buildResult());
-                  } else {
-                     info = new StructureBlockInfo(relativePos, blockState, (CompoundTag)null);
-                  }
-
-                  addToLists(info, fullBlockList, blockEntitiesList, otherBlocksList);
+               BlockEntity blockEntity = level.getBlockEntity(pos);
+               StructureBlockInfo info;
+               if (blockEntity != null) {
+                  TagValueOutput output = TagValueOutput.createWithContext(reporter, level.registryAccess());
+                  blockEntity.saveWithId(output);
+                  info = new StructureBlockInfo(relativePos, state, output.buildResult());
+               } else {
+                  info = new StructureBlockInfo(relativePos, state, (CompoundTag)null);
                }
-            }
 
+               addToLists(info, fullBlockList, blockEntitiesList, otherBlocksList);
+            });
             List<StructureBlockInfo> blockInfoList = buildInfoList(fullBlockList, blockEntitiesList, otherBlocksList);
             this.palettes.clear();
             this.palettes.add(new Palette(blockInfoList));

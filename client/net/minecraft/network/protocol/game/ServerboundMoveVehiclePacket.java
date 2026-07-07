@@ -1,14 +1,14 @@
 package net.minecraft.network.protocol.game;
 
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 
-public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot, boolean onGround) implements Packet<ServerGamePacketListener> {
+public record ServerboundMoveVehiclePacket(PositionAndRotation movingTo, boolean onGround) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundMoveVehiclePacket> STREAM_CODEC;
 
    public ServerboundMoveVehiclePacket {
@@ -16,7 +16,7 @@ public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot
    }
 
    public static ServerboundMoveVehiclePacket fromEntity(final Entity entity) {
-      return entity.isInterpolating() ? new ServerboundMoveVehiclePacket(entity.getInterpolation().position(), entity.getInterpolation().yRot(), entity.getInterpolation().xRot(), entity.onGround()) : new ServerboundMoveVehiclePacket(entity.position(), entity.getYRot(), entity.getXRot(), entity.onGround());
+      return entity.isInterpolating() ? new ServerboundMoveVehiclePacket(entity.getInterpolation().getCurrentPositionAndRotation(), entity.onGround()) : new ServerboundMoveVehiclePacket(entity.storePositionAndRotation(), entity.onGround());
    }
 
    public PacketType<ServerboundMoveVehiclePacket> type() {
@@ -28,6 +28,6 @@ public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, ServerboundMoveVehiclePacket::position, ByteBufCodecs.FLOAT, ServerboundMoveVehiclePacket::yRot, ByteBufCodecs.FLOAT, ServerboundMoveVehiclePacket::xRot, ByteBufCodecs.BOOL, ServerboundMoveVehiclePacket::onGround, ServerboundMoveVehiclePacket::new);
+      STREAM_CODEC = StreamCodec.composite(PositionAndRotation.STREAM_CODEC, ServerboundMoveVehiclePacket::movingTo, ByteBufCodecs.BOOL, ServerboundMoveVehiclePacket::onGround, ServerboundMoveVehiclePacket::new);
    }
 }

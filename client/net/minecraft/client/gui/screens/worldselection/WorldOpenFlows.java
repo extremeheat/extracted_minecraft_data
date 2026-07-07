@@ -103,7 +103,7 @@ public class WorldOpenFlows {
          try {
             WorldLoader.PackConfig packConfig = new WorldLoader.PackConfig(packRepository, dataConfiguration, false, false);
             WorldStem worldStem = (WorldStem)this.loadWorldDataBlocking(packConfig, (context) -> {
-               WorldDimensions dimensions = (WorldDimensions)dimensionsProvider.apply(context.datapackWorldgen());
+               WorldDimensions dimensions = (WorldDimensions)dimensionsProvider.apply(context.datapackWorldRegistries());
                WorldDimensions.Complete completeDimensions = dimensions.bake(context.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM));
                return new WorldLoader.DataLoadOutput(new LevelDataAndDimensions.WorldDataAndGenSettings(new PrimaryLevelData(levelSettings, completeDimensions.specialWorldProperty(), completeDimensions.lifecycle()), new WorldGenSettings(options, dimensions)), completeDimensions.dimensionsRegistryAccess());
             }, WorldStem::new);
@@ -142,7 +142,7 @@ public class WorldOpenFlows {
       WorldLoader.PackConfig packConfig = LevelStorageSource.getPackConfig(levelDataTag, packRepository, safeMode);
       return (WorldStem)this.loadWorldDataBlocking(packConfig, (context) -> {
          Registry<LevelStem> datapackDimensions = context.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
-         LevelDataAndDimensions data = LevelStorageSource.getLevelDataAndDimensions(worldAccess, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldgen());
+         LevelDataAndDimensions data = LevelStorageSource.getLevelDataAndDimensions(worldAccess, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldRegistries());
          return new WorldLoader.DataLoadOutput(data.worldDataAndGenSettings(), data.dimensions().dimensionsRegistryAccess());
       }, WorldStem::new);
    }
@@ -158,7 +158,7 @@ public class WorldOpenFlows {
          WorldLoader.PackConfig packConfig = LevelStorageSource.getPackConfig(levelDataTag, packRepository, false);
          return (Pair)this.loadWorldDataBlocking(packConfig, (context) -> {
             Registry<LevelStem> noDatapackDimensions = (new MappedRegistry<LevelStem>(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-            LevelDataAndDimensions existingData = LevelStorageSource.getLevelDataAndDimensions(levelSourceAccess, levelDataTag, context.dataConfiguration(), noDatapackDimensions, context.datapackWorldgen());
+            LevelDataAndDimensions existingData = LevelStorageSource.getLevelDataAndDimensions(levelSourceAccess, levelDataTag, context.dataConfiguration(), noDatapackDimensions, context.datapackWorldRegistries());
 
             record Data(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
                Data {
@@ -254,7 +254,7 @@ public class WorldOpenFlows {
       } catch (OutOfMemoryError e) {
          MemoryReserve.release();
          String detailedMessage = "Ran out of memory trying to read level data of world folder \"" + worldAccess.getLevelId() + "\"";
-         LOGGER.error(LogUtils.FATAL_MARKER, detailedMessage);
+         LOGGER.error(LogUtils.FATAL_MARKER, "{}", detailedMessage);
          OutOfMemoryError detailedException = new OutOfMemoryError("Ran out of memory reading level data");
          detailedException.initCause(e);
          CrashReport crashReport = CrashReport.forThrowable(detailedException, detailedMessage);

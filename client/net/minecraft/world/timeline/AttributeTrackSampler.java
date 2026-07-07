@@ -30,7 +30,7 @@ public class AttributeTrackSampler<Value, Argument> implements EnvironmentAttrib
    public Value applyTimeBased(final Value baseValue, final int cacheTickId) {
       if (this.cachedArgument == null || cacheTickId != this.cachedTickId) {
          this.cachedTickId = cacheTickId;
-         this.cachedArgument = this.argumentSampler.sample(this.clockManager.getTotalTicks(this.clock));
+         this.cachedArgument = this.argumentSampler.sample(this.clockManager.getInstance(this.clock).totalTicks());
       }
 
       return this.modifier.apply(baseValue, this.cachedArgument);

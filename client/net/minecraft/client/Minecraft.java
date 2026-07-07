@@ -11,7 +11,6 @@ import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
 import com.mojang.authlib.services.ProfileActionType;
 import com.mojang.authlib.services.ProfileResult;
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.ClientShutdownWatchdog;
@@ -25,17 +24,8 @@ import com.mojang.blaze3d.platform.MonitorManager;
 import com.mojang.blaze3d.platform.TextInputManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
-import com.mojang.blaze3d.shaders.GpuDebugOptions;
-import com.mojang.blaze3d.systems.BackendCreationException;
-import com.mojang.blaze3d.systems.DeviceInfo;
-import com.mojang.blaze3d.systems.GpuBackend;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.GpuSurface;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.SurfaceException;
 import com.mojang.blaze3d.systems.TimerQuery;
-import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vulkan.VulkanBackend;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.jtracy.DiscontinuousFrame;
 import com.mojang.jtracy.TracyClient;
@@ -43,6 +33,16 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.BackendCreationException;
+import com.mojang.renderpearl.api.device.DeviceInfo;
+import com.mojang.renderpearl.api.device.GpuBackend;
+import com.mojang.renderpearl.api.device.GpuDebugOptions;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuSurface;
+import com.mojang.renderpearl.api.device.SurfaceException;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.vulkan.VulkanBackend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -406,7 +406,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.vanillaPackResources = clientPackSource.getVanillaPack();
       this.proxy = gameConfig.user.proxy;
       this.offlineDeveloperMode = gameConfig.game.offlineDeveloperMode;
-      MinecraftServicesDiscoveryService discoveryService = MinecraftServicesDiscoveryService.create(this.proxy, this.offlineDeveloperMode);
+      MinecraftServicesDiscoveryService discoveryService = MinecraftServicesDiscoveryService.create(this.proxy, !this.offlineDeveloperMode);
       this.services = Services.create(discoveryService, this.gameDirectory);
       this.user = gameConfig.user.user;
       this.profileFuture = this.offlineDeveloperMode ? CompletableFuture.completedFuture((Object)null) : CompletableFuture.supplyAsync(() -> this.services.sessionService().fetchProfile(this.user.getProfileId(), true), Util.nonCriticalIoPool());
@@ -603,6 +603,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Objects.requireNonNull(var10001);
          particleResources.onReload(var10001::clearParticles);
          this.gameRenderer = new GameRenderer(this, this.entityRenderDispatcher.getItemInHandRenderer(), this.modelManager);
+         this.resourceManager.registerReloadListener(this.gameRenderer.createReloadListener());
          WindowRenderState windowRenderState = this.gameRenderer.gameRenderState().windowRenderState;
          windowRenderState.width = this.window.getWidth();
          windowRenderState.height = this.window.getHeight();
@@ -833,7 +834,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public void triggerResourcePackRecovery(final Exception exception) {
       if (!this.resourcePackRepository.isAbleToClearAnyPack()) {
          if (this.resourcePackRepository.getSelectedIds().size() <= 1) {
-            LOGGER.error(LogUtils.FATAL_MARKER, exception.getMessage(), exception);
+            LOGGER.error(LogUtils.FATAL_MARKER, "Failed to recover from resource pack error", exception);
             this.emergencySaveAndCrash(new CrashReport(exception.getMessage(), exception));
          } else {
             this.schedule(this::abortResourcePackRecovery);
@@ -1176,6 +1177,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          CrashReport report = CrashReport.forThrowable(e, "Render Frame");
          CrashReportCategory manualCrashDetails = report.addCategory("Render Frame Details");
          NativeModuleLister.addCrashSection(manualCrashDetails);
+         manualCrashDetails.setDetail("Post effects", this.gameRenderer.getRequestedPostEffects());
          throw new ReportedException(report);
       } finally {
          profiler.pop();
@@ -1213,7 +1215,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                      this.windowSurface.configure(config);
                      this.surfaceIsInvalid = false;
                   } catch (SurfaceException exception) {
-                     LOGGER.warn("Couldn't configure surface to {}: {}", config, exception);
+                     LOGGER.warn("Couldn't configure surface to {}", config, exception);
                      this.surfaceIsInvalid = true;
                   }
                }
@@ -1225,7 +1227,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                try {
                   this.windowSurface.acquireNextTexture();
                } catch (SurfaceException ex) {
-                  LOGGER.warn("Couldn't acquire next surface texture with config {}: {}", this.windowSurface.currentConfiguration(), ex);
+                  LOGGER.warn("Couldn't acquire next surface texture with config {}", this.windowSurface.currentConfiguration(), ex);
                   this.surfaceIsInvalid = true;
                   this.windowSurfaceNeedsReconfiguring = true;
                }
@@ -1768,8 +1770,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                this.player.sendChanges();
             }
          }
-      } else if (this.gameRenderer.currentPostEffect() != null) {
-         this.gameRenderer.clearPostEffect();
+      } else if (this.gameRenderer.spectatedEntityPostEffect() != null) {
+         this.gameRenderer.clearSpectatedEntityPostEffect();
       }
 
       this.musicManager.tick();
@@ -1848,7 +1850,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.gui.handleKeybinds();
 
       while(this.options.keyToggleSpectatorShaderEffects.consumeClick()) {
-         this.gameRenderer.togglePostEffect();
+         this.gameRenderer.toggleSpectatorPostEffect();
       }
 
       for(int i = 0; i < 9; ++i) {
@@ -2191,7 +2193,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean friendsEnabled() {
-      return this.userProperties().flag(UserFlag.FRIENDS_ENABLED);
+      return this.userProperties().flag(UserFlag.FRIENDS_ENABLED) && !this.offlineDeveloperMode;
    }
 
    public boolean handleGlobalKeyPress(final InputConstants.Key key, final boolean controlDown) {
@@ -2227,9 +2229,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private boolean toggleFriendsScreen() {
-      if (this.isDemo()) {
-         return false;
-      } else {
+      if (!this.isDemo() && !this.isOfflineDeveloperMode()) {
          Screen current = this.gui.screen();
          if (current instanceof FriendsOverlayScreen) {
             FriendsOverlayScreen friends = (FriendsOverlayScreen)current;
@@ -2241,6 +2241,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(current)), current);
             return true;
          }
+      } else {
+         return false;
       }
    }
 

@@ -27,17 +27,19 @@ public class FireworkParticles {
    public static class Starter extends NoRenderParticle {
       private static final double[][] CREEPER_PARTICLE_COORDS = new double[][]{{0.0, 0.2}, {0.2, 0.2}, {0.2, 0.6}, {0.6, 0.6}, {0.6, 0.2}, {0.2, 0.2}, {0.2, 0.0}, {0.4, 0.0}, {0.4, -0.6}, {0.2, -0.6}, {0.2, -0.4}, {0.0, -0.4}};
       private static final double[][] STAR_PARTICLE_COORDS = new double[][]{{0.0, 1.0}, {0.3455, 0.309}, {0.9511, 0.309}, {0.3795918367346939, -0.12653061224489795}, {0.6122448979591837, -0.8040816326530612}, {0.0, -0.35918367346938773}};
+      private final boolean playSound;
       private int life;
       private final ParticleEngine engine;
       private final List<FireworkExplosion> explosions;
       private boolean twinkleDelay;
 
-      public Starter(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final ParticleEngine engine, final List<FireworkExplosion> explosions) {
+      public Starter(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final ParticleEngine engine, final List<FireworkExplosion> explosions, final boolean playSound) {
          super(level, x, y, z);
          this.xd = xd;
          this.yd = yd;
          this.zd = zd;
          this.engine = engine;
+         this.playSound = playSound;
          if (explosions.isEmpty()) {
             throw new IllegalArgumentException("Cannot create firework starter with no explosions");
          } else {
@@ -56,7 +58,7 @@ public class FireworkParticles {
       }
 
       public void tick() {
-         if (this.life == 0) {
+         if (this.life == 0 && this.playSound) {
             boolean farEffect = this.isFarAwayFromCamera();
             boolean largeExplosion = false;
             if (this.explosions.size() >= 3) {
@@ -105,7 +107,7 @@ public class FireworkParticles {
 
          ++this.life;
          if (this.life > this.lifetime) {
-            if (this.twinkleDelay) {
+            if (this.twinkleDelay && this.playSound) {
                boolean farEffect = this.isFarAwayFromCamera();
                SoundEvent sound = farEffect ? SoundEvents.FIREWORK_ROCKET_TWINKLE_FAR : SoundEvents.FIREWORK_ROCKET_TWINKLE;
                this.level.playLocalSound(this.x, this.y, this.z, sound, SoundSource.AMBIENT, 20.0F, 0.9F + this.random.nextFloat() * 0.15F, true);

@@ -484,6 +484,10 @@ public class SoundEvents {
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_2 = registerForHolder("item.crossbow.quick_charge_2");
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_3 = registerForHolder("item.crossbow.quick_charge_3");
    public static final SoundEvent CROSSBOW_SHOOT = register("item.crossbow.shoot");
+   public static final SoundEvent CUSHION_BREAK = register("entity.cushion.break");
+   public static final SoundEvent CUSHION_PLACE = register("entity.cushion.place");
+   public static final SoundEvent CUSHION_SIT = register("entity.cushion.sit");
+   public static final SoundEvent CUSHION_GET_UP = register("entity.cushion.get_up");
    public static final SoundEvent DEAD_BUSH_IDLE = register("block.deadbush.idle");
    public static final SoundEvent DECORATED_POT_BREAK = register("block.decorated_pot.break");
    public static final SoundEvent DECORATED_POT_FALL = register("block.decorated_pot.fall");
@@ -1907,7 +1911,20 @@ public class SoundEvents {
    public static final SoundEvent SHELF_MUSHROOM_PLACE = register("block.shelf_mushroom.place");
    public static final SoundEvent SHELF_MUSHROOM_STEP = register("block.shelf_mushroom.step");
    public static final SoundEvent SHELF_MUSHROOM_BOUNCE = register("block.shelf_mushroom.bounce");
+   public static final SoundEvent POPLAR_LEAVES_BREAK = register("block.poplar_leaves.break");
+   public static final SoundEvent POPLAR_LEAVES_HIT = register("block.poplar_leaves.hit");
+   public static final SoundEvent POPLAR_LEAVES_FALL = register("block.poplar_leaves.fall");
+   public static final SoundEvent POPLAR_LEAVES_PLACE = register("block.poplar_leaves.place");
+   public static final SoundEvent POPLAR_LEAVES_STEP = register("block.poplar_leaves.step");
    public static final Holder.Reference<SoundEvent> POPLAR_LEAVES_AMBIENT = registerForHolder("block.poplar_leaves.ambient");
+   public static final SoundEvent STRAW_BED_BREAK = register("block.straw_bed.break");
+   public static final SoundEvent STRAW_BED_BREAK_LEAVE = register("block.straw_bed.break_leave");
+   public static final SoundEvent STRAW_BED_STEP = register("block.straw_bed.step");
+   public static final SoundEvent STRAW_BED_PLACE = register("block.straw_bed.place");
+   public static final SoundEvent STRAW_BED_HIT = register("block.straw_bed.hit");
+   public static final SoundEvent STRAW_BED_FALL = register("block.straw_bed.fall");
+   public static final SoundEvent RED_SHRUB_BREAK = register("block.red_shrub.break");
+   public static final SoundEvent RED_SHRUB_PLACE = register("block.red_shrub.place");
 
    public SoundEvents() {
       super();

@@ -70,7 +70,7 @@ public class NetherFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      HolderGetter<Block> blocks = context.<Block>lookup(Registries.BLOCK);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
       context.register(DELTA, new DeltaFeature(Blocks.LAVA.defaultBlockState(), Blocks.MAGMA_BLOCK.defaultBlockState(), UniformInt.of(3, 7), UniformInt.of(0, 2)));
       BlockPredicate replacedByBasaltColumns = BlockPredicate.anyOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.allOf(BlockPredicate.matchesBlocks(Blocks.LAVA), BlockPredicate.heightRange(VerticalAnchor.bottom(), VerticalAnchor.seaLevel())));
       context.register(SMALL_BASALT_COLUMNS, new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SteppedColumnClusterFeature(BlockStateProvider.simple(Blocks.BASALT), BlockPredicate.matchesBlocks(Blocks.BASALT), replacedByBasaltColumns, blocks.getOrThrow(BlockTags.CANNOT_PLACE_BASALT_PILLAR_ON), ConstantInt.of(5), ConstantInt.of(50), ConstantInt.of(1), UniformInt.of(1, 4))), 9), new Weighted(PlacementUtils.inlinePlaced(new SteppedColumnClusterFeature(BlockStateProvider.simple(Blocks.BASALT), BlockPredicate.matchesBlocks(Blocks.BASALT), replacedByBasaltColumns, blocks.getOrThrow(BlockTags.CANNOT_PLACE_BASALT_PILLAR_ON), ConstantInt.of(8), ConstantInt.of(15), ConstantInt.of(1), UniformInt.of(1, 4))), 1))));

@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
@@ -21,15 +22,14 @@ public class RecipeMap {
       this.byKey = byKey;
    }
 
-   public static RecipeMap create(final Iterable<RecipeHolder<?>> recipes) {
+   public static RecipeMap create(final HolderLookup<Recipe<?>> recipes) {
       ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.builder();
       ImmutableMap.Builder<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey = ImmutableMap.builder();
-
-      for(RecipeHolder<?> recipe : recipes) {
-         byType.put(recipe.value().getType(), recipe);
-         byKey.put(recipe.id(), recipe);
-      }
-
+      recipes.listElements().forEach((recipe) -> {
+         RecipeHolder<? extends Recipe<?>> legacyRecipeHolder = new RecipeHolder<Recipe<?>>(recipe.key(), (Recipe)recipe.value());
+         byType.put(((Recipe)recipe.value()).getType(), legacyRecipeHolder);
+         byKey.put(recipe.key(), legacyRecipeHolder);
+      });
       return new RecipeMap(byType.build(), byKey.build());
    }
 

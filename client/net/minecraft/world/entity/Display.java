@@ -89,7 +89,7 @@ public abstract class Display extends Entity {
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
    private @Nullable RenderState renderState;
-   private final InterpolationHandler interpolation = new InterpolationHandler(this, 0);
+   private final LinearInterpolationHandler interpolation = new LinearInterpolationHandler(this, 0);
 
    public Display(final EntityType<?> type, final Level level) {
       super(type, level);

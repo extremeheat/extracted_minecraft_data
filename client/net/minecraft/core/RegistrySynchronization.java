@@ -59,7 +59,7 @@ public class RegistrySynchronization {
    }
 
    public static Stream<RegistryAccess.RegistryEntry<?>> networkedRegistries(final LayeredRegistryAccess<RegistryLayer> registries) {
-      return ownedNetworkableRegistries(registries.getAccessFrom(RegistryLayer.WORLDGEN));
+      return ownedNetworkableRegistries(registries.getAccessFrom(RegistryLayer.WORLD));
    }
 
    public static Stream<RegistryAccess.RegistryEntry<?>> networkSafeRegistries(final LayeredRegistryAccess<RegistryLayer> registries) {

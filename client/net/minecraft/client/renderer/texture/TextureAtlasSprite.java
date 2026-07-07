@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.platform.Transparency;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import java.nio.ByteBuffer;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;

@@ -39,6 +39,10 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel level) {
          level.levelEvent(2002, this.blockPosition(), -13083194);
+         if (!this.isSilent()) {
+            level.levelEvent(1053, this.blockPosition(), 0);
+         }
+
          int xpCount = 3 + this.random.nextInt(5) + this.random.nextInt(5);
          if (hitResult instanceof BlockHitResult blockHitResult) {
             Vec3 blockNormalHit = blockHitResult.getDirection().getUnitVec3();

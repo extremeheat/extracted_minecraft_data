@@ -27,7 +27,7 @@ public class SlotSourceArgument implements ArgumentType<Result> {
 
    private SlotSourceArgument(final CommandBuildContext context) {
       super();
-      this.holderArgument = new ResourceOrIdArgument<Holder<SlotSource>>(context, Registries.SLOT_SOURCE, SlotSources.CODEC);
+      this.holderArgument = new ResourceOrIdArgument<Holder<SlotSource>>(context, Registries.SLOT_SOURCE, SlotSources.DIRECT_CODEC);
    }
 
    public static SlotSourceArgument slotSource(final CommandBuildContext context) {

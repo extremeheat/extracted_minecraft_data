@@ -38,7 +38,7 @@ public class PotionItem extends Item {
       ItemStack itemStack = context.getItemInHand();
       PotionContents potionContents = (PotionContents)itemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
       BlockState blockState = level.getBlockState(pos);
-      if (context.getClickedFace() != Direction.DOWN && blockState.is(BlockTags.CONVERTABLE_TO_MUD) && potionContents.is(Potions.WATER)) {
+      if (context.getClickedFace() != Direction.DOWN && blockState.is(BlockTags.CONVERTIBLE_TO_MUD) && potionContents.is(Potions.WATER)) {
          level.playSound((Entity)null, (BlockPos)pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
          player.setItemInHand(context.getHand(), ItemUtils.createFilledResult(itemStack, player, new ItemStack(Items.GLASS_BOTTLE)));
          if (!level.isClientSide()) {

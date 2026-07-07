@@ -62,6 +62,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
@@ -190,6 +191,7 @@ public abstract class PlayerList {
       level.addNewPlayer(player);
       this.server.getCustomBossEvents().onPlayerConnect(player);
       this.sendActivePlayerEffects(player);
+      player.sendPostEffects();
       player.initInventoryMenu();
       this.server.notificationManager().playerJoined(player);
       playerConnection.resumeFlushing();
@@ -371,6 +373,10 @@ public abstract class PlayerList {
          player.addTag(tag);
       }
 
+      for(Identifier postEffect : serverPlayer.getPostEffects()) {
+         player.addPostEffect(postEffect);
+      }
+
       Vec3 pos = respawnInfo.position();
       player.snapTo(pos.x, pos.y, pos.z, respawnInfo.yRot(), respawnInfo.xRot());
       if (respawnInfo.missingRespawnBlock()) {
@@ -386,6 +392,7 @@ public abstract class PlayerList {
       player.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
       player.connection.send(new ClientboundSetExperiencePacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
       this.sendActivePlayerEffects(player);
+      player.sendPostEffects();
       this.sendLevelInfo(player, level);
       this.sendPlayerPermissionLevel(player);
       level.addRespawnedPlayer(player);

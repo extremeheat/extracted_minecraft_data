@@ -23,12 +23,13 @@ public class PineFoliagePlacer extends FoliagePlacer {
 
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       int currentRadius = 0;
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
 
-      for(int yo = offset; yo >= offset - foliageHeight; --yo) {
+      for(int yo = offset; yo >= offset - foliageHeightWithOffset; --yo) {
          this.placeLeavesRow(level, foliageSetter, random, tree, foliageAttachment.pos(), currentRadius, yo, foliageAttachment.doubleTrunk());
-         if (currentRadius >= 1 && yo == offset - foliageHeight + 1) {
+         if (currentRadius >= 1 && yo == offset - foliageHeightWithOffset + 1) {
             --currentRadius;
-         } else if (currentRadius < leafRadius + foliageAttachment.radiusOffset()) {
+         } else if (currentRadius < leafRadius + foliageAttachment.radiusOffsetXZ()) {
             ++currentRadius;
          }
       }

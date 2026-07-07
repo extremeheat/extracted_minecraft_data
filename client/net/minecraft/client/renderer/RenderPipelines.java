@@ -1,15 +1,15 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PolygonMode;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +233,7 @@ public class RenderPipelines {
       MATRICES_FOG_LIGHT_DIR_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withBindGroupLayout(BindGroupLayouts.LIGHTING).buildSnippet();
       OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET = RenderPipeline.builder().withShaderDefine("OIT_OPAQUE_PARTS_THRESHOLD", 0.995F).buildSnippet();
       OIT_SNIPPET = RenderPipeline.builder(OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET, GLOBALS_SNIPPET).withShaderDefine("OIT").withShaderDefine("WAVELET_RANK", 2).withShaderDefine("COEFF_COUNT", LevelRenderer.OIT_COEFFICIENT_COUNT).withShaderDefine("COEFF_ATTACHMENT_COUNT", LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT).buildSnippet();
-      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), GpuFormat.RG32_FLOAT, 7)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
+      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), GpuFormat.RGBA32_FLOAT, 7)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
       OIT_TRANSMITTANCE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_TRANSMITTANCE").withColorTargetStates(0, LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT - 1, () -> new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       OIT_ACCUMULATE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ACCUMULATE").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       GENERIC_BLOCKS_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.FOG).withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.BLOCK).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
@@ -412,6 +412,6 @@ public class RenderPipelines {
       ANIMATE_SPRITE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withVertexShader("core/animate_sprite").withBindGroupLayout(BindGroupLayouts.SPRITE_ANIMATION_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
       ANIMATE_SPRITE_BLIT = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withBindGroupLayout(BindGroupLayouts.SPRITE).build());
       ANIMATE_SPRITE_INTERPOLATE = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withBindGroupLayout(BindGroupLayouts.CURRENT_SPRITE_NEXT_SPRITE).build());
-      OIT_COMPOSITE = register(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screenquad").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), GpuFormat.RGBA8_UNORM, 15)).build());
+      OIT_COMPOSITE = register(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screenquad").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), GpuFormat.RGBA8_UNORM, 15)).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
    }
 }

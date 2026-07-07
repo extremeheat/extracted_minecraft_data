@@ -23,6 +23,8 @@ public class RecipePropertySet {
    public static final ResourceKey<RecipePropertySet> BLAST_FURNACE_INPUT = registerVanilla("blast_furnace_input");
    public static final ResourceKey<RecipePropertySet> SMOKER_INPUT = registerVanilla("smoker_input");
    public static final ResourceKey<RecipePropertySet> CAMPFIRE_INPUT = registerVanilla("campfire_input");
+   public static final ResourceKey<RecipePropertySet> BREWING_INPUTS = registerVanilla("brewing_input");
+   public static final ResourceKey<RecipePropertySet> BREWING_REAGENTS = registerVanilla("brewing_reagent");
    public static final StreamCodec<RegistryFriendlyByteBuf, RecipePropertySet> STREAM_CODEC;
    public static final RecipePropertySet EMPTY;
    private final Set<Holder<Item>> items;

@@ -167,7 +167,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          int textWidth = font.width(selectedItemName.getVisualOrderText());
          int centerTooltip = x + w / 2 - 12;
          ClientTooltipComponent selectedItemNameTooltip = ClientTooltipComponent.create(selectedItemName.getVisualOrderText());
-         graphics.tooltip(font, List.of(selectedItemNameTooltip), centerTooltip - textWidth / 2, y - 15, DefaultTooltipPositioner.INSTANCE, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE));
+         graphics.tooltip(font, List.of(selectedItemNameTooltip), centerTooltip - textWidth / 2, y - 15, DefaultTooltipPositioner.INSTANCE, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE), false);
       }
 
    }

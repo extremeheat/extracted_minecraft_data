@@ -26,10 +26,11 @@ public class MegaPineFoliagePlacer extends FoliagePlacer {
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       BlockPos foliagePos = foliageAttachment.pos();
       int prevRadius = 0;
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
 
-      for(int yy = foliagePos.getY() - foliageHeight + offset; yy <= foliagePos.getY() + offset; ++yy) {
+      for(int yy = foliagePos.getY() - foliageHeightWithOffset + offset; yy <= foliagePos.getY() + offset; ++yy) {
          int yo = foliagePos.getY() - yy;
-         int smoothRadius = leafRadius + foliageAttachment.radiusOffset() + Mth.floor((float)yo / (float)foliageHeight * 3.5F);
+         int smoothRadius = leafRadius + foliageAttachment.radiusOffsetXZ() + Mth.floor((float)yo / (float)foliageHeightWithOffset * 3.5F);
          int jaggedRadius;
          if (yo > 0 && smoothRadius == prevRadius && (yy & 1) == 0) {
             jaggedRadius = smoothRadius + 1;

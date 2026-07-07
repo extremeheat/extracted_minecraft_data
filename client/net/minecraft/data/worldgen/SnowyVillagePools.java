@@ -21,15 +21,15 @@ public class SnowyVillagePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
       Holder<PlacedFeature> spruceVillage = placedFeatures.getOrThrow(VillagePlacements.SPRUCE_VILLAGE);
       Holder<PlacedFeature> pileSnowVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_SNOW_VILLAGE);
       Holder<PlacedFeature> pileIceVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_ICE_VILLAGE);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> streetSnowyOrTaiga = processorLists.getOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
       Holder<StructureProcessorList> farmSnowy = processorLists.getOrThrow(ProcessorLists.FARM_SNOWY);
       Holder<StructureProcessorList> zombieSnowy = processorLists.getOrThrow(ProcessorLists.ZOMBIE_SNOWY);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Holder<StructureTemplatePool> terminators = pools.getOrThrow(TERMINATORS_KEY);
       context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.legacy("village/snowy/town_centers/snowy_meeting_point_1"), 100), Pair.of(StructurePoolElement.legacy("village/snowy/town_centers/snowy_meeting_point_2"), 50), Pair.of(StructurePoolElement.legacy("village/snowy/town_centers/snowy_meeting_point_3"), 150), Pair.of(StructurePoolElement.legacy("village/snowy/zombie/town_centers/snowy_meeting_point_1"), 2), Pair.of(StructurePoolElement.legacy("village/snowy/zombie/town_centers/snowy_meeting_point_2"), 1), Pair.of(StructurePoolElement.legacy("village/snowy/zombie/town_centers/snowy_meeting_point_3"), 3)), StructureTemplatePool.Projection.RIGID));

@@ -1,5 +1,7 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.GpuQueryPool;
 import java.util.OptionalLong;
 import org.jspecify.annotations.Nullable;
 

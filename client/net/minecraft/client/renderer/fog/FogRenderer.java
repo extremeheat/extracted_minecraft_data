@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.fog;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import java.nio.ByteBuffer;
 import java.util.List;
 import net.minecraft.client.Camera;

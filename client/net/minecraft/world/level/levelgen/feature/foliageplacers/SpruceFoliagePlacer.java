@@ -27,13 +27,14 @@ public class SpruceFoliagePlacer extends FoliagePlacer {
       int currentRadius = random.nextInt(2);
       int maxRadius = 1;
       int minRadius = 0;
+      int foliageHeightWithOffset = foliageHeight + foliageAttachment.foliageHeightOffset();
 
-      for(int yo = offset; yo >= -foliageHeight; --yo) {
+      for(int yo = offset; yo >= -foliageHeightWithOffset; --yo) {
          this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius, yo, foliageAttachment.doubleTrunk());
          if (currentRadius >= maxRadius) {
             currentRadius = minRadius;
             minRadius = 1;
-            maxRadius = Math.min(maxRadius + 1, leafRadius + foliageAttachment.radiusOffset());
+            maxRadius = Math.min(maxRadius + 1, leafRadius + foliageAttachment.radiusOffsetXZ());
          } else {
             ++currentRadius;
          }

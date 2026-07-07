@@ -145,13 +145,7 @@ public final class TreeGrower {
    }
 
    private boolean hasFlowers(final LevelAccessor level, final BlockPos pos) {
-      for(BlockPos p : BlockPos.MutableBlockPos.betweenClosed(pos.below().north(2).west(2), pos.above().south(2).east(2))) {
-         if (level.getBlockState(p).is(BlockTags.FLOWERS)) {
-            return true;
-         }
-      }
-
-      return false;
+      return level.findBlocksIn(pos.offset(-2, -1, -2), pos.offset(2, 1, 2)).filterState((state) -> state.is(BlockTags.FLOWERS)).anyMatched();
    }
 
    public OptionalInt getMinimumHeight(final ServerLevel level) {

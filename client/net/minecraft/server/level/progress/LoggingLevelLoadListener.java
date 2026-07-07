@@ -55,7 +55,7 @@ public class LoggingLevelLoadListener implements LevelLoadListener {
          if (Util.getMillis() > this.nextLogTime) {
             this.nextLogTime += 500L;
             int percent = Mth.floor(this.progressTracker.get() * 100.0F);
-            LOGGER.info(Component.translatable("menu.preparingSpawn", percent).getString());
+            LOGGER.info("{}", Component.translatable("menu.preparingSpawn", percent).getString());
          }
 
       }

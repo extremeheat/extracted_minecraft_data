@@ -38,6 +38,7 @@ public class EntityTypeIds {
    public static final ResourceKey<EntityType<?>> COW = create("cow");
    public static final ResourceKey<EntityType<?>> CREAKING = create("creaking");
    public static final ResourceKey<EntityType<?>> CREEPER = create("creeper");
+   public static final ResourceKey<EntityType<?>> CUSHION = create("cushion");
    public static final ResourceKey<EntityType<?>> DARK_OAK_BOAT = create("dark_oak_boat");
    public static final ResourceKey<EntityType<?>> DARK_OAK_CHEST_BOAT = create("dark_oak_chest_boat");
    public static final ResourceKey<EntityType<?>> DOLPHIN = create("dolphin");

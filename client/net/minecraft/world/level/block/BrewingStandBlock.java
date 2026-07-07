@@ -43,7 +43,14 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
-      return level.isClientSide() ? null : createTickerHelper(type, BlockEntityTypes.BREWING_STAND, BrewingStandBlockEntity::serverTick);
+      BlockEntityTicker var10000;
+      if (level instanceof ServerLevel serverLevel) {
+         var10000 = createTickerHelper(type, BlockEntityTypes.BREWING_STAND, (var1, pos, state, entity) -> BrewingStandBlockEntity.serverTick(serverLevel, pos, state, entity));
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {

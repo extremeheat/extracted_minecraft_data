@@ -3,11 +3,13 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public class NetherrackBlock extends Block implements BonemealableBlock {
    public NetherrackBlock(final BlockBehaviour.Properties properties) {
@@ -15,17 +17,7 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
-      if (!level.getBlockState(pos.above()).propagatesSkylightDown()) {
-         return false;
-      } else {
-         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
-            if (level.getBlockState(blockPos).is(BlockTags.NYLIUM)) {
-               return true;
-            }
-         }
-
-         return false;
-      }
+      return !level.getBlockState(pos.above()).propagatesSkylightDown() ? false : level.findBlocksIn(pos.offset(-1, -1, -1), pos.offset(1, 1, 1)).filterState((blockState) -> blockState.is(BlockTags.NYLIUM)).anyMatched();
    }
 
    public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
@@ -33,29 +25,22 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
    }
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      boolean foundRed = false;
-      boolean foundBlue = false;
-
-      for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
-         BlockState blockState = level.getBlockState(blockPos);
+      MutableBoolean foundRed = new MutableBoolean();
+      MutableBoolean foundBlue = new MutableBoolean();
+      level.findBlocksIn(pos.offset(-1, -1, -1), pos.offset(1, 1, 1)).filterState((blockState) -> blockState.is(BlockTags.NYLIUM)).forEachUntil((var2, blockState) -> {
          if (blockState.is(Blocks.WARPED_NYLIUM)) {
-            foundBlue = true;
+            foundBlue.setTrue();
+         } else if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
+            foundRed.setTrue();
          }
 
-         if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
-            foundRed = true;
-         }
-
-         if (foundBlue && foundRed) {
-            break;
-         }
-      }
-
-      if (foundBlue && foundRed) {
+         return Continuation.abortIf(foundBlue.isTrue() && foundRed.isTrue());
+      });
+      if (foundBlue.isTrue() && foundRed.isTrue()) {
          level.setBlockAndUpdate(pos, random.nextBoolean() ? Blocks.WARPED_NYLIUM.defaultBlockState() : Blocks.CRIMSON_NYLIUM.defaultBlockState());
-      } else if (foundBlue) {
+      } else if (foundBlue.isTrue()) {
          level.setBlockAndUpdate(pos, Blocks.WARPED_NYLIUM.defaultBlockState());
-      } else if (foundRed) {
+      } else if (foundRed.isTrue()) {
          level.setBlockAndUpdate(pos, Blocks.CRIMSON_NYLIUM.defaultBlockState());
       }
 

@@ -12,7 +12,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class TradeSet {
-   public static final Codec<TradeSet> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.VILLAGER_TRADE).fieldOf("trades").forGetter((tradeSet) -> tradeSet.trades), NumberProviders.CODEC.fieldOf("amount").forGetter((tradeSet) -> tradeSet.amount), Codec.BOOL.optionalFieldOf("allow_duplicates", false).forGetter((tradeSet) -> tradeSet.allowDuplicates), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((t) -> t.randomSequence)).apply(i, TradeSet::new));
+   public static final Codec<TradeSet> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.VILLAGER_TRADE).fieldOf("trades").forGetter((tradeSet) -> tradeSet.trades), NumberProviders.DIRECT_CODEC.fieldOf("amount").forGetter((tradeSet) -> tradeSet.amount), Codec.BOOL.optionalFieldOf("allow_duplicates", false).forGetter((tradeSet) -> tradeSet.allowDuplicates), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((t) -> t.randomSequence)).apply(i, TradeSet::new));
    private final HolderSet<VillagerTrade> trades;
    private final NumberProvider amount;
    private final boolean allowDuplicates;

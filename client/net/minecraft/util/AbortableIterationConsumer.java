@@ -9,24 +9,7 @@ public interface AbortableIterationConsumer<T> {
    static <T> AbortableIterationConsumer<T> forConsumer(final Consumer<T> consumer) {
       return (e) -> {
          consumer.accept(e);
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       };
-   }
-
-   public static enum Continuation {
-      CONTINUE,
-      ABORT;
-
-      private Continuation() {
-      }
-
-      public boolean shouldAbort() {
-         return this == ABORT;
-      }
-
-      // $FF: synthetic method
-      private static Continuation[] $values() {
-         return new Continuation[]{CONTINUE, ABORT};
-      }
    }
 }

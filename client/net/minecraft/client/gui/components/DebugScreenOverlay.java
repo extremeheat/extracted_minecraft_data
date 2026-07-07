@@ -2,9 +2,9 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -188,7 +188,7 @@ public class DebugScreenOverlay {
                boolean hasServer = this.minecraft.getSingleplayerServer() != null;
                KeyMapping keyDebugModifier = options.keyDebugModifier;
                String var10001 = formatChart(keyDebugModifier, options.keyDebugPofilingChart, "Profiler", this.renderProfilerChart);
-               leftLines.add("Debug charts: " + var10001 + "; " + formatChart(keyDebugModifier, options.keyDebugFpsCharts, hasServer ? "FPS + TPS" : "FPS", this.renderFpsCharts) + ";");
+               leftLines.add("Debug charts: " + var10001 + "; " + formatChart(keyDebugModifier, options.keyDebugFpsCharts, hasServer ? "fps + tps" : "fps", this.renderFpsCharts) + ";");
                var10001 = formatChart(keyDebugModifier, options.keyDebugNetworkCharts, !this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping", this.renderNetworkCharts);
                leftLines.add(var10001 + "; " + formatChart(keyDebugModifier, options.keyDebugLightmapTexture, "Lightmap", this.renderLightmapTexture));
                var10001 = formatKeybind(keyDebugModifier, options.keyDebugDebugOptions);

@@ -1,15 +1,15 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.StagingBuffer;
 import com.mojang.blaze3d.vertex.TlsfAllocator;
 import com.mojang.blaze3d.vertex.UberGpuBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.Map;

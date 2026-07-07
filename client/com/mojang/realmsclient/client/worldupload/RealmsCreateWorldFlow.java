@@ -75,7 +75,7 @@ public class RealmsCreateWorldFlow {
                      RealmsUploadFailedException realmsUploadFailedException = (RealmsUploadFailedException)exception;
                      LOGGER.warn("Failed to create realms world {}", realmsUploadFailedException.getStatusMessage());
                   } else {
-                     LOGGER.warn("Failed to create realms world {}", exception.getMessage());
+                     LOGGER.warn("Failed to create realms world", exception);
                   }
 
                   minecraft.setScreenAndShow(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), lastScreen));

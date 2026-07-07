@@ -175,7 +175,7 @@ public class ServerExplosion implements Explosion {
                   boolean shouldDamageEntity = this.damageCalculator.shouldDamageEntity(this, entity);
                   float knockbackMultiplier = this.damageCalculator.getKnockbackMultiplier(entity);
                   float exposure = !shouldDamageEntity && knockbackMultiplier == 0.0F ? 0.0F : getSeenPercent(this.center, entity);
-                  if (shouldDamageEntity) {
+                  if (shouldDamageEntity && (this.source == null || this.source.doTeamsAllowDamage(entity))) {
                      entity.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, entity, exposure));
                   }
 

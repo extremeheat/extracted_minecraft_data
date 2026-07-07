@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public class SequenceFunction implements LootItemFunction {
-   public static final MapCodec<SequenceFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootItemFunctions.TYPED_CODEC.listOf().fieldOf("functions").forGetter((f) -> f.functions)).apply(i, SequenceFunction::new));
+   public static final MapCodec<SequenceFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootItemFunctions.DIRECT_CODEC.listOf().fieldOf("functions").forGetter((f) -> f.functions)).apply(i, SequenceFunction::new));
    public static final Codec<SequenceFunction> INLINE_CODEC;
    private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
@@ -40,6 +40,6 @@ public class SequenceFunction implements LootItemFunction {
    }
 
    static {
-      INLINE_CODEC = LootItemFunctions.TYPED_CODEC.listOf().xmap(SequenceFunction::new, (f) -> f.functions);
+      INLINE_CODEC = LootItemFunctions.DIRECT_CODEC.listOf().xmap(SequenceFunction::new, (f) -> f.functions);
    }
 }

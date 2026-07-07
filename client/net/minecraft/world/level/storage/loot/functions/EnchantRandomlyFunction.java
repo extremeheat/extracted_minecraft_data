@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponents;
@@ -84,8 +84,8 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       return new Builder();
    }
 
-   public static Builder randomApplicableEnchantment(final HolderLookup.Provider registries) {
-      return randomEnchantment().withOneOf(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
+   public static Builder randomApplicableEnchantment(final HolderGetter<Enchantment> enchantments) {
+      return randomEnchantment().withOneOf(enchantments.getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {

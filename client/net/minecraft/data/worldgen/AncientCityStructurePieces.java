@@ -18,9 +18,9 @@ public class AncientCityStructurePieces {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> ancientCityStartDegradation = processorLists.getOrThrow(ProcessorLists.ANCIENT_CITY_START_DEGRADATION);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_1", ancientCityStartDegradation), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_2", ancientCityStartDegradation), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_3", ancientCityStartDegradation), 1)), StructureTemplatePool.Projection.RIGID));
       AncientCityStructurePools.bootstrap(context);

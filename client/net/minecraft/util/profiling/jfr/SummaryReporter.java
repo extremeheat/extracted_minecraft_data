@@ -51,7 +51,7 @@ public class SummaryReporter {
 
    private static void infoWithFallback(final Supplier<String> message) {
       if (LogUtils.isLoggerActive()) {
-         LOGGER.info((String)message.get());
+         LOGGER.info("{}", message.get());
       } else {
          Bootstrap.realStdoutPrintln((String)message.get());
       }
@@ -60,7 +60,7 @@ public class SummaryReporter {
 
    private static void warnWithFallback(final Supplier<String> message, final Throwable t) {
       if (LogUtils.isLoggerActive()) {
-         LOGGER.warn((String)message.get(), t);
+         LOGGER.warn("{}", message.get(), t);
       } else {
          Bootstrap.realStdoutPrintln((String)message.get());
          t.printStackTrace(Bootstrap.STDOUT);

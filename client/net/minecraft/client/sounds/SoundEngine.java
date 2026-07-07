@@ -211,7 +211,7 @@ public class SoundEngine {
          if (!currentDevices.equals(this.lastSeenDevices)) {
             String currentDeviceName = this.library.currentDeviceName();
             if (!currentDevices.allDevices().contains(currentDeviceName)) {
-               LOGGER.info("Current audio device has disapeared!");
+               LOGGER.info("Current audio device has disappeared!");
                shouldChangeDevice = true;
             }
 

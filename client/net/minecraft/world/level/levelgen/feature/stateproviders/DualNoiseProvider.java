@@ -31,8 +31,8 @@ public class DualNoiseProvider extends NoiseProvider {
       this.slowNoise = NormalNoise.create(new WorldgenRandom(new LegacyRandomSource(seed)), slowNoiseParameters);
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.DUAL_NOISE_PROVIDER;
+   public MapCodec<DualNoiseProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -35,6 +36,14 @@ public record OffsetPlacement(IntProvider x, IntProvider y, IntProvider z) imple
 
    public static OffsetPlacement of(final int x, final int y, final int z) {
       return new OffsetPlacement(ConstantInt.of(x), ConstantInt.of(y), ConstantInt.of(z));
+   }
+
+   public static OffsetPlacement of(final Direction direction) {
+      return of(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+   }
+
+   public static OffsetPlacement above() {
+      return of(0, 1, 0);
    }
 
    public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {

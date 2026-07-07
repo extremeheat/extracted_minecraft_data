@@ -106,7 +106,7 @@ public class GameTestServer extends MinecraftServer {
          Stopwatch stopwatch = Stopwatch.createStarted();
          WorldStem worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(initConfig, (context) -> {
                Registry<LevelStem> noDatapackDimensions = (new MappedRegistry<LevelStem>(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-               WorldDimensions worldDimensions = ((WorldPreset)context.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT_ALL_DIMENSIONS).value()).createWorldDimensions();
+               WorldDimensions worldDimensions = ((WorldPreset)context.datapackWorldRegistries().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT_ALL_DIMENSIONS).value()).createWorldDimensions();
                WorldDimensions.Complete dimensions = worldDimensions.bake(noDatapackDimensions);
                PrimaryLevelData levelData = new PrimaryLevelData(testSettings, dimensions.specialWorldProperty(), dimensions.lifecycle());
                return new WorldLoader.DataLoadOutput(new LevelDataAndDimensions.WorldDataAndGenSettings(levelData, new WorldGenSettings(WORLD_OPTIONS, worldDimensions)), dimensions.dimensionsRegistryAccess());
@@ -204,12 +204,12 @@ public class GameTestServer extends MinecraftServer {
       }
 
       if (level.getGameTime() % 20L == 0L) {
-         LOGGER.info(this.testTracker.getProgressBar());
+         LOGGER.info("{}", this.testTracker.getProgressBar());
       }
 
       if (this.testTracker.isDone()) {
          this.halt(false);
-         LOGGER.info(this.testTracker.getProgressBar());
+         LOGGER.info("{}", this.testTracker.getProgressBar());
          GlobalTestReporter.finish();
          LOGGER.info("========= {} GAME TESTS COMPLETE IN {} ======================", this.testTracker.getTotalCount(), this.stopwatch.stop());
          if (this.testTracker.hasFailedRequired()) {

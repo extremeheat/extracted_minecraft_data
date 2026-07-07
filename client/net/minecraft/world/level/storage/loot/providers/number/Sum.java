@@ -9,7 +9,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record Sum(List<NumberProvider> summands) implements NumberProvider {
-   public static final MapCodec<Sum> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.listOf().fieldOf("summands").forGetter(Sum::summands)).apply(i, Sum::new));
+   public static final MapCodec<Sum> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.listOf().fieldOf("summands").forGetter(Sum::summands)).apply(i, Sum::new));
 
    public Sum {
       super();

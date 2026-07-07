@@ -1,6 +1,7 @@
 package net.minecraft.world.entity;
 
 import java.util.Set;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,7 +17,12 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
    }
 
    public static PositionMoveRotation of(final Entity entity) {
-      return entity.isInterpolating() ? new PositionMoveRotation(entity.getInterpolation().position(), entity.getKnownMovement(), entity.getInterpolation().yRot(), entity.getInterpolation().xRot()) : new PositionMoveRotation(entity.position(), entity.getKnownMovement(), entity.getYRot(), entity.getXRot());
+      if (entity.isInterpolating()) {
+         PositionAndRotation current = entity.getInterpolation().getCurrentPositionAndRotation();
+         return new PositionMoveRotation(current.position(), entity.getKnownMovement(), current.yRot(), current.xRot());
+      } else {
+         return new PositionMoveRotation(entity.position(), entity.getKnownMovement(), entity.getYRot(), entity.getXRot());
+      }
    }
 
    public PositionMoveRotation withRotation(final float yRot, final float xRot) {

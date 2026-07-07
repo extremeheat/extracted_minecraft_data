@@ -55,7 +55,7 @@ public class SystemReport {
          return free + " bytes (" + freeMb + " MiB) / " + total + " bytes (" + totalMb + " MiB) up to " + max + " bytes (" + maxMb + " MiB)";
       }));
       this.setDetail("Memory (heap)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage())));
-      this.setDetail("Memory (non-head)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
+      this.setDetail("Memory (non-heap)", (CrashReportDetail)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
       this.setDetail("CPUs", (CrashReportDetail)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
       this.ignoreErrors("software", () -> this.putSoftware(new SystemInfo()));

@@ -96,6 +96,7 @@ public class EntityRenderers {
       register(EntityTypes.COW, CowRenderer::new);
       register(EntityTypes.CREAKING, CreakingRenderer::new);
       register(EntityTypes.CREEPER, CreeperRenderer::new);
+      register(EntityTypes.CUSHION, CushionRenderer::new);
       register(EntityTypes.DARK_OAK_BOAT, (context) -> new BoatRenderer(context, ModelLayers.DARK_OAK_BOAT));
       register(EntityTypes.DARK_OAK_CHEST_BOAT, (context) -> new BoatRenderer(context, ModelLayers.DARK_OAK_CHEST_BOAT));
       register(EntityTypes.DOLPHIN, DolphinRenderer::new);

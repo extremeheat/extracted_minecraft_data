@@ -205,7 +205,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return 1.0F;
    }
 
-   protected boolean isDealsDamage() {
+   protected boolean canDealDamage() {
       return false;
    }
 
@@ -844,7 +844,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return new Vec3(0.0, (double)(this.getBbHeight() / 2.0F), 0.0);
    }
 
-   protected void setcubeMobHealth(final int actualSize) {
+   protected void setCubeMobHealth(final int actualSize) {
       this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(4 * actualSize));
    }
 

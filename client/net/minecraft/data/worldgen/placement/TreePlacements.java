@@ -56,6 +56,9 @@ public class TreePlacements {
    public static final ResourceKey<PlacedFeature> DARK_OAK_LEAF_LITTER = PlacementUtils.createKey("dark_oak_leaf_litter");
    public static final ResourceKey<PlacedFeature> BIRCH_LEAF_LITTER = PlacementUtils.createKey("birch_leaf_litter");
    public static final ResourceKey<PlacedFeature> FANCY_OAK_LEAF_LITTER = PlacementUtils.createKey("fancy_oak_leaf_litter");
+   public static final ResourceKey<PlacedFeature> RED_POPLAR = PlacementUtils.createKey("red_poplar");
+   public static final ResourceKey<PlacedFeature> ORANGE_POPLAR = PlacementUtils.createKey("orange_poplar");
+   public static final ResourceKey<PlacedFeature> YELLOW_POPLAR = PlacementUtils.createKey("yellow_poplar");
    public static final ResourceKey<PlacedFeature> RED_POPLAR_LEAF_LITTER = PlacementUtils.createKey("red_poplar_leaf_litter");
    public static final ResourceKey<PlacedFeature> ORANGE_POPLAR_LEAF_LITTER = PlacementUtils.createKey("orange_poplar_leaf_litter");
    public static final ResourceKey<PlacedFeature> YELLOW_POPLAR_LEAF_LITTER = PlacementUtils.createKey("yellow_poplar_leaf_litter");
@@ -71,7 +74,7 @@ public class TreePlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> crimsonFungus = configuredFeatures.getOrThrow(TreeFeatures.CRIMSON_FUNGUS);
       Holder<Feature> warpedFungus = configuredFeatures.getOrThrow(TreeFeatures.WARPED_FUNGUS);
       Holder<Feature> oak = configuredFeatures.getOrThrow(TreeFeatures.OAK);
@@ -112,6 +115,9 @@ public class TreePlacements {
       Holder<Feature> fallenSpruceTree = configuredFeatures.getOrThrow(TreeFeatures.FALLEN_SPRUCE_TREE);
       Holder<Feature> fallenJungleTree = configuredFeatures.getOrThrow(TreeFeatures.FALLEN_JUNGLE_TREE);
       Holder<Feature> fallenPoplarTree = configuredFeatures.getOrThrow(TreeFeatures.FALLEN_POPLAR_TREE);
+      Holder<Feature> redPoplar = configuredFeatures.getOrThrow(TreeFeatures.RED_POPLAR);
+      Holder<Feature> orangePoplar = configuredFeatures.getOrThrow(TreeFeatures.ORANGE_POPLAR);
+      Holder<Feature> yellowPoplar = configuredFeatures.getOrThrow(TreeFeatures.YELLOW_POPLAR);
       Holder<Feature> redPoplarLeafLitter = configuredFeatures.getOrThrow(TreeFeatures.RED_POPLAR_LEAF_LITTER);
       Holder<Feature> orangePoplarLeafLitter = configuredFeatures.getOrThrow(TreeFeatures.ORANGE_POPLAR_LEAF_LITTER);
       Holder<Feature> yellowPoplarLeafLitter = configuredFeatures.getOrThrow(TreeFeatures.YELLOW_POPLAR_LEAF_LITTER);
@@ -153,6 +159,9 @@ public class TreePlacements {
       PlacementUtils.register(context, DARK_OAK_LEAF_LITTER, darkOakLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.DARK_OAK_SAPLING));
       PlacementUtils.register(context, BIRCH_LEAF_LITTER, birchLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.BIRCH_SAPLING));
       PlacementUtils.register(context, FANCY_OAK_LEAF_LITTER, fancyOakLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.OAK_SAPLING));
+      PlacementUtils.register(context, RED_POPLAR, redPoplar, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));
+      PlacementUtils.register(context, ORANGE_POPLAR, orangePoplar, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));
+      PlacementUtils.register(context, YELLOW_POPLAR, yellowPoplar, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));
       PlacementUtils.register(context, RED_POPLAR_LEAF_LITTER, redPoplarLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));
       PlacementUtils.register(context, ORANGE_POPLAR_LEAF_LITTER, orangePoplarLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));
       PlacementUtils.register(context, YELLOW_POPLAR_LEAF_LITTER, yellowPoplarLeafLitter, PlacementUtils.filteredByBlockSurvival(Blocks.POPLAR_SAPLING));

@@ -9,32 +9,26 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.advancements.TreeNodePosition;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.profiling.ProfilerFiller;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<Advancement> {
+public class ServerAdvancementManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private Map<Identifier, AdvancementHolder> advancements = Map.of();
-   private AdvancementTree tree = new AdvancementTree();
-   private final HolderLookup.Provider registries;
+   private final Map<Identifier, AdvancementHolder> advancements;
+   private final AdvancementTree tree;
 
    public ServerAdvancementManager(final HolderLookup.Provider registries) {
-      super(registries, Advancement.CODEC, Registries.ADVANCEMENT);
-      this.registries = registries;
-   }
-
-   protected void apply(final Map<Identifier, Advancement> preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      super();
+      HolderLookup.RegistryLookup<Advancement> advancements = registries.lookupOrThrow(Registries.ADVANCEMENT);
       ImmutableMap.Builder<Identifier, AdvancementHolder> builder = ImmutableMap.builder();
-      preparations.forEach((id, advancement) -> {
-         this.validate(id, advancement);
-         builder.put(id, new AdvancementHolder(id, advancement));
+      advancements.listElements().forEach((advancement) -> {
+         validate(registries, advancement);
+         builder.put(advancement.key().identifier(), new AdvancementHolder(advancement.key().identifier(), (Advancement)advancement.value()));
       });
       this.advancements = builder.buildOrThrow();
       AdvancementTree tree = new AdvancementTree();
@@ -49,11 +43,11 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
       this.tree = tree;
    }
 
-   private void validate(final Identifier id, final Advancement advancement) {
+   private static void validate(final HolderLookup.Provider registries, final Holder.Reference<Advancement> advancement) {
       ProblemReporter.Collector problemCollector = new ProblemReporter.Collector();
-      advancement.validate(problemCollector, this.registries);
+      ((Advancement)advancement.value()).validate(problemCollector, registries);
       if (!problemCollector.isEmpty()) {
-         LOGGER.warn("Found validation problems in advancement {}: \n{}", id, problemCollector.getReport());
+         LOGGER.warn("Found validation problems in advancement {}: \n{}", advancement.key().identifier(), problemCollector.getReport());
       }
 
    }

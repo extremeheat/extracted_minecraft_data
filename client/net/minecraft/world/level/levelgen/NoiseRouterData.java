@@ -81,8 +81,8 @@ public class NoiseRouterData {
    }
 
    public static Holder<? extends DensityFunction> bootstrap(final BootstrapContext<DensityFunction> context) {
-      HolderGetter<NormalNoise.NoiseParameters> noises = context.<NormalNoise.NoiseParameters>lookup(Registries.NOISE);
-      HolderGetter<DensityFunction> functions = context.<DensityFunction>lookup(Registries.DENSITY_FUNCTION);
+      HolderGetter<NormalNoise.NoiseParameters> noises = context.lookup(Registries.NOISE);
+      HolderGetter<DensityFunction> functions = context.lookup(Registries.DENSITY_FUNCTION);
       context.register(ZERO, DensityFunctions.zero());
       int belowBottom = DimensionType.MIN_Y * 2;
       int aboveTop = DimensionType.MAX_Y * 2;

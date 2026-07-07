@@ -11,8 +11,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 
 public interface LootItemCondition extends LootContextUser, Predicate<LootContext> {
-   Codec<LootItemCondition> TYPED_CODEC = BuiltInRegistries.LOOT_CONDITION_TYPE.byNameCodec().dispatch("condition", LootItemCondition::codec, (c) -> c);
-   Codec<LootItemCondition> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, AllOfCondition.INLINE_CODEC));
+   Codec<LootItemCondition> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(BuiltInRegistries.LOOT_CONDITION_TYPE.byNameCodec().dispatch("condition", LootItemCondition::codec, (c) -> c), AllOfCondition.INLINE_CODEC));
    Codec<Holder<LootItemCondition>> CODEC = RegistryFileCodec.<Holder<LootItemCondition>>create(Registries.PREDICATE, DIRECT_CODEC);
 
    MapCodec<? extends LootItemCondition> codec();

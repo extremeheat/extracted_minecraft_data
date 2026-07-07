@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.oit;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.renderer.RenderPipelines;

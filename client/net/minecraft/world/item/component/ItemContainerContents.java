@@ -188,7 +188,7 @@ public final class ItemContainerContents implements ContainerComponent<ItemConta
             if (lineCount <= 4) {
                ++lineCount;
                ItemStack itemStack = ((ItemStackTemplate)item.get()).create();
-               consumer.accept(Component.translatable("item.container.item_count", itemStack.getHoverName(), itemStack.getCount()));
+               consumer.accept(Component.translatable("item.container.item_count", itemStack.getCount(), itemStack.getHoverName()));
             }
          }
       }

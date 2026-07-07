@@ -1,14 +1,19 @@
 package net.minecraft.data.worldgen;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.placement.TreePlacements;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
@@ -45,9 +50,23 @@ public class AbandonedCampStructurePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
+      bootstrapTrees(context, empty);
       bootstrapCampsitePools(context, empty);
+   }
+
+   private static void bootstrapTrees(final BootstrapContext<StructureTemplatePool> context, final Holder<StructureTemplatePool> empty) {
+      registerTrees(context, empty, ImmutableList.of(Pair.of("acacia", TreePlacements.ACACIA_CHECKED), Pair.of("birch", TreePlacements.BIRCH_CHECKED), Pair.of("fancy_oak", TreePlacements.FANCY_OAK_CHECKED), Pair.of("oak", TreePlacements.OAK_CHECKED), Pair.of("spruce", TreePlacements.SPRUCE_CHECKED), Pair.of("thick_spruce", TreePlacements.MEGA_SPRUCE_CHECKED), Pair.of("yellow_poplar", TreePlacements.YELLOW_POPLAR), Pair.of("orange_poplar", TreePlacements.ORANGE_POPLAR), Pair.of("red_poplar", TreePlacements.RED_POPLAR), Pair.of("super_birch_bees", TreePlacements.SUPER_BIRCH_BEES_0002), Pair.of("spruce_on_snow", TreePlacements.SPRUCE_ON_SNOW), Pair.of("fancy_oak_bees", TreePlacements.FANCY_OAK_BEES_002), new Pair[]{Pair.of("birch_bees", TreePlacements.BIRCH_BEES_002), Pair.of("pale_oak", TreePlacements.PALE_OAK_CHECKED), Pair.of("bamboo", VegetationPlacements.BAMBOO_IN_STRUCTURE), Pair.of("jungle", TreePlacements.JUNGLE_TREE_CHECKED), Pair.of("pine", TreePlacements.PINE_CHECKED), Pair.of("mega_pine", TreePlacements.MEGA_PINE_CHECKED), Pair.of("mega_jungle", TreePlacements.MEGA_JUNGLE_TREE_CHECKED), Pair.of("cherry", TreePlacements.CHERRY_CHECKED), Pair.of("cherry_bees", TreePlacements.CHERRY_BEES_005)}));
+   }
+
+   private static void registerTrees(final BootstrapContext<StructureTemplatePool> context, final Holder<StructureTemplatePool> empty, final Collection<Pair<String, ResourceKey<PlacedFeature>>> list) {
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
+
+      for(Pair<String, ResourceKey<PlacedFeature>> pair : list) {
+         Pools.register(context, "abandoned_camp/trees/" + (String)pair.getFirst(), new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.feature(placedFeatures.getOrThrow((ResourceKey)pair.getSecond())), 1)), StructureTemplatePool.Projection.RIGID));
+      }
+
    }
 
    private static void bootstrapCampsitePools(final BootstrapContext<StructureTemplatePool> context, final Holder<StructureTemplatePool> empty) {

@@ -52,7 +52,7 @@ public class NetherPlacements {
    }
 
    public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       Holder<Feature> delta = configuredFeatures.getOrThrow(NetherFeatures.DELTA);
       Holder<Feature> smallBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.SMALL_BASALT_COLUMNS);
       Holder<Feature> largeBasaltColumns = configuredFeatures.getOrThrow(NetherFeatures.LARGE_BASALT_COLUMNS);

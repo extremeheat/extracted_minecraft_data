@@ -29,8 +29,8 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
       this.highStates = highStates;
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.NOISE_THRESHOLD_PROVIDER;
+   public MapCodec<NoiseThresholdProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

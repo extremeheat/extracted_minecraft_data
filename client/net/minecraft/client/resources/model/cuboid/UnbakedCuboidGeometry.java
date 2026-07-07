@@ -61,7 +61,7 @@ public record UnbakedCuboidGeometry(List<CuboidModelElement> elements) implement
                boolean shouldDrawFace = var10000;
                if (shouldDrawFace) {
                   Material.Baked material = modelBaker.materials().resolveSlot(textures, face.texture(), name);
-                  BakedQuad quad = FaceBakery.bakeQuad(modelBaker, from, to, face, material, facing, modelState, element.rotation(), element.shade(), element.lightEmission());
+                  BakedQuad quad = FaceBakery.bakeQuad(modelBaker, from, to, face, material, facing, modelState, element.rotation(), element.shadeDirectionOverride(), element.lightEmission());
                   if (face.cullForDirection() == null) {
                      builder.addUnculledFace(quad);
                   } else {

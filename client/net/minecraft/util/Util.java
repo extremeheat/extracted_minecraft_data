@@ -727,7 +727,7 @@ public class Util {
    }
 
    public static void logAndPauseIfInIde(final String message) {
-      LOGGER.error(message);
+      LOGGER.error("{}", message);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          doPause(message);
       }
@@ -735,7 +735,7 @@ public class Util {
    }
 
    public static void logAndPauseIfInIde(final String message, final Throwable throwable) {
-      LOGGER.error(message, throwable);
+      LOGGER.error("{}", message, throwable);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          doPause(message);
       }

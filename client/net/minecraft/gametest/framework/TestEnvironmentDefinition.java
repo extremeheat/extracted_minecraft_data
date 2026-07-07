@@ -188,7 +188,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
 
       public Long setup(final ServerLevel level) {
          MinecraftServer server = level.getServer();
-         long previous = server.clockManager().getTotalTicks(this.clock);
+         long previous = server.clockManager().getInstance(this.clock).totalTicks();
          server.clockManager().setTotalTicks(this.clock, (long)this.time);
          return previous;
       }

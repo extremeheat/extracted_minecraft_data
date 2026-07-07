@@ -55,6 +55,7 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.Cushion;
 import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
@@ -179,6 +180,7 @@ public class EntityTypes {
    public static final EntityType<Cow> COW;
    public static final EntityType<Creaking> CREAKING;
    public static final EntityType<Creeper> CREEPER;
+   public static final EntityType<Cushion> CUSHION;
    public static final EntityType<Boat> DARK_OAK_BOAT;
    public static final EntityType<ChestBoat> DARK_OAK_CHEST_BOAT;
    public static final EntityType<Dolphin> DOLPHIN;
@@ -366,6 +368,7 @@ public class EntityTypes {
       COW = register(EntityTypeIds.COW, EntityType.Builder.of(Cow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
       CREAKING = register(EntityTypeIds.CREAKING, EntityType.Builder.of(Creaking::new, MobCategory.MONSTER).sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8).notInPeaceful());
       CREEPER = register(EntityTypeIds.CREEPER, EntityType.Builder.of(Creeper::new, MobCategory.MONSTER).sized(0.6F, 1.7F).clientTrackingRange(8).notInPeaceful());
+      CUSHION = register(EntityTypeIds.CUSHION, EntityType.Builder.of(Cushion::new, MobCategory.MISC).noLootTable().sized(1.0F, 0.25F).clientTrackingRange(10).updateInterval(2147483647).dontTrackDeltas());
       DARK_OAK_BOAT = register(EntityTypeIds.DARK_OAK_BOAT, EntityType.Builder.of(boatFactory(() -> Items.DARK_OAK_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       DARK_OAK_CHEST_BOAT = register(EntityTypeIds.DARK_OAK_CHEST_BOAT, EntityType.Builder.of(chestBoatFactory(() -> Items.DARK_OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       DOLPHIN = register(EntityTypeIds.DOLPHIN, EntityType.Builder.of(Dolphin::new, MobCategory.WATER_CREATURE).sized(0.9F, 0.6F).eyeHeight(0.3F));

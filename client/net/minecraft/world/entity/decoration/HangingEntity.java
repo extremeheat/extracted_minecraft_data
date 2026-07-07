@@ -79,12 +79,13 @@ public abstract class HangingEntity extends BlockAttachedEntity {
       if (this.hasLevelCollision(this.getPopBox())) {
          return false;
       } else {
-         boolean isSupported = BlockPos.betweenClosedStream(this.calculateSupportBox()).allMatch((pos) -> {
-            BlockState state = this.level().getBlockState(pos);
-            return state.isSolid() || DiodeBlock.isDiode(state);
-         });
+         boolean isSupported = this.level().findBlocksIn(this.calculateSupportBox()).filterState(HangingEntity::isSupportingBlock).allMatched();
          return isSupported && this.canCoexist(false);
       }
+   }
+
+   private static boolean isSupportingBlock(final BlockState state) {
+      return state.isSolid() || DiodeBlock.isDiode(state);
    }
 
    protected AABB calculateSupportBox() {

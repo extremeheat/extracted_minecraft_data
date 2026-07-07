@@ -109,7 +109,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.featuresize.FeatureSizeType;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.rootplacers.RootPlacerType;
-import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProviderType;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
@@ -149,7 +149,7 @@ public class Registries {
    public static final ResourceKey<Registry<MapCodec<? extends BiomeSource>>> BIOME_SOURCE = createRegistryKey("worldgen/biome_source");
    public static final ResourceKey<Registry<BlockEntityType<?>>> BLOCK_ENTITY_TYPE = createRegistryKey("block_entity_type");
    public static final ResourceKey<Registry<BlockPredicateType<?>>> BLOCK_PREDICATE_TYPE = createRegistryKey("block_predicate_type");
-   public static final ResourceKey<Registry<BlockStateProviderType<?>>> BLOCK_STATE_PROVIDER_TYPE = createRegistryKey("worldgen/block_state_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends BlockStateProvider>>> BLOCK_STATE_PROVIDER_TYPE = createRegistryKey("worldgen/block_state_provider_type");
    public static final ResourceKey<Registry<Block>> BLOCK = createRegistryKey("block");
    public static final ResourceKey<Registry<MapCodec<? extends WorldCarver>>> CARVER_TYPE = createRegistryKey("worldgen/carver_type");
    public static final ResourceKey<Registry<MapCodec<? extends ChunkGenerator>>> CHUNK_GENERATOR = createRegistryKey("worldgen/chunk_generator");
@@ -292,6 +292,7 @@ public class Registries {
    public static final ResourceKey<Registry<LootItemFunction>> ITEM_MODIFIER = createRegistryKey("item_modifier");
    public static final ResourceKey<Registry<LootItemCondition>> PREDICATE = createRegistryKey("predicate");
    public static final ResourceKey<Registry<SlotSource>> SLOT_SOURCE = createRegistryKey("slot_source");
+   public static final ResourceKey<Registry<NumberProvider>> NUMBER_PROVIDER = createRegistryKey("number_provider");
    public static final ResourceKey<Registry<Advancement>> ADVANCEMENT = createRegistryKey("advancement");
    public static final ResourceKey<Registry<Recipe<?>>> RECIPE = createRegistryKey("recipe");
 

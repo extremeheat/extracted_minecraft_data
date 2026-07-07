@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistryCodecs;
@@ -27,7 +27,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<EnchantWithLevelsFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("levels").forGetter((f) -> f.levels), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantWithLevelsFunction::new));
+   public static final MapCodec<EnchantWithLevelsFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.DIRECT_CODEC.fieldOf("levels").forGetter((f) -> f.levels), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantWithLevelsFunction::new));
    private final NumberProvider levels;
    private final Optional<HolderSet<Enchantment>> options;
    private final boolean includeAdditionalCostComponent;
@@ -64,8 +64,8 @@ public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
       return result;
    }
 
-   public static Builder enchantWithLevels(final HolderLookup.Provider registries, final NumberProvider levels) {
-      return (new Builder(levels)).withOptions(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
+   public static Builder enchantWithLevels(final HolderGetter<Enchantment> enchantments, final NumberProvider levels) {
+      return (new Builder(levels)).withOptions(enchantments.getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {

@@ -1,15 +1,20 @@
 package net.minecraft.data.advancements;
 
-import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.Identifier;
+import net.minecraft.data.worldgen.BootstrapContext;
 
-public interface AdvancementSubProvider {
-   void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> output);
+public abstract class AdvancementSubProvider {
+   protected final BootstrapContext<Advancement> output;
 
-   static AdvancementHolder createPlaceholder(final String id) {
-      return Advancement.Builder.advancement().build(Identifier.parse(id));
+   protected AdvancementSubProvider(final BootstrapContext<Advancement> output) {
+      super();
+      this.output = output;
+   }
+
+   public abstract void generate();
+
+   @FunctionalInterface
+   public interface Factory {
+      AdvancementSubProvider create(BootstrapContext<Advancement> output);
    }
 }

@@ -101,9 +101,9 @@ public class CaveFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      HolderGetter<Block> blocks = context.<Block>lookup(Registries.BLOCK);
-      HolderGetter<Feature> configuredFeatures = context.<Feature>lookup(Registries.FEATURE);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
+      HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       context.register(MONSTER_ROOM, new MonsterRoomFeature());
       List<Identifier> fossilStructures = List.of(Identifier.withDefaultNamespace("fossil/spine_1"), Identifier.withDefaultNamespace("fossil/spine_2"), Identifier.withDefaultNamespace("fossil/spine_3"), Identifier.withDefaultNamespace("fossil/spine_4"), Identifier.withDefaultNamespace("fossil/skull_1"), Identifier.withDefaultNamespace("fossil/skull_2"), Identifier.withDefaultNamespace("fossil/skull_3"), Identifier.withDefaultNamespace("fossil/skull_4"));
       List<Identifier> fossilCoalStructures = List.of(Identifier.withDefaultNamespace("fossil/spine_1_coal"), Identifier.withDefaultNamespace("fossil/spine_2_coal"), Identifier.withDefaultNamespace("fossil/spine_3_coal"), Identifier.withDefaultNamespace("fossil/spine_4_coal"), Identifier.withDefaultNamespace("fossil/skull_1_coal"), Identifier.withDefaultNamespace("fossil/skull_2_coal"), Identifier.withDefaultNamespace("fossil/skull_3_coal"), Identifier.withDefaultNamespace("fossil/skull_4_coal"));

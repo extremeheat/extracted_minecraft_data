@@ -21,6 +21,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
@@ -46,6 +47,10 @@ import org.jspecify.annotations.Nullable;
 public abstract class Projectile extends Entity implements TraceableEntity {
    private static final boolean DEFAULT_LEFT_OWNER = false;
    private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
+   private static final String TAG_OWNER = "Owner";
+   private static final String TAG_LEFT_OWNER = "LeftOwner";
+   private static final String TAG_HAS_BEEN_SHOT = "HasBeenShot";
+   private static final String TAG_CAN_BREAK = "can_break";
    protected @Nullable EntityReference<Entity> owner;
    private @Nullable AdventureModePredicate canBreak;
    private boolean leftOwner = false;
@@ -94,6 +99,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       }
 
       output.putBoolean("HasBeenShot", this.hasBeenShot);
+      if (this.canBreak != null) {
+         output.store("can_break", AdventureModePredicate.CODEC, this.canBreak);
+      }
+
    }
 
    protected boolean ownedBy(final Entity entity) {
@@ -104,6 +113,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setOwner(EntityReference.read(input, "Owner"));
       this.leftOwner = input.getBooleanOr("LeftOwner", false);
       this.hasBeenShot = input.getBooleanOr("HasBeenShot", false);
+      this.canBreak = (AdventureModePredicate)input.read("can_break", AdventureModePredicate.CODEC).orElse((Object)null);
    }
 
    public void restoreFrom(final Entity oldEntity) {
@@ -384,8 +394,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return false;
    }
 
-   public boolean canSimulateMovement() {
-      return true;
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    @FunctionalInterface

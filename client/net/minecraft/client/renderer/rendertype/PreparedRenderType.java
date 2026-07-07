@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.rendertype;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
@@ -42,6 +42,7 @@ public record PreparedRenderType(String name, RenderPipeline pipeline, @Nullable
          renderPass.enableScissor(this.scissorState.x(), this.scissorState.y(), this.scissorState.width(), this.scissorState.height());
       }
 
+      RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", this.dynamicTransforms);
       renderPass.setVertexBuffer(0, info.vertexBuffer().slice());
 

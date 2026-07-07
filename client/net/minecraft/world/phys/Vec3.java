@@ -39,6 +39,10 @@ public class Vec3 implements Position {
       return atLowerCornerWithOffset(pos, 0.5, 0.5, 0.5);
    }
 
+   public static Vec3 atCenterOfWithY(final Vec3i pos, final double y) {
+      return new Vec3((double)pos.getX() + 0.5, y, (double)pos.getZ() + 0.5);
+   }
+
    public static Vec3 atBottomCenterOf(final Vec3i pos) {
       return atLowerCornerWithOffset(pos, 0.5, 0.0, 0.5);
    }

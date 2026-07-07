@@ -70,7 +70,7 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    private static NoiseGeneratorSettings overworld(final BootstrapContext<?> context, final boolean isAmplified, final boolean largeBiomes) {
-      HolderGetter<DensityFunction> functions = context.<DensityFunction>lookup(Registries.DENSITY_FUNCTION);
+      HolderGetter<DensityFunction> functions = context.lookup(Registries.DENSITY_FUNCTION);
       List<SpawnTargetPoint> spawnTarget = (new OverworldBiomeBuilder()).spawnTarget(functions.getOrThrow(largeBiomes ? NoiseRouterData.TEMPERATURE_LARGE : NoiseRouterData.TEMPERATURE), functions.getOrThrow(largeBiomes ? NoiseRouterData.VEGETATION_LARGE : NoiseRouterData.VEGETATION), functions.getOrThrow(largeBiomes ? NoiseRouterData.CONTINENTS_LARGE : NoiseRouterData.CONTINENTS), functions.getOrThrow(largeBiomes ? NoiseRouterData.EROSION_LARGE : NoiseRouterData.EROSION), functions.getOrThrow(NoiseRouterData.RIDGES));
       return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.overworld(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE), largeBiomes, isAmplified), context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD), spawnTarget, 63, false, true, true, false);
    }

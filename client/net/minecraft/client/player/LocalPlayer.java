@@ -51,6 +51,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.PermissionSet;
@@ -1244,5 +1245,14 @@ public class LocalPlayer extends AbstractClientPlayer {
       } else {
          return hitResult;
       }
+   }
+
+   public void setActivePostEffects(final List<Identifier> postEffects) {
+      this.postEffects.clear();
+      this.postEffects.addAll(postEffects);
+   }
+
+   public List<Identifier> getActivePostEffects() {
+      return this.postEffects;
    }
 }

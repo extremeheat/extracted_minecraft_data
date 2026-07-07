@@ -40,6 +40,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
@@ -440,7 +441,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleMoveVehicle(final ServerboundMoveVehiclePacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
-      if (containsInvalidValues(packet.position().x(), packet.position().y(), packet.position().z(), packet.yRot(), packet.xRot())) {
+      PositionAndRotation movingTo = packet.movingTo();
+      Vec3 movingToPos = movingTo.position();
+      if (containsInvalidValues(movingToPos.x(), movingToPos.y(), movingToPos.z(), movingTo.yRot(), movingTo.xRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
       } else if (!this.updateAwaitingTeleport() && this.hasClientLoaded()) {
          Entity vehicle = this.player.getRootVehicle();
@@ -449,11 +452,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             double oldX = vehicle.getX();
             double oldY = vehicle.getY();
             double oldZ = vehicle.getZ();
-            double targetX = clampHorizontal(packet.position().x());
-            double targetY = clampVertical(packet.position().y());
-            double targetZ = clampHorizontal(packet.position().z());
-            float targetYRot = Mth.wrapDegrees(packet.yRot());
-            float targetXRot = Mth.wrapDegrees(packet.xRot());
+            double targetX = clampHorizontal(movingToPos.x());
+            double targetY = clampVertical(movingToPos.y());
+            double targetZ = clampHorizontal(movingToPos.z());
+            float targetYRot = Mth.wrapDegrees(movingTo.yRot());
+            float targetXRot = Mth.wrapDegrees(movingTo.xRot());
             double xDist = targetX - this.vehicleFirstGoodX;
             double yDist = targetY - this.vehicleFirstGoodY;
             double zDist = targetZ - this.vehicleFirstGoodZ;
@@ -517,7 +520,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private boolean noBlocksAround(final Entity entity) {
-      return entity.level().getBlockStates(entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0)).allMatch(BlockBehaviour.BlockStateBase::isAir);
+      AABB box = entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0);
+      return entity.level().findBlocksIn(box).filterState(BlockBehaviour.BlockStateBase::isAir).allMatched();
    }
 
    public void handleAcceptTeleportPacket(final ServerboundAcceptTeleportationPacket packet) {
@@ -1623,7 +1627,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             LastSeenMessages result = this.lastSeenMessages.applyUpdate(update);
             var10000 = Optional.of(result);
          } catch (LastSeenMessagesValidator.ValidationException e) {
-            LOGGER.error("Failed to validate message acknowledgements from {}: {}", this.player.getPlainTextName(), e.getMessage());
+            LOGGER.error("Failed to validate message acknowledgements from {}", this.player.getPlainTextName(), e);
             this.disconnect(CHAT_VALIDATION_FAILED);
             return Optional.empty();
          }
@@ -1673,7 +1677,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          try {
             this.lastSeenMessages.applyOffset(packet.offset());
          } catch (LastSeenMessagesValidator.ValidationException e) {
-            LOGGER.error("Failed to validate message acknowledgement offset from {}: {}", this.player.getPlainTextName(), e.getMessage());
+            LOGGER.error("Failed to validate message acknowledgement offset from {}", this.player.getPlainTextName(), e);
             this.disconnect(CHAT_VALIDATION_FAILED);
          }
 
@@ -2111,7 +2115,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                this.resetPlayerChatState(newChatSession.validate(this.player.getGameProfile(), profileKeySignatureValidator));
             } catch (ProfilePublicKey.ValidationException e) {
-               LOGGER.error("Failed to validate profile key: {}", e.getMessage());
+               LOGGER.error("Failed to validate profile key", e);
                this.disconnect(e.getComponent());
             }
 

@@ -6,17 +6,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class SimpleStateProvider extends BlockStateProvider {
+public record SimpleStateProvider(BlockState state) implements BlockStateProvider {
    public static final MapCodec<SimpleStateProvider> CODEC;
-   private final BlockState state;
 
-   protected SimpleStateProvider(final BlockState state) {
+   public SimpleStateProvider {
       super();
-      this.state = state;
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.SIMPLE_STATE_PROVIDER;
+   public MapCodec<SimpleStateProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

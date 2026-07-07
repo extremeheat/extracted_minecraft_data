@@ -40,7 +40,16 @@ public class BlockItem extends Item {
 
    public InteractionResult useOn(final UseOnContext context) {
       InteractionResult placeResult = this.place(new BlockPlaceContext(context));
-      return !placeResult.consumesAction() && context.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(context.getLevel(), context.getPlayer(), context.getHand()) : placeResult;
+      if (placeResult.consumesAction()) {
+         return placeResult;
+      } else {
+         InteractionResult result = super.useOn(context);
+         if (result.consumesAction()) {
+            return result;
+         } else {
+            return context.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(context.getLevel(), context.getPlayer(), context.getHand()) : placeResult;
+         }
+      }
    }
 
    public InteractionResult place(final BlockPlaceContext placeContext) {

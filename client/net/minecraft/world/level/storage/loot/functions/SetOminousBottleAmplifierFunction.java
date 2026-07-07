@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetOminousBottleAmplifierFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetOminousBottleAmplifierFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.CODEC.fieldOf("amplifier").forGetter((f) -> f.amplifier)).apply(i, SetOminousBottleAmplifierFunction::new));
+   public static final MapCodec<SetOminousBottleAmplifierFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.DIRECT_CODEC.fieldOf("amplifier").forGetter((f) -> f.amplifier)).apply(i, SetOminousBottleAmplifierFunction::new));
    private final NumberProvider amplifier;
 
    private SetOminousBottleAmplifierFunction(final List<LootItemCondition> predicates, final NumberProvider amplifier) {

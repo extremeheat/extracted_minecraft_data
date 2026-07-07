@@ -5,6 +5,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Encoder;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
@@ -17,18 +18,30 @@ import net.minecraft.resources.ResourceKey;
 
 public class RegistriesDatapackGenerator implements DataProvider {
    private final PackOutput output;
+   private final String name;
+   private final Collection<RegistryDataLoader.RegistryData<?>> registryData;
    private final CompletableFuture<HolderLookup.Provider> registries;
 
-   public RegistriesDatapackGenerator(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registries) {
+   public RegistriesDatapackGenerator(final PackOutput output, final String name, final Collection<RegistryDataLoader.RegistryData<?>> registryData, final CompletableFuture<HolderLookup.Provider> registryContents) {
       super();
-      this.registries = registries;
+      this.name = name;
+      this.registryData = registryData;
+      this.registries = registryContents;
       this.output = output;
+   }
+
+   public static RegistriesDatapackGenerator forWorldLayer(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registryContents) {
+      return new RegistriesDatapackGenerator(output, "world", RegistryDataLoader.WORLD_REGISTRIES, registryContents);
+   }
+
+   public static DataProvider forReloadableLayer(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registryContents) {
+      return new RegistriesDatapackGenerator(output, "reloadable", RegistryDataLoader.RELOADABLE_REGISTRIES, registryContents);
    }
 
    public CompletableFuture<?> run(final CachedOutput cache) {
       return this.registries.thenCompose((access) -> {
          DynamicOps<JsonElement> registryOps = access.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
-         return CompletableFuture.allOf((CompletableFuture[])RegistryDataLoader.WORLDGEN_REGISTRIES.stream().flatMap((v) -> this.dumpRegistryCap(cache, access, registryOps, v).stream()).toArray((x$0) -> new CompletableFuture[x$0]));
+         return CompletableFuture.allOf((CompletableFuture[])this.registryData.stream().flatMap((v) -> this.dumpRegistryCap(cache, access, registryOps, v).stream()).toArray((x$0) -> new CompletableFuture[x$0]));
       });
    }
 
@@ -48,6 +61,6 @@ public class RegistriesDatapackGenerator implements DataProvider {
    }
 
    public final String getName() {
-      return "Registries";
+      return "Registries for " + this.name;
    }
 }

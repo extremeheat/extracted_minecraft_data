@@ -55,14 +55,14 @@ public class DatapackStructureReport implements DataProvider {
    private Map<ResourceKey<? extends Registry<?>>, Entry> listRegistries() {
       Map<ResourceKey<? extends Registry<?>>, Entry> result = new HashMap();
       BuiltInRegistries.REGISTRY.forEach((entry) -> this.putIfNotPresent(result, entry.key(), BUILT_IN_REGISTRY));
-      RegistryDataLoader.WORLDGEN_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
+      RegistryDataLoader.WORLD_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
       RegistryDataLoader.DIMENSION_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
       MANUAL_ENTRIES.forEach((key, entry) -> this.putIfNotPresent(result, key, entry));
       return result;
    }
 
    static {
-      MANUAL_ENTRIES = Map.of(Registries.RECIPE, PSEUDO_REGISTRY, Registries.ADVANCEMENT, PSEUDO_REGISTRY, Registries.LOOT_TABLE, STABLE_DYNAMIC_REGISTRY, Registries.ITEM_MODIFIER, STABLE_DYNAMIC_REGISTRY, Registries.PREDICATE, STABLE_DYNAMIC_REGISTRY, Registries.SLOT_SOURCE, STABLE_DYNAMIC_REGISTRY);
+      MANUAL_ENTRIES = Map.of(Registries.RECIPE, PSEUDO_REGISTRY, Registries.ADVANCEMENT, PSEUDO_REGISTRY, Registries.LOOT_TABLE, STABLE_DYNAMIC_REGISTRY, Registries.ITEM_MODIFIER, STABLE_DYNAMIC_REGISTRY, Registries.PREDICATE, STABLE_DYNAMIC_REGISTRY, Registries.NUMBER_PROVIDER, STABLE_DYNAMIC_REGISTRY, Registries.SLOT_SOURCE, STABLE_DYNAMIC_REGISTRY);
       NON_REGISTRY_ENTRIES = Map.of("structure", new CustomPackEntry(DatapackStructureReport.Format.STRUCTURE, new Entry(true, false, true)), "function", new CustomPackEntry(DatapackStructureReport.Format.MCFUNCTION, new Entry(true, true, true)));
       REGISTRY_KEY_CODEC = Identifier.CODEC.xmap(ResourceKey::createRegistryKey, ResourceKey::identifier);
    }

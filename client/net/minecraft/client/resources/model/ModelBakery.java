@@ -86,7 +86,7 @@ public class ModelBakery {
          try {
             return model.bake(blockState, baker);
          } catch (Exception e) {
-            LOGGER.warn("Unable to bake model: '{}': {}", blockState, e);
+            LOGGER.warn("Unable to bake model: '{}'", blockState, e);
             return null;
          }
       }, taskExecutor);

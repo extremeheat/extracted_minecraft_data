@@ -230,7 +230,7 @@ public class HashCache {
                output.close();
             }
          } catch (IOException e) {
-            HashCache.LOGGER.warn("Unable write cachefile {}: {}", cacheFile, e);
+            HashCache.LOGGER.warn("Unable write cachefile {}", cacheFile, e);
          }
 
       }

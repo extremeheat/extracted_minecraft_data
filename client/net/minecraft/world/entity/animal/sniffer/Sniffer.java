@@ -285,7 +285,7 @@ public class Sniffer extends Animal {
             }
 
             if (this.tickCount % 10 == 0) {
-               this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), stateBelow.getSoundType().getHitSound(), this.getSoundSource(), 0.5F, 0.5F, false);
+               this.level().playLocalSound(this, stateBelow.getSoundType().getHitSound(), this.getSoundSource(), 0.5F, 0.5F);
             }
          }
       }
@@ -360,7 +360,7 @@ public class Sniffer extends Animal {
 
    private void playSearchingSound() {
       if (this.level().isClientSide() && this.tickCount % 20 == 0) {
-         this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.SNIFFER_SEARCHING, this.getSoundSource(), 1.0F, 1.0F, false);
+         this.level().playLocalSound(this, SoundEvents.SNIFFER_SEARCHING, this.getSoundSource(), 1.0F, 1.0F);
       }
 
    }

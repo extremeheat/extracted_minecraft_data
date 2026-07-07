@@ -345,6 +345,10 @@ public class BlockModelGenerators {
       return MultiVariantGenerator.dispatch(block).with(PropertyDispatch.initial(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.BED_PART).select(Direction.NORTH, BedPart.HEAD, headModel).select(Direction.SOUTH, BedPart.HEAD, headModel.with(Y_ROT_180)).select(Direction.EAST, BedPart.HEAD, headModel.with(Y_ROT_90)).select(Direction.WEST, BedPart.HEAD, headModel.with(Y_ROT_270)).select(Direction.NORTH, BedPart.FOOT, footModel).select(Direction.SOUTH, BedPart.FOOT, footModel.with(Y_ROT_180)).select(Direction.EAST, BedPart.FOOT, footModel.with(Y_ROT_90)).select(Direction.WEST, BedPart.FOOT, footModel.with(Y_ROT_270)));
    }
 
+   private static BlockModelDefinitionGenerator createStrawBed(final Block block, final MultiVariant headModel, final MultiVariant footModel) {
+      return MultiVariantGenerator.dispatch(block).with(PropertyDispatch.initial(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.BED_PART).select(Direction.NORTH, BedPart.HEAD, headModel.with(Y_ROT_180)).select(Direction.SOUTH, BedPart.HEAD, headModel).select(Direction.EAST, BedPart.HEAD, headModel.with(Y_ROT_270)).select(Direction.WEST, BedPart.HEAD, headModel.with(Y_ROT_90)).select(Direction.NORTH, BedPart.FOOT, footModel.with(Y_ROT_180)).select(Direction.SOUTH, BedPart.FOOT, footModel).select(Direction.EAST, BedPart.FOOT, footModel.with(Y_ROT_270)).select(Direction.WEST, BedPart.FOOT, footModel.with(Y_ROT_90)));
+   }
+
    private static BlockModelDefinitionGenerator createSign(final Block block, final MultiVariant rot0, final MultiVariant rot1, final MultiVariant rot2, final MultiVariant rot3) {
       return MultiVariantGenerator.dispatch(block).with(PropertyDispatch.initial(BlockStateProperties.ROTATION_16).select(0, rot0).select(1, rot1).select(2, rot2).select(3, rot3).select(4, rot0.with(Y_ROT_90)).select(5, rot1.with(Y_ROT_90)).select(6, rot2.with(Y_ROT_90)).select(7, rot3.with(Y_ROT_90)).select(8, rot0.with(Y_ROT_180)).select(9, rot1.with(Y_ROT_180)).select(10, rot2.with(Y_ROT_180)).select(11, rot3.with(Y_ROT_180)).select(12, rot0.with(Y_ROT_270)).select(13, rot1.with(Y_ROT_270)).select(14, rot2.with(Y_ROT_270)).select(15, rot3.with(Y_ROT_270)));
    }
@@ -1915,6 +1919,18 @@ public class BlockModelGenerators {
       this.itemModelOutput.accept(bed.asItem(), ItemModelUtils.composite(itemModelHead, itemModelFoot));
    }
 
+   private void createStrawBed() {
+      Block strawBed = Blocks.STRAW_BED;
+      Identifier head = ModelLocationUtils.getModelLocation(strawBed, "_head");
+      Identifier foot = ModelLocationUtils.getModelLocation(strawBed, "_foot");
+      this.blockStateOutput.accept(createStrawBed(strawBed, plainVariant(head), plainVariant(foot)));
+      Transformation headTransformation = new Transformation(new Vector3f(0.85F, 0.0F, 0.6F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
+      Transformation footTransformation = new Transformation(new Vector3f(0.85F, 0.0F, 1.6F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
+      ItemModel.Unbaked itemModelHead = ItemModelUtils.plainModel(head, headTransformation);
+      ItemModel.Unbaked itemModelFoot = ItemModelUtils.plainModel(foot, footTransformation);
+      this.itemModelOutput.accept(strawBed.asItem(), ItemModelUtils.composite(itemModelHead, itemModelFoot));
+   }
+
    private void generateSimpleSpecialItemModel(final Block block, final Optional<Transformation> transformation, final SpecialModelRenderer.Unbaked<?> specialModel) {
       Item item = block.asItem();
       Identifier harcodedModelBase = ModelLocationUtils.getModelLocation(item);
@@ -2178,6 +2194,7 @@ public class BlockModelGenerators {
       this.createPitcherPlant();
       DyeColor.VALUES.forEach(this::createBanner);
       DyeColor.VALUES.forEach(this::createBed);
+      this.createStrawBed();
       this.createHeads();
       this.createChests();
       this.createCopperChests();
@@ -2350,7 +2367,6 @@ public class BlockModelGenerators {
    }
 
    private void createLightBlock() {
-      ItemModel.Unbaked base = ItemModelUtils.plainModel(this.createFlatItemModel(Items.LIGHT));
       Map<Integer, ItemModel.Unbaked> overrides = new HashMap(16);
       PropertyDispatch.C1<MultiVariant, Integer> light = PropertyDispatch.initial(BlockStateProperties.LEVEL);
 
@@ -2362,7 +2378,7 @@ public class BlockModelGenerators {
          overrides.put(i, overrideItem);
       }
 
-      this.itemModelOutput.accept(Items.LIGHT, ItemModelUtils.selectBlockItemProperty(LightBlock.LEVEL, base, overrides));
+      this.itemModelOutput.accept(Items.LIGHT, ItemModelUtils.selectBlockItemProperty(LightBlock.LEVEL, (ItemModel.Unbaked)overrides.get(15), overrides));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.LIGHT).with(light));
    }
 

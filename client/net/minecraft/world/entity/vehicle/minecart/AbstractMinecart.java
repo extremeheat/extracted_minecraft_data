@@ -282,8 +282,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.behavior.getKnownMovement(super.getKnownMovement());
    }
 
-   public InterpolationHandler getInterpolation() {
+   public @Nullable InterpolationHandler getInterpolation() {
       return this.behavior.getInterpolation();
+   }
+
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
+      this.behavior.onInterpolationStart(interpolation);
    }
 
    public void recreateFromPacket(final ClientboundAddEntityPacket packet) {

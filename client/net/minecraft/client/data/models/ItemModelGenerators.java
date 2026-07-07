@@ -568,6 +568,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.WOODEN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.WRITABLE_BOOK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.WRITTEN_BOOK, ModelTemplates.FLAT_ITEM);
+      Items.CUSHION.forEach((name) -> this.generateFlatItem(name, ModelTemplates.FLAT_ITEM));
       this.generateFlatItem(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class MinecartBehavior {
    protected final AbstractMinecart minecart;
@@ -16,8 +17,11 @@ public abstract class MinecartBehavior {
       this.minecart = minecart;
    }
 
-   public InterpolationHandler getInterpolation() {
+   public @Nullable InterpolationHandler getInterpolation() {
       return null;
+   }
+
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
    }
 
    public void lerpMotion(final Vec3 movement) {

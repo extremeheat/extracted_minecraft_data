@@ -54,8 +54,8 @@ public class OreFeatures {
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
       RuleTest naturalStone = new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD);
-      RuleTest stoneOreReplaceables = RuleTest.allOf(new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES), HeightMatchTest.min(0));
-      RuleTest deepslateOreReplaceables = RuleTest.allOf(new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES), HeightMatchTest.max(8));
+      RuleTest stoneOreReplaceables = RuleTest.either(new TagMatchTest(BlockTags.HEIGHT_SPECIFIC_ORE_REPLACEABLES), HeightMatchTest.min(0), new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES));
+      RuleTest deepslateOreReplaceables = RuleTest.either(new TagMatchTest(BlockTags.HEIGHT_SPECIFIC_ORE_REPLACEABLES), HeightMatchTest.max(8), new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES));
       RuleTest netherrack = new BlockMatchTest(Blocks.NETHERRACK);
       RuleTest netherOreReplaceables = new TagMatchTest(BlockTags.BASE_STONE_NETHER);
       List<BlockReplacement> oreIronTargetList = List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.IRON_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_IRON_ORE.defaultBlockState()));

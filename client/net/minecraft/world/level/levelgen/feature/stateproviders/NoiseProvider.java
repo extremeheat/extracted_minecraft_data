@@ -25,8 +25,8 @@ public class NoiseProvider extends NoiseBasedStateProvider {
       this.states = states;
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.NOISE_PROVIDER;
+   public MapCodec<? extends NoiseProvider> codec() {
+      return CODEC;
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {

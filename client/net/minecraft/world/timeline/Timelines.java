@@ -35,7 +35,7 @@ public interface Timelines {
    int NIGHT_CLOUD_COLOR_MULTIPLIER = ARGB.colorFromFloat(1.0F, 0.1F, 0.1F, 0.15F);
 
    static void bootstrap(final BootstrapContext<Timeline> context) {
-      HolderGetter<WorldClock> clocks = context.<WorldClock>lookup(Registries.WORLD_CLOCK);
+      HolderGetter<WorldClock> clocks = context.lookup(Registries.WORLD_CLOCK);
       Holder.Reference<WorldClock> overworldClock = clocks.getOrThrow(WorldClocks.OVERWORLD);
       EasingType skyAngleEase = EasingType.symmetricCubicBezier(0.362F, 0.241F);
       int nightStart = 12600;

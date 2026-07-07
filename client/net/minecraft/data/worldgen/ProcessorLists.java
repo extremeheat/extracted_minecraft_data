@@ -88,7 +88,7 @@ public class ProcessorLists {
    }
 
    public static void bootstrap(final BootstrapContext<StructureProcessorList> context) {
-      HolderGetter<Block> blocks = context.<Block>lookup(Registries.BLOCK);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
       ProcessorRule ADD_GILDED_BLACKSTONE = new ProcessorRule(new RandomBlockMatchTest(Blocks.BLACKSTONE, 0.01F), AlwaysTrueTest.INSTANCE, Blocks.GILDED_BLACKSTONE.defaultBlockState());
       ProcessorRule REMOVE_GILDED_BLACKSTONE = new ProcessorRule(new RandomBlockMatchTest(Blocks.GILDED_BLACKSTONE, 0.5F), AlwaysTrueTest.INSTANCE, Blocks.BLACKSTONE.defaultBlockState());
       register(context, EMPTY, ImmutableList.of());

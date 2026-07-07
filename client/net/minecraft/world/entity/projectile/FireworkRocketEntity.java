@@ -255,7 +255,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    public void handleEntityEvent(final byte id) {
       if (id == 17 && this.level().isClientSide()) {
          Vec3 movement = this.getDeltaMovement();
-         this.level().createFireworks(this.getX(), this.getY(), this.getZ(), movement.x, movement.y, movement.z, this.getExplosions());
+         this.level().createFireworks(this.getX(), this.getY(), this.getZ(), movement.x, movement.y, movement.z, this.getExplosions(), !this.isSilent());
       }
 
       super.handleEntityEvent(id);

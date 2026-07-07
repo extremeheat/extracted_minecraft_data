@@ -53,6 +53,7 @@ import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacke
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
+import net.minecraft.network.protocol.common.ClientboundPostEffectsPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
@@ -191,6 +192,15 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    public void handleResourcePackPop(final ClientboundResourcePackPopPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       packet.id().ifPresentOrElse((id) -> this.minecraft.getDownloadedPackSource().popPack(id), () -> this.minecraft.getDownloadedPackSource().popAll());
+   }
+
+   public void handlePostEffects(final ClientboundPostEffectsPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
+      if (this.minecraft.player == null) {
+         throw new IllegalStateException("Cannot set player post effects before the player is created.");
+      } else {
+         this.minecraft.player.setActivePostEffects(packet.postEffects());
+      }
    }
 
    private static Component preparePackPrompt(final Component header, final @Nullable Component prompt) {

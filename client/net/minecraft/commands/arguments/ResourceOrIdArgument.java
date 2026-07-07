@@ -35,6 +35,7 @@ import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.IdentifierParseRule;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
@@ -105,6 +106,14 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return getResource(context, name);
    }
 
+   public static FeatureArgument feature(final CommandBuildContext context) {
+      return new FeatureArgument(context);
+   }
+
+   public static Holder<Feature> getFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return getResource(context, name);
+   }
+
    public static DialogArgument dialog(final CommandBuildContext context) {
       return new DialogArgument(context);
    }
@@ -153,6 +162,12 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    public static class LootPredicateArgument extends ResourceOrIdArgument<LootItemCondition> {
       protected LootPredicateArgument(final CommandBuildContext context) {
          super(context, Registries.PREDICATE, LootItemCondition.DIRECT_CODEC);
+      }
+   }
+
+   public static class FeatureArgument extends ResourceOrIdArgument<Feature> {
+      protected FeatureArgument(final CommandBuildContext context) {
+         super(context, Registries.FEATURE, Feature.DIRECT_CODEC);
       }
    }
 

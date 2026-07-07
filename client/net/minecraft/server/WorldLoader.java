@@ -34,15 +34,15 @@ public class WorldLoader {
          CloseableResourceManager resources = (CloseableResourceManager)packsAndResourceManager.getSecond();
          LayeredRegistryAccess<RegistryLayer> initialLayers = RegistryLayer.createRegistryAccess();
          List<Registry.PendingTags<?>> staticLayerTags = TagLoader.loadTagsForExistingRegistries(resources, initialLayers.getLayer(RegistryLayer.STATIC));
-         RegistryAccess.Frozen worldgenLoadContext = initialLayers.getAccessForLoading(RegistryLayer.WORLDGEN);
-         List<HolderLookup.RegistryLookup<?>> worldgenContextRegistries = TagLoader.buildUpdatedLookups(worldgenLoadContext, staticLayerTags);
-         return RegistryDataLoader.load((ResourceManager)resources, worldgenContextRegistries, RegistryDataLoader.WORLDGEN_REGISTRIES, backgroundExecutor).thenComposeAsync((loadedWorldgenRegistries) -> {
-            List<HolderLookup.RegistryLookup<?>> dimensionContextRegistries = Stream.concat(worldgenContextRegistries.stream(), loadedWorldgenRegistries.listRegistries()).toList();
+         RegistryAccess.Frozen worldLoadContext = initialLayers.getAccessForLoading(RegistryLayer.WORLD);
+         List<HolderLookup.RegistryLookup<?>> worldContextRegistries = TagLoader.buildUpdatedLookups(worldLoadContext, staticLayerTags);
+         return RegistryDataLoader.load((ResourceManager)resources, worldContextRegistries, RegistryDataLoader.WORLD_REGISTRIES, backgroundExecutor).thenComposeAsync((loadedWorldRegistries) -> {
+            List<HolderLookup.RegistryLookup<?>> dimensionContextRegistries = Stream.concat(worldContextRegistries.stream(), loadedWorldRegistries.listRegistries()).toList();
             return RegistryDataLoader.load((ResourceManager)resources, dimensionContextRegistries, RegistryDataLoader.DIMENSION_REGISTRIES, backgroundExecutor).thenComposeAsync((initialWorldgenDimensions) -> {
                WorldDataConfiguration worldDataConfiguration = (WorldDataConfiguration)packsAndResourceManager.getFirst();
                HolderLookup.Provider dimensionContextProvider = HolderLookup.Provider.create(dimensionContextRegistries.stream());
                DataLoadOutput<D> worldDataAndRegistries = worldDataSupplier.get(new DataLoadContext(resources, worldDataConfiguration, dimensionContextProvider, initialWorldgenDimensions));
-               LayeredRegistryAccess<RegistryLayer> resourcesLoadContext = initialLayers.replaceFrom(RegistryLayer.WORLDGEN, loadedWorldgenRegistries, worldDataAndRegistries.finalDimensions);
+               LayeredRegistryAccess<RegistryLayer> resourcesLoadContext = initialLayers.replaceFrom(RegistryLayer.WORLD, loadedWorldRegistries, worldDataAndRegistries.finalDimensions);
                return ReloadableServerResources.loadResources(resources, resourcesLoadContext, staticLayerTags, worldDataConfiguration.enabledFeatures(), config.commandSelection(), config.functionCompilationPermissions(), backgroundExecutor, mainThreadExecutor).whenComplete((managers, throwable) -> {
                   if (throwable != null) {
                      resources.close();
@@ -57,7 +57,7 @@ public class WorldLoader {
       }, backgroundExecutor);
    }
 
-   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
+   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldRegistries, RegistryAccess.Frozen datapackDimensions) {
       public DataLoadContext {
          super();
       }

@@ -53,6 +53,7 @@ public class VanillaItemTagsProvider extends TagsProvider<Item> {
       this.tag(ItemTags.FOX_FOOD).add(BlockItemIds.SWEET_BERRY_CROP, BlockItemIds.GLOW_BERRY_CROP);
       this.tag(ItemTags.DUPLICATES_ALLAYS).add(ItemIds.AMETHYST_SHARD);
       this.tag(ItemTags.BREWING_FUEL).add(ItemIds.BLAZE_POWDER);
+      this.tag(ItemTags.CUSHIONS).addAll(ItemIds.CUSHION);
       this.tag(ItemTags.NON_FLAMMABLE_WOOD).add(BlockItemIds.WARPED_STEM, BlockItemIds.STRIPPED_WARPED_STEM, BlockItemIds.WARPED_HYPHAE, BlockItemIds.STRIPPED_WARPED_HYPHAE, BlockItemIds.CRIMSON_STEM, BlockItemIds.STRIPPED_CRIMSON_STEM, BlockItemIds.CRIMSON_HYPHAE, BlockItemIds.STRIPPED_CRIMSON_HYPHAE, BlockItemIds.CRIMSON_PLANKS, BlockItemIds.WARPED_PLANKS, BlockItemIds.CRIMSON_SLAB, BlockItemIds.WARPED_SLAB, BlockItemIds.CRIMSON_PRESSURE_PLATE, BlockItemIds.WARPED_PRESSURE_PLATE, BlockItemIds.CRIMSON_FENCE, BlockItemIds.WARPED_FENCE, BlockItemIds.CRIMSON_TRAPDOOR, BlockItemIds.WARPED_TRAPDOOR, BlockItemIds.CRIMSON_FENCE_GATE, BlockItemIds.WARPED_FENCE_GATE, BlockItemIds.CRIMSON_STAIRS, BlockItemIds.WARPED_STAIRS, BlockItemIds.CRIMSON_BUTTON, BlockItemIds.WARPED_BUTTON, BlockItemIds.CRIMSON_DOOR, BlockItemIds.WARPED_DOOR, BlockItemIds.CRIMSON_SIGN, BlockItemIds.WARPED_SIGN, BlockItemIds.WARPED_HANGING_SIGN, BlockItemIds.CRIMSON_HANGING_SIGN, BlockItemIds.WARPED_SHELF, BlockItemIds.CRIMSON_SHELF);
       this.tag(ItemTags.WOODEN_TOOL_MATERIALS).addTag(ItemTags.PLANKS);
       this.tag(ItemTags.STONE_TOOL_MATERIALS).add(BlockItemIds.COBBLESTONE, BlockItemIds.BLACKSTONE, BlockItemIds.COBBLED_DEEPSLATE);
@@ -182,7 +183,7 @@ public class VanillaItemTagsProvider extends TagsProvider<Item> {
       this.tag(ItemTags.LOOM_PATTERNS).add(ItemIds.FLOWER_BANNER_PATTERN, ItemIds.CREEPER_BANNER_PATTERN, ItemIds.SKULL_BANNER_PATTERN, ItemIds.MOJANG_BANNER_PATTERN, ItemIds.GLOBE_BANNER_PATTERN, ItemIds.PIGLIN_BANNER_PATTERN, ItemIds.FLOW_BANNER_PATTERN, ItemIds.GUSTER_BANNER_PATTERN, ItemIds.FIELD_MASONED_BANNER_PATTERN, ItemIds.BORDURE_INDENTED_BANNER_PATTERN);
       this.tag(ItemTags.CAT_COLLAR_DYES).addTag(ItemTags.DYES);
       this.tag(ItemTags.WOLF_COLLAR_DYES).addTag(ItemTags.DYES);
-      this.tag(ItemTags.DOWSES_CAMPFIRES).addTag(ItemTags.SHOVELS);
+      this.tag(ItemTags.DOUSES_CAMPFIRES).addTag(ItemTags.SHOVELS);
    }
 
    private static ColorCollection<ResourceKey<Item>> toIds(final ColorCollection<BlockItemId> ids) {

@@ -207,6 +207,10 @@ public class LevelEventHandler {
          case 1052:
             this.level.playLocalSound(pos, SoundEvents.SULFUR_SPIKE_LAND, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
+         case 1053:
+         case 1054:
+            this.level.playLocalSound(pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
          case 1500:
             ComposterBlock.handleFill(this.level, pos, data > 0);
             break;
@@ -257,31 +261,7 @@ public class LevelEventHandler {
             this.level.addDestroyBlockEffect(pos, blockState);
             break;
          case 2002:
-         case 2007:
-            Vec3 particlePos = Vec3.atBottomCenterOf(pos);
-            ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, Items.SPLASH_POTION);
-
-            for(int i = 0; i < 8; ++i) {
-               this.level.addParticle(breakParticle, particlePos.x, particlePos.y, particlePos.z, random.nextGaussian() * 0.15, random.nextDouble() * 0.2, random.nextGaussian() * 0.15);
-            }
-
-            float red = (float)(data >> 16 & 255) / 255.0F;
-            float green = (float)(data >> 8 & 255) / 255.0F;
-            float blue = (float)(data >> 0 & 255) / 255.0F;
-            ParticleType<SpellParticleOption> particleType = eventType == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
-
-            for(int i = 0; i < 100; ++i) {
-               double dist = random.nextDouble() * 4.0;
-               double angle = random.nextDouble() * 3.141592653589793 * 2.0;
-               double velocityX = Math.cos(angle) * dist;
-               double velocityY = 0.01 + random.nextDouble() * 0.5;
-               double velocityZ = Math.sin(angle) * dist;
-               float randomBrightness = 0.75F + random.nextFloat() * 0.25F;
-               SpellParticleOption particle = SpellParticleOption.create(particleType, red * randomBrightness, green * randomBrightness, blue * randomBrightness, (float)dist);
-               this.level.addParticle(particle, particlePos.x + velocityX * 0.1, particlePos.y + 0.3, particlePos.z + velocityZ * 0.1, velocityX, velocityY, velocityZ);
-            }
-
-            this.level.playLocalSound(pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            this.potionSplashParticles(ParticleTypes.EFFECT, pos, data, random);
             break;
          case 2003:
             double x = (double)pos.getX() + 0.5;
@@ -321,6 +301,9 @@ public class LevelEventHandler {
                this.level.playLocalSound(pos, SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundSource.HOSTILE, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             }
             break;
+         case 2007:
+            this.potionSplashParticles(ParticleTypes.INSTANT_EFFECT, pos, data, random);
+            break;
          case 2008:
             this.level.addParticle(ParticleTypes.EXPLOSION, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
             break;
@@ -340,6 +323,9 @@ public class LevelEventHandler {
             break;
          case 2013:
             ParticleUtils.spawnSmashAttackParticles(this.level, pos, data);
+            break;
+         case 2014:
+            this.level.addDestroyBlockEffect(pos, Block.stateById(data));
             break;
          case 3000:
             this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
@@ -444,8 +430,8 @@ public class LevelEventHandler {
             TrialSpawner.addEjectItemParticles(this.level, pos, random);
             break;
          case 3015:
-            BlockEntity soundType = this.level.getBlockEntity(pos);
-            if (soundType instanceof VaultBlockEntity entity) {
+            BlockEntity brushableBlock = this.level.getBlockEntity(pos);
+            if (brushableBlock instanceof VaultBlockEntity entity) {
                VaultBlockEntity.Client.emitActivationParticles(this.level, entity.getBlockPos(), entity.getBlockState(), entity.getSharedData(), data == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
                this.level.playLocalSound(pos, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             }
@@ -529,6 +515,31 @@ public class LevelEventHandler {
    private void notifyNearbyEntities(final Level level, final BlockPos pos, final boolean isPlaying) {
       for(LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, (new AABB(pos)).inflate(3.0))) {
          entity.setRecordPlayingNearby(pos, isPlaying);
+      }
+
+   }
+
+   private void potionSplashParticles(final ParticleType<SpellParticleOption> particleType, final BlockPos pos, final int data, final RandomSource random) {
+      Vec3 particlePos = Vec3.atBottomCenterOf(pos);
+      ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, Items.SPLASH_POTION);
+
+      for(int i = 0; i < 8; ++i) {
+         this.level.addParticle(breakParticle, particlePos.x, particlePos.y, particlePos.z, random.nextGaussian() * 0.15, random.nextDouble() * 0.2, random.nextGaussian() * 0.15);
+      }
+
+      float red = (float)(data >> 16 & 255) / 255.0F;
+      float green = (float)(data >> 8 & 255) / 255.0F;
+      float blue = (float)(data >> 0 & 255) / 255.0F;
+
+      for(int i = 0; i < 100; ++i) {
+         double dist = random.nextDouble() * 4.0;
+         double angle = random.nextDouble() * 3.141592653589793 * 2.0;
+         double velocityX = Math.cos(angle) * dist;
+         double velocityY = 0.01 + random.nextDouble() * 0.5;
+         double velocityZ = Math.sin(angle) * dist;
+         float randomBrightness = 0.75F + random.nextFloat() * 0.25F;
+         SpellParticleOption particle = SpellParticleOption.create(particleType, red * randomBrightness, green * randomBrightness, blue * randomBrightness, (float)dist);
+         this.level.addParticle(particle, particlePos.x + velocityX * 0.1, particlePos.y + 0.3, particlePos.z + velocityZ * 0.1, velocityX, velocityY, velocityZ);
       }
 
    }

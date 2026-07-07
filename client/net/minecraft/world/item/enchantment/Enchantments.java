@@ -136,11 +136,11 @@ public class Enchantments {
    }
 
    public static void bootstrap(final BootstrapContext<Enchantment> context) {
-      HolderGetter<DamageType> damageTypes = context.<DamageType>lookup(Registries.DAMAGE_TYPE);
-      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
-      HolderGetter<Item> items = context.<Item>lookup(Registries.ITEM);
-      HolderGetter<Block> blocks = context.<Block>lookup(Registries.BLOCK);
-      HolderGetter<EntityType<?>> entityTypes = context.<EntityType<?>>lookup(Registries.ENTITY_TYPE);
+      HolderGetter<DamageType> damageTypes = context.lookup(Registries.DAMAGE_TYPE);
+      HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
+      HolderGetter<Item> items = context.lookup(Registries.ITEM);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
+      HolderGetter<EntityType<?>> entityTypes = context.lookup(Registries.ENTITY_TYPE);
       register(context, PROTECTION, Enchantment.enchantment(Enchantment.definition(items.getOrThrow(ItemTags.ARMOR_ENCHANTABLE), 10, 4, Enchantment.dynamicCost(1, 11), Enchantment.dynamicCost(12, 11), 1, EquipmentSlotGroup.ARMOR)).exclusiveWith(enchantments.getOrThrow(EnchantmentTags.ARMOR_EXCLUSIVE)).withEffect(EnchantmentEffectComponents.DAMAGE_PROTECTION, new AddValue(LevelBasedValue.perLevel(1.0F)), DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.isNot(DamageTypeTags.BYPASSES_INVULNERABILITY)))));
       register(context, FIRE_PROTECTION, Enchantment.enchantment(Enchantment.definition(items.getOrThrow(ItemTags.ARMOR_ENCHANTABLE), 5, 4, Enchantment.dynamicCost(10, 8), Enchantment.dynamicCost(18, 8), 2, EquipmentSlotGroup.ARMOR)).exclusiveWith(enchantments.getOrThrow(EnchantmentTags.ARMOR_EXCLUSIVE)).withEffect(EnchantmentEffectComponents.DAMAGE_PROTECTION, new AddValue(LevelBasedValue.perLevel(2.0F)), AllOfCondition.allOf(DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_FIRE)).tag(TagPredicate.isNot(DamageTypeTags.BYPASSES_INVULNERABILITY))))).withEffect(EnchantmentEffectComponents.ATTRIBUTES, new EnchantmentAttributeEffect(Identifier.withDefaultNamespace("enchantment.fire_protection"), Attributes.BURNING_TIME, LevelBasedValue.perLevel(-0.15F), AttributeModifier.Operation.ADD_MULTIPLIED_BASE)));
       register(context, FEATHER_FALLING, Enchantment.enchantment(Enchantment.definition(items.getOrThrow(ItemTags.FOOT_ARMOR_ENCHANTABLE), 5, 4, Enchantment.dynamicCost(5, 6), Enchantment.dynamicCost(11, 6), 2, EquipmentSlotGroup.ARMOR)).withEffect(EnchantmentEffectComponents.DAMAGE_PROTECTION, new AddValue(LevelBasedValue.perLevel(3.0F)), DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_FALL)).tag(TagPredicate.isNot(DamageTypeTags.BYPASSES_INVULNERABILITY)))));

@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public record ValueCheckCondition(NumberProvider value, IntRange range) implements LootItemCondition {
-   public static final MapCodec<ValueCheckCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("value").forGetter(ValueCheckCondition::value), IntRange.CODEC.fieldOf("range").forGetter(ValueCheckCondition::range)).apply(i, ValueCheckCondition::new));
+   public static final MapCodec<ValueCheckCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.fieldOf("value").forGetter(ValueCheckCondition::value), IntRange.CODEC.fieldOf("range").forGetter(ValueCheckCondition::range)).apply(i, ValueCheckCondition::new));
 
    public ValueCheckCondition {
       super();

@@ -14,8 +14,8 @@ public abstract class BiomeData {
    }
 
    public static void bootstrap(final BootstrapContext<Biome> context) {
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
-      HolderGetter<WorldCarver> carvers = context.<WorldCarver>lookup(Registries.CARVER);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
+      HolderGetter<WorldCarver> carvers = context.lookup(Registries.CARVER);
       context.register(Biomes.THE_VOID, OverworldBiomes.theVoid(placedFeatures, carvers));
       context.register(Biomes.PLAINS, OverworldBiomes.plains(placedFeatures, carvers, false, false, false));
       context.register(Biomes.SUNFLOWER_PLAINS, OverworldBiomes.plains(placedFeatures, carvers, true, false, false));

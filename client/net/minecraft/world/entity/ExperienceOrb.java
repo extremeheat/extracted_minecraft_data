@@ -74,7 +74,7 @@ public class ExperienceOrb extends Entity {
       this.age = 0;
       this.health = 5;
       this.count = 1;
-      this.interpolation = new InterpolationHandler(this);
+      this.interpolation = new LinearInterpolationHandler(this);
    }
 
    protected void unstuckIfPossible(final double maxDistance) {
@@ -373,8 +373,8 @@ public class ExperienceOrb extends Entity {
       return this.interpolation;
    }
 
-   public boolean canSimulateMovement() {
-      return true;
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    static {

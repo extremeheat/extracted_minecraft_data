@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;

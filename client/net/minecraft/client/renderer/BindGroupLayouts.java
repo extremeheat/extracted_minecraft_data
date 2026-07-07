@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 
 public class BindGroupLayouts {
    public static final BindGroupLayout DYNAMIC_TRANSFORMS;
@@ -27,7 +27,7 @@ public class BindGroupLayouts {
    public static final BindGroupLayout GLINT_SAMPLER;
    public static final BindGroupLayout DEPTH_BOUNDS_SAMPLER;
    public static final BindGroupLayout OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
-   public static final BindGroupLayout SAMPLER0_OIT_COEFFS;
+   public static final BindGroupLayout SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
    public static final BindGroupLayout SAMPLER0_SAMPLER2_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
    public static final BindGroupLayout CLOUD_INFO_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
 
@@ -64,13 +64,13 @@ public class BindGroupLayouts {
       }
 
       OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
-      builder = BindGroupLayout.builder().withSampler("Sampler0");
+      builder = BindGroupLayout.builder().withSampler("DepthBoundsSampler").withSampler("Sampler0");
 
       for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
          builder.withSampler("Coeff" + i);
       }
 
-      SAMPLER0_OIT_COEFFS = builder.build();
+      SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
       builder = BindGroupLayout.builder().withSampler("Sampler0").withSampler("Sampler2").withSampler("DepthBoundsSampler");
 
       for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {

@@ -22,15 +22,15 @@ public class SavannaVillagePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<PlacedFeature> placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+      HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
       Holder<PlacedFeature> acaciaVillage = placedFeatures.getOrThrow(VillagePlacements.ACACIA_VILLAGE);
       Holder<PlacedFeature> pileHayVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_HAY_VILLAGE);
       Holder<PlacedFeature> pileMelonVillage = placedFeatures.getOrThrow(VillagePlacements.PILE_MELON_VILLAGE);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> zombieSavanna = processorLists.getOrThrow(ProcessorLists.ZOMBIE_SAVANNA);
       Holder<StructureProcessorList> streetSavanna = processorLists.getOrThrow(ProcessorLists.STREET_SAVANNA);
       Holder<StructureProcessorList> farmSavanna = processorLists.getOrThrow(ProcessorLists.FARM_SAVANNA);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Holder<StructureTemplatePool> terminators = pools.getOrThrow(TERMINATORS_KEY);
       Holder<StructureTemplatePool> zombieTerminators = pools.getOrThrow(ZOMBIE_TERMINATORS_KEY);

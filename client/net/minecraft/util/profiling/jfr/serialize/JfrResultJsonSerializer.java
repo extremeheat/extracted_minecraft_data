@@ -205,9 +205,9 @@ public class JfrResultJsonSerializer {
          JsonObject json = new JsonObject();
          int[] fps = fpsStats.stream().mapToInt(FpsStat::fps).toArray();
          IntSummaryStatistics summary = IntStream.of(fps).summaryStatistics();
-         json.addProperty("minFPS", summary.getMin());
-         json.addProperty("averageFPS", summary.getAverage());
-         json.addProperty("maxFPS", summary.getMax());
+         json.addProperty("minFps", summary.getMin());
+         json.addProperty("averageFps", summary.getAverage());
+         json.addProperty("maxFps", summary.getMax());
          Map<Integer, Double> percentiles = Percentiles.evaluate(fps);
          percentiles.forEach((percentile, value) -> json.addProperty("p" + percentile, value));
          return json;

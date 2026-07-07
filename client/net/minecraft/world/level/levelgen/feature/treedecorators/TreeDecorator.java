@@ -72,6 +72,10 @@ public abstract class TreeDecorator {
          return this.checkBlock(pos, BlockBehaviour.BlockStateBase::canBeReplaced);
       }
 
+      public boolean isWaterOrWaterNearby(final BlockPos pos) {
+         return this.checkBlock(pos, (state) -> state.is(Blocks.WATER)) || this.checkBlock(pos.east(), (state) -> state.is(Blocks.WATER)) || this.checkBlock(pos.west(), (state) -> state.is(Blocks.WATER)) || this.checkBlock(pos.north(), (state) -> state.is(Blocks.WATER)) || this.checkBlock(pos.south(), (state) -> state.is(Blocks.WATER));
+      }
+
       public WorldGenLevel level() {
          return this.level;
       }

@@ -1,14 +1,17 @@
 package net.minecraft.world.level.block;
 
-import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
@@ -21,8 +24,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -32,6 +35,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -45,143 +53,8 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    public static final int MIN_LEVEL = 0;
    public static final int MAX_LEVEL = 7;
    public static final IntegerProperty LEVEL;
-   public static final Object2FloatMap<ItemLike> COMPOSTABLES;
    private static final int HOLE_WIDTH = 12;
    private static final VoxelShape[] SHAPES;
-
-   public static void bootStrap() {
-      COMPOSTABLES.defaultReturnValue(-1.0F);
-      float low = 0.3F;
-      float lowMid = 0.5F;
-      float mid = 0.65F;
-      float midHigh = 0.85F;
-      float high = 1.0F;
-      add(0.3F, Items.JUNGLE_LEAVES);
-      add(0.3F, Items.OAK_LEAVES);
-      add(0.3F, Items.SPRUCE_LEAVES);
-      add(0.3F, Items.DARK_OAK_LEAVES);
-      add(0.3F, Items.PALE_OAK_LEAVES);
-      add(0.3F, Items.ACACIA_LEAVES);
-      add(0.3F, Items.CHERRY_LEAVES);
-      add(0.3F, Items.BIRCH_LEAVES);
-      add(0.3F, Items.AZALEA_LEAVES);
-      add(0.3F, Items.MANGROVE_LEAVES);
-      add(0.3F, Items.RED_POPLAR_LEAVES);
-      add(0.3F, Items.ORANGE_POPLAR_LEAVES);
-      add(0.3F, Items.YELLOW_POPLAR_LEAVES);
-      add(0.3F, Items.OAK_SAPLING);
-      add(0.3F, Items.SPRUCE_SAPLING);
-      add(0.3F, Items.BIRCH_SAPLING);
-      add(0.3F, Items.JUNGLE_SAPLING);
-      add(0.3F, Items.ACACIA_SAPLING);
-      add(0.3F, Items.CHERRY_SAPLING);
-      add(0.3F, Items.DARK_OAK_SAPLING);
-      add(0.3F, Items.PALE_OAK_SAPLING);
-      add(0.3F, Items.POPLAR_SAPLING);
-      add(0.3F, Items.MANGROVE_PROPAGULE);
-      add(0.3F, Items.BEETROOT_SEEDS);
-      add(0.3F, Items.DRIED_KELP);
-      add(0.3F, Items.SHORT_GRASS);
-      add(0.3F, Items.KELP);
-      add(0.3F, Items.MELON_SEEDS);
-      add(0.3F, Items.PUMPKIN_SEEDS);
-      add(0.3F, Items.SEAGRASS);
-      add(0.3F, Items.SWEET_BERRIES);
-      add(0.3F, Items.GLOW_BERRIES);
-      add(0.3F, Items.WHEAT_SEEDS);
-      add(0.3F, Items.MOSS_CARPET);
-      add(0.3F, Items.PALE_MOSS_CARPET);
-      add(0.3F, Items.PALE_HANGING_MOSS);
-      add(0.3F, Items.PINK_PETALS);
-      add(0.3F, Items.WILDFLOWERS);
-      add(0.3F, Items.LEAF_LITTER);
-      add(0.3F, Items.SMALL_DRIPLEAF);
-      add(0.3F, Items.HANGING_ROOTS);
-      add(0.3F, Items.MANGROVE_ROOTS);
-      add(0.3F, Items.TORCHFLOWER_SEEDS);
-      add(0.3F, Items.PITCHER_POD);
-      add(0.3F, Items.FIREFLY_BUSH);
-      add(0.3F, Items.BUSH);
-      add(0.3F, Items.CACTUS_FLOWER);
-      add(0.3F, Items.DRY_SHORT_GRASS);
-      add(0.3F, Items.DRY_TALL_GRASS);
-      add(0.3F, Items.RED_SHRUB);
-      add(0.5F, Items.DRIED_KELP_BLOCK);
-      add(0.5F, Items.TALL_GRASS);
-      add(0.5F, Items.FLOWERING_AZALEA_LEAVES);
-      add(0.5F, Items.CACTUS);
-      add(0.5F, Items.SUGAR_CANE);
-      add(0.5F, Items.VINE);
-      add(0.5F, Items.NETHER_SPROUTS);
-      add(0.5F, Items.WEEPING_VINES);
-      add(0.5F, Items.TWISTING_VINES);
-      add(0.5F, Items.MELON_SLICE);
-      add(0.5F, Items.GLOW_LICHEN);
-      add(0.65F, Items.SEA_PICKLE);
-      add(0.65F, Items.LILY_PAD);
-      add(0.65F, Items.PUMPKIN);
-      add(0.65F, Items.CARVED_PUMPKIN);
-      add(0.65F, Items.MELON);
-      add(0.65F, Items.APPLE);
-      add(0.65F, Items.BEETROOT);
-      add(0.65F, Items.CARROT);
-      add(0.65F, Items.COCOA_BEANS);
-      add(0.65F, Items.POTATO);
-      add(0.65F, Items.WHEAT);
-      add(0.65F, Items.BROWN_MUSHROOM);
-      add(0.65F, Items.RED_MUSHROOM);
-      add(0.65F, Items.MUSHROOM_STEM);
-      add(0.65F, Items.CRIMSON_FUNGUS);
-      add(0.65F, Items.WARPED_FUNGUS);
-      add(0.65F, Items.NETHER_WART);
-      add(0.65F, Items.CRIMSON_ROOTS);
-      add(0.65F, Items.WARPED_ROOTS);
-      add(0.65F, Items.SHROOMLIGHT);
-      add(0.65F, Items.DANDELION);
-      add(0.65F, Items.POPPY);
-      add(0.65F, Items.BLUE_ORCHID);
-      add(0.65F, Items.ALLIUM);
-      add(0.65F, Items.AZURE_BLUET);
-      add(0.65F, Items.RED_TULIP);
-      add(0.65F, Items.ORANGE_TULIP);
-      add(0.65F, Items.WHITE_TULIP);
-      add(0.65F, Items.PINK_TULIP);
-      add(0.65F, Items.OXEYE_DAISY);
-      add(0.65F, Items.CORNFLOWER);
-      add(0.65F, Items.LILY_OF_THE_VALLEY);
-      add(0.65F, Items.WITHER_ROSE);
-      add(0.65F, Items.OPEN_EYEBLOSSOM);
-      add(0.65F, Items.CLOSED_EYEBLOSSOM);
-      add(0.65F, Items.FERN);
-      add(0.65F, Items.SUNFLOWER);
-      add(0.65F, Items.LILAC);
-      add(0.65F, Items.ROSE_BUSH);
-      add(0.65F, Items.PEONY);
-      add(0.65F, Items.LARGE_FERN);
-      add(0.65F, Items.SPORE_BLOSSOM);
-      add(0.65F, Items.AZALEA);
-      add(0.65F, Items.MOSS_BLOCK);
-      add(0.65F, Items.PALE_MOSS_BLOCK);
-      add(0.65F, Items.BIG_DRIPLEAF);
-      add(0.65F, Items.SHELF_MUSHROOM);
-      add(0.85F, Items.HAY_BLOCK);
-      add(0.85F, Items.BROWN_MUSHROOM_BLOCK);
-      add(0.85F, Items.RED_MUSHROOM_BLOCK);
-      add(0.85F, Items.NETHER_WART_BLOCK);
-      add(0.85F, Items.WARPED_WART_BLOCK);
-      add(0.85F, Items.FLOWERING_AZALEA);
-      add(0.85F, Items.BREAD);
-      add(0.85F, Items.BAKED_POTATO);
-      add(0.85F, Items.COOKIE);
-      add(0.85F, Items.TORCHFLOWER);
-      add(0.85F, Items.PITCHER_PLANT);
-      add(1.0F, Items.CAKE);
-      add(1.0F, Items.PUMPKIN_PIE);
-   }
-
-   private static void add(final float value, final ItemLike item) {
-      COMPOSTABLES.put(item.asItem(), value);
-   }
 
    public ComposterBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -227,9 +100,11 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
       int fillLevel = (Integer)state.getValue(LEVEL);
-      if (fillLevel < 8 && COMPOSTABLES.containsKey(itemStack.getItem())) {
-         if (fillLevel < 7 && !level.isClientSide()) {
-            BlockState newState = addItem(player, state, level, pos, itemStack);
+      Compostable compostable = (Compostable)itemStack.get(DataComponents.COMPOSTABLE);
+      if (fillLevel < 8 && compostable != null) {
+         if (fillLevel < 7 && level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            BlockState newState = addLayer(player, state, serverLevel, pos, compostable);
             level.levelEvent(1500, pos, state != newState ? 1 : 0);
             player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
             itemStack.consume(1, player);
@@ -253,8 +128,9 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    public static BlockState insertItem(final Entity sourceEntity, final BlockState state, final ServerLevel level, final ItemStack itemStack, final BlockPos pos) {
       int fillLevel = (Integer)state.getValue(LEVEL);
-      if (fillLevel < 7 && COMPOSTABLES.containsKey(itemStack.getItem())) {
-         BlockState newState = addItem(sourceEntity, state, level, pos, itemStack);
+      Compostable compostable = (Compostable)itemStack.get(DataComponents.COMPOSTABLE);
+      if (fillLevel < 7 && compostable != null) {
+         BlockState newState = addLayer(sourceEntity, state, level, pos, compostable);
          itemStack.shrink(1);
          return newState;
       } else {
@@ -282,21 +158,27 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       return newState;
    }
 
-   private static BlockState addItem(final @Nullable Entity sourceEntity, final BlockState state, final LevelAccessor level, final BlockPos pos, final ItemStack itemStack) {
+   private static BlockState addLayer(final @Nullable Entity sourceEntity, final BlockState state, final ServerLevel level, final BlockPos pos, final Compostable compostable) {
       int fillLevel = (Integer)state.getValue(LEVEL);
-      float chance = COMPOSTABLES.getFloat(itemStack.getItem());
-      if ((fillLevel != 0 || !(chance > 0.0F)) && !(level.getRandom().nextDouble() < (double)chance)) {
+      LootContext lootContext = (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.BLOCK_STATE, state).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, sourceEntity).create(LootContextParamSets.BLOCK_INTERACT))).create(Optional.empty());
+      Optional<NumberProvider> layers = level.getServer().reloadableRegistries().lookup().lookup(Registries.NUMBER_PROVIDER).flatMap((registry) -> registry.get(compostable.layers())).map(Holder.Reference::value);
+      if (layers.isEmpty()) {
          return state;
       } else {
-         int newLevel = fillLevel + 1;
-         BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
-         level.setBlockAndUpdate(pos, newState);
-         level.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)pos, (GameEvent.Context)GameEvent.Context.of(sourceEntity, newState));
-         if (newLevel == 7) {
-            level.scheduleTick(pos, state.getBlock(), 20);
-         }
+         int layersToAdd = ((NumberProvider)layers.get()).getInt(lootContext);
+         if (layersToAdd > 0) {
+            int newLevel = Mth.clamp(fillLevel + layersToAdd, 0, 7);
+            BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
+            level.setBlockAndUpdate(pos, newState);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
+            if (newLevel == 7) {
+               level.scheduleTick(pos, state.getBlock(), 20);
+            }
 
-         return newState;
+            return newState;
+         } else {
+            return state;
+         }
       }
    }
 
@@ -335,7 +217,6 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    static {
       LEVEL = BlockStateProperties.LEVEL_COMPOSTER;
-      COMPOSTABLES = new Object2FloatOpenHashMap();
       SHAPES = (VoxelShape[])Util.make(() -> {
          VoxelShape[] shapes = Block.boxes(8, (level) -> Shapes.join(Shapes.block(), Block.column(12.0, (double)Math.clamp((long)(1 + level * 2), 2, 16), 16.0), BooleanOp.ONLY_FIRST));
          shapes[8] = shapes[7];
@@ -418,7 +299,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       }
 
       public boolean canPlaceItemThroughFace(final int slot, final ItemStack itemStack, final @Nullable Direction direction) {
-         return !this.changed && direction == Direction.UP && ComposterBlock.COMPOSTABLES.containsKey(itemStack.getItem());
+         return !this.changed && direction == Direction.UP && itemStack.has(DataComponents.COMPOSTABLE);
       }
 
       public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
@@ -427,11 +308,16 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
       public void setChanged() {
          ItemStack contents = this.getItem(0);
-         if (!contents.isEmpty()) {
-            this.changed = true;
-            BlockState newState = ComposterBlock.addItem((Entity)null, this.state, this.level, this.pos, contents);
-            this.level.levelEvent(1500, this.pos, newState != this.state ? 1 : 0);
-            this.removeItemNoUpdate(0);
+         Compostable compostable = (Compostable)contents.get(DataComponents.COMPOSTABLE);
+         if (!contents.isEmpty() && compostable != null) {
+            LevelAccessor var4 = this.level;
+            if (var4 instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)var4;
+               this.changed = true;
+               BlockState newState = ComposterBlock.addLayer((Entity)null, this.state, serverLevel, this.pos, compostable);
+               this.level.levelEvent(1500, this.pos, newState != this.state ? 1 : 0);
+               this.removeItemNoUpdate(0);
+            }
          }
 
       }

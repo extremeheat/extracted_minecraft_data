@@ -134,46 +134,22 @@ public abstract class FoliagePlacer {
       CODEC = BuiltInRegistries.FOLIAGE_PLACER_TYPE.byNameCodec().dispatch(FoliagePlacer::type, FoliagePlacerType::codec);
    }
 
-   public static final class FoliageAttachment {
-      private final BlockPos pos;
-      private final int radiusOffset;
-      private final int sizeX;
-      private final int sizeZ;
+   public static record FoliageAttachment(BlockPos pos, int radiusOffsetXZ, int foliageHeightOffset, int sizeX, int sizeZ) {
+      public FoliageAttachment(final BlockPos pos, final int radiusOffsetXZ, final boolean doubleTrunk) {
+         int sizeXZ = doubleTrunk ? 2 : 1;
+         this(pos, radiusOffsetXZ, sizeXZ, sizeXZ);
+      }
 
-      public FoliageAttachment(final BlockPos pos, final int radiusOffset, final boolean doubleTrunk) {
+      public FoliageAttachment(final BlockPos pos, final int radiusOffsetXZ, final int sizeX, final int sizeZ) {
+         this(pos, radiusOffsetXZ, 0, sizeX, sizeZ);
+      }
+
+      public FoliageAttachment {
          super();
-         this.pos = pos;
-         this.radiusOffset = radiusOffset;
-         this.sizeX = doubleTrunk ? 2 : 1;
-         this.sizeZ = doubleTrunk ? 2 : 1;
-      }
-
-      public FoliageAttachment(final BlockPos pos, final int radiusOffset, final int sizeX, final int sizeZ) {
-         super();
-         this.pos = pos;
-         this.radiusOffset = radiusOffset;
-         this.sizeX = sizeX;
-         this.sizeZ = sizeZ;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public int radiusOffset() {
-         return this.radiusOffset;
       }
 
       public boolean doubleTrunk() {
          return this.sizeX == 2 && this.sizeZ == 2;
-      }
-
-      public int sizeX() {
-         return this.sizeX;
-      }
-
-      public int sizeZ() {
-         return this.sizeZ;
       }
    }
 

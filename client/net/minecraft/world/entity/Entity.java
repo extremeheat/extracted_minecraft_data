@@ -45,6 +45,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.TypedInstance;
@@ -296,7 +297,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    private final ArrayDeque<Movement> movementThisTick;
    private final List<Movement> finalMovementsThisTick;
    private final LongSet visitedBlocks;
-   private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
+   protected final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
    private CustomData customData;
 
    public Entity(final EntityType<?> type, final Level level) {
@@ -746,6 +747,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement"));
       } else if (this.noPhysics) {
          this.setPos(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z);
+         this.recordMovement(moverType, delta);
          this.horizontalCollision = false;
          this.verticalCollision = false;
          this.verticalCollisionBelow = false;
@@ -786,6 +788,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
             Vec3 newPosition = pos.add(movement);
             this.addMovementThisTick(new Movement(pos, newPosition, delta));
             this.setPos(newPosition);
+            this.recordMovement(moverType, movement);
          }
 
          profiler.pop();
@@ -833,6 +836,16 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
    }
 
+   public void recordMovement(final MoverType moverType, final Vec3 movement) {
+      if (moverType.isServerAndClientSimulated() || this.getMoveSimulationType() == MoveSimulationType.SERVER_AND_CLIENT) {
+         InterpolationHandler interpolationHandler = this.getInterpolation();
+         if (interpolationHandler != null) {
+            interpolationHandler.applyPredictedMovement(movement);
+         }
+
+      }
+   }
+
    private void restituteMovementAfterCollisions(final BlockState effectState, final boolean xCollision, final boolean zCollision, final Vec3 movement) {
       double restitution = this.isSuppressingBounce() ? 0.0 : this.getEntityBounciness();
       Vec3 currentMovement = this.getDeltaMovement();
@@ -848,7 +861,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       boolean bounced = restitution > 0.0 && (xCollision || zCollision);
       if (this.verticalCollision) {
          if (this.verticalCollisionBelow) {
-            restitution = !(-currentMovement.y < this.getEffectiveGravity()) && !this.isSuppressingBounce() && !effectState.is(BlockTags.SUPPRESSES_BOUNCE) ? Math.max(restitution, this.getBlockBounciness(effectState.getBlock())) : 0.0;
+            restitution = !(-currentMovement.y <= this.getEffectiveGravity()) && !this.isSuppressingBounce() && !effectState.is(BlockTags.SUPPRESSES_BOUNCE) ? Math.max(restitution, this.getBlockBounciness(effectState.getBlock())) : 0.0;
          }
 
          double gravityCompensation;
@@ -2203,6 +2216,15 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
                Set var10001 = this.tags;
                Objects.requireNonNull(var10001);
                var10000.ifPresent(var10001::addAll);
+               input.getString("Team").ifPresent((teamName) -> {
+                  Scoreboard scoreboard = this.level().getScoreboard();
+                  PlayerTeam team = scoreboard.getPlayerTeam(teamName);
+                  boolean success = team != null && scoreboard.addPlayerToTeam(this.getStringUUID(), team);
+                  if (!success) {
+                     LOGGER.warn("Unable to add entity to team \"{}\" (that team probably doesn't exist)", teamName);
+                  }
+
+               });
                this.readAdditionalSaveData(input);
                if (this.repositionEntityAfterLoad()) {
                   this.reapplyPosition();
@@ -2499,6 +2521,16 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    }
 
+   public final boolean doTeamsAllowDamage(final Entity other) {
+      Team team = this.getTeam();
+      Team otherTeam = other.getTeam();
+      if (team == null) {
+         return true;
+      } else {
+         return !team.isAlliedTo(otherTeam) ? true : team.isAllowFriendlyFire();
+      }
+   }
+
    public void removeVehicle() {
       if (this.vehicle != null) {
          Entity oldVehicle = this.vehicle;
@@ -2562,28 +2594,40 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.getInterpolation() != null && this.getInterpolation().hasActiveInterpolation();
    }
 
+   public final void moveOrInterpolateTo(final PositionPath position, final float yRot, final float xRot) {
+      this.moveOrInterpolateTo(position, yRot, xRot, true);
+   }
+
    public final void moveOrInterpolateTo(final Vec3 position, final float yRot, final float xRot) {
-      this.moveOrInterpolateTo(Optional.of(position), Optional.of(yRot), Optional.of(xRot));
+      this.moveOrInterpolateTo(PositionPath.of(position), yRot, xRot, true);
    }
 
    public final void moveOrInterpolateTo(final float yRot, final float xRot) {
-      this.moveOrInterpolateTo(Optional.empty(), Optional.of(yRot), Optional.of(xRot));
+      this.moveOrInterpolateTo((PositionPath)null, yRot, xRot, true);
    }
 
-   public final void moveOrInterpolateTo(final Vec3 position) {
-      this.moveOrInterpolateTo(Optional.of(position), Optional.empty(), Optional.empty());
+   public final void moveOrInterpolateTo(final PositionPath position) {
+      this.moveOrInterpolateTo(position, 0.0F, 0.0F, false);
    }
 
-   public final void moveOrInterpolateTo(final Optional<Vec3> position, final Optional<Float> yRot, final Optional<Float> xRot) {
+   public final void moveOrInterpolateTo(final @Nullable PositionPath position, final float yRot, final float xRot, final boolean hasRotation) {
       InterpolationHandler interpolationHandler = this.getInterpolation();
       if (interpolationHandler != null) {
-         interpolationHandler.interpolateTo((Vec3)position.orElse(interpolationHandler.position()), (Float)yRot.orElse(interpolationHandler.yRot()), (Float)xRot.orElse(interpolationHandler.xRot()));
+         PositionAndRotation current = interpolationHandler.getCurrentPositionAndRotation();
+         interpolationHandler.interpolateTo(position != null ? position : PositionPath.of(current.position()), hasRotation ? yRot : current.yRot(), hasRotation ? xRot : current.xRot());
       } else {
-         position.ifPresent(this::setPos);
-         yRot.ifPresent((y) -> this.setYRot(y % 360.0F));
-         xRot.ifPresent((x) -> this.setXRot(x % 360.0F));
-      }
+         if (position != null) {
+            this.setPos(position.endPosition());
+         }
 
+         if (hasRotation) {
+            this.setRot(yRot, xRot);
+         }
+
+      }
+   }
+
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
    }
 
    public @Nullable InterpolationHandler getInterpolation() {
@@ -3606,8 +3650,20 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return passenger != null && passenger.isClientAuthoritative();
    }
 
-   public boolean canSimulateMovement() {
-      return this.isLocalInstanceAuthoritative();
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.AUTHORITATIVE_SIDE;
+   }
+
+   public final boolean canSimulateMovement() {
+      boolean var10000;
+      switch (this.getMoveSimulationType()) {
+         case SERVER_AND_CLIENT -> var10000 = true;
+         case AUTHORITATIVE_SIDE -> var10000 = this.isLocalInstanceAuthoritative();
+         case AUTHORITATIVE_SIDE_AND_SERVER -> var10000 = !this.level().isClientSide() || this.isLocalClientAuthoritative();
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public boolean isEffectiveAi() {
@@ -3921,6 +3977,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       } else {
          this.xRot = Math.clamp(xRot % 360.0F, -90.0F, 90.0F);
       }
+   }
+
+   public PositionAndRotation storePositionAndRotation() {
+      return PositionAndRotation.of(this.position, this.yRot, this.xRot);
    }
 
    public boolean canSprint() {

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
-import com.mojang.blaze3d.systems.GpuSurface;
+import com.mojang.renderpearl.api.device.GpuSurface;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;

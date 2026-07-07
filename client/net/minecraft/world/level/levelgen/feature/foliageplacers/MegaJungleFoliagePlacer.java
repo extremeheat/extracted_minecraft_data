@@ -22,10 +22,10 @@ public class MegaJungleFoliagePlacer extends FoliagePlacer {
    }
 
    protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
-      int leafHeight = foliageAttachment.doubleTrunk() ? foliageHeight : 1 + random.nextInt(2);
+      int leafHeight = (foliageAttachment.doubleTrunk() ? foliageHeight : 1 + random.nextInt(2)) + foliageAttachment.foliageHeightOffset();
 
       for(int yo = offset; yo >= offset - leafHeight; --yo) {
-         int currentRadius = leafRadius + foliageAttachment.radiusOffset() + 1 - yo;
+         int currentRadius = leafRadius + foliageAttachment.radiusOffsetXZ() + 1 - yo;
          this.placeLeavesRow(level, foliageSetter, random, tree, foliageAttachment.pos(), currentRadius, yo, foliageAttachment.doubleTrunk());
       }
 

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
@@ -9,30 +10,22 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-public abstract class BlockStateProvider {
-   public static final Codec<BlockStateProvider> CODEC;
+public interface BlockStateProvider {
+   Codec<BlockStateProvider> CODEC = BuiltInRegistries.BLOCK_STATE_PROVIDER_TYPE.byNameCodec().dispatch(BlockStateProvider::codec, (c) -> c);
 
-   public BlockStateProvider() {
-      super();
-   }
-
-   public static SimpleStateProvider simple(final BlockState state) {
+   static SimpleStateProvider simple(final BlockState state) {
       return new SimpleStateProvider(state);
    }
 
-   public static SimpleStateProvider simple(final Block block) {
+   static SimpleStateProvider simple(final Block block) {
       return new SimpleStateProvider(block.defaultBlockState());
    }
 
-   protected abstract BlockStateProviderType<?> type();
+   MapCodec<? extends BlockStateProvider> codec();
 
-   public abstract BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos);
+   BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos);
 
-   public @Nullable BlockState getOptionalState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
+   default @Nullable BlockState getOptionalState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       return this.getState(level, random, pos);
-   }
-
-   static {
-      CODEC = BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE.byNameCodec().dispatch(BlockStateProvider::type, BlockStateProviderType::codec);
    }
 }

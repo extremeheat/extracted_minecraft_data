@@ -458,6 +458,7 @@ public class FireBlock extends BaseFireBlock {
       fire.setFlammable(Blocks.OAK_SHELF, 30, 20);
       fire.setFlammable(Blocks.PALE_OAK_SHELF, 30, 20);
       fire.setFlammable(Blocks.SPRUCE_SHELF, 30, 20);
+      fire.setFlammable(Blocks.STRAW_BED, 30, 60);
    }
 
    static {
