@@ -1,5 +1,6 @@
 package net.minecraft.client.resources.model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.resources.FileToIdConverter;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 
 public class EquipmentAssetManager extends SimpleJsonResourceReloadListener<EquipmentClientInfo> {
-   public static final EquipmentClientInfo MISSING = new EquipmentClientInfo(Map.of(), Map.of());
+   public static final EquipmentClientInfo MISSING = new EquipmentClientInfo(Map.of(), List.of());
    private static final FileToIdConverter ASSET_LISTER = FileToIdConverter.json("equipment");
    private Map<ResourceKey<EquipmentAsset>, EquipmentClientInfo> equipmentAssets = Map.of();
 

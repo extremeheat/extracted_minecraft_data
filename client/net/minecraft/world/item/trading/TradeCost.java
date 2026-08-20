@@ -14,14 +14,14 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
-public record TradeCost(Holder<Item> item, NumberProvider count, DataComponentExactPredicate components) implements Validatable {
-   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), NumberProviders.DIRECT_CODEC.optionalFieldOf("count", ConstantValue.exactly(1.0F)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
+public record TradeCost(Holder<Item> item, Holder<NumberProvider> count, DataComponentExactPredicate components) implements Validatable {
+   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), NumberProviders.CODEC.optionalFieldOf("count", ConstantValue.exactly(1.0F)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
 
    public TradeCost(final ItemLike item, final int count) {
       this(item.asItem().builtInRegistryHolder(), ConstantValue.exactly((float)count), DataComponentExactPredicate.EMPTY);
    }
 
-   public TradeCost(final ItemLike item, final NumberProvider count) {
+   public TradeCost(final ItemLike item, final Holder<NumberProvider> count) {
       this(item.asItem().builtInRegistryHolder(), count, DataComponentExactPredicate.EMPTY);
    }
 
@@ -30,11 +30,11 @@ public record TradeCost(Holder<Item> item, NumberProvider count, DataComponentEx
    }
 
    public ItemCost toItemCost(final LootContext lootContext, final int additionalCost) {
-      int count = Mth.clamp(this.count().getInt(lootContext) + additionalCost, 0, ((Item)this.item().value()).getDefaultMaxStackSize());
+      int count = Mth.clamp(((NumberProvider)this.count().value()).getInt(lootContext) + additionalCost, 0, ((Item)this.item().value()).getDefaultMaxStackSize());
       return new ItemCost(this.item(), count, this.components());
    }
 
    public void validate(final ValidationContext context) {
-      Validatable.validate(context, "count", this.count);
+      Validatable.validateHolder(context, "count", this.count);
    }
 }

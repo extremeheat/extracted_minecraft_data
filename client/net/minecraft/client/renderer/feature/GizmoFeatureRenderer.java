@@ -80,7 +80,7 @@ public class GizmoFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
 
    private void buildLines(final List<DrawableGizmoPrimitives.Line> lines, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final boolean opaque) {
       if (!lines.isEmpty()) {
-         VertexConsumer builder = this.getVertexBuilder(opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
+         VertexConsumer builder = this.getVertexBuilder(opaque ? RenderTypes.lines() : RenderTypes.linesTranslucentNoDepthWrite());
          PoseStack.Pose pose = this.poseStack.last();
          Vector4f start = new Vector4f();
          Vector4f end = new Vector4f();

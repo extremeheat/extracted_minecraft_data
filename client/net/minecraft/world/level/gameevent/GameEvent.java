@@ -5,8 +5,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -94,7 +94,7 @@ public record GameEvent(int notificationRadius) {
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<GameEvent>>create(Registries.GAME_EVENT);
+      CODEC = RegistryCodecs.holder(Registries.GAME_EVENT);
    }
 
    public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {

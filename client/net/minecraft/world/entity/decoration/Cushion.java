@@ -1,6 +1,9 @@
 package net.minecraft.world.entity.decoration;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -8,10 +11,15 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Continuation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -19,18 +27,20 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class Cushion extends BlockAttachedEntity {
    private static final DyeColor DEFAULT_COLOR;
+   private static final int LIGHTNING_DROP_INVULNERABLE_TICKS = 20;
    private static final EntityDataAccessor<DyeColor> DATA_COLOR;
 
    public Cushion(final EntityType<Cushion> type, final Level level) {
@@ -45,10 +55,6 @@ public class Cushion extends BlockAttachedEntity {
       this.entityData.set(DATA_COLOR, color);
    }
 
-   public boolean dampensVibrations() {
-      return true;
-   }
-
    public void dropItem(final ServerLevel level, final @Nullable Entity causedBy) {
       this.playSound(SoundEvents.CUSHION_BREAK, 1.0F, 1.0F);
       this.showBreakingParticles();
@@ -60,17 +66,57 @@ public class Cushion extends BlockAttachedEntity {
             }
          }
 
-         this.spawnAtLocation(level, Items.CUSHION.pick(this.getColor()));
+         ItemEntity itemEntity = this.spawnAtLocation(level, this.getCushionItemStackWithData());
+         if (itemEntity != null && causedBy instanceof LightningBolt) {
+            itemEntity.setInvulnerableTime(20);
+         }
+
       }
    }
 
+   private static boolean isBreakingDeniedFor(final DamageSource source) {
+      Entity var2 = source.getEntity();
+      boolean var10000;
+      if (var2 instanceof Player player) {
+         if (!player.mayBuild()) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
+   }
+
+   private boolean isBreakingDeniedAtPosFor(final ServerLevel level, final DamageSource source) {
+      Entity var4 = source.getEntity();
+      boolean var10000;
+      if (var4 instanceof Player player) {
+         if (!level.mayInteract(player, this.pos)) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
+   }
+
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      return !isBreakingDeniedFor(source) && !this.isBreakingDeniedAtPosFor(level, source) ? super.hurtServer(level, source, damage) : false;
+   }
+
+   public boolean hurtClient(final DamageSource source) {
+      return isBreakingDeniedFor(source) ? false : super.hurtClient(source);
+   }
+
    public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
-      if (!player.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide() || player.startRiding(this))) {
-         if (!this.level().isClientSide()) {
+      if (!player.isSecondaryUseActive() && !this.isVehicle()) {
+         if (!this.level().isClientSide() && player.startRiding(this)) {
             this.playSound(SoundEvents.CUSHION_SIT, 1.0F, 1.0F);
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
          }
       } else {
          return InteractionResult.PASS;
@@ -90,13 +136,33 @@ public class Cushion extends BlockAttachedEntity {
    }
 
    protected void tickAtCheckInterval() {
-      if (this.level() instanceof ServerLevel) {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel level) {
          BlockPos blockPos = this.blockPosition();
-         FluidState fluidState = this.level().getBlockState(blockPos).getFluidState();
+         FluidState fluidState = level.getBlockState(blockPos).getFluidState();
          if (this.collidedWithFluid(fluidState, blockPos, this.position(), this.position())) {
-            fluidState.entityInside(this.level(), blockPos, this, this.insideEffectCollector);
+            fluidState.entityInside(level, blockPos, this, this.insideEffectCollector);
             this.insideEffectCollector.applyAndClear(this);
          }
+
+         this.destroyIfInFire(level);
+      }
+
+   }
+
+   public void destroyIfInFire(final ServerLevel level) {
+      if (!this.isRemoved()) {
+         level.findBlocksIn(this.getBoundingBox().nextDeflated()).filterState((state) -> state.is(BlockTags.FIRE)).forEachUntil((var2, var3) -> {
+            this.hurtServer(level, this.damageSources().inFire(), 1.0F);
+            return Continuation.ABORT;
+         });
+      }
+   }
+
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      if (!this.isRemoved()) {
+         this.kill(level, lightningBolt);
+         this.dropItem(level, lightningBolt);
       }
 
    }
@@ -114,13 +180,29 @@ public class Cushion extends BlockAttachedEntity {
 
    }
 
-   public static boolean wouldSuriveAt(final Level level, final AABB boundingBox) {
-      AABB anchorBox = new AABB(boundingBox.minX, boundingBox.minY - 0.015625, boundingBox.minZ, Math.nextDown(boundingBox.maxX), boundingBox.minY, Math.nextDown(boundingBox.maxZ));
+   public static boolean canBePlacedAt(final Level level, final AABB boundingBox) {
+      return wouldSurviveAt(level, boundingBox) && !isAnchorBuried(level, boundingBox);
+   }
 
-      for(BlockPos blockPos : BlockPos.betweenClosed(anchorBox)) {
-         BlockState blockState = level.getBlockState(blockPos);
+   public static boolean wouldSurviveAt(final Level level, final AABB boundingBox) {
+      return hasAnchorBelow(level, boundingBox) && !isCoveredBySuffocatingBlocks(level, boundingBox);
+   }
+
+   private static boolean hasAnchorBelow(final Level level, final AABB boundingBox) {
+      AABB anchorBox = new AABB(boundingBox.minX, boundingBox.minY - 0.015625, boundingBox.minZ, Math.nextDown(boundingBox.maxX), boundingBox.minY, Math.nextDown(boundingBox.maxZ));
+      return level.findBlocksIn(anchorBox.expandTowards(0.0, -0.125, 0.0)).forEachUntil((blockPos, blockState) -> {
          VoxelShape shape = blockState.getShape(level, blockPos);
-         if (!shape.isEmpty() && shape.bounds().move(blockPos).intersects(anchorBox)) {
+         return !shape.isEmpty() && shape.bounds().move(blockPos).intersects(anchorBox) ? Continuation.ABORT : Continuation.CONTINUE;
+      });
+   }
+
+   private static boolean isAnchorBuried(final Level level, final AABB boundingBox) {
+      AABB restingSlice = (new AABB(boundingBox.minX, boundingBox.minY, boundingBox.minZ, boundingBox.maxX, boundingBox.minY + 0.015625, boundingBox.maxZ)).nextDeflated();
+      VoxelShape exposedSurface = Shapes.create(restingSlice);
+
+      for(VoxelShape collider : level.getBlockCollisions((Entity)null, restingSlice)) {
+         exposedSurface = Shapes.join(exposedSurface, collider, BooleanOp.ONLY_FIRST);
+         if (exposedSurface.isEmpty()) {
             return true;
          }
       }
@@ -128,20 +210,18 @@ public class Cushion extends BlockAttachedEntity {
       return false;
    }
 
-   public boolean survives() {
-      Level level = this.level();
-      AABB boundingBox = this.getBoundingBox();
-      if (!wouldSuriveAt(level, boundingBox)) {
-         return false;
-      } else {
-         for(BlockPos blockPos : BlockPos.betweenClosed(boundingBox.nextDeflated())) {
-            if (!level.getBlockState(blockPos).isCollisionShapeFullBlock(level, blockPos)) {
-               return true;
-            }
+   private static boolean isCoveredBySuffocatingBlocks(final Level level, final AABB boundingBox) {
+      for(BlockPos blockPos : BlockPos.betweenClosed(boundingBox.nextDeflated())) {
+         if (!level.getBlockState(blockPos).isSuffocating(level, blockPos)) {
+            return false;
          }
-
-         return false;
       }
+
+      return true;
+   }
+
+   public boolean survives() {
+      return wouldSurviveAt(this.level(), this.getBoundingBox());
    }
 
    protected void recalculateBoundingBox() {
@@ -160,6 +240,30 @@ public class Cushion extends BlockAttachedEntity {
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       this.setColor((DyeColor)input.read("color", DyeColor.CODEC).orElse(DEFAULT_COLOR));
+   }
+
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.CUSHION_COLOR ? castComponentValue(type, this.getColor()) : super.get(type));
+   }
+
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.CUSHION_COLOR);
+      super.applyImplicitComponents(components);
+   }
+
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.CUSHION_COLOR) {
+         this.setColor((DyeColor)castComponentValue(DataComponents.CUSHION_COLOR, value));
+         return true;
+      } else {
+         return super.applyImplicitComponent(type, value);
+      }
+   }
+
+   private ItemStack getCushionItemStackWithData() {
+      ItemStack itemStack = new ItemStack(Items.CUSHION.pick(this.getColor()));
+      itemStack.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+      return itemStack;
    }
 
    static {

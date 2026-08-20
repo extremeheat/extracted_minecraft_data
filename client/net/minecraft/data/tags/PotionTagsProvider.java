@@ -15,5 +15,9 @@ public class PotionTagsProvider extends TagsProvider<Potion> {
 
    protected void addTags(final HolderLookup.Provider registries) {
       this.tag(PotionTags.TRADEABLE).add(PotionIds.WIND_CHARGED, PotionIds.OOZING, PotionIds.INFESTED, PotionIds.WEAVING, PotionIds.NIGHT_VISION, PotionIds.LONG_NIGHT_VISION, PotionIds.INVISIBILITY, PotionIds.LONG_INVISIBILITY, PotionIds.FIRE_RESISTANCE, PotionIds.LONG_FIRE_RESISTANCE, PotionIds.LEAPING, PotionIds.LONG_LEAPING, PotionIds.STRONG_LEAPING, PotionIds.SLOWNESS, PotionIds.LONG_SLOWNESS, PotionIds.STRONG_SLOWNESS, PotionIds.TURTLE_MASTER, PotionIds.LONG_TURTLE_MASTER, PotionIds.STRONG_TURTLE_MASTER, PotionIds.SWIFTNESS, PotionIds.LONG_SWIFTNESS, PotionIds.STRONG_SWIFTNESS, PotionIds.WATER_BREATHING, PotionIds.LONG_WATER_BREATHING, PotionIds.HEALING, PotionIds.STRONG_HEALING, PotionIds.HARMING, PotionIds.STRONG_HARMING, PotionIds.POISON, PotionIds.LONG_POISON, PotionIds.STRONG_POISON, PotionIds.REGENERATION, PotionIds.LONG_REGENERATION, PotionIds.STRONG_REGENERATION, PotionIds.STRENGTH, PotionIds.LONG_STRENGTH, PotionIds.STRONG_STRENGTH, PotionIds.WEAKNESS, PotionIds.LONG_WEAKNESS, PotionIds.SLOW_FALLING, PotionIds.LONG_SLOW_FALLING);
+      this.tag(PotionTags.DOUSES_FIRE).add(PotionIds.WATER);
+      this.tag(PotionTags.HURTS_WATER_SENSITIVE_ENTITIES).add(PotionIds.WATER);
+      this.tag(PotionTags.EXTINGUISHES_ENTITIES).add(PotionIds.WATER);
+      this.tag(PotionTags.REHYDRATES_AXOLOTLS).add(PotionIds.WATER);
    }
 }

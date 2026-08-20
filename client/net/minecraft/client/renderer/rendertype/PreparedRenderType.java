@@ -9,21 +9,18 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.oit.OitStage;
 import org.jspecify.annotations.Nullable;
 
-public record PreparedRenderType(String name, RenderPipeline pipeline, @Nullable OitPipelineSet oitPipelineSet, @Nullable RenderPipeline opaquePartsPipeline, GpuBufferSlice dynamicTransforms, ScissorState scissorState, List<Texture> textures) {
+public record PreparedRenderType(String name, RenderPipeline pipeline, @Nullable OitPipelineSet oitPipelineSet, GpuBufferSlice dynamicTransforms, ScissorState scissorState, List<Texture> textures) {
    public PreparedRenderType {
       super();
    }
 
    public void drawFromBuffer(final StagedVertexBuffer.ExecuteInfo info, final RenderPass renderPass) {
-      boolean useImprovedTransparency = Minecraft.getInstance().gameRenderer.useImprovedTransparency();
-      RenderPipeline renderPipeline = useImprovedTransparency && RenderSystem.isRenderingLevel && this.opaquePartsPipeline != null ? this.opaquePartsPipeline : this.pipeline;
-      this.draw(info, renderPass, renderPipeline);
+      this.draw(info, renderPass, this.pipeline);
    }
 
    public void drawFromBufferOit(final StagedVertexBuffer.ExecuteInfo info, final OitStage stage, final RenderPass renderPass) {
@@ -47,7 +44,7 @@ public record PreparedRenderType(String name, RenderPipeline pipeline, @Nullable
       renderPass.setVertexBuffer(0, info.vertexBuffer().slice());
 
       for(Texture texture : this.textures) {
-         renderPass.bindTexture(texture.name, texture.textureView, texture.sampler);
+         renderPass.setUniform(texture.name, texture.textureView, texture.sampler);
       }
 
       renderPass.setIndexBuffer(indexBuffer, info.indexType());

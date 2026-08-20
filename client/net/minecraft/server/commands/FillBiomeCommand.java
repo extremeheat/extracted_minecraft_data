@@ -38,7 +38,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 public class FillBiomeCommand {
    public static final SimpleCommandExceptionType ERROR_NOT_LOADED = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
    private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType((max, count) -> Component.translatableEscape("commands.fillbiome.toobig", max, count));
-   private static final SimpleCommandExceptionType ERROR_NO_BIOMES_SET = new SimpleCommandExceptionType(Component.translatable("commands.fillbiome.no_changes"));
+   public static final SimpleCommandExceptionType ERROR_NO_BIOMES_SET = new SimpleCommandExceptionType(Component.translatable("commands.fillbiome.no_changes"));
 
    public FillBiomeCommand() {
       super();
@@ -57,7 +57,7 @@ public class FillBiomeCommand {
    }
 
    private static BiomeResolver makeResolver(final MutableInt count, final ChunkAccess chunk, final BoundingBox region, final Holder<Biome> toFill, final Predicate<Holder<Biome>> filter) {
-      return (quartX, quartY, quartZ, var8) -> {
+      return (quartX, quartY, quartZ) -> {
          int blockX = QuartPos.toBlock(quartX);
          int blockY = QuartPos.toBlock(quartY);
          int blockZ = QuartPos.toBlock(quartZ);
@@ -107,7 +107,7 @@ public class FillBiomeCommand {
          while(iterator.hasNext()) {
             ChunkAccess chunk = (ChunkAccess)iterator.next();
             int previousChangedCount = changedCount.intValue();
-            chunk.fillBiomesFromNoise(makeResolver(changedCount, chunk, region, biome, filter), level.getChunkSource().randomState().sampler());
+            chunk.fillBiomesFromNoise(makeResolver(changedCount, chunk, region, biome, filter));
             if (previousChangedCount != changedCount.intValue()) {
                chunk.markUnsaved();
             } else {

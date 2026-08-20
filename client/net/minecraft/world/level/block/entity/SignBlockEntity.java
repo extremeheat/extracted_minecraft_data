@@ -5,10 +5,14 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -22,6 +26,7 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -39,10 +44,13 @@ public class SignBlockEntity extends BlockEntity {
    private static final int MAX_TEXT_LINE_WIDTH = 90;
    private static final int TEXT_LINE_HEIGHT = 10;
    private static final boolean DEFAULT_IS_WAXED = false;
+   private static final boolean DEFAULT_ALLOW_OP_FEATURES = false;
+   private static final Component CLICK_ACTIONS_DISABLED;
    private @Nullable UUID playerWhoMayEdit;
    private SignText frontText;
    private SignText backText;
    private boolean isWaxed;
+   private boolean allowOpFeatures;
 
    public SignBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       this(BlockEntityTypes.SIGN, worldPosition, blockState);
@@ -50,16 +58,13 @@ public class SignBlockEntity extends BlockEntity {
 
    public SignBlockEntity(final BlockEntityType<? extends SignBlockEntity> type, final BlockPos worldPosition, final BlockState blockState) {
       super(type, worldPosition, blockState);
+      this.frontText = SignText.EMPTY;
+      this.backText = SignText.EMPTY;
       this.isWaxed = false;
-      this.frontText = this.createDefaultSignText();
-      this.backText = this.createDefaultSignText();
+      this.allowOpFeatures = false;
    }
 
-   protected SignText createDefaultSignText() {
-      return new SignText();
-   }
-
-   public boolean isFacingFrontText(final Player player) {
+   public SignTextSlot getSlotPlayerIsFacing(final Player player) {
       Block var3 = this.getBlockState().getBlock();
       if (var3 instanceof SignBlock sign) {
          Vec3 signPositionOffset = sign.getSignHitboxCenterPosition(this.getBlockState());
@@ -67,22 +72,21 @@ public class SignBlockEntity extends BlockEntity {
          double zd = player.getZ() - ((double)this.getBlockPos().getZ() + signPositionOffset.z);
          float signYRot = sign.getYRotationDegrees(this.getBlockState());
          float playerYRot = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-         return Mth.degreesDifferenceAbs(signYRot, playerYRot) <= 90.0F;
+         return Mth.degreesDifferenceAbs(signYRot, playerYRot) <= 90.0F ? SignTextSlot.FRONT : SignTextSlot.BACK;
       } else {
-         return false;
+         return SignTextSlot.FRONT;
       }
    }
 
-   public SignText getText(final boolean isFrontText) {
-      return isFrontText ? this.frontText : this.backText;
-   }
+   public SignText getText(final SignTextSlot slot) {
+      SignText var10000;
+      switch (slot) {
+         case FRONT -> var10000 = this.frontText;
+         case BACK -> var10000 = this.backText;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
 
-   public SignText getFrontText() {
-      return this.frontText;
-   }
-
-   public SignText getBackText() {
-      return this.backText;
+      return var10000;
    }
 
    public int getTextLineHeight() {
@@ -95,29 +99,28 @@ public class SignBlockEntity extends BlockEntity {
 
    protected void saveAdditional(final ValueOutput output) {
       super.saveAdditional(output);
-      output.store("front_text", SignText.DIRECT_CODEC, this.frontText);
-      output.store("back_text", SignText.DIRECT_CODEC, this.backText);
+      if (this.allowOpFeatures) {
+         output.putBoolean("allow_op_features", this.allowOpFeatures);
+      }
+
+      output.store("front_text", SignText.CODEC, this.frontText);
+      output.store("back_text", SignText.CODEC, this.backText);
       output.putBoolean("is_waxed", this.isWaxed);
    }
 
    protected void loadAdditional(final ValueInput input) {
       super.loadAdditional(input);
-      this.frontText = (SignText)input.read("front_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
-      this.backText = (SignText)input.read("back_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
+      this.allowOpFeatures = input.getBooleanOr("allow_op_features", false);
+      this.frontText = (SignText)input.read("front_text", SignText.CODEC).map(this::resolveLines).orElse(SignText.EMPTY);
+      this.backText = (SignText)input.read("back_text", SignText.CODEC).map(this::resolveLines).orElse(SignText.EMPTY);
       this.isWaxed = input.getBooleanOr("is_waxed", false);
    }
 
-   private SignText loadLines(SignText data) {
-      for(int i = 0; i < 4; ++i) {
-         Component unfilteredMessage = this.loadLine(data.getMessage(i, false));
-         Component filteredMessage = this.loadLine(data.getMessage(i, true));
-         data = data.setMessage(i, unfilteredMessage, filteredMessage);
-      }
-
-      return data;
+   private SignText resolveLines(final SignText data) {
+      return !this.allowOpFeatures ? data : data.asMutable().modifyLines(this::resolveLine).asImmutable();
    }
 
-   private Component loadLine(final Component component) {
+   private Component resolveLine(final Component component) {
       Level var3 = this.level;
       if (var3 instanceof ServerLevel serverLevel) {
          try {
@@ -129,9 +132,9 @@ public class SignBlockEntity extends BlockEntity {
       return component;
    }
 
-   public void updateSignText(final Player player, final boolean frontText, final List<FilteredText> lines) {
+   public void updateSignText(final Player player, final SignTextSlot slot, final List<FilteredText> lines) {
       if (!this.isWaxed() && player.getUUID().equals(this.getPlayerWhoMayEdit()) && this.level != null) {
-         this.updateText((text) -> this.setMessages(player, lines, text), frontText);
+         this.updateText((text) -> updateMessages(lines, text, player.isTextFilteringEnabled()), slot);
          this.setAllowedPlayerEditor((UUID)null);
          this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
       } else {
@@ -139,83 +142,90 @@ public class SignBlockEntity extends BlockEntity {
       }
    }
 
-   public boolean updateText(final UnaryOperator<SignText> function, final boolean isFrontText) {
-      SignText text = this.getText(isFrontText);
-      return this.setText((SignText)function.apply(text), isFrontText);
+   public boolean updateText(final UnaryOperator<SignText> function, final SignTextSlot slot) {
+      SignText currentText = this.getText(slot);
+      SignText newText = (SignText)function.apply(currentText);
+      if (currentText != newText) {
+         this.setText(newText, slot);
+         return true;
+      } else {
+         return false;
+      }
    }
 
-   private SignText setMessages(final Player player, final List<FilteredText> lines, SignText text) {
-      for(int i = 0; i < lines.size(); ++i) {
-         FilteredText line = (FilteredText)lines.get(i);
-         Style currentTextStyle = text.getMessage(i, player.isTextFilteringEnabled()).getStyle();
-         if (player.isTextFilteringEnabled()) {
-            text = text.setMessage(i, Component.literal(line.filteredOrEmpty()).setStyle(currentTextStyle));
+   private static SignText updateMessages(final List<FilteredText> newLines, final SignText originalText, final boolean shouldFilter) {
+      SignText.Mutable result = originalText.asMutable();
+      List<Component> originalLines = originalText.getMessages(shouldFilter);
+
+      for(int i = 0; i < newLines.size(); ++i) {
+         FilteredText line = (FilteredText)newLines.get(i);
+         Style currentTextStyle = ((Component)originalLines.get(i)).getStyle();
+         if (shouldFilter) {
+            result.setLine(i, Component.literal(line.filteredOrEmpty()).setStyle(currentTextStyle));
          } else {
-            text = text.setMessage(i, Component.literal(line.raw()).setStyle(currentTextStyle), Component.literal(line.filteredOrEmpty()).setStyle(currentTextStyle));
+            result.setLine(i, Component.literal(line.raw()).setStyle(currentTextStyle), Component.literal(line.filteredOrEmpty()).setStyle(currentTextStyle));
          }
       }
 
-      return text;
+      return result.asImmutable();
    }
 
-   public boolean setText(final SignText text, final boolean isFrontText) {
-      return isFrontText ? this.setFrontText(text) : this.setBackText(text);
-   }
-
-   private boolean setBackText(final SignText text) {
-      if (text != this.backText) {
-         this.backText = text;
-         this.markUpdated();
-         return true;
-      } else {
-         return false;
+   public void setText(final SignText text, final SignTextSlot slot) {
+      switch (slot) {
+         case FRONT -> this.frontText = text;
+         case BACK -> this.backText = text;
       }
+
+      this.markUpdated();
    }
 
-   private boolean setFrontText(final SignText text) {
-      if (text != this.frontText) {
-         this.frontText = text;
-         this.markUpdated();
-         return true;
-      } else {
-         return false;
-      }
+   public boolean canExecuteClickCommands(final SignTextSlot slot, final Player player) {
+      return this.isWaxed() && this.getText(slot).hasAnyClickCommands(player.isTextFilteringEnabled());
    }
 
-   public boolean canExecuteClickCommands(final boolean isFrontText, final Player player) {
-      return this.isWaxed() && this.getText(isFrontText).hasAnyClickCommands(player);
-   }
-
-   public boolean executeClickCommandsIfPresent(final ServerLevel level, final Player player, final BlockPos pos, final boolean isFrontText) {
+   public boolean executeClickCommandsIfPresent(final ServerLevel level, final Player player, final BlockPos pos, final SignTextSlot slot) {
       boolean hasAnyClickCommand = false;
 
-      for(Component message : this.getText(isFrontText).getMessages(player.isTextFilteringEnabled())) {
+      for(Component message : this.getText(slot).getMessages(player.isTextFilteringEnabled())) {
          Style style = message.getStyle();
          ClickEvent event = style.getClickEvent();
-         byte var13 = 0;
-         //$FF: var13->value
+         byte var11 = 0;
+         //$FF: var11->value
          //0->net/minecraft/network/chat/ClickEvent$RunCommand
          //1->net/minecraft/network/chat/ClickEvent$ShowDialog
          //2->net/minecraft/network/chat/ClickEvent$Custom
-         switch (event.typeSwitch<invokedynamic>(event, var13)) {
+         switch (event.typeSwitch<invokedynamic>(event, var11)) {
             case -1:
             default:
                break;
             case 0:
                ClickEvent.RunCommand command = (ClickEvent.RunCommand)event;
-               level.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(player, level, pos), command.command());
+               if (this.allowOpFeatures) {
+                  level.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(player, level, pos), command.command());
+               }
+
                hasAnyClickCommand = true;
                break;
             case 1:
                ClickEvent.ShowDialog dialog = (ClickEvent.ShowDialog)event;
-               player.openDialog(dialog.dialog());
+               if (this.allowOpFeatures) {
+                  player.openDialog(dialog.dialog());
+               }
+
                hasAnyClickCommand = true;
                break;
             case 2:
                ClickEvent.Custom custom = (ClickEvent.Custom)event;
-               level.getServer().handleCustomClickAction(custom.id(), custom.payload());
+               if (this.allowOpFeatures) {
+                  level.getServer().handleCustomClickAction(custom.id(), custom.payload());
+               }
+
                hasAnyClickCommand = true;
          }
+      }
+
+      if (!this.allowOpFeatures && hasAnyClickCommand) {
+         player.sendOverlayMessage(CLICK_ACTIONS_DISABLED);
       }
 
       return hasAnyClickCommand;
@@ -284,5 +294,33 @@ public class SignBlockEntity extends BlockEntity {
 
    public SoundEvent getSignInteractionFailedSoundEvent() {
       return SoundEvents.WAXED_SIGN_INTERACT_FAIL;
+   }
+
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.frontText = (SignText)components.getOrDefault(DataComponents.SIGN_TEXT_FRONT, SignText.EMPTY);
+      this.backText = (SignText)components.getOrDefault(DataComponents.SIGN_TEXT_BACK, SignText.EMPTY);
+      this.isWaxed = components.get(DataComponents.WAXED) != null;
+   }
+
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.SIGN_TEXT_FRONT, this.frontText);
+      components.set(DataComponents.SIGN_TEXT_BACK, this.backText);
+      if (this.isWaxed) {
+         components.set(DataComponents.WAXED, Unit.INSTANCE);
+      }
+
+   }
+
+   public void removeComponentsFromTag(final ValueOutput output) {
+      super.removeComponentsFromTag(output);
+      output.discard("front_text");
+      output.discard("back_text");
+      output.discard("is_waxed");
+   }
+
+   static {
+      CLICK_ACTIONS_DISABLED = Component.translatable("sign.click_actions_disabled").withStyle(ChatFormatting.RED);
    }
 }

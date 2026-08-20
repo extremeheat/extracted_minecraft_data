@@ -30,9 +30,6 @@ public abstract class GlDebugLabel {
    public void applyLabel(final GlProgram program) {
    }
 
-   public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
-   }
-
    public void pushDebugGroup(final Supplier<String> label) {
    }
 
@@ -86,15 +83,11 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(final GlShaderModule shaderModule) {
-         KHRDebug.glObjectLabel(33505, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getDebugLabel(), this.maxLabelLength, true));
+         KHRDebug.glObjectLabel(33505, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getLabel(), this.maxLabelLength, true));
       }
 
       public void applyLabel(final GlProgram program) {
          KHRDebug.glObjectLabel(33506, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), this.maxLabelLength, true));
-      }
-
-      public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
-         KHRDebug.glObjectLabel(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.formatName, this.maxLabelLength, true));
       }
 
       public void pushDebugGroup(final Supplier<String> label) {
@@ -127,15 +120,11 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(final GlShaderModule shaderModule) {
-         EXTDebugLabel.glLabelObjectEXT(35656, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getDebugLabel(), 256, true));
+         EXTDebugLabel.glLabelObjectEXT(35656, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getLabel(), 256, true));
       }
 
       public void applyLabel(final GlProgram program) {
          EXTDebugLabel.glLabelObjectEXT(35648, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), 256, true));
-      }
-
-      public void applyLabel(final VertexArrayCache.VertexArray vertexArray) {
-         EXTDebugLabel.glLabelObjectEXT(32884, vertexArray.id, StringUtil.truncateStringIfNecessary(vertexArray.formatName, 256, true));
       }
 
       public boolean exists() {

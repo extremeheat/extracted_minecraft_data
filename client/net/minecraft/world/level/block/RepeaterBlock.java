@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class RepeaterBlock extends DiodeBlock {
    public static final BooleanProperty LOCKED;
@@ -51,6 +53,11 @@ public class RepeaterBlock extends DiodeBlock {
       } else {
          return !level.isClientSide() && directionToNeighbour.getAxis() != ((Direction)state.getValue(FACING)).getAxis() ? (BlockState)state.setValue(LOCKED, this.isLocked(level, pos, state)) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       }
+   }
+
+   protected boolean shouldRedstoneWireConnectTo(final BlockState state, final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+      Direction repeaterDirection = (Direction)state.getValue(FACING);
+      return repeaterDirection == direction || repeaterDirection.getOpposite() == direction;
    }
 
    public boolean isLocked(final LevelReader level, final BlockPos pos, final BlockState state) {

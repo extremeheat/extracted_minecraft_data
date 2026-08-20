@@ -57,16 +57,16 @@ public class BlockModelLighter {
       int light3 = this.cache.getLightCoords(state3, level, pos);
       float shade3 = this.cache.getShadeBrightness(state3, level, pos);
       BlockState corner0 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[0]).move(direction));
-      boolean translucent0 = !corner0.isViewBlocking(level, pos) || corner0.getLightDampening() == 0;
+      boolean lightPermeable0 = corner0.isLightPermeable();
       BlockState corner1 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[1]).move(direction));
-      boolean translucent1 = !corner1.isViewBlocking(level, pos) || corner1.getLightDampening() == 0;
+      boolean lightPermeable1 = corner1.isLightPermeable();
       BlockState corner2 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[2]).move(direction));
-      boolean translucent2 = !corner2.isViewBlocking(level, pos) || corner2.getLightDampening() == 0;
+      boolean lightPermeable2 = corner2.isLightPermeable();
       BlockState corner3 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[3]).move(direction));
-      boolean translucent3 = !corner3.isViewBlocking(level, pos) || corner3.getLightDampening() == 0;
+      boolean lightPermeable3 = corner3.isLightPermeable();
       float shadeCorner02;
       int lightCorner02;
-      if (!translucent2 && !translucent0) {
+      if (!lightPermeable2 && !lightPermeable0) {
          shadeCorner02 = shade0;
          lightCorner02 = light0;
       } else {
@@ -78,7 +78,7 @@ public class BlockModelLighter {
 
       float shadeCorner03;
       int lightCorner03;
-      if (!translucent3 && !translucent0) {
+      if (!lightPermeable3 && !lightPermeable0) {
          shadeCorner03 = shade0;
          lightCorner03 = light0;
       } else {
@@ -90,7 +90,7 @@ public class BlockModelLighter {
 
       float shadeCorner12;
       int lightCorner12;
-      if (!translucent2 && !translucent1) {
+      if (!lightPermeable2 && !lightPermeable1) {
          shadeCorner12 = shade0;
          lightCorner12 = light0;
       } else {
@@ -102,7 +102,7 @@ public class BlockModelLighter {
 
       float shadeCorner13;
       int lightCorner13;
-      if (!translucent3 && !translucent1) {
+      if (!lightPermeable3 && !lightPermeable1) {
          shadeCorner13 = shade0;
          lightCorner13 = light0;
       } else {

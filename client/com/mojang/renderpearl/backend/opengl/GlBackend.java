@@ -1,18 +1,22 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.GLFWErrorCapture;
-import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.renderpearl.api.device.BackendCreationException;
 import com.mojang.renderpearl.api.device.GpuBackend;
 import com.mojang.renderpearl.api.device.GpuDebugOptions;
 import com.mojang.renderpearl.api.device.GpuDevice;
-import java.util.Locale;
+import com.mojang.renderpearl.frontend.FrontendGpuDevice;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.sdl.SDLError;
+import org.lwjgl.sdl.SDLVideo;
+import org.lwjgl.system.SharedLibrary;
 
 public class GlBackend implements GpuBackend {
    private static final int VERSION_MAJOR = 3;
    private static final int VERSION_MINOR = 3;
+   private boolean libraryLoaded;
+   private @Nullable BackendCreationException libraryLoadFailure;
 
    public GlBackend() {
       super();
@@ -22,34 +26,40 @@ public class GlBackend implements GpuBackend {
       return "OpenGL";
    }
 
-   public void setWindowHints() {
-      GLFW.glfwWindowHint(139265, 196609);
-      GLFW.glfwWindowHint(139275, 221185);
-      GLFW.glfwWindowHint(139266, 3);
-      GLFW.glfwWindowHint(139267, 3);
-      GLFW.glfwWindowHint(139272, 204801);
-      GLFW.glfwWindowHint(139270, 1);
-   }
-
-   public void handleWindowCreationErrors(final GLFWErrorCapture.@Nullable Error error) throws BackendCreationException {
-      if (error != null) {
-         if (error.error() == 65542) {
-            throw new BackendCreationException("Driver does not support OpenGL", BackendCreationException.Reason.OPENGL_MISSING);
-         } else if (error.error() == 65543) {
-            throw new BackendCreationException("Driver does not support OpenGL 3.3", BackendCreationException.Reason.OPENGL_MISSING);
+   public void loadLibrary() throws BackendCreationException {
+      if (!this.libraryLoaded) {
+         if (this.libraryLoadFailure != null) {
+            throw this.libraryLoadFailure;
+         } else if (!SDLVideo.SDL_GL_LoadLibrary(((SharedLibrary)GL.getFunctionProvider()).getPath())) {
+            this.libraryLoadFailure = new BackendCreationException("OpenGL is not supported: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.OPENGL_MISSING);
+            throw this.libraryLoadFailure;
+         } else if (GL.getFunctionProvider().getFunctionAddress("glGetError") != SDLVideo.SDL_GL_GetProcAddress("glGetError")) {
+            this.libraryLoadFailure = new BackendCreationException("glGetError mismatch", BackendCreationException.Reason.OPENGL_MISSING);
+            SDLVideo.SDL_GL_UnloadLibrary();
+            throw this.libraryLoadFailure;
          } else {
-            throw new BackendCreationException(String.format(Locale.ROOT, "GLFW_ERROR: 0x%X", error.error()), BackendCreationException.Reason.OPENGL_MISSING);
+            this.libraryLoaded = true;
          }
-      } else {
-         throw new BackendCreationException("Failed to create window with OpenGL context", BackendCreationException.Reason.OPENGL_MISSING);
       }
    }
 
-   public GpuDevice createDevice(final long window, final GpuDebugOptions debugOptions) {
-      if (MacosUtil.IS_MACOS) {
-         MacosUtil.setWindowColorSpaceForOpenGLBecauseGLFWDoesnt(window);
+   public void unloadLibrary() {
+      if (this.libraryLoaded) {
+         SDLVideo.SDL_GL_UnloadLibrary();
+         this.libraryLoaded = false;
       }
+   }
 
-      return new GpuDevice(new GlDevice(window, debugOptions));
+   public long createWindow(final @Nullable String title, final int width, final int height, final long flags) {
+      SDLVideo.SDL_GL_SetAttribute(17, 3);
+      SDLVideo.SDL_GL_SetAttribute(18, 3);
+      SDLVideo.SDL_GL_SetAttribute(20, 1);
+      SDLVideo.SDL_GL_SetAttribute(19, 2);
+      SDLVideo.SDL_GL_SetAttribute(22, 1);
+      return SDLVideo.SDL_CreateWindow(title, width, height, 2L | flags);
+   }
+
+   public GpuDevice createDevice(final GpuDebugOptions debugOptions) throws BackendCreationException {
+      return new FrontendGpuDevice(new GlDevice(this, debugOptions));
    }
 }

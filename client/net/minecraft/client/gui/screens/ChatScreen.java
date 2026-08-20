@@ -122,7 +122,7 @@ public class ChatScreen extends Screen {
    public boolean keyPressed(final KeyEvent event) {
       if (this.commandSuggestions.keyPressed(event)) {
          return true;
-      } else if (this.isDraft && event.key() == 259) {
+      } else if (this.isDraft && event.shortcutKey() == 8) {
          this.input.setValue("");
          this.isDraft = false;
          return true;
@@ -144,14 +144,24 @@ public class ChatScreen extends Screen {
             return true;
          }
       } else {
-         switch (event.key()) {
-            case 264 -> this.moveInHistory(1);
-            case 265 -> this.moveInHistory(-1);
-            case 266 -> this.minecraft.gui.hud.getChat().scrollChat(this.minecraft.gui.hud.getChat().getLinesPerPage() - 1);
-            case 267 -> this.minecraft.gui.hud.getChat().scrollChat(-this.minecraft.gui.hud.getChat().getLinesPerPage() + 1);
-            default -> {
+         switch (event.shortcutKey()) {
+            case 1073741899:
+               this.minecraft.gui.hud.getChat().scrollChat(this.minecraft.gui.hud.getChat().getLinesPerPage() - 1);
+               break;
+            case 1073741900:
+            case 1073741901:
+            case 1073741903:
+            case 1073741904:
+            default:
                return false;
-            }
+            case 1073741902:
+               this.minecraft.gui.hud.getChat().scrollChat(-this.minecraft.gui.hud.getChat().getLinesPerPage() + 1);
+               break;
+            case 1073741905:
+               this.moveInHistory(1);
+               break;
+            case 1073741906:
+               this.moveInHistory(-1);
          }
 
          return true;
@@ -176,7 +186,7 @@ public class ChatScreen extends Screen {
       if (this.commandSuggestions.mouseClicked(event)) {
          return true;
       } else {
-         if (event.button() == 0) {
+         if (event.button() == 1) {
             int screenHeight = this.minecraft.getWindow().getGuiScaledHeight();
             ActiveTextCollector.ClickableStyleFinder finder = (new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)event.x(), (int)event.y())).includeInsertions(this.insertionClickMode());
             this.minecraft.gui.hud.getChat().captureClickableText(finder, screenHeight, this.minecraft.gui.hud.getGuiTicks(), this.displayMode);

@@ -2,12 +2,14 @@ package net.minecraft.network.chat;
 
 import com.google.common.primitives.Ints;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.SignatureUpdater;
 
 public record LastSeenMessages(List<MessageSignature> entries) {
@@ -50,17 +52,10 @@ public record LastSeenMessages(List<MessageSignature> entries) {
 
    public static record Packed(List<MessageSignature.Packed> entries) {
       public static final Packed EMPTY = new Packed(List.of());
-
-      public Packed(final FriendlyByteBuf input) {
-         this((List)input.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 20), MessageSignature.Packed::read));
-      }
+      public static final StreamCodec<ByteBuf, Packed> STREAM_CODEC;
 
       public Packed {
          super();
-      }
-
-      public void write(final FriendlyByteBuf output) {
-         output.writeCollection(this.entries, MessageSignature.Packed::write);
       }
 
       public Optional<LastSeenMessages> unpack(final MessageSignatureCache cache) {
@@ -77,27 +72,26 @@ public record LastSeenMessages(List<MessageSignature> entries) {
 
          return Optional.of(new LastSeenMessages(unpacked));
       }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(MessageSignature.Packed.STREAM_CODEC.apply(ByteBufCodecs.list(20)), Packed::entries, Packed::new);
+      }
    }
 
    public static record Update(int offset, BitSet acknowledged, byte checksum) {
       public static final byte IGNORE_CHECKSUM = 0;
-
-      public Update(final FriendlyByteBuf input) {
-         this(input.readVarInt(), input.readFixedBitSet(20), input.readByte());
-      }
+      public static final StreamCodec<ByteBuf, Update> STREAM_CODEC;
 
       public Update {
          super();
       }
 
-      public void write(final FriendlyByteBuf output) {
-         output.writeVarInt(this.offset);
-         output.writeFixedBitSet(this.acknowledged, 20);
-         output.writeByte(this.checksum);
-      }
-
       public boolean verifyChecksum(final LastSeenMessages lastSeen) {
          return this.checksum == 0 || this.checksum == lastSeen.computeChecksum();
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Update::offset, ByteBufCodecs.fixedBitSet(20), Update::acknowledged, ByteBufCodecs.BYTE, Update::checksum, Update::new);
       }
    }
 }

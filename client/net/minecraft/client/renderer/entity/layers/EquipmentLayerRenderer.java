@@ -37,7 +37,7 @@ public class EquipmentLayerRenderer {
       super();
       this.equipmentAssets = equipmentAssets;
       this.layerTextureLookup = Util.memoize((Function)((key) -> key.layer.getTextureLocation(key.layerType)));
-      this.trimTextureLookup = Util.memoize((Function)((key) -> palettedTextures.getOrPrepare(key.baseTexture(), key.paletteId())));
+      this.trimTextureLookup = Util.memoize((Function)((key) -> key.getOrPrepareTexture(palettedTextures)));
    }
 
    public <S> void renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int outlineColor) {
@@ -98,16 +98,40 @@ public class EquipmentLayerRenderer {
          super();
       }
 
-      public Identifier baseTexture() {
-         return ((TrimPattern)this.trim.pattern().value()).assetId().withPath((UnaryOperator)((path) -> {
+      private PalettedTextureManager.Handle getOrPrepareTexture(final PalettedTextureManager palettedTextures) {
+         Identifier textureId = ((TrimPattern)this.trim.pattern().value()).assetId();
+         Identifier paletteId = ((TrimMaterial)this.trim.material().value()).paletteId();
+
+         for(EquipmentClientInfo.TrimOverride override : this.equipmentInfo.trimOverrides()) {
+            if (override.predicate().matches(this.trim)) {
+               textureId = (Identifier)override.textureId().orElse(textureId);
+               paletteId = (Identifier)override.paletteId().orElse((Object)null);
+               break;
+            }
+         }
+
+         Identifier baseTexture = textureId.withPath((UnaryOperator)((path) -> {
             String var10000 = this.layerType.trimAssetPrefix();
             return var10000 + "/" + path;
          }));
+         return paletteId == null ? createTextureWithNoPalette(baseTexture) : palettedTextures.getOrPrepare(baseTexture, paletteId);
       }
 
-      public Identifier paletteId() {
-         Identifier paletteId = ((TrimMaterial)this.trim.material().value()).paletteId();
-         return (Identifier)this.equipmentInfo.trimPaletteReplacements().getOrDefault(paletteId, paletteId);
+      private static PalettedTextureManager.Handle createTextureWithNoPalette(final Identifier texture) {
+         final Identifier textureLocation = texture.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"));
+         return new PalettedTextureManager.Handle() {
+            public Identifier textureLocation() {
+               return textureLocation;
+            }
+
+            public float getU(final float offset) {
+               return offset;
+            }
+
+            public float getV(final float offset) {
+               return offset;
+            }
+         };
       }
    }
 }

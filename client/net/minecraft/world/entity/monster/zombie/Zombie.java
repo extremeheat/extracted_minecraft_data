@@ -22,6 +22,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.ConversionTracker;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
@@ -64,6 +65,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -83,24 +85,21 @@ public class Zombie extends Monster {
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
    public static final int REINFORCEMENT_RANGE_MIN = 7;
-   private static final int NOT_CONVERTING = -1;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final float BREAK_DOOR_CHANCE = 0.1F;
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE;
    private static final boolean DEFAULT_BABY = false;
    private static final boolean DEFAULT_CAN_BREAK_DOORS = false;
-   private static final int DEFAULT_IN_WATER_TIME = 0;
    private static final float RANGED_MODE_DISTANCE_SQR = 9.0F;
    private final BreakDoorGoal breakDoorGoal;
    private boolean canBreakDoors;
-   private int inWaterTime;
-   private int conversionTime;
+   private final ConversionTracker<Zombie> drowningTracker;
 
    public Zombie(final EntityType<? extends Zombie> type, final Level level) {
       super(type, level);
       this.breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
       this.canBreakDoors = false;
-      this.inWaterTime = 0;
+      this.drowningTracker = new ConversionTracker<Zombie>(this, DATA_DROWNED_CONVERSION_ID, this::convertsToWhenDrowning, this::getConversionSound, () -> this.isEyeInFluid(FluidTags.WATER), "InWaterTime", 600, "DrownedConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
    }
 
    public Zombie(final Level level) {
@@ -138,7 +137,7 @@ public class Zombie extends Monster {
    }
 
    public boolean isUnderWaterConverting() {
-      return (Boolean)this.getEntityData().get(DATA_DROWNED_CONVERSION_ID);
+      return this.drowningTracker.isConverting();
    }
 
    public boolean canBreakDoors() {
@@ -204,45 +203,11 @@ public class Zombie extends Monster {
    }
 
    public void tick() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel serverLevel) {
-         if (this.isAlive() && !this.isNoAi()) {
-            if (this.isUnderWaterConverting()) {
-               --this.conversionTime;
-               if (this.conversionTime < 0) {
-                  this.doUnderWaterConversion(serverLevel);
-               }
-            } else if (this.convertsInWater()) {
-               if (this.isEyeInFluid(FluidTags.WATER)) {
-                  ++this.inWaterTime;
-                  if (this.inWaterTime >= 600) {
-                     this.startUnderWaterConversion(300);
-                  }
-               } else {
-                  this.inWaterTime = -1;
-               }
-            }
-         }
-      }
-
       super.tick();
-   }
-
-   private void startUnderWaterConversion(final int time) {
-      this.conversionTime = time;
-      this.getEntityData().set(DATA_DROWNED_CONVERSION_ID, true);
-   }
-
-   protected void doUnderWaterConversion(final ServerLevel level) {
-      this.convertToZombieType(level, EntityTypes.DROWNED);
-      if (!this.isSilent()) {
-         level.levelEvent((Entity)null, 1040, this.blockPosition(), 0);
+      if (this.convertsInWater()) {
+         this.drowningTracker.tick();
       }
 
-   }
-
-   protected void convertToZombieType(final ServerLevel level, final EntityType<? extends Zombie> zombieType) {
-      this.convertTo(zombieType, ConversionParams.single(this, true, true), (newZombie) -> newZombie.handleAttributes(level.getCurrentDifficultyAt(newZombie.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
    }
 
    @VisibleForTesting
@@ -340,6 +305,14 @@ public class Zombie extends Monster {
       return SoundEvents.ZOMBIE_STEP;
    }
 
+   protected @LevelEvent.Value int getConversionSound() {
+      return 1040;
+   }
+
+   protected EntityType<? extends Zombie> convertsToWhenDrowning() {
+      return EntityTypes.DROWNED;
+   }
+
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(this.getStepSound(), 0.15F, 1.0F);
    }
@@ -371,22 +344,14 @@ public class Zombie extends Monster {
       super.addAdditionalSaveData(output);
       output.putBoolean("IsBaby", this.isBaby());
       output.putBoolean("CanBreakDoors", this.canBreakDoors());
-      output.putInt("InWaterTime", this.isInWater() ? this.inWaterTime : -1);
-      output.putInt("DrownedConversionTime", this.isUnderWaterConverting() ? this.conversionTime : -1);
+      this.drowningTracker.addAdditionalSaveData(output);
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       this.setBaby(input.getBooleanOr("IsBaby", false));
       this.setCanBreakDoors(input.getBooleanOr("CanBreakDoors", false));
-      this.inWaterTime = input.getIntOr("InWaterTime", 0);
-      int conversionTime = input.getIntOr("DrownedConversionTime", -1);
-      if (conversionTime != -1) {
-         this.startUnderWaterConversion(conversionTime);
-      } else {
-         this.getEntityData().set(DATA_DROWNED_CONVERSION_ID, false);
-      }
-
+      this.drowningTracker.readAdditionalSaveData(input);
    }
 
    public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
@@ -479,12 +444,12 @@ public class Zombie extends Monster {
 
    @VisibleForTesting
    public void setInWaterTime(final int inWaterTime) {
-      this.inWaterTime = inWaterTime;
+      this.drowningTracker.setAfflictionTime(inWaterTime);
    }
 
    @VisibleForTesting
    public void setConversionTime(final int conversionTime) {
-      this.conversionTime = conversionTime;
+      this.drowningTracker.setConversionTime(conversionTime);
    }
 
    public static boolean getSpawnAsBabyOdds(final RandomSource random) {

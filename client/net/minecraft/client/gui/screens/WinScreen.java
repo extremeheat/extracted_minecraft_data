@@ -89,12 +89,12 @@ public class WinScreen extends Screen {
    public boolean keyPressed(final KeyEvent event) {
       if (event.isUp()) {
          this.direction = -1;
-      } else if (event.key() != 341 && event.key() != 345) {
-         if (event.key() == 32) {
+      } else if (event.shortcutKey() != 1073742048 && event.shortcutKey() != 1073742052) {
+         if (event.shortcutKey() == 32) {
             this.speedupActive = true;
          }
       } else {
-         this.speedupModifiers.add(event.key());
+         this.speedupModifiers.add(event.shortcutKey());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();
@@ -106,10 +106,10 @@ public class WinScreen extends Screen {
          this.direction = 1;
       }
 
-      if (event.key() == 32) {
+      if (event.shortcutKey() == 32) {
          this.speedupActive = false;
-      } else if (event.key() == 341 || event.key() == 345) {
-         this.speedupModifiers.remove(event.key());
+      } else if (event.shortcutKey() == 1073742048 || event.shortcutKey() == 1073742052) {
+         this.speedupModifiers.remove(event.shortcutKey());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();

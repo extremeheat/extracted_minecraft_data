@@ -68,7 +68,7 @@ public class CubeMap implements AutoCloseable {
          renderPass.setIndexBuffer(indexBuffer, indices.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          AbstractTexture texture = minecraft.getTextureManager().getTexture(this.location);
-         renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+         renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
          renderPass.drawIndexed(36, 1, 0, 0, 0);
       }
 

@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
@@ -73,7 +74,7 @@ public class FlowerPotBlock extends Block {
       } else {
          ItemStack plant = new ItemStack(this.potted);
          if (!player.addItem(plant)) {
-            player.drop(plant, false);
+            player.drop(plant, false, Prediction.PREDICTED);
          }
 
          level.setBlockAndUpdate(pos, Blocks.FLOWER_POT.defaultBlockState());

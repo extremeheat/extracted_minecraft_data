@@ -19,7 +19,7 @@ public record NoiseBasedCountPlacement(int noiseToCountRatio, double noiseFactor
    }
 
    public int count(final RandomSource random, final BlockPos origin) {
-      double flowerNoise = Biome.BIOME_INFO_NOISE.getValue((double)origin.getX() / this.noiseFactor, (double)origin.getZ() / this.noiseFactor, false);
+      double flowerNoise = (double)Biome.BIOME_INFO_NOISE.get((double)origin.getX() / this.noiseFactor, (double)origin.getZ() / this.noiseFactor);
       return (int)Math.ceil((flowerNoise + this.noiseOffset) * (double)this.noiseToCountRatio);
    }
 

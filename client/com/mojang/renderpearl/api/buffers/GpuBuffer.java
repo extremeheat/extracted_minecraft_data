@@ -1,61 +1,46 @@
 package com.mojang.renderpearl.api.buffers;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-public abstract class GpuBuffer implements AutoCloseable {
-   public static final int USAGE_MAP_READ = 1;
-   public static final int USAGE_MAP_WRITE = 2;
-   public static final int USAGE_HINT_CLIENT_STORAGE = 4;
-   public static final int USAGE_COPY_DST = 8;
-   public static final int USAGE_COPY_SRC = 16;
-   public static final int USAGE_VERTEX = 32;
-   public static final int USAGE_INDEX = 64;
-   public static final int USAGE_UNIFORM = 128;
-   public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
-   public static final int USAGE_INDIRECT_PARAMETERS = 512;
-   private final @GpuBuffer.Usage int usage;
-   private final long size;
-   private final GpuBufferSlice defaultSlice;
+public interface GpuBuffer extends UncheckedAutoCloseable {
+   int USAGE_MAP_READ = 1;
+   int USAGE_MAP_WRITE = 2;
+   int USAGE_HINT_CLIENT_STORAGE = 4;
+   int USAGE_COPY_DST = 8;
+   int USAGE_COPY_SRC = 16;
+   int USAGE_VERTEX = 32;
+   int USAGE_INDEX = 64;
+   int USAGE_UNIFORM = 128;
+   int USAGE_UNIFORM_TEXEL_BUFFER = 256;
+   int USAGE_INDIRECT_PARAMETERS = 512;
 
-   public GpuBuffer(final @GpuBuffer.Usage int usage, final long size) {
-      super();
-      this.size = size;
-      this.usage = usage;
-      this.defaultSlice = new GpuBufferSlice(this, 0L, size);
-   }
+   long size();
 
-   public long size() {
-      return this.size;
-   }
+   @GpuBuffer.Usage int usage();
 
-   public @GpuBuffer.Usage int usage() {
-      return this.usage;
-   }
+   boolean isClosed();
 
-   public abstract boolean isClosed();
-
-   public abstract void close();
-
-   public GpuBufferSlice slice(final long offset, final long length) {
-      if (offset >= 0L && length >= 0L && offset + length <= this.size) {
+   default GpuBufferSlice slice(final long offset, final long length) {
+      if (offset >= 0L && length >= 0L && offset + length <= this.size()) {
          return new GpuBufferSlice(this, offset, length);
       } else {
-         throw new IllegalArgumentException("Offset of " + offset + " and length " + length + " would put new slice outside buffer's range (of 0," + length + ")");
+         throw new IllegalArgumentException("Offset of " + offset + " and length " + length + " would put new slice outside buffer's range (of 0," + this.size() + ")");
       }
    }
 
-   public GpuBufferSlice slice() {
-      return this.defaultSlice;
+   default GpuBufferSlice slice() {
+      return new GpuBufferSlice(this, 0L, this.size());
    }
 
-   public GpuBufferSlice.MappedView map(final boolean read, final boolean write) {
-      return this.map(0L, this.size, read, write);
+   default GpuBufferSlice.MappedView map(final boolean read, final boolean write) {
+      return this.map(0L, this.size(), read, write);
    }
 
-   public abstract GpuBufferSlice.MappedView map(final long offset, final long length, final boolean read, final boolean write);
+   GpuBufferSlice.MappedView map(long offset, long length, boolean read, boolean write);
 
    @Retention(RetentionPolicy.CLASS)
    @Target({ElementType.TYPE_USE})

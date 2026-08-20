@@ -14,10 +14,10 @@ import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -28,7 +28,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ExtraCodecs;
@@ -59,7 +58,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 
 public record Enchantment(Component description, EnchantmentDefinition definition, HolderSet<Enchantment> exclusiveSet, DataComponentMap effects) {
    public static final int MAX_LEVEL = 255;
-   public static final Codec<Enchantment> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ComponentSerialization.CODEC.fieldOf("description").forGetter(Enchantment::description), Enchantment.EnchantmentDefinition.CODEC.forGetter(Enchantment::definition), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("exclusive_set", HolderSet.empty()).forGetter(Enchantment::exclusiveSet), EnchantmentEffectComponents.CODEC.optionalFieldOf("effects", DataComponentMap.EMPTY).forGetter(Enchantment::effects)).apply(i, Enchantment::new));
+   public static final Codec<Enchantment> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ComponentSerialization.CODEC.fieldOf("description").forGetter(Enchantment::description), Enchantment.EnchantmentDefinition.CODEC.forGetter(Enchantment::definition), RegistryCodecs.holderSet(Registries.ENCHANTMENT).optionalFieldOf("exclusive_set", HolderSet.empty()).forGetter(Enchantment::exclusiveSet), EnchantmentEffectComponents.CODEC.optionalFieldOf("effects", DataComponentMap.EMPTY).forGetter(Enchantment::effects)).apply(i, Enchantment::new));
    public static final Codec<Holder<Enchantment>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Enchantment>> STREAM_CODEC;
 
@@ -412,7 +411,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<Enchantment>>create(Registries.ENCHANTMENT);
+      CODEC = RegistryCodecs.holder(Registries.ENCHANTMENT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT);
    }
 
@@ -429,7 +428,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    public static record EnchantmentDefinition(HolderSet<Item> supportedItems, Optional<HolderSet<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, List<EquipmentSlotGroup> slots) {
-      public static final MapCodec<EnchantmentDefinition> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("supported_items").forGetter(EnchantmentDefinition::supportedItems), RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("primary_items").forGetter(EnchantmentDefinition::primaryItems), ExtraCodecs.intRange(1, 1024).fieldOf("weight").forGetter(EnchantmentDefinition::weight), ExtraCodecs.intRange(1, 255).fieldOf("max_level").forGetter(EnchantmentDefinition::maxLevel), Enchantment.Cost.CODEC.fieldOf("min_cost").forGetter(EnchantmentDefinition::minCost), Enchantment.Cost.CODEC.fieldOf("max_cost").forGetter(EnchantmentDefinition::maxCost), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anvil_cost").forGetter(EnchantmentDefinition::anvilCost), EquipmentSlotGroup.CODEC.listOf().fieldOf("slots").forGetter(EnchantmentDefinition::slots)).apply(i, EnchantmentDefinition::new));
+      public static final MapCodec<EnchantmentDefinition> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.ITEM).fieldOf("supported_items").forGetter(EnchantmentDefinition::supportedItems), RegistryCodecs.holderSet(Registries.ITEM).optionalFieldOf("primary_items").forGetter(EnchantmentDefinition::primaryItems), ExtraCodecs.intRange(1, 1024).fieldOf("weight").forGetter(EnchantmentDefinition::weight), ExtraCodecs.intRange(1, 255).fieldOf("max_level").forGetter(EnchantmentDefinition::maxLevel), Enchantment.Cost.CODEC.fieldOf("min_cost").forGetter(EnchantmentDefinition::minCost), Enchantment.Cost.CODEC.fieldOf("max_cost").forGetter(EnchantmentDefinition::maxCost), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anvil_cost").forGetter(EnchantmentDefinition::anvilCost), EquipmentSlotGroup.CODEC.listOf().fieldOf("slots").forGetter(EnchantmentDefinition::slots)).apply(i, EnchantmentDefinition::new));
 
       public EnchantmentDefinition {
          super();
@@ -453,7 +452,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       }
 
       public <E> Builder withEffect(final DataComponentType<List<ConditionalEffect<E>>> type, final E effect, final LootItemCondition.Builder condition) {
-         this.getEffectsList(type).add(new ConditionalEffect(effect, Optional.of(condition.build())));
+         this.getEffectsList(type).add(new ConditionalEffect(effect, Optional.of(Holder.direct(condition.build()))));
          return this;
       }
 
@@ -463,7 +462,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       }
 
       public <E> Builder withEffect(final DataComponentType<List<TargetedConditionalEffect<E>>> type, final EnchantmentTarget enchanted, final EnchantmentTarget affected, final E effect, final LootItemCondition.Builder condition) {
-         this.getEffectsList(type).add(new TargetedConditionalEffect(enchanted, affected, effect, Optional.of(condition.build())));
+         this.getEffectsList(type).add(new TargetedConditionalEffect(enchanted, affected, effect, Optional.of(Holder.direct(condition.build()))));
          return this;
       }
 

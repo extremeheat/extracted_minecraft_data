@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.phys.Vec3;
 
-public class SteppedInterpolationTracker implements InterpolationTracker {
+public class SteppedInterpolationTracker extends InterpolationHandler.NoOpInterpolationHandler implements InterpolationTracker {
    private final List<PositionStep> trackedSteps = new ArrayList();
    private int ticksSinceLastStep = -1;
    private Vec3 predictedDelta;
@@ -14,6 +14,10 @@ public class SteppedInterpolationTracker implements InterpolationTracker {
       super();
       this.predictedDelta = Vec3.ZERO;
       this.entity = entity;
+   }
+
+   public InterpolationTracker interpolationTracker() {
+      return this;
    }
 
    public void applyPredictedMovement(final Vec3 delta) {

@@ -102,7 +102,7 @@ public record EndSpikeFeature(List<EndSpike> spikes, boolean crystalInvulnerable
       EndCrystal endCrystal = (EndCrystal)EntityTypes.END_CRYSTAL.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.STRUCTURE);
       if (endCrystal != null) {
          endCrystal.setBeamTarget((BlockPos)this.crystalBeamTarget.orElse((Object)null));
-         endCrystal.setInvulnerable(this.crystalInvulnerable);
+         endCrystal.setPermanentlyInvulnerable(this.crystalInvulnerable);
          endCrystal.snapTo((double)spike.getCenterX() + 0.5, (double)(spike.getHeight() + 1), (double)spike.getCenterZ() + 0.5, random.nextFloat() * 360.0F, 0.0F);
          level.addFreshEntity(endCrystal);
          BlockPos crystalPos = endCrystal.blockPosition();

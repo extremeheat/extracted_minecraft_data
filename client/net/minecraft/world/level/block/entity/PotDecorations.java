@@ -5,12 +5,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.references.ItemIds;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
@@ -23,6 +26,11 @@ public record PotDecorations(Optional<ItemStackTemplate> back, Optional<ItemStac
 
    public PotDecorations {
       super();
+   }
+
+   public static PotDecorations allBrick(final HolderGetter<Item> items) {
+      Optional<ItemStackTemplate> brick = Optional.of(new ItemStackTemplate(items.getOrThrow(ItemIds.BRICK), 1, DataComponentPatch.EMPTY));
+      return new PotDecorations(brick, brick, brick, brick);
    }
 
    public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {

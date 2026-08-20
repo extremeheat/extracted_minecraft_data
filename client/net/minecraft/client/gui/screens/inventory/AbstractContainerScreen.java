@@ -278,6 +278,21 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return null;
    }
 
+   private void slotClicked(final Slot slot, final int slotId, final MouseButtonEvent event, final ContainerInput containerInput) {
+      this.slotClicked(slot, slotId, getContainerClickButton(event), containerInput);
+   }
+
+   private static int getContainerClickButton(final MouseButtonEvent event) {
+      int var10000;
+      switch (event.button()) {
+         case 1 -> var10000 = 0;
+         case 3 -> var10000 = 1;
+         default -> var10000 = event.button();
+      }
+
+      return var10000;
+   }
+
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (super.mouseClicked(event, doubleClick)) {
          return true;
@@ -286,7 +301,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          Slot slot = this.getHoveredSlot(event.x(), event.y());
          this.doubleclick = this.lastClickSlot == slot && doubleClick;
          this.skipNextRelease = false;
-         if (event.button() != 0 && event.button() != 1 && !cloning) {
+         if (event.button() != 1 && event.button() != 3 && !cloning) {
             this.checkHotbarMouseClicked(event);
          } else {
             int xo = this.leftPos;
@@ -304,7 +319,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             if (slotId != -1 && !this.isQuickCrafting) {
                if (this.menu.getCarried().isEmpty()) {
                   if (cloning) {
-                     this.slotClicked(slot, slotId, event.button(), ContainerInput.CLONE);
+                     this.slotClicked(slot, slotId, event, ContainerInput.CLONE);
                   } else {
                      boolean quickKey = slotId != -999 && event.hasShiftDown();
                      ContainerInput containerInput = ContainerInput.PICKUP;
@@ -315,7 +330,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                         containerInput = ContainerInput.THROW;
                      }
 
-                     this.slotClicked(slot, slotId, event.button(), containerInput);
+                     this.slotClicked(slot, slotId, event, containerInput);
                   }
 
                   this.skipNextRelease = true;
@@ -323,9 +338,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                   this.isQuickCrafting = true;
                   this.quickCraftingButton = event.button();
                   this.quickCraftSlots.clear();
-                  if (event.button() == 0) {
+                  if (event.button() == 1) {
                      this.quickCraftingType = 0;
-                  } else if (event.button() == 1) {
+                  } else if (event.button() == 3) {
                      this.quickCraftingType = 1;
                   } else if (cloning) {
                      this.quickCraftingType = 2;
@@ -384,17 +399,17 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          slotId = -999;
       }
 
-      if (this.doubleclick && slot != null && event.button() == 0 && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
+      if (this.doubleclick && slot != null && event.button() == 1 && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
          if (event.hasShiftDown()) {
             if (!this.lastQuickMoved.isEmpty()) {
                for(Slot target : this.menu.slots) {
                   if (target != null && target.mayPickup(this.minecraft.player) && target.hasItem() && target.container == slot.container && AbstractContainerMenu.canItemQuickReplace(target, this.lastQuickMoved, true)) {
-                     this.slotClicked(target, target.index, event.button(), ContainerInput.QUICK_MOVE);
+                     this.slotClicked(target, target.index, event, ContainerInput.QUICK_MOVE);
                   }
                }
             }
          } else {
-            this.slotClicked(slot, slotId, event.button(), ContainerInput.PICKUP_ALL);
+            this.slotClicked(slot, slotId, event, ContainerInput.PICKUP_ALL);
          }
 
          this.doubleclick = false;
@@ -415,14 +430,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             this.quickCraftToSlots();
          } else if (!this.menu.getCarried().isEmpty()) {
             if (this.minecraft.options.keyPickItem.matchesMouse(event)) {
-               this.slotClicked(slot, slotId, event.button(), ContainerInput.CLONE);
+               this.slotClicked(slot, slotId, event, ContainerInput.CLONE);
             } else {
                boolean quickKey = slotId != -999 && event.hasShiftDown();
                if (quickKey) {
                   this.lastQuickMoved = slot != null && slot.hasItem() ? slot.getItem().copy() : ItemStack.EMPTY;
                }
 
-               this.slotClicked(slot, slotId, event.button(), quickKey ? ContainerInput.QUICK_MOVE : ContainerInput.PICKUP);
+               this.slotClicked(slot, slotId, event, quickKey ? ContainerInput.QUICK_MOVE : ContainerInput.PICKUP);
             }
          }
       }

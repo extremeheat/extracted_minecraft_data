@@ -22,7 +22,7 @@ public class AdvancementVisibilityEvaluator {
       } else if (isDone) {
          return AdvancementVisibilityEvaluator.VisibilityRule.SHOW;
       } else {
-         return ((DisplayInfo)display.get()).isHidden() ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
+         return ((DisplayInfo)display.get()).hidden() ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
       }
    }
 

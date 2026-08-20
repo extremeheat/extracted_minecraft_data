@@ -10,6 +10,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
@@ -127,7 +128,7 @@ public class MinecartTNT extends AbstractMinecart {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 70) {
          this.primeFuse((DamageSource)null);
       } else {

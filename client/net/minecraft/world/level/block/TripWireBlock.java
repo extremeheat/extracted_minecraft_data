@@ -147,7 +147,7 @@ public class TripWireBlock extends Block {
       if (shouldBePressed) {
          level.scheduleTick(pos, this, 10);
       } else if (wasPressed) {
-         level.scheduleTick(pos, this, 0);
+         level.scheduleTick(pos, this, 1);
       }
 
    }

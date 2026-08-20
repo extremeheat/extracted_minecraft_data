@@ -73,6 +73,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -477,9 +478,11 @@ public class Hud {
       } else if (hitResult.getType() == HitResult.Type.ENTITY) {
          return ((EntityHitResult)hitResult).getEntity() instanceof MenuProvider;
       } else if (hitResult.getType() == HitResult.Type.BLOCK) {
-         BlockPos pos = ((BlockHitResult)hitResult).getBlockPos();
+         BlockHitResult blockHitResult = (BlockHitResult)hitResult;
+         BlockPos pos = blockHitResult.getBlockPos();
          Level level = this.minecraft.level;
-         return level.getBlockState(pos).getMenuProvider(level, pos) != null;
+         BlockState state = level.getBlockState(pos);
+         return state.showAsInteractableInSpectatorMode(level, pos, blockHitResult);
       } else {
          return false;
       }
@@ -773,10 +776,10 @@ public class Hud {
          int currentHealth = Mth.ceil(player.getHealth());
          boolean blink = this.healthBlinkTime > (long)this.tickCount && (this.healthBlinkTime - (long)this.tickCount) / 3L % 2L == 1L;
          long timeMillis = Util.getMillis();
-         if (currentHealth < this.lastHealth && player.invulnerableTime > 0) {
+         if (currentHealth < this.lastHealth && player.damageCooldownTime > 0) {
             this.lastHealthTime = timeMillis;
             this.healthBlinkTime = (long)(this.tickCount + 20);
-         } else if (currentHealth > this.lastHealth && player.invulnerableTime > 0) {
+         } else if (currentHealth > this.lastHealth && player.damageCooldownTime > 0) {
             this.lastHealthTime = timeMillis;
             this.healthBlinkTime = (long)(this.tickCount + 10);
          }

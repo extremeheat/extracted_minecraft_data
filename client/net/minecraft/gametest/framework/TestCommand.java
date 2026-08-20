@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -36,6 +38,7 @@ import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
@@ -49,6 +52,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.InCommandFunction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -101,10 +105,11 @@ public class TestCommand {
    private static int clear(final TestFinder finder) throws CommandSyntaxException {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((pos) -> level.getBlockEntity(pos, BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).toList();
+      MinecraftServer server = source.getServer();
+      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((globalPos) -> server.getLevel(globalPos.dimension()).getBlockEntity(globalPos.pos(), BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).toList();
 
       for(TestInstanceBlockEntity testInstanceBlockEntity : tests) {
+         ServerLevel level = (ServerLevel)testInstanceBlockEntity.getLevel();
          StructureUtils.clearSpaceForStructure(testInstanceBlockEntity.getTestBoundingBox(), level);
          testInstanceBlockEntity.removeBarriers();
          level.destroyBlock(testInstanceBlockEntity.getBlockPos(), false);
@@ -120,13 +125,13 @@ public class TestCommand {
 
    private static int export(final TestFinder finder) throws CommandSyntaxException {
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
       int count = 0;
       boolean allGood = true;
 
-      for(Iterator<BlockPos> iterator = finder.findTestPos().iterator(); iterator.hasNext(); ++count) {
-         BlockPos pos = (BlockPos)iterator.next();
-         BlockEntity var8 = level.getBlockEntity(pos);
+      for(Iterator<GlobalPos> iterator = finder.findTestPos().iterator(); iterator.hasNext(); ++count) {
+         GlobalPos pos = (GlobalPos)iterator.next();
+         ServerLevel level = source.getServer().getLevel(pos.dimension());
+         BlockEntity var8 = level.getBlockEntity(pos.pos());
          if (!(var8 instanceof TestInstanceBlockEntity)) {
             throw TEST_INSTANCE_COULD_NOT_BE_FOUND.create();
          }
@@ -150,8 +155,7 @@ public class TestCommand {
    private static int verify(final TestFinder finder) {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      BlockPos testPos = createTestPositionAround(source);
+      Function<ResourceKey<Level>, BlockPos> testPos = (dimension) -> createTestPositionAround(source, dimension);
       Collection<GameTestInfo> infos = Stream.concat(toGameTestInfos(source, RetryOptions.noRetries(), finder), toGameTestInfo(source, RetryOptions.noRetries(), finder, 0)).toList();
       FailedTestTracker.forgetFailedTests();
       Collection<GameTestBatch> batches = new ArrayList();
@@ -161,12 +165,12 @@ public class TestCommand {
             Collection<GameTestInfo> transformedInfos = new ArrayList();
 
             for(int i = 0; i < 100; ++i) {
-               GameTestInfo copyInfo = new GameTestInfo(info.getTestHolder(), rotation, level, new RetryOptions(1, true));
+               GameTestInfo copyInfo = new GameTestInfo(info.getTestHolder(), rotation, info.getLevel(), new RetryOptions(1, true));
                copyInfo.setTestBlockPos(info.getTestBlockPos());
                transformedInfos.add(copyInfo);
             }
 
-            GameTestBatch batch = GameTestBatchFactory.toGameTestBatch(transformedInfos, info.getTest().batch(), rotation.ordinal());
+            GameTestBatch batch = GameTestBatchFactory.toGameTestBatch(transformedInfos, info.getTest().batch(), rotation.ordinal(), info.getLevel().dimension());
             batches.add(batch);
          }
       }
@@ -179,8 +183,6 @@ public class TestCommand {
    private static int run(final TestFinder finder, final RetryOptions retryOptions, final int extraRotationSteps, final int testsPerRow) {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      BlockPos testPos = createTestPositionAround(source);
       Collection<GameTestInfo> infos = Stream.concat(toGameTestInfos(source, retryOptions, finder), toGameTestInfo(source, retryOptions, finder, extraRotationSteps)).toList();
       if (infos.isEmpty()) {
          source.sendSuccess(() -> Component.translatable("commands.test.no_tests"), false);
@@ -188,6 +190,7 @@ public class TestCommand {
       } else {
          FailedTestTracker.forgetFailedTests();
          source.sendSuccess(() -> Component.translatable("commands.test.run.running", infos.size()), false);
+         Function<ResourceKey<Level>, BlockPos> testPos = (dimension) -> createTestPositionAround(source, dimension);
          GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, source.getServer()).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
          return trackAndStartRunner(source, runner);
       }
@@ -196,18 +199,19 @@ public class TestCommand {
    private static int locate(final TestFinder finder) throws CommandSyntaxException {
       finder.source().sendSystemMessage(Component.translatable("commands.test.locate.started"));
       MutableInt structuresFound = new MutableInt(0);
+      MinecraftServer server = finder.source().getServer();
       BlockPos sourcePos = BlockPos.containing(finder.source().getPosition());
       finder.findTestPos().forEach((structurePos) -> {
-         BlockEntity patt0$temp = finder.source().getLevel().getBlockEntity(structurePos);
+         BlockEntity patt0$temp = server.getLevel(structurePos.dimension()).getBlockEntity(structurePos.pos());
          if (patt0$temp instanceof TestInstanceBlockEntity testBlock) {
             Direction facingDirection = testBlock.getRotation().rotate(Direction.NORTH);
             BlockPos teleportPosition = testBlock.getBlockPos().relative((Direction)facingDirection, 2);
             int teleportYRot = (int)facingDirection.getOpposite().toYRot();
             String tpCommand = String.format(Locale.ROOT, "/tp @s %d %d %d %d 0", teleportPosition.getX(), teleportPosition.getY(), teleportPosition.getZ(), teleportYRot);
-            int dx = sourcePos.getX() - structurePos.getX();
-            int dz = sourcePos.getZ() - structurePos.getZ();
+            int dx = sourcePos.getX() - structurePos.pos().getX();
+            int dz = sourcePos.getZ() - structurePos.pos().getZ();
             int distance = Mth.floor(Mth.sqrt((float)(dx * dx + dz * dz)));
-            MutableComponent coordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", structurePos.getX(), structurePos.getY(), structurePos.getZ())).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand(tpCommand)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            MutableComponent coordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", structurePos.pos().getX(), structurePos.pos().getY(), structurePos.pos().getZ())).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand(tpCommand)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
             finder.source().sendSuccess(() -> Component.translatable("commands.test.locate.found", coordinates, distance), false);
             structuresFound.increment();
          }
@@ -276,12 +280,21 @@ public class TestCommand {
    }
 
    private static Stream<GameTestInfo> toGameTestInfo(final CommandSourceStack source, final RetryOptions retryOptions, final TestInstanceFinder finder, final int rotationSteps) {
-      return finder.findTests().filter((test) -> verifyStructureExists(source, ((GameTestInstance)test.value()).structure())).map((test) -> new GameTestInfo(test, StructureUtils.getRotationForRotationSteps(rotationSteps), source.getLevel(), retryOptions));
+      return finder.findTests().filter((test) -> verifyStructureExists(source, ((GameTestInstance)test.value()).structure())).flatMap((test) -> {
+         ResourceKey<Level> dimension = ((GameTestInstance)test.value()).info().dimension();
+         ServerLevel level = source.getServer().getLevel(dimension);
+         if (level == null) {
+            source.sendFailure(Component.literal("Could not resolve level for dimension: " + String.valueOf(dimension.identifier())));
+            return Stream.empty();
+         } else {
+            return Stream.of(new GameTestInfo(test, StructureUtils.getRotationForRotationSteps(rotationSteps), level, retryOptions));
+         }
+      });
    }
 
-   private static Optional<GameTestInfo> createGameTestInfo(final BlockPos testBlockPos, final CommandSourceStack source, final RetryOptions retryOptions) {
-      ServerLevel level = source.getLevel();
-      BlockEntity var5 = level.getBlockEntity(testBlockPos);
+   private static Optional<GameTestInfo> createGameTestInfo(final GlobalPos testBlockPos, final CommandSourceStack source, final RetryOptions retryOptions) {
+      ServerLevel level = source.getServer().getLevel(testBlockPos.dimension());
+      BlockEntity var5 = level.getBlockEntity(testBlockPos.pos());
       if (var5 instanceof TestInstanceBlockEntity blockEntity) {
          Optional var10000 = blockEntity.test();
          Registry var10001 = source.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
@@ -293,11 +306,11 @@ public class TestCommand {
          } else {
             Holder.Reference<GameTestInstance> test = (Holder.Reference)maybeTest.get();
             GameTestInfo testInfo = new GameTestInfo(test, blockEntity.getRotation(), level, retryOptions);
-            testInfo.setTestBlockPos(testBlockPos);
+            testInfo.setTestBlockPos(testBlockPos.pos());
             return !verifyStructureExists(source, testInfo.getStructure()) ? Optional.empty() : Optional.of(testInfo);
          }
       } else {
-         source.sendFailure(Component.translatable("commands.test.error.test_instance_not_found.position", testBlockPos.getX(), testBlockPos.getY(), testBlockPos.getZ()));
+         source.sendFailure(Component.translatable("commands.test.error.test_instance_not_found.position", testBlockPos.pos().getX(), testBlockPos.pos().getY(), testBlockPos.pos().getZ()));
          return Optional.empty();
       }
    }
@@ -305,7 +318,7 @@ public class TestCommand {
    private static int createNewStructure(final CommandSourceStack source, final Identifier id, final int xSize, final int ySize, final int zSize) throws CommandSyntaxException {
       if (xSize <= 48 && ySize <= 48 && zSize <= 48) {
          ServerLevel level = source.getLevel();
-         BlockPos testPos = createTestPositionAround(source);
+         BlockPos testPos = createTestPositionAround(source, level.dimension());
          TestInstanceBlockEntity test = StructureUtils.createNewEmptyTest(id, testPos, new Vec3i(xSize, ySize, zSize), Rotation.NONE, level);
          BlockPos low = test.getStructurePos();
          BlockPos high = low.offset(xSize - 1, 0, zSize - 1);
@@ -378,36 +391,41 @@ public class TestCommand {
       }
    }
 
-   private static BlockPos createTestPositionAround(final CommandSourceStack source) {
-      Info info = playerAndTestInfo(source);
+   private static BlockPos createTestPositionAround(final CommandSourceStack source, final ResourceKey<Level> dimension) {
+      Info info = playerAndTestInfo(source, dimension);
       return new BlockPos(info.playerPos.getX(), info.surfaceY, info.playerPos.getZ() + 3);
    }
 
-   private static Info playerAndTestInfo(final CommandSourceStack source) {
+   private static Info playerAndTestInfo(final CommandSourceStack source, final ResourceKey<Level> dimension) {
       ServerPlayer serverPlayer = source.getPlayer();
       BlockPos playerPos = BlockPos.containing(serverPlayer == null ? source.getPosition() : serverPlayer.position());
       BlockPos testPos = new BlockPos(playerPos.getX(), 384, playerPos.getZ());
-      source.getLevel().getChunk(testPos);
-      int surfaceY = source.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, testPos).getY();
+      ServerLevel level = source.getServer().getLevel(dimension);
+      level.getChunk(testPos);
+      int surfaceY = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, testPos).getY();
       return new Info(source.getPlayer(), playerPos, testPos, surfaceY);
    }
 
-   private static void outputCoordinates(final CommandSourceStack source) {
-      Info info = playerAndTestInfo(source);
-      ServerPlayer player = info.player;
+   private static void outputCoordinates(final CommandSourceStack source, final Set<ResourceKey<Level>> testDimensions) {
+      Info playerInfo = playerAndTestInfo(source, source.getLevel().dimension());
+      ServerPlayer player = playerInfo.player;
       if (player != null) {
          float playerRotation = player.getYRot();
          float playerPitch = player.getXRot();
-         ResourceKey<Level> dimensionKey = player.level().dimension();
-         String playerDimension = dimensionKey.identifier().toString();
-         String testDimension = source.getLevel().dimension().identifier().toString();
-         if (!testDimension.equals(playerDimension)) {
-            Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", info.playerPos.getX(), info.playerPos.getY(), info.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + info.playerPos.getX() + " " + info.playerPos.getY() + " " + info.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+         ResourceKey<Level> playerDimensionKey = player.level().dimension();
+         if (testDimensions.size() != 1 || !testDimensions.contains(playerDimensionKey) || !testDimensions.contains(Level.OVERWORLD)) {
+            String playerDimension = playerDimensionKey.identifier().toString();
+            Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", playerInfo.playerPos.getX(), playerInfo.playerPos.getY(), playerInfo.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + playerInfo.playerPos.getX() + " " + playerInfo.playerPos.getY() + " " + playerInfo.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
             source.sendSuccess(() -> playerCoordinates, false);
-            Component testCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.run.coordinates", info.playerPos.getX(), info.surfaceY, info.playerPos.getZ(), testDimension.substring(testDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.YELLOW).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + testDimension + " run tp @s " + info.playerPos.getX() + " " + info.surfaceY + " " + info.playerPos.getZ() + " 0 0")).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
-            source.sendSuccess(() -> testCoordinates, false);
-         }
 
+            for(ResourceKey<Level> testDimensionKey : testDimensions) {
+               Info testInfo = playerAndTestInfo(source, testDimensionKey);
+               String testDimension = testDimensionKey.identifier().toString();
+               Component testCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.run.coordinates", testInfo.playerPos.getX(), testInfo.surfaceY, testInfo.playerPos.getZ(), testDimension.substring(testDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.YELLOW).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + testDimension + " run tp @s " + testInfo.playerPos.getX() + " " + testInfo.surfaceY + " " + testInfo.playerPos.getZ() + " 0 0")).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+               source.sendSuccess(() -> testCoordinates, false);
+            }
+
+         }
       }
    }
 
@@ -417,19 +435,27 @@ public class TestCommand {
       }
    }
 
-   public static record TestSummaryDisplayer(CommandSourceStack source, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer {
+   public static final class TestSummaryDisplayer implements GameTestListener {
+      private final CommandSourceStack source;
+      private final MultipleTestTracker tracker;
+      private final Set<ResourceKey<Level>> dimensions = new ReferenceArraySet();
+
+      public TestSummaryDisplayer(final CommandSourceStack source, final MultipleTestTracker tracker) {
          super();
+         this.source = source;
+         this.tracker = tracker;
       }
 
       public void testStructureLoaded(final GameTestInfo testInfo) {
       }
 
       public void testPassed(final GameTestInfo testInfo, final GameTestRunner runner) {
+         this.dimensions.add(testInfo.getTest().dimension());
          this.showTestSummaryIfAllDone();
       }
 
       public void testFailed(final GameTestInfo testInfo, final GameTestRunner runner) {
+         this.dimensions.add(testInfo.getTest().dimension());
          this.showTestSummaryIfAllDone();
       }
 
@@ -450,7 +476,7 @@ public class TestCommand {
                this.source.sendSystemMessage(Component.translatable("commands.test.summary.optional_failed", this.tracker.getFailedOptionalCount()));
             }
 
-            TestCommand.outputCoordinates(this.source);
+            TestCommand.outputCoordinates(this.source, this.dimensions);
          }
 
       }

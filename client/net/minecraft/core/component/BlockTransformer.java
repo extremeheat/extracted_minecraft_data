@@ -35,6 +35,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CopperChestBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -75,7 +76,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
                   BlockState oldBlockState = level.getBlockState(pos);
                   if (level instanceof ServerLevel) {
                      ServerLevel serverLevel = (ServerLevel)level;
-                     transformData.loot.ifPresent((lt) -> Block.dropFromBlockInteractLootTable(serverLevel, lt, oldBlockState, level.getBlockEntity(pos), itemInHand, player, (sl, stack) -> transformData.dropStrategy.resourcePopper.pop(sl, pos, clickedFace, stack)));
+                     transformData.loot.ifPresent((lt) -> Block.dropFromBlockInteractLootTable(serverLevel, lt, pos, oldBlockState, level.getBlockEntity(pos), itemInHand, player, (sl, stack) -> transformData.dropStrategy.resourcePopper.pop(sl, pos, clickedFace, stack)));
                   }
 
                   if (itemInHand.isStackable()) {
@@ -123,10 +124,6 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
 
       public static Builder builder(final BlockStateProvider targetStateProvider) {
          return new Builder(targetStateProvider);
-      }
-
-      public static Builder builder(final BlockPredicate predicate, final BlockStateProvider stateProvider) {
-         return builder(RuleBasedStateProvider.builder().ifTrueThenProvide(predicate, stateProvider).build());
       }
 
       public static Builder builder(final BlockPredicate predicate, final Block block) {
@@ -222,12 +219,12 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
 
       private final int id;
       private final String name;
-      private final int levelEvent;
+      private final @LevelEvent.Value int levelEvent;
       public static final Codec<TransformParticle> CODEC = StringRepresentable.<TransformParticle>fromValues(TransformParticle::values);
       private static final IntFunction<TransformParticle> BY_ID = ByIdMap.<TransformParticle>continuous(TransformParticle::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, TransformParticle> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, TransformParticle::getId);
 
-      private TransformParticle(final int id, final String name, final int levelEvent) {
+      private TransformParticle(final @LevelEvent.Value int id, final String name, final int levelEvent) {
          this.id = id;
          this.name = name;
          this.levelEvent = levelEvent;
@@ -248,7 +245,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          return this.id;
       }
 
-      public int getLevelEvent() {
+      public @LevelEvent.Value int getLevelEvent() {
          return this.levelEvent;
       }
 

@@ -31,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -190,7 +191,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 16) {
          if (!this.isSilent()) {
             this.level().playLocalSound(this.getX(), this.getEyeY(), this.getZ(), SoundEvents.ZOMBIE_VILLAGER_CURE, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);

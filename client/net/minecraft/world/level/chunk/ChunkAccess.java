@@ -34,18 +34,16 @@ import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.BlockScanUtils;
-import net.minecraft.world.level.BlockStateConsumer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.blockscan.BlockScanUtils;
+import net.minecraft.world.level.blockscan.BlockStateConsumer;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
@@ -61,7 +59,7 @@ import net.minecraft.world.ticks.TickContainerAccess;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeManager.NoiseBiomeSource {
+public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeResolver {
    public static final int NO_FILLED_SECTION = -1;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LongSet EMPTY_REFERENCE_SET = new LongOpenHashSet();
@@ -437,7 +435,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
       }
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler) {
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver) {
       ChunkPos pos = this.getPos();
       int quartMinX = QuartPos.fromBlock(pos.getMinBlockX());
       int quartMinZ = QuartPos.fromBlock(pos.getMinBlockZ());
@@ -446,7 +444,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
       for(int sectionY = heightAccessor.getMinSectionY(); sectionY <= heightAccessor.getMaxSectionY(); ++sectionY) {
          LevelChunkSection section = this.getSection(this.getSectionIndexFromSectionY(sectionY));
          int quartMinY = QuartPos.fromSection(sectionY);
-         section.fillBiomesFromNoise(biomeResolver, sampler, quartMinX, quartMinY, quartMinZ);
+         section.fillBiomesFromNoise(biomeResolver, quartMinX, quartMinY, quartMinZ);
       }
 
    }

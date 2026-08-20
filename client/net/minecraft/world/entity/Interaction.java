@@ -82,7 +82,7 @@ public class Interaction extends Entity implements Attackable, Targeting {
    }
 
    public PushReaction getPistonPushReaction() {
-      return PushReaction.IGNORE;
+      return PushReaction.IGNORE_ENTITY;
    }
 
    public boolean isIgnoringBlockTriggers() {

@@ -123,6 +123,10 @@ public class NetherPortalBlock extends Block implements Portal {
          exitPortal = BlockUtil.getLargestRectangleAround(pos, (Direction.Axis)portalState.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (blockPos) -> newLevel.getBlockState(blockPos) == portalState);
          post = TeleportTransition.PLAY_PORTAL_SOUND.then((e) -> e.placePortalTicket(pos));
       } else {
+         if (entity.isSpectator()) {
+            return null;
+         }
+
          Direction.Axis sourcePortalAxis = (Direction.Axis)entity.level().getBlockState(portalEntryPos).getOptionalValue(AXIS).orElse(Direction.Axis.X);
          Optional<BlockUtil.FoundRectangle> createdExit = newLevel.getPortalForcer().createPortal(approximateExitPos, sourcePortalAxis);
          if (createdExit.isEmpty()) {

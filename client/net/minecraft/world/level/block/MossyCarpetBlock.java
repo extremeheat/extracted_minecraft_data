@@ -237,15 +237,15 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return (EnumProperty)PROPERTY_BY_DIRECTION.get(direction);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (Boolean)state.getValue(BASE) && !createTopperWithSideChance(level, pos, () -> true).isAir();
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockState topper = createTopperWithSideChance(level, pos, () -> true);
       if (!topper.isAir()) {
          level.setBlockAndUpdate(pos.above(), topper);

@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.sounds.SoundEvent;
 
 public record WolfSoundVariant(WolfSoundSet adultSounds, WolfSoundSet babySounds) {
@@ -25,7 +25,7 @@ public record WolfSoundVariant(WolfSoundSet adultSounds, WolfSoundSet babySounds
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<WolfSoundVariant>>create(Registries.WOLF_SOUND_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.WOLF_SOUND_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.WOLF_SOUND_VARIANT);
    }
 

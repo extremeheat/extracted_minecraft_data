@@ -38,7 +38,7 @@ public class CushionRenderer extends EntityRenderer<Cushion, CushionRenderState>
 
    public void submit(final CushionRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.direction.toYRot()));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - state.direction.toYRot()));
       poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
       poseStack.translate(0.0, -0.25, 0.0);
       submitNodeCollector.submitModel(this.model, state, poseStack, this.model.renderType(state.texture), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);

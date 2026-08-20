@@ -518,7 +518,7 @@ public abstract class RecipeProvider {
    }
 
    private static Criterion<EnterBlockTrigger.TriggerInstance> insideOf(final Block block) {
-      return CriteriaTriggers.ENTER_BLOCK.createCriterion(new EnterBlockTrigger.TriggerInstance(Optional.empty(), Optional.of(block.builtInRegistryHolder()), Optional.empty()));
+      return CriteriaTriggers.ENTER_BLOCK.createCriterion(new EnterBlockTrigger.TriggerInstance(Optional.empty(), Optional.of(HolderSet.direct(block.builtInRegistryHolder())), Optional.empty()));
    }
 
    protected Criterion<BredAnimalsTrigger.TriggerInstance> bredAnimal() {

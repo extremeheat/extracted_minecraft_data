@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
@@ -19,8 +20,8 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
    private final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions;
    private final Optional<Integer> flightDuration;
 
-   protected SetFireworksFunction(final List<LootItemCondition> predicates, final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions, final Optional<Integer> flightDuration) {
-      super(predicates);
+   protected SetFireworksFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions, final Optional<Integer> flightDuration) {
+      super(condition);
       this.explosions = explosions;
       this.flightDuration = flightDuration;
    }

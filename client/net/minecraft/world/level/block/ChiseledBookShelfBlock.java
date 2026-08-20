@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -117,7 +118,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
          SoundEvent soundEvent = retrievedBook.is(Items.ENCHANTED_BOOK) ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED : SoundEvents.CHISELED_BOOKSHELF_PICKUP;
          level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
          if (!player.getInventory().add(retrievedBook)) {
-            player.drop(retrievedBook, false);
+            player.drop(retrievedBook, false, Prediction.SERVER_ONLY);
          }
 
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);

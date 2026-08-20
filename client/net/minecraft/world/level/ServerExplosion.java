@@ -190,7 +190,7 @@ public class ServerExplosion implements Explosion {
                   double knockbackResistance = var10000;
                   double knockbackPower = (1.0 - dist) * (double)exposure * (double)knockbackMultiplier * (1.0 - knockbackResistance);
                   Vec3 knockback = direction.scale(knockbackPower);
-                  entity.push(knockback);
+                  entity.pushFromExplosion(knockback);
                   if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile) {
                      Projectile projectile = (Projectile)entity;
                      projectile.setOwner(this.damageSource.getEntity());

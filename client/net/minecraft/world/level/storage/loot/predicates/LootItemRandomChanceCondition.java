@@ -2,13 +2,14 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
-public record LootItemRandomChanceCondition(NumberProvider chance) implements LootItemCondition {
-   public static final MapCodec<LootItemRandomChanceCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance)).apply(i, LootItemRandomChanceCondition::new));
+public record LootItemRandomChanceCondition(Holder<NumberProvider> chance) implements LootItemCondition {
+   public static final MapCodec<LootItemRandomChanceCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance)).apply(i, LootItemRandomChanceCondition::new));
 
    public LootItemRandomChanceCondition {
       super();
@@ -19,7 +20,7 @@ public record LootItemRandomChanceCondition(NumberProvider chance) implements Lo
    }
 
    public boolean test(final LootContext context) {
-      float probability = this.chance.getFloat(context);
+      float probability = ((NumberProvider)this.chance.value()).getFloat(context);
       return context.getRandom().nextFloat() < probability;
    }
 
@@ -27,7 +28,7 @@ public record LootItemRandomChanceCondition(NumberProvider chance) implements Lo
       return () -> new LootItemRandomChanceCondition(ConstantValue.exactly(probability));
    }
 
-   public static LootItemCondition.Builder randomChance(final NumberProvider probability) {
+   public static LootItemCondition.Builder randomChance(final Holder<NumberProvider> probability) {
       return () -> new LootItemRandomChanceCondition(probability);
    }
 }

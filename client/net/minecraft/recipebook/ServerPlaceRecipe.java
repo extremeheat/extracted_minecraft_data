@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.entity.player.StackedItemContents;
@@ -65,7 +66,7 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    private void clearGrid() {
       for(Slot slot : this.slotsToClear) {
          ItemStack itemStackCopy = slot.getItem().copy();
-         this.inventory.placeItemBackInInventory(itemStackCopy, false);
+         this.inventory.placeItemBackInInventory(itemStackCopy, false, Prediction.SERVER_ONLY);
          slot.set(itemStackCopy);
       }
 

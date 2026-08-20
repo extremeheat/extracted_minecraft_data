@@ -46,7 +46,7 @@ public class OitRenderPassProvider {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(descriptor.build());
       RenderSystem.bindDefaultUniforms(renderPass);
-      renderPass.bindTexture("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);
+      renderPass.setUniform("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);
       return renderPass;
    }
 
@@ -57,10 +57,10 @@ public class OitRenderPassProvider {
       RenderSystem.bindDefaultUniforms(renderPass);
 
       for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-         renderPass.bindTexture("Coeff" + i, OutputTarget.TRANSMITTANCE_TARGETS[i].getRenderTarget().getColorTextureView(), nearestSampler);
+         renderPass.setUniform("Coeff" + i, OutputTarget.TRANSMITTANCE_TARGETS[i].getRenderTarget().getColorTextureView(), nearestSampler);
       }
 
-      renderPass.bindTexture("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);
+      renderPass.setUniform("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);
       return renderPass;
    }
 

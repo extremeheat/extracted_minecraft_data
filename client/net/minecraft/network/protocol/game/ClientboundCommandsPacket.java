@@ -25,6 +25,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -32,7 +33,8 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCommandsPacket>codec(ClientboundCommandsPacket::write, ClientboundCommandsPacket::new);
+   private static final StreamCodec<FriendlyByteBuf, Entry> ENTRY_STREAM_CODEC = StreamCodec.<FriendlyByteBuf, Entry>of((output, entry) -> entry.write(output), ClientboundCommandsPacket::readNode);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC;
    private static final byte MASK_TYPE = 3;
    private static final byte FLAG_EXECUTABLE = 4;
    private static final byte FLAG_REDIRECT = 8;
@@ -51,16 +53,11 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       this.rootIndex = nodeToId.getInt(root);
    }
 
-   private ClientboundCommandsPacket(final FriendlyByteBuf input) {
+   private ClientboundCommandsPacket(final List<Entry> entries, final int rootIndex) {
       super();
-      this.entries = input.<Entry>readList(ClientboundCommandsPacket::readNode);
-      this.rootIndex = input.readVarInt();
+      this.entries = entries;
+      this.rootIndex = rootIndex;
       validateEntries(this.entries);
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeCollection(this.entries, (buffer, entry) -> entry.write(buffer));
-      output.writeVarInt(this.rootIndex);
    }
 
    private static void validateEntries(final List<Entry> entries, final BiPredicate<Entry, IntSet> validator) {
@@ -207,6 +204,10 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
 
    public <S> RootCommandNode<S> getRoot(final CommandBuildContext context, final NodeBuilder<S> builder) {
       return (RootCommandNode)(new NodeResolver<S>(context, builder, this.entries)).resolve(this.rootIndex);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ENTRY_STREAM_CODEC.apply(ByteBufCodecs.list()), (p) -> p.entries, ByteBufCodecs.VAR_INT, (p) -> p.rootIndex, ClientboundCommandsPacket::new);
    }
 
    private static record LiteralNodeStub(String id) implements NodeStub {

@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 
-public class VulkanGpuSampler extends GpuSampler implements Destroyable {
+public class VulkanGpuSampler implements GpuSampler, Destroyable {
    private final long vkSampler;
    private final VulkanDevice device;
    private final AddressMode addressModeU;
@@ -66,6 +66,10 @@ public class VulkanGpuSampler extends GpuSampler implements Destroyable {
 
    public void destroy() {
       VK12.vkDestroySampler(this.device.vkDevice(), this.vkSampler, (VkAllocationCallbacks)null);
+   }
+
+   public boolean isClosed() {
+      return this.closed;
    }
 
    public void close() {

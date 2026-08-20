@@ -3,12 +3,12 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 
 public class DecoratedPotPatterns {
@@ -77,7 +77,7 @@ public class DecoratedPotPatterns {
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<DecoratedPotPattern>>create(Registries.DECORATED_POT_PATTERN);
+      CODEC = RegistryCodecs.holder(Registries.DECORATED_POT_PATTERN);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.DECORATED_POT_PATTERN);
    }
 }

@@ -50,7 +50,7 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
       for(BakedQuad quad : submit.quads()) {
          BakedQuad.MaterialInfo material = quad.materialInfo();
          RenderType var10000;
-         switch (submit.foilType()) {
+         switch (foilType) {
             case NONE -> var10000 = material.itemRenderType();
             case STANDARD -> var10000 = material.itemGlintRenderType();
             case SPECIAL -> var10000 = material.itemGlintSpecialRenderType();
@@ -102,16 +102,6 @@ public class ItemFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
    public static record Submit(PoseStack.Pose pose, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) implements TranslucentSubmit {
       public Submit {
          super();
-      }
-
-      public boolean hasTranslucency() {
-         for(BakedQuad quad : this.quads()) {
-            if (quad.materialInfo().itemRenderType().hasBlending()) {
-               return true;
-            }
-         }
-
-         return false;
       }
 
       public float distanceToCameraSq() {

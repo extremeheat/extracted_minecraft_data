@@ -1,15 +1,17 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EntryGroup extends CompositeEntryBase {
    public static final MapCodec<EntryGroup> MAP_CODEC = createCodec(EntryGroup::new);
 
-   public EntryGroup(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
-      super(children, conditions);
+   public EntryGroup(final List<LootPoolEntryContainer> children, final Optional<Holder<LootItemCondition>> condition, final Optional<Holder<LootItemFunction>> modifier) {
+      super(children, condition, modifier);
    }
 
    public MapCodec<EntryGroup> codec() {
@@ -51,16 +53,9 @@ public class EntryGroup extends CompositeEntryBase {
       return new Builder(entries);
    }
 
-   public static class Builder extends LootPoolEntryContainer.Builder<Builder> {
-      private final ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
-
+   public static class Builder extends CompositeEntryBase.Builder<EntryGroup, Builder> {
       public Builder(final LootPoolEntryContainer.Builder<?>... entries) {
-         super();
-
-         for(LootPoolEntryContainer.Builder<?> entry : entries) {
-            this.entries.add(entry.build());
-         }
-
+         super(entries);
       }
 
       protected Builder getThis() {
@@ -68,12 +63,12 @@ public class EntryGroup extends CompositeEntryBase {
       }
 
       public Builder append(final LootPoolEntryContainer.Builder<?> other) {
-         this.entries.add(other.build());
+         this.addEntry(other);
          return this;
       }
 
       public LootPoolEntryContainer build() {
-         return new EntryGroup(this.entries.build(), this.getConditions());
+         return this.build(EntryGroup::new);
       }
    }
 }

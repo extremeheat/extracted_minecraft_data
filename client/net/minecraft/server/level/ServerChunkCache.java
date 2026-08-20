@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
@@ -343,7 +344,7 @@ public class ServerChunkCache extends ChunkSource {
    private void tickChunks(final ProfilerFiller profiler, final long timeDiff) {
       profiler.push("naturalSpawnCount");
       int chunkCount = this.distanceManager.getNaturalSpawnChunkCount();
-      NaturalSpawner.SpawnState spawnCookie = NaturalSpawner.createState(chunkCount, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
+      NaturalSpawner.SpawnState spawnCookie = NaturalSpawner.createState(chunkCount, this.level, this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
       this.lastSpawnState = spawnCookie;
       boolean doMobSpawning = (Boolean)this.level.getGameRules().get(GameRules.SPAWN_MOBS);
       int tickSpeed = (Integer)this.level.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
@@ -515,6 +516,10 @@ public class ServerChunkCache extends ChunkSource {
 
    public void sendToTrackingPlayers(final Entity entity, final Packet<? super ClientGamePacketListener> packet) {
       this.chunkMap.sendToTrackingPlayers(entity, packet);
+   }
+
+   public void sendToTrackingPlayersFiltered(final Entity entity, final Packet<? super ClientGamePacketListener> packet, final Predicate<ServerPlayer> targetPredicate) {
+      this.chunkMap.sendToTrackingPlayersFiltered(entity, packet, targetPredicate);
    }
 
    public void setViewDistance(final int newDistance) {

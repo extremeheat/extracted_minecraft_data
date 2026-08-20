@@ -7,13 +7,13 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 public class NoiseData {
    /** @deprecated */
    @Deprecated
-   public static final NormalNoise.NoiseParameters DEFAULT_SHIFT = new NormalNoise.NoiseParameters(-3, 1.0, new double[]{1.0, 1.0, 0.0});
+   public static final NormalNoise DEFAULT_SHIFT = NormalNoise.createParity(-3, (double[])(1.0, 1.0, 1.0, 0.0));
 
    public NoiseData() {
       super();
    }
 
-   public static void bootstrap(final BootstrapContext<NormalNoise.NoiseParameters> context) {
+   public static void bootstrap(final BootstrapContext<NormalNoise> context) {
       registerBiomeNoises(context, 0, Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
       registerBiomeNoises(context, -2, Noises.TEMPERATURE_LARGE, Noises.VEGETATION_LARGE, Noises.CONTINENTALNESS_LARGE, Noises.EROSION_LARGE);
       register(context, Noises.TEMPERATURE_NETHER, -7, 1.0, 1.0);
@@ -74,14 +74,14 @@ public class NoiseData {
       register(context, Noises.NETHER_STATE_SELECTOR, -4, 1.0);
    }
 
-   private static void registerBiomeNoises(final BootstrapContext<NormalNoise.NoiseParameters> context, final int octaveOffset, final ResourceKey<NormalNoise.NoiseParameters> temperature, final ResourceKey<NormalNoise.NoiseParameters> vegetation, final ResourceKey<NormalNoise.NoiseParameters> continentalness, final ResourceKey<NormalNoise.NoiseParameters> erosion) {
+   private static void registerBiomeNoises(final BootstrapContext<NormalNoise> context, final int octaveOffset, final ResourceKey<NormalNoise> temperature, final ResourceKey<NormalNoise> vegetation, final ResourceKey<NormalNoise> continentalness, final ResourceKey<NormalNoise> erosion) {
       register(context, temperature, -10 + octaveOffset, 1.5, 0.0, 1.0, 0.0, 0.0, 0.0);
       register(context, vegetation, -8 + octaveOffset, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
       register(context, continentalness, -9 + octaveOffset, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0);
       register(context, erosion, -9 + octaveOffset, 1.0, 1.0, 0.0, 1.0, 1.0);
    }
 
-   private static void register(final BootstrapContext<NormalNoise.NoiseParameters> context, final ResourceKey<NormalNoise.NoiseParameters> key, final int firstOctave, final double firstAmplitude, final double... amplitudes) {
-      context.register(key, new NormalNoise.NoiseParameters(firstOctave, firstAmplitude, amplitudes));
+   private static void register(final BootstrapContext<NormalNoise> context, final ResourceKey<NormalNoise> key, final int firstOctave, final double... amplitudes) {
+      context.register(key, NormalNoise.createParity(firstOctave, amplitudes));
    }
 }

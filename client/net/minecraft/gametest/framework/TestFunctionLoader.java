@@ -7,23 +7,19 @@ import java.util.function.Consumer;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
-public abstract class TestFunctionLoader {
-   private static final List<TestFunctionLoader> loaders = new ArrayList();
+public interface TestFunctionLoader {
+   List<TestFunctionLoader> ALL_LOADERS = new ArrayList();
 
-   public TestFunctionLoader() {
-      super();
+   static void registerLoader(final TestFunctionLoader loader) {
+      ALL_LOADERS.add(loader);
    }
 
-   public static void registerLoader(final TestFunctionLoader loader) {
-      loaders.add(loader);
-   }
-
-   public static void runLoaders(final Registry<Consumer<GameTestHelper>> registry) {
-      for(TestFunctionLoader loader : loaders) {
+   static void runLoaders(final Registry<Consumer<GameTestHelper>> registry) {
+      for(TestFunctionLoader loader : ALL_LOADERS) {
          loader.load((key, function) -> Registry.register(registry, (ResourceKey)key, function));
       }
 
    }
 
-   public abstract void load(BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> register);
+   void load(BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> register);
 }

@@ -49,6 +49,12 @@ public class AquaticFeatures {
    public static final ResourceKey<Feature> SEAGRASS_TALL = FeatureUtils.createKey("seagrass_tall");
    public static final ResourceKey<Feature> SEA_PICKLE = FeatureUtils.createKey("sea_pickle");
    public static final ResourceKey<Feature> KELP = FeatureUtils.createKey("kelp");
+   public static final ResourceKey<Feature> CORAL_BLOCK_DECORATION = FeatureUtils.createKey("coral/block_decoration");
+   public static final ResourceKey<Feature> TUBE_CORAL_BLOCK = FeatureUtils.createKey("coral/tube_block");
+   public static final ResourceKey<Feature> BRAIN_CORAL_BLOCK = FeatureUtils.createKey("coral/brain_block");
+   public static final ResourceKey<Feature> BUBBLE_CORAL_BLOCK = FeatureUtils.createKey("coral/bubble_block");
+   public static final ResourceKey<Feature> FIRE_CORAL_BLOCK = FeatureUtils.createKey("coral/fire_block");
+   public static final ResourceKey<Feature> HORN_CORAL_BLOCK = FeatureUtils.createKey("coral/horn_block");
    public static final ResourceKey<Feature> WARM_OCEAN_VEGETATION = FeatureUtils.createKey("warm_ocean_vegetation");
 
    public AquaticFeatures() {
@@ -65,11 +71,17 @@ public class AquaticFeatures {
       context.register(SEA_PICKLE, new SimpleBlockFeature(new RandomizedIntStateProvider(BlockStateProvider.simple(Blocks.SEA_PICKLE), BlockStateProperties.PICKLES, UniformInt.of(1, 4))));
       context.register(KELP, new BlockColumnFeature(List.of(BlockColumnFeature.layer(UniformInt.of(0, 9), BlockStateProvider.simple(Blocks.KELP_PLANT)), BlockColumnFeature.layer(ConstantInt.of(1), new RandomizedIntStateProvider(BlockStateProvider.simple(Blocks.KELP), KelpBlock.AGE, UniformInt.of(20, 23)))), Direction.UP, BlockPredicate.allOf(BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER)), true));
       BlockPredicateFilter coralAllowed = BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.anyOf(BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesTag(BlockTags.CORALS)), BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER)));
-      context.register(WARM_OCEAN_VEGETATION, new SimpleRandomSelectorFeature(HolderSet.direct(Stream.of(BlockItemIds.TUBE_CORAL_BLOCK, BlockItemIds.BRAIN_CORAL_BLOCK, BlockItemIds.BUBBLE_CORAL_BLOCK, BlockItemIds.FIRE_CORAL_BLOCK, BlockItemIds.HORN_CORAL_BLOCK).map((id) -> (Block)blocks.getOrThrow(id.block()).value()).map((block) -> coral(features, blocks, block)).flatMap((coralType) -> Stream.of(PlacementUtils.inlinePlaced(new CoralTreeFeature(PlacementUtils.inlinePlaced(coralType, coralAllowed))), PlacementUtils.inlinePlaced(new CoralClawFeature(PlacementUtils.inlinePlaced(coralType, coralAllowed))), PlacementUtils.inlinePlaced(coralType, OffsetPlacement.vertical(UniformInt.of(-3, -1)), new CuboidPlacement(UniformInt.of(3, 5), UniformInt.of(3, 5), false, false), new RandomChancePlacement(0.9F), coralAllowed))).toList())));
+      context.register(CORAL_BLOCK_DECORATION, new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(new RandomBlockProvider(blocks.getOrThrow(BlockTags.CORALS)))), 20), new Weighted(PlacementUtils.inlinePlaced(features.getOrThrow(SEA_PICKLE)), 3), new Weighted(PlacementUtils.inlinePlaced(new NoOpFeature()), 57))), OffsetPlacement.above()), wallCoral(blocks, Direction.NORTH), wallCoral(blocks, Direction.EAST), wallCoral(blocks, Direction.SOUTH), wallCoral(blocks, Direction.WEST))));
+      Holder.Reference<Feature> tubeCoralBlock = context.register(TUBE_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.TUBE_CORAL_BLOCK.block())));
+      Holder.Reference<Feature> brainCoralBlock = context.register(BRAIN_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.BRAIN_CORAL_BLOCK.block())));
+      Holder.Reference<Feature> bubbleCoralBlock = context.register(BUBBLE_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.BUBBLE_CORAL_BLOCK.block())));
+      Holder.Reference<Feature> fireCoralBlock = context.register(FIRE_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.FIRE_CORAL_BLOCK.block())));
+      Holder.Reference<Feature> hornCoralBlock = context.register(HORN_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.HORN_CORAL_BLOCK.block())));
+      context.register(WARM_OCEAN_VEGETATION, new SimpleRandomSelectorFeature(HolderSet.direct(Stream.of(tubeCoralBlock, brainCoralBlock, bubbleCoralBlock, fireCoralBlock, hornCoralBlock).flatMap((blockFeature) -> Stream.of(PlacementUtils.inlinePlaced(new CoralTreeFeature(PlacementUtils.inlinePlaced(blockFeature, coralAllowed))), PlacementUtils.inlinePlaced(new CoralClawFeature(PlacementUtils.inlinePlaced(blockFeature, coralAllowed))), PlacementUtils.inlinePlaced(blockFeature, OffsetPlacement.vertical(UniformInt.of(-3, -1)), new CuboidPlacement(UniformInt.of(3, 5), UniformInt.of(3, 5), false, false), new RandomChancePlacement(0.9F), coralAllowed))).toList())));
    }
 
-   private static Feature coral(final HolderGetter<Feature> features, final HolderGetter<Block> blocks, final Block block) {
-      return new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(block))), PlacementUtils.inlinePlaced(new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(new RandomBlockProvider(blocks.getOrThrow(BlockTags.CORALS)))), 20), new Weighted(PlacementUtils.inlinePlaced(features.getOrThrow(SEA_PICKLE)), 3), new Weighted(PlacementUtils.inlinePlaced(new NoOpFeature()), 57))), OffsetPlacement.above()), wallCoral(blocks, Direction.NORTH), wallCoral(blocks, Direction.EAST), wallCoral(blocks, Direction.SOUTH), wallCoral(blocks, Direction.WEST)));
+   private static Feature coralBlock(final HolderGetter<Feature> features, final Holder<Block> block) {
+      return new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(block.value()))), PlacementUtils.inlinePlaced(features.getOrThrow(CORAL_BLOCK_DECORATION))));
    }
 
    private static Holder<PlacedFeature> wallCoral(final HolderGetter<Block> blocks, final Direction direction) {

@@ -1,17 +1,17 @@
 package net.minecraft.world.level.material;
 
 public enum PushReaction {
-   NORMAL,
-   DESTROY,
-   BLOCK,
-   IGNORE,
-   PUSH_ONLY;
+   PUSH_PULL,
+   PUSH,
+   POPPED,
+   IMMOVEABLE,
+   IGNORE_ENTITY;
 
    private PushReaction() {
    }
 
    // $FF: synthetic method
    private static PushReaction[] $values() {
-      return new PushReaction[]{NORMAL, DESTROY, BLOCK, IGNORE, PUSH_ONLY};
+      return new PushReaction[]{PUSH_PULL, PUSH, POPPED, IMMOVEABLE, IGNORE_ENTITY};
    }
 }

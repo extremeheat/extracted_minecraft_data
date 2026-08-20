@@ -132,10 +132,12 @@ public class Camera implements TrackedWaypoint.Camera {
       return this.level.tickRateManager().isEntityFrozen(this.entity) ? 1.0F : deltaTracker.getGameTimeDeltaPartialTick(true);
    }
 
-   public void extractRenderState(final CameraRenderState cameraState, final float cameraEntityPartialTicks) {
+   public void extractRenderState(final CameraRenderState cameraState, final DeltaTracker deltaTracker) {
+      cameraState.cameraEntityPartialTicks = this.getCameraEntityPartialTicks(deltaTracker);
       cameraState.initialized = this.isInitialized();
       cameraState.isPanoramicMode = this.isPanoramicMode;
       cameraState.isFrustumCaptured = this.capturedFrustum != null;
+      cameraState.isFirstPerson = this.minecraft.options.getCameraType().isFirstPerson();
       cameraState.smartCull = this.minecraft.smartCull;
       if (this.minecraft.player.isSpectator() && this.level.getBlockState(this.blockPosition).isSolidRender()) {
          cameraState.smartCull = false;
@@ -157,8 +159,8 @@ public class Camera implements TrackedWaypoint.Camera {
          cameraState.entityRenderState.doesMobEffectBlockSky = livingEntity.hasEffect(MobEffects.BLINDNESS) || livingEntity.hasEffect(MobEffects.DARKNESS);
          cameraState.entityRenderState.isDeadOrDying = livingEntity.isDeadOrDying();
          cameraState.entityRenderState.hurtDir = livingEntity.getHurtDir();
-         cameraState.entityRenderState.hurtTime = (float)livingEntity.hurtTime - cameraEntityPartialTicks;
-         cameraState.entityRenderState.deathTime = (float)livingEntity.deathTime + cameraEntityPartialTicks;
+         cameraState.entityRenderState.hurtTime = (float)livingEntity.hurtTime - cameraState.cameraEntityPartialTicks;
+         cameraState.entityRenderState.deathTime = (float)livingEntity.deathTime + cameraState.cameraEntityPartialTicks;
          cameraState.entityRenderState.hurtDuration = livingEntity.hurtDuration;
       } else {
          cameraState.entityRenderState.isLiving = false;
@@ -170,8 +172,8 @@ public class Camera implements TrackedWaypoint.Camera {
       if (var4 instanceof AbstractClientPlayer player) {
          cameraState.entityRenderState.isPlayer = true;
          ClientAvatarState avatarState = player.avatarState();
-         cameraState.entityRenderState.backwardsInterpolatedWalkDistance = avatarState.getBackwardsInterpolatedWalkDistance(cameraEntityPartialTicks);
-         cameraState.entityRenderState.bob = avatarState.getInterpolatedBob(cameraEntityPartialTicks);
+         cameraState.entityRenderState.backwardsInterpolatedWalkDistance = avatarState.getBackwardsInterpolatedWalkDistance(cameraState.cameraEntityPartialTicks);
+         cameraState.entityRenderState.bob = avatarState.getInterpolatedBob(cameraState.cameraEntityPartialTicks);
       } else {
          cameraState.entityRenderState.isPlayer = false;
       }

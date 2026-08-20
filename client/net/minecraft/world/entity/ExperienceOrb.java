@@ -42,7 +42,6 @@ public class ExperienceOrb extends Entity {
    private int health;
    private int count;
    private @Nullable Player followingPlayer;
-   private final InterpolationHandler interpolation;
 
    public ExperienceOrb(final Level level, final double x, final double y, final double z, final int value) {
       this(level, new Vec3(x, y, z), Vec3.ZERO, value);
@@ -74,7 +73,6 @@ public class ExperienceOrb extends Entity {
       this.age = 0;
       this.health = 5;
       this.count = 1;
-      this.interpolation = new LinearInterpolationHandler(this);
    }
 
    protected void unstuckIfPossible(final double maxDistance) {
@@ -96,7 +94,6 @@ public class ExperienceOrb extends Entity {
    }
 
    public void tick() {
-      this.interpolation.interpolate();
       if (this.firstTick && this.level().isClientSide()) {
          this.firstTick = false;
       } else {
@@ -369,8 +366,8 @@ public class ExperienceOrb extends Entity {
       return SoundSource.AMBIENT;
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
+   protected InterpolationHandler createInterpolationHandler() {
+      return LinearInterpolationHandler.create(this);
    }
 
    public MoveSimulationType getMoveSimulationType() {

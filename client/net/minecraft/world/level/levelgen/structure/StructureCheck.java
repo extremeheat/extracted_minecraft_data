@@ -30,6 +30,7 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
@@ -50,7 +51,7 @@ public class StructureCheck {
    private final ChunkGenerator chunkGenerator;
    private final RandomState randomState;
    private final LevelHeightAccessor heightAccessor;
-   private final BiomeSource biomeSource;
+   private final BiomeResolver biomeResolver;
    private final long seed;
    private final DataFixer fixerUpper;
    private final Long2ObjectMap<Object2IntMap<Structure>> loadedChunks = new Long2ObjectOpenHashMap();
@@ -65,7 +66,7 @@ public class StructureCheck {
       this.chunkGenerator = chunkGenerator;
       this.randomState = randomState;
       this.heightAccessor = heightAccessor;
-      this.biomeSource = biomeSource;
+      this.biomeResolver = biomeSource.createResolver(randomState.sampler());
       this.seed = seed;
       this.fixerUpper = fixerUpper;
    }
@@ -91,7 +92,7 @@ public class StructureCheck {
    private boolean canCreateStructure(final ChunkPos pos, final Structure structure) {
       RegistryAccess var10003 = this.registryAccess;
       ChunkGenerator var10004 = this.chunkGenerator;
-      BiomeSource var10005 = this.biomeSource;
+      BiomeResolver var10005 = this.biomeResolver;
       RandomState var10006 = this.randomState;
       StructureTemplateManager var10007 = this.structureTemplateManager;
       long var10008 = this.seed;

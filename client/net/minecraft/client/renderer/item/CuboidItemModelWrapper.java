@@ -20,6 +20,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
@@ -34,7 +35,8 @@ import org.jspecify.annotations.Nullable;
 
 public class CuboidItemModelWrapper implements ItemModel {
    private final List<ItemTintSource> tints;
-   private final QuadCollection quads;
+   private final boolean animated;
+   private final ItemQuads itemQuads;
    private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
    private final Matrix4fc transformation;
@@ -42,7 +44,8 @@ public class CuboidItemModelWrapper implements ItemModel {
    private CuboidItemModelWrapper(final List<ItemTintSource> tints, final QuadCollection quads, final ModelRenderProperties properties, final Matrix4fc transformation) {
       super();
       this.tints = tints;
-      this.quads = quads;
+      this.animated = quads.hasMaterialFlag(2);
+      this.itemQuads = ItemQuads.split(quads.getAll());
       this.properties = properties;
       this.transformation = transformation;
       this.extents = Suppliers.memoize(() -> computeExtents(quads.getAll()));
@@ -83,8 +86,8 @@ public class CuboidItemModelWrapper implements ItemModel {
       layer.setExtents(this.extents);
       layer.setLocalTransform(this.transformation);
       this.properties.applyToLayer(layer, displayContext);
-      layer.prepareQuadList().addAll(this.quads.getAll());
-      if (this.quads.hasMaterialFlag(2)) {
+      layer.setQuads(this.itemQuads);
+      if (this.animated) {
          output.setAnimated();
       }
 

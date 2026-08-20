@@ -57,6 +57,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
    private VulkanQueue.Submission submissionBuilder;
    private final DestructionQueue<Destroyable> destroyQueue = new DestructionQueue<Destroyable>(2, Destroyable::destroy);
    private final VulkanCommandPool[] commandPools = new VulkanCommandPool[2];
+   private @Nullable VkCommandBuffer currentInitCommandBuffer;
    private @Nullable VkCommandBuffer currentCommandBuffer;
    private @Nullable VulkanRenderPass currentRenderPass;
 
@@ -160,22 +161,56 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          throw new IllegalStateException("Cannot start command buffer while inside RenderPass");
       } else {
          this.currentCommandBuffer = this.allocateAndBeginTransientCommandBuffer();
-         this.submissionBuilder.executeCommands(this.currentCommandBuffer);
          return this.currentCommandBuffer;
       }
    }
 
-   VkCommandBuffer textureInitCommandBuffer() {
-      return this.commandBuffer();
+   VkCommandBuffer objectInitCommandBuffer() {
+      if (this.currentInitCommandBuffer != null) {
+         return this.currentInitCommandBuffer;
+      } else {
+         this.currentInitCommandBuffer = this.allocateAndBeginTransientCommandBuffer();
+         return this.currentInitCommandBuffer;
+      }
    }
 
    private void endCommandBuffer() {
-      if (this.currentCommandBuffer != null) {
+      if (this.currentCommandBuffer != null || this.currentInitCommandBuffer != null) {
          if (this.currentRenderPass != null) {
             throw new IllegalStateException("Cannot end command buffer while inside RenderPass");
          } else {
-            VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(this.currentCommandBuffer), "Failed to end VkCommandBuffer");
-            this.currentCommandBuffer = null;
+            if (this.currentInitCommandBuffer != null) {
+               MemoryStack stack = MemoryStack.stackPush();
+
+               try {
+                  memoryBarrier(this.currentInitCommandBuffer, stack);
+               } catch (Throwable var5) {
+                  if (stack != null) {
+                     try {
+                        stack.close();
+                     } catch (Throwable var4) {
+                        var5.addSuppressed(var4);
+                     }
+                  }
+
+                  throw var5;
+               }
+
+               if (stack != null) {
+                  stack.close();
+               }
+
+               VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(this.currentInitCommandBuffer), "Failed to end VkCommandBuffer");
+               this.submissionBuilder.executeCommands(this.currentInitCommandBuffer);
+               this.currentInitCommandBuffer = null;
+            }
+
+            if (this.currentCommandBuffer != null) {
+               VulkanUtils.crashIfFailure(this.device, VK12.vkEndCommandBuffer(this.currentCommandBuffer), "Failed to end VkCommandBuffer");
+               this.submissionBuilder.executeCommands(this.currentCommandBuffer);
+               this.currentCommandBuffer = null;
+            }
+
          }
       }
    }
@@ -453,10 +488,10 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
 
    }
 
-   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final Vector4fc clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight) {
+   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final Vector4fc clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight, final int mipLevel) {
       try (
-         GpuTextureView colorTextureView = this.device.createTextureView(colorTexture);
-         GpuTextureView depthTextureView = this.device.createTextureView(depthTexture);
+         GpuTextureView colorTextureView = this.device.createTextureView(colorTexture, mipLevel, 1);
+         GpuTextureView depthTextureView = this.device.createTextureView(depthTexture, mipLevel, 1);
       ) {
          MemoryStack stack = MemoryStack.stackPush();
 
@@ -484,16 +519,16 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
             attachments.position(0);
             VK12.vkCmdClearAttachments(this.commandBuffer(), attachments, rects);
             this.submitRenderPass();
-         } catch (Throwable var21) {
+         } catch (Throwable var22) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var20) {
-                  var21.addSuppressed(var20);
+               } catch (Throwable var21) {
+                  var22.addSuppressed(var21);
                }
             }
 
-            throw var21;
+            throw var22;
          }
 
          if (stack != null) {

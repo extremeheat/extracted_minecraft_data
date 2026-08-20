@@ -22,6 +22,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -69,14 +70,12 @@ public class FishingHook extends Projectile {
    private FishHookState currentState;
    private final int luck;
    private final int lureSpeed;
-   private final InterpolationHandler interpolationHandler;
 
    private FishingHook(final EntityType<? extends FishingHook> type, final Level level, final int luck, final int lureSpeed) {
       super(type, level);
       this.syncronizedRandom = RandomSource.create();
       this.openWater = true;
       this.currentState = FishingHook.FishHookState.FLYING;
-      this.interpolationHandler = new LinearInterpolationHandler(this);
       this.luck = Math.max(0, luck);
       this.lureSpeed = Math.max(0, lureSpeed);
    }
@@ -108,8 +107,8 @@ public class FishingHook extends Projectile {
       this.xRotO = this.getXRot();
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolationHandler;
+   protected InterpolationHandler createInterpolationHandler() {
+      return LinearInterpolationHandler.create(this);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -144,7 +143,6 @@ public class FishingHook extends Projectile {
 
    public void tick() {
       this.syncronizedRandom.setSeed(this.getUUID().getLeastSignificantBits() ^ this.level().getGameTime());
-      this.getInterpolation().interpolate();
       super.tick();
       Player owner = this.getPlayerOwner();
       if (owner == null) {
@@ -459,7 +457,7 @@ public class FishingHook extends Projectile {
       }
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 31 && this.hookedIn != null) {
          this.pullEntity(this.hookedIn);
       }

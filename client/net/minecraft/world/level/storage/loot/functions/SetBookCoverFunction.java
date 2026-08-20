@@ -3,9 +3,9 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
@@ -20,8 +20,8 @@ public class SetBookCoverFunction extends LootItemConditionalFunction {
    private final Optional<Filterable<String>> title;
    private final Optional<Integer> generation;
 
-   public SetBookCoverFunction(final List<LootItemCondition> predicates, final Optional<Filterable<String>> title, final Optional<String> author, final Optional<Integer> generation) {
-      super(predicates);
+   public SetBookCoverFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<Filterable<String>> title, final Optional<String> author, final Optional<Integer> generation) {
+      super(condition);
       this.author = author;
       this.title = title;
       this.generation = generation;

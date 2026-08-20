@@ -189,15 +189,21 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.resetFallDistance();
    }
 
-   public boolean canBreakBlockInAdventureMode(final BlockInWorld blockInWorld) {
-      Entity var3 = this.getOwner();
-      if (var3 instanceof Player player) {
-         if (player.gameMode() != GameType.ADVENTURE) {
-            return true;
+   public boolean canBreakBlockInAdventureMode(final ServerLevel level, final BlockInWorld blockInWorld) {
+      Entity owner = this.getOwner();
+      GameType worldGameMode = level.getServer().getDefaultGameType();
+      if (owner != null || worldGameMode == GameType.ADVENTURE) {
+         if (owner instanceof Player) {
+            Player player = (Player)owner;
+            if (player.gameMode() != GameType.ADVENTURE) {
+               return true;
+            }
          }
-      }
 
-      return this.canBreak != null && this.canBreak.test(blockInWorld);
+         return this.canBreak != null && this.canBreak.test(blockInWorld);
+      } else {
+         return true;
+      }
    }
 
    public static <T extends Projectile> T spawnProjectileFromRotation(final ProjectileFactory<T> creator, final ServerLevel serverLevel, final ItemStack itemStack, final LivingEntity source, final float yOffset, final float pow, final float uncertainty) {
@@ -238,23 +244,25 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected ProjectileDeflection hitTargetOrDeflectSelf(final HitResult hitResult) {
-      if (hitResult.getType() == HitResult.Type.ENTITY) {
-         EntityHitResult entityHitResult = (EntityHitResult)hitResult;
+      if (hitResult instanceof EntityHitResult entityHitResult) {
          Entity entity = entityHitResult.getEntity();
          ProjectileDeflection deflection = entity.deflection(this);
          if (deflection != ProjectileDeflection.NONE) {
-            if (entity != this.lastDeflectedBy && this.deflect(deflection, entity, this.owner, false)) {
+            if (entity != this.lastDeflectedBy && this.deflect(deflection, entity, this.owner, false, 1.0)) {
                this.lastDeflectedBy = entity;
             }
 
             return deflection;
          }
-      } else if (this.shouldBounceOnWorldBorder() && hitResult instanceof BlockHitResult) {
-         BlockHitResult blockHit = (BlockHitResult)hitResult;
-         if (blockHit.isWorldBorderHit()) {
+      } else if (hitResult instanceof BlockHitResult blockHitResult) {
+         if (!blockHitResult.isWorldBorderHit()) {
+            BlockState collidedWith = this.level().getBlockState(blockHitResult.getBlockPos());
+            if (collidedWith.isAir()) {
+               return ProjectileDeflection.NONE;
+            }
+         } else if (this.shouldBounceOnWorldBorder()) {
             ProjectileDeflection deflection = ProjectileDeflection.REVERSE;
-            if (this.deflect(deflection, (Entity)null, this.owner, false)) {
-               this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
+            if (this.deflect(deflection, (Entity)null, this.owner, false, 0.2)) {
                return deflection;
             }
          }
@@ -268,14 +276,18 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return false;
    }
 
-   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack) {
-      deflection.deflect(this, deflectingEntity, this.random);
+   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack, final Vec3 power) {
       if (!this.level().isClientSide()) {
+         deflection.deflect(this, deflectingEntity, this.random, power);
          this.setOwner(newOwner);
          this.onDeflection(byAttack);
       }
 
       return true;
+   }
+
+   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack, final double power) {
+      return this.deflect(deflection, deflectingEntity, newOwner, byAttack, new Vec3(power, power, power));
    }
 
    protected void onDeflection(final boolean byAttack) {
@@ -291,7 +303,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          Entity entityHit = entityHitResult.getEntity();
          if (entityHit.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entityHit instanceof Projectile) {
             Projectile projectile = (Projectile)entityHit;
-            projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.owner, true);
+            this.onRedirectProjectile(projectile);
          }
 
          this.onHitEntity(entityHitResult);
@@ -311,6 +323,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    protected void onHitBlock(final BlockHitResult hitResult) {
       BlockState state = this.level().getBlockState(hitResult.getBlockPos());
       state.onProjectileHit(this.level(), state, hitResult, this);
+   }
+
+   protected void onRedirectProjectile(final Projectile hitProjectile) {
+      hitProjectile.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.owner, true, 1.0);
    }
 
    protected boolean canHitEntity(final Entity entity) {
@@ -365,7 +381,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public boolean mayBreak(final ServerLevel level, final BlockPos pos) {
-      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS) && this.canBreakBlockInAdventureMode(new BlockInWorld(level, pos, false));
+      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS) && this.canBreakBlockInAdventureMode(level, new BlockInWorld(level, pos, false));
    }
 
    public boolean isPickable() {

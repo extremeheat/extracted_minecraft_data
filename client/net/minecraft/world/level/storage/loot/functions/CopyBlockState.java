@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,17 +29,17 @@ public class CopyBlockState extends LootItemConditionalFunction {
    private final Holder<Block> block;
    private final Set<Property<?>> properties;
 
-   private CopyBlockState(final List<LootItemCondition> predicates, final Holder<Block> block, final Set<Property<?>> properties) {
-      super(predicates);
+   private CopyBlockState(final Optional<Holder<LootItemCondition>> condition, final Holder<Block> block, final Set<Property<?>> properties) {
+      super(condition);
       this.block = block;
       this.properties = properties;
    }
 
-   private CopyBlockState(final List<LootItemCondition> predicates, final Holder<Block> block, final List<String> propertyNames) {
+   private CopyBlockState(final Optional<Holder<LootItemCondition>> condition, final Holder<Block> block, final List<String> propertyNames) {
       Stream var10003 = propertyNames.stream();
       StateDefinition var10004 = (block.value()).getStateDefinition();
       Objects.requireNonNull(var10004);
-      this(predicates, block, (Set)var10003.map(var10004::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
+      this(condition, block, (Set)var10003.map(var10004::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
    }
 
    public MapCodec<CopyBlockState> codec() {
@@ -94,7 +95,7 @@ public class CopyBlockState extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new CopyBlockState(this.getConditions(), this.block, this.properties.build());
+         return new CopyBlockState(this.getCondition(), this.block, this.properties.build());
       }
    }
 }

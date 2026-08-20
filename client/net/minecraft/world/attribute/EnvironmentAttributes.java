@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.TriState;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.MoonPhase;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 
 public interface EnvironmentAttributes {
    EnvironmentAttribute<Integer> FOG_COLOR = register("visual/fog_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(0).spatiallyInterpolated().syncable());
@@ -59,6 +60,8 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Boolean> BEES_STAY_IN_HIVE = register("gameplay/bees_stay_in_hive", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    EnvironmentAttribute<Boolean> MONSTERS_BURN = register("gameplay/monsters_burn", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    EnvironmentAttribute<Boolean> CAN_PILLAGER_PATROL_SPAWN = register("gameplay/can_pillager_patrol_spawn", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(true));
+   EnvironmentAttribute<MobSpawnSettings> NATURAL_MOB_SPAWNS = register("gameplay/natural_mob_spawns", EnvironmentAttribute.builder(AttributeTypes.MOB_SPAWN_SETTINGS).defaultValue(MobSpawnSettings.EMPTY));
+   EnvironmentAttribute<Float> CREATURE_WORLD_GEN_SPAWN_PROBABILITY = register("gameplay/creature_world_gen_spawn_probability", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.1F).valueRange(AttributeRange.UNIT_FLOAT_EPSILON));
    EnvironmentAttribute<Activity> VILLAGER_ACTIVITY = register("gameplay/villager_activity", EnvironmentAttribute.builder(AttributeTypes.ACTIVITY).defaultValue(Activity.IDLE));
    EnvironmentAttribute<Activity> BABY_VILLAGER_ACTIVITY = register("gameplay/baby_villager_activity", EnvironmentAttribute.builder(AttributeTypes.ACTIVITY).defaultValue(Activity.IDLE));
    Codec<EnvironmentAttribute<?>> CODEC = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec();

@@ -316,7 +316,7 @@ public abstract class AbstractGameRulesScreen extends Screen {
             }
          });
          entries.entrySet().stream().sorted(Entry.comparingByKey(Comparator.comparing(GameRuleCategory::getDescriptionId))).forEach((e) -> {
-            this.addEntry(AbstractGameRulesScreen.this.new CategoryRuleEntry(((GameRuleCategory)e.getKey()).label().withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW)));
+            this.addEntry(AbstractGameRulesScreen.this.new CategoryRuleEntry(((GameRuleCategory)e.getKey()).label().withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW, ChatFormatting.UNDERLINE)));
             ((Map)e.getValue()).entrySet().stream().sorted(Entry.comparingByKey(Comparator.comparing(GameRule::getDescriptionId))).forEach((v) -> this.addEntry((RuleEntry)v.getValue()));
          });
       }

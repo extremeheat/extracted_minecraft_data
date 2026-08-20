@@ -6,13 +6,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public ChanneledLightningTrigger() {
@@ -28,8 +29,8 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
       this.trigger(player, (t) -> t.matches(victimsContexts));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, List<Holder<LootItemCondition>> victims) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootItemCondition.CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -40,11 +41,11 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
       }
 
       public boolean matches(final Collection<? extends LootContext> victims) {
-         for(ContextAwarePredicate predicate : this.victims) {
+         for(Holder<LootItemCondition> predicate : this.victims) {
             boolean found = false;
 
             for(LootContext victim : victims) {
-               if (predicate.matches(victim)) {
+               if (((LootItemCondition)predicate.value()).test(victim)) {
                   found = true;
                   break;
                }
@@ -60,7 +61,7 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "victims", this.victims);
+         Validatable.validateHolder(validator.entityContext(), "victims", this.victims);
       }
    }
 }

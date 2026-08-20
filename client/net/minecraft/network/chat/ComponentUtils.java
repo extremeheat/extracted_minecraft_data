@@ -92,8 +92,8 @@ public class ComponentUtils {
             throw new MatchException(var7.toString(), var7);
          }
 
-         HoverEvent resolved = var9;
-         resolved = new HoverEvent.ShowText(resolve(context, resolved, recursionDepth + 1));
+         Component text = var9;
+         HoverEvent resolved = new HoverEvent.ShowText(resolve(context, text, recursionDepth + 1));
          return style.withHoverEvent(resolved);
       } else {
          return style;

@@ -5,20 +5,20 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class DefaultRedstoneWireEvaluator extends RedstoneWireEvaluator {
-   public DefaultRedstoneWireEvaluator(final RedStoneWireBlock wireBlock) {
+   public DefaultRedstoneWireEvaluator(final RedstoneWireBlock wireBlock) {
       super(wireBlock);
    }
 
    public void updatePowerStrength(final Level level, final BlockPos pos, final BlockState state, final @Nullable Orientation orientation, final boolean skipShapeUpdates) {
       int targetStrength = this.calculateTargetStrength(level, pos);
-      if ((Integer)state.getValue(RedStoneWireBlock.POWER) != targetStrength) {
+      if ((Integer)state.getValue(RedstoneWireBlock.POWER) != targetStrength) {
          if (level.getBlockState(pos) == state) {
-            level.setBlock(pos, (BlockState)state.setValue(RedStoneWireBlock.POWER, targetStrength), 2);
+            level.setBlock(pos, (BlockState)state.setValue(RedstoneWireBlock.POWER, targetStrength), 2);
          }
 
          Set<BlockPos> toUpdate = Sets.newHashSet();

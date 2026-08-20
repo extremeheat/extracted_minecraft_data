@@ -26,6 +26,7 @@ public class DebugScreenEntries {
    public static final Identifier CHUNK_SOURCE_STATS = register((String)"chunk_source_stats", new DebugEntryChunkSourceStats());
    public static final Identifier PLAYER_POSITION = register((String)"player_position", new DebugEntryPosition());
    public static final Identifier PLAYER_SECTION_POSITION = register((String)"player_section_position", new DebugEntrySectionPosition());
+   public static final Identifier PLAYER_SPEED = register((String)"player_speed", new DebugEntryPlayerSpeed());
    public static final Identifier LIGHT_LEVELS = register((String)"light_levels", new DebugEntryLight());
    public static final Identifier HEIGHTMAP = register((String)"heightmap", new DebugEntryHeightmap());
    public static final Identifier BIOME = register((String)"biome", new DebugEntryBiome());

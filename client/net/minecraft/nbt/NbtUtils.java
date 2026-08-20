@@ -121,7 +121,7 @@ public final class NbtUtils {
    }
 
    public static BlockState readBlockState(final HolderGetter<Block> blocks, final CompoundTag tag) {
-      Optional var10000 = tag.read("Name", BLOCK_NAME_CODEC);
+      Optional var10000 = tag.read("id", BLOCK_NAME_CODEC);
       Objects.requireNonNull(blocks);
       Optional<? extends Holder<Block>> blockHolder = var10000.flatMap(blocks::get);
       if (blockHolder.isEmpty()) {
@@ -129,7 +129,7 @@ public final class NbtUtils {
       } else {
          Block block = (Block)((Holder)blockHolder.get()).value();
          BlockState result = block.defaultBlockState();
-         Optional<CompoundTag> properties = tag.getCompound("Properties");
+         Optional<CompoundTag> properties = tag.getCompound("properties");
          if (properties.isPresent()) {
             StateDefinition<Block, BlockState> definition = block.getStateDefinition();
 
@@ -161,21 +161,21 @@ public final class NbtUtils {
       if (!state.isSingletonState()) {
          CompoundTag properties = new CompoundTag();
          state.getValues().forEach((value) -> properties.putString(value.property().getName(), value.valueName()));
-         tag.put("Properties", properties);
+         tag.put("properties", properties);
       }
 
    }
 
    public static CompoundTag writeBlockState(final BlockState state) {
       CompoundTag tag = new CompoundTag();
-      tag.putString("Name", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+      tag.putString("id", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
       writeStateProperties(state, tag);
       return tag;
    }
 
    public static CompoundTag writeFluidState(final FluidState state) {
       CompoundTag tag = new CompoundTag();
-      tag.putString("Name", BuiltInRegistries.FLUID.getKey(state.getType()).toString());
+      tag.putString("id", BuiltInRegistries.FLUID.getKey(state.getType()).toString());
       writeStateProperties(state, tag);
       return tag;
    }
@@ -478,8 +478,8 @@ public final class NbtUtils {
 
    @VisibleForTesting
    static String packBlockState(final CompoundTag compound) {
-      StringBuilder builder = new StringBuilder((String)compound.getString("Name").orElseThrow());
-      compound.getCompound("Properties").ifPresent((properties) -> {
+      StringBuilder builder = new StringBuilder((String)compound.getString("id").orElseThrow());
+      compound.getCompound("properties").ifPresent((properties) -> {
          String keyValues = (String)properties.entrySet().stream().sorted(Entry.comparingByKey()).map((entry) -> {
             String var10000 = (String)entry.getKey();
             return var10000 + ":" + (String)((Tag)entry.getValue()).asString().orElseThrow();
@@ -508,13 +508,13 @@ public final class NbtUtils {
                }
 
             });
-            tag.put("Properties", properties);
+            tag.put("properties", properties);
          }
       } else {
          name = compound;
       }
 
-      tag.putString("Name", name);
+      tag.putString("id", name);
       return tag;
    }
 

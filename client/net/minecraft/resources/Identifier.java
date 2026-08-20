@@ -129,7 +129,7 @@ public final class Identifier implements Comparable<Identifier> {
       return this.namespace + ":" + this.path;
    }
 
-   public boolean equals(final Object o) {
+   public boolean equals(final @Nullable Object o) {
       if (this == o) {
          return true;
       } else if (!(o instanceof Identifier)) {
@@ -154,7 +154,7 @@ public final class Identifier implements Comparable<Identifier> {
    }
 
    public Path resolveAgainst(final Path root) {
-      Path resultingPath = root.resolve(this.getNamespace(), new String[]{this.getPath()});
+      Path resultingPath = root.resolve(this.getNamespace(), this.getPath());
       Path normalizedPath = resultingPath.normalize();
       Path normalizedRoot = root.normalize();
       if (!normalizedPath.startsWith(normalizedRoot)) {

@@ -4,6 +4,7 @@ import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.backend.vulkan.VulkanDevice;
 import com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer;
 import com.mojang.renderpearl.backend.vulkan.VulkanQueue;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.vulkan.AMDBufferMarker;
@@ -40,7 +41,7 @@ public class AmdCheckpointExtension implements CheckpointExtension {
 
    }
 
-   private static class AmdCheckpointStorage extends AbstractCheckpointStorage implements AutoCloseable {
+   private static class AmdCheckpointStorage extends AbstractCheckpointStorage implements UncheckedAutoCloseable {
       private final VulkanGpuBuffer buffer;
       private final GpuBufferSlice.MappedView mappedView;
 

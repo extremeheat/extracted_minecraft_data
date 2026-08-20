@@ -3,15 +3,16 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.DamagePredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public PlayerHurtEntityTrigger() {
@@ -27,8 +28,8 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInsta
       this.trigger(player, (t) -> t.matches(player, victimContext, source, originalDamage, actualDamage, blocked));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DamagePredicate> damage, Optional<ContextAwarePredicate> entity) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<DamagePredicate> damage, Optional<Holder<LootItemCondition>> entity) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage), LootItemCondition.CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -62,13 +63,13 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInsta
          if (this.damage.isPresent() && !((DamagePredicate)this.damage.get()).matches(player, source, originalDamage, actualDamage, blocked)) {
             return false;
          } else {
-            return !this.entity.isPresent() || ((ContextAwarePredicate)this.entity.get()).matches(victim);
+            return !this.entity.isPresent() || ((LootItemCondition)((Holder)this.entity.get()).value()).test(victim);
          }
       }
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "entity", this.entity);
+         Validatable.validateHolder(validator.entityContext(), "entity", this.entity);
       }
    }
 }

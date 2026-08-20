@@ -5,11 +5,13 @@ import com.google.common.primitives.Longs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.time.Instant;
 import java.util.Optional;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
@@ -38,23 +40,18 @@ public record SignedMessageBody(String content, Instant timeStamp, long salt, La
    }
 
    public static record Packed(String content, Instant timeStamp, long salt, LastSeenMessages.Packed lastSeen) {
-      public Packed(final FriendlyByteBuf input) {
-         this(input.readUtf(256), input.readInstant(), input.readLong(), new LastSeenMessages.Packed(input));
-      }
+      public static final StreamCodec<ByteBuf, Packed> STREAM_CODEC;
 
       public Packed {
          super();
       }
 
-      public void write(final FriendlyByteBuf output) {
-         output.writeUtf(this.content, 256);
-         output.writeInstant(this.timeStamp);
-         output.writeLong(this.salt);
-         this.lastSeen.write(output);
-      }
-
       public Optional<SignedMessageBody> unpack(final MessageSignatureCache cache) {
          return this.lastSeen.unpack(cache).map((lastSeen) -> new SignedMessageBody(this.content, this.timeStamp, this.salt, lastSeen));
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.stringUtf8(256), Packed::content, ByteBufCodecs.INSTANT, Packed::timeStamp, ByteBufCodecs.LONG, Packed::salt, LastSeenMessages.Packed.STREAM_CODEC, Packed::lastSeen, Packed::new);
       }
    }
 }

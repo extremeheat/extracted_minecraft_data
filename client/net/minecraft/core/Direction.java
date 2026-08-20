@@ -460,69 +460,9 @@ public enum Direction implements Directional, StringRepresentable {
    }
 
    public static enum Axis implements Predicate<Direction>, StringRepresentable {
-      X("x") {
-         public int choose(final int x, final int y, final int z) {
-            return x;
-         }
-
-         public boolean choose(final boolean x, final boolean y, final boolean z) {
-            return x;
-         }
-
-         public double choose(final double x, final double y, final double z) {
-            return x;
-         }
-
-         public Direction getPositive() {
-            return Direction.EAST;
-         }
-
-         public Direction getNegative() {
-            return Direction.WEST;
-         }
-      },
-      Y("y") {
-         public int choose(final int x, final int y, final int z) {
-            return y;
-         }
-
-         public double choose(final double x, final double y, final double z) {
-            return y;
-         }
-
-         public boolean choose(final boolean x, final boolean y, final boolean z) {
-            return y;
-         }
-
-         public Direction getPositive() {
-            return Direction.UP;
-         }
-
-         public Direction getNegative() {
-            return Direction.DOWN;
-         }
-      },
-      Z("z") {
-         public int choose(final int x, final int y, final int z) {
-            return z;
-         }
-
-         public double choose(final double x, final double y, final double z) {
-            return z;
-         }
-
-         public boolean choose(final boolean x, final boolean y, final boolean z) {
-            return z;
-         }
-
-         public Direction getPositive() {
-            return Direction.SOUTH;
-         }
-
-         public Direction getNegative() {
-            return Direction.NORTH;
-         }
-      };
+      X("x"),
+      Y("y"),
+      Z("z");
 
       public static final Axis[] VALUES = values();
       public static final StringRepresentable.EnumCodec<Axis> CODEC = StringRepresentable.<Axis>fromEnum(Axis::values);
@@ -548,9 +488,29 @@ public enum Direction implements Directional, StringRepresentable {
          return this == X || this == Z;
       }
 
-      public abstract Direction getPositive();
+      public Direction getPositive() {
+         Direction var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = Direction.EAST;
+            case 1 -> var10000 = Direction.UP;
+            case 2 -> var10000 = Direction.SOUTH;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
 
-      public abstract Direction getNegative();
+         return var10000;
+      }
+
+      public Direction getNegative() {
+         Direction var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = Direction.WEST;
+            case 1 -> var10000 = Direction.DOWN;
+            case 2 -> var10000 = Direction.NORTH;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
 
       public Direction[] getDirections() {
          return new Direction[]{this.getPositive(), this.getNegative()};
@@ -589,11 +549,41 @@ public enum Direction implements Directional, StringRepresentable {
          return this.name;
       }
 
-      public abstract int choose(final int x, final int y, final int z);
+      public int choose(final int x, final int y, final int z) {
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = x;
+            case 1 -> var10000 = y;
+            case 2 -> var10000 = z;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
 
-      public abstract double choose(final double x, final double y, final double z);
+         return var10000;
+      }
 
-      public abstract boolean choose(final boolean x, final boolean y, final boolean z);
+      public double choose(final double x, final double y, final double z) {
+         double var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = x;
+            case 1 -> var10000 = y;
+            case 2 -> var10000 = z;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
+
+      public boolean choose(final boolean x, final boolean y, final boolean z) {
+         boolean var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = x;
+            case 1 -> var10000 = y;
+            case 2 -> var10000 = z;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
 
       // $FF: synthetic method
       private static Axis[] $values() {

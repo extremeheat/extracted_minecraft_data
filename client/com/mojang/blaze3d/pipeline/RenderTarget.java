@@ -73,6 +73,17 @@ public abstract class RenderTarget {
       }
    }
 
+   public void copyColorFrom(final RenderTarget source) {
+      RenderSystem.assertOnRenderThread();
+      if (this.colorTexture == null) {
+         throw new IllegalStateException("Trying to copy color texture to a RenderTarget without a color texture");
+      } else if (source.colorTexture == null) {
+         throw new IllegalStateException("Trying to copy color texture from a RenderTarget without a color texture");
+      } else {
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(source.colorTexture, this.colorTexture, 0, 0, 0, 0, 0, this.width, this.height);
+      }
+   }
+
    public void createBuffers(final int width, final int height) {
       RenderSystem.assertOnRenderThread();
       GpuDevice device = RenderSystem.getDevice();
@@ -101,7 +112,7 @@ public abstract class RenderTarget {
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, Optional.empty(), outputDepth, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT));
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+         renderPass.setUniform("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
          renderPass.draw(3, 1, 0, 0);
       }
 

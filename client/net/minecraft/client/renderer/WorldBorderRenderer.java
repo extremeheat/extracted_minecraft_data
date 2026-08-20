@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.level.WorldBorderRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MipmappedTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -28,9 +29,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
 public class WorldBorderRenderer implements AutoCloseable {
    public static final Identifier FORCEFIELD_LOCATION = Identifier.withDefaultNamespace("textures/misc/forcefield.png");
+   private static final int FORCEFIELD_MIP_LEVEL = 4;
+   private static final double RENDERING_OFFSET = 0.01;
    private boolean needsRebuild = true;
    private double lastMinX;
    private double lastMinZ;
@@ -38,7 +42,7 @@ public class WorldBorderRenderer implements AutoCloseable {
    private double lastBorderMaxX;
    private double lastBorderMinZ;
    private double lastBorderMaxZ;
-   private AbstractTexture texture;
+   private @Nullable AbstractTexture texture;
    private final GpuBuffer worldBorderBuffer;
    private final RenderSystem.AutoStorageIndexBuffer indices;
    private final TextureManager textureManager;
@@ -49,7 +53,7 @@ public class WorldBorderRenderer implements AutoCloseable {
       this.indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       Minecraft minecraft = Minecraft.getInstance();
       this.textureManager = minecraft.getTextureManager();
-      this.texture = this.textureManager.getTexture(FORCEFIELD_LOCATION);
+      this.textureManager.register(FORCEFIELD_LOCATION, new MipmappedTexture(FORCEFIELD_LOCATION, 4));
    }
 
    public void close() {
@@ -58,10 +62,10 @@ public class WorldBorderRenderer implements AutoCloseable {
 
    private void rebuildWorldBorderBuffer(final WorldBorderRenderState state, final double renderDistance, final double cameraZ, final double cameraX, final float halfHeightY, final float v1, final float v0) {
       try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4 * 4)) {
-         double borderMinX = state.minX;
-         double borderMaxX = state.maxX;
-         double borderMinZ = state.minZ;
-         double borderMaxZ = state.maxZ;
+         double borderMinX = state.minX + 0.01;
+         double borderMaxX = state.maxX - 0.01;
+         double borderMinZ = state.minZ + 0.01;
+         double borderMaxZ = state.maxZ - 0.01;
          double minZ = Math.max((double)Mth.floor(cameraZ - renderDistance), borderMinZ);
          double maxZ = Math.min((double)Mth.ceil(cameraZ + renderDistance), borderMaxZ);
          float u0z = (float)(Mth.floor(minZ) & 1) * 0.5F;
@@ -92,10 +96,10 @@ public class WorldBorderRenderer implements AutoCloseable {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.worldBorderBuffer.slice(), meshData.vertexBuffer());
          }
 
-         this.lastBorderMinX = borderMinX;
-         this.lastBorderMaxX = borderMaxX;
-         this.lastBorderMinZ = borderMinZ;
-         this.lastBorderMaxZ = borderMaxZ;
+         this.lastBorderMinX = state.minX;
+         this.lastBorderMaxX = state.maxX;
+         this.lastBorderMinZ = state.minZ;
+         this.lastBorderMaxZ = state.maxZ;
          this.lastMinX = minX;
          this.lastMinZ = minZ;
          this.needsRebuild = false;
@@ -171,7 +175,7 @@ public class WorldBorderRenderer implements AutoCloseable {
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setIndexBuffer(indexBuffer, this.indices.type());
-      renderPass.bindTexture("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
+      renderPass.setUniform("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
       renderPass.setVertexBuffer(0, this.worldBorderBuffer.slice());
    }
 

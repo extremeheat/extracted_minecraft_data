@@ -34,11 +34,11 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.InterpolationTracker;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PositionPath;
+import net.minecraft.world.entity.UpdateInterval;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -63,9 +63,10 @@ public class ServerEntity {
    private static final int FORCED_TELEPORT_PERIOD = 400;
    private final ServerLevel level;
    private final Entity entity;
-   private final int updateInterval;
+   private final UpdateInterval updateInterval;
    private final boolean trackDelta;
    private final Synchronizer synchronizer;
+   private final InterpolationTracker interpolationTracker;
    private final VecDeltaCodec positionCodec = new VecDeltaCodec();
    private byte lastSentYRot;
    private byte lastSentXRot;
@@ -78,13 +79,14 @@ public class ServerEntity {
    private boolean wasOnGround;
    private @Nullable List<SynchedEntityData.DataValue<?>> trackedDataValues;
 
-   public ServerEntity(final ServerLevel level, final Entity entity, final int updateInterval, final boolean trackDelta, final Synchronizer synchronizer) {
+   public ServerEntity(final ServerLevel level, final Entity entity, final UpdateInterval updateInterval, final boolean trackDelta, final Synchronizer synchronizer) {
       super();
       this.level = level;
       this.synchronizer = synchronizer;
       this.entity = entity;
       this.updateInterval = updateInterval;
       this.trackDelta = trackDelta;
+      this.interpolationTracker = entity.getInterpolation().interpolationTracker();
       this.positionCodec.setBase(entity.trackingPosition());
       this.lastSentMovement = entity.getDeltaMovement();
       this.lastSentYRot = Mth.packDegrees(entity.getYRot());
@@ -98,7 +100,7 @@ public class ServerEntity {
       this.entity.updateDataBeforeSync();
       List<Entity> passengers = this.entity.getPassengers();
       if (!passengers.equals(this.lastPassengers)) {
-         this.synchronizer.sendToTrackingPlayersFiltered(new ClientboundSetPassengersPacket(this.entity), (playerx) -> passengers.contains(playerx) == this.lastPassengers.contains(playerx));
+         this.synchronizer.sendToTrackingPlayers(new ClientboundSetPassengersPacket(this.entity));
          this.lastPassengers = passengers;
       }
 
@@ -124,19 +126,14 @@ public class ServerEntity {
          }
       }
 
-      InterpolationHandler interpolation = this.entity.getInterpolation();
-      InterpolationTracker interpolationTracker = interpolation != null ? interpolation.interpolationTracker() : null;
       Vec3 currentPosition = this.entity.trackingPosition();
-      if (interpolationTracker != null) {
-         interpolationTracker.updateTracking(currentPosition);
-      }
-
+      this.interpolationTracker.updateTracking(currentPosition);
       if (this.entity.syncPosition) {
-         this.tickCount = this.tickCount / this.updateInterval * this.updateInterval + this.updateInterval;
+         this.tickCount = this.updateInterval.nextInterval(this.tickCount);
          this.entity.syncPosition = false;
       }
 
-      if (this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) {
+      if (this.entity.needsSync || this.updateInterval.test(this.tickCount) || this.entity.getEntityData().isDirty()) {
          byte yRotn = Mth.packDegrees(this.entity.getYRot());
          byte xRotn = Mth.packDegrees(this.entity.getXRot());
          boolean shouldSendRotation = Math.abs(yRotn - this.lastSentYRot) >= 1 || Math.abs(xRotn - this.lastSentXRot) >= 1;
@@ -147,35 +144,26 @@ public class ServerEntity {
                this.lastSentXRot = xRotn;
             }
 
-            if (interpolationTracker != null) {
-               interpolationTracker.clear();
-            }
-
+            this.interpolationTracker.clear();
             this.positionCodec.setBase(currentPosition);
             this.sendDirtyEntityData();
             this.wasRiding = true;
          } else {
-            label163: {
-               Entity var10 = this.entity;
-               if (var10 instanceof AbstractMinecart) {
-                  AbstractMinecart minecart = (AbstractMinecart)var10;
-                  MinecartBehavior var27 = minecart.getBehavior();
-                  if (var27 instanceof NewMinecartBehavior) {
-                     NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var27;
+            label144: {
+               Entity position = this.entity;
+               if (position instanceof AbstractMinecart) {
+                  AbstractMinecart minecart = (AbstractMinecart)position;
+                  MinecartBehavior var25 = minecart.getBehavior();
+                  if (var25 instanceof NewMinecartBehavior) {
+                     NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var25;
                      this.handleMinecartPosRot(newMinecartBehavior, yRotn, xRotn, shouldSendRotation);
-                     break label163;
+                     break label144;
                   }
                }
 
                ++this.teleportDelay;
-               PositionPath position;
-               if (interpolationTracker != null) {
-                  position = interpolationTracker.getPositionPath(currentPosition);
-                  interpolationTracker.clear();
-               } else {
-                  position = PositionPath.of(currentPosition);
-               }
-
+               PositionPath position = this.interpolationTracker.getPositionPath(currentPosition);
+               this.interpolationTracker.clear();
                MovementPacket<ClientGamePacketListener> packet;
                if (this.entity instanceof AbstractArrow) {
                   packet = this.createMovePacket(position, yRotn, xRotn, true, true);
@@ -185,16 +173,16 @@ public class ServerEntity {
                   packet = this.createMovePacket(position, yRotn, xRotn, shouldSendPosition, shouldSendRotation);
                }
 
-               label160: {
+               label141: {
                   if (!this.entity.needsSync && !this.trackDelta) {
                      Entity movement = this.entity;
                      if (!(movement instanceof LivingEntity)) {
-                        break label160;
+                        break label141;
                      }
 
                      LivingEntity livingEntity = (LivingEntity)movement;
                      if (!livingEntity.isFallFlying()) {
-                        break label160;
+                        break label141;
                      }
                   }
 
@@ -202,9 +190,9 @@ public class ServerEntity {
                   double diff = movement.distanceToSqr(this.lastSentMovement);
                   if (diff > 1.0E-7 || diff > 0.0 && movement.lengthSqr() == 0.0) {
                      this.lastSentMovement = movement;
-                     Entity var17 = this.entity;
-                     if (var17 instanceof AbstractHurtingProjectile) {
-                        AbstractHurtingProjectile projectile = (AbstractHurtingProjectile)var17;
+                     Entity var15 = this.entity;
+                     if (var15 instanceof AbstractHurtingProjectile) {
+                        AbstractHurtingProjectile projectile = (AbstractHurtingProjectile)var15;
                         this.synchronizer.sendToTrackingPlayers(new ClientboundBundlePacket(List.of(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement), new ClientboundProjectilePowerPacket(projectile.getId(), projectile.accelerationPower))));
                      } else {
                         this.synchronizer.sendToTrackingPlayers(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));

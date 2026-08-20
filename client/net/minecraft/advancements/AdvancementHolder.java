@@ -1,17 +1,14 @@
 package net.minecraft.advancements;
 
-import java.util.List;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 
 public record AdvancementHolder(Identifier id, Advancement value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, AdvancementHolder> STREAM_CODEC;
-   public static final StreamCodec<RegistryFriendlyByteBuf, List<AdvancementHolder>> LIST_STREAM_CODEC;
 
    public AdvancementHolder {
       super();
@@ -49,6 +46,5 @@ public record AdvancementHolder(Identifier id, Advancement value) {
 
    static {
       STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, AdvancementHolder::id, Advancement.STREAM_CODEC, AdvancementHolder::value, AdvancementHolder::new);
-      LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
    }
 }

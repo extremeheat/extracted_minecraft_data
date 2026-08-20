@@ -22,15 +22,15 @@ public class TallGrassBlock extends VegetationBlock implements BonemealableBlock
       return SHAPE;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return getGrownBlock(state).defaultBlockState().canSurvive(level, pos) && level.isEmptyBlock(pos.above()) && level.isInsideBuildHeight(pos.above());
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       DoublePlantBlock.placeAt(level, getGrownBlock(state).defaultBlockState(), pos, 2);
    }
 

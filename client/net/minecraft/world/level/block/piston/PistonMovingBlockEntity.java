@@ -118,7 +118,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
             boolean causeBounce = self.movedState.is(Blocks.SLIME_BLOCK);
 
             for(Entity entity : entities) {
-               if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
+               if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY) {
                   if (causeBounce && entity.canSimulateMovement()) {
                      Vec3 deltaMovement = entity.getDeltaMovement();
                      double dx = deltaMovement.x;
@@ -186,7 +186,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    private static boolean matchesStickyCritera(final AABB aabb, final Entity entity, final BlockPos pos) {
-      return entity.getPistonPushReaction() == PushReaction.NORMAL && entity.onGround() && (entity.isSupportedBy(pos) || entity.getX() >= aabb.minX && entity.getX() <= aabb.maxX && entity.getZ() >= aabb.minZ && entity.getZ() <= aabb.maxZ);
+      return entity.getPistonPushReaction() == PushReaction.PUSH_PULL && entity.onGround() && (entity.isSupportedBy(pos) || entity.getX() >= aabb.minX && entity.getX() <= aabb.maxX && entity.getZ() >= aabb.minZ && entity.getZ() <= aabb.maxZ);
    }
 
    private boolean isStickyForEntities() {

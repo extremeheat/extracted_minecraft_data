@@ -3,16 +3,14 @@ package net.minecraft.client.renderer.item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -161,7 +159,7 @@ public class ItemStackRenderState {
       private static final Vector3fc[] NO_EXTENTS = new Vector3fc[0];
       public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
       public static final int[] EMPTY_TINTS = new int[0];
-      private final List<BakedQuad> quads;
+      private ItemQuads quads;
       private boolean usesBlockLight;
       private Material.@Nullable Baked particleMaterial;
       private ItemTransform itemTransform;
@@ -175,7 +173,7 @@ public class ItemStackRenderState {
       public LayerRenderState() {
          Objects.requireNonNull(ItemStackRenderState.this);
          super();
-         this.quads = new ArrayList();
+         this.quads = ItemQuads.EMPTY;
          this.itemTransform = ItemTransform.NO_TRANSFORM;
          this.localTransform = new Matrix4f();
          this.foilType = ItemStackRenderState.FoilType.NONE;
@@ -183,7 +181,7 @@ public class ItemStackRenderState {
       }
 
       public void clear() {
-         this.quads.clear();
+         this.quads = ItemQuads.EMPTY;
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.specialRenderer = null;
          this.argumentForSpecialRendering = null;
@@ -198,8 +196,8 @@ public class ItemStackRenderState {
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
-      public List<BakedQuad> prepareQuadList() {
-         return this.quads;
+      public void setQuads(final ItemQuads quads) {
+         this.quads = quads;
       }
 
       public void setUsesBlockLight(final boolean usesBlockLight) {

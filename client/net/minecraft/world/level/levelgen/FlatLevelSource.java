@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -15,11 +16,11 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -52,7 +53,7 @@ public class FlatLevelSource extends ChunkGenerator {
       return this.settings;
    }
 
-   public void buildSurface(final WorldGenRegion level, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
+   public void buildSurface(final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk, final BiomeManager biomeManager, final Blender blender, final Set<Holder<Biome>> possibleBiomes) {
    }
 
    public int getSpawnHeight(final LevelHeightAccessor heightAccessor) {
@@ -103,7 +104,7 @@ public class FlatLevelSource extends ChunkGenerator {
    public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
    }
 
-   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final CarvingMask.@Nullable Filter filter) {
+   public void applyCarvers(final @Nullable WorldGenRegion biomeRegion, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final Blender blender) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

@@ -555,7 +555,7 @@ public class EnderDragonFight extends SavedData {
    public void resetSpikeCrystals() {
       for(EndSpikeFeature.EndSpike spike : EndSpikeFeature.getSpikesForLevel(this.level)) {
          for(EndCrystal crystal : this.level.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox())) {
-            crystal.setInvulnerable(false);
+            crystal.setPermanentlyInvulnerable(false);
             crystal.setBeamTarget((BlockPos)null);
          }
       }

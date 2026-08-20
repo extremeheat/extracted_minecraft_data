@@ -1,13 +1,15 @@
 package com.mojang.renderpearl.api.device;
 
-import com.mojang.blaze3d.GLFWErrorCapture;
+import org.jspecify.annotations.Nullable;
 
 public interface GpuBackend {
    String getName();
 
-   void setWindowHints();
+   void loadLibrary() throws BackendCreationException;
 
-   void handleWindowCreationErrors(final GLFWErrorCapture.Error error) throws BackendCreationException;
+   void unloadLibrary();
 
-   GpuDevice createDevice(long window, GpuDebugOptions debugOptions) throws BackendCreationException;
+   long createWindow(@Nullable String title, int width, int height, long flags);
+
+   GpuDevice createDevice(GpuDebugOptions debugOptions) throws BackendCreationException;
 }

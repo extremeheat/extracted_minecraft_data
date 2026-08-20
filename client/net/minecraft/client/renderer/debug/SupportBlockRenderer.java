@@ -43,7 +43,7 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       for(Entity entity : this.surroundEntities) {
-         if (entity != player) {
+         if (entity != player && !entity.isInvisible()) {
             this.drawHighlights(entity, () -> this.getBias(entity), -16711936);
          }
       }

@@ -134,7 +134,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
 
             Inventory inventory = player.getInventory();
             if (level.isClientSide()) {
-               return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
+               return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.CONSUME);
             }
 
             if (!(Boolean)state.getValue(POWERED)) {
@@ -149,7 +149,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                   this.playSound(level, pos, SoundEvents.SHELF_PLACE_ITEM);
                }
 
-               return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
+               return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(itemStack);
             }
 
             ItemStack previousItem = inventory.getSelectedItem();
@@ -160,10 +160,10 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
 
             this.playSound(level, pos, SoundEvents.SHELF_MULTI_SWAP);
             if (previousItem == inventory.getSelectedItem()) {
-               return InteractionResult.SUCCESS;
+               return InteractionResult.SUCCESS_SERVER;
             }
 
-            return InteractionResult.SUCCESS.heldItemTransformedTo(inventory.getSelectedItem());
+            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(inventory.getSelectedItem());
          }
       }
 

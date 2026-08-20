@@ -13,7 +13,9 @@ public class GameRenderState {
    public final OptionsRenderState optionsRenderState = new OptionsRenderState();
    public final WindowRenderState windowRenderState = new WindowRenderState();
    public final List<Identifier> requestedPostEffects = new ArrayList();
+   public boolean shouldRenderLevel;
    public int framerateLimit;
+   public boolean readyForLevelRendering;
 
    public GameRenderState() {
       super();

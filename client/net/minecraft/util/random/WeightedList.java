@@ -168,6 +168,11 @@ public final class WeightedList<E> {
          return this;
       }
 
+      public Builder<E> addAll(final WeightedList<E> other) {
+         this.result.addAll(other.unwrap());
+         return this;
+      }
+
       public WeightedList<E> build() {
          return new WeightedList<E>(this.result.build());
       }

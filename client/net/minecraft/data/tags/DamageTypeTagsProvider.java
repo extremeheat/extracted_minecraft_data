@@ -49,5 +49,6 @@ public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
       this.tag(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES).add(DamageTypes.CACTUS, DamageTypes.FREEZE, DamageTypes.HOT_FLOOR, DamageTypes.SULFUR_CUBE_HOT, DamageTypes.IN_FIRE, DamageTypes.LAVA, DamageTypes.LIGHTNING_BOLT, DamageTypes.ON_FIRE);
       this.tag(DamageTypeTags.PANIC_CAUSES).addTag(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES).add(DamageTypes.ARROW, DamageTypes.DRAGON_BREATH, DamageTypes.EXPLOSION, DamageTypes.FIREBALL, DamageTypes.FIREWORKS, DamageTypes.INDIRECT_MAGIC, DamageTypes.MAGIC, DamageTypes.MOB_ATTACK, DamageTypes.MOB_PROJECTILE, DamageTypes.PLAYER_EXPLOSION, DamageTypes.SONIC_BOOM, DamageTypes.STING, DamageTypes.THROWN, DamageTypes.TRIDENT, DamageTypes.UNATTRIBUTED_FIREBALL, DamageTypes.WIND_CHARGE, DamageTypes.WITHER, DamageTypes.WITHER_SKULL).addTag(DamageTypeTags.IS_PLAYER_ATTACK);
       this.tag(DamageTypeTags.IS_MACE_SMASH).add(DamageTypes.MACE_SMASH);
+      this.tag(DamageTypeTags.BYPASSES_COOLDOWN);
    }
 }

@@ -157,11 +157,6 @@ public class Mannequin extends Avatar {
       }
    }
 
-   public void aiStep() {
-      super.aiStep();
-      this.updateSwingTime();
-   }
-
    static {
       DATA_PROFILE = SynchedEntityData.<ResolvableProfile>defineId(Mannequin.class, EntityDataSerializers.RESOLVABLE_PROFILE);
       DATA_IMMOVABLE = SynchedEntityData.<Boolean>defineId(Mannequin.class, EntityDataSerializers.BOOLEAN);

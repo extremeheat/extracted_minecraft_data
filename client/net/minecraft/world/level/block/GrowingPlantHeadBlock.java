@@ -88,16 +88,16 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       builder.add(AGE);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos growthPos = pos.relative(this.growthDirection);
       return this.canGrowInto(level.getBlockState(growthPos)) && level.isInsideBuildHeight(growthPos);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos forwardPos = pos.relative(this.growthDirection);
       int nextAge = Math.min((Integer)state.getValue(AGE) + 1, 25);
       int blocksToGrow = this.getBlocksToGrowWhenBonemealed(random);

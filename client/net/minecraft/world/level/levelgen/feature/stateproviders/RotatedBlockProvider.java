@@ -27,6 +27,7 @@ public record RotatedBlockProvider(BlockStateProvider state, Optional<Direction>
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       Direction direction = (Direction)this.direction.orElseGet(() -> Direction.getRandom(random));
-      return (BlockState)((BlockState)((BlockState)this.state.getState(level, random, pos).trySetValue(BlockStateProperties.AXIS, direction.getAxis())).trySetValue(BlockStateProperties.HORIZONTAL_FACING, direction)).trySetValue(BlockStateProperties.FACING, direction);
+      BlockState newState = (BlockState)((BlockState)this.state.getState(level, random, pos).trySetValue(BlockStateProperties.AXIS, direction.getAxis())).trySetValue(BlockStateProperties.FACING, direction);
+      return direction.getAxis().isHorizontal() ? (BlockState)newState.trySetValue(BlockStateProperties.HORIZONTAL_FACING, direction) : newState;
    }
 }

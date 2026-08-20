@@ -13,8 +13,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -33,13 +33,12 @@ import org.slf4j.Logger;
 
 public interface TestEnvironmentDefinition<SavedDataType> {
    Codec<TestEnvironmentDefinition<?>> DIRECT_CODEC = BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE.byNameCodec().dispatch(TestEnvironmentDefinition::codec, (c) -> c);
-   Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryFileCodec.<Holder<TestEnvironmentDefinition<?>>>create(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
+   Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryCodecs.holder(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
 
    static MapCodec<? extends TestEnvironmentDefinition<?>> bootstrap(final Registry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
       Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
       Registry.register(registry, (String)"difficulty", TestEnvironmentDefinition.SetDifficulty.CODEC);
-      Registry.register(registry, (String)"dimension", TestEnvironmentDefinition.Dimension.CODEC);
       Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
       Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"timeline_attributes", TestEnvironmentDefinition.Timelines.CODEC);
@@ -70,47 +69,6 @@ public interface TestEnvironmentDefinition<SavedDataType> {
 
       public void teardown() {
          this.definition.teardown(this.level, this.value);
-      }
-   }
-
-   public static record Dimension(Type type) implements TestEnvironmentDefinition<Type> {
-      public static final MapCodec<Dimension> CODEC = RecordCodecBuilder.mapCodec((instance) -> instance.group(TestEnvironmentDefinition.Dimension.Type.CODEC.fieldOf("dimension").forGetter(Dimension::type)).apply(instance, Dimension::new));
-
-      public Dimension {
-         super();
-      }
-
-      public Type setup(final ServerLevel level) {
-         return this.type;
-      }
-
-      public void teardown(final ServerLevel level, final Type savedData) {
-      }
-
-      public MapCodec<Dimension> codec() {
-         return CODEC;
-      }
-
-      public static enum Type implements StringRepresentable {
-         OVERWORLD("overworld"),
-         NETHER("nether"),
-         END("end");
-
-         public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
-         private final String id;
-
-         private Type(final String id) {
-            this.id = id;
-         }
-
-         public String getSerializedName() {
-            return this.id;
-         }
-
-         // $FF: synthetic method
-         private static Type[] $values() {
-            return new Type[]{OVERWORLD, NETHER, END};
-         }
       }
    }
 

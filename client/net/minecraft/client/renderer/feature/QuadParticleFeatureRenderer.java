@@ -64,7 +64,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
       renderPass.pushDebugGroup(() -> "Particles - " + (group.translucent ? "Translucent" : "Solid"));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", (GpuBufferSlice)Objects.requireNonNull(this.dynamicTransforms));
-      renderPass.bindTexture("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+      renderPass.setUniform("Sampler2", context.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
       drawLayers(context.stagedVertexBuffer(), group, renderPass, stage);
       renderPass.popDebugGroup();
    }
@@ -77,7 +77,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
             renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             AbstractTexture texture = (AbstractTexture)group.textures.get(entry.getKey());
-            renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+            renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
             renderPass.drawIndexed(executeInfo.indexCount(), 1, executeInfo.firstIndex(), executeInfo.baseVertex(), 0);
          }
       }

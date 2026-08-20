@@ -7,12 +7,10 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -27,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
+import org.jspecify.annotations.Nullable;
 
 @Immutable
 public class BlockPos extends Vec3i {
@@ -227,12 +226,6 @@ public class BlockPos extends Vec3i {
       return randomBetweenClosed(random, limit, center.getX() - sizeToScanInAllDirections, center.getY() - sizeToScanInAllDirections, center.getZ() - sizeToScanInAllDirections, center.getX() + sizeToScanInAllDirections, center.getY() + sizeToScanInAllDirections, center.getZ() + sizeToScanInAllDirections);
    }
 
-   /** @deprecated */
-   @Deprecated
-   public static Stream<BlockPos> squareOutSouthEast(final BlockPos from) {
-      return Stream.of(from, from.south(), from.east(), from.south().east());
-   }
-
    public static Iterable<BlockPos> randomBetweenClosed(final RandomSource random, final int limit, final int minX, final int minY, final int minZ, final int maxX, final int maxY, final int maxZ) {
       int width = maxX - minX + 1;
       int height = maxY - minY + 1;
@@ -253,8 +246,19 @@ public class BlockPos extends Vec3i {
          };
    }
 
-   public static Iterable<BlockPos> withinManhattan(final BlockPos origin, final int reachX, final int reachY, final int reachZ) {
-      int maxDepth = reachX + reachY + reachZ;
+   public static Iterable<BlockPos> withinManhattan(final BlockPos origin, final int reach) {
+      return manhattanOrdered(origin, reach, reach, reach, reach);
+   }
+
+   public static Iterable<BlockPos> withinClippedManhattan(final BlockPos origin, final int reachX, final int reachY, final int reachZ) {
+      return manhattanOrdered(origin, reachX, reachY, reachZ, Math.max(Math.max(reachX, reachY), reachZ));
+   }
+
+   public static Iterable<BlockPos> withinBoxByManhattanDistance(final BlockPos origin, final int reachX, final int reachY, final int reachZ) {
+      return manhattanOrdered(origin, reachX, reachY, reachZ, reachX + reachY + reachZ);
+   }
+
+   private static Iterable<BlockPos> manhattanOrdered(final BlockPos origin, final int reachX, final int reachY, final int reachZ, final int maxDepth) {
       int originX = origin.getX();
       int originY = origin.getY();
       int originZ = origin.getZ();
@@ -267,7 +271,7 @@ public class BlockPos extends Vec3i {
             private int y;
             private boolean zMirror;
 
-            protected BlockPos computeNext() {
+            protected @Nullable BlockPos computeNext() {
                if (this.zMirror) {
                   this.zMirror = false;
                   this.cursor.setZ(originZ - (this.cursor.getZ() - originZ));
@@ -304,20 +308,6 @@ public class BlockPos extends Vec3i {
                }
             }
          };
-   }
-
-   public static Optional<BlockPos> findClosestMatch(final BlockPos startPos, final int horizontalSearchRadius, final int verticalSearchRadius, final Predicate<BlockPos> predicate) {
-      for(BlockPos blockPos : withinManhattan(startPos, horizontalSearchRadius, verticalSearchRadius, horizontalSearchRadius)) {
-         if (predicate.test(blockPos)) {
-            return Optional.of(blockPos);
-         }
-      }
-
-      return Optional.empty();
-   }
-
-   public static Stream<BlockPos> withinManhattanStream(final BlockPos origin, final int reachX, final int reachY, final int reachZ) {
-      return StreamSupport.stream(withinManhattan(origin, reachX, reachY, reachZ).spliterator(), false);
    }
 
    public static Iterable<BlockPos> betweenClosed(final AABB box) {

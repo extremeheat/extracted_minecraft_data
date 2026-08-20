@@ -1,6 +1,5 @@
 package net.minecraft.client.server;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
@@ -20,7 +19,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Position;
@@ -37,6 +35,7 @@ import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
@@ -62,18 +61,20 @@ public class IntegratedServer extends MinecraftServer {
    private final Minecraft minecraft;
    private boolean paused = true;
    private int publishedPort = -1;
-   private @Nullable GameType gameTypeForOtherPlayers;
-   private @Nullable Boolean commandsAllowedForOtherPlayers;
    private @Nullable LanServerPinger lanPinger;
    private @Nullable UUID uuid;
    private int previousSimulationDistance = 0;
    private volatile List<SimpleGizmoCollector.GizmoInstance> latestTicksGizmos = new ArrayList();
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
    private MinecraftServer.MultiplayerScope multiplayerScope;
+   private boolean guestCommandAccess;
+   private boolean forceGameMode;
 
    public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
       super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false, new NotificationManager());
       this.multiplayerScope = MinecraftServer.MultiplayerScope.OFF;
+      this.guestCommandAccess = false;
+      this.forceGameMode = true;
       this.setSingleplayerProfile(minecraft.getGameProfile());
       this.setDemo(minecraft.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
@@ -208,12 +209,8 @@ public class IntegratedServer extends MinecraftServer {
       return Minecraft.checkModStatus().merge(super.getModdedStatus());
    }
 
-   public boolean publishServer(final MinecraftServer.MultiplayerScope scope, final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
-      if (gameMode != null) {
-         this.setGameTypeForOtherPlayers(gameMode);
-      }
-
-      this.setCommandsAllowedForOtherPlayers(allowCommands);
+   public boolean publishServer(final MinecraftServer.MultiplayerScope scope, final boolean allowCommands, final int port) {
+      this.setGuestCommandAccess(allowCommands);
       return this.publishServer(scope, port);
    }
 
@@ -228,7 +225,6 @@ public class IntegratedServer extends MinecraftServer {
             this.lanPinger = new LanServerPinger(this.getMotd(), Integer.toString(port));
             this.lanPinger.start();
             this.setMultiplayerScope(scope);
-            this.updateCommandsAllowedForOtherPlayers();
             return true;
          } catch (IOException var4) {
             return false;
@@ -240,69 +236,97 @@ public class IntegratedServer extends MinecraftServer {
 
    public void setWorldGameType(final GameType gameMode) {
       this.setDefaultGameType(gameMode);
-      this.applyGameTypeToPlayers(gameMode, true);
-      if (this.gameTypeForOtherPlayers == null) {
-         this.applyGameTypeToPlayers(gameMode, false);
-      }
-
+      this.updateGameModeBasedOnPermission();
    }
 
-   public GameType getGameTypeForOtherPlayers() {
-      return (GameType)MoreObjects.firstNonNull(this.gameTypeForOtherPlayers, this.worldData.getGameType());
-   }
-
-   public void setGameTypeForOtherPlayers(final GameType gameMode) {
-      this.gameTypeForOtherPlayers = gameMode;
-      this.applyGameTypeToPlayers(gameMode, false);
-   }
-
-   private void applyGameTypeToPlayers(final GameType gameMode, final boolean singleplayerOwner) {
-      for(ServerPlayer player : this.getPlayerList().getPlayers()) {
-         if (this.isSingleplayerOwner(player.nameAndId()) == singleplayerOwner) {
-            player.setGameMode(gameMode);
+   public void setPersonalGameType(final GameType gameMode) {
+      if (this.minecraft.player != null) {
+         ServerPlayer serverPlayer = this.getPlayerList().getPlayer(this.minecraft.player.getUUID());
+         if (serverPlayer != null) {
+            serverPlayer.setGameMode(gameMode);
          }
       }
+   }
 
+   public int enforceGameTypeForPlayers(final @Nullable GameType gameType) {
+      return gameType == null ? 0 : this.updateGameModeBasedOnPermission();
    }
 
    public void setWorldAllowCommands(final boolean allowCommands) {
       this.getWorldData().setAllowCommands(allowCommands);
-      this.updateCommandsAllowedForOtherPlayers();
+      this.updateGameModeBasedOnPermission();
+      this.updatePermissions();
    }
 
-   public boolean commandsAllowedForOtherPlayers() {
-      return (Boolean)MoreObjects.firstNonNull(this.commandsAllowedForOtherPlayers, this.worldData.isAllowCommands());
+   public @Nullable GameType getPersonalGameMode() {
+      if (this.minecraft.player == null) {
+         return null;
+      } else {
+         ServerPlayer serverPlayer = this.getPlayerList().getPlayer(this.minecraft.player.getUUID());
+         return serverPlayer == null ? null : serverPlayer.gameMode();
+      }
    }
 
-   public void setCommandsAllowedForOtherPlayers(final boolean allowCommands) {
-      this.commandsAllowedForOtherPlayers = allowCommands;
-      this.updateCommandsAllowedForOtherPlayers();
+   private int updateGameModeBasedOnPermission() {
+      if (!this.forceGameMode()) {
+         return 0;
+      } else {
+         int count = 0;
+
+         for(ServerPlayer player : this.getPlayerList().getPlayers()) {
+            if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) && player.setGameMode(this.getWorldData().getGameType())) {
+               ++count;
+            }
+         }
+
+         return count;
+      }
    }
 
-   private void updateCommandsAllowedForOtherPlayers() {
-      this.getPlayerList().setAllowCommandsForAllPlayers(this.commandsAllowedForOtherPlayers());
+   public LevelBasedPermissionSet getProfilePermissions(final NameAndId nameAndId) {
+      if (this.isSingleplayerOwner(nameAndId)) {
+         if (this.getPlayerList().isOp(nameAndId)) {
+            return LevelBasedPermissionSet.OWNER;
+         }
+      } else {
+         LevelBasedPermissionSet customPermissionLevel = this.getCustomPermissionLevel();
+         if (customPermissionLevel != null) {
+            return customPermissionLevel;
+         }
+      }
 
+      return super.getProfilePermissions(nameAndId);
+   }
+
+   protected @Nullable LevelBasedPermissionSet getCustomPermissionLevel() {
+      if (this.worldData.isAllowCommands()) {
+         return this.guestCommandAccess ? LevelBasedPermissionSet.GAMEMASTER : LevelBasedPermissionSet.ALL;
+      } else {
+         return null;
+      }
+   }
+
+   public boolean getGuestCommandAccess() {
+      return this.guestCommandAccess;
+   }
+
+   public void setGuestCommandAccess(final boolean commandAccess) {
+      this.guestCommandAccess = commandAccess;
+      this.updatePermissions();
+      this.updateGameModeBasedOnPermission();
+   }
+
+   private void updatePermissions() {
       for(ServerPlayer player : this.getPlayerList().getPlayers()) {
          this.getPlayerList().sendPlayerPermissionLevel(player);
       }
 
-      LocalPlayer player = this.minecraft.player;
-      if (player != null) {
-         this.updatePermissionAndChatAbilities(player);
-      }
-
-   }
-
-   private void updatePermissionAndChatAbilities(final LocalPlayer player) {
-      player.setPermissions(this.getProfilePermissions(player.nameAndId()));
-      player.refreshChatAbilities();
    }
 
    private void teardownPublishedState() {
       this.stopLanPinger();
       this.publishedPort = -1;
       this.setMultiplayerScope(MinecraftServer.MultiplayerScope.OFF);
-      this.updateCommandsAllowedForOtherPlayers();
    }
 
    private void stopLanPinger() {
@@ -330,7 +354,6 @@ public class IntegratedServer extends MinecraftServer {
             }
          }
 
-         this.getPlayerList().setAllowCommandsForAllPlayers(false);
          this.teardownPublishedState();
          return true;
       }
@@ -387,7 +410,16 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    public @Nullable GameType getForcedGameType() {
-      return this.isPublished() && !this.isHardcore() ? this.getGameTypeForOtherPlayers() : null;
+      return this.forceGameMode() && this.isPublished() && !this.isHardcore() ? this.worldData.getGameType() : null;
+   }
+
+   public boolean forceGameMode() {
+      return this.forceGameMode;
+   }
+
+   public void setForceGameMode(final boolean forceGameMode) {
+      this.forceGameMode = forceGameMode;
+      this.enforceGameTypeForPlayers(this.getDefaultGameType());
    }
 
    protected GlobalPos selectLevelLoadFocusPos() {

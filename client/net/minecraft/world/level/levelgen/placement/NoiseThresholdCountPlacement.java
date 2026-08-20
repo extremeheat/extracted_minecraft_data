@@ -19,7 +19,7 @@ public record NoiseThresholdCountPlacement(double noiseLevel, int belowNoise, in
    }
 
    public int count(final RandomSource random, final BlockPos origin) {
-      double flowerNoise = Biome.BIOME_INFO_NOISE.getValue((double)origin.getX() / 200.0, (double)origin.getZ() / 200.0, false);
+      double flowerNoise = (double)Biome.BIOME_INFO_NOISE.get((double)origin.getX() / 200.0, (double)origin.getZ() / 200.0);
       return flowerNoise < this.noiseLevel ? this.belowNoise : this.aboveNoise;
    }
 

@@ -8,11 +8,9 @@ import net.minecraft.world.entity.Entity;
 
 public class ClientboundAnimatePacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundAnimatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundAnimatePacket>codec(ClientboundAnimatePacket::write, ClientboundAnimatePacket::new);
-   public static final int SWING_MAIN_HAND = 0;
-   public static final int WAKE_UP = 2;
-   public static final int SWING_OFF_HAND = 3;
-   public static final int CRITICAL_HIT = 4;
-   public static final int MAGIC_CRITICAL_HIT = 5;
+   public static final int WAKE_UP = 0;
+   public static final int CRITICAL_HIT = 1;
+   public static final int MAGIC_CRITICAL_HIT = 2;
    private final int id;
    private final int action;
 

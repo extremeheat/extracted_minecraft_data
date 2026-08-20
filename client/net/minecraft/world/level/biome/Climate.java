@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
 import org.jspecify.annotations.Nullable;
 
 public class Climate {
@@ -58,7 +58,7 @@ public class Climate {
    }
 
    protected static final class RTree<T> {
-      private static final int CHILDREN_PER_NODE = 6;
+      private static final int CHILDREN_PER_NODE = 19;
       private final Node<T> root;
       private final ThreadLocal<@Nullable Leaf<T>> lastResult = new ThreadLocal();
 
@@ -68,6 +68,10 @@ public class Climate {
       }
 
       public static <T> RTree<T> create(final List<Pair<ParameterPoint, T>> values) {
+         return create(values, 19);
+      }
+
+      public static <T> RTree<T> create(final List<Pair<ParameterPoint, T>> values, final int childrenPerNode) {
          if (values.isEmpty()) {
             throw new IllegalArgumentException("Need at least one value to build the search tree.");
          } else {
@@ -76,17 +80,17 @@ public class Climate {
                throw new IllegalStateException("Expecting parameter space to be 7, got " + dimensions);
             } else {
                List<Leaf<T>> leaves = (List)values.stream().map((p) -> new Leaf((ParameterPoint)p.getFirst(), p.getSecond())).collect(Collectors.toCollection(ArrayList::new));
-               return new RTree<T>(build(dimensions, leaves));
+               return new RTree<T>(build(dimensions, leaves, childrenPerNode));
             }
          }
       }
 
-      private static <T> Node<T> build(final int dimensions, final List<? extends Node<T>> children) {
+      private static <T> Node<T> build(final int dimensions, final List<? extends Node<T>> children, final int childrenPerNode) {
          if (children.isEmpty()) {
             throw new IllegalStateException("Need at least one child to build a node");
          } else if (children.size() == 1) {
             return (Node)children.get(0);
-         } else if (children.size() <= 6) {
+         } else if (children.size() <= childrenPerNode) {
             children.sort(Comparator.comparingLong((leaf) -> {
                long totalMagnitude = 0L;
 
@@ -105,7 +109,7 @@ public class Climate {
 
             for(int d = 0; d < dimensions; ++d) {
                sort(children, dimensions, d, false);
-               List<SubTree<T>> buckets = bucketize(children);
+               List<SubTree<T>> buckets = bucketize(children, childrenPerNode);
                long totalCost = 0L;
 
                for(SubTree<T> bucket : buckets) {
@@ -120,7 +124,7 @@ public class Climate {
             }
 
             sort(minBuckets, dimensions, minDimension, true);
-            return new SubTree<T>((List)minBuckets.stream().map((b) -> build(dimensions, Arrays.asList(b.children))).collect(Collectors.toList()));
+            return new SubTree<T>((List)minBuckets.stream().map((b) -> build(dimensions, Arrays.asList(b.children), childrenPerNode)).collect(Collectors.toList()));
          }
       }
 
@@ -142,10 +146,10 @@ public class Climate {
          });
       }
 
-      private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes) {
+      private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes, final int childrenPerNode) {
          List<SubTree<T>> buckets = Lists.newArrayList();
          List<Node<T>> children = Lists.newArrayList();
-         int expectedChildrenCount = (int)Math.pow(6.0, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log(6.0)));
+         int expectedChildrenCount = (int)Math.pow((double)childrenPerNode, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log((double)childrenPerNode)));
 
          for(Node<T> child : nodes) {
             children.add(child);
@@ -281,9 +285,18 @@ public class Climate {
       }
 
       public ParameterList(final List<Pair<ParameterPoint, T>> values) {
+         this(values, 19);
+      }
+
+      private ParameterList(final List<Pair<ParameterPoint, T>> values, final int childrenPerNode) {
          super();
          this.values = values;
-         this.index = Climate.RTree.<T>create(values);
+         this.index = Climate.RTree.<T>create(values, childrenPerNode);
+      }
+
+      @VisibleForTesting
+      public ParameterList<T> rebuildWithChildrenPerNode(final int childrenPerNode) {
+         return new ParameterList<T>(this.values, childrenPerNode);
       }
 
       public List<Pair<ParameterPoint, T>> values() {
@@ -402,7 +415,7 @@ public class Climate {
          int blockY = QuartPos.toBlock(quartY);
          int blockZ = QuartPos.toBlock(quartZ);
          DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
-         return Climate.target((float)this.temperature.compute(context), (float)this.humidity.compute(context), (float)this.continentalness.compute(context), (float)this.erosion.compute(context), (float)this.depth.compute(context), (float)this.weirdness.compute(context));
+         return Climate.target(this.temperature.compute(context), this.humidity.compute(context), this.continentalness.compute(context), this.erosion.compute(context), this.depth.compute(context), this.weirdness.compute(context));
       }
    }
 

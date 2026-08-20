@@ -1924,8 +1924,8 @@ public class BlockModelGenerators {
       Identifier head = ModelLocationUtils.getModelLocation(strawBed, "_head");
       Identifier foot = ModelLocationUtils.getModelLocation(strawBed, "_foot");
       this.blockStateOutput.accept(createStrawBed(strawBed, plainVariant(head), plainVariant(foot)));
-      Transformation headTransformation = new Transformation(new Vector3f(0.85F, 0.0F, 0.6F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
-      Transformation footTransformation = new Transformation(new Vector3f(0.85F, 0.0F, 1.6F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
+      Transformation headTransformation = new Transformation(new Vector3f(1.0F, 0.0F, 1.0F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
+      Transformation footTransformation = new Transformation(new Vector3f(1.0F, 0.0F, 2.0F), (new Quaternionf()).rotationY(3.1415927F), (Vector3fc)null, (Quaternionfc)null);
       ItemModel.Unbaked itemModelHead = ItemModelUtils.plainModel(head, headTransformation);
       ItemModel.Unbaked itemModelFoot = ItemModelUtils.plainModel(foot, footTransformation);
       this.itemModelOutput.accept(strawBed.asItem(), ItemModelUtils.composite(itemModelHead, itemModelFoot));
@@ -2209,7 +2209,6 @@ public class BlockModelGenerators {
       this.createParticleOnlyBlock(Blocks.END_GATEWAY, Blocks.OBSIDIAN);
       this.createTrivialCube(Blocks.AZALEA_LEAVES);
       this.createTrivialCube(Blocks.FLOWERING_AZALEA_LEAVES);
-      Blocks.CONCRETE.forEach(this::createTrivialCube);
       this.createColoredBlockWithRandomRotations(TexturedModel.CUBE, Blocks.CONCRETE_POWDER.asList());
       this.createTrivialCube(Blocks.POTENT_SULFUR);
       this.createTrivialCube(Blocks.TERRACOTTA);

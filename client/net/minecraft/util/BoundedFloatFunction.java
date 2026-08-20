@@ -19,7 +19,7 @@ public interface BoundedFloatFunction<C> {
    Interval range();
 
    static <C> BoundedFloatFunction<C> constant(final float value) {
-      final Interval range = Interval.ofExact((double)value);
+      final Interval range = Interval.ofExact(value);
       return new BoundedFloatFunction<C>() {
          public float apply(final C c) {
             return value;

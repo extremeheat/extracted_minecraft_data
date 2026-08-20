@@ -3,10 +3,8 @@ package net.minecraft.world.level.block;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -39,7 +37,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -160,25 +157,20 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    private static BlockState addLayer(final @Nullable Entity sourceEntity, final BlockState state, final ServerLevel level, final BlockPos pos, final Compostable compostable) {
       int fillLevel = (Integer)state.getValue(LEVEL);
-      LootContext lootContext = (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.BLOCK_STATE, state).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, sourceEntity).create(LootContextParamSets.BLOCK_INTERACT))).create(Optional.empty());
-      Optional<NumberProvider> layers = level.getServer().reloadableRegistries().lookup().lookup(Registries.NUMBER_PROVIDER).flatMap((registry) -> registry.get(compostable.layers())).map(Holder.Reference::value);
-      if (layers.isEmpty()) {
-         return state;
-      } else {
-         int layersToAdd = ((NumberProvider)layers.get()).getInt(lootContext);
-         if (layersToAdd > 0) {
-            int newLevel = Mth.clamp(fillLevel + layersToAdd, 0, 7);
-            BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
-            level.setBlockAndUpdate(pos, newState);
-            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
-            if (newLevel == 7) {
-               level.scheduleTick(pos, state.getBlock(), 20);
-            }
-
-            return newState;
-         } else {
-            return state;
+      LootContext lootContext = (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, sourceEntity).create(LootContextParamSets.BLOCK_INTERACT))).create(Optional.empty());
+      int layersToAdd = compostable.layers().getInt(lootContext, 0);
+      if (layersToAdd > 0) {
+         int newLevel = Mth.clamp(fillLevel + layersToAdd, 0, 7);
+         BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);
+         level.setBlockAndUpdate(pos, newState);
+         level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
+         if (newLevel == 7) {
+            level.scheduleTick(pos, state.getBlock(), 20);
          }
+
+         return newState;
+      } else {
+         return state;
       }
    }
 

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
+import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
@@ -14,30 +15,30 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.jspecify.annotations.Nullable;
 
 public class IntRange implements LootContextUser {
-   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(NumberProviders.DIRECT_CODEC.optionalFieldOf("min").forGetter((r) -> Optional.ofNullable(r.min)), NumberProviders.DIRECT_CODEC.optionalFieldOf("max").forGetter((r) -> Optional.ofNullable(r.max))).apply(i, IntRange::new));
+   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(NumberProviders.CODEC.optionalFieldOf("min").forGetter((r) -> Optional.ofNullable(r.min)), NumberProviders.CODEC.optionalFieldOf("max").forGetter((r) -> Optional.ofNullable(r.max))).apply(i, IntRange::new));
    public static final Codec<IntRange> CODEC;
-   private final @Nullable NumberProvider min;
-   private final @Nullable NumberProvider max;
+   private final @Nullable Holder<NumberProvider> min;
+   private final @Nullable Holder<NumberProvider> max;
    private final IntLimiter limiter;
    private final IntChecker predicate;
 
    public void validate(final ValidationContext context) {
       LootContextUser.super.validate(context);
       if (this.min != null) {
-         Validatable.validate(context, "min", this.min);
+         Validatable.validateHolder(context, "min", this.min);
       }
 
       if (this.max != null) {
-         Validatable.validate(context, "max", this.max);
+         Validatable.validateHolder(context, "max", this.max);
       }
 
    }
 
-   private IntRange(final Optional<NumberProvider> min, final Optional<NumberProvider> max) {
-      this((NumberProvider)min.orElse((Object)null), (NumberProvider)max.orElse((Object)null));
+   private IntRange(final Optional<Holder<NumberProvider>> min, final Optional<Holder<NumberProvider>> max) {
+      this((Holder)min.orElse((Object)null), (Holder)max.orElse((Object)null));
    }
 
-   private IntRange(final @Nullable NumberProvider min, final @Nullable NumberProvider max) {
+   private IntRange(final @Nullable Holder<NumberProvider> min, final @Nullable Holder<NumberProvider> max) {
       super();
       this.min = min;
       this.max = max;
@@ -46,21 +47,21 @@ public class IntRange implements LootContextUser {
             this.limiter = (context, value) -> value;
             this.predicate = (context, value) -> true;
          } else {
-            this.limiter = (context, value) -> Math.min(max.getInt(context), value);
-            this.predicate = (context, value) -> value <= max.getInt(context);
+            this.limiter = (context, value) -> Math.min(((NumberProvider)max.value()).getInt(context), value);
+            this.predicate = (context, value) -> value <= ((NumberProvider)max.value()).getInt(context);
          }
       } else if (max == null) {
-         this.limiter = (context, value) -> Math.max(min.getInt(context), value);
-         this.predicate = (context, value) -> value >= min.getInt(context);
+         this.limiter = (context, value) -> Math.max(((NumberProvider)min.value()).getInt(context), value);
+         this.predicate = (context, value) -> value >= ((NumberProvider)min.value()).getInt(context);
       } else {
-         this.limiter = (context, value) -> Mth.clamp(value, min.getInt(context), max.getInt(context));
-         this.predicate = (context, value) -> value >= min.getInt(context) && value <= max.getInt(context);
+         this.limiter = (context, value) -> Mth.clamp(value, ((NumberProvider)min.value()).getInt(context), ((NumberProvider)max.value()).getInt(context));
+         this.predicate = (context, value) -> value >= ((NumberProvider)min.value()).getInt(context) && value <= ((NumberProvider)max.value()).getInt(context);
       }
 
    }
 
    public static IntRange exact(final int value) {
-      ConstantValue c = ConstantValue.exactly((float)value);
+      Holder<NumberProvider> c = ConstantValue.exactly((float)value);
       return new IntRange(Optional.of(c), Optional.of(c));
    }
 
@@ -85,8 +86,8 @@ public class IntRange implements LootContextUser {
    }
 
    private OptionalInt unpackExact() {
-      if (Objects.equals(this.min, this.max)) {
-         NumberProvider var2 = this.min;
+      if (Objects.equals(this.min, this.max) && this.min != null && this.min instanceof Holder.Direct) {
+         Object var2 = this.min.value();
          if (var2 instanceof ConstantValue) {
             ConstantValue constant = (ConstantValue)var2;
             if (Math.floor((double)constant.value()) == (double)constant.value()) {

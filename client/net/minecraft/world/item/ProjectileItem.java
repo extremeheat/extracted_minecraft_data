@@ -1,12 +1,13 @@
 package net.minecraft.world.item;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.phys.Vec3;
 
 public interface ProjectileItem {
@@ -20,7 +21,7 @@ public interface ProjectileItem {
       projectile.shoot(xd, yd, zd, pow, uncertainty);
    }
 
-   public static record DispenseConfig(PositionFunction positionFunction, float uncertainty, float power, OptionalInt overrideDispenseEvent) {
+   public static record DispenseConfig(PositionFunction positionFunction, float uncertainty, float power, Optional<@LevelEvent.Value Integer> overrideDispenseEvent) {
       public static final DispenseConfig DEFAULT = builder().build();
 
       public DispenseConfig {
@@ -35,7 +36,7 @@ public interface ProjectileItem {
          private PositionFunction positionFunction = (source, direction) -> DispenserBlock.getDispensePosition(source, 0.7, new Vec3(0.0, 0.1, 0.0));
          private float uncertainty = 6.0F;
          private float power = 1.1F;
-         private OptionalInt overrideDispenseEvent = OptionalInt.empty();
+         private Optional<@LevelEvent.Value Integer> overrideDispenseEvent = Optional.empty();
 
          public Builder() {
             super();
@@ -56,8 +57,8 @@ public interface ProjectileItem {
             return this;
          }
 
-         public Builder overrideDispenseEvent(final int dispenseEvent) {
-            this.overrideDispenseEvent = OptionalInt.of(dispenseEvent);
+         public Builder overrideDispenseEvent(final @LevelEvent.Value int dispenseEvent) {
+            this.overrideDispenseEvent = Optional.of(dispenseEvent);
             return this;
          }
 

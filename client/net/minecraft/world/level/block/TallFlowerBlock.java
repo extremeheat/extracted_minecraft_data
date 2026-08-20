@@ -14,15 +14,15 @@ public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlo
       super(properties);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       popResource(level, pos, new ItemStack(this));
    }
 }

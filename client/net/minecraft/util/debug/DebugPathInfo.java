@@ -13,6 +13,6 @@ public record DebugPathInfo(Path path, float maxNodeDistance) {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Path.STREAM_CODEC, DebugPathInfo::path, ByteBufCodecs.FLOAT, DebugPathInfo::maxNodeDistance, DebugPathInfo::new);
+      STREAM_CODEC = StreamCodec.composite(Path.DEBUG_STREAM_CODEC, DebugPathInfo::path, ByteBufCodecs.FLOAT, DebugPathInfo::maxNodeDistance, DebugPathInfo::new);
    }
 }

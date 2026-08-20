@@ -48,7 +48,7 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
       return new ItemStack(this.getHeadBlock());
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       Optional<BlockPos> headPos = this.getHeadPos(level, pos, state.getBlock());
       if (headPos.isEmpty()) {
          return false;
@@ -58,15 +58,15 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
       }
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       Optional<BlockPos> headPos = this.getHeadPos(level, pos, state.getBlock());
       if (headPos.isPresent()) {
          BlockState forwardState = level.getBlockState((BlockPos)headPos.get());
-         ((GrowingPlantHeadBlock)forwardState.getBlock()).performBonemeal(level, random, (BlockPos)headPos.get(), forwardState);
+         ((GrowingPlantHeadBlock)forwardState.getBlock()).performBonemeal(level, random, (BlockPos)headPos.get(), forwardState, source);
       }
 
    }

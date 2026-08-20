@@ -5,7 +5,6 @@ import net.minecraft.client.renderer.entity.state.UndeadRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwingAnimationType;
 
 public class AnimationUtils {
    public AnimationUtils() {
@@ -66,26 +65,26 @@ public class AnimationUtils {
    }
 
    public static <T extends UndeadRenderState> void animateZombieArms(final ModelPart leftArm, final ModelPart rightArm, final boolean aggressive, final T state) {
-      boolean animateAttack = state.swingAnimationType != SwingAnimationType.STAB;
-      if (animateAttack) {
+      boolean usingSpear = state.rightArmPose == HumanoidModel.ArmPose.SPEAR || state.leftArmPose == HumanoidModel.ArmPose.SPEAR;
+      if (!usingSpear) {
          boolean raiseArms = !state.isBaby || state.getMainHandItemStack() == ItemStack.EMPTY;
          float armDrop = raiseArms ? -3.1415927F / (aggressive ? 1.5F : 2.25F) : 0.0F;
-         animateAttackArms(leftArm, rightArm, state.attackTime, raiseArms, armDrop);
+         float attackYRotModifier = (raiseArms ? 1.0F : -1.0F) * Mth.sin((double)(state.swingAnimation * 3.1415927F));
+         float attackXRotModifier = Mth.sin((double)((1.0F - (1.0F - state.swingAnimation) * (1.0F - state.swingAnimation)) * 3.1415927F));
+         float xRot = armDrop + attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
+         float yRot = 0.1F - attackYRotModifier * 0.6F;
+         if (state.rightArmPose != HumanoidModel.ArmPose.THROW_TRIDENT) {
+            rightArm.xRot = xRot;
+            rightArm.yRot = raiseArms ? -yRot : yRot;
+            rightArm.zRot = 0.0F;
+         }
+
+         if (state.leftArmPose != HumanoidModel.ArmPose.THROW_TRIDENT) {
+            leftArm.xRot = xRot;
+            leftArm.yRot = raiseArms ? yRot : -yRot;
+            leftArm.zRot = 0.0F;
+         }
+
       }
-
-      bobArms(rightArm, leftArm, state.ageInTicks);
-   }
-
-   private static void animateAttackArms(final ModelPart leftArm, final ModelPart rightArm, final float attackTime, final boolean negateArmRotation, final float armDrop) {
-      float attackYRotModifier = (negateArmRotation ? 1.0F : -1.0F) * Mth.sin((double)(attackTime * 3.1415927F));
-      float attackXRotModifier = Mth.sin((double)((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F));
-      float xRot = armDrop + attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
-      float yRot = 0.1F - attackYRotModifier * 0.6F;
-      rightArm.xRot = xRot;
-      rightArm.yRot = negateArmRotation ? -yRot : yRot;
-      rightArm.zRot = 0.0F;
-      leftArm.xRot = xRot;
-      leftArm.yRot = negateArmRotation ? yRot : -yRot;
-      leftArm.zRot = 0.0F;
    }
 }

@@ -20,6 +20,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -266,12 +267,12 @@ public class ArmorStand extends LivingEntity {
       } else if (!(Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) && source.getEntity() instanceof Mob) {
          return false;
       } else if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-         this.kill(level);
+         this.kill(level, source.getEntity());
          return false;
       } else if (!this.isInvulnerableTo(level, source) && !this.invisible && !this.isMarker()) {
          if (source.is(DamageTypeTags.IS_EXPLOSION)) {
             this.brokenByAnything(level, source);
-            this.kill(level);
+            this.kill(level, source.getEntity());
             return false;
          } else if (source.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
             if (this.isOnFire()) {
@@ -301,7 +302,7 @@ public class ArmorStand extends LivingEntity {
                if (source.isCreativePlayer()) {
                   this.playBrokenSound();
                   this.showBreakingParticles();
-                  this.kill(level);
+                  this.kill(level, source.getEntity());
                   return true;
                } else {
                   long time = level.getGameTime();
@@ -312,7 +313,7 @@ public class ArmorStand extends LivingEntity {
                   } else {
                      this.brokenByPlayer(level, source);
                      this.showBreakingParticles();
-                     this.kill(level);
+                     this.kill(level, source.getEntity());
                   }
 
                   return true;
@@ -324,7 +325,7 @@ public class ArmorStand extends LivingEntity {
       }
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 32) {
          if (this.level().isClientSide()) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_HIT, this.getSoundSource(), 0.3F, 1.0F, false);
@@ -358,7 +359,7 @@ public class ArmorStand extends LivingEntity {
       health -= dmg;
       if (health <= 0.5F) {
          this.brokenByAnything(level, source);
-         this.kill(level);
+         this.kill(level, source.getEntity());
       } else {
          this.setHealth(health);
          this.gameEvent(GameEvent.ENTITY_DAMAGE, source.getEntity());
@@ -424,9 +425,9 @@ public class ArmorStand extends LivingEntity {
       return this.isSmall();
    }
 
-   public void kill(final ServerLevel level) {
+   public void kill(final ServerLevel level, final @Nullable Entity attributedTo) {
       this.remove(Entity.RemovalReason.KILLED);
-      this.gameEvent(GameEvent.ENTITY_DIE);
+      this.gameEvent(GameEvent.ENTITY_DIE, (Entity)(attributedTo != null ? attributedTo : this));
    }
 
    public boolean ignoreExplosion(final Explosion explosion) {
@@ -434,7 +435,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    public PushReaction getPistonPushReaction() {
-      return this.isMarker() ? PushReaction.IGNORE : super.getPistonPushReaction();
+      return this.isMarker() ? PushReaction.IGNORE_ENTITY : super.getPistonPushReaction();
    }
 
    public boolean isIgnoringBlockTriggers() {

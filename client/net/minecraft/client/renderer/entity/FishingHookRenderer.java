@@ -28,8 +28,8 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       super(context);
    }
 
-   public boolean shouldRender(final FishingHook entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      return super.shouldRender(entity, culler, camX, camY, camZ) && entity.getPlayerOwner() != null;
+   public boolean shouldRender(final FishingHook entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      return super.shouldRender(entity, culler, camX, camY, camZ, partialTicks) && entity.getPlayerOwner() != null;
    }
 
    public void submit(final FishingHookRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
@@ -118,7 +118,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       if (owner == null) {
          state.lineOriginOffset = Vec3.ZERO;
       } else {
-         float swing = owner.getAttackAnim(partialTicks);
+         float swing = owner.getSwingAnimation(partialTicks);
          float swing2 = Mth.sin((double)(Mth.sqrt(swing) * 3.1415927F));
          Vec3 playerPos = this.getPlayerHandPos(owner, swing2, partialTicks);
          Vec3 hookPos = entity.getPosition(partialTicks).add(0.0, 0.25, 0.0);

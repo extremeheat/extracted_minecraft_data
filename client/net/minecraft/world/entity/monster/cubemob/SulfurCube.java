@@ -324,7 +324,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             if ((Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES) && !this.isPrimed()) {
                int fuse = ((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).fuse();
                int fuseTime = imminent ? PrimedTnt.getRandomShortFuse(fuse, this.getRandom()) : fuse;
-               this.setInvulnerable(true);
+               this.setPermanentlyInvulnerable(true);
                this.setFuse(fuseTime);
                this.entityData.set(MAX_FUSE, fuseTime);
                this.makeSound(SoundEvents.TNT_PRIMED);
@@ -849,7 +849,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public boolean isInvulnerableToPiercingWeapon() {
-      return this.isInvulnerable() && !this.isPrimed();
+      return super.isInvulnerableToPiercingWeapon() && !this.isPrimed();
    }
 
    public boolean canBePickedFromInside() {

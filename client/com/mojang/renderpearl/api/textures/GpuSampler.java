@@ -1,23 +1,20 @@
 package com.mojang.renderpearl.api.textures;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.util.OptionalDouble;
 
-public abstract class GpuSampler implements AutoCloseable {
-   public GpuSampler() {
-      super();
-   }
+public interface GpuSampler extends UncheckedAutoCloseable {
+   AddressMode getAddressModeU();
 
-   public abstract AddressMode getAddressModeU();
+   AddressMode getAddressModeV();
 
-   public abstract AddressMode getAddressModeV();
+   FilterMode getMinFilter();
 
-   public abstract FilterMode getMinFilter();
+   FilterMode getMagFilter();
 
-   public abstract FilterMode getMagFilter();
+   int getMaxAnisotropy();
 
-   public abstract int getMaxAnisotropy();
+   OptionalDouble getMaxLod();
 
-   public abstract OptionalDouble getMaxLod();
-
-   public abstract void close();
+   boolean isClosed();
 }

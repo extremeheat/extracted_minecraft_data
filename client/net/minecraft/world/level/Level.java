@@ -50,6 +50,7 @@ import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
@@ -61,8 +62,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -664,7 +665,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return true;
    }
 
-   public void broadcastEntityEvent(final Entity entity, final byte event) {
+   public void broadcastEntityEvent(final Entity entity, final @EntityEvent.Value byte event) {
    }
 
    public void broadcastDamageEvent(final Entity entity, final DamageSource source) {
@@ -735,7 +736,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract @Nullable MapItemSavedData getMapData(MapId id);
 
-   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+   public void globalLevelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
    }
 
    public CrashReportCategory fillReportDetails(final CrashReport report) {
@@ -858,8 +859,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public abstract ClockManager clockManager();
 
    public abstract EnvironmentAttributeSystem environmentAttributes();
-
-   public abstract FuelValues fuelValues();
 
    public int getClientLeafTintColor(final BlockPos pos) {
       return 0;

@@ -30,6 +30,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -267,7 +268,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       } else if (!itemInHand.isEmpty() && hand == InteractionHand.MAIN_HAND && interactionItem.isEmpty()) {
          this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
          this.level().playSound(player, (Entity)this, SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
-         this.swing(InteractionHand.MAIN_HAND);
+         this.swing(InteractionHand.MAIN_HAND, itemInHand.getInteractAnimation());
 
          for(ItemStack itemStack : this.getInventory().removeAllItems()) {
             BehaviorUtils.throwItem(this, itemStack, this.position());
@@ -438,7 +439,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       return new Vec3(0.0, (double)this.getEyeHeight() * 0.6, (double)this.getBbWidth() * 0.1);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 18) {
          for(int i = 0; i < 3; ++i) {
             this.spawnHeartParticle();

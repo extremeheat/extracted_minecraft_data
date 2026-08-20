@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.providers.number;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record ConstantValue(float value) implements NumberProvider {
@@ -21,8 +22,8 @@ public record ConstantValue(float value) implements NumberProvider {
       return this.value;
    }
 
-   public static ConstantValue exactly(final float value) {
-      return new ConstantValue(value);
+   public static Holder<NumberProvider> exactly(final float value) {
+      return Holder.<NumberProvider>direct(new ConstantValue(value));
    }
 
    static {

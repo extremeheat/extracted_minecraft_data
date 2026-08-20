@@ -8,7 +8,7 @@ import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLVideo;
 
 public class GlSurface implements GpuSurfaceBackend {
    private static final Set<GpuSurface.PresentMode> SUPPORTED_PRESENT_MODES;
@@ -22,7 +22,7 @@ public class GlSurface implements GpuSurfaceBackend {
    }
 
    public void configure(final GpuSurface.Configuration config) throws SurfaceException {
-      GLFW.glfwSwapInterval(config.presentMode() == GpuSurface.PresentMode.FIFO ? 1 : 0);
+      SDLVideo.SDL_GL_SetSwapInterval(config.presentMode() == GpuSurface.PresentMode.FIFO ? 1 : 0);
       this.swapchainWidth = config.width();
       this.swapchainHeight = config.height();
    }
@@ -35,11 +35,11 @@ public class GlSurface implements GpuSurfaceBackend {
    }
 
    public void blitFromTexture(final CommandEncoderBackend commandEncoder, final GpuTextureView textureView) {
-      ((GlCommandEncoder)commandEncoder).presentTexture(textureView, this.swapchainWidth, this.swapchainHeight);
+      ((GlCommandEncoder)commandEncoder).presentTexture(this.windowHandle, textureView, this.swapchainWidth, this.swapchainHeight);
    }
 
    public void present() {
-      GLFW.glfwSwapBuffers(this.windowHandle);
+      SDLVideo.SDL_GL_SwapWindow(this.windowHandle);
    }
 
    public void close() {

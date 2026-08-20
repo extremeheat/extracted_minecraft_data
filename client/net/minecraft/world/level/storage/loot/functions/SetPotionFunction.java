@@ -2,7 +2,7 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
@@ -15,8 +15,8 @@ public class SetPotionFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetPotionFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Potion.CODEC.fieldOf("id").forGetter((f) -> f.potion)).apply(i, SetPotionFunction::new));
    private final Holder<Potion> potion;
 
-   private SetPotionFunction(final List<LootItemCondition> predicates, final Holder<Potion> potion) {
-      super(predicates);
+   private SetPotionFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<Potion> potion) {
+      super(condition);
       this.potion = potion;
    }
 

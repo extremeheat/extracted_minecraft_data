@@ -14,10 +14,9 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -30,7 +29,7 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -80,9 +79,9 @@ public abstract class Structure {
       return this.terrainAdaptation() != TerrainAdjustment.NONE ? boundingBox.inflatedBy(12) : boundingBox;
    }
 
-   public StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final int references, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
+   public StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeResolver biomeResolver, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final int references, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
       ProfiledDuration profiled = JvmProfiler.INSTANCE.onStructureGenerate(sourceChunkPos, dimension, selected);
-      GenerationContext context = new GenerationContext(registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, heightAccessor, validBiome);
+      GenerationContext context = new GenerationContext(registryAccess, chunkGenerator, biomeResolver, randomState, structureTemplateManager, seed, sourceChunkPos, heightAccessor, validBiome);
       Optional<GenerationStub> generation = this.findValidGenerationPoint(context);
       if (generation.isPresent()) {
          StructurePiecesBuilder builder = ((GenerationStub)generation.get()).getPiecesBuilder();
@@ -113,7 +112,7 @@ public abstract class Structure {
 
    private static boolean isValidBiome(final GenerationStub stub, final GenerationContext context) {
       BlockPos startPos = stub.position();
-      return context.validBiome.test(context.chunkGenerator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(startPos.getX()), QuartPos.fromBlock(startPos.getY()), QuartPos.fromBlock(startPos.getZ()), context.randomState.sampler()));
+      return context.validBiome.test(context.biomeResolver.getNoiseBiome(QuartPos.fromBlock(startPos.getX()), QuartPos.fromBlock(startPos.getY()), QuartPos.fromBlock(startPos.getZ())));
    }
 
    public void afterPlace(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final PiecesContainer pieces) {
@@ -173,7 +172,7 @@ public abstract class Structure {
 
    static {
       DIRECT_CODEC = BuiltInRegistries.STRUCTURE_TYPE.byNameCodec().dispatch(Structure::type, StructureType::codec);
-      CODEC = RegistryFileCodec.<Holder<Structure>>create(Registries.STRUCTURE, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.STRUCTURE, DIRECT_CODEC);
    }
 
    public static record StructureSettings(HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
@@ -190,7 +189,7 @@ public abstract class Structure {
 
       static {
          DEFAULT = new StructureSettings(HolderSet.empty(), Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE);
-         CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(i, StructureSettings::new));
+         CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(i, StructureSettings::new));
       }
 
       public static class Builder {
@@ -228,9 +227,9 @@ public abstract class Structure {
       }
    }
 
-   public static record GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
-      public GenerationContext(final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
-         this(registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, makeRandom(seed, chunkPos), seed, chunkPos, heightAccessor, validBiome);
+   public static record GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeResolver biomeResolver, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
+      public GenerationContext(final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeResolver biomeResolver, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
+         this(registryAccess, chunkGenerator, biomeResolver, randomState, structureTemplateManager, makeRandom(seed, chunkPos), seed, chunkPos, heightAccessor, validBiome);
       }
 
       public GenerationContext {

@@ -3,9 +3,10 @@ package com.mojang.renderpearl.backend.api;
 import com.mojang.renderpearl.api.device.GpuSurface;
 import com.mojang.renderpearl.api.device.SurfaceException;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.util.Collection;
 
-public interface GpuSurfaceBackend extends AutoCloseable {
+public interface GpuSurfaceBackend extends UncheckedAutoCloseable {
    void configure(GpuSurface.Configuration config) throws SurfaceException;
 
    boolean isSuboptimal();
@@ -15,8 +16,6 @@ public interface GpuSurfaceBackend extends AutoCloseable {
    void blitFromTexture(CommandEncoderBackend commandEncoder, GpuTextureView textureView);
 
    void present();
-
-   void close();
 
    Collection<GpuSurface.PresentMode> supportedPresentModes();
 }

@@ -28,8 +28,8 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
       return state.renderOffset;
    }
 
-   public boolean shouldRender(final Shulker entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      if (super.shouldRender(entity, culler, camX, camY, camZ)) {
+   public boolean shouldRender(final Shulker entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      if (super.shouldRender(entity, culler, camX, camY, camZ, partialTicks)) {
          return true;
       } else {
          Vec3 startPos = entity.getRenderPosition(0.0F);

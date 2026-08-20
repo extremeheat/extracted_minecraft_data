@@ -57,6 +57,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    private final Holder.Reference<EntityType<?>> builtInRegistryHolder;
    public static final Codec<EntityType<?>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, EntityType<?>> STREAM_CODEC;
+   public static final int NO_UPDATE_INTERVAL = 2147483647;
    private final EntityFactory<T> factory;
    private final MobCategory category;
    private final TagKey<Block> immuneTo;
@@ -387,6 +388,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return this.updateInterval;
    }
 
+   public boolean hasUpdateInterval() {
+      return this.updateInterval != 2147483647;
+   }
+
    public boolean trackDeltas() {
       return this.trackDeltas;
    }
@@ -551,6 +556,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       public Builder<T> updateInterval(final int updateInterval) {
          this.updateInterval = updateInterval;
          return this;
+      }
+
+      public Builder<T> noUpdateInterval() {
+         return this.updateInterval(2147483647);
       }
 
       public Builder<T> requiredFeatures(final FeatureFlag... flags) {

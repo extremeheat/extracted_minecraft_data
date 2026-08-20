@@ -1,25 +1,19 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
 import java.util.List;
-import net.minecraft.network.FriendlyByteBuf;
+import java.util.function.IntFunction;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.util.ByIdMap;
 
 public record ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket>codec(ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new);
-
-   private ClientboundCustomChatCompletionsPacket(final FriendlyByteBuf input) {
-      this((Action)input.readEnum(Action.class), input.readList(FriendlyByteBuf::readUtf));
-   }
+   public static final StreamCodec<ByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC;
 
    public ClientboundCustomChatCompletionsPacket {
       super();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeEnum(this.action);
-      output.writeCollection(this.entries, FriendlyByteBuf::writeUtf);
    }
 
    public PacketType<ClientboundCustomChatCompletionsPacket> type() {
@@ -30,12 +24,21 @@ public record ClientboundCustomChatCompletionsPacket(Action action, List<String>
       listener.handleCustomChatCompletions(this);
    }
 
-   public static enum Action {
-      ADD,
-      REMOVE,
-      SET;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ClientboundCustomChatCompletionsPacket.Action.STREAM_CODEC, ClientboundCustomChatCompletionsPacket::action, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), ClientboundCustomChatCompletionsPacket::entries, ClientboundCustomChatCompletionsPacket::new);
+   }
 
-      private Action() {
+   public static enum Action {
+      ADD(0),
+      REMOVE(1),
+      SET(2);
+
+      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((a) -> a.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (a) -> a.id);
+      private final int id;
+
+      private Action(final int id) {
+         this.id = id;
       }
 
       // $FF: synthetic method

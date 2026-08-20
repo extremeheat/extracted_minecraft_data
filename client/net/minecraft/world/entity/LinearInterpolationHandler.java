@@ -4,15 +4,20 @@ import net.minecraft.core.PositionAndRotation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-public class LinearInterpolationHandler extends InterpolationHandler {
+public class LinearInterpolationHandler extends AbstractInterpolationHandler {
+   public static final int DEFAULT_INTERPOLATION_STEPS = 3;
    private final InterpolationData interpolationData = new InterpolationData();
 
-   public LinearInterpolationHandler(final Entity entity) {
-      super(entity);
+   private LinearInterpolationHandler(final Entity entity, final int interpolationSteps) {
+      super(entity, interpolationSteps);
    }
 
-   public LinearInterpolationHandler(final Entity entity, final int interpolationSteps) {
-      super(entity, interpolationSteps);
+   public static InterpolationHandler create(final Entity entity, final int interpolationSteps) {
+      return (InterpolationHandler)(entity.level().isClientSide() ? new LinearInterpolationHandler(entity, interpolationSteps) : InterpolationHandler.NO_OP);
+   }
+
+   public static InterpolationHandler create(final Entity entity) {
+      return create(entity, 3);
    }
 
    public void setInterpolationLength(final int steps) {

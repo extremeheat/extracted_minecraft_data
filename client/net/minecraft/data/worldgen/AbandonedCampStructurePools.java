@@ -39,7 +39,7 @@ public class AbandonedCampStructurePools {
    private static final String TENT_IDENTIFIER_TEMPLATE = "abandoned_camp/tent/%s/tent_%s_%d";
    private static final String CAMP_BIOME_IDENTIFIER_TEMPLATE = "abandoned_camp/camp/%s/campsite_%s_%d";
    private static final String CAMP_DEFAULT_IDENTIFIER_TEMPLATE = "abandoned_camp/camp/default/campsite_default_%s_%d";
-   private static final int NUM_OF_BIOME_SPECIFIC_CAMPSITES = 3;
+   private static final int NUM_OF_BIOME_SPECIFIC_CAMPSITES = 4;
    private static final int NUM_OF_DEFAULT_CAMPSITES = 15;
    private static final int NUM_OF_TENTS = 10;
    private static final List<AbandonedCampStructure> BIOME_VARIANTS;
@@ -96,7 +96,7 @@ public class AbandonedCampStructurePools {
          }
       }
 
-      for(int numOfBiomeCampVariants = 1; numOfBiomeCampVariants <= 3; ++numOfBiomeCampVariants) {
+      for(int numOfBiomeCampVariants = 1; numOfBiomeCampVariants <= 4; ++numOfBiomeCampVariants) {
          campsiteStructures.add(Pair.of(StructurePoolElement.legacy(getBiomeSpecificStructureName(biomeVariant, "abandoned_camp/camp/%s/campsite_%s_%d", numOfBiomeCampVariants)), 1));
       }
 

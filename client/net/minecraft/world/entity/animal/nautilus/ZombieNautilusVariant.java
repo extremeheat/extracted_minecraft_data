@@ -5,10 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.variant.ModelAndTexture;
 import net.minecraft.world.entity.variant.PriorityProvider;
@@ -35,7 +35,7 @@ public record ZombieNautilusVariant(ModelAndTexture<ModelType> modelAndTexture, 
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<ZombieNautilusVariant>>create(Registries.ZOMBIE_NAUTILUS_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.ZOMBIE_NAUTILUS_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ZOMBIE_NAUTILUS_VARIANT);
    }
 

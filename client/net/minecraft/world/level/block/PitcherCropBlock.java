@@ -172,16 +172,16 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       PosAndState lowerHalf = this.getLowerHalf(level, pos, state);
       return lowerHalf == null ? false : this.canGrow(level, lowerHalf.pos, lowerHalf.state, (Integer)lowerHalf.state.getValue(AGE) + 1);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       PosAndState lowerHalf = this.getLowerHalf(level, pos, state);
       if (lowerHalf != null) {
          this.grow(level, lowerHalf.state, lowerHalf.pos, 1);

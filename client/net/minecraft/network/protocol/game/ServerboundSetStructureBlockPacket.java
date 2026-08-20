@@ -64,7 +64,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       int maxSize = 48;
       this.size = new Vec3i(Mth.clamp(input.readByte(), 0, 48), Mth.clamp(input.readByte(), 0, 48), Mth.clamp(input.readByte(), 0, 48));
       this.mirror = (Mirror)input.readEnum(Mirror.class);
-      this.rotation = (Rotation)input.readEnum(Rotation.class);
+      this.rotation = (Rotation)Rotation.STREAM_CODEC.decode(input);
       this.data = input.readUtf(128);
       this.integrity = Mth.clamp(input.readFloat(), 0.0F, 1.0F);
       this.seed = input.readVarLong();
@@ -87,7 +87,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       output.writeByte(this.size.getY());
       output.writeByte(this.size.getZ());
       output.writeEnum(this.mirror);
-      output.writeEnum(this.rotation);
+      Rotation.STREAM_CODEC.encode(output, this.rotation);
       output.writeUtf(this.data);
       output.writeFloat(this.integrity);
       output.writeVarLong(this.seed);

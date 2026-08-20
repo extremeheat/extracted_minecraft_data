@@ -74,6 +74,7 @@ import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.UpdateInterval;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.level.ChunkPos;
@@ -172,7 +173,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
          this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value());
       } else {
-         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none(), List.of());
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none(), List.of(), Optional.empty(), List.of());
       }
 
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);
@@ -1112,10 +1113,10 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          EntityType<?> type = entity.getType();
          int range = type.clientTrackingRange() * 16;
          if (range != 0) {
-            int updateInterval = type.updateInterval();
             if (this.entityMap.containsKey(entity.getId())) {
                throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Entity is already tracked!"));
             } else {
+               UpdateInterval updateInterval = type.hasUpdateInterval() ? UpdateInterval.periodic(type.updateInterval()) : UpdateInterval.NEVER;
                TrackedEntity trackedEntity = new TrackedEntity(entity, range, updateInterval, type.trackDeltas());
                this.entityMap.put(entity.getId(), trackedEntity);
                trackedEntity.updatePlayers(this.level.players());
@@ -1325,7 +1326,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       private SectionPos lastSectionPos;
       private final Set<ServerPlayerConnection> seenBy;
 
-      public TrackedEntity(final Entity entity, final int range, final int updateInterval, final boolean trackDelta) {
+      public TrackedEntity(final Entity entity, final int range, final UpdateInterval updateInterval, final boolean trackDelta) {
          Objects.requireNonNull(ChunkMap.this);
          super();
          this.seenBy = Sets.newIdentityHashSet();

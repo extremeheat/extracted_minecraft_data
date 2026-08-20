@@ -27,15 +27,15 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
       super(properties, BlockItemIds.DIRT.block());
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos above = pos.above();
 
       label24:
@@ -53,19 +53,19 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
             }
          }
 
-         placeBonemealEffect(level, random, testPos);
+         placeBonemealEffect(level, random, testPos, source);
       }
 
    }
 
-   private static void placeBonemealEffect(final ServerLevel level, final RandomSource random, final BlockPos testPos) {
+   private static void placeBonemealEffect(final ServerLevel level, final RandomSource random, final BlockPos testPos, final BonemealSource source) {
       BlockState grass = Blocks.SHORT_GRASS.defaultBlockState();
       Optional<Holder.Reference<PlacedFeature>> grassFeature = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE).get(VegetationPlacements.GRASS_BONEMEAL);
       BlockState testState = level.getBlockState(testPos);
       if (testState.is(grass.getBlock()) && random.nextFloat() < 0.1F) {
          BonemealableBlock bonemealableBlock = (BonemealableBlock)grass.getBlock();
-         if (bonemealableBlock.isValidBonemealTarget(level, testPos, testState)) {
-            bonemealableBlock.performBonemeal(level, random, testPos, testState);
+         if (bonemealableBlock.isValidBonemealTarget(level, testPos, testState, source)) {
+            bonemealableBlock.performBonemeal(level, random, testPos, testState, source);
          }
       }
 

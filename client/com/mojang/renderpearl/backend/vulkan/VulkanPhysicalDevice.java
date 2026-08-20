@@ -2,6 +2,7 @@ package com.mojang.renderpearl.backend.vulkan;
 
 import com.mojang.renderpearl.api.device.BackendCreationException;
 import com.mojang.renderpearl.api.device.DeviceType;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMaps;
@@ -13,7 +14,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.sdl.SDLVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkExtensionProperties;
@@ -26,7 +27,7 @@ import org.lwjgl.vulkan.VkPhysicalDeviceProperties2;
 import org.lwjgl.vulkan.VkPhysicalDeviceVulkan11Properties;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
-public class VulkanPhysicalDevice implements AutoCloseable {
+public class VulkanPhysicalDevice implements UncheckedAutoCloseable {
    private final VkPhysicalDevice vkPhysicalDevice;
    private final VkExtensionProperties.Buffer vkDeviceExtensions;
    private final VkPhysicalDeviceFeatures2 vkPhysicalDeviceFeatures;
@@ -75,7 +76,7 @@ public class VulkanPhysicalDevice implements AutoCloseable {
          for(int i = 0; i < numQueueFamilies; ++i) {
             int familyUsedQueues = 0;
             VkQueueFamilyProperties queueFamilyProperties = (VkQueueFamilyProperties)vkQueueFamilyProps.get(i);
-            if (graphicsQueueFamily == -1 && VulkanUtils.hasAllBits(queueFamilyProperties.queueFlags(), 3) && GLFWVulkan.glfwGetPhysicalDevicePresentationSupport(vkPhysicalDevice.getInstance(), vkPhysicalDevice, i)) {
+            if (graphicsQueueFamily == -1 && VulkanUtils.hasAllBits(queueFamilyProperties.queueFlags(), 3) && SDLVulkan.SDL_Vulkan_GetPresentationSupport(vkPhysicalDevice.getInstance(), vkPhysicalDevice, i)) {
                graphicsQueueFamily = i;
                ++familyUsedQueues;
             }

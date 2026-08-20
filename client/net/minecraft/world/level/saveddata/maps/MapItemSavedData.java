@@ -32,7 +32,6 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.MapDecorations;
-import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -220,10 +219,6 @@ public class MapItemSavedData extends SavedData {
    public static void addTargetDecoration(final ItemStack itemStack, final BlockPos position, final String key, final Holder<MapDecorationType> decorationType) {
       MapDecorations.Entry newDecoration = new MapDecorations.Entry(decorationType, (double)position.getX(), (double)position.getZ(), 180.0F);
       itemStack.update(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY, (decorations) -> decorations.withDecoration(key, newDecoration));
-      if (((MapDecorationType)decorationType.value()).hasMapColor()) {
-         itemStack.set(DataComponents.MAP_COLOR, new MapItemColor(((MapDecorationType)decorationType.value()).mapColor()));
-      }
-
    }
 
    private void addDecoration(final Holder<MapDecorationType> type, final @Nullable LevelAccessor level, final String key, final double xPos, final double zPos, final double yRot, final @Nullable Component name) {
@@ -267,7 +262,7 @@ public class MapItemSavedData extends SavedData {
          return Pair.of(type, this.calculateRotation(level, yRot));
       } else {
          Holder<MapDecorationType> outsideMapDecorationType = this.decorationTypeForPlayerOutsideMap(xDeltaFromCenter, yDeltaFromCenter);
-         return outsideMapDecorationType == null ? null : Pair.of(outsideMapDecorationType, (byte)0);
+         return outsideMapDecorationType == null ? null : Pair.of(outsideMapDecorationType, this.calculateRotation(level, yRot));
       }
    }
 
@@ -404,16 +399,6 @@ public class MapItemSavedData extends SavedData {
    public void setColor(final int x, final int y, final byte newColor) {
       this.colors[x + y * 128] = newColor;
       this.setColorsDirty(x, y);
-   }
-
-   public boolean isExplorationMap() {
-      for(MapDecoration decoration : this.decorations.values()) {
-         if (((MapDecorationType)decoration.type().value()).explorationMapElement()) {
-            return true;
-         }
-      }
-
-      return false;
    }
 
    public void addClientSideDecorations(final List<MapDecoration> decorations) {

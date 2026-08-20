@@ -121,7 +121,7 @@ public class Sniffer extends Animal {
    }
 
    public boolean isTempted() {
-      return (Boolean)this.brain.getMemory(MemoryModuleType.IS_TEMPTED).orElse(false);
+      return this.brain.getMemory(MemoryModuleType.TEMPTING_PLAYER).isPresent();
    }
 
    public boolean canSniff() {

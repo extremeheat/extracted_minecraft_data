@@ -66,7 +66,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
 
    }
 
-   public boolean shouldRender(final EndCrystal entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      return super.shouldRender(entity, culler, camX, camY, camZ) || entity.getBeamTarget() != null;
+   public boolean shouldRender(final EndCrystal entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      return super.shouldRender(entity, culler, camX, camY, camZ, partialTicks) || entity.getBeamTarget() != null;
    }
 }

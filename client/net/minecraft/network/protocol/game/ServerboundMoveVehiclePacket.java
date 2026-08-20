@@ -16,7 +16,7 @@ public record ServerboundMoveVehiclePacket(PositionAndRotation movingTo, boolean
    }
 
    public static ServerboundMoveVehiclePacket fromEntity(final Entity entity) {
-      return entity.isInterpolating() ? new ServerboundMoveVehiclePacket(entity.getInterpolation().getCurrentPositionAndRotation(), entity.onGround()) : new ServerboundMoveVehiclePacket(entity.storePositionAndRotation(), entity.onGround());
+      return new ServerboundMoveVehiclePacket(entity.getClientPositionAndRotation(), entity.onGround());
    }
 
    public PacketType<ServerboundMoveVehiclePacket> type() {

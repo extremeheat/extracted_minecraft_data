@@ -155,7 +155,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    public static class LootModifierArgument extends ResourceOrIdArgument<LootItemFunction> {
       protected LootModifierArgument(final CommandBuildContext context) {
-         super(context, Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC);
+         super(context, Registries.ITEM_MODIFIER, LootItemFunctions.DIRECT_CODEC);
       }
    }
 

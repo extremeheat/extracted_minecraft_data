@@ -30,7 +30,7 @@ public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
       return state.is(BlockTags.SUPPORTS_AZALEA);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (!(level instanceof ServerLevel serverLevel)) {
          return false;
       } else {
@@ -39,11 +39,11 @@ public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
       }
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (double)level.getRandom().nextFloat() < 0.45;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       TreeGrower.AZALEA.growTree(level, level.getChunkSource().getGenerator(), pos, state, random);
    }
 

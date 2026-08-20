@@ -69,6 +69,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -361,7 +362,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 20) {
          this.spawnAnim();
       } else {
@@ -1485,6 +1486,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
    public float chargeSpeedModifier() {
       return 1.0F;
+   }
+
+   public void swingForAttack(final InteractionHand hand) {
+      SwingAnimation swingAnimation = this.getItemInHand(hand).getAttackAnimation();
+      this.swing(hand, swingAnimation, false);
+   }
+
+   public void swing(final InteractionHand hand, final SwingAnimation animation) {
+      this.swing(hand, animation, false);
    }
 
    static {

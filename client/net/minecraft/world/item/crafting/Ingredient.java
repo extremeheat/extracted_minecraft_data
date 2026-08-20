@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.HolderSetCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.HolderSetCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.Item;
@@ -94,7 +94,7 @@ public final class Ingredient implements Predicate<ItemStack>, StackedContents.I
    }
 
    public SlotDisplay display() {
-      return (SlotDisplay)this.values.unwrap().map(SlotDisplay.TagSlotDisplay::new, (l) -> new SlotDisplay.Composite(l.stream().map(Ingredient::displayForSingleItem).toList()));
+      return new SlotDisplay.TagSlotDisplay(this.values);
    }
 
    public static SlotDisplay optionalIngredientToDisplay(final Optional<Ingredient> ingredient) {

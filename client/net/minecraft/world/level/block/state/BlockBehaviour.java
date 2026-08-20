@@ -52,6 +52,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
@@ -177,6 +178,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
       return InteractionResult.TRY_WITH_EMPTY_HAND;
+   }
+
+   protected boolean showAsInteractableInSpectatorMode(final BlockState state, final Level level, final BlockPos pos, final BlockHitResult hitResult) {
+      return state.getMenuProvider(level, pos) != null || state.getBlock() instanceof Portal;
    }
 
    protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
@@ -328,6 +333,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return false;
    }
 
+   protected boolean shouldRedstoneWireConnectTo(final BlockState state, final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+      return state.isSignalSource() && direction != null;
+   }
+
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return this.ownSignal(state, level, pos);
    }
@@ -433,7 +442,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private StateArgumentPredicate<EntityType<?>> isValidSpawn;
       private StatePredicate isRedstoneConductor;
       private StatePredicate isSuffocating;
-      private StatePredicate isViewBlocking;
+      private StateArgumentPredicate<AABB> isViewBlocking;
       private PostProcess postProcess;
       private Predicate<BlockState> emissiveRendering;
       private boolean dynamicShape;
@@ -451,13 +460,13 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.drops = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("blocks/")));
          this.descriptionId = (id) -> Util.makeDescriptionId("block", id.identifier());
          this.canOcclude = true;
-         this.pushReaction = PushReaction.NORMAL;
+         this.pushReaction = PushReaction.PUSH_PULL;
          this.spawnTerrainParticles = true;
          this.instrument = NoteBlockInstrument.HARP;
          this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
          this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
          this.isSuffocating = (state, level, pos) -> state.is(BlockTags.CAUSES_SUFFOCATION) && state.isCollisionShapeFullBlock(level, pos);
-         this.isViewBlocking = this.isSuffocating;
+         this.isViewBlocking = (state, level, pos, nearPlaneBox) -> this.isSuffocating.test(state, level, pos);
          this.postProcess = (state, level, pos) -> null;
          this.emissiveRendering = (var0) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
@@ -659,7 +668,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties isViewBlocking(final StatePredicate isViewBlocking) {
+      public Properties isViewBlocking(final StateArgumentPredicate<AABB> isViewBlocking) {
          this.isViewBlocking = isViewBlocking;
          return this;
       }
@@ -773,7 +782,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final boolean canOcclude;
       private final StatePredicate isRedstoneConductor;
       private final StatePredicate isSuffocating;
-      private final StatePredicate isViewBlocking;
+      private final StateArgumentPredicate<AABB> isViewBlocking;
       private final PostProcess postProcess;
       private final Predicate<BlockState> emissiveRendering;
       private final @Nullable OffsetFunction offsetFunction;
@@ -954,6 +963,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().isSignalSource(this.asState());
       }
 
+      public boolean shouldRedstoneWireConnectTo(final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+         return this.getBlock().shouldRedstoneWireConnectTo(this.asState(), level, pos, direction);
+      }
+
       public int getOwnSignal(final BlockGetter level, final BlockPos pos) {
          return this.getBlock().ownSignal(this.asState(), level, pos);
       }
@@ -1117,6 +1130,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().useWithoutItem(this.asState(), level, hitResult.getBlockPos(), player, hitResult);
       }
 
+      public boolean showAsInteractableInSpectatorMode(final Level level, final BlockPos pos, final BlockHitResult hitResult) {
+         return this.getBlock().showAsInteractableInSpectatorMode(this.asState(), level, pos, hitResult);
+      }
+
       public void attack(final Level level, final BlockPos pos, final Player player) {
          this.getBlock().attack(this.asState(), level, pos, player);
       }
@@ -1125,8 +1142,12 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.isSuffocating.test(this.asState(), level, pos);
       }
 
-      public boolean isViewBlocking(final BlockGetter level, final BlockPos pos) {
-         return this.isViewBlocking.test(this.asState(), level, pos);
+      public boolean isLightPermeable() {
+         return !this.solidRender || this.getLightDampening() == 0;
+      }
+
+      public boolean isViewBlocking(final BlockGetter level, final BlockPos blockPos, final AABB nearPlaneBox) {
+         return this.isViewBlocking.test(this.asState(), level, blockPos, nearPlaneBox);
       }
 
       public BlockState updateShape(final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {

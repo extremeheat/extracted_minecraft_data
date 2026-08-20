@@ -28,6 +28,8 @@ public class VulkanFeatureSets {
    public static final FeatureSet MULTI_DRAW_FEATURESET;
    public static final FeatureSet AMD_BUFFER_MARKER_FEATURESET;
    public static final FeatureSet NV_DIAGNOSTIC_CHECKPOINT_FEATURESET;
+   public static final FeatureSet WIREFRAME_FEATURESET;
+   public static final FeatureSet CALIBRATED_TIMESTAMP_FEATURESET;
 
    public VulkanFeatureSets() {
       super();
@@ -42,19 +44,21 @@ public class VulkanFeatureSets {
    }
 
    public static Set<FeatureSet> optionalFeatureSets() {
-      return ObjectOpenHashSet.of(NV_DIAGNOSTIC_CHECKPOINT_FEATURESET, AMD_BUFFER_MARKER_FEATURESET, MULTI_DRAW_FEATURESET);
+      return ObjectOpenHashSet.of(new FeatureSet[]{CALIBRATED_TIMESTAMP_FEATURESET, WIREFRAME_FEATURESET, NV_DIAGNOSTIC_CHECKPOINT_FEATURESET, AMD_BUFFER_MARKER_FEATURESET, MULTI_DRAW_FEATURESET});
    }
 
    public static void bootstrap() {
    }
 
    static {
-      REQUIRED_FEATURESET = new FeatureSet("Minecraft base required", Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain"), Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect"), new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid"), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy"), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters"), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore"), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset"), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2"), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STRUCT, "dynamicRendering"), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT, "vertexAttributeInstanceRateDivisor")));
+      REQUIRED_FEATURESET = new FeatureSet("Minecraft base required", Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain"), Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect"), new VulkanFeature(VK10_FEATURES_STRUCT, "drawIndirectFirstInstance"), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy"), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters"), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore"), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset"), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2"), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STRUCT, "dynamicRendering"), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT, "vertexAttributeInstanceRateDivisor")));
       PORTABILITY_SUBSET_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDevicePortabilitySubsetFeaturesKHR.class);
       PORTABILITY_SUBSET_FEATURESET = new FeatureSet("Vulkan Portability Subset", Set.of("VK_KHR_portability_subset"), Set.of(new VulkanFeature(PORTABILITY_SUBSET_FEATURES_STRUCT, "triangleFans")));
       MULTI_DRAW_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceMultiDrawFeaturesEXT.class);
       MULTI_DRAW_FEATURESET = new FeatureSet("EXT MultiDraw", Set.of("VK_EXT_multi_draw"), Set.of(new VulkanFeature(MULTI_DRAW_FEATURES_STRUCT, "multiDraw")));
       AMD_BUFFER_MARKER_FEATURESET = new FeatureSet("AMD Buffer Marker", Set.of("VK_AMD_buffer_marker"), Set.of());
       NV_DIAGNOSTIC_CHECKPOINT_FEATURESET = new FeatureSet("NV Diagnostic Checkpoint", Set.of("VK_NV_device_diagnostic_checkpoints"), Set.of(), (device) -> !AMD_BUFFER_MARKER_FEATURESET.isSupported(device));
+      WIREFRAME_FEATURESET = new FeatureSet("Wireframe", Set.of(), Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "fillModeNonSolid")));
+      CALIBRATED_TIMESTAMP_FEATURESET = new FeatureSet("Calibrated Timestamps", Set.of("VK_EXT_calibrated_timestamps"), Set.of());
    }
 }

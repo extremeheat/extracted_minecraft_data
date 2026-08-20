@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -24,7 +25,6 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
@@ -49,7 +49,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return CODEC;
    }
 
-   public void buildSurface(final WorldGenRegion level, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
+   public void buildSurface(final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk, final BiomeManager biomeManager, final Blender blender, final Set<Holder<Biome>> possibleBiomes) {
    }
 
    public void applyBiomeDecoration(final WorldGenLevel level, final ChunkAccess chunk, final StructureManager structureManager) {
@@ -101,7 +101,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return state;
    }
 
-   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final CarvingMask.@Nullable Filter filter) {
+   public void applyCarvers(final @Nullable WorldGenRegion biomeRegion, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final Blender blender) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

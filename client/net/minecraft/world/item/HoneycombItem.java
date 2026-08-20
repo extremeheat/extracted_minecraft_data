@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -79,11 +80,11 @@ public class HoneycombItem extends Item implements SignApplicator {
       return Optional.ofNullable((Block)((BiMap)WAXABLES.get()).get(oldState.getBlock())).map((b) -> b.withPropertiesOf(oldState));
    }
 
-   public boolean tryApplyToSign(final Level level, final SignBlockEntity sign, final boolean isFrontText, final ItemStack item, final Player player) {
+   public boolean tryApplyToSign(final Level level, final SignBlockEntity sign, final SignTextSlot slot, final ItemStack item, final Player player) {
       if (sign.setWaxed(true)) {
          BlockPos blockPos = sign.getBlockPos();
          level.levelEvent((Entity)null, 3003, blockPos, 0);
-         level.playSound(player, (BlockPos)blockPos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {
          return false;

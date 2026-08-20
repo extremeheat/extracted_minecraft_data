@@ -69,11 +69,11 @@ public class TextFieldHelper {
          return true;
       } else {
          CursorStep cursorStep = event.hasControlDownWithQuirk() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
-         if (event.key() == 259) {
+         if (event.shortcutKey() == 8) {
             this.removeFromCursor(-1, cursorStep);
             return true;
          } else {
-            if (event.key() == 261) {
+            if (event.shortcutKey() == 127) {
                this.removeFromCursor(1, cursorStep);
             } else {
                if (event.isLeft()) {
@@ -86,12 +86,12 @@ public class TextFieldHelper {
                   return true;
                }
 
-               if (event.key() == 268) {
+               if (event.shortcutKey() == 1073741898) {
                   this.setCursorToStart(event.hasShiftDown());
                   return true;
                }
 
-               if (event.key() == 269) {
+               if (event.shortcutKey() == 1073741901) {
                   this.setCursorToEnd(event.hasShiftDown());
                   return true;
                }

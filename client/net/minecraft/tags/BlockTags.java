@@ -53,6 +53,8 @@ public final class BlockTags {
    public static final TagKey<Block> TERRACOTTA;
    public static final TagKey<Block> GLAZED_TERRACOTTA;
    public static final TagKey<Block> CONCRETE;
+   public static final TagKey<Block> CONCRETE_SLABS;
+   public static final TagKey<Block> CONCRETE_STAIRS;
    public static final TagKey<Block> CONCRETE_POWDERS;
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Block> SHULKER_BOXES;
@@ -129,6 +131,7 @@ public final class BlockTags {
    public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE;
    public static final TagKey<Block> CANNOT_REPLACE_BELOW_TREE_TRUNK;
    public static final TagKey<Block> CANNOT_PLACE_BASALT_PILLAR_ON;
+   public static final TagKey<Block> UNCARVABLE;
    public static final TagKey<Block> CANDLE_CAKES;
    public static final TagKey<Block> CAULDRONS;
    public static final TagKey<Block> CRYSTAL_SOUND_BLOCKS;
@@ -137,6 +140,7 @@ public final class BlockTags {
    public static final TagKey<Block> CAMEL_SAND_STEP_SOUND_BLOCKS;
    public static final TagKey<Block> HAPPY_GHAST_AVOIDS;
    public static final TagKey<Block> OCCLUDES_VIBRATION_SIGNALS;
+   public static final TagKey<Block> CUSHION_USES_COLLISION_SHAPE;
    public static final TagKey<Block> DRIPSTONE_REPLACEABLE;
    public static final TagKey<Block> SULFUR_SPIKE_REPLACEABLE;
    public static final TagKey<Block> CAVE_VINES;
@@ -259,6 +263,11 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS;
    public static final TagKey<Block> REQUIRED_FOR_POPLAR_LEAF_AMBIENCE;
    public static final TagKey<Block> SPELEOTHEMS;
+   public static final TagKey<Block> DANGEROUS_FOR_TELEPORTATION;
+   public static final TagKey<Block> CAT_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> ENDERMAN_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> SHULKER_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> CONSUMABLE_DOES_NOT_TELEPORT_TO;
    public static final TagKey<Block> FOX_IMMUNE_TO;
    public static final TagKey<Block> POLAR_BEAR_IMMUNE_TO;
    public static final TagKey<Block> SNOW_GOLEM_IMMUNE_TO;
@@ -336,6 +345,8 @@ public final class BlockTags {
       TERRACOTTA = BlockItemTags.TERRACOTTA.block();
       GLAZED_TERRACOTTA = BlockItemTags.GLAZED_TERRACOTTA.block();
       CONCRETE = BlockItemTags.CONCRETE.block();
+      CONCRETE_SLABS = BlockItemTags.CONCRETE_SLABS.block();
+      CONCRETE_STAIRS = BlockItemTags.CONCRETE_STAIRS.block();
       CONCRETE_POWDERS = BlockItemTags.CONCRETE_POWDERS.block();
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.block();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.block();
@@ -412,6 +423,7 @@ public final class BlockTags {
       BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");
       CANNOT_REPLACE_BELOW_TREE_TRUNK = create("cannot_replace_below_tree_trunk");
       CANNOT_PLACE_BASALT_PILLAR_ON = create("cannot_place_basalt_pillar_on");
+      UNCARVABLE = create("uncarvable");
       CANDLE_CAKES = create("candle_cakes");
       CAULDRONS = create("cauldrons");
       CRYSTAL_SOUND_BLOCKS = create("crystal_sound_blocks");
@@ -420,6 +432,7 @@ public final class BlockTags {
       CAMEL_SAND_STEP_SOUND_BLOCKS = create("camel_sand_step_sound_blocks");
       HAPPY_GHAST_AVOIDS = create("happy_ghast_avoids");
       OCCLUDES_VIBRATION_SIGNALS = create("occludes_vibration_signals");
+      CUSHION_USES_COLLISION_SHAPE = create("cushion_uses_collision_shape");
       DRIPSTONE_REPLACEABLE = create("dripstone_replaceable_blocks");
       SULFUR_SPIKE_REPLACEABLE = create("sulfur_spike_replaceable_blocks");
       CAVE_VINES = create("cave_vines");
@@ -542,6 +555,11 @@ public final class BlockTags {
       TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
       REQUIRED_FOR_POPLAR_LEAF_AMBIENCE = create("required_for_poplar_leaf_ambience");
       SPELEOTHEMS = create("speleothems");
+      DANGEROUS_FOR_TELEPORTATION = create("dangerous_for_teleportation");
+      CAT_DOES_NOT_TELEPORT_TO = create("cat_does_not_teleport_to");
+      ENDERMAN_DOES_NOT_TELEPORT_TO = create("enderman_does_not_teleport_to");
+      SHULKER_DOES_NOT_TELEPORT_TO = create("shulker_does_not_teleport_to");
+      CONSUMABLE_DOES_NOT_TELEPORT_TO = create("consumable_does_not_teleport_to");
       FOX_IMMUNE_TO = create("fox_immune_to");
       POLAR_BEAR_IMMUNE_TO = create("polar_bear_immune_to");
       SNOW_GOLEM_IMMUNE_TO = create("snow_golem_immune_to");

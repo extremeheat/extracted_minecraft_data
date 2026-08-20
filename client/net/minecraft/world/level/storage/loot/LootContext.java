@@ -44,7 +44,7 @@ public class LootContext {
    }
 
    public <T> @Nullable T getOptionalParameter(final ContextKey<T> key) {
-      return (T)this.params.contextMap().getOptional(key);
+      return (T)this.params.contextMap().get(key);
    }
 
    public void addDynamicDrops(final Identifier location, final Consumer<ItemStack> output) {

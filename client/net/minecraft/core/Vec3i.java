@@ -22,7 +22,7 @@ public class Vec3i implements Comparable<Vec3i> {
    private int z;
 
    public static Codec<Vec3i> offsetCodec(final int maxOffsetPerAxis) {
-      return CODEC.validate((value) -> Math.abs(value.getX()) < maxOffsetPerAxis && Math.abs(value.getY()) < maxOffsetPerAxis && Math.abs(value.getZ()) < maxOffsetPerAxis ? DataResult.success(value) : DataResult.error(() -> "Position out of range, expected at most " + maxOffsetPerAxis + ": " + String.valueOf(value)));
+      return CODEC.validate((value) -> Math.abs(value.getX()) <= maxOffsetPerAxis && Math.abs(value.getY()) <= maxOffsetPerAxis && Math.abs(value.getZ()) <= maxOffsetPerAxis ? DataResult.success(value) : DataResult.error(() -> "Position out of range, expected at most " + maxOffsetPerAxis + ": " + String.valueOf(value)));
    }
 
    public Vec3i(final int x, final int y, final int z) {
@@ -219,6 +219,10 @@ public class Vec3i implements Comparable<Vec3i> {
       int yd = Math.abs(this.getY() - pos.getY());
       int zd = Math.abs(this.getZ() - pos.getZ());
       return Math.max(Math.max(xd, yd), zd);
+   }
+
+   public boolean differsHorizontally(final Vec3i pos) {
+      return this.x != pos.x || this.z != pos.z;
    }
 
    public int get(final Direction.Axis axis) {

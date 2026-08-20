@@ -490,11 +490,10 @@ public abstract class AbstractArrow extends Projectile {
          }
       } else {
          entity.setRemainingFireTicks(remainingFireTicks);
+         this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, 0.2);
          Level var21 = this.level();
          if (var21 instanceof ServerLevel) {
             ServerLevel level = (ServerLevel)var21;
-            this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false);
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
             if (this.getDeltaMovement().lengthSqr() < 1.0E-7) {
                if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
                   this.spawnAtLocation(level, this.getPickupItem(), 0.1F);
@@ -591,7 +590,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    protected Collection<EntityHitResult> findHitEntities(final Vec3 from, final Vec3 to) {
-      return ProjectileUtil.getManyEntityHitResult(this.level(), this, from, to, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity, false);
+      return ProjectileUtil.getManyEntityHitResult(this.level(), this, from, to, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity, false, false);
    }
 
    protected boolean canHitEntity(final Entity entity) {

@@ -104,7 +104,7 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
       if ((Integer)state.getValue(AGE) > 1) {
          if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
-            Block.dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, state, level.getBlockEntity(pos), (ItemInstance)null, player, (serverlvl, itemStack) -> Block.popResource(serverlvl, pos, itemStack));
+            Block.dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, pos, state, level.getBlockEntity(pos), (ItemInstance)null, player, (serverlvl, itemStack) -> Block.popResource(serverlvl, pos, itemStack));
             serverLevel.playSound((Entity)null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + serverLevel.getRandom().nextFloat() * 0.4F);
             BlockState newState = (BlockState)state.setValue(AGE, 1);
             serverLevel.setBlock(pos, newState, 2);
@@ -121,15 +121,15 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
       builder.add(AGE);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (Integer)state.getValue(AGE) < 3;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int newAge = Math.min(3, (Integer)state.getValue(AGE) + 1);
       level.setBlock(pos, (BlockState)state.setValue(AGE, newAge), 2);
    }

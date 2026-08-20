@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.TextInputManager;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.List;
@@ -277,18 +278,41 @@ public class EditBox extends AbstractWidget {
 
    public boolean keyPressed(final KeyEvent event) {
       if (this.isActive() && this.isFocused()) {
-         switch (event.key()) {
-            case 259:
+         switch (event.shortcutKey()) {
+            case 8:
                if (this.isEditable) {
                   this.deleteText(-1, event.hasControlDownWithQuirk());
                }
 
                return true;
-            case 260:
-            case 264:
-            case 265:
-            case 266:
-            case 267:
+            case 127:
+               if (this.isEditable) {
+                  this.deleteText(1, event.hasControlDownWithQuirk());
+               }
+
+               return true;
+            case 1073741898:
+               this.moveCursorToStart(event.hasShiftDown());
+               return true;
+            case 1073741901:
+               this.moveCursorToEnd(event.hasShiftDown());
+               return true;
+            case 1073741903:
+               if (event.hasControlDownWithQuirk()) {
+                  this.moveCursorTo(this.getWordPosition(1), event.hasShiftDown());
+               } else {
+                  this.moveCursor(1, event.hasShiftDown());
+               }
+
+               return true;
+            case 1073741904:
+               if (event.hasControlDownWithQuirk()) {
+                  this.moveCursorTo(this.getWordPosition(-1), event.hasShiftDown());
+               } else {
+                  this.moveCursor(-1, event.hasShiftDown());
+               }
+
+               return true;
             default:
                if (event.isSelectAll()) {
                   this.moveCursorToEnd(false);
@@ -303,46 +327,16 @@ public class EditBox extends AbstractWidget {
                   }
 
                   return true;
-               } else {
-                  if (event.isCut()) {
-                     Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-                     if (this.isEditable()) {
-                        this.insertText("");
-                     }
-
-                     return true;
+               } else if (event.isCut()) {
+                  Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
+                  if (this.isEditable()) {
+                     this.insertText("");
                   }
 
+                  return true;
+               } else {
                   return false;
                }
-            case 261:
-               if (this.isEditable) {
-                  this.deleteText(1, event.hasControlDownWithQuirk());
-               }
-
-               return true;
-            case 262:
-               if (event.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(1), event.hasShiftDown());
-               } else {
-                  this.moveCursor(1, event.hasShiftDown());
-               }
-
-               return true;
-            case 263:
-               if (event.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(-1), event.hasShiftDown());
-               } else {
-                  this.moveCursor(-1, event.hasShiftDown());
-               }
-
-               return true;
-            case 268:
-               this.moveCursorToStart(event.hasShiftDown());
-               return true;
-            case 269:
-               this.moveCursorToEnd(event.hasShiftDown());
-               return true;
          }
       } else {
          return false;
@@ -479,6 +473,15 @@ public class EditBox extends AbstractWidget {
 
          if (this.isHovered()) {
             graphics.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
+         }
+
+         if (this.canConsumeInput()) {
+            TextInputManager var10000 = Minecraft.getInstance().textInputManager();
+            int var19 = this.textY;
+            int var20 = cursorX + 1;
+            int var21 = this.textY;
+            Objects.requireNonNull(this.font);
+            var10000.setTextInputArea(cursorX, var19, var20, var21 + 9 + 1);
          }
 
          if (this.preeditOverlay != null) {

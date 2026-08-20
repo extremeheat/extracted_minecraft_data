@@ -37,17 +37,17 @@ public class ProfilerPieChart {
       this.bottomOffset = bottomOffset;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int scaledScreenWidth, final int scaledScreenHeight) {
       if (this.profilerPieChartResults != null) {
          List<ResultField> list = this.profilerPieChartResults.getTimes(this.profilerTreePath);
          ResultField currentNode = (ResultField)list.removeFirst();
-         int chartCenterX = graphics.guiWidth() - 130 - 10;
+         int chartCenterX = scaledScreenWidth - 130 - 10;
          int left = chartCenterX - 130;
          int right = chartCenterX + 130;
          int var10000 = list.size();
          Objects.requireNonNull(this.font);
          int textUnderChartHeight = var10000 * 9;
-         int bottom = graphics.guiHeight() - this.bottomOffset - 5;
+         int bottom = scaledScreenHeight - this.bottomOffset - 5;
          int textStartY = bottom - textUnderChartHeight;
          int chartHalfSizeY = 62;
          int chartCenterY = textStartY - 62 - 5;
@@ -73,11 +73,11 @@ public class ProfilerPieChart {
          graphics.text(this.font, (String)firstLineText, left, currentNodeNameTop, -1);
 
          for(int i = 1; i < currentNodeNameLines.size(); ++i) {
-            Font var31 = this.font;
+            Font var33 = this.font;
             String var10002 = (String)currentNodeNameLines.get(i);
             int var10003 = left + 10 + zeroPrefixWidth;
             Objects.requireNonNull(this.font);
-            graphics.text(var31, (String)var10002, var10003, currentNodeNameTop + i * 9, -1);
+            graphics.text(var33, (String)var10002, var10003, currentNodeNameTop + i * 9, -1);
          }
 
          graphics.text(this.font, (String)globalPercentage, right - globalPercentageWidth, currentNodeNameTop, -1);

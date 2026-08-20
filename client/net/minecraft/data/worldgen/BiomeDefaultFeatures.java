@@ -6,7 +6,6 @@ import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
 import net.minecraft.data.worldgen.placement.OrePlacements;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -441,15 +440,15 @@ public class BiomeDefaultFeatures {
    }
 
    public static void farmAnimals(final MobSpawnSettings.Builder builder) {
-      builder.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityTypes.SHEEP, 4, 4));
-      builder.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.PIG, 4, 4));
-      builder.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.CHICKEN, 4, 4));
-      builder.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.COW, 4, 4));
+      builder.addSpawn(EntityTypes.SHEEP, 12, 4, 4);
+      builder.addSpawn(EntityTypes.PIG, 10, 4, 4);
+      builder.addSpawn(EntityTypes.CHICKEN, 10, 4, 4);
+      builder.addSpawn(EntityTypes.COW, 8, 4, 4);
    }
 
    public static void caveSpawns(final MobSpawnSettings.Builder builder) {
-      builder.addSpawn(MobCategory.AMBIENT, 10, new MobSpawnSettings.SpawnerData(EntityTypes.BAT, 8, 8));
-      builder.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.GLOW_SQUID, 4, 6));
+      builder.addSpawn(EntityTypes.BAT, 10, 8, 8);
+      builder.addSpawn(EntityTypes.GLOW_SQUID, 10, 4, 6);
    }
 
    public static void commonSpawns(final MobSpawnSettings.Builder builder) {
@@ -468,84 +467,84 @@ public class BiomeDefaultFeatures {
 
    public static void swampSpawns(final MobSpawnSettings.Builder builder, final int swampSkeletonWeight) {
       commonSpawns(builder, swampSkeletonWeight);
-      builder.addSpawn(MobCategory.MONSTER, 1, new MobSpawnSettings.SpawnerData(EntityTypes.SLIME, 1, 1));
-      builder.addSpawn(MobCategory.MONSTER, 30, new MobSpawnSettings.SpawnerData(EntityTypes.BOGGED, 4, 4));
-      builder.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.FROG, 2, 5));
+      builder.addSpawn(EntityTypes.SLIME, 1, 1, 1);
+      builder.addSpawn(EntityTypes.BOGGED, 30, 4, 4);
+      builder.addSpawn(EntityTypes.FROG, 10, 2, 5);
    }
 
    public static void oceanSpawns(final MobSpawnSettings.Builder builder, final int squidProbabilityWeight, final int squidMaxCount, final int codProbabilityWeight) {
-      builder.addSpawn(MobCategory.WATER_CREATURE, squidProbabilityWeight, new MobSpawnSettings.SpawnerData(EntityTypes.SQUID, 1, squidMaxCount));
-      builder.addSpawn(MobCategory.WATER_AMBIENT, codProbabilityWeight, new MobSpawnSettings.SpawnerData(EntityTypes.COD, 3, 6));
+      builder.addSpawn(EntityTypes.SQUID, squidProbabilityWeight, 1, squidMaxCount);
+      builder.addSpawn(EntityTypes.COD, codProbabilityWeight, 3, 6);
       commonSpawns(builder);
-      builder.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityTypes.DROWNED, 1, 1));
+      builder.addSpawn(EntityTypes.DROWNED, 5, 1, 1);
    }
 
    public static void warmOceanSpawns(final MobSpawnSettings.Builder builder, final int squidProbabilityWeight, final int squidMinCount) {
-      builder.addSpawn(MobCategory.WATER_CREATURE, squidProbabilityWeight, new MobSpawnSettings.SpawnerData(EntityTypes.SQUID, squidMinCount, 4));
-      builder.addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityTypes.TROPICAL_FISH, 8, 8));
-      builder.addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityTypes.DOLPHIN, 1, 2));
-      builder.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityTypes.DROWNED, 1, 1));
+      builder.addSpawn(EntityTypes.SQUID, squidProbabilityWeight, squidMinCount, 4);
+      builder.addSpawn(EntityTypes.TROPICAL_FISH, 25, 8, 8);
+      builder.addSpawn(EntityTypes.DOLPHIN, 2, 1, 2);
+      builder.addSpawn(EntityTypes.DROWNED, 5, 1, 1);
       commonSpawns(builder);
    }
 
    public static void plainsSpawns(final MobSpawnSettings.Builder builder) {
       farmAnimals(builder);
-      builder.addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityTypes.HORSE, 2, 6));
-      builder.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.DONKEY, 1, 3));
+      builder.addSpawn(EntityTypes.HORSE, 5, 2, 6);
+      builder.addSpawn(EntityTypes.DONKEY, 1, 1, 3);
       commonSpawnWithZombieHorse(builder);
    }
 
    public static void snowySpawns(final MobSpawnSettings.Builder builder, final boolean spawnZombieHorse) {
-      builder.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 3));
-      builder.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.POLAR_BEAR, 1, 2));
+      builder.addSpawn(EntityTypes.RABBIT, 10, 2, 3);
+      builder.addSpawn(EntityTypes.POLAR_BEAR, 1, 1, 2);
       caveSpawns(builder);
       monsters(builder, spawnZombieHorse ? 90 : 95, 5, spawnZombieHorse ? 5 : 0, 20, false);
-      builder.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityTypes.STRAY, 4, 4));
+      builder.addSpawn(EntityTypes.STRAY, 80, 4, 4);
    }
 
    public static void desertSpawns(final MobSpawnSettings.Builder builder) {
-      builder.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityTypes.RABBIT, 2, 3));
-      builder.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityTypes.CAMEL, 1, 1));
+      builder.addSpawn(EntityTypes.RABBIT, 12, 2, 3);
+      builder.addSpawn(EntityTypes.CAMEL, 1, 1, 1);
       caveSpawns(builder);
       monsters(builder, 19, 1, 0, 50, false);
-      builder.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityTypes.HUSK, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityTypes.PARCHED, 4, 4));
+      builder.addSpawn(EntityTypes.HUSK, 80, 4, 4);
+      builder.addSpawn(EntityTypes.PARCHED, 50, 4, 4);
    }
 
    public static void dripstoneCavesSpawns(final MobSpawnSettings.Builder builder) {
       caveSpawns(builder);
       int zombieWeight = 95;
       monsters(builder, 95, 5, 0, 100, false);
-      builder.addSpawn(MobCategory.MONSTER, 95, new MobSpawnSettings.SpawnerData(EntityTypes.DROWNED, 4, 4));
+      builder.addSpawn(EntityTypes.DROWNED, 95, 4, 4);
    }
 
    public static void monsters(final MobSpawnSettings.Builder builder, final int zombieWeight, final int zombieVillagerWeight, final int zombieHorseWeight, final int skeletonWeight, final boolean drownedZombies) {
-      builder.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityTypes.SPIDER, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, zombieWeight, new MobSpawnSettings.SpawnerData(drownedZombies ? EntityTypes.DROWNED : EntityTypes.ZOMBIE, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, zombieVillagerWeight, new MobSpawnSettings.SpawnerData(EntityTypes.ZOMBIE_VILLAGER, 1, 1));
+      builder.addSpawn(EntityTypes.SPIDER, 100, 4, 4);
+      builder.addSpawn(drownedZombies ? EntityTypes.DROWNED : EntityTypes.ZOMBIE, zombieWeight, 4, 4);
+      builder.addSpawn(EntityTypes.ZOMBIE_VILLAGER, zombieVillagerWeight, 1, 1);
       if (zombieHorseWeight > 0) {
-         builder.addSpawn(MobCategory.MONSTER, zombieHorseWeight, new MobSpawnSettings.SpawnerData(EntityTypes.ZOMBIE_HORSE, 1, 1));
+         builder.addSpawn(EntityTypes.ZOMBIE_HORSE, zombieHorseWeight, 1, 1);
       }
 
-      builder.addSpawn(MobCategory.MONSTER, skeletonWeight, new MobSpawnSettings.SpawnerData(EntityTypes.SKELETON, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityTypes.CREEPER, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityTypes.SLIME, 4, 4));
-      builder.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityTypes.ENDERMAN, 1, 4));
-      builder.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityTypes.WITCH, 1, 1));
+      builder.addSpawn(EntityTypes.SKELETON, skeletonWeight, 4, 4);
+      builder.addSpawn(EntityTypes.CREEPER, 100, 4, 4);
+      builder.addSpawn(EntityTypes.SLIME, 100, 4, 4);
+      builder.addSpawn(EntityTypes.ENDERMAN, 10, 1, 4);
+      builder.addSpawn(EntityTypes.WITCH, 5, 1, 1);
    }
 
    public static void mooshroomSpawns(final MobSpawnSettings.Builder builder) {
-      builder.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityTypes.MOOSHROOM, 4, 8));
+      builder.addSpawn(EntityTypes.MOOSHROOM, 8, 4, 8);
       caveSpawns(builder);
    }
 
    public static void baseJungleSpawns(final MobSpawnSettings.Builder builder) {
       farmAnimals(builder);
-      builder.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityTypes.CHICKEN, 4, 4));
+      builder.addSpawn(EntityTypes.CHICKEN, 10, 4, 4);
       commonSpawns(builder);
    }
 
    public static void endSpawns(final MobSpawnSettings.Builder builder) {
-      builder.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityTypes.ENDERMAN, 4, 4));
+      builder.addSpawn(EntityTypes.ENDERMAN, 10, 4, 4);
    }
 }

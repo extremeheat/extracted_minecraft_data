@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.PipelineCache;
-import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.device.GpuDevice;
@@ -13,7 +13,6 @@ import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -25,17 +24,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.IdentifierException;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.FileUtil;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.io.IOUtils;
@@ -46,7 +42,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_LOG_LENGTH = 32768;
    public static final String SHADER_PATH = "shaders";
-   private static final String SHADER_INCLUDE_PATH = "shaders/include/";
+   public static final String SHADER_INCLUDE_PATH = "shaders/include/";
    private static final FileToIdConverter POST_CHAIN_ID_CONVERTER = FileToIdConverter.json("post_effect");
    private final TextureManager textureManager;
    private final Consumer<Exception> recoveryHandler;
@@ -71,9 +67,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       for(Map.Entry<Identifier, Resource> entry : files.entrySet()) {
          Identifier location = (Identifier)entry.getKey();
          ShaderType shaderType = ShaderType.byLocation(location);
-         if (shaderType != null) {
-            loadShader(location, (Resource)entry.getValue(), shaderType, files, shaderSources);
-         }
+         loadShader(location, (Resource)entry.getValue(), shaderType, files, shaderSources);
       }
 
       ImmutableMap.Builder<Identifier, PostChainConfig> postChains = ImmutableMap.builder();
@@ -85,26 +79,25 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       return new Configs(shaderSources.build(), postChains.build());
    }
 
-   private static void loadShader(final Identifier location, final Resource resource, final ShaderType type, final Map<Identifier, Resource> files, final ImmutableMap.Builder<ShaderSourceKey, String> output) {
-      Identifier id = type.idConverter().fileToId(location);
-      GlslPreprocessor preprocessor = createPreprocessor(files, location);
+   private static void loadShader(final Identifier location, final Resource resource, final @Nullable ShaderType type, final Map<Identifier, Resource> files, final ImmutableMap.Builder<ShaderSourceKey, String> output) {
+      Identifier id = type == null ? location : type.idConverter().fileToId(location);
 
       try {
          Reader reader = resource.openAsReader();
 
          try {
             String source = IOUtils.toString(reader);
-            output.put(new ShaderSourceKey(id, type), String.join("", preprocessor.process(source)));
-         } catch (Throwable var11) {
+            output.put(new ShaderSourceKey(id, type), source);
+         } catch (Throwable var10) {
             if (reader != null) {
                try {
                   reader.close();
-               } catch (Throwable var10) {
-                  var11.addSuppressed(var10);
+               } catch (Throwable var9) {
+                  var10.addSuppressed(var9);
                }
             }
 
-            throw var11;
+            throw var10;
          }
 
          if (reader != null) {
@@ -114,59 +107,6 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          LOGGER.error("Failed to load shader source at {}", location, e);
       }
 
-   }
-
-   private static GlslPreprocessor createPreprocessor(final Map<Identifier, Resource> files, final Identifier location) {
-      final Identifier parentLocation = location.withPath(FileUtil::getFullResourcePath);
-      return new GlslPreprocessor() {
-         private final Set<Identifier> importedLocations = new ObjectArraySet();
-
-         public @Nullable String applyImport(final boolean isRelative, final String path) {
-            Identifier location;
-            try {
-               if (isRelative) {
-                  location = parentLocation.withPath((UnaryOperator)((parentPath) -> FileUtil.normalizeResourcePath(parentPath + path)));
-               } else {
-                  location = Identifier.parse(path).withPrefix("shaders/include/");
-               }
-            } catch (IdentifierException e) {
-               ShaderManager.LOGGER.error("Malformed GLSL import {}", path, e);
-               return "#error " + e.getMessage();
-            }
-
-            if (!this.importedLocations.add(location)) {
-               return null;
-            } else {
-               try {
-                  Reader importResource = ((Resource)files.get(location)).openAsReader();
-
-                  String var5;
-                  try {
-                     var5 = IOUtils.toString(importResource);
-                  } catch (Throwable var9) {
-                     if (importResource != null) {
-                        try {
-                           importResource.close();
-                        } catch (Throwable var7) {
-                           var9.addSuppressed(var7);
-                        }
-                     }
-
-                     throw var9;
-                  }
-
-                  if (importResource != null) {
-                     importResource.close();
-                  }
-
-                  return var5;
-               } catch (IOException e) {
-                  ShaderManager.LOGGER.error("Could not open GLSL import {}", location, e);
-                  return "#error " + e.getMessage();
-               }
-            }
-         }
-      };
    }
 
    private static void loadPostChain(final Identifier location, final Resource resource, final ImmutableMap.Builder<Identifier, PostChainConfig> output) {
@@ -205,7 +145,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    protected void apply(final Configs preparations, final ResourceManager manager, final ProfilerFiller profiler) {
       CompilationCache newCompilationCache = new CompilationCache(preparations);
-      Set<RenderPipeline> pipelinesToPreload = new HashSet(RenderPipelines.getStaticPipelines());
+      Set<RenderPipeline> pipelinesToPreload = new HashSet(RenderPipelines.requiredPipelines());
       List<Identifier> failedLoads = new ArrayList();
       GpuDevice device = RenderSystem.getDevice();
       Objects.requireNonNull(newCompilationCache);
@@ -224,6 +164,17 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          Stream var10002 = failedLoads.stream().map((entry) -> " - " + String.valueOf(entry));
          throw new RuntimeException("Failed to load required shader programs:\n" + (String)var10002.collect(Collectors.joining("\n")));
       } else {
+         for(RenderPipeline pipeline : RenderPipelines.optionalPipelines()) {
+            CompiledRenderPipeline compiled = pipelineCache.get(pipeline);
+            if (compiled == null) {
+               failedLoads.add(pipeline.getLocation());
+            }
+         }
+
+         if (!failedLoads.isEmpty()) {
+            LOGGER.warn("Failed to load optional shader programs:\n{}", failedLoads.stream().map((entry) -> " - " + String.valueOf(entry)).collect(Collectors.joining("\n")));
+         }
+
          this.compilationCache.close();
          this.compilationCache = newCompilationCache;
          PipelineCache oldPipelineCache = RenderSystem.setCurrentPipelineCache(pipelineCache);
@@ -242,6 +193,22 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       if (!this.compilationCache.triggeredRecovery) {
          this.recoveryHandler.accept(exception);
          this.compilationCache.triggeredRecovery = true;
+      }
+   }
+
+   public boolean isPostEffectValid(final Identifier id, final Set<Identifier> allowedTargets) {
+      PostChainConfig postChainConfig = (PostChainConfig)this.compilationCache.configs.postChains.get(id);
+      if (postChainConfig == null) {
+         LOGGER.warn("Requested post effect does not exist: {}", id);
+         return false;
+      } else {
+         Set<Identifier> invalidExternalTargets = Sets.difference(PostChain.getReferencedExternalTargets(postChainConfig), allowedTargets);
+         if (!invalidExternalTargets.isEmpty()) {
+            LOGGER.warn("Requested post chain {} can not be used as a post effect because it uses targets inaccessible to post effects: {}", id, invalidExternalTargets);
+            return false;
+         } else {
+            return true;
+         }
       }
    }
 
@@ -314,7 +281,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          this.postChains.clear();
       }
 
-      public @Nullable String getShaderSource(final Identifier id, final ShaderType type) {
+      public @Nullable String getShaderSource(final Identifier id, final @Nullable ShaderType type) {
          return (String)this.configs.shaderSources.get(new ShaderSourceKey(id, type));
       }
 
@@ -323,7 +290,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       }
    }
 
-   private static record ShaderSourceKey(Identifier id, ShaderType type) {
+   private static record ShaderSourceKey(Identifier id, @Nullable ShaderType type) {
       private ShaderSourceKey {
          super();
       }

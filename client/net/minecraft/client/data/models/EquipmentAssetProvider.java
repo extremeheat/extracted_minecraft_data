@@ -29,12 +29,12 @@ public class EquipmentAssetProvider implements DataProvider {
    private static void bootstrap(final BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> consumer) {
       consumer.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true), EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather_overlay"), false)).build());
       consumer.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail").build());
-      consumer.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper").replaceTrimPalette(TrimMaterials.Palette.COPPER.id(), TrimMaterials.Palette.COPPER_DARKER.id()).build());
-      consumer.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron").replaceTrimPalette(TrimMaterials.Palette.IRON.id(), TrimMaterials.Palette.IRON_DARKER.id()).build());
-      consumer.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold").replaceTrimPalette(TrimMaterials.Palette.GOLD.id(), TrimMaterials.Palette.GOLD_DARKER.id()).build());
-      consumer.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond").replaceTrimPalette(TrimMaterials.Palette.DIAMOND.id(), TrimMaterials.Palette.DIAMOND_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper").replaceTrimPalette(TrimMaterials.COPPER, TrimMaterials.Palette.COPPER_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron").replaceTrimPalette(TrimMaterials.IRON, TrimMaterials.Palette.IRON_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold").replaceTrimPalette(TrimMaterials.GOLD, TrimMaterials.Palette.GOLD_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond").replaceTrimPalette(TrimMaterials.DIAMOND, TrimMaterials.Palette.DIAMOND_DARKER.id()).build());
       consumer.accept(EquipmentAssets.TURTLE_SCUTE, EquipmentClientInfo.builder().addMainHumanoidLayer(Identifier.withDefaultNamespace("turtle_scute"), false).build());
-      consumer.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite").replaceTrimPalette(TrimMaterials.Palette.NETHERITE.id(), TrimMaterials.Palette.NETHERITE_DARKER.id()).build());
+      consumer.accept(EquipmentAssets.NETHERITE, humanoidAndMountArmor("netherite").replaceTrimPalette(TrimMaterials.NETHERITE, TrimMaterials.Palette.NETHERITE_DARKER.id()).build());
       consumer.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(Identifier.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
       consumer.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
       EquipmentClientInfo.Layer saddleLayer = new EquipmentClientInfo.Layer(Identifier.withDefaultNamespace("saddle"));

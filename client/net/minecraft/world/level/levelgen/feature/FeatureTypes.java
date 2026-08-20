@@ -15,7 +15,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"coral_claw", CoralClawFeature.CODEC);
       Registry.register(registry, (String)"coral_tree", CoralTreeFeature.CODEC);
       Registry.register(registry, (String)"delta_feature", DeltaFeature.CODEC);
-      Registry.register(registry, (String)"desert_well", DesertWellFeature.CODEC);
       Registry.register(registry, (String)"disk", DiskFeature.CODEC);
       Registry.register(registry, (String)"end_gateway", EndGatewayFeature.CODEC);
       Registry.register(registry, (String)"end_island", EndIslandFeature.CODEC);
@@ -35,7 +34,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"large_dripstone", LargeDripstoneFeature.CODEC);
       Registry.register(registry, (String)"monster_room", MonsterRoomFeature.CODEC);
       Registry.register(registry, (String)"multiface_growth", MultifaceGrowthFeature.CODEC);
-      Registry.register(registry, (String)"nether_forest_vegetation", NetherForestVegetationFeature.CODEC);
       Registry.register(registry, (String)"netherrack_replace_blobs", ReplaceBlobsFeature.CODEC);
       Registry.register(registry, (String)"no_op", NoOpFeature.CODEC);
       Registry.register(registry, (String)"ore", OreFeature.CODEC);
@@ -59,13 +57,11 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"stepped_column_cluster", SteppedColumnClusterFeature.CODEC);
       Registry.register(registry, (String)"template", TemplateFeature.CODEC);
       Registry.register(registry, (String)"tree", TreeFeature.CODEC);
-      Registry.register(registry, (String)"twisting_vines", TwistingVinesFeature.CODEC);
       Registry.register(registry, (String)"underwater_magma", UnderwaterMagmaFeature.CODEC);
       Registry.register(registry, (String)"vegetation_patch", VegetationPatchFeature.CODEC);
       Registry.register(registry, (String)"vines", VinesFeature.CODEC);
       Registry.register(registry, (String)"void_start_platform", VoidStartPlatformFeature.CODEC);
       Registry.register(registry, (String)"waterlogged_vegetation_patch", WaterloggedVegetationPatchFeature.CODEC);
-      Registry.register(registry, (String)"weeping_vines", WeepingVinesFeature.CODEC);
       return (MapCodec)Registry.register(registry, (String)"weighted_random_selector", WeightedRandomSelectorFeature.CODEC);
    }
 }

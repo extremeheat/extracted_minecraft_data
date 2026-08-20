@@ -12,8 +12,10 @@ public class GlUtil {
          return 34962;
       } else if ((usage & 64) != 0) {
          return 34963;
+      } else if ((usage & 128) != 0) {
+         return 35345;
       } else {
-         return (usage & 128) != 0 ? '\u8a11' : '\u8f37';
+         return (usage & 512) != 0 ? '\u8f3f' : '\u8f37';
       }
    }
 }

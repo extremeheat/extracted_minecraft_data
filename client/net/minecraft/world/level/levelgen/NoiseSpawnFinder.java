@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 
 public class NoiseSpawnFinder {
    private static final long MAX_RADIUS = 2048L;

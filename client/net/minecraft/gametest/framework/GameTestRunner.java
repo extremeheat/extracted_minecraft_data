@@ -99,7 +99,7 @@ public class GameTestRunner {
          Collection<GameTestInfo> testInfosForThisBatch = this.createStructuresForBatch(currentBatch.gameTestInfos());
          LOGGER.info("Running test environment '{}' batch {} ({} tests)...", new Object[]{currentBatch.environment().getRegisteredName(), currentBatch.index(), testInfosForThisBatch.size()});
          this.endCurrentEnvironment();
-         this.currentEnvironment = TestEnvironmentDefinition.activate((TestEnvironmentDefinition)currentBatch.environment().value(), this.server.getLevel(TestFinder.Builder.levelForDimension((TestEnvironmentDefinition)currentBatch.environment().value())));
+         this.currentEnvironment = TestEnvironmentDefinition.activate((TestEnvironmentDefinition)currentBatch.environment().value(), this.server.getLevel(currentBatch.dimension()));
          this.batchListeners.forEach((listener) -> listener.testBatchStarting(currentBatch));
          final MultipleTestTracker currentBatchTracker = new MultipleTestTracker();
          Objects.requireNonNull(currentBatchTracker);

@@ -24,7 +24,7 @@ public class MeleeAttack {
                LivingEntity target = (LivingEntity)i.get(attackTarget);
                if (canAttackPredicate.test(body) && !isHoldingUsableNonMeleeWeapon(body) && body.isWithinMeleeAttackRange(target) && ((NearestVisibleLivingEntities)i.get(nearestEntities)).contains(target)) {
                   lookTarget.set(new EntityTracker(target, true));
-                  body.swing(InteractionHand.MAIN_HAND);
+                  body.swingForAttack(InteractionHand.MAIN_HAND);
                   body.doHurtTarget(level, target);
                   attackCoolingDown.setWithExpiry(true, (long)cooldownBetweenAttacks);
                   return true;

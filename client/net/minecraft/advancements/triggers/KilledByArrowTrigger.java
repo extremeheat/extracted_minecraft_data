@@ -9,10 +9,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +24,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
 public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -47,8 +48,8 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
       this.trigger(player, (t) -> t.matches(victimContexts, entityTypes.size(), firedByWeapon));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims, MinMaxBounds.Ints uniqueEntityTypes, Optional<ItemPredicate> firedFromWeapon) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, List<Holder<LootItemCondition>> victims, MinMaxBounds.Ints uniqueEntityTypes, Optional<ItemPredicate> firedFromWeapon) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootItemCondition.CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -67,13 +68,13 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
             if (!this.victims.isEmpty()) {
                List<LootContext> victimsCopy = Lists.newArrayList(victims);
 
-               for(ContextAwarePredicate predicate : this.victims) {
+               for(Holder<LootItemCondition> predicate : this.victims) {
                   boolean found = false;
                   Iterator<LootContext> iterator = victimsCopy.iterator();
 
                   while(iterator.hasNext()) {
                      LootContext entity = (LootContext)iterator.next();
-                     if (predicate.matches(entity)) {
+                     if (((LootItemCondition)predicate.value()).test(entity)) {
                         iterator.remove();
                         found = true;
                         break;
@@ -94,7 +95,7 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "victims", this.victims);
+         Validatable.validateHolder(validator.entityContext(), "victims", this.victims);
       }
    }
 }

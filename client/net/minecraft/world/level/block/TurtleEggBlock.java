@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -130,7 +131,7 @@ public class TurtleEggBlock extends Block {
       return chance > 0.0F && level.getRandom().nextFloat() < chance;
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
       this.decreaseEggs(level, pos, state);
    }

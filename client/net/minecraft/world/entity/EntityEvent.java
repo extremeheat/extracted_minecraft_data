@@ -1,5 +1,10 @@
 package net.minecraft.world.entity;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 public class EntityEvent {
    public static final byte JUMP = 1;
    public static final byte KINETIC_HIT = 2;
@@ -68,5 +73,10 @@ public class EntityEvent {
 
    public EntityEvent() {
       super();
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.TYPE_USE})
+   public @interface Value {
    }
 }

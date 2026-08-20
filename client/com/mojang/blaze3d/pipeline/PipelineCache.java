@@ -4,6 +4,7 @@ import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderSource;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -35,7 +36,7 @@ public class PipelineCache implements AutoCloseable {
    }
 
    public void clear() {
-      this.cache.values().forEach(CompiledRenderPipeline::close);
+      this.cache.values().forEach(UncheckedAutoCloseable::close);
       this.cache.clear();
    }
 

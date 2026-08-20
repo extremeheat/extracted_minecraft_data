@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
 public class EntityEquipment {
@@ -54,7 +55,10 @@ public class EntityEquipment {
 
    public void dropAll(final LivingEntity dropper) {
       for(ItemStack item : this.items.values()) {
-         dropper.drop(item, true, false);
+         ItemEntity drop = dropper.createItemStackToDrop(item, true, false);
+         if (drop != null) {
+            dropper.level().addFreshEntity(drop);
+         }
       }
 
       this.clear();

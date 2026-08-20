@@ -4,11 +4,9 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.buffers.TransientMemory;
 import com.mojang.renderpearl.backend.util.TransientBlockAllocator;
-import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import it.unimi.dsi.fastutil.objects.ReferenceReferenceImmutablePair;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -40,10 +38,13 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
    private final VulkanDevice device;
    private final VulkanCommandEncoder encoder;
    private final boolean useDeviceMemoryForMappedGpuStaging;
-   private final TransientBlockAllocator<Long> cpuBlockAllocator = new TransientBlockAllocator<Long>(524288L, 16L, TransientBlockAllocator.Allocator.create(MemoryUtil::nmemAlloc, MemoryUtil::nmemFree));
+   private final TransientBlockAllocator<TransientBlockAllocator.Allocator.CpuBlock> cpuBlockAllocator = new TransientBlockAllocator<TransientBlockAllocator.Allocator.CpuBlock>(524288L, 16L, TransientBlockAllocator.Allocator.CpuBlock.memalloc());
    private final TransientBlockAllocator<VulkanAllocation> stagingBlockAllocator;
    private final TransientBlockAllocator<VulkanAllocation> gpuBlockAllocator;
-   private final TransientBlockAllocator<Pair<VulkanAllocation, VulkanAllocation>> gpuMappedBlockAllocator;
+   private final TransientBlockAllocator<TransferPair> gpuMappedBlockAllocator;
+   private final int expectedCpuMemoryHeap;
+   private final int expectedGpuMemoryHeap;
+   private final int[] memoryTypeToHeapMap = new int[32];
    private long submitIndex = 0L;
    private boolean anyCommandRecorded = false;
    private @Nullable VkCommandBuffer commandBuffer;
@@ -60,6 +61,11 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
          VK12.vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), memoryProperties);
          int heapCount = memoryProperties.memoryHeapCount();
          int typeCount = memoryProperties.memoryTypeCount();
+
+         for(int i = 0; i < typeCount; ++i) {
+            this.memoryTypeToHeapMap[i] = memoryProperties.memoryTypes(i).heapIndex();
+         }
+
          int largestDeviceLocalHeapIndex = -1;
          long largestDeviceLocalHeapSize = -1L;
 
@@ -84,16 +90,38 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
          }
 
          this.useDeviceMemoryForMappedGpuStaging = largestHeapIsHostVisibleAndCoherent;
-      } catch (Throwable var15) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var14) {
-               var15.addSuppressed(var14);
+         int selectedCpuHeap = -1;
+         if (this.useDeviceMemoryForMappedGpuStaging) {
+            selectedCpuHeap = largestDeviceLocalHeapIndex;
+         } else {
+            for(int i = 0; i < typeCount; ++i) {
+               VkMemoryType typeProperties = memoryProperties.memoryTypes(i);
+               if (VulkanUtils.hasAllBits(typeProperties.propertyFlags(), 6)) {
+                  VkMemoryHeap heapProperties = memoryProperties.memoryHeaps(typeProperties.heapIndex());
+                  if (!VulkanUtils.hasAnyBit(heapProperties.flags(), 1)) {
+                     selectedCpuHeap = typeProperties.heapIndex();
+                     break;
+                  }
+               }
             }
          }
 
-         throw var15;
+         if (selectedCpuHeap == -1) {
+            throw new IllegalStateException("Could not select heap for CPU allocations");
+         }
+
+         this.expectedCpuMemoryHeap = selectedCpuHeap;
+         this.expectedGpuMemoryHeap = largestDeviceLocalHeapIndex;
+      } catch (Throwable var17) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var16) {
+               var17.addSuppressed(var16);
+            }
+         }
+
+         throw var17;
       }
 
       if (stack != null) {
@@ -102,7 +130,7 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
 
       this.stagingBlockAllocator = new TransientBlockAllocator<VulkanAllocation>(524288L, MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create((size) -> this.allocateVulkanBlock(size, true), this::freeVulkanBlock));
       this.gpuBlockAllocator = new TransientBlockAllocator<VulkanAllocation>(524288L, MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create((size) -> this.allocateVulkanBlock(size, false), this::queueFreeVulkanBlock));
-      this.gpuMappedBlockAllocator = new TransientBlockAllocator<Pair<VulkanAllocation, VulkanAllocation>>(524288L, MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create(this::allocateGpuMappedVulkanBlock, this::freeGpuMappedVulkanBlock), this::recordGpuMappedCopy);
+      this.gpuMappedBlockAllocator = new TransientBlockAllocator<TransferPair>(524288L, MAX_GPU_ALIGNMENT, TransientBlockAllocator.Allocator.create(this::allocateGpuMappedVulkanBlock, this::freeGpuMappedVulkanBlock), this::recordGpuMappedCopy);
    }
 
    public void destroy() {
@@ -166,9 +194,9 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
       ++this.submitIndex;
    }
 
-   private void recordGpuMappedCopy(final Pair<VulkanAllocation, VulkanAllocation> block) {
-      if (block.first() != block.second()) {
-         assert ((VulkanAllocation)block.first()).size == ((VulkanAllocation)block.second()).size;
+   private void recordGpuMappedCopy(final TransferPair block) {
+      if (block.cpu() != block.gpu()) {
+         assert block.cpu().size == block.gpu().size;
 
          MemoryStack stack = MemoryStack.stackPush();
 
@@ -176,11 +204,11 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
             VkBufferCopy.Buffer region = VkBufferCopy.calloc(1, stack);
             region.srcOffset(0L);
             region.dstOffset(0L);
-            region.size(((VulkanAllocation)block.first()).size);
+            region.size(block.cpu().size);
 
             assert this.commandBuffer != null;
 
-            VK12.vkCmdCopyBuffer(this.commandBuffer, ((VulkanAllocation)block.first()).vkBuffer, ((VulkanAllocation)block.second()).vkBuffer, region);
+            VK12.vkCmdCopyBuffer(this.commandBuffer, block.cpu().vkBuffer, block.gpu().vkBuffer, region);
             this.anyCommandRecorded = true;
          } catch (Throwable var6) {
             if (stack != null) {
@@ -204,7 +232,7 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
    private VulkanAllocation allocateVulkanBlock(final long size, final boolean staging) {
       MemoryStack stack = MemoryStack.stackPush();
 
-      VulkanAllocation var11;
+      VulkanAllocation var14;
       try {
          VkBufferCreateInfo bufferCreateInfo = VkBufferCreateInfo.calloc(stack).sType$Default();
          bufferCreateInfo.size(size);
@@ -212,10 +240,13 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
          bufferCreateInfo.sharingMode(0);
          bufferCreateInfo.pQueueFamilyIndices((IntBuffer)null);
          VmaAllocationCreateInfo allocCreateInfo = VmaAllocationCreateInfo.calloc(stack);
-         if (staging) {
+         int expectedHeap;
+         if (staging && !this.useDeviceMemoryForMappedGpuStaging) {
             allocCreateInfo.usage(9);
+            expectedHeap = this.expectedCpuMemoryHeap;
          } else {
             allocCreateInfo.usage(8);
+            expectedHeap = this.expectedGpuMemoryHeap;
          }
 
          if (this.useDeviceMemoryForMappedGpuStaging || staging) {
@@ -225,7 +256,8 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
 
          LongBuffer bufferPtr = stack.callocLong(1);
          PointerBuffer allocPtr = stack.callocPointer(1);
-         int result = Vma.vmaCreateBuffer(this.device.vma(), bufferCreateInfo, allocCreateInfo, bufferPtr, allocPtr, (VmaAllocationInfo)null);
+         VmaAllocationInfo allocationInfo = VmaAllocationInfo.calloc(stack);
+         int result = Vma.vmaCreateBuffer(this.device.vma(), bufferCreateInfo, allocCreateInfo, bufferPtr, allocPtr, allocationInfo);
          VulkanUtils.crashIfFailure(this.device, result, "Failed to allocate VkBuffer");
          PointerBuffer hostPtrPtr = stack.callocPointer(1);
          if (staging || this.useDeviceMemoryForMappedGpuStaging) {
@@ -233,24 +265,25 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
          }
 
          this.device.instance().debug().setObjectName(this.device.vkDevice(), 9, bufferPtr.get(0), "Vulkan Transient Memory Buffer");
-         var11 = new VulkanAllocation(bufferPtr.get(0), allocPtr.get(0), hostPtrPtr.get(0), size);
-      } catch (Throwable var13) {
+         int allocatedHeap = this.memoryTypeToHeapMap[allocationInfo.memoryType()];
+         var14 = new VulkanAllocation(bufferPtr.get(0), allocPtr.get(0), hostPtrPtr.get(0), size, allocatedHeap != expectedHeap);
+      } catch (Throwable var16) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var12) {
-               var13.addSuppressed(var12);
+            } catch (Throwable var15) {
+               var16.addSuppressed(var15);
             }
          }
 
-         throw var13;
+         throw var16;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var11;
+      return var14;
    }
 
    private void queueFreeVulkanBlock(final VulkanAllocation allocation) {
@@ -261,7 +294,7 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
       Vma.vmaDestroyBuffer(this.device.vma(), allocation.vkBuffer, allocation.vmaAllocation);
    }
 
-   private Pair<VulkanAllocation, VulkanAllocation> allocateGpuMappedVulkanBlock(final long size) {
+   private TransferPair allocateGpuMappedVulkanBlock(final long size) {
       assert size >= 524288L;
 
       assert size >= this.gpuBlockAllocator.blockSize();
@@ -271,24 +304,24 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
 
          assert block.offset() == 0L;
 
-         return new ReferenceReferenceImmutablePair(block.block(), block.block());
+         return new TransferPair(block.block(), block.block());
       } else {
          assert size >= this.stagingBlockAllocator.blockSize();
 
          TransientBlockAllocator.Allocation<VulkanAllocation> stagingBlock = this.stagingBlockAllocator.allocate(size, 16L, size, 1L);
          TransientBlockAllocator.Allocation<VulkanAllocation> gpuBlock = this.gpuBlockAllocator.allocate(size, 16L, size, 1L);
-         return new ReferenceReferenceImmutablePair(stagingBlock.block(), gpuBlock.block());
+         return new TransferPair(stagingBlock.block(), gpuBlock.block());
       }
    }
 
-   private void freeGpuMappedVulkanBlock(final Pair<VulkanAllocation, VulkanAllocation> allocations) {
+   private void freeGpuMappedVulkanBlock(final TransferPair allocations) {
    }
 
    public ByteBuffer allocateCpu(final long size, final long alignment, final long minimumAllocation, final long elementSize) {
       assert size <= 2147483647L;
 
-      TransientBlockAllocator.Allocation<Long> alloc = this.cpuBlockAllocator.allocate(size, alignment, minimumAllocation, elementSize);
-      return MemoryUtil.memByteBuffer((Long)alloc.block() + alloc.offset(), (int)alloc.size());
+      TransientBlockAllocator.Allocation<TransientBlockAllocator.Allocator.CpuBlock> alloc = this.cpuBlockAllocator.allocate(size, alignment, minimumAllocation, elementSize);
+      return MemoryUtil.memByteBuffer(((TransientBlockAllocator.Allocator.CpuBlock)alloc.block()).address() + alloc.offset(), (int)alloc.size());
    }
 
    public GpuBufferSlice.MappedView allocateStaging(final long size, final long alignment, final @GpuBuffer.Usage int usage, final long minimumAllocation, final long elementSize) {
@@ -312,9 +345,9 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
    public GpuBufferSlice.MappedView allocateGpuMapped(final long size, final long alignment, final @GpuBuffer.Usage int usage, final long minimumAllocation, final long elementSize) {
       assert size <= 2147483647L;
 
-      TransientBlockAllocator.Allocation<Pair<VulkanAllocation, VulkanAllocation>> alloc = this.gpuMappedBlockAllocator.allocate(size, alignment, minimumAllocation, elementSize);
-      TransientGpuBuffer apiBuffer = new TransientGpuBuffer(((VulkanAllocation)((Pair)alloc.block()).second()).vkBuffer, usage, (int)((VulkanAllocation)((Pair)alloc.block()).first()).size, this.submitIndex);
-      ByteBuffer cpuBuffer = MemoryUtil.memByteBuffer(((VulkanAllocation)((Pair)alloc.block()).first()).hostPtr + alloc.offset(), (int)alloc.size());
+      TransientBlockAllocator.Allocation<TransferPair> alloc = this.gpuMappedBlockAllocator.allocate(size, alignment, minimumAllocation, elementSize);
+      TransientGpuBuffer apiBuffer = new TransientGpuBuffer(((TransferPair)alloc.block()).gpu().vkBuffer, usage, (int)((TransferPair)alloc.block()).gpu().size, this.submitIndex);
+      ByteBuffer cpuBuffer = MemoryUtil.memByteBuffer(((TransferPair)alloc.block()).cpu().hostPtr + alloc.offset(), (int)alloc.size());
       return new GpuBufferSlice.MappedView(new GpuBufferSlice(apiBuffer, alloc.offset(), alloc.size()), cpuBuffer, () -> {
       });
    }
@@ -400,9 +433,19 @@ public class VulkanTransientMemory implements TransientMemory, Destroyable {
       return uploadedBuffers;
    }
 
-   private static record VulkanAllocation(long vkBuffer, long vmaAllocation, long hostPtr, long size) {
+   private static record VulkanAllocation(long vkBuffer, long vmaAllocation, long hostPtr, long size, boolean suboptimal) implements TransientBlockAllocator.Allocator.Block {
       private VulkanAllocation {
          super();
+      }
+   }
+
+   private static record TransferPair(VulkanAllocation cpu, VulkanAllocation gpu) implements TransientBlockAllocator.Allocator.Block {
+      private TransferPair {
+         super();
+      }
+
+      public boolean suboptimal() {
+         return this.cpu.suboptimal() || this.gpu.suboptimal();
       }
    }
 

@@ -1,24 +1,16 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundDeleteChatPacket>codec(ClientboundDeleteChatPacket::write, ClientboundDeleteChatPacket::new);
-
-   private ClientboundDeleteChatPacket(final FriendlyByteBuf input) {
-      this(MessageSignature.Packed.read(input));
-   }
+   public static final StreamCodec<ByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC;
 
    public ClientboundDeleteChatPacket {
       super();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      MessageSignature.Packed.write(output, this.messageSignature);
    }
 
    public PacketType<ClientboundDeleteChatPacket> type() {
@@ -27,5 +19,9 @@ public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignatu
 
    public void handle(final ClientGamePacketListener listener) {
       listener.handleDeleteChat(this);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(MessageSignature.Packed.STREAM_CODEC, ClientboundDeleteChatPacket::messageSignature, ClientboundDeleteChatPacket::new);
    }
 }

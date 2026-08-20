@@ -1,15 +1,13 @@
 package net.minecraft.world.item.crafting.display;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.FuelValues;
 
 public class SlotDisplayContext {
-   public static final ContextKey<FuelValues> FUEL_VALUES = ContextKey.<FuelValues>vanilla("fuel_values");
-   public static final ContextKey<HolderLookup.Provider> REGISTRIES = ContextKey.<HolderLookup.Provider>vanilla("registries");
+   public static final ContextKey<RegistryAccess> REGISTRIES = ContextKey.<RegistryAccess>vanilla("registries");
    public static final ContextKeySet CONTEXT;
 
    public SlotDisplayContext() {
@@ -17,10 +15,10 @@ public class SlotDisplayContext {
    }
 
    public static ContextMap fromLevel(final Level level) {
-      return (new ContextMap.Builder()).withParameter(FUEL_VALUES, level.fuelValues()).withParameter(REGISTRIES, level.registryAccess()).create(CONTEXT);
+      return ContextMap.builder().set(REGISTRIES, level.registryAccess()).buildAndValidate(CONTEXT);
    }
 
    static {
-      CONTEXT = (new ContextKeySet.Builder()).optional(FUEL_VALUES).optional(REGISTRIES).build();
+      CONTEXT = (new ContextKeySet.Builder()).optional(REGISTRIES).build();
    }
 }

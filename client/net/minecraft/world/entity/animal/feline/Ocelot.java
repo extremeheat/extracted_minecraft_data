@@ -21,6 +21,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -172,7 +173,7 @@ public class Ocelot extends Animal {
       }
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 41) {
          this.spawnTrustingParticles(true);
       } else if (id == 40) {

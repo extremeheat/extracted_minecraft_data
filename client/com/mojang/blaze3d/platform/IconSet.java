@@ -19,11 +19,7 @@ public enum IconSet {
    }
 
    public List<IoSupplier<InputStream>> getStandardIcons(final PackMetadataResources resources) throws IOException {
-      return List.of(this.getFile(resources, "icon_16x16.png"), this.getFile(resources, "icon_32x32.png"), this.getFile(resources, "icon_48x48.png"), this.getFile(resources, "icon_128x128.png"), this.getFile(resources, "icon_256x256.png"));
-   }
-
-   public IoSupplier<InputStream> getMacIcon(final PackMetadataResources resources) throws IOException {
-      return this.getFile(resources, "minecraft.icns");
+      return List.of(this.getFile(resources, "icon_256x256.png"), this.getFile(resources, "icon_128x128.png"), this.getFile(resources, "icon_48x48.png"), this.getFile(resources, "icon_32x32.png"), this.getFile(resources, "icon_16x16.png"));
    }
 
    private IoSupplier<InputStream> getFile(final PackMetadataResources resources, final String fileName) throws IOException {

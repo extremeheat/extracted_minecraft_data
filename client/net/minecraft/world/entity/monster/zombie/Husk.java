@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.LevelEvent;
 import org.jspecify.annotations.Nullable;
 
 public class Husk extends Zombie {
@@ -69,12 +70,12 @@ public class Husk extends Zombie {
       return true;
    }
 
-   protected void doUnderWaterConversion(final ServerLevel level) {
-      this.convertToZombieType(level, EntityTypes.ZOMBIE);
-      if (!this.isSilent()) {
-         level.levelEvent((Entity)null, 1041, this.blockPosition(), 0);
-      }
+   protected @LevelEvent.Value int getConversionSound() {
+      return 1041;
+   }
 
+   protected EntityType<? extends Zombie> convertsToWhenDrowning() {
+      return EntityTypes.ZOMBIE;
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {

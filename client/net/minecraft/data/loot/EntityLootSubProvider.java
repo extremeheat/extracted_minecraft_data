@@ -14,10 +14,12 @@ import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.EnchantmentPredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.advancements.predicates.TagPredicate;
 import net.minecraft.advancements.predicates.entity.EntityEquipmentPredicate;
 import net.minecraft.advancements.predicates.entity.EntityFlagsPredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.predicates.entity.SheepPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponents;
@@ -25,18 +27,22 @@ import net.minecraft.core.component.predicates.DataComponentPredicates;
 import net.minecraft.core.component.predicates.EnchantmentsPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.DamageSourceCondition;
@@ -45,9 +51,12 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyC
 
 public abstract class EntityLootSubProvider implements LootTableSubProvider {
    protected final LootTableSubProvider.Context output;
+   protected final HolderGetter<Item> items;
    protected final HolderGetter<Enchantment> enchantments;
    protected final HolderGetter<EntityType<?>> entityTypes;
    protected final HolderGetter<FrogVariant> frogVariants;
+   protected final HolderGetter<DamageType> damageTypes;
+   protected final HolderGetter<LootTable> lootTables;
    private final FeatureFlagSet allowed;
    private final FeatureFlagSet required;
    private final Map<EntityType<?>, Map<ResourceKey<LootTable>, LootTable.Builder>> map;
@@ -62,20 +71,27 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       this.allowed = allowed;
       this.required = required;
       this.output = output;
+      this.items = output.lookup(Registries.ITEM);
       this.enchantments = output.lookup(Registries.ENCHANTMENT);
       this.entityTypes = output.lookup(Registries.ENTITY_TYPE);
       this.frogVariants = output.lookup(Registries.FROG_VARIANT);
+      this.damageTypes = output.lookup(Registries.DAMAGE_TYPE);
+      this.lootTables = output.lookup(Registries.LOOT_TABLE);
+   }
+
+   protected DamageSourcePredicate.Builder projectileDamage() {
+      return DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(this.damageTypes, DamageTypeTags.IS_PROJECTILE));
    }
 
    protected final AnyOfCondition.Builder shouldSmeltLoot() {
       return AnyOfCondition.anyOf(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().flags(EntityFlagsPredicate.Builder.flags().setOnFire(true))), LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.DIRECT_ATTACKER, EntityPredicate.Builder.entity().equipment(EntityEquipmentPredicate.Builder.equipment().mainhand(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(this.enchantments.getOrThrow(EnchantmentTags.SMELTS_LOOT), MinMaxBounds.Ints.ANY)))).build())))));
    }
 
-   public static LootPool.Builder createSheepDispatchPool(final ColorCollection<ResourceKey<LootTable>> tableNames) {
+   public static LootPool.Builder createSheepDispatchPool(final ColorCollection<Holder<LootTable>> tableNames) {
       AlternativesEntry.Builder variants = AlternativesEntry.alternatives();
 
       for(DyeColor color : DyeColor.VALUES) {
-         variants = variants.otherwise(NestedLootTable.lootTableReference(tableNames.pick(color)).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, color)).sheep(SheepPredicate.hasWool()))));
+         variants = variants.otherwise((LootPoolEntryContainer.Builder)NestedLootTable.lootTableReference(tableNames.pick(color)).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, color)).sheep(SheepPredicate.hasWool()))));
       }
 
       return LootPool.lootPool().add(variants);

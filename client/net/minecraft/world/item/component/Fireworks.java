@@ -28,7 +28,7 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
 
    public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
       if (this.flightDuration > 0) {
-         consumer.accept(Component.translatable("item.minecraft.firework_rocket.flight", this.flightDuration).withStyle(ChatFormatting.GRAY));
+         consumer.accept(Component.translatable("item.minecraft.firework_rocket.flight_duration", this.flightDuration).withStyle(ChatFormatting.GRAY));
       }
 
       FireworkExplosion current = null;

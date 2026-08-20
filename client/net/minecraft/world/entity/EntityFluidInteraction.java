@@ -1,9 +1,14 @@
 package net.minecraft.world.entity;
 
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -20,34 +25,41 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class EntityFluidInteraction {
-   private final Map<TagKey<Fluid>, Tracker> trackerByFluid = new Reference2ObjectArrayMap();
+   private final List<Tracker> fluidTrackers = new ArrayList();
+   private final Reference2ObjectMap<TagKey<Fluid>, CurrentAccumulator> currentAccumulators = new Reference2ObjectArrayMap();
 
-   public EntityFluidInteraction(final Set<TagKey<Fluid>> fluids) {
+   public EntityFluidInteraction(final Set<TagKey<Fluid>> fluidsWithCurrent) {
       super();
 
-      for(TagKey<Fluid> fluid : fluids) {
-         this.trackerByFluid.put(fluid, new Tracker());
+      for(TagKey<Fluid> fluid : fluidsWithCurrent) {
+         this.currentAccumulators.put(fluid, new CurrentAccumulator());
       }
 
    }
 
-   public void update(final Entity entity, final boolean ignoreCurrent) {
-      this.trackerByFluid.values().forEach(Tracker::reset);
+   public boolean update(final Entity entity, final boolean ignoreCurrent) {
+      this.fluidTrackers.removeIf(Tracker::reset);
+      this.currentAccumulators.values().forEach(CurrentAccumulator::reset);
       AABB box = entity.getFluidInteractionBox();
-      if (box != null) {
+      if (box == null) {
+         return false;
+      } else {
          int x0 = Mth.floor(box.minX);
          int y0 = Mth.floor(box.minY);
          int z0 = Mth.floor(box.minZ);
          int x1 = Mth.ceil(box.maxX) - 1;
          int y1 = Mth.ceil(box.maxY) - 1;
          int z1 = Mth.ceil(box.maxZ) - 1;
-         if (hasFluidAndLoaded(entity.level(), x0 - 1, y0, z0 - 1, x1 + 1, y1, z1 + 1)) {
+         if (!hasFluidAndLoaded(entity.level(), x0 - 1, y0, z0 - 1, x1 + 1, y1, z1 + 1)) {
+            return false;
+         } else {
             double entityY = entity.getBoundingBox().minY;
             int eyeBlockX = entity.getBlockX();
             double eyeY = entity.getEyeY();
             int eyeBlockZ = entity.getBlockZ();
-            Fluid lastFluidType = null;
+            Holder<Fluid> lastFluidType = null;
             Tracker tracker = null;
+            CurrentAccumulator current = null;
             BlockGetter level = entity.level();
             BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
@@ -60,26 +72,28 @@ public class EntityFluidInteraction {
                         double fluidBottom = (double)mutablePos.getY();
                         double fluidTop = fluidBottom + (double)fluidState.getHeight(level, mutablePos);
                         if (!(fluidTop < box.minY)) {
-                           Fluid fluidType = fluidState.getType();
+                           Holder<Fluid> fluidType = fluidState.typeHolder();
                            if (fluidType != lastFluidType) {
                               lastFluidType = fluidType;
-                              tracker = this.getTrackerFor(fluidType);
+                              tracker = this.getOrCreateTrackerFor(fluidType);
+                              if (!ignoreCurrent) {
+                                 current = this.getCurrentAccumulatorFor(fluidType);
+                              }
                            }
 
-                           if (tracker != null) {
-                              if (x == eyeBlockX && z == eyeBlockZ && eyeY >= fluidBottom && eyeY <= fluidTop) {
-                                 tracker.eyesInside = true;
+                           if (x == eyeBlockX && z == eyeBlockZ && eyeY >= fluidBottom && eyeY <= fluidTop) {
+                              tracker.eyesInside = true;
+                           }
+
+                           tracker.height = Math.max(fluidTop - entityY, tracker.height);
+                           if (current != null) {
+                              Vec3 flow = fluidState.getFlow(level, mutablePos);
+                              current.height = Math.max(tracker.height, current.height);
+                              if (current.height < 0.4) {
+                                 flow = flow.scale(current.height);
                               }
 
-                              tracker.height = Math.max(fluidTop - entityY, tracker.height);
-                              if (!ignoreCurrent) {
-                                 Vec3 flow = fluidState.getFlow(level, mutablePos);
-                                 if (tracker.height < 0.4) {
-                                    flow = flow.scale(tracker.height);
-                                 }
-
-                                 tracker.accumulateCurrent(flow);
-                              }
+                              current.accumulate(flow);
                            }
                         }
                      }
@@ -87,6 +101,7 @@ public class EntityFluidInteraction {
                }
             }
 
+            return lastFluidType != null;
          }
       }
    }
@@ -121,11 +136,25 @@ public class EntityFluidInteraction {
       return hasFluid;
    }
 
-   private @Nullable Tracker getTrackerFor(final Fluid fluid) {
-      for(Map.Entry<TagKey<Fluid>, Tracker> entry : this.trackerByFluid.entrySet()) {
-         TagKey<Fluid> tag = (TagKey)entry.getKey();
-         if (fluid.is(tag)) {
-            return (Tracker)entry.getValue();
+   private Tracker getOrCreateTrackerFor(final Holder<Fluid> fluidType) {
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.fluidType.equals(fluidType)) {
+            return tracker;
+         }
+      }
+
+      Tracker tracker = new Tracker(fluidType);
+      this.fluidTrackers.add(tracker);
+      return tracker;
+   }
+
+   private @Nullable CurrentAccumulator getCurrentAccumulatorFor(final Holder<Fluid> fluid) {
+      ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.currentAccumulators).iterator();
+
+      while(var2.hasNext()) {
+         Reference2ObjectMap.Entry<TagKey<Fluid>, CurrentAccumulator> entry = (Reference2ObjectMap.Entry)var2.next();
+         if (fluid.is((TagKey)entry.getKey())) {
+            return (CurrentAccumulator)entry.getValue();
          }
       }
 
@@ -133,16 +162,23 @@ public class EntityFluidInteraction {
    }
 
    public void applyCurrentTo(final TagKey<Fluid> fluid, final Entity entity, final double scale) {
-      Tracker tracker = (Tracker)this.trackerByFluid.get(fluid);
-      if (tracker != null) {
-         tracker.applyCurrentTo(entity, scale);
+      CurrentAccumulator current = (CurrentAccumulator)this.currentAccumulators.get(fluid);
+      if (current != null) {
+         current.applyTo(entity, scale);
       }
 
    }
 
    public double getFluidHeight(final TagKey<Fluid> fluid) {
-      Tracker tracker = (Tracker)this.trackerByFluid.get(fluid);
-      return tracker != null ? tracker.height : 0.0;
+      double height = 0.0;
+
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.height > height && tracker.fluidType.is(fluid)) {
+            height = tracker.height;
+         }
+      }
+
+      return height;
    }
 
    public boolean isInFluid(final TagKey<Fluid> fluid) {
@@ -150,34 +186,58 @@ public class EntityFluidInteraction {
    }
 
    public boolean isEyeInFluid(final TagKey<Fluid> fluid) {
-      Tracker tracker = (Tracker)this.trackerByFluid.get(fluid);
-      return tracker != null && tracker.eyesInside;
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.eyesInside && tracker.fluidType.is(fluid)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    private static class Tracker {
+      private final Holder<Fluid> fluidType;
       private double height;
       private boolean eyesInside;
+
+      public Tracker(final Holder<Fluid> fluidType) {
+         super();
+         this.fluidType = fluidType;
+      }
+
+      public boolean reset() {
+         if (this.height == 0.0 && !this.eyesInside) {
+            return true;
+         } else {
+            this.height = 0.0;
+            this.eyesInside = false;
+            return false;
+         }
+      }
+   }
+
+   private static class CurrentAccumulator {
+      private double height;
       private Vec3 accumulatedCurrent;
       private int currentCount;
 
-      private Tracker() {
+      private CurrentAccumulator() {
          super();
          this.accumulatedCurrent = Vec3.ZERO;
       }
 
       public void reset() {
          this.height = 0.0;
-         this.eyesInside = false;
          this.accumulatedCurrent = Vec3.ZERO;
          this.currentCount = 0;
       }
 
-      public void accumulateCurrent(final Vec3 flow) {
+      public void accumulate(final Vec3 flow) {
          this.accumulatedCurrent = this.accumulatedCurrent.add(flow);
          ++this.currentCount;
       }
 
-      public void applyCurrentTo(final Entity entity, final double scale) {
+      public void applyTo(final Entity entity, final double scale) {
          if (this.currentCount != 0 && !(this.accumulatedCurrent.lengthSqr() < 9.999999747378752E-6)) {
             Vec3 impulse;
             if (!(entity instanceof Player)) {

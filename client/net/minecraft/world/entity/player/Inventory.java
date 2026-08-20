@@ -16,12 +16,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerInventoryPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -280,11 +282,11 @@ public class Inventory implements Container, Nameable {
       }
    }
 
-   public void placeItemBackInInventory(final ItemStack itemStack) {
-      this.placeItemBackInInventory(itemStack, true);
+   public void placeItemBackInInventory(final ItemStack itemStack, final Prediction prediction) {
+      this.placeItemBackInInventory(itemStack, true, prediction);
    }
 
-   public void placeItemBackInInventory(final ItemStack itemStack, final boolean shouldSendSetSlotPacket) {
+   public void placeItemBackInInventory(final ItemStack itemStack, final boolean shouldSendSetSlotPacket, final Prediction prediction) {
       while(true) {
          if (!itemStack.isEmpty()) {
             int slot = this.getSlotWithRemainingSpace(itemStack);
@@ -298,15 +300,15 @@ public class Inventory implements Container, Nameable {
                   continue;
                }
 
-               Player var6 = this.player;
-               if (var6 instanceof ServerPlayer) {
-                  ServerPlayer serverPlayer = (ServerPlayer)var6;
+               Player var7 = this.player;
+               if (var7 instanceof ServerPlayer) {
+                  ServerPlayer serverPlayer = (ServerPlayer)var7;
                   serverPlayer.connection.send(this.createInventoryUpdatePacket(slot));
                }
                continue;
             }
 
-            this.player.drop(itemStack, false);
+            this.player.drop(itemStack, false, prediction);
          }
 
          return;
@@ -438,7 +440,11 @@ public class Inventory implements Container, Nameable {
       for(int i = 0; i < this.items.size(); ++i) {
          ItemStack itemStack = this.items.get(i);
          if (!itemStack.isEmpty()) {
-            this.player.drop(itemStack, true, false);
+            ItemEntity drop = this.player.createItemStackToDrop(itemStack, true, false);
+            if (drop != null) {
+               this.player.level().addFreshEntity(drop);
+            }
+
             this.items.set(i, ItemStack.EMPTY);
          }
       }

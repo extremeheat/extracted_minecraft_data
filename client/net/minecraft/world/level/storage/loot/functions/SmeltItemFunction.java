@@ -4,8 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -20,8 +20,8 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
    private final boolean useInputCount;
    public static final MapCodec<SmeltItemFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Codec.BOOL.optionalFieldOf("use_input_count", true).forGetter((o) -> o.useInputCount)).apply(i, SmeltItemFunction::new));
 
-   private SmeltItemFunction(final List<LootItemCondition> predicates, final boolean useInputCount) {
-      super(predicates);
+   private SmeltItemFunction(final Optional<Holder<LootItemCondition>> condition, final boolean useInputCount) {
+      super(condition);
       this.useInputCount = useInputCount;
    }
 

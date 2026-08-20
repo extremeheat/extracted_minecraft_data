@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import java.util.List;
+import net.minecraft.advancements.predicates.BlockPredicate;
 import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.EnchantmentPredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
@@ -16,10 +17,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public class LootPredicates {
    public static final ResourceKey<LootItemCondition> TOOL_CAN_SILK_TOUCH = createKey("tool/can_silk_touch");
    public static final ResourceKey<LootItemCondition> TOOL_CAN_SHEAR = createKey("tool/can_shear");
+   public static final ResourceKey<LootItemCondition> FAST_FURNACE = createKey("block/fast_cooking");
 
    public LootPredicates() {
       super();
@@ -32,7 +36,9 @@ public class LootPredicates {
    public static void bootstrap(final BootstrapContext<LootItemCondition> context) {
       HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
       HolderGetter<Item> items = context.lookup(Registries.ITEM);
+      HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
       context.register(TOOL_CAN_SILK_TOUCH, MatchTool.toolMatches(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(enchantments.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1))))).build())).build());
       context.register(TOOL_CAN_SHEAR, MatchTool.toolMatches(ItemPredicate.Builder.item().of(items, Items.SHEARS)).build());
+      context.register(FAST_FURNACE, MatchBlock.blockMatches(BlockPredicate.Builder.block().of(blocks, Blocks.SMOKER, Blocks.BLAST_FURNACE)).build());
    }
 }

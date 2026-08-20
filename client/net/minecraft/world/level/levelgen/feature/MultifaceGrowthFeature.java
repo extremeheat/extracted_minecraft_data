@@ -10,9 +10,9 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.WorldGenLevel;
@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record MultifaceGrowthFeature(Block placeBlock, int searchRange, boolean canPlaceOnFloor, boolean canPlaceOnCeiling, boolean canPlaceOnWall, float chanceOfSpreading, HolderSet<Block> canBePlacedOn) implements Feature {
-   public static final MapCodec<MultifaceGrowthFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().validate(MultifaceGrowthFeature::validateBlock).fieldOf("block").forGetter(MultifaceGrowthFeature::placeBlock), Codec.intRange(1, 64).optionalFieldOf("search_range", 10).forGetter(MultifaceGrowthFeature::searchRange), Codec.BOOL.optionalFieldOf("can_place_on_floor", false).forGetter(MultifaceGrowthFeature::canPlaceOnFloor), Codec.BOOL.optionalFieldOf("can_place_on_ceiling", false).forGetter(MultifaceGrowthFeature::canPlaceOnCeiling), Codec.BOOL.optionalFieldOf("can_place_on_wall", false).forGetter(MultifaceGrowthFeature::canPlaceOnWall), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("chance_of_spreading", 0.5F).forGetter(MultifaceGrowthFeature::chanceOfSpreading), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_be_placed_on").forGetter(MultifaceGrowthFeature::canBePlacedOn)).apply(i, MultifaceGrowthFeature::new));
+   public static final MapCodec<MultifaceGrowthFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().validate(MultifaceGrowthFeature::validateBlock).fieldOf("block").forGetter(MultifaceGrowthFeature::placeBlock), Codec.intRange(1, 64).optionalFieldOf("search_range", 10).forGetter(MultifaceGrowthFeature::searchRange), Codec.BOOL.optionalFieldOf("can_place_on_floor", false).forGetter(MultifaceGrowthFeature::canPlaceOnFloor), Codec.BOOL.optionalFieldOf("can_place_on_ceiling", false).forGetter(MultifaceGrowthFeature::canPlaceOnCeiling), Codec.BOOL.optionalFieldOf("can_place_on_wall", false).forGetter(MultifaceGrowthFeature::canPlaceOnWall), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("chance_of_spreading", 0.5F).forGetter(MultifaceGrowthFeature::chanceOfSpreading), RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("can_be_placed_on").forGetter(MultifaceGrowthFeature::canBePlacedOn)).apply(i, MultifaceGrowthFeature::new));
 
    public MultifaceGrowthFeature {
       super();

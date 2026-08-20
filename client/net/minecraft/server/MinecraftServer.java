@@ -161,7 +161,6 @@ import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
@@ -286,7 +285,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final ServerDebugSubscribers debugSubscribers;
    protected final WorldData worldData;
    private LevelData.RespawnData effectiveRespawnData;
-   private FuelValues fuelValues;
    private int emptyTicks;
    private volatile boolean isSaving;
    private final SuppressedExceptionCollector suppressedExceptions;
@@ -358,7 +356,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.serverThread = serverThread;
          this.executor = Util.backgroundExecutor();
          this.resources.managers.getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
-         this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
          this.notificationManager = notificationManager;
          this.serverActivityMonitor = new ServerActivityMonitor(notificationManager, 30);
@@ -1421,7 +1418,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.isReady;
    }
 
-   public boolean publishServer(final MultiplayerScope scope, final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
+   public boolean publishServer(final MultiplayerScope scope, final boolean allowCommands, final int port) {
       return false;
    }
 
@@ -1540,7 +1537,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.getPlayerList().reloadResources();
          this.functionManager.replaceLibrary(this.resources.managers.getFunctionLibrary());
          this.structureTemplateManager.onResourceManagerReload(this.resources.resourceManager);
-         this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
       }, this);
       if (this.isSameThread()) {
          Objects.requireNonNull(result);
@@ -1789,15 +1785,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public LevelBasedPermissionSet getProfilePermissions(final NameAndId nameAndId) {
       if (this.getPlayerList().isOp(nameAndId)) {
          ServerOpListEntry opListEntry = (ServerOpListEntry)this.getPlayerList().getOps().get(nameAndId);
-         if (opListEntry != null) {
-            return opListEntry.permissions();
-         } else if (this.isSingleplayerOwner(nameAndId)) {
-            return LevelBasedPermissionSet.OWNER;
-         } else if (this.isSingleplayer()) {
-            return this.getPlayerList().isAllowCommandsForAllPlayers() ? LevelBasedPermissionSet.OWNER : LevelBasedPermissionSet.ALL;
-         } else {
-            return this.operatorUserPermissions();
-         }
+         return opListEntry != null ? opListEntry.permissions() : this.operatorUserPermissions();
       } else {
          return LevelBasedPermissionSet.ALL;
       }
@@ -2085,6 +2073,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return null;
    }
 
+   public boolean forceGameMode() {
+      return false;
+   }
+
+   public void setForceGameMode(final boolean forceGameMode) {
+   }
+
    public ResourceManager getResourceManager() {
       return this.resources.resourceManager;
    }
@@ -2278,10 +2273,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public void reportPacketHandlingException(final Throwable throwable, final PacketType<?> packetType) {
       this.suppressedExceptions.addEntry("packet/" + String.valueOf(packetType), throwable);
-   }
-
-   public FuelValues fuelValues() {
-      return this.fuelValues;
    }
 
    public ServerLinks serverLinks() {

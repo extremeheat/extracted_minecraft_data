@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -123,7 +124,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    }
 
    protected boolean isFuel(final ItemStack itemStack) {
-      return this.level.fuelValues().isFuel(itemStack);
+      return itemStack.has(DataComponents.COOKING_FUEL);
    }
 
    public float getBurnProgress() {

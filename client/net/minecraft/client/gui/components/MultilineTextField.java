@@ -203,12 +203,8 @@ public class MultilineTextField {
          this.insertText("");
          return true;
       } else {
-         switch (event.key()) {
-            case 257:
-            case 335:
-               this.insertText("\n");
-               return true;
-            case 259:
+         switch (event.shortcutKey()) {
+            case 8:
                if (event.hasControlDownWithQuirk()) {
                   StringView wordView = this.getPreviousWord();
                   this.deleteText(wordView.beginIndex - this.cursor);
@@ -217,7 +213,11 @@ public class MultilineTextField {
                }
 
                return true;
-            case 261:
+            case 13:
+            case 1073741912:
+               this.insertText("\n");
+               return true;
+            case 127:
                if (event.hasControlDownWithQuirk()) {
                   StringView wordView = this.getNextWord();
                   this.deleteText(wordView.beginIndex - this.cursor);
@@ -226,7 +226,29 @@ public class MultilineTextField {
                }
 
                return true;
-            case 262:
+            case 1073741898:
+               if (event.hasControlDownWithQuirk()) {
+                  this.seekCursor(Whence.ABSOLUTE, 0);
+               } else {
+                  this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().beginIndex);
+               }
+
+               return true;
+            case 1073741899:
+               this.seekCursor(Whence.ABSOLUTE, 0);
+               return true;
+            case 1073741901:
+               if (event.hasControlDownWithQuirk()) {
+                  this.seekCursor(Whence.END, 0);
+               } else {
+                  this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().endIndex);
+               }
+
+               return true;
+            case 1073741902:
+               this.seekCursor(Whence.END, 0);
+               return true;
+            case 1073741903:
                if (event.hasControlDownWithQuirk()) {
                   StringView wordView = this.getNextWord();
                   this.seekCursor(Whence.ABSOLUTE, wordView.beginIndex);
@@ -235,7 +257,7 @@ public class MultilineTextField {
                }
 
                return true;
-            case 263:
+            case 1073741904:
                if (event.hasControlDownWithQuirk()) {
                   StringView wordView = this.getPreviousWord();
                   this.seekCursor(Whence.ABSOLUTE, wordView.beginIndex);
@@ -244,37 +266,15 @@ public class MultilineTextField {
                }
 
                return true;
-            case 264:
+            case 1073741905:
                if (!event.hasControlDownWithQuirk()) {
                   this.seekCursorLine(1);
                }
 
                return true;
-            case 265:
+            case 1073741906:
                if (!event.hasControlDownWithQuirk()) {
                   this.seekCursorLine(-1);
-               }
-
-               return true;
-            case 266:
-               this.seekCursor(Whence.ABSOLUTE, 0);
-               return true;
-            case 267:
-               this.seekCursor(Whence.END, 0);
-               return true;
-            case 268:
-               if (event.hasControlDownWithQuirk()) {
-                  this.seekCursor(Whence.ABSOLUTE, 0);
-               } else {
-                  this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().beginIndex);
-               }
-
-               return true;
-            case 269:
-               if (event.hasControlDownWithQuirk()) {
-                  this.seekCursor(Whence.END, 0);
-               } else {
-                  this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().endIndex);
                }
 
                return true;

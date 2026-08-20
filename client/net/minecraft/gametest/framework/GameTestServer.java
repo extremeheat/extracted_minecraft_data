@@ -271,7 +271,7 @@ public class GameTestServer extends MinecraftServer {
       RandomSource random = level.getRandom();
       BlockPos startPos = new BlockPos(random.nextIntBetweenInclusive(-14999992, 14999992), 4, random.nextIntBetweenInclusive(-14999992, 14999992));
       level.setRespawnData(LevelData.RespawnData.of(level.dimension(), startPos, 0.0F, 0.0F));
-      GameTestRunner runner = GameTestRunner.Builder.fromBatches(this.testBatches, this).newStructureSpawner(new StructureGridSpawner(startPos, 8, false)).build();
+      GameTestRunner runner = GameTestRunner.Builder.fromBatches(this.testBatches, this).newStructureSpawner(new StructureGridSpawner((var1) -> startPos, 8, false)).build();
       Collection<GameTestInfo> testInfos = runner.getTestInfos();
       this.testTracker = new MultipleTestTracker(testInfos);
       LOGGER.info("{} tests are now running at position {}!", this.testTracker.getTotalCount(), startPos.toShortString());

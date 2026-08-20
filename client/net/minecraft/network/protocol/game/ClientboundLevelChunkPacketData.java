@@ -6,6 +6,7 @@ import io.netty.buffer.Unpooled;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
@@ -26,6 +27,7 @@ import org.jspecify.annotations.Nullable;
 public class ClientboundLevelChunkPacketData {
    private static final StreamCodec<ByteBuf, Map<Heightmap.Types, long[]>> HEIGHTMAPS_STREAM_CODEC;
    private static final int TWO_MEGABYTES = 2097152;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkPacketData> STREAM_CODEC;
    private final Map<Heightmap.Types, long[]> heightmaps;
    private final byte[] buffer;
    private final List<BlockEntityInfo> blockEntitiesData;
@@ -43,24 +45,11 @@ public class ClientboundLevelChunkPacketData {
 
    }
 
-   public ClientboundLevelChunkPacketData(final RegistryFriendlyByteBuf input, final int x, final int z) {
+   private ClientboundLevelChunkPacketData(final Map<Heightmap.Types, long[]> heightmaps, final byte[] buffer, final List<BlockEntityInfo> blockEntitiesData) {
       super();
-      this.heightmaps = (Map)HEIGHTMAPS_STREAM_CODEC.decode(input);
-      int size = input.readVarInt();
-      if (size > 2097152) {
-         throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
-      } else {
-         this.buffer = new byte[size];
-         input.readBytes(this.buffer);
-         this.blockEntitiesData = (List)ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.decode(input);
-      }
-   }
-
-   public void write(final RegistryFriendlyByteBuf output) {
-      HEIGHTMAPS_STREAM_CODEC.encode(output, this.heightmaps);
-      output.writeVarInt(this.buffer.length);
-      output.writeBytes(this.buffer);
-      ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.encode(output, this.blockEntitiesData);
+      this.heightmaps = heightmaps;
+      this.buffer = buffer;
+      this.blockEntitiesData = blockEntitiesData;
    }
 
    private static int calculateChunkSize(final LevelChunk chunk) {
@@ -103,7 +92,7 @@ public class ClientboundLevelChunkPacketData {
          int unpackedX = baseX + SectionPos.sectionRelative(data.packedXZ >> 4);
          int unpackedZ = baseZ + SectionPos.sectionRelative(data.packedXZ);
          pos.set(unpackedX, data.y, unpackedZ);
-         output.accept(pos, data.type, data.tag);
+         output.accept(pos, data.type, (CompoundTag)data.tag.orElse((Object)null));
       }
 
    }
@@ -118,48 +107,25 @@ public class ClientboundLevelChunkPacketData {
 
    static {
       HEIGHTMAPS_STREAM_CODEC = ByteBufCodecs.map((size) -> new EnumMap(Heightmap.Types.class), Heightmap.Types.STREAM_CODEC, ByteBufCodecs.LONG_ARRAY);
+      STREAM_CODEC = StreamCodec.composite(HEIGHTMAPS_STREAM_CODEC, (p) -> p.heightmaps, ByteBufCodecs.byteArray(2097152), (p) -> p.buffer, ClientboundLevelChunkPacketData.BlockEntityInfo.STREAM_CODEC.apply(ByteBufCodecs.list()), (p) -> p.blockEntitiesData, ClientboundLevelChunkPacketData::new);
    }
 
-   private static class BlockEntityInfo {
-      public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityInfo> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, BlockEntityInfo>ofMember(BlockEntityInfo::write, BlockEntityInfo::new);
-      public static final StreamCodec<RegistryFriendlyByteBuf, List<BlockEntityInfo>> LIST_STREAM_CODEC;
-      private final int packedXZ;
-      private final int y;
-      private final BlockEntityType<?> type;
-      private final @Nullable CompoundTag tag;
+   private static record BlockEntityInfo(byte packedXZ, short y, BlockEntityType<?> type, Optional<CompoundTag> tag) {
+      public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityInfo> STREAM_CODEC;
 
-      private BlockEntityInfo(final int packedXZ, final int y, final BlockEntityType<?> type, final @Nullable CompoundTag tag) {
+      private BlockEntityInfo {
          super();
-         this.packedXZ = packedXZ;
-         this.y = y;
-         this.type = type;
-         this.tag = tag;
-      }
-
-      private BlockEntityInfo(final RegistryFriendlyByteBuf input) {
-         super();
-         this.packedXZ = input.readByte();
-         this.y = input.readShort();
-         this.type = (BlockEntityType)ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE).decode(input);
-         this.tag = input.readNbt();
-      }
-
-      private void write(final RegistryFriendlyByteBuf output) {
-         output.writeByte(this.packedXZ);
-         output.writeShort(this.y);
-         ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE).encode(output, this.type);
-         output.writeNbt(this.tag);
       }
 
       private static BlockEntityInfo create(final BlockEntity blockEntity) {
          CompoundTag tag = blockEntity.getUpdateTag(blockEntity.getLevel().registryAccess());
          BlockPos pos = blockEntity.getBlockPos();
          int xz = SectionPos.sectionRelative(pos.getX()) << 4 | SectionPos.sectionRelative(pos.getZ());
-         return new BlockEntityInfo(xz, pos.getY(), blockEntity.getType(), tag.isEmpty() ? null : tag);
+         return new BlockEntityInfo((byte)xz, (short)pos.getY(), blockEntity.getType(), tag.isEmpty() ? Optional.empty() : Optional.of(tag));
       }
 
       static {
-         LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BYTE, BlockEntityInfo::packedXZ, ByteBufCodecs.SHORT, BlockEntityInfo::y, ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE), BlockEntityInfo::type, ByteBufCodecs.OPTIONAL_COMPOUND_TAG, BlockEntityInfo::tag, BlockEntityInfo::new);
       }
    }
 

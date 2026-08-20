@@ -28,9 +28,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.UvMapping;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Avatar;
@@ -42,8 +40,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwingAnimationType;
-import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
@@ -86,7 +82,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    private static HumanoidModel.ArmPose getArmPose(final Avatar avatar, final ItemStack itemInHand, final InteractionHand hand) {
       if (itemInHand.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
-      } else if (!avatar.swinging && itemInHand.is(Items.CROSSBOW) && CrossbowItem.isCharged(itemInHand)) {
+      } else if (!avatar.isSwinging() && itemInHand.is(Items.CROSSBOW) && CrossbowItem.isCharged(itemInHand)) {
          return HumanoidModel.ArmPose.CROSSBOW_HOLD;
       } else {
          if (avatar.getUsedItemHand() == hand && avatar.getUseItemRemainingTicks() > 0) {
@@ -124,12 +120,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
             }
          }
 
-         SwingAnimation attack = (SwingAnimation)itemInHand.get(DataComponents.SWING_ANIMATION);
-         if (attack != null && attack.type() == SwingAnimationType.STAB && avatar.swinging) {
-            return HumanoidModel.ArmPose.SPEAR;
-         } else {
-            return itemInHand.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
-         }
+         return HumanoidMobRenderer.usesSpearPose(itemInHand, hand.asArm(avatar.getMainArm()), avatar) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
       }
    }
 

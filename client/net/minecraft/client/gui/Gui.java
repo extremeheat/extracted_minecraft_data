@@ -5,6 +5,9 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.BanDetails;
 import com.mojang.authlib.services.ProfileActionType;
 import com.mojang.authlib.services.ProfileResult;
+import com.mojang.jtracy.Section;
+import com.mojang.jtracy.SectionCategory;
+import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +68,13 @@ import org.slf4j.Logger;
 
 public class Gui {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final SectionCategory TRACY_CURRENT_SCREEN = TracyClient.createSectionCategory("Current Screen");
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
    public static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private final Minecraft minecraft;
    public final Hud hud;
    private final GuiRenderState guiRenderState;
+   private @Nullable Section screenTracySection;
    private @Nullable Screen screen;
    private @Nullable Overlay overlay;
    private boolean clientLevelTeardownInProgress;
@@ -234,7 +239,14 @@ public class Gui {
          LOGGER.error("setScreen called from non-game thread");
       }
 
+      if (this.screenTracySection != null) {
+         this.screenTracySection.close();
+         this.screenTracySection = null;
+      }
+
       if (this.screen != null) {
+         this.screen.clearFocus();
+         this.minecraft.textInputManager().stopTextInput();
          this.screen.removed();
       } else {
          this.minecraft.setLastInputType(InputType.NONE);
@@ -261,6 +273,8 @@ public class Gui {
       this.screen = screen;
       if (this.screen != null) {
          this.screen.added();
+         String name = this.screen.getTitle().getString();
+         this.screenTracySection = TRACY_CURRENT_SCREEN.enterSection(name.isBlank() ? this.screen.getClass().getSimpleName() : name);
       }
 
       if (screen != null) {

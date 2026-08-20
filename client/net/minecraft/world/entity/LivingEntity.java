@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -36,10 +37,10 @@ import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundSwingAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -63,6 +64,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -99,6 +101,8 @@ import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.KineticWeapon;
+import net.minecraft.world.item.component.MobVisibility;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -116,6 +120,7 @@ import net.minecraft.world.level.block.PowderSnowBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.Fluid;
@@ -165,7 +170,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private static final int FREE_FALL_EVENTS_PER_ELYTRA_BREAK = 2;
    public static final float BASE_JUMP_POWER = 0.42F;
    protected static final float DEFAULT_KNOCKBACK = 0.4F;
-   protected static final int INVULNERABLE_DURATION = 20;
+   protected static final int DAMAGE_COOLDOWN_DURATION = 20;
    protected static final int HURT_DURATION_TICKS = 10;
    private static final double CLIMBING_VERTICAL_SPEED = 0.2;
    private static final float SWIM_AMOUNT_PER_TICK = 0.09F;
@@ -207,17 +212,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
    private final Map<EquipmentSlot, ItemStack> lastEquipmentItems = Util.<EquipmentSlot, ItemStack>makeEnumMap(EquipmentSlot.class, (slot) -> ItemStack.EMPTY);
-   public boolean swinging;
+   private final SwingState swingState = new SwingState();
    private boolean discardFriction = false;
-   public @Nullable InteractionHand swingingArm;
-   public int swingTime;
    public int removeArrowTime;
    public int removeStingerTime;
    public int hurtTime;
    public int hurtDuration;
    public int deathTime;
-   public float oAttackAnim;
-   public float attackAnim;
+   public int damageCooldownTime;
    protected int attackStrengthTicker;
    protected int itemSwapTicker;
    public final WalkAnimationState walkAnimation = new WalkAnimationState();
@@ -235,7 +237,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public float xxa;
    public float yya;
    public float zza;
-   protected final InterpolationHandler interpolation = new SteppedInterpolationHandler(this);
    protected double lerpYHeadRot;
    protected int lerpHeadSteps;
    private boolean effectsDirty = true;
@@ -371,9 +372,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void baseTick() {
-      this.oAttackAnim = this.attackAnim;
+      this.swingState.tick();
       if (this.firstTick) {
-         this.getSleepingPos().ifPresent(this::setPosToBed);
+         this.getSleepingPos().ifPresent((bedPosition) -> {
+            if (!this.setPosToBed(bedPosition)) {
+               this.stopSleeping();
+            }
+
+         });
       }
 
       ServerLevel level = this.level();
@@ -433,8 +439,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          --this.hurtTime;
       }
 
-      if (this.invulnerableTime > 0 && !(this instanceof ServerPlayer)) {
-         --this.invulnerableTime;
+      if (this.damageCooldownTime > 0 && !(this instanceof ServerPlayer)) {
+         --this.damageCooldownTime;
       }
 
       if (this.isDeadOrDying() && this.level().shouldTickDeath(this)) {
@@ -463,8 +469,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.tickEffects();
       this.yHeadRotO = this.yHeadRot;
       this.yBodyRotO = this.yBodyRot;
-      this.yRotO = this.getYRot();
-      this.xRotO = this.getXRot();
       profiler.pop();
    }
 
@@ -738,19 +742,21 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction) {
       if (itemStack.isEmpty()) {
          return null;
-      } else if (this.level().isClientSide()) {
-         this.swing(InteractionHand.MAIN_HAND);
-         return null;
       } else {
-         ItemEntity entity = this.createItemStackToDrop(itemStack, randomly, thrownFromHand);
-         if (entity != null) {
-            this.level().addFreshEntity(entity);
-         }
+         this.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, prediction != Prediction.PREDICTED);
+         if (this.level().isClientSide()) {
+            return null;
+         } else {
+            ItemEntity entity = this.createItemStackToDrop(itemStack, false, thrownFromHand);
+            if (entity != null) {
+               this.level().addFreshEntity(entity);
+            }
 
-         return entity;
+            return entity;
+         }
       }
    }
 
@@ -778,8 +784,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       input.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((sleepingPos) -> {
          this.setSleepingPos(sleepingPos);
          this.entityData.set(DATA_POSE, Pose.SLEEPING);
-         if (!this.firstTick) {
-            this.setPosToBed(sleepingPos);
+         if (!this.firstTick && !this.setPosToBed(sleepingPos)) {
+            this.stopSleeping();
          }
 
       }, this::clearSleepingPos);
@@ -868,7 +874,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public double getVisibilityPercent(final @Nullable Entity targetingEntity) {
+   public double getVisibilityPercent(final ServerLevel serverLevel, final @Nullable Entity targetingEntity) {
       double visibilityPercent = 1.0;
       if (this.isDiscrete()) {
          visibilityPercent *= 0.8;
@@ -884,13 +890,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (targetingEntity != null) {
-         ItemStack itemStack = this.getItemBySlot(EquipmentSlot.HEAD);
-         if (targetingEntity.is(EntityTypes.SKELETON) && itemStack.is(Items.SKELETON_SKULL) || targetingEntity.is(EntityTypes.ZOMBIE) && itemStack.is(Items.ZOMBIE_HEAD) || targetingEntity.is(EntityTypes.PIGLIN) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityTypes.PIGLIN_BRUTE) && itemStack.is(Items.PIGLIN_HEAD) || targetingEntity.is(EntityTypes.CREEPER) && itemStack.is(Items.CREEPER_HEAD)) {
-            visibilityPercent *= 0.5;
+         for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+            ItemStack item = this.getItemBySlot(slot);
+            MobVisibility mobVisibility = (MobVisibility)item.get(DataComponents.MOB_VISIBILITY);
+            if (mobVisibility != null) {
+               Equippable equippable = (Equippable)item.get(DataComponents.EQUIPPABLE);
+               if (equippable != null && slot == equippable.slot() && mobVisibility.targetingEntityTypes().contains(targetingEntity.typeHolder())) {
+                  visibilityPercent *= (double)mobVisibility.visibility();
+               }
+            }
          }
       }
 
-      return visibilityPercent;
+      return Mth.clamp(visibilityPercent, 0.0, 10.0);
    }
 
    public boolean canAttack(final LivingEntity target) {
@@ -1170,7 +1182,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
 
          boolean tookFullDamage = true;
-         if ((float)this.invulnerableTime > 10.0F && !source.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
+         if ((float)this.damageCooldownTime > 10.0F && !source.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
             if (damage <= this.lastHurt) {
                return false;
             }
@@ -1180,7 +1192,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             tookFullDamage = false;
          } else {
             this.lastHurt = damage;
-            this.invulnerableTime = 20;
+            this.damageCooldownTime = 20;
             this.actuallyHurt(level, source, damage);
             this.hurtDuration = 10;
             this.hurtTime = this.hurtDuration;
@@ -1288,7 +1300,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                Vec3 sourcePosition = source.getSourcePosition();
                double angle;
                if (sourcePosition != null) {
-                  Vec3 viewVector = this.calculateViewVector(0.0F, this.getYHeadRot());
+                  Vec3 viewVector = calculateViewVector(0.0F, this.getYHeadRot());
                   Vec3 vectorTo = sourcePosition.subtract(this.position());
                   vectorTo = (new Vec3(vectorTo.x, 0.0, vectorTo.z)).normalize();
                   angle = Math.acos(vectorTo.dot(viewVector));
@@ -1935,10 +1947,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.entityData.set(DATA_STINGER_COUNT_ID, count);
    }
 
-   private int getCurrentSwingDuration() {
-      InteractionHand hand = this.swingingArm != null ? this.swingingArm : InteractionHand.MAIN_HAND;
-      ItemStack handStack = this.getItemInHand(hand);
-      int swingDuration = handStack.getSwingAnimation().duration();
+   private int getModifiedSwingDuration(final SwingAnimation animation) {
+      int swingDuration = animation.duration();
       if (MobEffectUtil.hasDigSpeed(this)) {
          return swingDuration - (1 + MobEffectUtil.getDigSpeedAmplification(this));
       } else {
@@ -1946,31 +1956,35 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   public void swing(final InteractionHand hand) {
-      this.swing(hand, false);
+   /** @deprecated */
+   @Deprecated
+   public void swingAndResetAttackStrength(final InteractionHand hand, final SwingAnimation animation, final boolean sendToSwingingEntity) {
+      this.swing(hand, animation, sendToSwingingEntity);
    }
 
-   public void swing(final InteractionHand hand, final boolean sendToSwingingEntity) {
-      if (!this.swinging || this.swingTime >= this.getCurrentSwingDuration() / 2 || this.swingTime < 0) {
-         this.swingTime = -1;
-         this.swinging = true;
-         this.swingingArm = hand;
-         if (this.level() instanceof ServerLevel) {
-            ClientboundAnimatePacket packet = new ClientboundAnimatePacket(this, hand == InteractionHand.MAIN_HAND ? 0 : 3);
-            ServerChunkCache chunkSource = ((ServerLevel)this.level()).getChunkSource();
+   public boolean swing(final InteractionHand hand, final SwingAnimation animation, final boolean sendToSwingingEntity) {
+      if (this.swingState.startIfAble(hand, animation, this.getModifiedSwingDuration(animation))) {
+         Level var5 = this.level();
+         if (var5 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var5;
+            ClientboundSwingAnimationPacket packet = new ClientboundSwingAnimationPacket(this, hand, animation);
+            ServerChunkCache chunkSource = serverLevel.getChunkSource();
             if (sendToSwingingEntity) {
                chunkSource.sendToTrackingPlayersAndSelf(this, packet);
             } else {
                chunkSource.sendToTrackingPlayers(this, packet);
             }
          }
-      }
 
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public void handleDamageEvent(final DamageSource source) {
       this.walkAnimation.setSpeed(1.5F);
-      this.invulnerableTime = 20;
+      this.damageCooldownTime = 20;
       this.hurtDuration = 10;
       this.hurtTime = this.hurtDuration;
       SoundEvent hurtSound = this.getHurtSound(source);
@@ -1982,7 +1996,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.lastDamageStamp = this.level().getGameTime();
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       switch (id) {
          case 2:
             this.onKineticHit();
@@ -2099,21 +2113,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    protected void onBelowWorld() {
       this.hurt(this.damageSources().fellOutOfWorld(), 4.0F);
-   }
-
-   protected void updateSwingTime() {
-      int currentSwingDuration = this.getCurrentSwingDuration();
-      if (this.swinging) {
-         ++this.swingTime;
-         if (this.swingTime >= currentSwingDuration) {
-            this.swingTime = 0;
-            this.swinging = false;
-         }
-      } else {
-         this.swingTime = 0;
-      }
-
-      this.attackAnim = (float)this.swingTime / (float)currentSwingDuration;
    }
 
    protected double getEntityBounciness() {
@@ -2724,7 +2723,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
       }
 
-      if (this.attackAnim > 0.0F) {
+      if (this.swingState.animation > 0.0F) {
          yBodyRotT = this.getYRot();
       }
 
@@ -2950,9 +2949,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          --this.noJumpDelay;
       }
 
-      if (this.isInterpolating()) {
-         this.getInterpolation().interpolate();
-      } else if (!this.canSimulateMovement()) {
+      if (!this.isInterpolating() && !this.canSimulateMovement()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.98));
       }
 
@@ -3039,12 +3036,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.resetFallDistance();
       }
 
-      label124: {
+      label123: {
          LivingEntity var18 = this.getControllingPassenger();
          if (var18 instanceof Player controller) {
             if (this.isAlive()) {
                this.travelRidden(controller, input);
-               break label124;
+               break label123;
             }
          }
 
@@ -3227,8 +3224,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.resetFallDistance();
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
+   protected InterpolationHandler createInterpolationHandler() {
+      return SteppedInterpolationHandler.create(this);
    }
 
    public void lerpHeadTo(final float yRot, final int steps) {
@@ -3277,13 +3274,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return a == 1.0F ? this.yHeadRot : Mth.rotLerp(a, this.yHeadRotO, this.yHeadRot);
    }
 
-   public float getAttackAnim(final float a) {
-      float diff = this.attackAnim - this.oAttackAnim;
-      if (diff < 0.0F) {
-         ++diff;
-      }
+   public @Nullable SwingDescription getCurrentSwing() {
+      return this.swingState.currentSwing;
+   }
 
-      return this.oAttackAnim + diff * a;
+   public float getSwingAnimation(final float partialTicks) {
+      return this.swingState.getAnimation(partialTicks);
+   }
+
+   public boolean isSwinging() {
+      return this.swingState.isSwinging();
    }
 
    public boolean isPickable() {
@@ -3358,7 +3358,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   private @Nullable ItemEntity createItemStackToDrop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
+   public @Nullable ItemEntity createItemStackToDrop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
       if (itemStack.isEmpty()) {
          return null;
       } else {
@@ -3585,51 +3585,63 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.fallFlyTicks;
    }
 
-   public boolean randomTeleport(final double xx, final double yy, final double zz, final boolean showParticles) {
-      double xo = this.getX();
-      double yo = this.getY();
-      double zo = this.getZ();
+   public boolean randomTeleport(final double xx, final double yy, final double zz, final boolean showParticles, final TagKey<Block> avoidanceTag) {
+      return this.randomTeleport(xx, yy, zz, showParticles, (Predicate)((state) -> state.is(avoidanceTag)));
+   }
+
+   public boolean randomTeleport(final double xx, final double yy, final double zz, final boolean showParticles, final Predicate<BlockState> isInvalidPosition) {
       double y = yy;
-      boolean ok = false;
-      BlockPos pos = BlockPos.containing(xx, yy, zz);
       Level level = this.level();
+      WorldBorder worldBorder = level.getWorldBorder();
+      Vec3 clamped = worldBorder.clampVec3ToBound(xx, yy, zz);
+      BlockPos.MutableBlockPos pos = BlockPos.containing(clamped).mutable();
       if (level.hasChunkAt(pos)) {
-         boolean landed = false;
-
-         while(!landed && pos.getY() > level.getMinY()) {
-            BlockPos below = pos.below();
-            BlockState state = level.getBlockState(below);
+         while(pos.getY() > level.getMinY()) {
+            pos.move(Direction.DOWN);
+            BlockState state = level.getBlockState(pos);
             if (state.is(BlockTags.ENTITIES_CAN_TELEPORT_TO)) {
-               landed = true;
-            } else {
-               --y;
-               pos = below;
+               return this.checkPositionAndTeleport(clamped.x, y, clamped.z, showParticles, isInvalidPosition, state, level);
             }
-         }
 
-         if (landed) {
-            this.teleportTo(xx, y, zz);
-            if (level.noCollision(this) && !level.containsAnyLiquid(this.getBoundingBox())) {
-               ok = true;
-            }
+            --y;
          }
       }
 
-      if (!ok) {
-         this.teleportTo(xo, yo, zo);
+      return false;
+   }
+
+   private boolean checkPositionAndTeleport(final double xx, final double y, final double zz, final boolean showParticles, final Predicate<BlockState> isInvalidPosition, final BlockState state, final Level level) {
+      if (isInvalidPosition.test(state)) {
          return false;
       } else {
-         if (showParticles) {
-            level.broadcastEntityEvent(this, (byte)46);
-         }
+         AABB aabb = this.makeBoundingBox(new Vec3(xx, y, zz));
+         if (level.noCollision(aabb) && !level.containsAnyLiquid(aabb)) {
+            boolean hasInvalidPosition = level.findBlocksIn(aabb).filterState(isInvalidPosition).anyMatched();
+            if (hasInvalidPosition) {
+               return false;
+            } else if (this.canRandomlyTeleportTo(xx, y, zz)) {
+               this.teleportTo(xx, y, zz);
+               if (showParticles) {
+                  level.broadcastEntityEvent(this, (byte)46);
+               }
 
-         if (this instanceof PathfinderMob) {
-            PathfinderMob pathfinderMob = (PathfinderMob)this;
-            pathfinderMob.getNavigation().stop();
-         }
+               if (this instanceof PathfinderMob) {
+                  PathfinderMob pathfinderMob = (PathfinderMob)this;
+                  pathfinderMob.getNavigation().stop();
+               }
 
-         return true;
+               return true;
+            } else {
+               return false;
+            }
+         } else {
+            return false;
+         }
       }
+   }
+
+   public boolean canRandomlyTeleportTo(final double x, final double y, final double z) {
+      return true;
    }
 
    public boolean isAffectedByPotions() {
@@ -3689,43 +3701,67 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.getSleepingPos().isPresent();
    }
 
-   public void startSleeping(final BlockPos bedPosition) {
-      if (this.isPassenger()) {
-         this.stopRiding();
-      }
-
+   public boolean startSleeping(final BlockPos bedPosition) {
       BlockState blockState = this.level().getBlockState(bedPosition);
-      if (blockState.getBlock() instanceof AbstractBedBlock) {
-         this.level().setBlockAndUpdate(bedPosition, (BlockState)blockState.setValue(BedBlock.OCCUPIED, true));
-      }
+      Block var4 = blockState.getBlock();
+      if (var4 instanceof AbstractBedBlock bedBlock) {
+         OptionalDouble sleepHeight = bedBlock.getSleepHeight(blockState, this.level(), bedPosition);
+         if (sleepHeight.isEmpty()) {
+            return false;
+         } else {
+            if (this.isPassenger()) {
+               this.stopRiding();
+            }
 
-      this.setPose(Pose.SLEEPING);
-      this.setPosToBed(blockState, bedPosition);
-      this.setSleepingPos(bedPosition);
-      this.setDeltaMovement(Vec3.ZERO);
-      this.needsSync = true;
-   }
-
-   private void setPosToBed(final BlockPos bedPosition) {
-      BlockState state = this.level().getBlockState(bedPosition);
-      this.setPosToBed(state, bedPosition);
-   }
-
-   private void setPosToBed(final BlockState state, final BlockPos bedPosition) {
-      Block var6 = state.getBlock();
-      double sleepHeight;
-      if (var6 instanceof AbstractBedBlock bed) {
-         sleepHeight = bed.getSleepHeight(state, this.level(), bedPosition);
+            this.setPosToBed(sleepHeight.getAsDouble(), bedPosition);
+            this.level().setBlockAndUpdate(bedPosition, (BlockState)blockState.setValue(BedBlock.OCCUPIED, true));
+            this.setPose(Pose.SLEEPING);
+            this.setSleepingPos(bedPosition);
+            this.setDeltaMovement(Vec3.ZERO);
+            this.needsSync = true;
+            return true;
+         }
       } else {
-         sleepHeight = state.getShape(this.level(), bedPosition).max(Direction.Axis.Y);
+         return false;
       }
+   }
 
+   private boolean setPosToBed(final BlockPos bedPosition) {
+      BlockState state = this.level().getBlockState(bedPosition);
+      Block var4 = state.getBlock();
+      if (var4 instanceof AbstractBedBlock bedBlock) {
+         OptionalDouble sleepHeight = bedBlock.getSleepHeight(state, this.level(), bedPosition);
+         if (sleepHeight.isEmpty()) {
+            return false;
+         } else {
+            this.setPosToBed(sleepHeight.getAsDouble(), bedPosition);
+            return true;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   private void setPosToBed(final double sleepHeight, final BlockPos bedPosition) {
       double adjustHeight = 0.125;
       this.setPos((double)bedPosition.getX() + 0.5, (double)bedPosition.getY() + sleepHeight + 0.125, (double)bedPosition.getZ() + 0.5);
    }
 
    private boolean checkBedExists() {
-      return (Boolean)this.getSleepingPos().map((bedPosition) -> this.level().getBlockState(bedPosition).getBlock() instanceof AbstractBedBlock).orElse(false);
+      return (Boolean)this.getSleepingPos().map((bedPosition) -> {
+         BlockState state = this.level().getBlockState(bedPosition);
+         Block patt0$temp = state.getBlock();
+         boolean var10000;
+         if (patt0$temp instanceof AbstractBedBlock bedBlock) {
+            if (bedBlock.getSleepHeight(state, this.level(), bedPosition).isPresent()) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
+      }).orElse(false);
    }
 
    public void stopSleeping() {
@@ -3738,6 +3774,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (patt0$temp instanceof AbstractBedBlock bedBlock) {
             Direction facing = (Direction)state.getValue(BedBlock.FACING);
             this.level().setBlockAndUpdate(bedPosition, (BlockState)state.setValue(BedBlock.OCCUPIED, false));
+            bedBlock.onStopSleeping(this.level(), bedPosition);
             Vec3 standUp = (Vec3)AbstractBedBlock.findStandUpPosition(this.getType(), this.level(), bedPosition, facing, this.getYRot()).orElseGet(() -> {
                BlockPos above = bedPosition.above();
                return new Vec3((double)above.getX() + 0.5, (double)above.getY() + 0.1, (double)above.getZ() + 0.5);
@@ -3747,7 +3784,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.setPos(standUp.x, standUp.y, standUp.z);
             this.setYRot(yaw);
             this.setXRot(0.0F);
-            bedBlock.onStopSleeping(this.level(), bedPosition);
          }
 
       });
@@ -3770,7 +3806,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return ItemStack.EMPTY;
    }
 
-   private static byte entityEventForEquipmentBreak(final EquipmentSlot equipmentSlot) {
+   private static @EntityEvent.Value byte entityEventForEquipmentBreak(final EquipmentSlot equipmentSlot) {
       byte var10000;
       switch (equipmentSlot) {
          case MAINHAND -> var10000 = 47;
@@ -4003,6 +4039,65 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public static record Fallsounds(SoundEvent small, SoundEvent big) {
       public Fallsounds {
+         super();
+      }
+   }
+
+   public static class SwingState {
+      private @Nullable SwingDescription currentSwing;
+      private int ticks;
+      private float oldAnimation;
+      private float animation;
+
+      public SwingState() {
+         super();
+      }
+
+      public boolean startIfAble(final InteractionHand hand, final SwingAnimation animation, final int durationTicks) {
+         if (this.currentSwing != null && this.ticks <= this.currentSwing.durationTicks / 2 && this.ticks > 0) {
+            return false;
+         } else {
+            this.start(hand, animation, durationTicks);
+            return true;
+         }
+      }
+
+      private void start(final InteractionHand hand, final SwingAnimation animation, final int durationTicks) {
+         SwingDescription oldSwing = this.currentSwing;
+         this.currentSwing = new SwingDescription(hand, animation, durationTicks);
+         if (!this.currentSwing.equals(oldSwing)) {
+            this.oldAnimation = 0.0F;
+            this.animation = 0.0F;
+         }
+
+         this.ticks = 0;
+      }
+
+      public void tick() {
+         this.oldAnimation = this.animation;
+         if (this.currentSwing != null) {
+            this.animation = Math.min((float)this.ticks / (float)this.currentSwing.durationTicks, 1.0F);
+            if (this.ticks++ > this.currentSwing.durationTicks) {
+               this.currentSwing = null;
+               this.animation = 0.0F;
+            }
+         } else {
+            this.animation = 0.0F;
+         }
+
+      }
+
+      public float getAnimation(final float partialTicks) {
+         return this.animation >= this.oldAnimation ? Mth.lerp(partialTicks, this.oldAnimation, this.animation) : Mth.lerp(partialTicks, this.oldAnimation, this.animation + 1.0F);
+      }
+
+      public boolean isSwinging() {
+         return this.currentSwing != null;
+      }
+   }
+
+   public static record SwingDescription(InteractionHand hand, SwingAnimation animation, int durationTicks) {
+      public SwingDescription {
          super();
       }
    }

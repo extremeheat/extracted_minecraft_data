@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -131,7 +132,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          MapItemSavedData mapData = MapItem.getSavedData(mapStack, level);
          if (mapData != null) {
             ItemStack result;
-            if (additionalStack.is(Items.PAPER) && !mapData.locked && mapData.scale < 4) {
+            if (additionalStack.is(Items.PAPER) && mapStack.is(ItemTags.EXTENDABLE_MAPS) && !mapData.locked && mapData.scale < 4) {
                result = mapStack.copyWithCount(1);
                result.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
                this.broadcastChanges();

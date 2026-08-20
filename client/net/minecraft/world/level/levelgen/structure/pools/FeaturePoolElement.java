@@ -9,7 +9,6 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.data.worldgen.Pools;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.StructureManager;
@@ -28,24 +27,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 public class FeaturePoolElement extends StructurePoolElement {
    public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((e) -> e.feature), projectionCodec()).apply(i, FeaturePoolElement::new));
-   private static final Identifier DEFAULT_JIGSAW_NAME = Identifier.withDefaultNamespace("bottom");
    private final Holder<PlacedFeature> feature;
-   private final CompoundTag defaultJigsawNBT;
 
    protected FeaturePoolElement(final Holder<PlacedFeature> feature, final StructureTemplatePool.Projection projection) {
       super(projection);
       this.feature = feature;
-      this.defaultJigsawNBT = this.fillDefaultJigsawNBT();
-   }
-
-   private CompoundTag fillDefaultJigsawNBT() {
-      CompoundTag tag = new CompoundTag();
-      tag.store("name", Identifier.CODEC, DEFAULT_JIGSAW_NAME);
-      tag.putString("final_state", "minecraft:air");
-      tag.store("pool", JigsawBlockEntity.POOL_CODEC, Pools.EMPTY);
-      tag.store("target", Identifier.CODEC, JigsawBlockEntity.EMPTY_ID);
-      tag.store("joint", JigsawBlockEntity.JointType.CODEC, JigsawBlockEntity.JointType.ROLLABLE);
-      return tag;
    }
 
    public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {
@@ -53,7 +39,7 @@ public class FeaturePoolElement extends StructurePoolElement {
    }
 
    public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final RandomSource random) {
-      return List.of(StructureTemplate.JigsawBlockInfo.of(new StructureTemplate.StructureBlockInfo(position, (BlockState)Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)), this.defaultJigsawNBT)));
+      return List.of(new StructureTemplate.JigsawBlockInfo(position, (BlockState)Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)), JigsawBlockEntity.JointType.ROLLABLE, (Identifier)null, Pools.EMPTY, JigsawBlockEntity.EMPTY_ID, 0, 0));
    }
 
    public BoundingBox getBoundingBox(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation) {

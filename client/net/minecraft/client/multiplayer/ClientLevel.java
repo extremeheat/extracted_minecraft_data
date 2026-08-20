@@ -108,9 +108,9 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -429,12 +429,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    public void tickNonPassenger(final Entity entity) {
-      entity.setOldPosAndRot();
-      ++entity.tickCount;
       ProfilerFiller var10000 = Profiler.get();
       Holder var10001 = entity.typeHolder();
       Objects.requireNonNull(var10001);
       var10000.push(var10001::getRegisteredName);
+      entity.commonTick();
       entity.tick();
       Profiler.get().pop();
 
@@ -447,8 +446,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private void tickPassenger(final Entity vehicle, final Entity entity) {
       if (!entity.isRemoved() && entity.getVehicle() == vehicle) {
          if (entity instanceof Player || this.tickingEntities.contains(entity)) {
-            entity.setOldPosAndRot();
-            ++entity.tickCount;
+            entity.commonTick();
             entity.rideTick();
 
             for(Entity passenger : entity.getPassengers()) {
@@ -767,11 +765,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    }
 
-   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+   public void globalLevelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       this.levelEventHandler.globalLevelEvent(type, pos, data);
    }
 
-   public void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data) {
+   public void levelEvent(final @Nullable Entity source, final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       try {
          this.levelEventHandler.levelEvent(type, pos, data);
       } catch (Throwable t) {
@@ -1002,10 +1000,6 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public FeatureFlagSet enabledFeatures() {
       return this.connection.enabledFeatures();
-   }
-
-   public FuelValues fuelValues() {
-      return this.connection.fuelValues();
    }
 
    public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final Level.ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> secondaryParticles, final Holder<SoundEvent> explosionSound) {

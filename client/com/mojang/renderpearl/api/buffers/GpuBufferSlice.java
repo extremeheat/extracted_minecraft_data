@@ -1,5 +1,6 @@
 package com.mojang.renderpearl.api.buffers;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.ByteBuffer;
 
 public record GpuBufferSlice(GpuBuffer buffer, long offset, long length) {
@@ -19,7 +20,7 @@ public record GpuBufferSlice(GpuBuffer buffer, long offset, long length) {
       return this.buffer.map(this.offset, this.length, read, write);
    }
 
-   public static record MappedView(GpuBufferSlice slice, ByteBuffer data, Runnable onClose) implements AutoCloseable {
+   public static record MappedView(GpuBufferSlice slice, ByteBuffer data, Runnable onClose) implements UncheckedAutoCloseable {
       public MappedView {
          super();
       }

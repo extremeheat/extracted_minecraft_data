@@ -15,6 +15,7 @@ import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -243,7 +244,6 @@ public class StagedVertexBuffer implements AutoCloseable {
       }
 
       public GpuBuffer acquire(final GpuDevice device, final int minSize) {
-         this.tryRecycleBuffers();
          int roundedMinSize = Mth.roundToward(minSize, 262144);
          GpuBuffer buffer = this.takeBestAvailable(roundedMinSize, roundedMinSize * 4);
          if (buffer == null) {
@@ -285,15 +285,16 @@ public class StagedVertexBuffer implements AutoCloseable {
          }
 
          if (!this.available.isEmpty()) {
-            this.available.forEach(GpuBuffer::close);
+            this.available.forEach(UncheckedAutoCloseable::close);
             this.available.clear();
          }
 
+         this.tryRecycleBuffers();
       }
 
       public void close() {
-         this.available.forEach(GpuBuffer::close);
-         this.usedThisFrame.forEach(GpuBuffer::close);
+         this.available.forEach(UncheckedAutoCloseable::close);
+         this.usedThisFrame.forEach(UncheckedAutoCloseable::close);
          this.pendingRecycle.forEach(PendingRecycle::close);
          this.available.clear();
          this.usedThisFrame.clear();
@@ -315,7 +316,7 @@ public class StagedVertexBuffer implements AutoCloseable {
          }
 
          public void close() {
-            this.buffers.forEach(GpuBuffer::close);
+            this.buffers.forEach(UncheckedAutoCloseable::close);
             this.fence.close();
          }
       }

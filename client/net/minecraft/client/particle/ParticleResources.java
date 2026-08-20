@@ -103,10 +103,10 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.FISHING, WakeParticle.Provider::new);
       this.register(ParticleTypes.FLAME, FlameParticle.Provider::new);
       this.register(ParticleTypes.INFESTED, SpellParticle.Provider::new);
-      this.register(ParticleTypes.SCULK_SOUL, SoulParticle.EmissiveProvider::new);
+      this.register(ParticleTypes.SCULK_SOUL, EmissiveRisingParticle.EmissiveProvider::new);
       this.register(ParticleTypes.SCULK_CHARGE, SculkChargeParticle.Provider::new);
       this.register(ParticleTypes.SCULK_CHARGE_POP, SculkChargePopParticle.Provider::new);
-      this.register(ParticleTypes.SOUL, SoulParticle.Provider::new);
+      this.register(ParticleTypes.SOUL, EmissiveRisingParticle.Provider::new);
       this.register(ParticleTypes.SOUL_FIRE_FLAME, FlameParticle.Provider::new);
       this.register(ParticleTypes.FLASH, FireworkParticles.FlashProvider::new);
       this.register(ParticleTypes.HAPPY_VILLAGER, SuspendedTownParticle.HappyVillagerProvider::new);

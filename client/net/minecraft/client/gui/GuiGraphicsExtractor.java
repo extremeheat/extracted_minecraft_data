@@ -588,7 +588,7 @@ public class GuiGraphicsExtractor {
    }
 
    public void profilerChart(final List<ResultField> chartData, final int x0, final int y0, final int x1, final int y1) {
-      this.guiRenderState.addPicturesInPictureState(new GuiProfilerChartRenderState(chartData, x0, y0, x1, y1, this.scissorStack.peek()));
+      this.guiRenderState.addPicturesInPictureState(new GuiProfilerChartRenderState(new Matrix3x2f(this.pose), chartData, x0, y0, x1, y1, this.scissorStack.peek()));
    }
 
    public void setTooltipForNextFrame(final Component component, final int x, final int y) {

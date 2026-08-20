@@ -37,7 +37,6 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
          builder.put(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED);
          builder.put(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED);
          builder.put(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT);
-         builder.put(MemoryModuleType.IS_TEMPTED, MemoryStatus.VALUE_ABSENT);
          builder.put(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_PRESENT);
          builder.put(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT);
          builder.put(MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT);
@@ -64,14 +63,9 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
       return this.getTemptingPlayer(body).isPresent() && !body.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET) && !body.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
-   protected void start(final ServerLevel level, final PathfinderMob body, final long timestamp) {
-      body.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, true);
-   }
-
    protected void stop(final ServerLevel level, final PathfinderMob body, final long timestamp) {
       Brain<?> brain = body.getBrain();
       brain.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
-      brain.eraseMemory(MemoryModuleType.IS_TEMPTED);
       brain.eraseMemory(MemoryModuleType.WALK_TARGET);
       brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
    }

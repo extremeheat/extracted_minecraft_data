@@ -16,15 +16,15 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       super(properties);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return !level.getBlockState(pos.above()).propagatesSkylightDown() ? false : level.findBlocksIn(pos.offset(-1, -1, -1), pos.offset(1, 1, 1)).filterState((blockState) -> blockState.is(BlockTags.NYLIUM)).anyMatched();
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       MutableBoolean foundRed = new MutableBoolean();
       MutableBoolean foundBlue = new MutableBoolean();
       level.findBlocksIn(pos.offset(-1, -1, -1), pos.offset(1, 1, 1)).filterState((blockState) -> blockState.is(BlockTags.NYLIUM)).forEachUntil((var2, blockState) -> {

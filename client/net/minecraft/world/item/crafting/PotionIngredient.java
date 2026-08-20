@@ -9,6 +9,7 @@ import net.minecraft.core.component.predicates.PotionsPredicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -35,6 +36,11 @@ public record PotionIngredient(Ingredient ingredient, Optional<PotionsPredicate>
 
    public static PotionIngredient of(final Item item) {
       return new PotionIngredient(Ingredient.of((ItemLike)item), Optional.empty());
+   }
+
+   public static boolean isPotionInput(final ItemStack itemStack, final RecipeAccess recipeAccess) {
+      RecipePropertySet brewingInputs = recipeAccess.propertySet(RecipePropertySet.BREWING_INPUTS);
+      return brewingInputs.test(itemStack) || itemStack.is(ItemTags.BREWING_POTION_INPUTS);
    }
 
    static {

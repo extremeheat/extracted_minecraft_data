@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 public class LevelRenderState {
    public CameraRenderState cameraRenderState = new CameraRenderState();
+   public final PlayerRenderState playerRenderState = new PlayerRenderState();
    public final List<SectionUpdateRenderState> sectionUpdateRenderStates = new ArrayList();
    public final List<EntityRenderState> entityRenderStates = new ArrayList();
    public final List<BlockEntityRenderState> blockEntityRenderStates = new ArrayList();
@@ -18,11 +19,13 @@ public class LevelRenderState {
    public final SkyRenderState skyRenderState = new SkyRenderState();
    public final ParticlesRenderState particlesRenderState = new ParticlesRenderState();
    public long gameTime;
+   public float worldPartialTicks;
    public int lastEntityRenderStateCount;
    public int cloudColor;
    public float cloudHeight;
    public boolean render3dCrosshair;
    public boolean renderWireframeTerrain;
+   public boolean shouldUseMultiDrawIndirectForTerrain;
    public @Nullable Runnable playerCompiledSectionCallback;
    public ChunkLoadingRenderState chunkLoadingRenderState = new ChunkLoadingRenderState();
    public boolean shouldResetChunkLayerSampler;
@@ -35,6 +38,7 @@ public class LevelRenderState {
 
    public void reset() {
       this.sectionUpdateRenderStates.clear();
+      this.playerRenderState.reset();
       this.entityRenderStates.clear();
       this.blockEntityRenderStates.clear();
       this.blockBreakingRenderStates.clear();

@@ -60,6 +60,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.packs.repository.Pack;
@@ -120,7 +121,7 @@ public class Options {
    private final OptionInstance<Boolean> cutoutLeaves;
    private static final Component GRAPHICS_TOOLTIP_VIGNETTE = Component.translatable("options.vignette.tooltip");
    private final OptionInstance<Boolean> vignette;
-   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.tooltip");
+   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.oit.tooltip");
    private final OptionInstance<Boolean> improvedTransparency;
    private final OptionInstance<Boolean> ambientOcclusion;
    private static final Component GRAPHICS_TOOLTIP_CHUNK_FADE = Component.translatable("options.chunkFade.tooltip");
@@ -172,9 +173,12 @@ public class Options {
    public boolean joinedFirstServer;
    private final OptionInstance<Integer> biomeBlendRadius;
    private final OptionInstance<Double> mouseWheelSensitivity;
-   private final OptionInstance<Boolean> rawMouseInput;
    private static final Component ALLOW_CURSOR_CHANGES_TOOLTIP = Component.translatable("options.allowCursorChanges.tooltip");
    private final OptionInstance<Boolean> allowCursorChanges;
+   private static final Component QUIT_SHORTCUTS_TOOLTIP = Component.translatable("options.quitShortcuts.tooltip");
+   private final OptionInstance<Boolean> quitShortcuts;
+   private static final Component CTRL_CLICK_EMULATES_RIGHT_CLICK_TOOLTIP = Component.translatable("options.ctrlClickEmulatesRightClick.tooltip");
+   private final OptionInstance<Boolean> ctrlClickEmulatesRightClick;
    public int glDebugVerbosity;
    private final OptionInstance<Boolean> autoJump;
    private static final Component ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART = Component.translatable("options.rotateWithMinecart.tooltip");
@@ -207,7 +211,6 @@ public class Options {
    private final OptionInstance<Boolean> directionalAudio;
    private final OptionInstance<Boolean> backgroundForChatOnly;
    private final OptionInstance<Boolean> fullscreen;
-   private boolean exclusiveFullscreenFromStartup;
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_ON = Component.translatable("options.exclusiveFullscreen.on.tooltip");
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF = Component.translatable("options.exclusiveFullscreen.off.tooltip");
    private final OptionInstance<Boolean> exclusiveFullscreen;
@@ -308,6 +311,9 @@ public class Options {
    public static final int AUTO_GUI_SCALE = 0;
    private static final int MAX_GUI_SCALE_INCLUSIVE = 2147483646;
    private final OptionInstance<Integer> guiScale;
+   public static final int DEBUG_GUI_SCALE_UNCHANGED = -1;
+   private static final Component DEBUG_GUI_SCALE_TOOLTIP = Component.translatable("options.debugGuiScale.tooltip");
+   private final OptionInstance<Integer> debugGuiScale;
    private final OptionInstance<ParticleStatus> particles;
    private final OptionInstance<NarratorStatus> narrator;
    public String languageCode;
@@ -368,7 +374,7 @@ public class Options {
    }
 
    public boolean isRestartRequiredToApplyVideoSettings() {
-      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup || (Boolean)this.exclusiveFullscreen.get() != this.exclusiveFullscreenFromStartup;
+      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup;
    }
 
    public void applyGraphicsPreset(final GraphicsPreset value) {
@@ -547,12 +553,16 @@ public class Options {
       return this.mouseWheelSensitivity;
    }
 
-   public OptionInstance<Boolean> rawMouseInput() {
-      return this.rawMouseInput;
-   }
-
    public OptionInstance<Boolean> allowCursorChanges() {
       return this.allowCursorChanges;
+   }
+
+   public OptionInstance<Boolean> quitShortcuts() {
+      return this.quitShortcuts;
+   }
+
+   public OptionInstance<Boolean> ctrlClickEmulatesRightClick() {
+      return this.ctrlClickEmulatesRightClick;
    }
 
    public OptionInstance<Boolean> autoJump() {
@@ -784,6 +794,10 @@ public class Options {
       return this.guiScale;
    }
 
+   public OptionInstance<Integer> debugGuiScale() {
+      return this.debugGuiScale;
+   }
+
    public OptionInstance<ParticleStatus> particles() {
       return this.particles;
    }
@@ -950,17 +964,24 @@ public class Options {
          this.setGraphicsPresetToCustom();
       });
       this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.literal(String.format(Locale.ROOT, "%.2f", value))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse, false), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), OptionInstance.NO_ACTION);
-      this.rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, (value) -> {
-         Window window = Minecraft.getInstance().getWindow();
-         if (window != null) {
-            window.updateRawMouseInput(value);
-         }
-
-      });
       this.allowCursorChanges = OptionInstance.createBoolean("options.allowCursorChanges", OptionInstance.cachedConstantTooltip(ALLOW_CURSOR_CHANGES_TOOLTIP), true, (value) -> {
          Window window = Minecraft.getInstance().getWindow();
          if (window != null) {
             window.setAllowCursorChanges(value);
+         }
+
+      });
+      this.quitShortcuts = OptionInstance.createBoolean("options.quitShortcuts", OptionInstance.cachedConstantTooltip(QUIT_SHORTCUTS_TOOLTIP), true, (value) -> {
+         Window window = Minecraft.getInstance().getWindow();
+         if (window != null) {
+            window.setQuitShortcuts(value);
+         }
+
+      });
+      this.ctrlClickEmulatesRightClick = OptionInstance.createBoolean("options.ctrlClickEmulatesRightClick", OptionInstance.cachedConstantTooltip(CTRL_CLICK_EMULATES_RIGHT_CLICK_TOOLTIP), false, (value) -> {
+         Window window = Minecraft.getInstance().getWindow();
+         if (window != null) {
+            window.setMacCtrlClickEmulatesRightClick(value);
          }
 
       });
@@ -994,23 +1015,13 @@ public class Options {
       });
       this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (caption, value) -> value ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, OptionInstance.NO_ACTION);
       this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (value) -> {
-         Minecraft minecraft = Minecraft.getInstance();
-         if (minecraft.getWindow() != null && minecraft.getWindow().isFullscreen() != value) {
-            minecraft.getWindow().toggleFullScreen();
-            this.fullscreen().set(minecraft.getWindow().isFullscreen());
+         Window window = Minecraft.getInstance().getWindow();
+         if (window != null) {
+            window.setFullscreen(value);
          }
 
       });
-      this.exclusiveFullscreen = OptionInstance.createBoolean("options.exclusiveFullscreen", (value) -> {
-         List<Component> tooltipLines = new ArrayList();
-         if (value != this.exclusiveFullscreenFromStartup) {
-            tooltipLines.add(TOOLTIP_NEEDS_RESTART);
-            tooltipLines.add(CommonComponents.EMPTY);
-         }
-
-         tooltipLines.add(value ? TOOLTIP_EXCLUSIVE_FULLSCREEN_ON : TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF);
-         return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
-      }, false);
+      this.exclusiveFullscreen = OptionInstance.createBoolean("options.exclusiveFullscreen", (value) -> Tooltip.create(value ? TOOLTIP_EXCLUSIVE_FULLSCREEN_ON : TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF), false, (value) -> Minecraft.getInstance().getWindow().setExclusiveFullscreen(value));
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
       this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, OptionInstance.NO_ACTION);
       this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, OptionInstance.NO_ACTION);
@@ -1021,74 +1032,74 @@ public class Options {
       this.showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
       this.onlyShowSecureChat = OptionInstance.createBoolean("options.onlyShowSecureChat", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_ONLY_SHOW_SECURE), false);
       this.saveChatDrafts = OptionInstance.createBoolean("options.chat.drafts", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_SAVE_DRAFTS), false);
-      this.keyUp = new KeyMapping("key.forward", 87, KeyMapping.Category.MOVEMENT);
-      this.keyLeft = new KeyMapping("key.left", 65, KeyMapping.Category.MOVEMENT);
-      this.keyDown = new KeyMapping("key.back", 83, KeyMapping.Category.MOVEMENT);
-      this.keyRight = new KeyMapping("key.right", 68, KeyMapping.Category.MOVEMENT);
-      this.keyJump = new KeyMapping("key.jump", 32, KeyMapping.Category.MOVEMENT);
+      this.keyUp = new KeyMapping("key.forward", 26, KeyMapping.Category.MOVEMENT);
+      this.keyLeft = new KeyMapping("key.left", 4, KeyMapping.Category.MOVEMENT);
+      this.keyDown = new KeyMapping("key.back", 22, KeyMapping.Category.MOVEMENT);
+      this.keyRight = new KeyMapping("key.right", 7, KeyMapping.Category.MOVEMENT);
+      this.keyJump = new KeyMapping("key.jump", 44, KeyMapping.Category.MOVEMENT);
       KeyMapping.Category var10005 = KeyMapping.Category.MOVEMENT;
       OptionInstance var10006 = this.toggleCrouch;
       Objects.requireNonNull(var10006);
-      this.keyShift = new ToggleKeyMapping("key.sneak", 340, var10005, var10006::get, true);
+      this.keyShift = new ToggleKeyMapping("key.sneak", 225, var10005, var10006::get, true);
       var10005 = KeyMapping.Category.MOVEMENT;
       var10006 = this.toggleSprint;
       Objects.requireNonNull(var10006);
-      this.keySprint = new ToggleKeyMapping("key.sprint", 341, var10005, var10006::get, true);
-      this.keyInventory = new KeyMapping("key.inventory", 69, KeyMapping.Category.INVENTORY);
-      this.keySwapOffhand = new KeyMapping("key.swapOffhand", 70, KeyMapping.Category.INVENTORY);
-      this.keyDrop = new KeyMapping("key.drop", 81, KeyMapping.Category.INVENTORY);
+      this.keySprint = new ToggleKeyMapping("key.sprint", 224, var10005, var10006::get, true);
+      this.keyInventory = new KeyMapping("key.inventory", 8, KeyMapping.Category.INVENTORY);
+      this.keySwapOffhand = new KeyMapping("key.swapOffhand", 9, KeyMapping.Category.INVENTORY);
+      this.keyDrop = new KeyMapping("key.drop", 20, KeyMapping.Category.INVENTORY);
       InputConstants.Type var10004 = InputConstants.Type.MOUSE;
       KeyMapping.Category var7 = KeyMapping.Category.GAMEPLAY;
       OptionInstance var10007 = this.toggleUse;
       Objects.requireNonNull(var10007);
-      this.keyUse = new ToggleKeyMapping("key.use", var10004, 1, var7, var10007::get, false);
+      this.keyUse = new ToggleKeyMapping("key.use", var10004, 3, var7, var10007::get, false);
       var10004 = InputConstants.Type.MOUSE;
       var7 = KeyMapping.Category.GAMEPLAY;
       var10007 = this.toggleAttack;
       Objects.requireNonNull(var10007);
-      this.keyAttack = new ToggleKeyMapping("key.attack", var10004, 0, var7, var10007::get, true);
+      this.keyAttack = new ToggleKeyMapping("key.attack", var10004, 1, var7, var10007::get, true);
       this.keyPickItem = new KeyMapping("key.pickItem", InputConstants.Type.MOUSE, 2, KeyMapping.Category.GAMEPLAY);
-      this.keyChat = new KeyMapping("key.chat", 84, KeyMapping.Category.MULTIPLAYER);
-      this.keyPlayerList = new KeyMapping("key.playerlist", 258, KeyMapping.Category.MULTIPLAYER);
-      this.keyCommand = new KeyMapping("key.command", 47, KeyMapping.Category.MULTIPLAYER);
-      this.keyFriends = new KeyMapping("key.friends", 79, KeyMapping.Category.MULTIPLAYER);
-      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 80, KeyMapping.Category.MULTIPLAYER);
-      this.keyScreenshot = new KeyMapping("key.screenshot", 291, KeyMapping.Category.MISC);
-      this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, KeyMapping.Category.MISC);
+      this.keyChat = new KeyMapping("key.chat", 23, KeyMapping.Category.MULTIPLAYER);
+      this.keyPlayerList = new KeyMapping("key.playerlist", 43, KeyMapping.Category.MULTIPLAYER);
+      this.keyCommand = new KeyMapping("key.command", 56, KeyMapping.Category.MULTIPLAYER);
+      this.keyFriends = new KeyMapping("key.friends", 18, KeyMapping.Category.MULTIPLAYER);
+      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 19, KeyMapping.Category.MULTIPLAYER);
+      this.keyScreenshot = new KeyMapping("key.screenshot", 59, KeyMapping.Category.MISC);
+      this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 62, KeyMapping.Category.MISC);
       this.keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
-      this.keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
-      this.keyAdvancements = new KeyMapping("key.advancements", 76, KeyMapping.Category.MISC);
-      this.keyQuickActions = new KeyMapping("key.quickActions", 71, KeyMapping.Category.MISC);
-      this.keyToggleGui = new KeyMapping("key.toggleGui", 290, KeyMapping.Category.MISC);
-      this.keyToggleSpectatorShaderEffects = new KeyMapping("key.toggleSpectatorShaderEffects", 293, KeyMapping.Category.MISC);
-      this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.2", 50, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.3", 51, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.4", 52, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.5", 53, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.6", 54, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.7", 55, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.8", 56, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.9", 57, KeyMapping.Category.INVENTORY)};
-      this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, KeyMapping.Category.CREATIVE);
-      this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, KeyMapping.Category.CREATIVE);
+      this.keyFullscreen = new KeyMapping("key.fullscreen", 68, KeyMapping.Category.MISC);
+      this.keyAdvancements = new KeyMapping("key.advancements", 15, KeyMapping.Category.MISC);
+      this.keyQuickActions = new KeyMapping("key.quickActions", 10, KeyMapping.Category.MISC);
+      this.keyToggleGui = new KeyMapping("key.toggleGui", 58, KeyMapping.Category.MISC);
+      this.keyToggleSpectatorShaderEffects = new KeyMapping("key.toggleSpectatorShaderEffects", 61, KeyMapping.Category.MISC);
+      this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 30, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.2", 31, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.3", 32, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.4", 33, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.5", 34, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.6", 35, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.7", 36, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.8", 37, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.9", 38, KeyMapping.Category.INVENTORY)};
+      this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 6, KeyMapping.Category.CREATIVE);
+      this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 27, KeyMapping.Category.CREATIVE);
       this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.SPECTATOR);
       this.keySpectatorHotbar = new KeyMapping("key.spectatorHotbar", InputConstants.Type.MOUSE, 2, KeyMapping.Category.SPECTATOR);
-      this.keyDebugOverlay = new KeyMapping("key.debug.overlay", InputConstants.Type.KEYSYM, 292, KeyMapping.Category.DEBUG, -2);
-      this.keyDebugModifier = new KeyMapping("key.debug.modifier", InputConstants.Type.KEYSYM, 292, KeyMapping.Category.DEBUG, -1);
-      this.keyDebugCrash = new KeyMapping("key.debug.crash", InputConstants.Type.KEYSYM, 67, KeyMapping.Category.DEBUG);
-      this.keyDebugReloadChunk = new KeyMapping("key.debug.reloadChunk", InputConstants.Type.KEYSYM, 65, KeyMapping.Category.DEBUG);
-      this.keyDebugShowHitboxes = new KeyMapping("key.debug.showHitboxes", InputConstants.Type.KEYSYM, 66, KeyMapping.Category.DEBUG);
-      this.keyDebugClearChat = new KeyMapping("key.debug.clearChat", InputConstants.Type.KEYSYM, 68, KeyMapping.Category.DEBUG);
-      this.keyDebugShowChunkBorders = new KeyMapping("key.debug.showChunkBorders", InputConstants.Type.KEYSYM, 71, KeyMapping.Category.DEBUG);
-      this.keyDebugShowAdvancedTooltips = new KeyMapping("key.debug.showAdvancedTooltips", InputConstants.Type.KEYSYM, 72, KeyMapping.Category.DEBUG);
-      this.keyDebugCopyRecreateCommand = new KeyMapping("key.debug.copyRecreateCommand", InputConstants.Type.KEYSYM, 73, KeyMapping.Category.DEBUG);
-      this.keyDebugSpectate = new KeyMapping("key.debug.spectate", InputConstants.Type.KEYSYM, 78, KeyMapping.Category.DEBUG);
-      this.keyDebugSwitchGameMode = new KeyMapping("key.debug.switchGameMode", InputConstants.Type.KEYSYM, 293, KeyMapping.Category.DEBUG);
-      this.keyDebugDebugOptions = new KeyMapping("key.debug.debugOptions", InputConstants.Type.KEYSYM, 295, KeyMapping.Category.DEBUG);
-      this.keyDebugFocusPause = new KeyMapping("key.debug.focusPause", InputConstants.Type.KEYSYM, 80, KeyMapping.Category.DEBUG);
-      this.keyDebugDumpDynamicTextures = new KeyMapping("key.debug.dumpDynamicTextures", InputConstants.Type.KEYSYM, 83, KeyMapping.Category.DEBUG);
-      this.keyDebugReloadResourcePacks = new KeyMapping("key.debug.reloadResourcePacks", InputConstants.Type.KEYSYM, 84, KeyMapping.Category.DEBUG);
-      this.keyDebugProfiling = new KeyMapping("key.debug.profiling", InputConstants.Type.KEYSYM, 76, KeyMapping.Category.DEBUG);
-      this.keyDebugCopyLocation = new KeyMapping("key.debug.copyLocation", InputConstants.Type.KEYSYM, 67, KeyMapping.Category.DEBUG);
-      this.keyDebugDumpVersion = new KeyMapping("key.debug.dumpVersion", InputConstants.Type.KEYSYM, 86, KeyMapping.Category.DEBUG);
-      this.keyDebugPofilingChart = new KeyMapping("key.debug.profilingChart", InputConstants.Type.KEYSYM, 49, KeyMapping.Category.DEBUG, 1);
-      this.keyDebugFpsCharts = new KeyMapping("key.debug.fpsCharts", InputConstants.Type.KEYSYM, 50, KeyMapping.Category.DEBUG, 2);
-      this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYSYM, 51, KeyMapping.Category.DEBUG, 3);
-      this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYSYM, 52, KeyMapping.Category.DEBUG, 4);
-      this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYSYM, 88, KeyMapping.Category.DEBUG);
+      this.keyDebugOverlay = new KeyMapping("key.debug.overlay", InputConstants.Type.KEYBOARD, 60, KeyMapping.Category.DEBUG, -2);
+      this.keyDebugModifier = new KeyMapping("key.debug.modifier", InputConstants.Type.KEYBOARD, 60, KeyMapping.Category.DEBUG, -1);
+      this.keyDebugCrash = new KeyMapping("key.debug.crash", InputConstants.Type.KEYBOARD, 6, KeyMapping.Category.DEBUG);
+      this.keyDebugReloadChunk = new KeyMapping("key.debug.reloadChunk", InputConstants.Type.KEYBOARD, 4, KeyMapping.Category.DEBUG);
+      this.keyDebugShowHitboxes = new KeyMapping("key.debug.showHitboxes", InputConstants.Type.KEYBOARD, 5, KeyMapping.Category.DEBUG);
+      this.keyDebugClearChat = new KeyMapping("key.debug.clearChat", InputConstants.Type.KEYBOARD, 7, KeyMapping.Category.DEBUG);
+      this.keyDebugShowChunkBorders = new KeyMapping("key.debug.showChunkBorders", InputConstants.Type.KEYBOARD, 10, KeyMapping.Category.DEBUG);
+      this.keyDebugShowAdvancedTooltips = new KeyMapping("key.debug.showAdvancedTooltips", InputConstants.Type.KEYBOARD, 11, KeyMapping.Category.DEBUG);
+      this.keyDebugCopyRecreateCommand = new KeyMapping("key.debug.copyRecreateCommand", InputConstants.Type.KEYBOARD, 12, KeyMapping.Category.DEBUG);
+      this.keyDebugSpectate = new KeyMapping("key.debug.spectate", InputConstants.Type.KEYBOARD, 17, KeyMapping.Category.DEBUG);
+      this.keyDebugSwitchGameMode = new KeyMapping("key.debug.switchGameMode", InputConstants.Type.KEYBOARD, 61, KeyMapping.Category.DEBUG);
+      this.keyDebugDebugOptions = new KeyMapping("key.debug.debugOptions", InputConstants.Type.KEYBOARD, 63, KeyMapping.Category.DEBUG);
+      this.keyDebugFocusPause = new KeyMapping("key.debug.focusPause", InputConstants.Type.KEYBOARD, 19, KeyMapping.Category.DEBUG);
+      this.keyDebugDumpDynamicTextures = new KeyMapping("key.debug.dumpDynamicTextures", InputConstants.Type.KEYBOARD, 22, KeyMapping.Category.DEBUG);
+      this.keyDebugReloadResourcePacks = new KeyMapping("key.debug.reloadResourcePacks", InputConstants.Type.KEYBOARD, 23, KeyMapping.Category.DEBUG);
+      this.keyDebugProfiling = new KeyMapping("key.debug.profiling", InputConstants.Type.KEYBOARD, 15, KeyMapping.Category.DEBUG);
+      this.keyDebugCopyLocation = new KeyMapping("key.debug.copyLocation", InputConstants.Type.KEYBOARD, 6, KeyMapping.Category.DEBUG);
+      this.keyDebugDumpVersion = new KeyMapping("key.debug.dumpVersion", InputConstants.Type.KEYBOARD, 25, KeyMapping.Category.DEBUG);
+      this.keyDebugPofilingChart = new KeyMapping("key.debug.profilingChart", InputConstants.Type.KEYBOARD, 30, KeyMapping.Category.DEBUG, 1);
+      this.keyDebugFpsCharts = new KeyMapping("key.debug.fpsCharts", InputConstants.Type.KEYBOARD, 31, KeyMapping.Category.DEBUG, 2);
+      this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYBOARD, 32, KeyMapping.Category.DEBUG, 3);
+      this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYBOARD, 33, KeyMapping.Category.DEBUG, 4);
+      this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYBOARD, 27, KeyMapping.Category.DEBUG);
       this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode};
       this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
@@ -1131,6 +1142,20 @@ public class Options {
          Minecraft minecraft = Minecraft.getInstance();
          return !minecraft.isRunning() ? 2147483646 : minecraft.getWindow().calculateScale(0, minecraft.isEnforceUnicode());
       }, 2147483646), 0, (var1) -> this.minecraft.resizeGui());
+      this.debugGuiScale = new OptionInstance<Integer>("options.guiScale", OptionInstance.cachedConstantTooltip(DEBUG_GUI_SCALE_TOOLTIP), (caption, value) -> {
+         MutableComponent var10000;
+         switch (value) {
+            case -1 -> var10000 = Component.translatable("options.debugGuiScale.unchanged");
+            case 0 -> var10000 = Component.translatable("options.guiScale.auto");
+            default -> var10000 = Component.literal(Integer.toString(value));
+         }
+
+         return var10000;
+      }, new OptionInstance.ClampingLazyMaxIntRange(-1, () -> {
+         Minecraft minecraft = Minecraft.getInstance();
+         return !minecraft.isRunning() ? 2147483646 : minecraft.getWindow().calculateScale(0, minecraft.isEnforceUnicode());
+      }, 2147483646), 0, (var0) -> {
+      });
       this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (var1) -> this.setGraphicsPresetToCustom());
       this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (caption, value) -> (Component)(this.minecraft.getNarrator().isActive() ? value.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (value) -> this.minecraft.getNarrator().updateNarratorStatus(value));
       this.languageCode = "en_us";
@@ -1192,6 +1217,7 @@ public class Options {
       access.process("exclusiveFullscreen", this.exclusiveFullscreen);
       access.process("gamma", this.gamma);
       access.process("guiScale", this.guiScale);
+      access.process("debugGuiScale", this.debugGuiScale);
       access.process("maxAnisotropyBit", this.maxAnisotropyBit);
       access.process("textureFiltering", this.textureFiltering);
       access.process("maxFps", this.framerateLimit);
@@ -1273,8 +1299,9 @@ public class Options {
       access.process("attackIndicator", this.attackIndicator);
       this.tutorialStep = (TutorialSteps)access.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
       access.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
-      access.process("rawMouseInput", this.rawMouseInput);
       access.process("allowCursorChanges", this.allowCursorChanges);
+      access.process("quitShortcuts", this.quitShortcuts);
+      access.process("ctrlClickEmulatesRightClick", this.ctrlClickEmulatesRightClick);
       this.glDebugVerbosity = access.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = access.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
       access.process("hideMatchedNames", this.hideMatchedNames);
@@ -1444,7 +1471,6 @@ public class Options {
       }
 
       this.preferredGraphicsBackendFromStartup = this.preferredGraphicsBackend.get();
-      this.exclusiveFullscreenFromStartup = (Boolean)this.exclusiveFullscreen.get();
    }
 
    private static boolean isTrue(final String value) {

@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -203,7 +204,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return Crackiness.GOLEM.byFraction(this.getHealth() / this.getMaxHealth());
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.attackAnimationTick = 10;
          this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);

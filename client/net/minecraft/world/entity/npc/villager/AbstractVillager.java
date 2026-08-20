@@ -221,9 +221,9 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
          LootContext lootContext = (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED, Unit.INSTANCE).create(LootContextParamSets.VILLAGER_TRADE))).create(tradeSet.randomSequence());
          int numberOfOffers = tradeSet.calculateNumberOfTrades(lootContext);
          if (tradeSet.allowDuplicates()) {
-            addOffersFromItemListings(lootContext, offers, tradeSet.getTrades(), numberOfOffers);
+            addOffersFromItemListings(lootContext, offers, tradeSet.trades(), numberOfOffers);
          } else {
-            addOffersFromItemListingsWithoutDuplicates(lootContext, offers, tradeSet.getTrades(), numberOfOffers);
+            addOffersFromItemListingsWithoutDuplicates(lootContext, offers, tradeSet.trades(), numberOfOffers);
          }
 
       }

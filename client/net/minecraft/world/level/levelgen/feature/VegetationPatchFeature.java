@@ -11,8 +11,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -39,7 +39,7 @@ public class VegetationPatchFeature implements Feature {
    protected final float extraEdgeColumnChance;
 
    protected static <T extends VegetationPatchFeature> MapCodec<T> makeCodec(final Function10<HolderSet<Block>, BlockStateProvider, Holder<PlacedFeature>, CaveSurface, IntProvider, Float, Integer, Float, IntProvider, Float, T> constructor) {
-      return RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("replaceable").forGetter((f) -> f.replaceable), BlockStateProvider.CODEC.fieldOf("ground_state").forGetter((f) -> f.groundState), PlacedFeature.CODEC.fieldOf("vegetation_feature").forGetter((f) -> f.vegetationFeature), CaveSurface.CODEC.fieldOf("surface").forGetter((f) -> f.surface), IntProviders.codec(1, 128).fieldOf("depth").forGetter((f) -> f.depth), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_bottom_block_chance").forGetter((f) -> f.extraBottomBlockChance), Codec.intRange(1, 256).fieldOf("vertical_range").forGetter((f) -> f.verticalRange), Codec.floatRange(0.0F, 1.0F).fieldOf("vegetation_chance").forGetter((f) -> f.vegetationChance), IntProviders.CODEC.fieldOf("xz_radius").forGetter((f) -> f.xzRadius), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_edge_column_chance").forGetter((f) -> f.extraEdgeColumnChance)).apply(i, constructor));
+      return RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("replaceable").forGetter((f) -> f.replaceable), BlockStateProvider.CODEC.fieldOf("ground_state").forGetter((f) -> f.groundState), PlacedFeature.CODEC.fieldOf("vegetation_feature").forGetter((f) -> f.vegetationFeature), CaveSurface.CODEC.fieldOf("surface").forGetter((f) -> f.surface), IntProviders.codec(1, 128).fieldOf("depth").forGetter((f) -> f.depth), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_bottom_block_chance").forGetter((f) -> f.extraBottomBlockChance), Codec.intRange(1, 256).fieldOf("vertical_range").forGetter((f) -> f.verticalRange), Codec.floatRange(0.0F, 1.0F).fieldOf("vegetation_chance").forGetter((f) -> f.vegetationChance), IntProviders.CODEC.fieldOf("xz_radius").forGetter((f) -> f.xzRadius), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_edge_column_chance").forGetter((f) -> f.extraEdgeColumnChance)).apply(i, constructor));
    }
 
    public VegetationPatchFeature(final HolderSet<Block> replaceable, final BlockStateProvider groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {

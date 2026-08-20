@@ -160,8 +160,8 @@ public class TradeSets {
       return register(context, resourceKey, tradeTag, ConstantValue.exactly(2.0F));
    }
 
-   public static Holder.Reference<TradeSet> register(final BootstrapContext<TradeSet> context, final ResourceKey<TradeSet> resourceKey, final TagKey<VillagerTrade> tradeTag, final NumberProvider numberProvider) {
-      return context.register(resourceKey, new TradeSet(context.lookup(Registries.VILLAGER_TRADE).getOrThrow(tradeTag), numberProvider, false, Optional.of(resourceKey.identifier().withPrefix("trade_set/"))));
+   public static Holder.Reference<TradeSet> register(final BootstrapContext<TradeSet> context, final ResourceKey<TradeSet> resourceKey, final TagKey<VillagerTrade> tradeTag, final Holder<NumberProvider> amount) {
+      return context.register(resourceKey, new TradeSet(context.lookup(Registries.VILLAGER_TRADE).getOrThrow(tradeTag), amount, false, Optional.of(resourceKey.identifier().withPrefix("trade_set/"))));
    }
 
    public static ResourceKey<TradeSet> resourceKey(final String path) {

@@ -51,18 +51,20 @@ public class GiveCommand {
                ItemStack copyToDrop = prototypeItemStack.copyWithCount(size);
                boolean added = player.getInventory().add(copyToDrop);
                if (added && copyToDrop.isEmpty()) {
-                  ItemEntity drop = player.drop(prototypeItemStack.copy(), false);
+                  ItemEntity drop = player.createItemStackToDrop(prototypeItemStack.copy(), false, false);
                   if (drop != null) {
                      drop.makeFakeItem();
+                     drop.level().addFreshEntity(drop);
                   }
 
                   player.level().playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                   player.containerMenu.broadcastChanges();
                } else {
-                  ItemEntity drop = player.drop(copyToDrop, false);
+                  ItemEntity drop = player.createItemStackToDrop(copyToDrop, false, false);
                   if (drop != null) {
                      drop.setNoPickUpDelay();
                      drop.setTarget(player.getUUID());
+                     drop.level().addFreshEntity(drop);
                   }
                }
             }

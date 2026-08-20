@@ -6,9 +6,9 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -46,6 +46,7 @@ import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import net.minecraft.world.entity.npc.villager.VillagerType;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.food.VillagerFood;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.JukeboxPlayable;
@@ -55,10 +56,12 @@ import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.BrewingFuel;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.DamageResistant;
@@ -74,8 +77,8 @@ import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.MapDecorations;
-import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.world.item.component.MobVisibility;
 import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -105,6 +108,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class DataComponents {
@@ -149,13 +153,14 @@ public class DataComponents {
    public static final DataComponentType<BlocksAttacks> BLOCKS_ATTACKS = register("blocks_attacks", (b) -> b.persistent(BlocksAttacks.CODEC).networkSynchronized(BlocksAttacks.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<PiercingWeapon> PIERCING_WEAPON = register("piercing_weapon", (b) -> b.persistent(PiercingWeapon.CODEC).networkSynchronized(PiercingWeapon.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<KineticWeapon> KINETIC_WEAPON = register("kinetic_weapon", (b) -> b.persistent(KineticWeapon.CODEC).networkSynchronized(KineticWeapon.STREAM_CODEC).cacheEncoding());
-   public static final DataComponentType<SwingAnimation> SWING_ANIMATION = register("swing_animation", (b) -> b.persistent(SwingAnimation.CODEC).networkSynchronized(SwingAnimation.STREAM_CODEC));
+   public static final DataComponentType<SwingAnimation> ATTACK_ANIMATION = register("attack_animation", (b) -> b.persistent(SwingAnimation.CODEC).networkSynchronized(SwingAnimation.STREAM_CODEC));
+   public static final DataComponentType<SwingAnimation> INTERACT_ANIMATION = register("interact_animation", (b) -> b.persistent(SwingAnimation.CODEC).networkSynchronized(SwingAnimation.STREAM_CODEC));
    public static final DataComponentType<Integer> ADDITIONAL_TRADE_COST = register("additional_trade_cost", (b) -> b.networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<BlockTransformer> BLOCK_TRANSFORMER = register("block_transformer", (b) -> b.persistent(BlockTransformer.CODEC).networkSynchronized(BlockTransformer.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<VillagerFood> VILLAGER_FOOD = register("villager_food", (b) -> b.persistent(VillagerFood.CODEC).networkSynchronized(VillagerFood.STREAM_CODEC));
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register("stored_enchantments", (b) -> b.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<DyeColor> DYE = register("dye", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyedItemColor> DYED_COLOR = register("dyed_color", (b) -> b.persistent(DyedItemColor.CODEC).networkSynchronized(DyedItemColor.STREAM_CODEC));
-   public static final DataComponentType<MapItemColor> MAP_COLOR = register("map_color", (b) -> b.persistent(MapItemColor.CODEC).networkSynchronized(MapItemColor.STREAM_CODEC));
    public static final DataComponentType<MapId> MAP_ID = register("map_id", (b) -> b.persistent(MapId.CODEC).networkSynchronized(MapId.STREAM_CODEC));
    public static final DataComponentType<MapDecorations> MAP_DECORATIONS = register("map_decorations", (b) -> b.persistent(MapDecorations.CODEC).cacheEncoding());
    public static final DataComponentType<MapPostProcessing> MAP_POST_PROCESSING = register("map_post_processing", (b) -> b.networkSynchronized(MapPostProcessing.STREAM_CODEC));
@@ -175,7 +180,7 @@ public class DataComponents {
    public static final DataComponentType<Holder<TrimMaterial>> PROVIDES_TRIM_MATERIAL = register("provides_trim_material", (b) -> b.persistent(TrimMaterial.CODEC).networkSynchronized(TrimMaterial.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<OminousBottleAmplifier> OMINOUS_BOTTLE_AMPLIFIER = register("ominous_bottle_amplifier", (b) -> b.persistent(OminousBottleAmplifier.CODEC).networkSynchronized(OminousBottleAmplifier.STREAM_CODEC));
    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register("jukebox_playable", (b) -> b.persistent(JukeboxPlayable.CODEC).networkSynchronized(JukeboxPlayable.STREAM_CODEC));
-   public static final DataComponentType<HolderSet<BannerPattern>> PROVIDES_BANNER_PATTERNS = register("provides_banner_patterns", (b) -> b.persistent(RegistryCodecs.homogeneousList(Registries.BANNER_PATTERN)).networkSynchronized(ByteBufCodecs.holderSet(Registries.BANNER_PATTERN)).cacheEncoding());
+   public static final DataComponentType<HolderSet<BannerPattern>> PROVIDES_BANNER_PATTERNS = register("provides_banner_patterns", (b) -> b.persistent(RegistryCodecs.holderSet(Registries.BANNER_PATTERN)).networkSynchronized(ByteBufCodecs.holderSet(Registries.BANNER_PATTERN)).cacheEncoding());
    public static final DataComponentType<List<ResourceKey<Recipe<?>>>> RECIPES = register("recipes", (b) -> b.persistent(Recipe.KEY_CODEC.listOf()).cacheEncoding());
    public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register("lodestone_tracker", (b) -> b.persistent(LodestoneTracker.CODEC).networkSynchronized(LodestoneTracker.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<FireworkExplosion> FIREWORK_EXPLOSION = register("firework_explosion", (b) -> b.persistent(FireworkExplosion.CODEC).networkSynchronized(FireworkExplosion.STREAM_CODEC).cacheEncoding());
@@ -193,6 +198,9 @@ public class DataComponents {
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", (b) -> b.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentType<Holder<SoundEvent>> BREAK_SOUND = register("break_sound", (b) -> b.persistent(SoundEvent.CODEC).networkSynchronized(SoundEvent.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Compostable> COMPOSTABLE = register("compostable", (b) -> b.persistent(Compostable.CODEC).networkSynchronized(Compostable.STREAM_CODEC));
+   public static final DataComponentType<CookingFuel> COOKING_FUEL = register("cooking_fuel", (b) -> b.persistent(CookingFuel.CODEC).networkSynchronized(CookingFuel.STREAM_CODEC));
+   public static final DataComponentType<BrewingFuel> BREWING_FUEL = register("brewing_fuel", (b) -> b.persistent(BrewingFuel.CODEC).networkSynchronized(BrewingFuel.STREAM_CODEC));
+   public static final DataComponentType<MobVisibility> MOB_VISIBILITY = register("mob_visibility", (b) -> b.persistent(MobVisibility.CODEC).networkSynchronized(MobVisibility.STREAM_CODEC));
    public static final DataComponentType<Holder<VillagerType>> VILLAGER_VARIANT = register("villager/variant", (b) -> b.persistent(VillagerType.CODEC).networkSynchronized(VillagerType.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfVariant>> WOLF_VARIANT = register("wolf/variant", (b) -> b.persistent(WolfVariant.CODEC).networkSynchronized(WolfVariant.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT = register("wolf/sound_variant", (b) -> b.persistent(WolfSoundVariant.CODEC).networkSynchronized(WolfSoundVariant.STREAM_CODEC));
@@ -223,6 +231,10 @@ public class DataComponents {
    public static final DataComponentType<DyeColor> SHEEP_COLOR = register("sheep/color", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyeColor> SHULKER_COLOR = register("shulker/color", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<Holder<DecoratedPotPattern>> PROVIDES_POTTERY_PATTERN = register("provides_pottery_pattern", (b) -> b.persistent(DecoratedPotPatterns.CODEC).networkSynchronized(DecoratedPotPatterns.STREAM_CODEC));
+   public static final DataComponentType<SignText> SIGN_TEXT_FRONT = register("sign_text_front", (b) -> b.persistent(SignText.CODEC).networkSynchronized(SignText.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<SignText> SIGN_TEXT_BACK = register("sign_text_back", (b) -> b.persistent(SignText.CODEC).networkSynchronized(SignText.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<Unit> WAXED = register("waxed", (b) -> b.persistent(Unit.CODEC).networkSynchronized(Unit.STREAM_CODEC));
+   public static final DataComponentType<DyeColor> CUSHION_COLOR = register("cushion/color", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentMap COMMON_ITEM_COMPONENTS;
 
    public DataComponents() {
@@ -238,6 +250,6 @@ public class DataComponents {
    }
 
    static {
-      COMMON_ITEM_COMPONENTS = DataComponentMap.builder().set(MAX_STACK_SIZE, 64).set(LORE, ItemLore.EMPTY).set(ENCHANTMENTS, ItemEnchantments.EMPTY).set(REPAIR_COST, 0).set(USE_EFFECTS, UseEffects.DEFAULT).set(ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).set(RARITY, Rarity.COMMON).set(BREAK_SOUND, SoundEvents.ITEM_BREAK).set(TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).set(SWING_ANIMATION, SwingAnimation.DEFAULT).build();
+      COMMON_ITEM_COMPONENTS = DataComponentMap.builder().set(MAX_STACK_SIZE, 64).set(LORE, ItemLore.EMPTY).set(ENCHANTMENTS, ItemEnchantments.EMPTY).set(REPAIR_COST, 0).set(USE_EFFECTS, UseEffects.DEFAULT).set(ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).set(RARITY, Rarity.COMMON).set(BREAK_SOUND, SoundEvents.ITEM_BREAK).set(TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).set(ATTACK_ANIMATION, SwingAnimation.DEFAULT).set(INTERACT_ANIMATION, SwingAnimation.DEFAULT).build();
    }
 }

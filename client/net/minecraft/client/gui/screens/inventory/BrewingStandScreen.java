@@ -31,14 +31,16 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       int yo = (this.height - this.imageHeight) / 2;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BREWING_STAND_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int fuel = ((BrewingStandMenu)this.menu).getFuel();
-      int fuelLength = Mth.clamp((18 * fuel + 20 - 1) / 20, 0, 18);
+      int totalFuel = ((BrewingStandMenu)this.menu).getTotalFuel();
+      int fuelLength = totalFuel > 0 ? Mth.clamp(Mth.positiveCeilDiv(18 * fuel, totalFuel), 0, 18) : 0;
       if (fuelLength > 0) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FUEL_LENGTH_SPRITE, 18, 4, 0, 0, xo + 60, yo + 44, fuelLength, 4);
       }
 
       int tickCount = ((BrewingStandMenu)this.menu).getBrewingTicks();
-      if (tickCount > 0) {
-         int length = (int)(28.0F * (1.0F - (float)tickCount / 400.0F));
+      int totalTickCount = ((BrewingStandMenu)this.menu).getTotalBrewingTicks();
+      if (tickCount > 0 && totalTickCount > 0) {
+         int length = (int)(28.0F * (1.0F - (float)tickCount / (float)totalTickCount));
          if (length > 0) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BREW_PROGRESS_SPRITE, 9, 28, 0, 0, xo + 97, yo + 16, 9, length);
          }

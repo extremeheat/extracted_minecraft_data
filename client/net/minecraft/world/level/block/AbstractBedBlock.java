@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -67,42 +69,50 @@ public abstract class AbstractBedBlock extends HorizontalDirectionalBlock {
       return Stats.SLEEP_IN_BED;
    }
 
-   public double getSleepHeight(final BlockState state, final Level level, final BlockPos pos) {
-      return state.getShape(level, pos).max(Direction.Axis.Y);
+   public OptionalDouble getSleepHeight(final BlockState state, final Level level, final BlockPos pos) {
+      if (!state.is(this)) {
+         return OptionalDouble.empty();
+      } else {
+         VoxelShape shape = state.getShape(level, pos);
+         return shape.isEmpty() ? OptionalDouble.empty() : OptionalDouble.of(shape.max(Direction.Axis.Y));
+      }
    }
 
    protected InteractionResult useWithoutItem(BlockState state, final Level level, BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (level.isClientSide()) {
          return InteractionResult.SUCCESS_SERVER;
       } else {
-         if (state.getValue(PART) != BedPart.HEAD) {
-            pos = pos.relative((Direction)state.getValue(FACING));
-            state = level.getBlockState(pos);
-            if (!state.is(this)) {
-               return InteractionResult.CONSUME;
-            }
-         }
-
-         BedRule bedRule = this.getBedRule(level, pos);
-         if (bedRule.destroyOnUse()) {
-            Optional var10000 = bedRule.errorMessage();
-            Objects.requireNonNull(player);
-            var10000.ifPresent(player::sendOverlayMessage);
-            return this.destroyOnUse(state, level, pos, player);
-         } else if ((Boolean)state.getValue(OCCUPIED)) {
-            if (!this.kickVillagerOutOfBed(level, pos)) {
-               player.sendOverlayMessage(Component.translatable("block.minecraft.bed.occupied"));
+         BedPart part = (BedPart)state.getValue(PART);
+         BlockState otherState = level.getBlockState(pos.relative(getNeighbourDirection(part, (Direction)state.getValue(FACING))));
+         if (otherState.is(this) && otherState.getValue(PART) != part) {
+            if (part != BedPart.HEAD) {
+               pos = pos.relative((Direction)state.getValue(FACING));
+               state = level.getBlockState(pos);
             }
 
-            return InteractionResult.SUCCESS_SERVER;
-         } else {
-            player.startSleepInBed(this, state, bedRule, pos).ifLeft((problem) -> {
-               if (problem.message() != null) {
-                  player.sendOverlayMessage(problem.message());
+            BedRule bedRule = this.getBedRule(level, pos);
+            if (bedRule.destroyOnUse()) {
+               Optional var10000 = bedRule.errorMessage();
+               Objects.requireNonNull(player);
+               var10000.ifPresent(player::sendOverlayMessage);
+               return this.destroyOnUse(state, level, pos, player);
+            } else if ((Boolean)state.getValue(OCCUPIED)) {
+               if (!this.kickVillagerOutOfBed(level, pos)) {
+                  player.sendOverlayMessage(Component.translatable("block.minecraft.bed.occupied"));
                }
 
-            });
-            return InteractionResult.SUCCESS_SERVER;
+               return InteractionResult.SUCCESS_SERVER;
+            } else {
+               player.startSleepInBed(this, state, bedRule, pos).ifLeft((problem) -> {
+                  if (problem.message() != null) {
+                     player.sendOverlayMessage(problem.message());
+                  }
+
+               });
+               return InteractionResult.SUCCESS_SERVER;
+            }
+         } else {
+            return InteractionResult.CONSUME;
          }
       }
    }

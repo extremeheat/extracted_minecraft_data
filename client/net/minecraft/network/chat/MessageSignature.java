@@ -2,11 +2,13 @@ package net.minecraft.network.chat;
 
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.VarInt;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
@@ -14,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 public record MessageSignature(byte[] bytes) {
    public static final Codec<MessageSignature> CODEC;
+   public static final StreamCodec<ByteBuf, MessageSignature> STREAM_CODEC;
    public static final int BYTES = 256;
 
    public MessageSignature {
@@ -21,13 +24,13 @@ public record MessageSignature(byte[] bytes) {
       Preconditions.checkState(bytes.length == 256, "Invalid message signature size");
    }
 
-   public static MessageSignature read(final FriendlyByteBuf input) {
+   private static MessageSignature read(final ByteBuf input) {
       byte[] bytes = new byte[256];
       input.readBytes(bytes);
       return new MessageSignature(bytes);
    }
 
-   public static void write(final FriendlyByteBuf output, final MessageSignature signature) {
+   private static void write(final ByteBuf output, final MessageSignature signature) {
       output.writeBytes(signature.bytes);
    }
 
@@ -82,10 +85,12 @@ public record MessageSignature(byte[] bytes) {
 
    static {
       CODEC = ExtraCodecs.BASE64_STRING.xmap(MessageSignature::new, MessageSignature::bytes);
+      STREAM_CODEC = StreamCodec.<ByteBuf, MessageSignature>of(MessageSignature::write, MessageSignature::read);
    }
 
    public static record Packed(int id, @Nullable MessageSignature fullSignature) {
       public static final int FULL_SIGNATURE = -1;
+      public static final StreamCodec<ByteBuf, Packed> STREAM_CODEC = StreamCodec.<ByteBuf, Packed>of(Packed::write, Packed::read);
 
       public Packed(final MessageSignature signature) {
          this(-1, signature);
@@ -99,13 +104,13 @@ public record MessageSignature(byte[] bytes) {
          super();
       }
 
-      public static Packed read(final FriendlyByteBuf input) {
-         int id = input.readVarInt() - 1;
+      private static Packed read(final ByteBuf input) {
+         int id = VarInt.read(input) - 1;
          return id == -1 ? new Packed(MessageSignature.read(input)) : new Packed(id);
       }
 
-      public static void write(final FriendlyByteBuf output, final Packed packed) {
-         output.writeVarInt(packed.id() + 1);
+      private static void write(final ByteBuf output, final Packed packed) {
+         VarInt.write(output, packed.id() + 1);
          if (packed.fullSignature() != null) {
             MessageSignature.write(output, packed.fullSignature());
          }

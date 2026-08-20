@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.DyeColor;
@@ -15,11 +17,11 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetRandomDyesFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetRandomDyesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.DIRECT_CODEC.fieldOf("number_of_dyes").forGetter((f) -> f.numberOfDyes)).apply(i, SetRandomDyesFunction::new));
-   private final NumberProvider numberOfDyes;
+   public static final MapCodec<SetRandomDyesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.CODEC.fieldOf("number_of_dyes").forGetter((f) -> f.numberOfDyes)).apply(i, SetRandomDyesFunction::new));
+   private final Holder<NumberProvider> numberOfDyes;
 
-   private SetRandomDyesFunction(final List<LootItemCondition> predicates, final NumberProvider numberOfDyes) {
-      super(predicates);
+   private SetRandomDyesFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<NumberProvider> numberOfDyes) {
+      super(condition);
       this.numberOfDyes = numberOfDyes;
    }
 
@@ -29,7 +31,7 @@ public class SetRandomDyesFunction extends LootItemConditionalFunction {
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
       RandomSource random = context.getRandom();
-      int rolls = this.numberOfDyes.getInt(context);
+      int rolls = ((NumberProvider)this.numberOfDyes.value()).getInt(context);
       if (rolls <= 0) {
          return itemStack;
       } else {
@@ -43,7 +45,7 @@ public class SetRandomDyesFunction extends LootItemConditionalFunction {
       }
    }
 
-   public static LootItemConditionalFunction.Builder<?> withCount(final NumberProvider numberOfDyes) {
+   public static LootItemConditionalFunction.Builder<?> withCount(final Holder<NumberProvider> numberOfDyes) {
       return simpleBuilder((conditions) -> new SetRandomDyesFunction(conditions, numberOfDyes));
    }
 }

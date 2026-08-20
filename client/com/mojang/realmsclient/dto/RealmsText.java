@@ -29,7 +29,7 @@ public class RealmsText {
       if (!Language.getInstance().has(this.translationKey)) {
          return null;
       } else {
-         return this.args == null ? Component.translatable(this.translationKey) : Component.translatable(this.translationKey, (Object[])this.args);
+         return this.args == null ? Component.translatable(this.translationKey) : Component.translatable(this.translationKey, this.args);
       }
    }
 

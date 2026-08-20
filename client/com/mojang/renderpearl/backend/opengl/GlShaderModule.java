@@ -2,18 +2,18 @@ package com.mojang.renderpearl.backend.opengl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
-import net.minecraft.resources.Identifier;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 
-public class GlShaderModule implements AutoCloseable {
+public class GlShaderModule implements UncheckedAutoCloseable {
    private static final int NOT_ALLOCATED = -1;
    public static final GlShaderModule INVALID_SHADER;
-   private final Identifier id;
+   private final String label;
    private int shaderId;
    private final ShaderType type;
 
-   public GlShaderModule(final int shaderId, final Identifier id, final ShaderType type) {
+   public GlShaderModule(final int shaderId, final String label, final ShaderType type) {
       super();
-      this.id = id;
+      this.label = label;
       this.shaderId = shaderId;
       this.type = type;
    }
@@ -28,19 +28,19 @@ public class GlShaderModule implements AutoCloseable {
       }
    }
 
-   public Identifier getId() {
-      return this.id;
+   public String getLabel() {
+      return this.label;
    }
 
    public int getShaderId() {
       return this.shaderId;
    }
 
-   public String getDebugLabel() {
-      return this.type.idConverter().idToFile(this.id).toString();
+   public ShaderType getType() {
+      return this.type;
    }
 
    static {
-      INVALID_SHADER = new GlShaderModule(-1, Identifier.withDefaultNamespace("invalid"), ShaderType.VERTEX);
+      INVALID_SHADER = new GlShaderModule(-1, "invalid", ShaderType.VERTEX);
    }
 }

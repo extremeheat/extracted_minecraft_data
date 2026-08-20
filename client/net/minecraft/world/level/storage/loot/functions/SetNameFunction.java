@@ -6,11 +6,11 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -34,8 +34,8 @@ public class SetNameFunction extends LootItemConditionalFunction {
    private final Optional<LootContext.EntityTarget> resolutionContext;
    private final Target target;
 
-   private SetNameFunction(final List<LootItemCondition> predicates, final Optional<Component> name, final Optional<LootContext.EntityTarget> resolutionContext, final Target target) {
-      super(predicates);
+   private SetNameFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<Component> name, final Optional<LootContext.EntityTarget> resolutionContext, final Target target) {
+      super(condition);
       this.name = name;
       this.resolutionContext = resolutionContext;
       this.target = target;

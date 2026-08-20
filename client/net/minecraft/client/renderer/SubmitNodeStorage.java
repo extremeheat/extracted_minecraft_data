@@ -12,13 +12,14 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
+import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.UvMapping;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -29,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeStorage implements SubmitNodeCollector {
    private final Int2ObjectAVLTreeMap<SubmitNodeCollection> submitsPerOrder = new Int2ObjectAVLTreeMap();
+   private final TranslucentFeatureRenderPhase seeThrough = new TranslucentFeatureRenderPhase();
    private boolean useImprovedTransparency;
 
    public SubmitNodeStorage() {
@@ -56,7 +58,11 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    }
 
    public SubmitNodeCollection order(final int order) {
-      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (var1) -> new SubmitNodeCollection(this.useImprovedTransparency));
+      return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(order, (var1) -> new SubmitNodeCollection(this.useImprovedTransparency, this.seeThrough));
+   }
+
+   public TranslucentFeatureRenderPhase seeThrough() {
+      return this.seeThrough;
    }
 
    public void submitShadow(final PoseStack poseStack, final float radius, final List<EntityRenderState.ShadowPiece> pieces) {
@@ -69,6 +75,10 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public void submitText(final PoseStack poseStack, final float x, final float y, final FormattedCharSequence string, final boolean dropShadow, final Font.DisplayMode displayMode, final int lightCoords, final int color, final int backgroundColor, final int outlineColor) {
       this.order(0).submitText(poseStack, x, y, string, dropShadow, displayMode, lightCoords, color, backgroundColor, outlineColor);
+   }
+
+   public void submitTextBackground(final PoseStack poseStack, final float x0, final float y0, final float x1, final float y1, final int color, final Font.DisplayMode displayMode, final int lightCoords) {
+      this.order(0).submitTextBackground(poseStack, x0, y0, x1, y1, color, displayMode, lightCoords);
    }
 
    public void submitFlame(final PoseStack poseStack, final EntityRenderState renderState, final Quaternionf rotation) {
@@ -103,7 +113,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitShapeOutline(poseStack, shape, renderType, color, width, afterTerrain);
    }
 
-   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
+   public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final ItemQuads quads, final ItemStackRenderState.FoilType foilType) {
       this.order(0).submitItem(poseStack, displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType);
    }
 
@@ -136,5 +146,9 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
          return empty;
       });
+      if (!this.seeThrough.isEmpty()) {
+         consumer.accept(this.seeThrough);
+      }
+
    }
 }

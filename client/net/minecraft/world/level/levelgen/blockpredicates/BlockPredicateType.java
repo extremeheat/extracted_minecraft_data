@@ -20,6 +20,7 @@ public interface BlockPredicateType<P extends BlockPredicate> {
    BlockPredicateType<TrueBlockPredicate> TRUE = register("true", TrueBlockPredicate.CODEC);
    BlockPredicateType<UnobstructedPredicate> UNOBSTRUCTED = register("unobstructed", UnobstructedPredicate.CODEC);
    BlockPredicateType<HeightRangePredicate> HEIGHT_RANGE = register("height_range", HeightRangePredicate.CODEC);
+   BlockPredicateType<VolumeMatchPredicate> VOLUME_MATCH = register("volume_match", VolumeMatchPredicate.CODEC);
 
    MapCodec<P> codec();
 

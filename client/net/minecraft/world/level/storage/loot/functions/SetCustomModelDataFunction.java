@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
@@ -19,15 +20,15 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetCustomModelDataFunction extends LootItemConditionalFunction {
-   private static final Codec<NumberProvider> COLOR_PROVIDER_CODEC;
+   private static final Codec<Holder<NumberProvider>> COLOR_PROVIDER_CODEC;
    public static final MapCodec<SetCustomModelDataFunction> MAP_CODEC;
-   private final Optional<ListOperation.StandAlone<NumberProvider>> floats;
+   private final Optional<ListOperation.StandAlone<Holder<NumberProvider>>> floats;
    private final Optional<ListOperation.StandAlone<Boolean>> flags;
    private final Optional<ListOperation.StandAlone<String>> strings;
-   private final Optional<ListOperation.StandAlone<NumberProvider>> colors;
+   private final Optional<ListOperation.StandAlone<Holder<NumberProvider>>> colors;
 
-   public SetCustomModelDataFunction(final List<LootItemCondition> predicates, final Optional<ListOperation.StandAlone<NumberProvider>> floats, final Optional<ListOperation.StandAlone<Boolean>> flags, final Optional<ListOperation.StandAlone<String>> strings, final Optional<ListOperation.StandAlone<NumberProvider>> colors) {
-      super(predicates);
+   public SetCustomModelDataFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<ListOperation.StandAlone<Holder<NumberProvider>>> floats, final Optional<ListOperation.StandAlone<Boolean>> flags, final Optional<ListOperation.StandAlone<String>> strings, final Optional<ListOperation.StandAlone<Holder<NumberProvider>>> colors) {
+      super(condition);
       this.floats = floats;
       this.flags = flags;
       this.strings = strings;
@@ -36,8 +37,8 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
 
    public void validate(final ValidationContext context) {
       super.validate(context);
-      this.floats.ifPresent((f) -> Validatable.validate(context, "floats", f.value()));
-      this.colors.ifPresent((c) -> Validatable.validate(context, "colors", c.value()));
+      this.floats.ifPresent((f) -> Validatable.validateHolder(context, "floats", f.value()));
+      this.colors.ifPresent((c) -> Validatable.validateHolder(context, "colors", c.value()));
    }
 
    public MapCodec<SetCustomModelDataFunction> codec() {
@@ -57,12 +58,12 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
       CustomModelData component = (CustomModelData)itemStack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.EMPTY);
-      itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(apply(this.floats, component.floats(), (provider) -> provider.getFloat(context)), apply(this.flags, component.flags()), apply(this.strings, component.strings()), apply(this.colors, component.colors(), (provider) -> provider.getInt(context))));
+      itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(apply(this.floats, component.floats(), (provider) -> ((NumberProvider)provider.value()).getFloat(context)), apply(this.flags, component.flags()), apply(this.strings, component.strings()), apply(this.colors, component.colors(), (provider) -> ((NumberProvider)provider.value()).getInt(context))));
       return itemStack;
    }
 
    static {
-      COLOR_PROVIDER_CODEC = Codec.withAlternative(NumberProviders.DIRECT_CODEC, ExtraCodecs.RGB_COLOR_CODEC, ConstantValue::new);
-      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ListOperation.StandAlone.codec(NumberProviders.DIRECT_CODEC, 2147483647).optionalFieldOf("floats").forGetter((o) -> o.floats), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((o) -> o.flags), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((o) -> o.strings), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((o) -> o.colors))).apply(i, SetCustomModelDataFunction::new));
+      COLOR_PROVIDER_CODEC = Codec.withAlternative(NumberProviders.CODEC, ExtraCodecs.RGB_COLOR_CODEC, ConstantValue::exactly);
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ListOperation.StandAlone.codec(NumberProviders.CODEC, 2147483647).optionalFieldOf("floats").forGetter((o) -> o.floats), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((o) -> o.flags), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((o) -> o.strings), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((o) -> o.colors))).apply(i, SetCustomModelDataFunction::new));
    }
 }

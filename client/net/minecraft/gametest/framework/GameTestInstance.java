@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 
 public abstract class GameTestInstance {
@@ -37,6 +38,10 @@ public abstract class GameTestInstance {
 
    public Holder<TestEnvironmentDefinition<?>> batch() {
       return this.info.environment();
+   }
+
+   public ResourceKey<Level> dimension() {
+      return this.info.dimension();
    }
 
    public Identifier structure() {
@@ -94,7 +99,7 @@ public abstract class GameTestInstance {
    }
 
    protected Component describeInfo() {
-      return this.descriptionRow("test_instance.description.structure", this.info.structure().toString()).append((Component)this.descriptionRow("test_instance.description.batch", ((Holder)this.info.environment()).getRegisteredName()));
+      return this.descriptionRow("test_instance.description.structure", this.info.structure().toString()).append((Component)this.descriptionRow("test_instance.description.batch", ((Holder)this.info.environment()).getRegisteredName())).append((Component)this.descriptionRow("test_instance.description.dimension", this.info.dimension().identifier().toString()));
    }
 
    protected MutableComponent descriptionRow(final String translationKey, final String value) {

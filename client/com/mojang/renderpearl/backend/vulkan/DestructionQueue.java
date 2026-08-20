@@ -1,10 +1,11 @@
 package com.mojang.renderpearl.backend.vulkan;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
 import java.util.Objects;
 
-public class DestructionQueue<T> implements AutoCloseable {
+public class DestructionQueue<T> implements UncheckedAutoCloseable {
    private final Destroyer<T> destroyCallback;
    private final ReferenceList<ReferenceArrayList<T>> destructionQueues;
    private int currentDestructionQueueIndex = 0;

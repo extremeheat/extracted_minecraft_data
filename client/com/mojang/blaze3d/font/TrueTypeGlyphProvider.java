@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
+import net.minecraft.client.gui.font.providers.FreeTypeButNotCrashing;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
@@ -49,7 +50,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          FT_Vector vector = FreeTypeUtil.setVector(FT_Vector.malloc(stack), transformX, transformY);
          FreeType.FT_Set_Transform(face, (FT_Matrix)null, vector);
          IntBuffer indexPtr = stack.mallocInt(1);
-         int codepoint = (int)FreeType.FT_Get_First_Char(face, indexPtr);
+         int codepoint = (int)FreeTypeButNotCrashing.FT_Get_First_Char(face, indexPtr);
 
          while(true) {
             int index = indexPtr.get(0);
@@ -61,7 +62,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                this.glyphs.put(codepoint, new GlyphEntry(index));
             }
 
-            codepoint = (int)FreeType.FT_Get_Next_Char(face, (long)codepoint, indexPtr);
+            codepoint = (int)FreeTypeButNotCrashing.FT_Get_Next_Char(face, codepoint, indexPtr);
          }
       } catch (Throwable var18) {
          if (stack != null) {

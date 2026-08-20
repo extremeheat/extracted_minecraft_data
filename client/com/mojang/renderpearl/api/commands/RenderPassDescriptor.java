@@ -1,8 +1,9 @@
 package com.mojang.renderpearl.api.commands;
 
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceLists;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -10,38 +11,18 @@ import java.util.function.Supplier;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
-public class RenderPassDescriptor {
-   private final Supplier<String> label;
-   private final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments;
-   private final @Nullable Attachment<OptionalDouble> depthAttachment;
-   private final RenderPass.RenderArea renderArea;
-
-   private RenderPassDescriptor(final Supplier<String> label, final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable Attachment<OptionalDouble> depthAttachment, final RenderPass.RenderArea renderArea) {
+public record RenderPassDescriptor(Supplier<String> label, List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, @Nullable Attachment<OptionalDouble> depthAttachment, RenderPass.RenderArea renderArea) {
+   public @Nullable RenderPassDescriptor(Supplier<String> label, List<Attachment<Optional<Vector4fc>>> colorAttachments, @Nullable Attachment<OptionalDouble> depthAttachment, RenderPass.RenderArea renderArea) {
       super();
+      List<Attachment<Optional<Vector4fc>>> var5 = ReferenceLists.unmodifiable(new ReferenceArrayList(colorAttachments));
       this.label = label;
-      this.colorAttachments = Collections.unmodifiableList(new ArrayList(colorAttachments));
+      this.colorAttachments = var5;
       this.depthAttachment = depthAttachment;
       this.renderArea = renderArea;
    }
 
    public static Builder builder(final Supplier<String> label) {
       return new Builder(label);
-   }
-
-   public Supplier<String> label() {
-      return this.label;
-   }
-
-   public List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments() {
-      return this.colorAttachments;
-   }
-
-   public @Nullable Attachment<OptionalDouble> depthAttachment() {
-      return this.depthAttachment;
-   }
-
-   public RenderPass.RenderArea renderArea() {
-      return this.renderArea;
    }
 
    public static record Attachment<T>(GpuTextureView textureView, T clearValue) {

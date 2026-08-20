@@ -2,6 +2,7 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.PublicKey;
@@ -9,9 +10,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.UUID;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ThrowingComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureValidator;
@@ -45,19 +47,10 @@ public record ProfilePublicKey(Data data) {
    public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
       public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(i, Data::new));
-
-      public Data(final FriendlyByteBuf input) {
-         this(input.readInstant(), input.readPublicKey(), input.readByteArray(4096));
-      }
+      public static final StreamCodec<ByteBuf, Data> STREAM_CODEC;
 
       public Data {
          super();
-      }
-
-      public void write(final FriendlyByteBuf output) {
-         output.writeInstant(this.expiresAt);
-         output.writePublicKey(this.key);
-         output.writeByteArray(this.keySignature);
       }
 
       private boolean validateSignature(final SignatureValidator validator, final UUID profileId) {
@@ -86,6 +79,10 @@ public record ProfilePublicKey(Data data) {
          } else {
             return this.expiresAt.equals(data.expiresAt) && this.key.equals(data.key) && Arrays.equals(this.keySignature, data.keySignature);
          }
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INSTANT, Data::expiresAt, ByteBufCodecs.PUBLIC_KEY, Data::key, ByteBufCodecs.byteArray(4096), Data::keySignature, Data::new);
       }
    }
 

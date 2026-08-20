@@ -180,7 +180,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
          try {
             entity = type.create(pos, state);
          } catch (Throwable t) {
-            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{type, pos, state, t});
+            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{type, state, pos, t});
             return null;
          }
 
@@ -188,7 +188,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
             entity.loadWithComponents(TagValueInput.create(reporter, registries, tag));
             return entity;
          } catch (Throwable t) {
-            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{type, pos, state, t});
+            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{type, state, pos, t});
             return null;
          }
       }

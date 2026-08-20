@@ -40,6 +40,7 @@ public class EntityDataAccessor implements DataAccessor {
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
             this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
             this.entity.setUUID(uuid);
+            this.entity.postDataManipulated();
          }
 
       }

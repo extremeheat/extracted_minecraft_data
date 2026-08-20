@@ -5,8 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import org.jspecify.annotations.Nullable;
 
 public record SteppedColumnClusterFeature(BlockStateProvider block, BlockPredicate continueThrough, BlockPredicate canReplace, HolderSet<Block> cannotPlaceOn, IntProvider clusterReach, IntProvider columnCount, IntProvider columnReach, IntProvider height) implements Feature {
-   public static final MapCodec<SteppedColumnClusterFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block").forGetter(SteppedColumnClusterFeature::block), BlockPredicate.CODEC.fieldOf("continue_through").forGetter(SteppedColumnClusterFeature::continueThrough), BlockPredicate.CODEC.fieldOf("can_replace").forGetter(SteppedColumnClusterFeature::canReplace), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("cannot_place_on").forGetter(SteppedColumnClusterFeature::cannotPlaceOn), IntProviders.codec(0, 13).fieldOf("cluster_reach").forGetter(SteppedColumnClusterFeature::clusterReach), IntProviders.codec(1, 150).fieldOf("column_count").forGetter(SteppedColumnClusterFeature::columnCount), IntProviders.codec(0, 3).fieldOf("column_reach").forGetter(SteppedColumnClusterFeature::columnReach), IntProviders.codec(1, 10).fieldOf("height").forGetter(SteppedColumnClusterFeature::height)).apply(i, SteppedColumnClusterFeature::new));
+   public static final MapCodec<SteppedColumnClusterFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block").forGetter(SteppedColumnClusterFeature::block), BlockPredicate.CODEC.fieldOf("continue_through").forGetter(SteppedColumnClusterFeature::continueThrough), BlockPredicate.CODEC.fieldOf("can_replace").forGetter(SteppedColumnClusterFeature::canReplace), RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("cannot_place_on").forGetter(SteppedColumnClusterFeature::cannotPlaceOn), IntProviders.codec(0, 13).fieldOf("cluster_reach").forGetter(SteppedColumnClusterFeature::clusterReach), IntProviders.codec(1, 150).fieldOf("column_count").forGetter(SteppedColumnClusterFeature::columnCount), IntProviders.codec(0, 3).fieldOf("column_reach").forGetter(SteppedColumnClusterFeature::columnReach), IntProviders.codec(1, 10).fieldOf("height").forGetter(SteppedColumnClusterFeature::height)).apply(i, SteppedColumnClusterFeature::new));
 
    public SteppedColumnClusterFeature {
       super();

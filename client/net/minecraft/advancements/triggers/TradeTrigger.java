@@ -3,9 +3,9 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.item.ItemInstance;
@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public TradeTrigger() {
@@ -28,8 +29,8 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       this.trigger(player, (t) -> t.matches(villagerContext, itemStack));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> villager, Optional<ItemPredicate> item) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Holder<LootItemCondition>> villager, Optional<ItemPredicate> item) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootItemCondition.CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -44,7 +45,7 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       }
 
       public boolean matches(final LootContext villager, final ItemStack itemStack) {
-         if (this.villager.isPresent() && !((ContextAwarePredicate)this.villager.get()).matches(villager)) {
+         if (this.villager.isPresent() && !((LootItemCondition)((Holder)this.villager.get()).value()).test(villager)) {
             return false;
          } else {
             return !this.item.isPresent() || ((ItemPredicate)this.item.get()).test((ItemInstance)itemStack);
@@ -53,7 +54,7 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "villager", this.villager);
+         Validatable.validateHolder(validator.entityContext(), "villager", this.villager);
       }
    }
 }

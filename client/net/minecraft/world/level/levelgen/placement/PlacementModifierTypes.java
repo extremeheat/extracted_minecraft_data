@@ -22,6 +22,7 @@ public interface PlacementModifierTypes {
       Registry.register(registry, (String)"height_range", HeightRangePlacement.CODEC);
       Registry.register(registry, (String)"in_square", InSquarePlacement.CODEC);
       Registry.register(registry, (String)"offset", OffsetPlacement.CODEC);
+      Registry.register(registry, (String)"randomly_selected", RandomlySelectedPlacement.CODEC);
       return (MapCodec)Registry.register(registry, (String)"fixed_placement", FixedPlacement.CODEC);
    }
 }

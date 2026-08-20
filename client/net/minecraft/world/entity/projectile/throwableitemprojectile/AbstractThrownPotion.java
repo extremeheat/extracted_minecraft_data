@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.PotionTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCandleBlock;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -55,7 +55,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
          BlockPos blockHitPos = hitResult.getBlockPos();
          BlockPos blockEffectPos = blockHitPos.relative(hitDirection);
          PotionContents potion = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         if (potion.is(Potions.WATER)) {
+         if (potion.is(PotionTags.DOUSES_FIRE)) {
             this.douseFire(blockEffectPos);
             this.douseFire(blockEffectPos.relative(hitDirection.getOpposite()));
 
@@ -73,9 +73,8 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
       if (var3 instanceof ServerLevel level) {
          ItemStack potionItemStack = this.getItem();
          PotionContents potion = (PotionContents)potionItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         if (potion.is(Potions.WATER)) {
-            this.onHitAsWater(level);
-         } else if (potion.hasEffects()) {
+         this.affectEntitiesAround(level, potion);
+         if (potion.hasEffects()) {
             this.onHitAsPotion(level, potionItemStack, hitResult);
          }
 
@@ -95,24 +94,29 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
       }
    }
 
-   private void onHitAsWater(final ServerLevel level) {
+   private void affectEntitiesAround(final ServerLevel level, final PotionContents potion) {
+      boolean hurtsWaterSensitiveEntities = potion.is(PotionTags.HURTS_WATER_SENSITIVE_ENTITIES);
+      boolean extinguishesEntities = potion.is(PotionTags.EXTINGUISHES_ENTITIES);
       AABB aabb = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+      if (hurtsWaterSensitiveEntities || extinguishesEntities) {
+         for(LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, aabb, WATER_SENSITIVE_OR_ON_FIRE)) {
+            double dist = this.distanceToSqr(entity);
+            if (dist < 16.0) {
+               if (hurtsWaterSensitiveEntities && entity.isSensitiveToWater()) {
+                  entity.hurtServer(level, this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
+               }
 
-      for(LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, aabb, WATER_SENSITIVE_OR_ON_FIRE)) {
-         double dist = this.distanceToSqr(entity);
-         if (dist < 16.0) {
-            if (entity.isSensitiveToWater()) {
-               entity.hurtServer(level, this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
-            }
-
-            if (entity.isOnFire() && entity.isAlive()) {
-               entity.extinguishFire();
+               if (extinguishesEntities && entity.isOnFire() && entity.isAlive()) {
+                  entity.extinguishFire();
+               }
             }
          }
       }
 
-      for(Axolotl axolotl : this.level().getEntitiesOfClass(Axolotl.class, aabb)) {
-         axolotl.rehydrate();
+      if (potion.is(PotionTags.REHYDRATES_AXOLOTLS)) {
+         for(Axolotl axolotl : this.level().getEntitiesOfClass(Axolotl.class, aabb)) {
+            axolotl.rehydrate();
+         }
       }
 
    }

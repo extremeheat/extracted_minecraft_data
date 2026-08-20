@@ -1,38 +1,17 @@
 package com.mojang.renderpearl.api.textures;
 
-public abstract class GpuTextureView implements AutoCloseable {
-   private final GpuTexture texture;
-   private final int baseMipLevel;
-   private final int mipLevels;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 
-   protected GpuTextureView(final GpuTexture texture, final int baseMipLevel, final int mipLevels) {
-      super();
-      this.texture = texture;
-      this.baseMipLevel = baseMipLevel;
-      this.mipLevels = mipLevels;
-   }
+public interface GpuTextureView extends UncheckedAutoCloseable {
+   boolean isClosed();
 
-   public abstract void close();
+   GpuTexture texture();
 
-   public GpuTexture texture() {
-      return this.texture;
-   }
+   int baseMipLevel();
 
-   public int baseMipLevel() {
-      return this.baseMipLevel;
-   }
+   int mipLevels();
 
-   public int mipLevels() {
-      return this.mipLevels;
-   }
+   int getWidth(int mipLevel);
 
-   public int getWidth(final int mipLevel) {
-      return this.texture.getWidth(mipLevel + this.baseMipLevel);
-   }
-
-   public int getHeight(final int mipLevel) {
-      return this.texture.getHeight(mipLevel + this.baseMipLevel);
-   }
-
-   public abstract boolean isClosed();
+   int getHeight(int mipLevel);
 }

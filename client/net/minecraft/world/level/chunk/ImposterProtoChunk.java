@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -207,9 +206,9 @@ public class ImposterProtoChunk extends ProtoChunk {
       this.wrapped.setLightCorrect(isLightCorrect);
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler) {
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver) {
       if (this.allowWrites) {
-         this.wrapped.fillBiomesFromNoise(biomeResolver, sampler);
+         this.wrapped.fillBiomesFromNoise(biomeResolver);
       }
 
    }

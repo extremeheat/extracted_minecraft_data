@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +49,7 @@ public record TeleportRandomlyConsumeEffect(float diameter) implements ConsumeEf
          }
 
          Vec3 oldPos = user.position();
-         if (user.randomTeleport(xx, yy, zz, true)) {
+         if (user.randomTeleport(xx, yy, zz, true, BlockTags.CONSUMABLE_DOES_NOT_TELEPORT_TO)) {
             level.gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)user));
             SoundSource soundSource;
             SoundEvent soundEvent;

@@ -51,7 +51,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
       for(KeyMapping keyMapping : ALL.values()) {
          if (keyMapping.shouldSetOnIngameFocus()) {
-            keyMapping.setDown(InputConstants.isKeyDown(window, keyMapping.key.getValue()));
+            keyMapping.setDown(InputConstants.isKeyDown(keyMapping.key.getValue()));
          }
       }
 
@@ -94,7 +94,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public KeyMapping(final String name, final int keysym, final Category category) {
-      this(name, InputConstants.Type.KEYSYM, keysym, category);
+      this(name, InputConstants.Type.KEYBOARD, keysym, category);
    }
 
    public KeyMapping(final String name, final InputConstants.Type type, final int value, final Category category) {
@@ -135,7 +135,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    protected boolean shouldSetOnIngameFocus() {
-      return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() != InputConstants.UNKNOWN.getValue();
+      return this.key.getType() == InputConstants.Type.KEYBOARD && this.key.getValue() != InputConstants.UNKNOWN.getValue();
    }
 
    public String getName() {
@@ -177,11 +177,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public boolean matches(final KeyEvent event) {
-      if (event.key() == InputConstants.UNKNOWN.getValue()) {
-         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == event.scancode();
-      } else {
-         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == event.key();
-      }
+      return this.key.getType() == InputConstants.Type.KEYBOARD && this.key.getValue() == event.key();
    }
 
    public boolean matchesMouse(final MouseButtonEvent event) {

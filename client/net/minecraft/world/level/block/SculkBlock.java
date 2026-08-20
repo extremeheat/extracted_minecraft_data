@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
 
 public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
+   public static final int GROWTH_INHIBITOR_RANGE = 4;
+
    public SculkBlock(final BlockBehaviour.Properties properties) {
       super(ConstantInt.of(1), properties);
    }

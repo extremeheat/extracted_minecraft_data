@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Identifier INTENTIONAL_MISSING_TEXTURE = Identifier.withDefaultNamespace("");
    private final Map<Identifier, AbstractTexture> byPath = new HashMap();
    private final Set<TickableTexture> tickableTextures = new HashSet();
    private final ResourceManager resourceManager;
@@ -55,7 +54,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
 
    private TextureContents loadContentsSafe(final Identifier textureId, final ReloadableTexture texture) {
       try {
-         return loadContents(this.resourceManager, textureId, texture);
+         return loadContents(this.resourceManager, texture);
       } catch (Exception e) {
          LOGGER.error("Failed to load texture {} into slot {}", new Object[]{texture.resourceId(), textureId, e});
          return TextureContents.createMissing();
@@ -127,9 +126,9 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
    public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
       ResourceManager manager = currentReload.resourceManager();
       List<PendingReload> reloads = new ArrayList();
-      this.byPath.forEach((id, texture) -> {
+      this.byPath.forEach((var3, texture) -> {
          if (texture instanceof ReloadableTexture reloadableTexture) {
-            reloads.add(scheduleLoad(manager, id, reloadableTexture, taskExecutor));
+            reloads.add(scheduleLoad(manager, reloadableTexture, taskExecutor));
          }
 
       });
@@ -165,22 +164,18 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       });
    }
 
-   private static TextureContents loadContents(final ResourceManager manager, final Identifier location, final ReloadableTexture texture) throws IOException {
+   private static TextureContents loadContents(final ResourceManager manager, final ReloadableTexture texture) throws IOException {
       try {
          return texture.loadContents(manager);
-      } catch (FileNotFoundException var4) {
-         if (location != INTENTIONAL_MISSING_TEXTURE) {
-            LOGGER.warn("Missing resource {} referenced from {}", texture.resourceId(), location);
-         }
-
+      } catch (FileNotFoundException var3) {
          return TextureContents.createMissing();
       }
    }
 
-   private static PendingReload scheduleLoad(final ResourceManager manager, final Identifier location, final ReloadableTexture texture, final Executor executor) {
+   private static PendingReload scheduleLoad(final ResourceManager manager, final ReloadableTexture texture, final Executor executor) {
       return new PendingReload(texture, CompletableFuture.supplyAsync(() -> {
          try {
-            return loadContents(manager, location, texture);
+            return loadContents(manager, texture);
          } catch (IOException e) {
             throw new UncheckedIOException(e);
          }

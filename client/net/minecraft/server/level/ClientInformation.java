@@ -9,7 +9,7 @@ public record ClientInformation(String language, int viewDistance, ChatVisiblity
    public static final int MAX_LANGUAGE_LENGTH = 16;
 
    public ClientInformation(final FriendlyByteBuf input) {
-      this(input.readUtf(16), input.readByte(), (ChatVisiblity)input.readEnum(ChatVisiblity.class), input.readBoolean(), input.readUnsignedByte(), (HumanoidArm)input.readEnum(HumanoidArm.class), input.readBoolean(), input.readBoolean(), (ParticleStatus)input.readEnum(ParticleStatus.class));
+      this(input.readUtf(16), input.readByte(), (ChatVisiblity)ChatVisiblity.STREAM_CODEC.decode(input), input.readBoolean(), input.readUnsignedByte(), (HumanoidArm)HumanoidArm.STREAM_CODEC.decode(input), input.readBoolean(), input.readBoolean(), (ParticleStatus)ParticleStatus.STREAM_CODEC.decode(input));
    }
 
    public ClientInformation {
@@ -19,13 +19,13 @@ public record ClientInformation(String language, int viewDistance, ChatVisiblity
    public void write(final FriendlyByteBuf output) {
       output.writeUtf(this.language);
       output.writeByte(this.viewDistance);
-      output.writeEnum(this.chatVisibility);
+      ChatVisiblity.STREAM_CODEC.encode(output, this.chatVisibility);
       output.writeBoolean(this.chatColors);
       output.writeByte(this.modelCustomisation);
-      output.writeEnum(this.mainHand);
+      HumanoidArm.STREAM_CODEC.encode(output, this.mainHand);
       output.writeBoolean(this.textFilteringEnabled);
       output.writeBoolean(this.allowsListing);
-      output.writeEnum(this.particleStatus);
+      ParticleStatus.STREAM_CODEC.encode(output, this.particleStatus);
    }
 
    public static ClientInformation createDefault() {

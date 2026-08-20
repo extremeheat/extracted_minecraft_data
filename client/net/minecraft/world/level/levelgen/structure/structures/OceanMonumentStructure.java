@@ -30,7 +30,7 @@ public class OceanMonumentStructure extends Structure {
       int offsetX = context.chunkPos().getBlockX(9);
       int offsetZ = context.chunkPos().getBlockZ(9);
 
-      for(Holder<Biome> biome : context.biomeSource().getBiomesWithin(offsetX, context.chunkGenerator().getSeaLevel(), offsetZ, 29, context.randomState().sampler())) {
+      for(Holder<Biome> biome : context.biomeResolver().getBiomesWithin(offsetX, context.chunkGenerator().getSeaLevel(), offsetZ, 29)) {
          if (!biome.is(BiomeTags.REQUIRED_OCEAN_MONUMENT_SURROUNDING)) {
             return Optional.empty();
          }

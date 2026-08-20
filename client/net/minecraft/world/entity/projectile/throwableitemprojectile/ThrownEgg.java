@@ -7,6 +7,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -35,7 +36,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
       super(EntityTypes.EGG, x, y, z, level, itemStack);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 3) {
          ItemStack item = this.getItem();
          if (!item.isEmpty()) {

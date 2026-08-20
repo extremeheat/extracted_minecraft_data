@@ -25,7 +25,7 @@ public class BackendCreationException extends Exception {
    }
 
    public static enum Reason {
-      GLFW_ERROR("glfw_error"),
+      PLATFORM_ERROR("platform_error"),
       VULKAN_LOADER_MISSING("vulkan_loader_missing"),
       VULKAN_INSTANCE_CREATION_FAILED("vulkan_instance_creation_failed"),
       VULKAN_NO_DEVICE("vulkan_no_device"),
@@ -49,7 +49,7 @@ public class BackendCreationException extends Exception {
 
       // $FF: synthetic method
       private static Reason[] $values() {
-         return new Reason[]{GLFW_ERROR, VULKAN_LOADER_MISSING, VULKAN_INSTANCE_CREATION_FAILED, VULKAN_NO_DEVICE, VULKAN_KNOWN_PROBLEMATIC, VULKAN_DEVICE_VERSION_TOO_LOW, VULKAN_NO_GRAPHICS_QUEUE, VULKAN_MISSING_EXTENSION, VULKAN_MISSING_FEATURE, OPENGL_MISSING, OTHER};
+         return new Reason[]{PLATFORM_ERROR, VULKAN_LOADER_MISSING, VULKAN_INSTANCE_CREATION_FAILED, VULKAN_NO_DEVICE, VULKAN_KNOWN_PROBLEMATIC, VULKAN_DEVICE_VERSION_TOO_LOW, VULKAN_NO_GRAPHICS_QUEUE, VULKAN_MISSING_EXTENSION, VULKAN_MISSING_FEATURE, OPENGL_MISSING, OTHER};
       }
    }
 }

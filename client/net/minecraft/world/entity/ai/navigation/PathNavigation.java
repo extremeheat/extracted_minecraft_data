@@ -183,7 +183,11 @@ public abstract class PathNavigation {
    }
 
    public boolean moveTo(final Entity target, final double speedModifier) {
-      Path newPath = this.createPath(target, 1);
+      return this.moveTo(target, 1, speedModifier);
+   }
+
+   public boolean moveTo(final Entity target, final int reachRange, final double speedModifier) {
+      Path newPath = this.createPath(target, reachRange);
       return newPath != null && this.moveTo(newPath, speedModifier);
    }
 

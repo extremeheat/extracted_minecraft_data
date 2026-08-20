@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -86,9 +87,9 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.permissions;
    }
 
-   public CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<?>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context) {
+   public <E> CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<E>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context, final Predicate<E> filter) {
       return (CompletableFuture)this.registryAccess().lookup(key).map((registry) -> {
-         this.suggestRegistryElements(registry, elements, builder);
+         this.suggestRegistryElements(registry, elements, builder, filter);
          return builder.buildFuture();
       }).orElseGet(() -> this.customSuggestion(context));
    }

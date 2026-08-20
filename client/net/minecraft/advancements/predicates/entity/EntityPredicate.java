@@ -10,13 +10,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.DistancePredicate;
 import net.minecraft.advancements.predicates.LocationPredicate;
 import net.minecraft.advancements.predicates.MobEffectsPredicate;
 import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.advancements.predicates.SlotsPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
@@ -38,7 +38,6 @@ import org.jspecify.annotations.Nullable;
 public final class EntityPredicate {
    private static final Codec<Map<Codec<? extends EntitySubPredicate>, EntitySubPredicate>> MAP_CODEC;
    public static final Codec<EntityPredicate> CODEC;
-   public static final Codec<ContextAwarePredicate> ADVANCEMENT_CODEC;
    private static final Comparator<Map.Entry<Codec<? extends EntitySubPredicate>, EntitySubPredicate>> PREDICATE_TYPE_ORDER;
    private final Map<Codec<? extends EntitySubPredicate>, EntitySubPredicate> parts;
    private final EntitySubPredicate combinedPart;
@@ -49,21 +48,20 @@ public final class EntityPredicate {
       this.combinedPart = combine(parts);
    }
 
-   public static ContextAwarePredicate wrap(final Builder singlePredicate) {
+   public static Holder<LootItemCondition> wrap(final Builder singlePredicate) {
       return wrap(singlePredicate.build());
    }
 
-   public static Optional<ContextAwarePredicate> wrap(final Optional<EntityPredicate> singlePredicate) {
+   public static Optional<Holder<LootItemCondition>> wrap(final Optional<EntityPredicate> singlePredicate) {
       return singlePredicate.map(EntityPredicate::wrap);
    }
 
-   public static List<ContextAwarePredicate> wrap(final Builder... predicates) {
+   public static List<Holder<LootItemCondition>> wrap(final Builder... predicates) {
       return Stream.of(predicates).map(EntityPredicate::wrap).toList();
    }
 
-   public static ContextAwarePredicate wrap(final EntityPredicate singlePredicate) {
-      LootItemCondition asCondition = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, singlePredicate).build();
-      return new ContextAwarePredicate(List.of(asCondition));
+   public static Holder<LootItemCondition> wrap(final EntityPredicate singlePredicate) {
+      return Holder.<LootItemCondition>direct(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, singlePredicate).build());
    }
 
    public boolean matches(final ServerPlayer player, final @Nullable Entity entity) {
@@ -129,7 +127,6 @@ public final class EntityPredicate {
    static {
       MAP_CODEC = Codec.dispatchedMap(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE.byNameCodec(), (c) -> c);
       CODEC = MAP_CODEC.xmap(EntityPredicate::new, (p) -> p.parts);
-      ADVANCEMENT_CODEC = Codec.withAlternative(ContextAwarePredicate.CODEC, CODEC, EntityPredicate::wrap);
       PREDICATE_TYPE_ORDER = Entry.comparingByKey(Comparator.comparing((codec) -> {
          if (codec == EntityTypePredicate.CODEC) {
             return -1;

@@ -261,9 +261,9 @@ public class Breeze extends Monster {
 
    static {
       BRAIN_PROVIDER = Brain.<Breeze>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.BREEZE_ATTACK_ENTITY_SENSOR), BreezeAi::getActivities);
-      PROJECTILE_DEFLECTION = (projectile, entity, random) -> {
+      PROJECTILE_DEFLECTION = (projectile, entity, random, power) -> {
          entity.level().playSound((Entity)null, (Entity)entity, SoundEvents.BREEZE_DEFLECT, entity.getSoundSource(), 1.0F, 1.0F);
-         ProjectileDeflection.REVERSE.deflect(projectile, entity, random);
+         ProjectileDeflection.REVERSE.deflect(projectile, entity, random, power);
       };
    }
 }

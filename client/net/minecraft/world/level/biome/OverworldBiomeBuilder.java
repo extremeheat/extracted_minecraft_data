@@ -18,10 +18,12 @@ import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.VisibleForDebug;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
+import net.minecraft.world.level.levelgen.OverworldFunctionSet;
 import net.minecraft.world.level.levelgen.SpawnTargetPoint;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.op.SplineFunction;
 
 public final class OverworldBiomeBuilder {
    private static final float VALLEY_SIZE = 0.05F;
@@ -79,10 +81,10 @@ public final class OverworldBiomeBuilder {
       this.SHATTERED_BIOMES = new ResourceKey[][]{{Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {null, null, null, null, null}, {null, null, null, null, null}};
    }
 
-   public List<SpawnTargetPoint> spawnTarget(final Holder<DensityFunction> temperature, final Holder<DensityFunction> vegetation, final Holder<DensityFunction> continents, final Holder<DensityFunction> erosion, final Holder<DensityFunction> weirdness) {
+   public List<SpawnTargetPoint> spawnTarget(final OverworldFunctionSet<Holder<DensityFunction>> functions, final Holder<DensityFunction> weirdness) {
       Climate.Parameter inland = Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE);
       float riverClearance = 0.16F;
-      return List.of(new SpawnTargetPoint(Map.of(temperature, this.FULL_RANGE, vegetation, this.FULL_RANGE, continents, inland, erosion, this.FULL_RANGE, weirdness, Climate.Parameter.span(-1.0F, -0.16F))), new SpawnTargetPoint(Map.of(temperature, this.FULL_RANGE, vegetation, this.FULL_RANGE, continents, inland, erosion, this.FULL_RANGE, weirdness, Climate.Parameter.span(0.16F, 1.0F))));
+      return List.of(new SpawnTargetPoint(Map.of(functions.temperature(), this.FULL_RANGE, functions.vegetation(), this.FULL_RANGE, functions.continents(), inland, functions.erosion(), this.FULL_RANGE, weirdness, Climate.Parameter.span(-1.0F, -0.16F))), new SpawnTargetPoint(Map.of(functions.temperature(), this.FULL_RANGE, functions.vegetation(), this.FULL_RANGE, functions.continents(), inland, functions.erosion(), this.FULL_RANGE, weirdness, Climate.Parameter.span(0.16F, 1.0F))));
    }
 
    void addBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
@@ -98,9 +100,9 @@ public final class OverworldBiomeBuilder {
    private void addDebugBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
       HolderLookup.Provider builtIns = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
       HolderGetter<DensityFunction> densityFunctions = builtIns.lookupOrThrow(Registries.DENSITY_FUNCTION);
-      DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.CONTINENTS)));
-      DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.EROSION)));
-      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED)));
+      SplineFunction.Coordinate continents = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.OVERWORLD_FUNCTIONS.continents())));
+      SplineFunction.Coordinate erosion = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.OVERWORLD_FUNCTIONS.erosion())));
+      SplineFunction.Coordinate ridges = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED)));
       biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
       CubicSpline<?> erosionOffsetSpline = TerrainProvider.buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, Float2FloatFunction.identity());
       if (erosionOffsetSpline instanceof CubicSpline.Multipoint<?> multipoint) {
@@ -413,8 +415,8 @@ public final class OverworldBiomeBuilder {
       biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.point(1.1F), weirdness, offset), biome));
    }
 
-   public static boolean isDeepDarkRegion(final DensityFunction erosion, final DensityFunction depth, final DensityFunction.FunctionContext context) {
-      return erosion.compute(context) < -0.22499999403953552 && depth.compute(context) > 0.8999999761581421;
+   public static DensityFunction deepDarkRegion(final DensityFunction erosion, final DensityFunction depth) {
+      return DensityFunctions.min(DensityFunctions.sub(DensityFunctions.constant(-0.225F), erosion), DensityFunctions.max(depth.sub(0.9F), DensityFunctions.constant(0.0F)));
    }
 
    public static String getDebugStringForPeaksAndValleys(final double peaksAndValleys) {

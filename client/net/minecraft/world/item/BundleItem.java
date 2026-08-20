@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -205,7 +206,7 @@ public class BundleItem extends Item {
       if (contents != null && !contents.isEmpty()) {
          Optional<ItemStack> itemStack = removeOneItemFromBundle(bundle, player, contents);
          if (itemStack.isPresent()) {
-            player.drop((ItemStack)itemStack.get(), true);
+            player.drop((ItemStack)itemStack.get(), true, Prediction.PREDICTED);
             return true;
          } else {
             return false;

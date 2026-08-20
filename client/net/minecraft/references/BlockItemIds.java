@@ -782,6 +782,8 @@ public class BlockItemIds {
    public static final ColorCollection<BlockItemId> DYED_SHULKER_BOX = createSimpleColored("shulker_box");
    public static final ColorCollection<BlockItemId> GLAZED_TERRACOTTA = createSimpleColored("glazed_terracotta");
    public static final ColorCollection<BlockItemId> CONCRETE = createSimpleColored("concrete");
+   public static final ColorCollection<BlockItemId> CONCRETE_STAIRS = createSimpleColored("concrete_stairs");
+   public static final ColorCollection<BlockItemId> CONCRETE_SLAB = createSimpleColored("concrete_slab");
    public static final ColorCollection<BlockItemId> CONCRETE_POWDER = createSimpleColored("concrete_powder");
    public static final ColorCollection<BlockItemId> DYED_CANDLE = createSimpleColored("candle");
    private static final WeatheringCopperCollection.ByState<String> COPPER_BLOCK_SPECIAL_NAMES = new WeatheringCopperCollection.ByState<String>("copper_block", "copper", "copper", "copper");

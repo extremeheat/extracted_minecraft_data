@@ -101,6 +101,10 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
       return new HasSturdyFacePredicate(Vec3i.ZERO, direction);
    }
 
+   static BlockPredicate hasSturdyFace(final Directional offset, final Direction direction) {
+      return new HasSturdyFacePredicate(offset.getStep(), direction);
+   }
+
    static BlockPredicate solid(final Directional directional) {
       return new SolidPredicate(directional.getStep());
    }
@@ -127,5 +131,9 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
 
    static BlockPredicate heightRange(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
       return new HeightRangePredicate(minInclusive, maxInclusive);
+   }
+
+   static BlockPredicate volumeMatch(final Vec3i min, final Vec3i max, final BlockPredicate match) {
+      return new VolumeMatchPredicate(min, max, match);
    }
 }

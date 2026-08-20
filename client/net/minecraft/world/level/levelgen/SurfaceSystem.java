@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.BlockColumn;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import net.minecraft.world.level.levelgen.synth.Noise;
 import org.jspecify.annotations.Nullable;
 
 public class SurfaceSystem {
@@ -37,16 +37,16 @@ public class SurfaceSystem {
    private final BlockState defaultBlock;
    private final int seaLevel;
    private final BlockState[] clayBands;
-   private final NormalNoise clayBandsOffsetNoise;
-   private final NormalNoise badlandsPillarNoise;
-   private final NormalNoise badlandsPillarRoofNoise;
-   private final NormalNoise badlandsSurfaceNoise;
-   private final NormalNoise icebergPillarNoise;
-   private final NormalNoise icebergPillarRoofNoise;
-   private final NormalNoise icebergSurfaceNoise;
+   private final Noise clayBandsOffsetNoise;
+   private final Noise badlandsPillarNoise;
+   private final Noise badlandsPillarRoofNoise;
+   private final Noise badlandsSurfaceNoise;
+   private final Noise icebergPillarNoise;
+   private final Noise icebergPillarRoofNoise;
+   private final Noise icebergSurfaceNoise;
    private final PositionalRandomFactory noiseRandom;
-   private final NormalNoise surfaceNoise;
-   private final NormalNoise surfaceSecondaryNoise;
+   private final Noise surfaceNoise;
+   private final Noise surfaceSecondaryNoise;
 
    public SurfaceSystem(final RandomState randomState, final BlockState defaultBlock, final int seaLevel, final PositionalRandomFactory noiseRandom) {
       super();
@@ -160,12 +160,12 @@ public class SurfaceSystem {
    }
 
    protected int getSurfaceDepth(final int blockX, final int blockZ) {
-      double noiseValue = this.surfaceNoise.getValue((double)blockX, 0.0, (double)blockZ);
+      double noiseValue = (double)this.surfaceNoise.get((double)blockX, 0.0, (double)blockZ);
       return (int)(noiseValue * 2.75 + 3.0 + this.noiseRandom.at(blockX, 0, blockZ).nextDouble() * 0.25);
    }
 
    protected double getSurfaceSecondary(final int blockX, final int blockZ) {
-      return this.surfaceSecondaryNoise.getValue((double)blockX, 0.0, (double)blockZ);
+      return (double)this.surfaceSecondaryNoise.get((double)blockX, 0.0, (double)blockZ);
    }
 
    private boolean isStone(final BlockState state) {
@@ -192,11 +192,11 @@ public class SurfaceSystem {
 
    private void erodedBadlandsExtension(final BlockColumn column, final int blockX, final int blockZ, final int height, final LevelHeightAccessor protoChunk) {
       double pillarNoiseScale = 0.2;
-      double pillarBuffer = Math.min(Math.abs(this.badlandsSurfaceNoise.getValue((double)blockX, 0.0, (double)blockZ) * 8.25), this.badlandsPillarNoise.getValue((double)blockX * 0.2, 0.0, (double)blockZ * 0.2) * 15.0);
+      double pillarBuffer = Math.min(Math.abs((double)this.badlandsSurfaceNoise.get((double)blockX, 0.0, (double)blockZ) * 8.25), (double)(this.badlandsPillarNoise.get((double)blockX * 0.2, 0.0, (double)blockZ * 0.2) * 15.0F));
       if (!(pillarBuffer <= 0.0)) {
          double floorNoiseSampleResolution = 0.75;
          double floorAmplitude = 1.5;
-         double pillarFloor = Math.abs(this.badlandsPillarRoofNoise.getValue((double)blockX * 0.75, 0.0, (double)blockZ * 0.75) * 1.5);
+         double pillarFloor = Math.abs((double)this.badlandsPillarRoofNoise.get((double)blockX * 0.75, 0.0, (double)blockZ * 0.75) * 1.5);
          double extensionTop = 64.0 + Math.min(pillarBuffer * pillarBuffer * 2.5, Math.ceil(pillarFloor * 50.0) + 24.0);
          int startY = Mth.floor(extensionTop);
          if (height <= startY) {
@@ -221,42 +221,37 @@ public class SurfaceSystem {
 
    private void frozenOceanExtension(final int minSurfaceLevel, final Biome surfaceBiome, final BlockColumn column, final BlockPos.MutableBlockPos blockPos, final int blockX, final int blockZ, final int height) {
       double pillarScale = 1.28;
-      double iceberg = Math.min(Math.abs(this.icebergSurfaceNoise.getValue((double)blockX, 0.0, (double)blockZ) * 8.25), this.icebergPillarNoise.getValue((double)blockX * 1.28, 0.0, (double)blockZ * 1.28) * 15.0);
+      double iceberg = Math.min(Math.abs((double)this.icebergSurfaceNoise.get((double)blockX, 0.0, (double)blockZ) * 8.25), (double)(this.icebergPillarNoise.get((double)blockX * 1.28, 0.0, (double)blockZ * 1.28) * 15.0F));
       if (!(iceberg <= 1.8)) {
          double roofScale = 1.17;
          double roofAmplitude = 1.5;
-         double icebergRoof = Math.abs(this.icebergPillarRoofNoise.getValue((double)blockX * 1.17, 0.0, (double)blockZ * 1.17) * 1.5);
+         double icebergRoof = Math.abs((double)this.icebergPillarRoofNoise.get((double)blockX * 1.17, 0.0, (double)blockZ * 1.17) * 1.5);
          double top = Math.min(iceberg * iceberg * 1.2, Math.ceil(icebergRoof * 40.0) + 14.0);
          if (surfaceBiome.shouldMeltFrozenOceanIcebergSlightly(blockPos.set(blockX, this.seaLevel, blockZ), this.seaLevel)) {
             top -= 2.0;
          }
 
-         double extensionBottom;
-         if (top > 2.0) {
-            extensionBottom = (double)this.seaLevel - top - 7.0;
+         if (!(top <= 2.0)) {
+            double extensionBottom = (double)this.seaLevel - top - 7.0;
             top += (double)this.seaLevel;
-         } else {
-            top = 0.0;
-            extensionBottom = 0.0;
-         }
+            double extensionTop = top;
+            RandomSource random = this.noiseRandom.at(blockX, 0, blockZ);
+            int maxSnowDepth = 2 + random.nextInt(4);
+            int minSnowHeight = this.seaLevel + 18 + random.nextInt(10);
+            int snowDepth = 0;
 
-         double extensionTop = top;
-         RandomSource random = this.noiseRandom.at(blockX, 0, blockZ);
-         int maxSnowDepth = 2 + random.nextInt(4);
-         int minSnowHeight = this.seaLevel + 18 + random.nextInt(10);
-         int snowDepth = 0;
-
-         for(int y = Math.max(height, (int)top + 1); y >= minSurfaceLevel; --y) {
-            if (column.getBlock(y).isAir() && y < (int)extensionTop && random.nextDouble() > 0.01 || column.getBlock(y).is(Blocks.WATER) && y > (int)extensionBottom && y < this.seaLevel && extensionBottom != 0.0 && random.nextDouble() > 0.15) {
-               if (snowDepth <= maxSnowDepth && y > minSnowHeight) {
-                  column.setBlock(y, SNOW_BLOCK);
-                  ++snowDepth;
-               } else {
-                  column.setBlock(y, PACKED_ICE);
+            for(int y = Math.max(height, (int)top + 1); y >= minSurfaceLevel; --y) {
+               if (column.getBlock(y).isAir() && y < (int)extensionTop && random.nextDouble() > 0.01 || column.getBlock(y).is(Blocks.WATER) && y > (int)extensionBottom && y < this.seaLevel && random.nextDouble() > 0.15) {
+                  if (snowDepth <= maxSnowDepth && y > minSnowHeight) {
+                     column.setBlock(y, SNOW_BLOCK);
+                     ++snowDepth;
+                  } else {
+                     column.setBlock(y, PACKED_ICE);
+                  }
                }
             }
-         }
 
+         }
       }
    }
 
@@ -308,7 +303,7 @@ public class SurfaceSystem {
    }
 
    protected BlockState getBand(final int worldX, final int y, final int worldZ) {
-      int offset = (int)Math.round(this.clayBandsOffsetNoise.getValue((double)worldX, 0.0, (double)worldZ) * 4.0);
+      int offset = Math.round(this.clayBandsOffsetNoise.get((double)worldX, 0.0, (double)worldZ) * 4.0F);
       return this.clayBands[(y + offset + this.clayBands.length) % this.clayBands.length];
    }
 

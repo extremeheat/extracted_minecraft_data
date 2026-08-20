@@ -5,10 +5,9 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -17,8 +16,8 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
 public interface WorldCarver {
    Codec<WorldCarver> DIRECT_CODEC = BuiltInRegistries.CARVER_TYPE.byNameCodec().dispatch(WorldCarver::codec, Function.identity());
-   Codec<Holder<WorldCarver>> CODEC = RegistryFileCodec.<Holder<WorldCarver>>create(Registries.CARVER, DIRECT_CODEC);
-   Codec<HolderSet<WorldCarver>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CARVER, DIRECT_CODEC);
+   Codec<Holder<WorldCarver>> CODEC = RegistryCodecs.holder(Registries.CARVER, DIRECT_CODEC);
+   Codec<HolderSet<WorldCarver>> LIST_CODEC = RegistryCodecs.holderSet(Registries.CARVER, DIRECT_CODEC);
 
    default int getRange() {
       return 4;

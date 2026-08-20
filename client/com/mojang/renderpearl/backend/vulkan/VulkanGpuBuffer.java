@@ -2,6 +2,7 @@ package com.mojang.renderpearl.backend.vulkan;
 
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.backend.common.BaseGpuBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -16,7 +17,7 @@ import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.util.vma.VmaAllocationInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
-public abstract class VulkanGpuBuffer extends GpuBuffer implements Destroyable {
+public abstract class VulkanGpuBuffer extends BaseGpuBuffer implements Destroyable {
    private final long vkBuffer;
 
    public VulkanGpuBuffer(final long vkBuffer, final @GpuBuffer.Usage int usage, final long size) {

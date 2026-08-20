@@ -1158,7 +1158,7 @@ public class GameTestHelper {
       BlockPos low = BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ);
       BlockPos high = BlockPos.containing(bounds.maxX, bounds.maxY, bounds.maxZ);
       Either<Integer, CommandSyntaxException> result = FillBiomeCommand.fill(this.getLevel(), low, high, this.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(biome));
-      if (result.right().isPresent()) {
+      if (result.right().isPresent() && ((CommandSyntaxException)result.right().get()).getType() != FillBiomeCommand.ERROR_NO_BIOMES_SET) {
          throw this.assertionException("test.error.set_biome");
       }
    }

@@ -19,7 +19,7 @@ public class TryFindLandNearWater {
 
    public static BehaviorControl<PathfinderMob> create(final int range, final float speedModifier) {
       MutableLong nextOkStartTime = new MutableLong(0L);
-      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (attackTarget, walkTarget, lookTarget) -> (level, body, timestamp) -> {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (var3, walkTarget, lookTarget) -> (level, body, timestamp) -> {
                if (level.getFluidState(body.blockPosition()).is(FluidTags.WATER)) {
                   return false;
                } else if (timestamp < nextOkStartTime.longValue()) {
@@ -29,21 +29,26 @@ public class TryFindLandNearWater {
                   CollisionContext context = CollisionContext.of(body);
                   BlockPos bodyBlockPos = body.blockPosition();
                   BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
-
-                  label45:
-                  for(BlockPos pos : BlockPos.withinManhattan(bodyBlockPos, range, range, range)) {
-                     if ((pos.getX() != bodyBlockPos.getX() || pos.getZ() != bodyBlockPos.getZ()) && level.getBlockState(pos).getCollisionShape(level, pos, context).isEmpty() && !level.getBlockState(testPos.setWithOffset(pos, (Direction)Direction.DOWN)).getCollisionShape(level, pos, context).isEmpty()) {
+                  level.findBlocksInBoxByManhattanDistance(bodyBlockPos, range).filterPos((pos) -> pos.differsHorizontally(bodyBlockPos)).findFirst((pos, state) -> {
+                     if (!state.getCollisionShape(level, pos, context).isEmpty()) {
+                        return false;
+                     } else if (level.getBlockState(testPos.setWithOffset(pos, (Direction)Direction.DOWN)).getCollisionShape(level, pos, context).isEmpty()) {
+                        return false;
+                     } else {
                         for(Direction direction : Direction.Plane.HORIZONTAL) {
                            testPos.setWithOffset(pos, (Direction)direction);
                            if (level.getBlockState(testPos).isAir() && level.getBlockState(testPos.move(Direction.DOWN)).is(Blocks.WATER)) {
-                              lookTarget.set(new BlockPosTracker(pos));
-                              walkTarget.set(new WalkTarget(new BlockPosTracker(pos), speedModifier, 0));
-                              break label45;
+                              return true;
                            }
                         }
-                     }
-                  }
 
+                        return false;
+                     }
+                  }).ifPresent((pos) -> {
+                     BlockPos targetPos = pos.immutable();
+                     lookTarget.set(new BlockPosTracker(targetPos));
+                     walkTarget.set(new WalkTarget(new BlockPosTracker(targetPos), speedModifier, 0));
+                  });
                   nextOkStartTime.setValue(timestamp + 40L);
                   return true;
                }

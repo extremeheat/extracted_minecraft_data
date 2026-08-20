@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.blending;
 
-import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Floats;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.floats.FloatArrays;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -33,12 +33,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
 public class BlendingData {
-   private static final double BLENDING_DENSITY_FACTOR = 0.1;
+   private static final float BLENDING_DENSITY_FACTOR = 0.1F;
    protected static final int CELL_WIDTH = 4;
    protected static final int CELL_HEIGHT = 8;
    protected static final int CELL_RATIO = 2;
-   private static final double SOLID_DENSITY = 1.0;
-   private static final double AIR_DENSITY = -1.0;
+   private static final float SOLID_DENSITY = 1.0F;
+   private static final float AIR_DENSITY = -1.0F;
    private static final int CELLS_PER_SECTION_Y = 2;
    private static final int QUARTS_PER_SECTION = QuartPos.fromBlock(16);
    private static final int CELL_HORIZONTAL_MAX_INDEX_INSIDE;
@@ -48,16 +48,16 @@ public class BlendingData {
    private static final int CELL_COLUMN_COUNT;
    private final LevelHeightAccessor areaWithOldGeneration;
    private static final List<Block> SURFACE_BLOCKS;
-   protected static final double NO_VALUE = 1.7976931348623157E308;
+   protected static final float NO_VALUE = 3.4028235E38F;
    private boolean hasCalculatedData;
-   private final double[] heights;
+   private final float[] heights;
    private final List<@Nullable List<@Nullable Holder<Biome>>> biomes;
-   private final transient double[][] densities;
+   private final transient float[][] densities;
 
-   private BlendingData(final int minSection, final int maxSection, final Optional<double[]> heights) {
+   private BlendingData(final int minSection, final int maxSection, final Optional<float[]> heights) {
       super();
-      this.heights = (double[])heights.orElseGet(() -> (double[])Util.make(new double[CELL_COLUMN_COUNT], (i) -> Arrays.fill(i, 1.7976931348623157E308)));
-      this.densities = new double[CELL_COLUMN_COUNT][];
+      this.heights = (float[])heights.orElseGet(() -> (float[])Util.make(new float[CELL_COLUMN_COUNT], (i) -> Arrays.fill(i, 3.4028235E38F)));
+      this.densities = new float[CELL_COLUMN_COUNT][];
       ObjectArrayList<List<Holder<Biome>>> biomes = new ObjectArrayList(CELL_COLUMN_COUNT);
       biomes.size(CELL_COLUMN_COUNT);
       this.biomes = biomes;
@@ -73,14 +73,14 @@ public class BlendingData {
    public Packed pack() {
       boolean hasHeight = false;
 
-      for(double height : this.heights) {
-         if (height != 1.7976931348623157E308) {
+      for(float height : this.heights) {
+         if (height != 3.4028235E38F) {
             hasHeight = true;
             break;
          }
       }
 
-      return new Packed(this.areaWithOldGeneration.getMinSectionY(), this.areaWithOldGeneration.getMaxSectionY() + 1, hasHeight ? Optional.of(DoubleArrays.copy(this.heights)) : Optional.empty());
+      return new Packed(this.areaWithOldGeneration.getMinSectionY(), this.areaWithOldGeneration.getMaxSectionY() + 1, hasHeight ? Optional.of(FloatArrays.copy(this.heights)) : Optional.empty());
    }
 
    public static @Nullable BlendingData getOrUpdateBlendingData(final WorldGenRegion region, final int chunkX, final int chunkZ) {
@@ -151,8 +151,8 @@ public class BlendingData {
    }
 
    private void addValuesForColumn(final int index, final ChunkAccess chunk, final int blockX, final int blockZ) {
-      if (this.heights[index] == 1.7976931348623157E308) {
-         this.heights[index] = (double)this.getHeightAtXZ(chunk, blockX, blockZ);
+      if (this.heights[index] == 3.4028235E38F) {
+         this.heights[index] = (float)this.getHeightAtXZ(chunk, blockX, blockZ);
       }
 
       this.densities[index] = this.getDensityColumn(chunk, blockX, blockZ, Mth.floor(this.heights[index]));
@@ -181,12 +181,12 @@ public class BlendingData {
       return minY;
    }
 
-   private static double read1(final ChunkAccess chunk, final BlockPos.MutableBlockPos pos) {
-      return isGround(chunk, pos.move(Direction.DOWN)) ? 1.0 : -1.0;
+   private static float read1(final ChunkAccess chunk, final BlockPos.MutableBlockPos pos) {
+      return isGround(chunk, pos.move(Direction.DOWN)) ? 1.0F : -1.0F;
    }
 
-   private static double read7(final ChunkAccess chunk, final BlockPos.MutableBlockPos pos) {
-      double sum = 0.0;
+   private static float read7(final ChunkAccess chunk, final BlockPos.MutableBlockPos pos) {
+      float sum = 0.0F;
 
       for(int i = 0; i < 7; ++i) {
          sum += read1(chunk, pos);
@@ -195,26 +195,26 @@ public class BlendingData {
       return sum;
    }
 
-   private double[] getDensityColumn(final ChunkAccess chunk, final int x, final int z, final int height) {
-      double[] densities = new double[this.cellCountPerColumn()];
-      Arrays.fill(densities, -1.0);
+   private float[] getDensityColumn(final ChunkAccess chunk, final int x, final int z, final int height) {
+      float[] densities = new float[this.cellCountPerColumn()];
+      Arrays.fill(densities, -1.0F);
       BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, this.areaWithOldGeneration.getMaxY() + 1, z);
-      double last7 = read7(chunk, pos);
+      float last7 = read7(chunk, pos);
 
       for(int cellIndex = densities.length - 2; cellIndex >= 0; --cellIndex) {
-         double one = read1(chunk, pos);
-         double current7 = read7(chunk, pos);
-         densities[cellIndex] = (last7 + one + current7) / 15.0;
+         float one = read1(chunk, pos);
+         float current7 = read7(chunk, pos);
+         densities[cellIndex] = (last7 + one + current7) / 15.0F;
          last7 = current7;
       }
 
       int highestCellWithSurfaceIndex = this.getCellYIndex(Mth.floorDiv(height, 8));
       if (highestCellWithSurfaceIndex >= 0 && highestCellWithSurfaceIndex < densities.length - 1) {
-         double inCellIndex = ((double)height + 0.5) % 8.0 / 8.0;
-         double amplitudeAboveToMakeSurfaceBeAtHeight = (1.0 - inCellIndex) / inCellIndex;
-         double max = Math.max(amplitudeAboveToMakeSurfaceBeAtHeight, 1.0) * 0.25;
+         float inCellIndex = ((float)height + 0.5F) % 8.0F / 8.0F;
+         float amplitudeAboveToMakeSurfaceBeAtHeight = (1.0F - inCellIndex) / inCellIndex;
+         float max = Math.max(amplitudeAboveToMakeSurfaceBeAtHeight, 1.0F) * 0.25F;
          densities[highestCellWithSurfaceIndex + 1] = -amplitudeAboveToMakeSurfaceBeAtHeight / max;
-         densities[highestCellWithSurfaceIndex] = 1.0 / max;
+         densities[highestCellWithSurfaceIndex] = 1.0F / max;
       }
 
       return densities;
@@ -247,28 +247,28 @@ public class BlendingData {
       }
    }
 
-   protected double getHeight(final int cellX, final int cellY, final int cellZ) {
+   protected float getHeight(final int cellX, final int cellY, final int cellZ) {
       if (cellX != CELL_HORIZONTAL_MAX_INDEX_OUTSIDE && cellZ != CELL_HORIZONTAL_MAX_INDEX_OUTSIDE) {
-         return cellX != 0 && cellZ != 0 ? 1.7976931348623157E308 : this.heights[getInsideIndex(cellX, cellZ)];
+         return cellX != 0 && cellZ != 0 ? 3.4028235E38F : this.heights[getInsideIndex(cellX, cellZ)];
       } else {
          return this.heights[getOutsideIndex(cellX, cellZ)];
       }
    }
 
-   private double getDensity(final double @Nullable [] densityColumn, final int cellY) {
+   private float getDensity(final float @Nullable [] densityColumn, final int cellY) {
       if (densityColumn == null) {
-         return 1.7976931348623157E308;
+         return 3.4028235E38F;
       } else {
          int yIndex = this.getCellYIndex(cellY);
-         return yIndex >= 0 && yIndex < densityColumn.length ? densityColumn[yIndex] * 0.1 : 1.7976931348623157E308;
+         return yIndex >= 0 && yIndex < densityColumn.length ? densityColumn[yIndex] * 0.1F : 3.4028235E38F;
       }
    }
 
-   protected double getDensity(final int cellX, final int cellY, final int cellZ) {
+   protected float getDensity(final int cellX, final int cellY, final int cellZ) {
       if (cellY == this.getMinY()) {
-         return 0.1;
+         return 0.1F;
       } else if (cellX != CELL_HORIZONTAL_MAX_INDEX_OUTSIDE && cellZ != CELL_HORIZONTAL_MAX_INDEX_OUTSIDE) {
-         return cellX != 0 && cellZ != 0 ? 1.7976931348623157E308 : this.getDensity(this.densities[getInsideIndex(cellX, cellZ)], cellY);
+         return cellX != 0 && cellZ != 0 ? 3.4028235E38F : this.getDensity(this.densities[getInsideIndex(cellX, cellZ)], cellY);
       } else {
          return this.getDensity(this.densities[getOutsideIndex(cellX, cellZ)], cellY);
       }
@@ -293,8 +293,8 @@ public class BlendingData {
 
    protected void iterateHeights(final int minCellX, final int minCellZ, final HeightConsumer heightConsumer) {
       for(int i = 0; i < this.heights.length; ++i) {
-         double value = this.heights[i];
-         if (value != 1.7976931348623157E308) {
+         float value = this.heights[i];
+         if (value != 3.4028235E38F) {
             heightConsumer.consume(minCellX + getX(i), minCellZ + getZ(i), value);
          }
       }
@@ -307,13 +307,13 @@ public class BlendingData {
       int maxYIndex = Math.min(this.cellCountPerColumn(), toCellY - minCellY);
 
       for(int i = 0; i < this.densities.length; ++i) {
-         double[] densityColumn = this.densities[i];
+         float[] densityColumn = this.densities[i];
          if (densityColumn != null) {
             int testCellX = minCellX + getX(i);
             int testCellZ = minCellZ + getZ(i);
 
             for(int yIndex = minYIndex; yIndex < maxYIndex; ++yIndex) {
-               densityConsumer.consume(testCellX, yIndex + minCellY, testCellZ, densityColumn[yIndex] * 0.1);
+               densityConsumer.consume(testCellX, yIndex + minCellY, testCellZ, densityColumn[yIndex] * 0.1F);
             }
          }
       }
@@ -383,8 +383,8 @@ public class BlendingData {
       SURFACE_BLOCKS = List.of(Blocks.PODZOL, Blocks.GRAVEL, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.COARSE_DIRT, Blocks.SAND, Blocks.RED_SAND, Blocks.MYCELIUM, Blocks.SNOW_BLOCK, Blocks.TERRACOTTA, Blocks.DIRT);
    }
 
-   public static record Packed(int minSection, int maxSection, Optional<double[]> heights) {
-      private static final Codec<double[]> DOUBLE_ARRAY_CODEC;
+   public static record Packed(int minSection, int maxSection, Optional<float[]> heights) {
+      private static final Codec<float[]> FLOAT_ARRAY_CODEC;
       public static final Codec<Packed> CODEC;
 
       public Packed {
@@ -392,12 +392,12 @@ public class BlendingData {
       }
 
       private static DataResult<Packed> validateArraySize(final Packed blendingData) {
-         return blendingData.heights.isPresent() && ((double[])blendingData.heights.get()).length != BlendingData.CELL_COLUMN_COUNT ? DataResult.error(() -> "heights has to be of length " + BlendingData.CELL_COLUMN_COUNT) : DataResult.success(blendingData);
+         return blendingData.heights.isPresent() && ((float[])blendingData.heights.get()).length != BlendingData.CELL_COLUMN_COUNT ? DataResult.error(() -> "heights has to be of length " + BlendingData.CELL_COLUMN_COUNT) : DataResult.success(blendingData);
       }
 
       static {
-         DOUBLE_ARRAY_CODEC = Codec.DOUBLE.listOf().xmap(Doubles::toArray, Doubles::asList);
-         CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.fieldOf("min_section").forGetter(Packed::minSection), Codec.INT.fieldOf("max_section").forGetter(Packed::maxSection), DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter(Packed::heights)).apply(i, Packed::new)).validate(Packed::validateArraySize);
+         FLOAT_ARRAY_CODEC = Codec.FLOAT.listOf().xmap(Floats::toArray, Floats::asList);
+         CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.fieldOf("min_section").forGetter(Packed::minSection), Codec.INT.fieldOf("max_section").forGetter(Packed::maxSection), FLOAT_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter(Packed::heights)).apply(i, Packed::new)).validate(Packed::validateArraySize);
       }
    }
 
@@ -406,10 +406,10 @@ public class BlendingData {
    }
 
    protected interface DensityConsumer {
-      void consume(final int cellX, final int cellY, final int cellZ, final double density);
+      void consume(final int cellX, final int cellY, final int cellZ, final float density);
    }
 
    protected interface HeightConsumer {
-      void consume(final int cellX, final int cellZ, final double height);
+      void consume(final int cellX, final int cellZ, final float height);
    }
 }

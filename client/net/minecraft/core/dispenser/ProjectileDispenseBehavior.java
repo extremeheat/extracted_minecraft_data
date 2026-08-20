@@ -34,6 +34,6 @@ public class ProjectileDispenseBehavior extends DefaultDispenseItemBehavior {
    }
 
    protected void playSound(final BlockSource source) {
-      source.level().levelEvent(this.dispenseConfig.overrideDispenseEvent().orElse(1002), source.pos(), 0);
+      source.level().levelEvent((Integer)this.dispenseConfig.overrideDispenseEvent().orElse(1002), source.pos(), 0);
    }
 }

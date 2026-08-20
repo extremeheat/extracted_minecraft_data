@@ -84,7 +84,7 @@ public class TracyFrameCapture implements AutoCloseable {
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, Optional.empty())) {
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT));
-            renderPass.bindTexture("InSampler", captureTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+            renderPass.setUniform("InSampler", captureTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             renderPass.draw(3, 1, 0, 0);
          }
 

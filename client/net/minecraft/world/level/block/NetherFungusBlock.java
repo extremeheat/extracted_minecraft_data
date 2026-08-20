@@ -43,16 +43,16 @@ public class NetherFungusBlock extends VegetationBlock implements BonemealableBl
       return level.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockState belowState = level.getBlockState(pos.below());
       return belowState.is(this.requiredBlock) && level.isInsideBuildHeight(pos.above());
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (double)random.nextFloat() < 0.4;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.getFeature(level).ifPresent((feature) -> ((Feature)feature.value()).place(level, level.getChunkSource().getGenerator(), random, pos));
    }
 }

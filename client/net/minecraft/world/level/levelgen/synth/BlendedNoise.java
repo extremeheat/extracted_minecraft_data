@@ -4,133 +4,182 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import net.minecraft.util.Interval;
-import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 
-public class BlendedNoise implements DensityFunction.SimpleFunction {
+public record BlendedNoise(double xzScale, double yScale, double xzFactor, double yFactor, double smearScaleMultiplier) implements DensityFunction {
    private static final Codec<Double> SCALE_RANGE = Codec.doubleRange(0.001, 1000.0);
-   private static final MapCodec<BlendedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SCALE_RANGE.fieldOf("xz_scale").forGetter((n) -> n.xzScale), SCALE_RANGE.fieldOf("y_scale").forGetter((n) -> n.yScale), SCALE_RANGE.fieldOf("xz_factor").forGetter((n) -> n.xzFactor), SCALE_RANGE.fieldOf("y_factor").forGetter((n) -> n.yFactor), Codec.doubleRange(1.0, 8.0).fieldOf("smear_scale_multiplier").forGetter((n) -> n.smearScaleMultiplier)).apply(i, BlendedNoise::createUnseeded));
-   public static final KeyDispatchDataCodec<BlendedNoise> CODEC;
-   private final PerlinNoise minLimitNoise;
-   private final PerlinNoise maxLimitNoise;
-   private final PerlinNoise mainNoise;
-   private final double xzMultiplier;
-   private final double yMultiplier;
-   private final double xzFactor;
-   private final double yFactor;
-   private final double smearScaleMultiplier;
-   private final double maxValue;
-   private final double xzScale;
-   private final double yScale;
+   public static final MapCodec<BlendedNoise> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SCALE_RANGE.fieldOf("xz_scale").forGetter(BlendedNoise::xzScale), SCALE_RANGE.fieldOf("y_scale").forGetter(BlendedNoise::yScale), SCALE_RANGE.fieldOf("xz_factor").forGetter(BlendedNoise::xzFactor), SCALE_RANGE.fieldOf("y_factor").forGetter(BlendedNoise::yFactor), Codec.doubleRange(1.0, 8.0).fieldOf("smear_scale_multiplier").forGetter(BlendedNoise::smearScaleMultiplier)).apply(i, BlendedNoise::new));
+   private static final double BASE_SCALE = 684.412;
+   private static final double LIMIT_FACTOR = 0.9999847412109375;
+   private static final double MAIN_FACTOR = 12.75;
+   private static final int LIMIT_FIRST_OCTAVE = -15;
+   private static final int MAIN_FIRST_OCTAVE = -7;
 
-   public static BlendedNoise createUnseeded(final double xzScale, final double yScale, final double xzFactor, final double yFactor, final double smearScaleMultiplier) {
-      return new BlendedNoise(new XoroshiroRandomSource(0L), xzScale, yScale, xzFactor, yFactor, smearScaleMultiplier);
+   public BlendedNoise {
+      super();
    }
 
-   private BlendedNoise(final PerlinNoise minLimitNoise, final PerlinNoise maxLimitNoise, final PerlinNoise mainNoise, final double xzScale, final double yScale, final double xzFactor, final double yFactor, final double smearScaleMultiplier) {
-      super();
-      this.minLimitNoise = minLimitNoise;
-      this.maxLimitNoise = maxLimitNoise;
-      this.mainNoise = mainNoise;
-      this.xzScale = xzScale;
-      this.yScale = yScale;
-      this.xzFactor = xzFactor;
-      this.yFactor = yFactor;
-      this.smearScaleMultiplier = smearScaleMultiplier;
-      this.xzMultiplier = 684.412 * this.xzScale;
-      this.yMultiplier = 684.412 * this.yScale;
-      this.maxValue = minLimitNoise.maxBrokenValue(this.yMultiplier);
+   private double xzMultiplier() {
+      return 684.412 * this.xzScale;
+   }
+
+   private double yMultiplier() {
+      return 684.412 * this.yScale;
+   }
+
+   public FbmSet createFbmSet(final RandomSource random) {
+      double limitSmearScaleY = this.yMultiplier() * this.smearScaleMultiplier;
+      double mainSmearScaleY = limitSmearScaleY / this.yFactor;
+      return new FbmSet(createFbm(random, -15, limitSmearScaleY, 0.9999847412109375), createFbm(random, -15, limitSmearScaleY, 0.9999847412109375), createFbm(random, -7, mainSmearScaleY, 12.75));
    }
 
    @VisibleForTesting
-   public BlendedNoise(final RandomSource random, final double xzScale, final double yScale, final double xzFactor, final double yFactor, final double smearScaleMultiplier) {
-      this(PerlinNoise.createLegacyForBlendedNoise(random, IntStream.rangeClosed(-15, 0)), PerlinNoise.createLegacyForBlendedNoise(random, IntStream.rangeClosed(-15, 0)), PerlinNoise.createLegacyForBlendedNoise(random, IntStream.rangeClosed(-7, 0)), xzScale, yScale, xzFactor, yFactor, smearScaleMultiplier);
-   }
+   public static NoiseStack createFbm(final RandomSource random, final int firstOctave, final double smearScaleY, double valueFactor) {
+      if (firstOctave > 0) {
+         throw new IllegalArgumentException("firstOctave>0");
+      } else {
+         int octaves = -firstOctave + 1;
+         double factor = 1.0;
+         valueFactor /= Math.pow(2.0, (double)octaves) - 1.0;
+         NoiseStack.Builder stack = NoiseStack.builder();
 
-   public BlendedNoise withNewRandom(final RandomSource terrainRandom) {
-      return new BlendedNoise(terrainRandom, this.xzScale, this.yScale, this.xzFactor, this.yFactor, this.smearScaleMultiplier);
-   }
-
-   public double compute(final DensityFunction.FunctionContext context) {
-      double limitX = (double)context.blockX() * this.xzMultiplier;
-      double limitY = (double)context.blockY() * this.yMultiplier;
-      double limitZ = (double)context.blockZ() * this.xzMultiplier;
-      double mainX = limitX / this.xzFactor;
-      double mainY = limitY / this.yFactor;
-      double mainZ = limitZ / this.xzFactor;
-      double limitSmear = this.yMultiplier * this.smearScaleMultiplier;
-      double mainSmear = limitSmear / this.yFactor;
-      double blendMin = 0.0;
-      double blendMax = 0.0;
-      double mainNoiseValue = 0.0;
-      boolean optimizeLoop = true;
-      double pow = 1.0;
-
-      for(int i = 0; i < 8; ++i) {
-         ImprovedNoise noise = this.mainNoise.getOctaveNoise(i);
-         if (noise != null) {
-            mainNoiseValue += noise.noise(PerlinNoise.wrap(mainX * pow), PerlinNoise.wrap(mainY * pow), PerlinNoise.wrap(mainZ * pow), mainSmear * pow, mainY * pow) / pow;
+         for(int i = octaves - 1; i >= 0; --i) {
+            stack.add(new SmearedPerlinNoise(random, smearScaleY * factor), factor, (float)valueFactor);
+            factor /= 2.0;
+            valueFactor *= 2.0;
          }
 
-         pow /= 2.0;
+         return stack.build();
+      }
+   }
+
+   private static Interval computeFbmRange(final int firstOctave, final double smearScaleY, double valueFactor) {
+      int octaves = firstOctave + 1;
+      double factor = 1.0;
+      valueFactor /= Math.pow(2.0, (double)octaves) - 1.0;
+      Interval range = Interval.ofExact(0.0F);
+
+      for(int i = octaves - 1; i >= 0; --i) {
+         Interval layerRange = Interval.mul(SmearedPerlinNoise.range(smearScaleY * factor), Interval.ofExact((float)valueFactor));
+         range = Interval.add(range, layerRange);
+         factor /= 2.0;
+         valueFactor *= 2.0;
       }
 
-      double factor = (mainNoiseValue / 10.0 + 1.0) / 2.0;
-      boolean isMax = factor >= 1.0;
-      boolean isMin = factor <= 0.0;
-      pow = 1.0;
+      return range;
+   }
 
-      for(int i = 0; i < 16; ++i) {
-         double wx = PerlinNoise.wrap(limitX * pow);
-         double wy = PerlinNoise.wrap(limitY * pow);
-         double wz = PerlinNoise.wrap(limitZ * pow);
-         double yScalePow = limitSmear * pow;
-         if (!isMax) {
-            ImprovedNoise minNoise = this.minLimitNoise.getOctaveNoise(i);
-            if (minNoise != null) {
-               blendMin += minNoise.noise(wx, wy, wz, yScalePow, limitY * pow) / pow;
+   public DensityFunction withNewRandom(final RandomSource terrainRandom) {
+      final FbmSet fbms = this.createFbmSet(terrainRandom);
+      final double xzMultiplier = this.xzMultiplier();
+      final double yMultiplier = this.yMultiplier();
+      return new DensityFunction() {
+         {
+            Objects.requireNonNull(BlendedNoise.this);
+         }
+
+         public float compute(final DensityFunction.FunctionContext context) {
+            double limitX = (double)context.blockX() * xzMultiplier;
+            double limitY = (double)context.blockY() * yMultiplier;
+            double limitZ = (double)context.blockZ() * xzMultiplier;
+            double mainX = limitX / BlendedNoise.this.xzFactor;
+            double mainY = limitY / BlendedNoise.this.yFactor;
+            double mainZ = limitZ / BlendedNoise.this.xzFactor;
+            float factor = fbms.mainNoise.get(mainX, mainY, mainZ) + 0.5F;
+            if (factor <= 0.0F) {
+               return fbms.minLimitNoise.get(limitX, limitY, limitZ);
+            } else if (factor >= 1.0F) {
+               return fbms.maxLimitNoise.get(limitX, limitY, limitZ);
+            } else {
+               float blendMin = fbms.minLimitNoise.get(limitX, limitY, limitZ);
+               float blendMax = fbms.maxLimitNoise.get(limitX, limitY, limitZ);
+               return Mth.clampedLerp(factor, blendMin, blendMax);
             }
          }
 
-         if (!isMin) {
-            ImprovedNoise maxNoise = this.maxLimitNoise.getOctaveNoise(i);
-            if (maxNoise != null) {
-               blendMax += maxNoise.noise(wx, wy, wz, yScalePow, limitY * pow) / pow;
-            }
+         public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
+            contextProvider.fillAllDirectly(output, this);
          }
 
-         pow /= 2.0;
-      }
+         public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+            return this;
+         }
 
-      return Mth.clampedLerp(factor, blendMin / 512.0, blendMax / 512.0) / 128.0;
+         public Interval range() {
+            return fbms.minLimitNoise.range();
+         }
+
+         public @DensityFunction.Axes int domainAxes() {
+            return 7;
+         }
+
+         public MapCodec<? extends DensityFunction> codec() {
+            throw new UnsupportedOperationException();
+         }
+      };
+   }
+
+   public float compute(final DensityFunction.FunctionContext context) {
+      return 0.0F;
+   }
+
+   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
+      contextProvider.fillAllDirectly(output, this);
    }
 
    public Interval range() {
-      return Interval.ofSymmetric(this.maxValue);
+      return computeFbmRange(-15, this.yMultiplier() * this.smearScaleMultiplier, 0.9999847412109375);
    }
 
-   @VisibleForTesting
-   public void parityConfigString(final StringBuilder sb) {
-      sb.append("BlendedNoise{minLimitNoise=");
-      this.minLimitNoise.parityConfigString(sb);
-      sb.append(", maxLimitNoise=");
-      this.maxLimitNoise.parityConfigString(sb);
-      sb.append(", mainNoise=");
-      this.mainNoise.parityConfigString(sb);
-      sb.append(String.format(Locale.ROOT, ", xzScale=%.3f, yScale=%.3f, xzMainScale=%.3f, yMainScale=%.3f, cellWidth=4, cellHeight=8", 684.412, 684.412, 8.555150000000001, 4.277575000000001)).append('}');
+   public @DensityFunction.Axes int domainAxes() {
+      return 7;
    }
 
-   public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+   public MapCodec<BlendedNoise> codec() {
       return CODEC;
    }
 
-   static {
-      CODEC = KeyDispatchDataCodec.<BlendedNoise>of(DATA_CODEC);
+   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+      return this;
+   }
+
+   public static record FbmSet(NoiseStack minLimitNoise, NoiseStack maxLimitNoise, NoiseStack mainNoise) {
+      public FbmSet {
+         super();
+      }
+
+      @VisibleForTesting
+      public void parityConfigString(final StringBuilder sb) {
+         sb.append("BlendedNoise{minLimitNoise=");
+         this.parityConfigString(sb, this.minLimitNoise);
+         sb.append(", maxLimitNoise=");
+         this.parityConfigString(sb, this.maxLimitNoise);
+         sb.append(", mainNoise=");
+         this.parityConfigString(sb, this.mainNoise);
+         sb.append(String.format(Locale.ROOT, ", xzScale=%.3f, yScale=%.3f, xzMainScale=%.3f, yMainScale=%.3f, cellWidth=4, cellHeight=8", 684.412, 684.412, 8.555150000000001, 4.277575000000001)).append('}');
+      }
+
+      private void parityConfigString(final StringBuilder output, final NoiseStack noise) {
+         int octaves = noise.layers.length;
+         output.append("PerlinNoise{");
+         List<String> amplitudeStrings = IntStream.range(0, octaves).mapToObj((var0) -> "1.00").toList();
+         output.append("first octave: ").append(-octaves + 1).append(", amplitudes: ").append(amplitudeStrings).append(", noise levels: [");
+
+         for(int i = 0; i < octaves; ++i) {
+            output.append(i).append(": ");
+            ((SmearedPerlinNoise)noise.getLayer(octaves - 1 - i)).parityConfigString(output);
+            output.append(", ");
+         }
+
+         output.append("]");
+         output.append("}");
+      }
    }
 }

@@ -89,7 +89,6 @@ public abstract class Display extends Entity {
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
    private @Nullable RenderState renderState;
-   private final LinearInterpolationHandler interpolation = new LinearInterpolationHandler(this, 0);
 
    public Display(final EntityType<?> type, final Level level) {
       super(type, level);
@@ -108,7 +107,11 @@ public abstract class Display extends Entity {
       }
 
       if (DATA_POS_ROT_INTERPOLATION_DURATION_ID.equals(accessor)) {
-         this.interpolation.setInterpolationLength(this.getPosRotInterpolationDuration());
+         InterpolationHandler var3 = this.interpolationHandler;
+         if (var3 instanceof LinearInterpolationHandler) {
+            LinearInterpolationHandler interpolation = (LinearInterpolationHandler)var3;
+            interpolation.setInterpolationLength(this.getPosRotInterpolationDuration());
+         }
       }
 
       if (DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID.equals(accessor)) {
@@ -162,14 +165,12 @@ public abstract class Display extends Entity {
 
             this.updateRenderSubState(shouldInterpolate, this.lastProgress);
          }
-
-         this.interpolation.interpolate();
       }
 
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
+   protected InterpolationHandler createInterpolationHandler() {
+      return LinearInterpolationHandler.create(this, 0);
    }
 
    protected abstract void updateRenderSubState(boolean shouldInterpolate, float progress);
@@ -229,8 +230,8 @@ public abstract class Display extends Entity {
       output.storeNullable("brightness", Brightness.CODEC, this.getBrightnessOverride());
    }
 
-   public AABB getBoundingBoxForCulling() {
-      return this.cullingBoundingBox;
+   public AABB getInterpolatedBoundingBox(final float partialTicks) {
+      return this.xOld == this.getX() && this.yOld == this.getY() && this.zOld == this.getZ() ? this.cullingBoundingBox : this.cullingBoundingBox.move(Mth.lerp((double)partialTicks, this.xOld, this.getX()) - this.getX(), Mth.lerp((double)partialTicks, this.yOld, this.getY()) - this.getY(), Mth.lerp((double)partialTicks, this.zOld, this.getZ()) - this.getZ());
    }
 
    public boolean affectedByCulling() {
@@ -238,7 +239,7 @@ public abstract class Display extends Entity {
    }
 
    public PushReaction getPistonPushReaction() {
-      return PushReaction.IGNORE;
+      return PushReaction.IGNORE_ENTITY;
    }
 
    public boolean isIgnoringBlockTriggers() {

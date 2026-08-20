@@ -70,7 +70,7 @@ public record BiomeSpecialEffects(int waterColor, Optional<Integer> foliageColor
       },
       SWAMP("swamp") {
          public int modifyColor(final double x, final double z, final int baseColor) {
-            double groundValue = Biome.BIOME_INFO_NOISE.getValue(x * 0.0225, z * 0.0225, false);
+            double groundValue = (double)Biome.BIOME_INFO_NOISE.get(x * 0.0225, z * 0.0225);
             return groundValue < -0.1 ? -11766212 : -9801671;
          }
       };

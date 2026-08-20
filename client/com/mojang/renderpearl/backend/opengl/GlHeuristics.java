@@ -22,11 +22,15 @@ public class GlHeuristics {
    private static final List<String> DEVICE_NAMES_THAT_IMPLY_VIRTUAL = List.of("virtgl");
    private final boolean isGlOnDx12;
    private final boolean isAmd;
+   private final boolean isNvidia;
+   private final boolean couldBeIntelGen7;
 
-   GlHeuristics(final String deviceName) {
+   GlHeuristics(final String deviceName, final String vendor) {
       super();
       this.isGlOnDx12 = isGlOnDx12(deviceName);
       this.isAmd = isAmd(deviceName);
+      this.isNvidia = isNvidia(deviceName);
+      this.couldBeIntelGen7 = couldBeIntelGen7(deviceName.toLowerCase(Locale.ROOT), vendor.toLowerCase(Locale.ROOT));
    }
 
    public boolean isGlOnDx12() {
@@ -37,6 +41,14 @@ public class GlHeuristics {
       return this.isAmd;
    }
 
+   public boolean isNvidia() {
+      return this.isNvidia;
+   }
+
+   public boolean couldBeIntelGen7() {
+      return this.couldBeIntelGen7;
+   }
+
    private static boolean isGlOnDx12(final String deviceName) {
       boolean isWindowsArm64 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
       return isWindowsArm64 || deviceName.startsWith("D3D12");
@@ -44,6 +56,10 @@ public class GlHeuristics {
 
    private static boolean isAmd(final String deviceName) {
       return deviceName.contains("AMD");
+   }
+
+   private static boolean isNvidia(final String deviceName) {
+      return deviceName.toLowerCase(Locale.ROOT).contains("nvidia");
    }
 
    private static int getMaxSupportedTextureSize() {
@@ -65,7 +81,22 @@ public class GlHeuristics {
    public DeviceInfo createDeviceInfo(final GLCapabilities capabilities, final int maxSupportedAnisotropy, final Set<String> enabledExtensions) {
       String renderer = GlStateManager._getString(7937);
       String vendor = GlStateManager._getString(7936);
-      return new DeviceInfo(renderer, vendor, GlStateManager._getString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852)), new DeviceFeatures(enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd()), this.guessDeviceType(renderer.toLowerCase(Locale.ROOT), vendor.toLowerCase(Locale.ROOT)));
+      int drawIndirectCount = enabledExtensions.contains("GL_ARB_multi_draw_indirect") ? 2147483647 : (enabledExtensions.contains("GL_ARB_draw_indirect") ? 1 : 0);
+      return new DeviceInfo(renderer, vendor, GlStateManager._getString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852), drawIndirectCount), new DeviceFeatures(true, enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd(), Util.isAppleSiliconMac(renderer)), this.guessDeviceType(renderer.toLowerCase(Locale.ROOT), vendor.toLowerCase(Locale.ROOT)));
+   }
+
+   private static boolean couldBeIntelGen7(final String renderer, final String vendor) {
+      if (!vendor.contains("intel")) {
+         return false;
+      } else if (renderer.contains("2500")) {
+         return true;
+      } else if (renderer.contains("4000")) {
+         return true;
+      } else if (renderer.contains("hd graphics (byt)")) {
+         return true;
+      } else {
+         return renderer.endsWith("hd graphics");
+      }
    }
 
    private DeviceType guessDeviceType(final String renderer, final String vendor) {

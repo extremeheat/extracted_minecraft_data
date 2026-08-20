@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.game;
 
 import java.util.BitSet;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -10,35 +11,16 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 
-public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket>codec(ClientboundLevelChunkWithLightPacket::write, ClientboundLevelChunkWithLightPacket::new);
-   private final int x;
-   private final int z;
-   private final ClientboundLevelChunkPacketData chunkData;
-   private final ClientboundLightUpdatePacketData lightData;
+public record ClientboundLevelChunkWithLightPacket(int x, int z, ClientboundLevelChunkPacketData chunkData, ClientboundLightUpdatePacketData lightData) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC;
 
    public ClientboundLevelChunkWithLightPacket(final LevelChunk levelChunk, final LevelLightEngine lightEngine, final @Nullable BitSet skyChangedLightSectionFilter, final @Nullable BitSet blockChangedLightSectionFilter) {
-      super();
       ChunkPos chunkPos = levelChunk.getPos();
-      this.x = chunkPos.x();
-      this.z = chunkPos.z();
-      this.chunkData = new ClientboundLevelChunkPacketData(levelChunk);
-      this.lightData = new ClientboundLightUpdatePacketData(chunkPos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
+      this(chunkPos.x(), chunkPos.z(), new ClientboundLevelChunkPacketData(levelChunk), new ClientboundLightUpdatePacketData(chunkPos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter));
    }
 
-   private ClientboundLevelChunkWithLightPacket(final RegistryFriendlyByteBuf input) {
+   public ClientboundLevelChunkWithLightPacket {
       super();
-      this.x = input.readInt();
-      this.z = input.readInt();
-      this.chunkData = new ClientboundLevelChunkPacketData(input, this.x, this.z);
-      this.lightData = new ClientboundLightUpdatePacketData(input, this.x, this.z);
-   }
-
-   private void write(final RegistryFriendlyByteBuf output) {
-      output.writeInt(this.x);
-      output.writeInt(this.z);
-      this.chunkData.write(output);
-      this.lightData.write(output);
    }
 
    public PacketType<ClientboundLevelChunkWithLightPacket> type() {
@@ -49,19 +31,7 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
       listener.handleLevelChunkWithLight(this);
    }
 
-   public int getX() {
-      return this.x;
-   }
-
-   public int getZ() {
-      return this.z;
-   }
-
-   public ClientboundLevelChunkPacketData getChunkData() {
-      return this.chunkData;
-   }
-
-   public ClientboundLightUpdatePacketData getLightData() {
-      return this.lightData;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, ClientboundLevelChunkWithLightPacket::x, ByteBufCodecs.INT, ClientboundLevelChunkWithLightPacket::z, ClientboundLevelChunkPacketData.STREAM_CODEC, ClientboundLevelChunkWithLightPacket::chunkData, ClientboundLightUpdatePacketData.STREAM_CODEC, ClientboundLevelChunkWithLightPacket::lightData, ClientboundLevelChunkWithLightPacket::new);
    }
 }

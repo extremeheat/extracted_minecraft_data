@@ -1,35 +1,35 @@
 package net.minecraft.util;
 
+import it.unimi.dsi.fastutil.floats.FloatUnaryOperator;
 import java.util.List;
-import java.util.function.DoubleUnaryOperator;
 
 public final class Interval {
-   public static final Interval NaI = new Interval(0.0 / 0.0, 0.0 / 0.0);
-   public static final Interval INFINITE = new Interval(-1.0 / 0.0, 1.0 / 0.0);
-   private static final Interval NEGATIVE_ONE_TO_ONE = new Interval(-1.0, 1.0);
-   private static final Interval ZERO_TO_ONE = new Interval(0.0, 1.0);
-   private final double min;
-   private final double max;
+   public static final Interval NaI = new Interval(0.0F / 0.0F, 0.0F / 0.0F);
+   public static final Interval INFINITE = new Interval(-1.0F / 0.0F, 1.0F / 0.0F);
+   private static final Interval NEGATIVE_ONE_TO_ONE = new Interval(-1.0F, 1.0F);
+   private static final Interval ZERO_TO_ONE = new Interval(0.0F, 1.0F);
+   private final float min;
+   private final float max;
 
-   private Interval(final double min, final double max) {
+   private Interval(final float min, final float max) {
       super();
       this.min = min;
       this.max = max;
    }
 
-   public static Interval of(final double min, final double max) {
+   public static Interval of(final float min, final float max) {
       if (max < min) {
          throw new IllegalArgumentException("max (" + max + ") < min (" + min + ")");
-      } else if (!Double.isNaN(min) && !Double.isNaN(max)) {
-         if (min == -1.0 / 0.0 && max == 1.0 / 0.0) {
+      } else if (!Float.isNaN(min) && !Float.isNaN(max)) {
+         if (min == -1.0F / 0.0F && max == 1.0F / 0.0F) {
             return INFINITE;
          } else {
-            if (max == 1.0) {
-               if (min == 0.0) {
+            if (max == 1.0F) {
+               if (min == 0.0F) {
                   return ZERO_TO_ONE;
                }
 
-               if (min == -1.0) {
+               if (min == -1.0F) {
                   return NEGATIVE_ONE_TO_ONE;
                }
             }
@@ -41,11 +41,11 @@ public final class Interval {
       }
    }
 
-   public static Interval ofSymmetric(final double range) {
+   public static Interval ofSymmetric(final float range) {
       return of(-range, range);
    }
 
-   public static Interval ofExact(final double value) {
+   public static Interval ofExact(final float value) {
       return of(value, value);
    }
 
@@ -53,8 +53,8 @@ public final class Interval {
       if (intervals.isEmpty()) {
          throw new IllegalArgumentException("At least one interval required");
       } else {
-         double min = 1.0 / 0.0;
-         double max = -1.0 / 0.0;
+         float min = 1.0F / 0.0F;
+         float max = -1.0F / 0.0F;
 
          for(Interval interval : intervals) {
             if (!interval.isNaI()) {
@@ -75,52 +75,60 @@ public final class Interval {
       return encapsulating(List.of(intervals));
    }
 
-   public static Interval encapsulating(final double first, final double second) {
-      if (Double.isNaN(first) && Double.isNaN(second)) {
+   public static Interval encapsulating(final float first, final float second) {
+      if (Float.isNaN(first) && Float.isNaN(second)) {
          return NaI;
-      } else if (Double.isNaN(first)) {
+      } else if (Float.isNaN(first)) {
          return ofExact(second);
       } else {
-         return Double.isNaN(second) ? ofExact(first) : of(Math.min(first, second), Math.max(first, second));
+         return Float.isNaN(second) ? ofExact(first) : of(Math.min(first, second), Math.max(first, second));
+      }
+   }
+
+   private static Interval encapsulating(final Interval first, final float second) {
+      if (Float.isNaN(second)) {
+         return first;
+      } else {
+         return first.isNaI() ? ofExact(second) : of(Math.min(first.min(), second), Math.max(first.max(), second));
       }
    }
 
    public static Interval add(final Interval left, final Interval right) {
-      double min = left.min + right.min;
-      double max = left.max + right.max;
-      return !Double.isNaN(min) && !Double.isNaN(max) ? of(min, max) : NaI;
+      float min = left.min + right.min;
+      float max = left.max + right.max;
+      return !Float.isNaN(min) && !Float.isNaN(max) ? of(min, max) : NaI;
    }
 
    public static Interval sub(final Interval left, final Interval right) {
-      double min = left.min - right.max;
-      double max = left.max - right.min;
-      return !Double.isNaN(min) && !Double.isNaN(max) ? of(min, max) : NaI;
+      float min = left.min - right.max;
+      float max = left.max - right.min;
+      return !Float.isNaN(min) && !Float.isNaN(max) ? of(min, max) : NaI;
    }
 
    public static Interval mul(final Interval left, final Interval right) {
       if (!left.isNaI() && !right.isNaI()) {
-         double minMin = mulBound(left.min, right.min);
-         double minMax = mulBound(left.min, right.max);
-         double maxMin = mulBound(left.max, right.min);
-         double maxMax = mulBound(left.max, right.max);
+         float minMin = mulBound(left.min, right.min);
+         float minMax = mulBound(left.min, right.max);
+         float maxMin = mulBound(left.max, right.min);
+         float maxMax = mulBound(left.max, right.max);
          return of(Math.min(Math.min(minMin, minMax), Math.min(maxMin, maxMax)), Math.max(Math.max(minMin, minMax), Math.max(maxMin, maxMax)));
       } else {
          return NaI;
       }
    }
 
-   private static double mulBound(final double left, final double right) {
-      return left != 0.0 && right != 0.0 ? left * right : 0.0;
+   private static float mulBound(final float left, final float right) {
+      return left != 0.0F && right != 0.0F ? left * right : 0.0F;
    }
 
-   public static Interval inverse(final Interval input) {
-      if (!input.isNaI() && (input.min != 0.0 || input.max != 0.0)) {
-         if (!input.contains(0.0)) {
-            return of(1.0 / input.max, 1.0 / input.min);
-         } else if (input.max == 0.0) {
-            return of(-1.0 / 0.0, 1.0 / input.min);
+   public static Interval reciprocal(final Interval input) {
+      if (!input.isNaI() && (input.min != 0.0F || input.max != 0.0F)) {
+         if (!input.contains(0.0F)) {
+            return of(1.0F / input.max, 1.0F / input.min);
+         } else if (input.max == 0.0F) {
+            return of(-1.0F / 0.0F, 1.0F / input.min);
          } else {
-            return input.min == 0.0 ? of(1.0 / input.max, 1.0 / 0.0) : INFINITE;
+            return input.min == 0.0F ? of(1.0F / input.max, 1.0F / 0.0F) : INFINITE;
          }
       } else {
          return NaI;
@@ -128,7 +136,7 @@ public final class Interval {
    }
 
    public static Interval div(final Interval left, final Interval right) {
-      return mul(left, inverse(right));
+      return mul(left, reciprocal(right));
    }
 
    public static Interval min(final Interval left, final Interval right) {
@@ -139,7 +147,7 @@ public final class Interval {
       return !left.isNaI() && !right.isNaI() ? of(Math.max(left.min, right.min), Math.max(left.max, right.max)) : NaI;
    }
 
-   public static Interval clamp(final Interval input, final double min, final double max) {
+   public static Interval clamp(final Interval input, final float min, final float max) {
       if (min > max) {
          throw new IllegalArgumentException("min (" + min + ") > max (" + max + ")");
       } else if (input.isNaI()) {
@@ -155,8 +163,8 @@ public final class Interval {
       if (input.isNaI()) {
          return NaI;
       } else {
-         double max = Math.max(Math.abs(input.min), Math.abs(input.max));
-         return input.contains(0.0) ? of(0.0, max) : of(Math.min(Math.abs(input.min), Math.abs(input.max)), max);
+         float max = Math.max(Math.abs(input.min), Math.abs(input.max));
+         return input.contains(0.0F) ? of(0.0F, max) : of(Math.min(Math.abs(input.min), Math.abs(input.max)), max);
       }
    }
 
@@ -164,18 +172,118 @@ public final class Interval {
       if (input.isNaI()) {
          return NaI;
       } else {
-         double max = Math.max(Mth.square(input.min), Mth.square(input.max));
-         return input.contains(0.0) ? of(0.0, max) : of(Math.min(Mth.square(input.min), Mth.square(input.max)), max);
+         float max = Math.max(Mth.square(input.min), Mth.square(input.max));
+         return input.contains(0.0F) ? of(0.0F, max) : of(Math.min(Mth.square(input.min), Mth.square(input.max)), max);
       }
    }
 
-   public static Interval mapMonotonic(final Interval input, final DoubleUnaryOperator monotonicOp) {
+   public static Interval pow(final Interval base, final Interval exponent) {
+      if (!base.isNaI() && !exponent.isNaI()) {
+         if (base.min() == base.max()) {
+            return pow(base.min(), exponent);
+         } else {
+            Interval result = encapsulating(pow(base.min(), exponent), pow(base.max(), exponent));
+            if (base.contains(0.0F)) {
+               if (base.max() > 0.0F) {
+                  result = encapsulating(result, pow(0.0F, exponent));
+               }
+
+               if (base.min() < 0.0F) {
+                  result = encapsulating(result, pow(-0.0F, exponent));
+               }
+            }
+
+            return result;
+         }
+      } else {
+         return NaI;
+      }
+   }
+
+   private static Interval pow(final float base, final Interval exponent) {
+      if (!Float.isNaN(base) && !exponent.isNaI()) {
+         if (exponent.min() == exponent.max()) {
+            float value = (float)Math.pow((double)base, (double)exponent.min());
+            return Float.isNaN(value) ? NaI : ofExact(value);
+         } else if (base == 0.0F) {
+            return mul(powZeroBase(exponent), ofExact(Math.copySign(1.0F, base)));
+         } else if (base == 1.0F) {
+            return ofExact(1.0F);
+         } else {
+            return base > 0.0F ? powPositiveBase(base, exponent) : powNegativeBase(base, exponent);
+         }
+      } else {
+         return NaI;
+      }
+   }
+
+   private static Interval powPositiveBase(final float base, final Interval exponent) {
+      return Float.isFinite(exponent.min()) && Float.isFinite(exponent.max()) ? encapsulating((float)Math.pow((double)base, (double)exponent.min()), (float)Math.pow((double)base, (double)exponent.max())) : powInfiniteExponent(base, exponent);
+   }
+
+   private static Interval powZeroBase(final Interval exponent) {
+      if (exponent.contains(0.0F)) {
+         if (exponent.max() == 0.0F) {
+            return of(1.0F, 1.0F / 0.0F);
+         } else {
+            return exponent.min() == 0.0F ? ZERO_TO_ONE : of(0.0F, 1.0F / 0.0F);
+         }
+      } else {
+         return exponent.max() < 0.0F ? ofExact(1.0F / 0.0F) : ofExact(0.0F);
+      }
+   }
+
+   private static Interval powInfiniteExponent(final float base, final Interval exponent) {
+      if (Float.isInfinite(exponent.min()) && Float.isInfinite(exponent.max())) {
+         return of(0.0F, 1.0F / 0.0F);
+      } else if (Float.isInfinite(exponent.min())) {
+         return base < 1.0F ? of((float)Math.pow((double)base, (double)exponent.max()), 1.0F / 0.0F) : of(0.0F, (float)Math.pow((double)base, (double)exponent.max()));
+      } else {
+         return base < 1.0F ? of(0.0F, (float)Math.pow((double)base, (double)exponent.min())) : of((float)Math.pow((double)base, (double)exponent.min()), 1.0F / 0.0F);
+      }
+   }
+
+   private static Interval powNegativeBase(final float base, final Interval exponent) {
+      float exponentMinInt = (float)Math.ceil((double)exponent.min());
+      float exponentMaxInt = (float)Math.floor((double)exponent.max());
+      if (exponentMaxInt < exponentMinInt) {
+         return NaI;
+      } else {
+         float baseToMinInt = (float)Math.pow((double)base, (double)exponentMinInt);
+         float baseToMaxInt = (float)Math.pow((double)base, (double)exponentMaxInt);
+         Interval result = encapsulating(baseToMinInt, baseToMaxInt);
+         if (Float.isInfinite(exponentMinInt)) {
+            result = encapsulating(result, -baseToMinInt);
+         } else if (exponentMinInt + 1.0F < exponentMaxInt) {
+            result = encapsulating(result, (float)Math.pow((double)base, (double)(exponentMinInt + 1.0F)));
+         }
+
+         if (Float.isInfinite(exponentMaxInt)) {
+            result = encapsulating(result, -baseToMaxInt);
+         } else if (exponentMaxInt - 1.0F > exponentMinInt) {
+            result = encapsulating(result, (float)Math.pow((double)base, (double)(exponentMaxInt - 1.0F)));
+         }
+
+         return result;
+      }
+   }
+
+   public static Interval log(final Interval input) {
+      if (input.max() < 0.0F) {
+         return NaI;
+      } else {
+         Interval clippedInput = max(input, ofExact(0.0F));
+         return mapMonotonic(clippedInput, (x) -> (float)Math.log((double)x));
+      }
+   }
+
+   public static Interval mapMonotonic(final Interval input, final FloatUnaryOperator monotonicOp) {
       if (input.isNaI()) {
          return NaI;
       } else {
-         double mappedMin = monotonicOp.applyAsDouble(input.min);
-         double mappedMax = monotonicOp.applyAsDouble(input.max);
-         if (!Double.isNaN(mappedMin) && !Double.isNaN(mappedMax)) {
+         float mappedMin = monotonicOp.apply(input.min);
+         float mappedMax = monotonicOp.apply(input.max);
+         if (!Float.isNaN(mappedMin) && !Float.isNaN(mappedMax)) {
             return of(Math.min(mappedMin, mappedMax), Math.max(mappedMin, mappedMax));
          } else {
             throw new IllegalStateException("Monotonic operator should not produce NaN");
@@ -187,49 +295,65 @@ public final class Interval {
       return !alpha.isNaI() && !first.isNaI() && !second.isNaI() ? encapsulating(lerp(alpha, first.min, second.min), lerp(alpha, first.max, second.min), lerp(alpha, first.min, second.max), lerp(alpha, first.max, second.max)) : NaI;
    }
 
-   public static Interval lerp(final Interval alpha, final double first, final double second) {
-      if (!alpha.isNaI() && !Double.isNaN(first) && !Double.isNaN(second)) {
-         return Double.isFinite(first) && Double.isFinite(second) ? lerpFiniteBounds(alpha, first, second) : lerpInfiniteBounds(alpha, first, second);
+   public static Interval lerp(final Interval alpha, final float first, final float second) {
+      if (!alpha.isNaI() && !Float.isNaN(first) && !Float.isNaN(second)) {
+         return Float.isFinite(first) && Float.isFinite(second) ? lerpFiniteBounds(alpha, first, second) : lerpInfiniteBounds(alpha, first, second);
       } else {
          return NaI;
       }
    }
 
-   private static Interval lerpFiniteBounds(final Interval alpha, final double first, final double second) {
+   private static Interval lerpFiniteBounds(final Interval alpha, final float first, final float second) {
       return encapsulating(lerpFiniteBound(alpha.min, first, second), lerpFiniteBound(alpha.max, first, second));
    }
 
-   private static double lerpFiniteBound(final double alpha, final double first, final double second) {
+   private static float lerpFiniteBound(final float alpha, final float first, final float second) {
       return first + mulBound(alpha, second - first);
    }
 
-   private static Interval lerpInfiniteBounds(final Interval alpha, final double first, final double second) {
+   private static Interval lerpInfiniteBounds(final Interval alpha, final float first, final float second) {
       if (first == second) {
          return ofExact(first);
       } else {
-         double newMin = lerpInfiniteBound(alpha.min, first, second);
-         double newMax = lerpInfiniteBound(alpha.max, first, second);
-         return !Double.isNaN(newMin) && !Double.isNaN(newMax) ? encapsulating(newMin, newMax) : NaI;
+         float newMin = lerpInfiniteBound(alpha.min, first, second);
+         float newMax = lerpInfiniteBound(alpha.max, first, second);
+         return !Float.isNaN(newMin) && !Float.isNaN(newMax) ? encapsulating(newMin, newMax) : NaI;
       }
    }
 
-   private static double lerpInfiniteBound(final double alpha, final double first, final double second) {
-      double firstPart = mulBound(1.0 - alpha, first);
-      double secondPart = mulBound(alpha, second);
-      if (Double.isInfinite(firstPart) && Double.isInfinite(secondPart)) {
-         if (alpha <= 0.0) {
-            return second > first ? -1.0 / 0.0 : 1.0 / 0.0;
-         } else if (alpha >= 1.0) {
-            return second > first ? 1.0 / 0.0 : -1.0 / 0.0;
+   private static float lerpInfiniteBound(final float alpha, final float first, final float second) {
+      float firstPart = mulBound(1.0F - alpha, first);
+      float secondPart = mulBound(alpha, second);
+      if (Float.isInfinite(firstPart) && Float.isInfinite(secondPart)) {
+         if (alpha <= 0.0F) {
+            return second > first ? -1.0F / 0.0F : 1.0F / 0.0F;
+         } else if (alpha >= 1.0F) {
+            return second > first ? 1.0F / 0.0F : -1.0F / 0.0F;
          } else {
-            return 0.0 / 0.0;
+            return 0.0F / 0.0F;
          }
       } else {
          return firstPart + secondPart;
       }
    }
 
-   public boolean contains(final double value) {
+   public static Interval sign(final Interval input) {
+      if (input.isNaI()) {
+         return NaI;
+      } else if (input.min() == input.max()) {
+         return ofExact(Math.signum(input.min()));
+      } else if (input.contains(0.0F)) {
+         if (input.min() == 0.0F) {
+            return of(0.0F, 1.0F);
+         } else {
+            return input.max() == 0.0F ? of(-1.0F, 0.0F) : of(-1.0F, 1.0F);
+         }
+      } else {
+         return ofExact(input.min() > 0.0F ? 1.0F : -1.0F);
+      }
+   }
+
+   public boolean contains(final float value) {
       return value >= this.min && value <= this.max;
    }
 
@@ -241,11 +365,11 @@ public final class Interval {
       return this == NaI;
    }
 
-   public double min() {
+   public float min() {
       return this.min;
    }
 
-   public double max() {
+   public float max() {
       return this.max;
    }
 
@@ -268,8 +392,8 @@ public final class Interval {
    }
 
    public int hashCode() {
-      int hash = Double.hashCode(this.min);
-      hash = hash * 31 + Double.hashCode(this.max);
+      int hash = Float.hashCode(this.min);
+      hash = hash * 31 + Float.hashCode(this.max);
       return hash;
    }
 

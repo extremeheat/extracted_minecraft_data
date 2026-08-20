@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -24,8 +25,8 @@ public class SetLoreFunction extends LootItemConditionalFunction {
    private final ListOperation mode;
    private final Optional<LootContext.EntityTarget> resolutionContext;
 
-   public SetLoreFunction(final List<LootItemCondition> predicates, final List<Component> lore, final ListOperation mode, final Optional<LootContext.EntityTarget> resolutionContext) {
-      super(predicates);
+   public SetLoreFunction(final Optional<Holder<LootItemCondition>> condition, final List<Component> lore, final ListOperation mode, final Optional<LootContext.EntityTarget> resolutionContext) {
+      super(condition);
       this.lore = List.copyOf(lore);
       this.mode = mode;
       this.resolutionContext = resolutionContext;
@@ -88,7 +89,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new SetLoreFunction(this.getConditions(), this.lore.build(), this.mode, this.resolutionContext);
+         return new SetLoreFunction(this.getCondition(), this.lore.build(), this.mode, this.resolutionContext);
       }
    }
 }

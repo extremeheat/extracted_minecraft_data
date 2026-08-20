@@ -1,6 +1,7 @@
 package net.minecraft.advancements.predicates;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,9 +10,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -27,7 +28,8 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.jspecify.annotations.Nullable;
 
 public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt, DataComponentMatchers components) {
-   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(i, BlockPredicate::new));
+   public static final MapCodec<BlockPredicate> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(i, BlockPredicate::new));
+   public static final Codec<BlockPredicate> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPredicate> STREAM_CODEC;
 
    public BlockPredicate {
@@ -42,11 +44,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       } else {
          if (this.nbt.isPresent() || !this.components.isEmpty()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (this.nbt.isPresent() && !matchesBlockEntity(level, blockEntity, (NbtPredicate)this.nbt.get())) {
-               return false;
-            }
-
-            if (!this.components.isEmpty() && !matchesComponents(blockEntity, this.components)) {
+            if (!this.matchesBlockEntity(level, blockEntity)) {
                return false;
             }
          }
@@ -59,11 +57,11 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       if (!this.matchesState(blockInWorld.getState())) {
          return false;
       } else {
-         return !this.nbt.isPresent() || matchesBlockEntity(blockInWorld.getLevel(), blockInWorld.getEntity(), (NbtPredicate)this.nbt.get());
+         return !this.nbt.isPresent() || matchesBlockEntityData(blockInWorld.getLevel(), blockInWorld.getEntity(), (NbtPredicate)this.nbt.get());
       }
    }
 
-   private boolean matchesState(final BlockState state) {
+   public boolean matchesState(final BlockState state) {
       if (this.blocks.isPresent() && !state.is((HolderSet)this.blocks.get())) {
          return false;
       } else {
@@ -71,7 +69,15 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       }
    }
 
-   private static boolean matchesBlockEntity(final LevelReader level, final @Nullable BlockEntity entity, final NbtPredicate nbt) {
+   public boolean matchesBlockEntity(final LevelReader level, final @Nullable BlockEntity blockEntity) {
+      if (this.nbt.isPresent() && !matchesBlockEntityData(level, blockEntity, (NbtPredicate)this.nbt.get())) {
+         return false;
+      } else {
+         return this.components.isEmpty() || matchesComponents(blockEntity, this.components);
+      }
+   }
+
+   private static boolean matchesBlockEntityData(final LevelReader level, final @Nullable BlockEntity entity, final NbtPredicate nbt) {
       return entity != null && nbt.matches((Tag)entity.saveWithFullMetadata((HolderLookup.Provider)level.registryAccess()));
    }
 
@@ -84,6 +90,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
    }
 
    static {
+      CODEC = MAP_CODEC.codec();
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BLOCK)), BlockPredicate::blocks, ByteBufCodecs.optional(StatePropertiesPredicate.STREAM_CODEC), BlockPredicate::properties, ByteBufCodecs.optional(NbtPredicate.STREAM_CODEC), BlockPredicate::nbt, DataComponentMatchers.STREAM_CODEC, BlockPredicate::components, BlockPredicate::new);
    }
 

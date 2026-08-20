@@ -5,13 +5,12 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.system.MemoryStack;
 
 public class GlobalSettingsUniform implements AutoCloseable {
-   public static final int UBO_SIZE = (new Std140SizeCalculator()).putIVec3().putVec3().putVec2().putFloat().putFloat().putInt().putInt().get();
+   public static final int UBO_SIZE = (new Std140SizeCalculator()).putIVec3().putFloat().putVec3().putFloat().putVec2().putInt().putInt().get();
    private final GpuBuffer buffer;
 
    public GlobalSettingsUniform() {
@@ -19,14 +18,14 @@ public class GlobalSettingsUniform implements AutoCloseable {
       this.buffer = RenderSystem.getDevice().createBuffer(() -> "Global Settings UBO", 136, (long)UBO_SIZE);
    }
 
-   public void update(final int width, final int height, final double glintAlpha, final long gameTime, final DeltaTracker deltaTracker, final int menuBlurRadius, final Vec3 cameraPos, final boolean useRgss) {
+   public void update(final int width, final int height, final double glintAlpha, final long gameTime, final float worldPartialTicks, final int menuBlurRadius, final Vec3 cameraPos, final boolean useRgss) {
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
          int cameraX = Mth.floor(cameraPos.x);
          int cameraY = Mth.floor(cameraPos.y);
          int cameraZ = Mth.floor(cameraPos.z);
-         ByteBuffer data = Std140Builder.onStack(stack, UBO_SIZE).putIVec3(cameraX, cameraY, cameraZ).putVec3((float)((double)cameraX - cameraPos.x), (float)((double)cameraY - cameraPos.y), (float)((double)cameraZ - cameraPos.z)).putVec2((float)width, (float)height).putFloat((float)glintAlpha).putFloat(((float)(gameTime % 24000L) + deltaTracker.getGameTimeDeltaPartialTick(false)) / 24000.0F).putInt(menuBlurRadius).putInt(useRgss ? 1 : 0).get();
+         ByteBuffer data = Std140Builder.onStack(stack, UBO_SIZE).putIVec3(cameraX, cameraY, cameraZ).putFloat((float)glintAlpha).putVec3((float)((double)cameraX - cameraPos.x), (float)((double)cameraY - cameraPos.y), (float)((double)cameraZ - cameraPos.z)).putFloat(((float)(gameTime % 24000L) + worldPartialTicks) / 24000.0F).putVec2((float)width, (float)height).putInt(menuBlurRadius).putInt(useRgss ? 1 : 0).get();
          RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), data);
       } catch (Throwable var17) {
          if (stack != null) {

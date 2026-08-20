@@ -22,13 +22,9 @@ public class Minecart extends AbstractMinecart {
    }
 
    public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
-      if (!player.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide() || player.startRiding(this))) {
+      if (!player.isSecondaryUseActive() && !this.isVehicle()) {
          this.playerRotationOffset = this.rotationOffset;
-         if (!this.level().isClientSide()) {
-            return (InteractionResult)(player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
-         } else {
-            return InteractionResult.SUCCESS;
-         }
+         return !this.level().isClientSide() && player.startRiding(this) ? InteractionResult.SUCCESS_SERVER : InteractionResult.CONSUME;
       } else {
          return InteractionResult.PASS;
       }

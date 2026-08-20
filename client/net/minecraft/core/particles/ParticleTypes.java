@@ -163,7 +163,7 @@ public class ParticleTypes {
    }
 
    static {
-      CODEC = BuiltInRegistries.PARTICLE_TYPE.byNameCodec().dispatch("type", ParticleOptions::getType, ParticleType::codec);
+      CODEC = BuiltInRegistries.PARTICLE_TYPE.byNameCodec().dispatch(ParticleOptions::getType, ParticleType::codec);
       STREAM_CODEC = ByteBufCodecs.registry(Registries.PARTICLE_TYPE).dispatch(ParticleOptions::getType, ParticleType::streamCodec);
    }
 }

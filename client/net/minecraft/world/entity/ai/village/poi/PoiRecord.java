@@ -6,7 +6,7 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.VisibleForDebug;
 
 public class PoiRecord {
@@ -87,7 +87,7 @@ public class PoiRecord {
    }
 
    public static record Packed(BlockPos pos, Holder<PoiType> poiType, int freeTickets) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(Packed::pos), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(Packed::poiType), Codec.INT.optionalFieldOf("free_tickets", 0).forGetter(Packed::freeTickets)).apply(i, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(Packed::pos), RegistryCodecs.holder(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(Packed::poiType), Codec.INT.optionalFieldOf("free_tickets", 0).forGetter(Packed::freeTickets)).apply(i, Packed::new));
 
       public Packed {
          super();

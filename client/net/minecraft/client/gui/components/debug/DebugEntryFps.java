@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
+import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.renderpearl.api.device.GpuSurface;
 import java.util.Locale;
 import java.util.Optional;
@@ -17,7 +18,8 @@ public class DebugEntryFps implements DebugScreenEntry {
       Minecraft minecraft = Minecraft.getInstance();
       int framerateLimit = minecraft.getFramerateLimitTracker().getFramerateLimit();
       Optional<GpuSurface.Configuration> surfaceConfiguration = minecraft.windowSurface().currentConfiguration();
-      displayer.addPriorityLine(String.format(Locale.ROOT, "%d fps T: %s%s", minecraft.getFps(), framerateLimit == 260 ? "inf" : framerateLimit, presentModeName((GpuSurface.PresentMode)surfaceConfiguration.map(GpuSurface.Configuration::presentMode).orElse((Object)null))));
+      VideoMode activeMode = minecraft.getWindow().getActiveVideoMode();
+      displayer.addPriorityLine(String.format(Locale.ROOT, "%d fps T: %s%s @%sHz", minecraft.getFps(), framerateLimit == 260 ? "inf" : framerateLimit, presentModeName((GpuSurface.PresentMode)surfaceConfiguration.map(GpuSurface.Configuration::presentMode).orElse((Object)null)), activeMode == null ? "0" : activeMode.refreshRateLabel()));
    }
 
    public boolean isAllowed(final boolean reducedDebugInfo) {

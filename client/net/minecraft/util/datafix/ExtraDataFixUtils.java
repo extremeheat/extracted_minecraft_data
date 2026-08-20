@@ -12,16 +12,11 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.BitSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.util.Util;
 
 public class ExtraDataFixUtils {
@@ -77,26 +72,16 @@ public class ExtraDataFixUtils {
       };
    }
 
-   public static Dynamic<?> blockState(final String id, final Map<String, String> properties) {
-      Dynamic<Tag> dynamic = new Dynamic(NbtOps.INSTANCE, new CompoundTag());
-      Dynamic<Tag> blockState = dynamic.set("Name", dynamic.createString(id));
-      if (!properties.isEmpty()) {
-         blockState = blockState.set("Properties", dynamic.createMap((Map)properties.entrySet().stream().collect(Collectors.toMap((entry) -> dynamic.createString((String)entry.getKey()), (entry) -> dynamic.createString((String)entry.getValue())))));
-      }
-
-      return blockState;
-   }
-
-   public static Dynamic<?> blockState(final String id) {
-      return blockState(id, Map.of());
-   }
-
    public static Dynamic<?> fixStringField(final Dynamic<?> dynamic, final String fieldName, final UnaryOperator<String> fix) {
       return dynamic.update(fieldName, (field) -> {
          DataResult var10000 = field.asString().map(fix);
          Objects.requireNonNull(dynamic);
          return (Dynamic)DataFixUtils.orElse(var10000.map(dynamic::createString).result(), field);
       });
+   }
+
+   public static Optional<String> getPlainTranslationKey(final Dynamic<?> textComponent) {
+      return textComponent.getMapValues().result().filter((fields) -> fields.size() == 1).flatMap((fields) -> textComponent.get("translate").asString().result());
    }
 
    public static String dyeColorIdToName(final int id) {

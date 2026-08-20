@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -104,7 +105,7 @@ public class ResultSlot extends Slot {
                   replacement.grow(itemStack.getCount());
                   this.craftSlots.setItem(slot, replacement);
                } else if (!this.player.getInventory().add(replacement)) {
-                  this.player.drop(replacement, false);
+                  this.player.drop(replacement, false, Prediction.PREDICTED);
                }
             }
          }

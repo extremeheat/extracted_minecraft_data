@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -99,7 +100,8 @@ public class PlaceCommand {
       ServerLevel level = source.getLevel();
       Structure structure = structureHolder.value();
       ChunkGenerator chunkGenerator = level.getChunkSource().getGenerator();
-      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, chunkGenerator.getBiomeSource(), level.getChunkSource().randomState(), level.getStructureManager(), level.getSeed(), ChunkPos.containing(pos), 0, level, (b) -> true);
+      RandomState randomState = level.getChunkSource().randomState();
+      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, level.uncachedBiomeResolver(), randomState, level.getStructureManager(), level.getSeed(), ChunkPos.containing(pos), 0, level, (b) -> true);
       if (!start.isValid()) {
          throw ERROR_STRUCTURE_FAILED.create();
       } else {

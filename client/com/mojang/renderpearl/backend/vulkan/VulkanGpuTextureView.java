@@ -1,6 +1,6 @@
 package com.mojang.renderpearl.backend.vulkan;
 
-import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.common.BaseGpuTextureView;
 import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK12;
@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
-public class VulkanGpuTextureView extends GpuTextureView implements Destroyable {
+public class VulkanGpuTextureView extends BaseGpuTextureView implements Destroyable {
    private final VulkanDevice device;
    private final long vkImageView;
    private boolean closed;

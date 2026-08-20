@@ -11,14 +11,16 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextMap;
@@ -32,7 +34,6 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
-import net.minecraft.world.level.block.entity.FuelValues;
 
 public interface SlotDisplay {
    Codec<SlotDisplay> CODEC = BuiltInRegistries.SLOT_DISPLAY.byNameCodec().dispatch(SlotDisplay::type, Type::codec);
@@ -173,9 +174,9 @@ public interface SlotDisplay {
 
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
          if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
-            FuelValues fuelValues = (FuelValues)context.getOptional(SlotDisplayContext.FUEL_VALUES);
-            if (fuelValues != null) {
-               Stream var10000 = fuelValues.fuelItems().stream();
+            RegistryAccess registries = (RegistryAccess)context.get(SlotDisplayContext.REGISTRIES);
+            if (registries != null) {
+               Stream var10000 = registries.lookupOrThrow(Registries.ITEM).componentLookup().findAll(DataComponents.COOKING_FUEL).stream();
                Objects.requireNonNull(stacks);
                return var10000.map(stacks::forStack);
             }
@@ -207,7 +208,7 @@ public interface SlotDisplay {
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
          if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
             List<ItemStack> displayItems = this.display.resolveForStacks(context);
-            Optional<? extends HolderLookup.RegistryLookup<Potion>> potions = Optional.ofNullable((HolderLookup.Provider)context.getOptional(SlotDisplayContext.REGISTRIES)).flatMap((r) -> r.lookup(Registries.POTION));
+            Optional<? extends HolderLookup.RegistryLookup<Potion>> potions = Optional.ofNullable((RegistryAccess)context.get(SlotDisplayContext.REGISTRIES)).flatMap((r) -> r.lookup(Registries.POTION));
             return potions.stream().flatMap(HolderLookup::listElements).flatMap((potion) -> {
                PotionContents potionContents = new PotionContents(potion);
                return displayItems.stream().map((item) -> {
@@ -374,8 +375,8 @@ public interface SlotDisplay {
       }
    }
 
-   public static record TagSlotDisplay(TagKey<Item> tag) implements SlotDisplay {
-      public static final MapCodec<TagSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(TagSlotDisplay::tag)).apply(i, TagSlotDisplay::new));
+   public static record TagSlotDisplay(HolderSet<Item> tag) implements SlotDisplay {
+      public static final MapCodec<TagSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.ITEM).fieldOf("tag").forGetter(TagSlotDisplay::tag)).apply(i, TagSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, TagSlotDisplay> STREAM_CODEC;
       public static final Type<TagSlotDisplay> TYPE;
 
@@ -389,21 +390,16 @@ public interface SlotDisplay {
 
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
          if (factory instanceof DisplayContentsFactory.ForStacks<T> stacks) {
-            HolderLookup.Provider registries = (HolderLookup.Provider)context.getOptional(SlotDisplayContext.REGISTRIES);
-            if (registries != null) {
-               return registries.lookupOrThrow(Registries.ITEM).get(this.tag).map((t) -> {
-                  Stream var10000 = t.stream();
-                  Objects.requireNonNull(stacks);
-                  return var10000.map(stacks::forStack);
-               }).stream().flatMap((s) -> s);
-            }
+            Stream var10000 = this.tag.stream();
+            Objects.requireNonNull(stacks);
+            return var10000.map(stacks::forStack);
+         } else {
+            return Stream.empty();
          }
-
-         return Stream.empty();
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(TagKey.streamCodec(Registries.ITEM), TagSlotDisplay::tag, TagSlotDisplay::new);
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderSet(Registries.ITEM), TagSlotDisplay::tag, TagSlotDisplay::new);
          TYPE = new Type<TagSlotDisplay>(MAP_CODEC, STREAM_CODEC);
       }
    }

@@ -3,10 +3,12 @@ package net.minecraft.server.level;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -23,8 +25,10 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.GameMasterBlock;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -344,7 +348,25 @@ public class ServerPlayerGameMode {
             player.openMenu(menuProvider);
             return InteractionResult.CONSUME;
          } else {
-            return InteractionResult.PASS;
+            Block var16 = state.getBlock();
+            if (var16 instanceof Portal) {
+               Portal portal = (Portal)var16;
+               if (player.getCamera() != player) {
+                  player.setCamera(player);
+               }
+
+               ServerLevel serverLevel = player.level();
+               TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
+               if (teleportTransition != null) {
+                  player.teleportToPortalDestination(serverLevel, teleportTransition);
+               } else {
+                  player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
+               }
+
+               return InteractionResult.CONSUME;
+            } else {
+               return InteractionResult.PASS;
+            }
          }
       } else {
          boolean haveSomethingInOurHands = !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();

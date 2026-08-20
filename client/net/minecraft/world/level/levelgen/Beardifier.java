@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -20,11 +22,12 @@ import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import org.jspecify.annotations.Nullable;
 
-public class Beardifier implements DensityFunctions.BeardifierOrMarker {
+public class Beardifier implements DensityFunction {
    public static final Interval RANGE;
    public static final int BEARD_KERNEL_RADIUS = 12;
    private static final int BEARD_KERNEL_SIZE = 24;
    private static final float[] BEARD_KERNEL;
+   private static final float MAX_BURY_DISTANCE = 6.0F;
    public static final Beardifier EMPTY;
    private final List<Rigid> pieces;
    private final List<JigsawJunction> junctions;
@@ -92,26 +95,26 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       this.affectedBox = affectedBox;
    }
 
-   public void fillArray(final double[] output, final DensityFunction.ContextProvider contextProvider) {
+   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
       if (this.affectedBox == null) {
-         Arrays.fill(output, 0.0);
+         Arrays.fill(output, 0.0F);
       } else {
-         DensityFunctions.BeardifierOrMarker.super.fillArray(output, contextProvider);
+         contextProvider.fillAllDirectly(output, this);
       }
 
    }
 
-   public double compute(final DensityFunction.FunctionContext context) {
+   public float compute(final DensityFunction.FunctionContext context) {
       if (this.affectedBox == null) {
-         return 0.0;
+         return 0.0F;
       } else {
          int blockX = context.blockX();
          int blockY = context.blockY();
          int blockZ = context.blockZ();
          if (!this.affectedBox.isInside(blockX, blockY, blockZ)) {
-            return 0.0;
+            return 0.0F;
          } else {
-            double noiseValue = 0.0;
+            float noiseValue = 0.0F;
 
             for(Rigid rigid : this.pieces) {
                BoundingBox box = rigid.box();
@@ -140,20 +143,20 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
                }
 
                int dy = var10000;
-               double var10001;
+               float var10001;
                switch (rigid.terrainAdjustment()) {
                   case NONE:
-                     var10001 = 0.0;
+                     var10001 = 0.0F;
                      break;
                   case BURY:
-                     var10001 = getBuryContribution((double)dx, (double)dy / 2.0, (double)dz);
+                     var10001 = getBuryContribution((float)dx, (float)dy / 2.0F, (float)dz);
                      break;
                   case BEARD_THIN:
                   case BEARD_BOX:
-                     var10001 = getBeardContribution(dx, dy, dz, dyToGround) * 0.8;
+                     var10001 = getBeardContribution(dx, dy, dz, dyToGround) * 0.8F;
                      break;
                   case ENCAPSULATE:
-                     var10001 = getBuryContribution((double)dx / 2.0, (double)dy / 2.0, (double)dz / 2.0) * 0.8;
+                     var10001 = getBuryContribution((float)dx / 2.0F, (float)dy / 2.0F, (float)dz / 2.0F) * 0.8F;
                      break;
                   default:
                      throw new MatchException((String)null, (Throwable)null);
@@ -166,7 +169,7 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
                int dx = blockX - junction.getSourceX();
                int dy = blockY - junction.getSourceGroundY();
                int dz = blockZ - junction.getSourceZ();
-               noiseValue += getBeardContribution(dx, dy, dz, dy) * 0.4;
+               noiseValue += getBeardContribution(dx, dy, dz, dy) * 0.4F;
             }
 
             return noiseValue;
@@ -174,22 +177,38 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       }
    }
 
-   private static double getBuryContribution(final double dx, final double dy, final double dz) {
-      double distance = Mth.length(dx, dy, dz);
-      return Mth.clampedMap(distance, 0.0, 6.0, 1.0, 0.0);
+   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+      return this;
    }
 
-   private static double getBeardContribution(final int dx, final int dy, final int dz, final int yToGround) {
+   public Interval range() {
+      return RANGE;
+   }
+
+   public @DensityFunction.Axes int domainAxes() {
+      return 7;
+   }
+
+   public MapCodec<? extends DensityFunction> codec() {
+      throw new UnsupportedOperationException();
+   }
+
+   private static float getBuryContribution(final float dx, final float dy, final float dz) {
+      float distanceSq = Mth.lengthSquared(dx, dy, dz);
+      return distanceSq >= 36.0F ? 0.0F : 1.0F - Mth.sqrt(distanceSq) / 6.0F;
+   }
+
+   private static float getBeardContribution(final int dx, final int dy, final int dz, final int yToGround) {
       int xi = dx + 12;
       int yi = dy + 12;
       int zi = dz + 12;
       if (isInKernelRange(xi) && isInKernelRange(yi) && isInKernelRange(zi)) {
-         double dyWithOffset = (double)yToGround + 0.5;
-         double distanceSqr = Mth.lengthSquared((double)dx, dyWithOffset, (double)dz);
-         double value = -dyWithOffset * Mth.fastInvSqrt(distanceSqr / 2.0) / 2.0;
-         return value * (double)BEARD_KERNEL[zi * 24 * 24 + xi * 24 + yi];
+         float dyWithOffset = (float)yToGround + 0.5F;
+         float distanceSqr = Mth.lengthSquared((float)dx, dyWithOffset, (float)dz);
+         float value = -dyWithOffset * (float)Mth.fastInvSqrt((double)(distanceSqr / 2.0F)) / 2.0F;
+         return value * BEARD_KERNEL[zi * 24 * 24 + xi * 24 + yi];
       } else {
-         return 0.0;
+         return 0.0F;
       }
    }
 

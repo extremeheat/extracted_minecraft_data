@@ -1,14 +1,12 @@
 package net.minecraft.advancements;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -16,10 +14,7 @@ import org.slf4j.Logger;
 
 public class AdvancementTree {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<Identifier, AdvancementNode> nodes = new Object2ObjectOpenHashMap();
-   private final Set<AdvancementNode> roots = new ObjectLinkedOpenHashSet();
-   private final Set<AdvancementNode> tasks = new ObjectLinkedOpenHashSet();
-   private @Nullable Listener listener;
+   private final Map<Identifier, AdvancementNode> nodes = new Object2ObjectLinkedOpenHashMap();
 
    public AdvancementTree() {
       super();
@@ -32,18 +27,6 @@ public class AdvancementTree {
 
       LOGGER.info("Forgot about advancement {}", node.holder());
       this.nodes.remove(node.holder().id());
-      if (node.parent() == null) {
-         this.roots.remove(node);
-         if (this.listener != null) {
-            this.listener.onRemoveAdvancementRoot(node);
-         }
-      } else {
-         this.tasks.remove(node);
-         if (this.listener != null) {
-            this.listener.onRemoveAdvancementTask(node);
-         }
-      }
-
    }
 
    public void remove(final Set<Identifier> ids) {
@@ -58,8 +41,8 @@ public class AdvancementTree {
 
    }
 
-   public void addAll(final Collection<AdvancementHolder> advancements) {
-      List<AdvancementHolder> advancementsToAdd = new ArrayList(advancements);
+   public void addAll(final Iterable<AdvancementHolder> advancements) {
+      List<AdvancementHolder> advancementsToAdd = Lists.newArrayList(advancements);
 
       while(!advancementsToAdd.isEmpty()) {
          if (!advancementsToAdd.removeIf(this::tryInsert)) {
@@ -72,47 +55,36 @@ public class AdvancementTree {
    }
 
    private boolean tryInsert(final AdvancementHolder holder) {
-      Optional<Identifier> parentId = holder.value().parent();
-      Map var10001 = this.nodes;
-      Objects.requireNonNull(var10001);
-      AdvancementNode parentNode = (AdvancementNode)parentId.map(var10001::get).orElse((Object)null);
-      if (parentNode == null && parentId.isPresent()) {
-         return false;
-      } else {
-         AdvancementNode node = new AdvancementNode(holder, parentNode);
-         if (parentNode != null) {
-            parentNode.addChild(node);
-         }
-
-         this.nodes.put(holder.id(), node);
+      Identifier parentId = (Identifier)holder.value().parent().orElse((Object)null);
+      AdvancementNode parentNode;
+      if (parentId != null) {
+         parentNode = (AdvancementNode)this.nodes.get(parentId);
          if (parentNode == null) {
-            this.roots.add(node);
-            if (this.listener != null) {
-               this.listener.onAddAdvancementRoot(node);
-            }
-         } else {
-            this.tasks.add(node);
-            if (this.listener != null) {
-               this.listener.onAddAdvancementTask(node);
-            }
+            return false;
          }
-
-         return true;
+      } else {
+         parentNode = null;
       }
+
+      AdvancementNode node = new AdvancementNode(holder, parentNode);
+      if (parentNode != null) {
+         parentNode.addChild(node);
+      }
+
+      this.nodes.put(holder.id(), node);
+      return true;
    }
 
    public void clear() {
       this.nodes.clear();
-      this.roots.clear();
-      this.tasks.clear();
-      if (this.listener != null) {
-         this.listener.onAdvancementsCleared();
-      }
-
    }
 
    public Iterable<AdvancementNode> roots() {
-      return this.roots;
+      return Iterables.filter(this.nodes(), AdvancementNode::isRoot);
+   }
+
+   public Iterable<AdvancementNode> tasks() {
+      return Iterables.filter(this.nodes(), AdvancementNode::isTask);
    }
 
    public Collection<AdvancementNode> nodes() {
@@ -127,29 +99,12 @@ public class AdvancementTree {
       return (AdvancementNode)this.nodes.get(advancement.id());
    }
 
-   public void setListener(final @Nullable Listener listener) {
-      this.listener = listener;
-      if (listener != null) {
-         for(AdvancementNode root : this.roots) {
-            listener.onAddAdvancementRoot(root);
-         }
-
-         for(AdvancementNode task : this.tasks) {
-            listener.onAddAdvancementTask(task);
+   public void repositionNodes() {
+      for(AdvancementNode root : this.roots()) {
+         if (root.holder().value().display().isPresent()) {
+            TreeNodePosition.run(root);
          }
       }
 
-   }
-
-   public interface Listener {
-      void onAddAdvancementRoot(AdvancementNode root);
-
-      void onRemoveAdvancementRoot(AdvancementNode root);
-
-      void onAddAdvancementTask(AdvancementNode task);
-
-      void onRemoveAdvancementTask(AdvancementNode task);
-
-      void onAdvancementsCleared();
    }
 }

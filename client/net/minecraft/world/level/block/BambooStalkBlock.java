@@ -123,18 +123,18 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       return directionToNeighbour == Direction.UP && neighbourState.is(Blocks.BAMBOO) && (Integer)neighbourState.getValue(AGE) > (Integer)state.getValue(AGE) ? (BlockState)state.cycle(AGE) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int heightAbove = this.getHeightAboveUpToMax(level, pos);
       int heightBelow = this.getHeightBelowUpToMax(level, pos);
       BlockPos growthPos = pos.above(heightAbove + 1);
       return heightAbove + heightBelow + 1 < 16 && (Integer)level.getBlockState(pos.above(heightAbove)).getValue(STAGE) != 1 && level.isInsideBuildHeight(growthPos) && level.isEmptyBlock(growthPos);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int heightAbove = this.getHeightAboveUpToMax(level, pos);
       int heightBelow = this.getHeightBelowUpToMax(level, pos);
       int totalHeight = heightAbove + heightBelow + 1;

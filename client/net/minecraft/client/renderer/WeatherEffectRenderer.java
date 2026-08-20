@@ -43,8 +43,8 @@ public class WeatherEffectRenderer implements AutoCloseable {
    private final float[] columnSizeZ = new float[1024];
    private final GameRenderer gameRenderer;
    private final TextureManager textureManager;
-   private AbstractTexture rainTexture;
-   private AbstractTexture snowTexture;
+   private @Nullable AbstractTexture rainTexture;
+   private @Nullable AbstractTexture snowTexture;
    private @Nullable GpuBuffer vertexBuffer;
    private @Nullable PrimitiveTopology primitiveTopology;
    private int indexCount;
@@ -65,8 +65,6 @@ public class WeatherEffectRenderer implements AutoCloseable {
       Minecraft minecraft = Minecraft.getInstance();
       this.gameRenderer = minecraft.gameRenderer;
       this.textureManager = minecraft.getTextureManager();
-      this.rainTexture = this.textureManager.getTexture(RAIN_LOCATION);
-      this.snowTexture = this.textureManager.getTexture(SNOW_LOCATION);
    }
 
    public void extractRenderState(final ClientLevel level, final float partialTicks, final Vec3 cameraPos, final WeatherRenderState renderState) {
@@ -105,7 +103,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
    }
 
    private void renderWeather(final RenderPass renderPass, final AbstractTexture texture, final int startColumn, final int columnCount) {
-      renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+      renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
       renderPass.drawIndexed(columnCount * 6, 1, startColumn * 6, 0, 0);
    }
 
@@ -165,7 +163,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         renderPass.bindTexture("Sampler2", this.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+         renderPass.setUniform("Sampler2", this.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
          renderPass.setIndexBuffer(indexBuffer, indexType);
          renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
          this.renderWeather(renderPass, this.rainTexture, 0, renderState.rainColumns.size());
@@ -200,7 +198,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
          for(ColumnInstance column : columns) {
             float relativeX = (float)((double)column.x + 0.5 - cameraPos.x);
             float relativeZ = (float)((double)column.z + 0.5 - cameraPos.z);
-            float distanceSq = (float)Mth.lengthSquared((double)relativeX, (double)relativeZ);
+            float distanceSq = Mth.lengthSquared(relativeX, relativeZ);
             float alpha = Mth.lerp(Math.min(distanceSq / radiusSq, 1.0F), maxAlpha, 0.5F) * intensity;
             int color = ARGB.white(alpha);
             int index = (column.z - Mth.floor(cameraPos.z) + 16) * 32 + column.x - Mth.floor(cameraPos.x) + 16;

@@ -310,26 +310,6 @@ public class Vec3 implements Position {
       return onto.lengthSqr() == 0.0 ? onto : onto.scale(this.dot(onto)).scale(1.0 / onto.lengthSqr());
    }
 
-   public static Vec3 applyLocalCoordinatesToRotation(final Vec2 rotation, final Vec3 direction) {
-      float yCos = Mth.cos((double)((rotation.y + 90.0F) * 0.017453292F));
-      float ySin = Mth.sin((double)((rotation.y + 90.0F) * 0.017453292F));
-      float xCos = Mth.cos((double)(-rotation.x * 0.017453292F));
-      float xSin = Mth.sin((double)(-rotation.x * 0.017453292F));
-      float xCosUp = Mth.cos((double)((-rotation.x + 90.0F) * 0.017453292F));
-      float xSinUp = Mth.sin((double)((-rotation.x + 90.0F) * 0.017453292F));
-      Vec3 forwards = new Vec3((double)(yCos * xCos), (double)xSin, (double)(ySin * xCos));
-      Vec3 up = new Vec3((double)(yCos * xCosUp), (double)xSinUp, (double)(ySin * xCosUp));
-      Vec3 left = forwards.cross(up).scale(-1.0);
-      double xa = forwards.x * direction.z + up.x * direction.y + left.x * direction.x;
-      double ya = forwards.y * direction.z + up.y * direction.y + left.y * direction.x;
-      double za = forwards.z * direction.z + up.z * direction.y + left.z * direction.x;
-      return new Vec3(xa, ya, za);
-   }
-
-   public Vec3 addLocalCoordinates(final Vec3 direction) {
-      return applyLocalCoordinatesToRotation(this.rotation(), direction);
-   }
-
    public boolean isFinite() {
       return Double.isFinite(this.x) && Double.isFinite(this.y) && Double.isFinite(this.z);
    }

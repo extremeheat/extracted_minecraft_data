@@ -23,10 +23,10 @@ import org.jspecify.annotations.Nullable;
 
 public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.online.title");
-   private static final Component SERVERS_HEADER = Component.translatable("options.online.servers.header");
-   private static final Component REALMS_HEADER = Component.translatable("options.online.realms.header");
-   private static final Component FRIENDS_HEADER = Component.translatable("options.online.friends.header");
-   private static final Component XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
+   private static final Component SERVERS_HEADER;
+   private static final Component REALMS_HEADER;
+   private static final Component FRIENDS_HEADER;
+   private static final Component XBOX_SETTINGS;
    private static final Component FRIENDS_CONFIRM_TITLE;
    private static final Component MICROSOFT_ACCOUNT_LINK;
    private static final Component FRIENDS_CONFIRM_MESSAGE;
@@ -154,6 +154,10 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
    }
 
    static {
+      SERVERS_HEADER = Component.translatable("options.online.servers.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      REALMS_HEADER = Component.translatable("options.online.realms.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      FRIENDS_HEADER = Component.translatable("options.online.friends.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
       FRIENDS_CONFIRM_TITLE = Component.translatable("options.friendsList.confirm.title").withStyle(ChatFormatting.UNDERLINE);
       MICROSOFT_ACCOUNT_LINK = Component.translatable("options.friendsList.confirm.message.link").withStyle((UnaryOperator)((style) -> style.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent.OpenUrl(CommonLinks.PRIVACY_AND_ONLINE_SETTINGS))));
       FRIENDS_CONFIRM_MESSAGE = Component.translatable("options.friendsList.confirm.message", MICROSOFT_ACCOUNT_LINK);

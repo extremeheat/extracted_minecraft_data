@@ -127,7 +127,7 @@ public class TitleScreen extends Screen {
       SpriteIconButton accessibility = (SpriteIconButton)this.addRenderableWidget(CommonButtons.accessibility(20, (var1) -> this.minecraft.gui.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true));
       ++currentButton;
       accessibility.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
-      Button.Builder var10001 = Button.builder(Component.translatable("menu.options"), (var1) -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options, false)));
+      Button.Builder var10001 = Button.builder(Component.translatable("menu.options"), (var1) -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options)));
       int var10002 = this.width / 2 - 100;
       topPos += 24;
       this.addRenderableWidget(var10001.bounds(var10002, topPos, 98, 20).build());

@@ -56,6 +56,14 @@ public abstract class BlockItemTagsProvider {
 
       CombinedAppender addTag(BlockItemTagId id);
 
+      default CombinedAppender addTag(final BlockItemTagId... ids) {
+         for(BlockItemTagId id : ids) {
+            this.addTag(id);
+         }
+
+         return this;
+      }
+
       default CombinedAppender add(final BlockItemId... ids) {
          this.addAll(Arrays.stream(ids));
          return this;

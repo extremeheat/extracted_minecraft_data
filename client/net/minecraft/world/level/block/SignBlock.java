@@ -1,12 +1,10 @@
 package net.minecraft.world.level.block;
 
-import java.util.Arrays;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -14,6 +12,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -88,9 +87,9 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
          boolean hasApplicatorToUse = signApplicator != null && player.mayBuild();
          if (level instanceof ServerLevel serverLevel) {
             if (hasApplicatorToUse && !sign.isWaxed() && !this.otherPlayerIsEditingSign(player, sign)) {
-               boolean isFrontText = sign.isFacingFrontText(player);
-               if (signApplicator.canApplyToSign(sign.getText(isFrontText), itemStack, player) && signApplicator.tryApplyToSign(serverLevel, sign, isFrontText, itemStack, player)) {
-                  sign.executeClickCommandsIfPresent(serverLevel, player, pos, isFrontText);
+               SignTextSlot textSlot = sign.getSlotPlayerIsFacing(player);
+               if (signApplicator.canApplyToSign(sign.getText(textSlot), itemStack, player) && signApplicator.tryApplyToSign(serverLevel, sign, textSlot, itemStack, player)) {
+                  sign.executeClickCommandsIfPresent(serverLevel, player, pos, textSlot);
                   player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
                   serverLevel.gameEvent(GameEvent.BLOCK_CHANGE, sign.getBlockPos(), GameEvent.Context.of(player, sign.getBlockState()));
                   itemStack.consume(1, player);
@@ -113,15 +112,15 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       BlockEntity var7 = level.getBlockEntity(pos);
       if (var7 instanceof SignBlockEntity sign) {
          if (level instanceof ServerLevel serverLevel) {
-            boolean isFrontText = sign.isFacingFrontText(player);
-            boolean executedClickCommand = sign.executeClickCommandsIfPresent(serverLevel, player, pos, isFrontText);
+            SignTextSlot textSlot = sign.getSlotPlayerIsFacing(player);
+            boolean executedClickCommand = sign.executeClickCommandsIfPresent(serverLevel, player, pos, textSlot);
             if (sign.isWaxed()) {
                serverLevel.playSound((Entity)null, sign.getBlockPos(), sign.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
                return InteractionResult.SUCCESS_SERVER;
             } else if (executedClickCommand) {
                return InteractionResult.SUCCESS_SERVER;
-            } else if (!this.otherPlayerIsEditingSign(player, sign) && player.mayBuild() && this.hasEditableText(player, sign, isFrontText)) {
-               this.openTextEdit(player, sign, isFrontText);
+            } else if (!this.otherPlayerIsEditingSign(player, sign) && player.mayBuild() && sign.getText(textSlot).hasEditableText(player.isTextFilteringEnabled())) {
+               this.openTextEdit(player, sign, textSlot);
                return InteractionResult.SUCCESS_SERVER;
             } else {
                return InteractionResult.PASS;
@@ -133,11 +132,6 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       } else {
          return InteractionResult.PASS;
       }
-   }
-
-   private boolean hasEditableText(final Player player, final SignBlockEntity sign, final boolean isFrontText) {
-      SignText text = sign.getText(isFrontText);
-      return Arrays.stream(text.getMessages(player.isTextFilteringEnabled())).allMatch((message) -> message.equals(CommonComponents.EMPTY) || message.getContents() instanceof PlainTextContents);
    }
 
    public abstract float getYRotationDegrees(final BlockState state);
@@ -165,9 +159,9 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       return var10000;
    }
 
-   public void openTextEdit(final Player player, final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final Player player, final SignBlockEntity sign, final SignTextSlot slot) {
       sign.setAllowedPlayerEditor(player.getUUID());
-      player.openTextEdit(sign, isFrontText);
+      player.openTextEdit(sign, slot);
    }
 
    private boolean otherPlayerIsEditingSign(final Player player, final SignBlockEntity sign) {
@@ -177,6 +171,21 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       return createTickerHelper(type, BlockEntityTypes.SIGN, SignBlockEntity::tick);
+   }
+
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (!level.isClientSide() && by instanceof ServerPlayer player) {
+         Block var9 = state.getBlock();
+         if (var9 instanceof SignBlock sign) {
+            BlockEntity var10 = level.getBlockEntity(pos);
+            if (var10 instanceof SignBlockEntity signEntity) {
+               if (!signEntity.isWaxed() && signEntity.getText(SignTextSlot.FRONT).hasEditableText(player.isTextFilteringEnabled())) {
+                  sign.openTextEdit(player, signEntity, SignTextSlot.FRONT);
+               }
+            }
+         }
+      }
+
    }
 
    static {

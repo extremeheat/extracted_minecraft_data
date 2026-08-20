@@ -95,10 +95,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.permissions.PermissionSet;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.stats.ServerRecipeBook;
@@ -108,6 +110,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
@@ -170,6 +173,7 @@ import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ServerItemCooldowns;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -186,6 +190,7 @@ import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -604,8 +609,8 @@ public class ServerPlayer extends Player {
       this.connection.tickClientLoadTimeout();
       this.gameMode.tick();
       this.wardenSpawnTracker.tick();
-      if (this.invulnerableTime > 0) {
-         --this.invulnerableTime;
+      if (this.damageCooldownTime > 0) {
+         --this.damageCooldownTime;
       }
 
       this.containerMenu.broadcastChanges();
@@ -1234,9 +1239,7 @@ public class ServerPlayer extends Player {
       if (!this.isSleeping() && this.isAlive()) {
          boolean canSleep = rule.canSleep(this.level());
          boolean canSetSpawn = rule.canSetSpawn(this.level());
-         if (!canSetSpawn && !canSleep) {
-            return Either.left(rule.asProblem());
-         } else if (!this.bedInRange(pos, direction)) {
+         if (!this.bedInRange(pos, direction)) {
             return Either.left(Player.BedSleepingProblem.TOO_FAR_AWAY);
          } else if (this.bedBlocked(pos, direction)) {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
@@ -1278,9 +1281,17 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void startSleeping(final BlockPos bedPosition) {
-      this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
-      super.startSleeping(bedPosition);
+   public boolean startSleeping(final BlockPos bedPosition) {
+      if (!super.startSleeping(bedPosition)) {
+         return false;
+      } else {
+         this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+         if (this.connection != null) {
+            this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+         }
+
+         return true;
+      }
    }
 
    private boolean bedInRange(final BlockPos pos, final Direction direction) {
@@ -1299,7 +1310,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(final boolean forcefulWakeUp, final boolean updateLevelList) {
       if (this.isSleeping()) {
-         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 0));
       }
 
       super.stopSleepInBed(forcefulWakeUp, updateLevelList);
@@ -1345,9 +1356,9 @@ public class ServerPlayer extends Player {
 
    }
 
-   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final SignBlockEntity sign, final SignTextSlot slot) {
       this.connection.send(new ClientboundBlockUpdatePacket(this.level(), sign.getBlockPos()));
-      this.connection.send(new ClientboundOpenSignEditorPacket(sign.getBlockPos(), isFrontText));
+      this.connection.send(new ClientboundOpenSignEditorPacket(sign.getBlockPos(), slot));
    }
 
    public void openDialog(final Holder<Dialog> dialog) {
@@ -1717,11 +1728,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(final Entity entity) {
-      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 4));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 1));
    }
 
    public void magicCrit(final Entity entity) {
-      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 5));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 2));
    }
 
    public void onUpdateAbilities() {
@@ -1928,11 +1939,6 @@ public class ServerPlayer extends Player {
       return 0;
    }
 
-   public void swing(final InteractionHand hand) {
-      super.swing(hand);
-      this.resetAttackStrengthTicker();
-   }
-
    public boolean isChangingDimension() {
       return this.isChangingDimension;
    }
@@ -1977,8 +1983,8 @@ public class ServerPlayer extends Player {
       this.chunkTrackingView = chunkTrackingView;
    }
 
-   public ItemEntity drop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
-      ItemEntity entity = super.drop(itemStack, randomly, thrownFromHand);
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction) {
+      ItemEntity entity = super.drop(itemStack, thrownFromHand, prediction);
       if (thrownFromHand) {
          ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY;
          if (!droppedItemStack.isEmpty()) {
@@ -2005,10 +2011,10 @@ public class ServerPlayer extends Player {
 
    private GameType calculateGameModeForNewPlayer(final @Nullable GameType loadedGameType) {
       GameType forcedGameType = this.server.getForcedGameType();
-      if (forcedGameType != null) {
-         return forcedGameType;
-      } else {
+      if (forcedGameType == null || !(this.server instanceof DedicatedServer) && this.server.getProfilePermissions(this.nameAndId()).hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          return loadedGameType != null ? loadedGameType : this.server.getDefaultGameType();
+      } else {
+         return forcedGameType;
       }
    }
 
@@ -2047,12 +2053,13 @@ public class ServerPlayer extends Player {
          this.stopUsingItem();
       }
 
-      this.drop(removed, false, true);
+      this.drop(removed, true, Prediction.PREDICTED);
+      this.resetAttackStrengthTicker();
    }
 
    public void handleExtraItemsCreatedOnUse(final ItemStack extraItems) {
       if (!this.getInventory().add(extraItems)) {
-         this.drop(extraItems, false);
+         this.drop(extraItems, false, Prediction.PREDICTED);
       }
 
    }
@@ -2123,7 +2130,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommonPlayerSpawnInfo createCommonSpawnInfo(final ServerLevel level) {
-      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), this.gameMode.getGameModeForPlayer(), this.gameMode.getPreviousGameModeForPlayer(), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
+      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
    }
 
    public void setRaidOmenPosition(final BlockPos raidOmenPosition) {
@@ -2228,6 +2235,13 @@ public class ServerPlayer extends Player {
 
    public Set<DebugSubscription<?>> debugSubscriptions() {
       return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
+   }
+
+   public void swingAndResetAttackStrength(final InteractionHand hand, final SwingAnimation animation, final boolean sendToSwingingEntity) {
+      if (this.swing(hand, animation, sendToSwingingEntity)) {
+         this.resetAttackStrengthTicker();
+      }
+
    }
 
    static {

@@ -37,7 +37,7 @@ public record ReplaceBlobsFeature(BlockState targetState, BlockState replaceStat
          int maximumRadius = Math.max(radiusX, Math.max(radiusY, radiusZ));
          boolean replacedAny = false;
 
-         for(BlockPos pos : BlockPos.withinManhattan(centerPos, radiusX, radiusY, radiusZ)) {
+         for(BlockPos pos : BlockPos.withinBoxByManhattanDistance(centerPos, radiusX, radiusY, radiusZ)) {
             if (pos.distManhattan(centerPos) > maximumRadius) {
                break;
             }

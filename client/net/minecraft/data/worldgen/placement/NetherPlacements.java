@@ -1,5 +1,6 @@
 package net.minecraft.data.worldgen.placement;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Directional;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CountOnEveryLayerPlacement;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
+import net.minecraft.world.level.levelgen.placement.EnvironmentScanPlacement;
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
 import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -60,7 +62,7 @@ public class NetherPlacements {
       Holder<Feature> blackstoneBlobs = configuredFeatures.getOrThrow(NetherFeatures.BLACKSTONE_BLOBS);
       Holder<Feature> glowstoneExtra = configuredFeatures.getOrThrow(NetherFeatures.GLOWSTONE_EXTRA);
       Holder<Feature> crimsonForestVegetation = configuredFeatures.getOrThrow(NetherFeatures.CRIMSON_FOREST_VEGETATION);
-      Holder<Feature> warpedForestVegetion = configuredFeatures.getOrThrow(NetherFeatures.WARPED_FOREST_VEGETION);
+      Holder<Feature> warpedForestVegetation = configuredFeatures.getOrThrow(NetherFeatures.WARPED_FOREST_VEGETION);
       Holder<Feature> netherSprouts = configuredFeatures.getOrThrow(NetherFeatures.NETHER_SPROUTS);
       Holder<Feature> twistingVines = configuredFeatures.getOrThrow(NetherFeatures.TWISTING_VINES);
       Holder<Feature> weepingVines = configuredFeatures.getOrThrow(NetherFeatures.WEEPING_VINES);
@@ -78,11 +80,11 @@ public class NetherPlacements {
       PlacementUtils.register(context, BLACKSTONE_BLOBS, blackstoneBlobs, CountPlacement.of(25), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
       PlacementUtils.register(context, GLOWSTONE_EXTRA, glowstoneExtra, CountPlacement.of(BiasedToBottomInt.of(0, 9)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.NETHERRACK, Blocks.BASALT, Blocks.BLACKSTONE))), BiomeFilter.biome());
       PlacementUtils.register(context, GLOWSTONE, glowstoneExtra, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.NETHERRACK, Blocks.BASALT, Blocks.BLACKSTONE))), BiomeFilter.biome());
-      PlacementUtils.register(context, CRIMSON_FOREST_VEGETATION, crimsonForestVegetation, CountOnEveryLayerPlacement.of(6), BiomeFilter.biome());
-      PlacementUtils.register(context, WARPED_FOREST_VEGETATION, warpedForestVegetion, CountOnEveryLayerPlacement.of(5), BiomeFilter.biome());
-      PlacementUtils.register(context, NETHER_SPROUTS, netherSprouts, CountOnEveryLayerPlacement.of(4), BiomeFilter.biome());
-      PlacementUtils.register(context, TWISTING_VINES, twistingVines, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
-      PlacementUtils.register(context, WEEPING_VINES, weepingVines, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome());
+      PlacementUtils.register(context, CRIMSON_FOREST_VEGETATION, crimsonForestVegetation, CountOnEveryLayerPlacement.of(6), BiomeFilter.biome(), BlockPredicateFilter.forPredicate(BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.NYLIUM)), CountPlacement.of(64), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, WARPED_FOREST_VEGETATION, warpedForestVegetation, CountOnEveryLayerPlacement.of(5), BiomeFilter.biome(), BlockPredicateFilter.forPredicate(BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.NYLIUM)), CountPlacement.of(64), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, NETHER_SPROUTS, netherSprouts, CountOnEveryLayerPlacement.of(4), BiomeFilter.biome(), BlockPredicateFilter.forPredicate(BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.NYLIUM)), CountPlacement.of(64), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      PlacementUtils.register(context, TWISTING_VINES, twistingVines, ImmutableList.builder().add(new PlacementModifier[]{CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome()}).addAll(spreadTwistingVines(8, 4)).build());
+      PlacementUtils.register(context, WEEPING_VINES, weepingVines, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BiomeFilter.biome(), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.NETHERRACK, Blocks.NETHER_WART_BLOCK))));
       PlacementUtils.register(context, PATCH_CRIMSON_ROOTS, crimsonRoots, PlacementUtils.FULL_RANGE, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
       PlacementUtils.register(context, BASALT_PILLAR, basaltPillar, CountPlacement.of(10), InSquarePlacement.spread(), PlacementUtils.FULL_RANGE, BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.not(BlockPredicate.matchesTag((Directional)Direction.UP, BlockTags.AIR)))), BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_DELTA, springLavaNether, CountPlacement.of(16), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome());
@@ -95,5 +97,10 @@ public class NetherPlacements {
 
    private static List<PlacementModifier> firePlacement(final Block onlyOnBlock) {
       return List.of(CountPlacement.of(UniformInt.of(0, 5)), InSquarePlacement.spread(), PlacementUtils.RANGE_4_4, BiomeFilter.biome(), CountPlacement.of(96), OffsetPlacement.ofTriangle(7, 3), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, onlyOnBlock))));
+   }
+
+   public static List<PlacementModifier> spreadTwistingVines(final int spreadWidth, final int spreadHeight) {
+      BlockPredicateFilter placementFilter = BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks((Directional)Direction.DOWN, Blocks.NETHERRACK, Blocks.WARPED_NYLIUM, Blocks.WARPED_WART_BLOCK)));
+      return List.of(placementFilter, CountPlacement.of(spreadWidth * spreadWidth), OffsetPlacement.of(UniformInt.of(-spreadWidth, spreadWidth), UniformInt.of(-spreadHeight, spreadHeight)), OffsetPlacement.of(Direction.DOWN), EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.not(BlockPredicate.ONLY_IN_AIR_PREDICATE), 32), OffsetPlacement.of(Direction.UP), placementFilter);
    }
 }

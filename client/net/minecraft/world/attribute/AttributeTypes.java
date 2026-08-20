@@ -12,6 +12,7 @@ import net.minecraft.util.TriState;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.MoonPhase;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 
 public interface AttributeTypes {
    AttributeType<Boolean> BOOLEAN = register("boolean", AttributeType.ofNotInterpolated(Codec.BOOL, AttributeModifier.BOOLEAN_LIBRARY));
@@ -25,9 +26,10 @@ public interface AttributeTypes {
    AttributeType<Activity> ACTIVITY = register("activity", AttributeType.ofNotInterpolated(BuiltInRegistries.ACTIVITY.byNameCodec()));
    AttributeType<BedRule> BED_RULE = register("bed_rule", AttributeType.ofNotInterpolated(BedRule.CODEC));
    AttributeType<ParticleOptions> PARTICLE = register("particle", AttributeType.ofNotInterpolated(ParticleTypes.CODEC));
-   AttributeType<List<AmbientParticle>> AMBIENT_PARTICLES = register("ambient_particles", AttributeType.ofNotInterpolated(AmbientParticle.CODEC.listOf()));
+   AttributeType<List<AmbientParticle>> AMBIENT_PARTICLES = register("ambient_particles", AttributeType.ofInterpolated(AmbientParticle.CODEC.listOf(), AttributeModifier.listLibrary(), LerpFunction.ofListCrossFade((p, alpha) -> new AmbientParticle(p.particle(), p.probability() * alpha))));
    AttributeType<BackgroundMusic> BACKGROUND_MUSIC = register("background_music", AttributeType.ofNotInterpolated(BackgroundMusic.CODEC));
    AttributeType<AmbientSounds> AMBIENT_SOUNDS = register("ambient_sounds", AttributeType.ofNotInterpolated(AmbientSounds.CODEC));
+   AttributeType<MobSpawnSettings> MOB_SPAWN_SETTINGS = register("mob_spawn_settings", AttributeType.ofNotInterpolated(MobSpawnSettings.CODEC, AttributeModifier.MOB_SPAWN_SETTINGS_LIBRARY));
    Codec<AttributeType<?>> CODEC = BuiltInRegistries.ATTRIBUTE_TYPE.byNameCodec();
 
    static AttributeType<?> bootstrap(final Registry<AttributeType<?>> registry) {

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -7,6 +8,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -24,6 +26,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -156,5 +162,9 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       output.discard("CustomName");
       output.discard("lock");
       output.discard("Items");
+   }
+
+   protected LootContext getLootContext(final ServerLevel level) {
+      return (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.BLOCK_STATE, this.getBlockState()).withParameter(LootContextParams.BLOCK_ENTITY, this).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.getBlockPos())).withParameter(LootContextParams.CONTAINER, this).create(LootContextParamSets.CONTAINER_PROCESS))).create(Optional.empty());
    }
 }

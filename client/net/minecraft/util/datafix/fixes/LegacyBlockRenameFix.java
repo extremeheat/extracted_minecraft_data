@@ -1,0 +1,72 @@
+package net.minecraft.util.datafix.fixes;
+
+import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.schemas.Schema;
+import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Dynamic;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import net.minecraft.util.datafix.schemas.NamespacedSchema;
+
+public abstract class LegacyBlockRenameFix extends DataFix {
+   private final String name;
+
+   public LegacyBlockRenameFix(final Schema outputSchema, final String name) {
+      super(outputSchema, false);
+      this.name = name;
+   }
+
+   public TypeRewriteRule makeRule() {
+      Type<?> blockType = this.getInputSchema().getType(References.BLOCK_NAME);
+      Type<Pair<String, String>> expectedType = DSL.named(References.BLOCK_NAME.typeName(), NamespacedSchema.namespacedString());
+      if (!Objects.equals(blockType, expectedType)) {
+         throw new IllegalStateException("block type is not what was expected.");
+      } else {
+         TypeRewriteRule blockRule = this.fixTypeEverywhere(this.name + " for block", expectedType, (ops) -> (input) -> input.mapSecond(this::renameBlock));
+         TypeRewriteRule blockStateRule = this.fixTypeEverywhereTyped(this.name + " for block_state", this.getInputSchema().getType(References.BLOCK_STATE), (input) -> input.update(DSL.remainderFinder(), this::fixBlockState));
+         TypeRewriteRule flatBlockStateRule = this.fixTypeEverywhereTyped(this.name + " for flat_block_state", this.getInputSchema().getType(References.FLAT_BLOCK_STATE), (input) -> input.update(DSL.remainderFinder(), (tag) -> {
+               Optional var10000 = tag.asString().result().map(this::fixFlatBlockState);
+               Objects.requireNonNull(tag);
+               return (Dynamic)DataFixUtils.orElse(var10000.map(tag::createString), tag);
+            }));
+         return TypeRewriteRule.seq(blockRule, new TypeRewriteRule[]{blockStateRule, flatBlockStateRule});
+      }
+   }
+
+   private Dynamic<?> fixBlockState(final Dynamic<?> tag) {
+      Optional<String> name = tag.get("Name").asString().result();
+      return name.isPresent() ? tag.set("Name", tag.createString(this.renameBlock((String)name.get()))) : tag;
+   }
+
+   private String fixFlatBlockState(final String string) {
+      int startProperties = string.indexOf(91);
+      int startNbt = string.indexOf(123);
+      int end = string.length();
+      if (startProperties > 0) {
+         end = startProperties;
+      }
+
+      if (startNbt > 0) {
+         end = Math.min(end, startNbt);
+      }
+
+      String name = string.substring(0, end);
+      String newName = this.renameBlock(name);
+      return newName + string.substring(end);
+   }
+
+   protected abstract String renameBlock(String block);
+
+   public static DataFix create(final Schema outputSchema, final String name, final Function<String, String> renamer) {
+      return new LegacyBlockRenameFix(outputSchema, name) {
+         protected String renameBlock(final String block) {
+            return (String)renamer.apply(block);
+         }
+      };
+   }
+}

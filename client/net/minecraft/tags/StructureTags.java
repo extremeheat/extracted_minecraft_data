@@ -18,6 +18,10 @@ public interface StructureTags {
    TagKey<Structure> ON_SWAMP_EXPLORER_MAPS = create("on_swamp_explorer_maps");
    TagKey<Structure> ON_TREASURE_MAPS = create("on_treasure_maps");
    TagKey<Structure> ON_TRIAL_CHAMBERS_MAPS = create("on_trial_chambers_maps");
+   TagKey<Structure> ON_ANCIENT_CITY_MAPS = create("on_ancient_city_maps");
+   TagKey<Structure> ON_MINESHAFT_MAPS = create("on_mineshaft_maps");
+   TagKey<Structure> ON_DESERT_PYRAMID_MAPS = create("on_desert_pyramid_maps");
+   TagKey<Structure> ON_OCEAN_RUIN_WARM_MAPS = create("on_ocean_ruin_warm_maps");
    TagKey<Structure> CATS_SPAWN_IN = create("cats_spawn_in");
    TagKey<Structure> CATS_SPAWN_AS_BLACK = create("cats_spawn_as_black");
    TagKey<Structure> VILLAGE = create("village");
@@ -26,6 +30,14 @@ public interface StructureTags {
    TagKey<Structure> RUINED_PORTAL = create("ruined_portal");
    TagKey<Structure> OCEAN_RUIN = create("ocean_ruin");
    TagKey<Structure> ABANDONED_CAMP = create("abandoned_camp");
+   TagKey<Structure> ON_ABANDONED_CAMP_BAMBOO_JUNGLE_MAPS = create("on_abandoned_camp_bamboo_jungle");
+   TagKey<Structure> ON_ABANDONED_CAMP_CHERRY_GROVE_MAPS = create("on_abandoned_camp_cherry_grove");
+   TagKey<Structure> ON_ABANDONED_CAMP_BIRCH_FOREST_MAPS = create("on_abandoned_camp_birch_forest");
+   TagKey<Structure> ON_ABANDONED_CAMP_DAPPLED_FOREST_MAPS = create("on_abandoned_camp_dappled_forest");
+   TagKey<Structure> ON_ABANDONED_CAMP_FLOWER_FOREST_MAPS = create("on_abandoned_camp_flower_forest");
+   TagKey<Structure> ON_ABANDONED_CAMP_PALE_GARDEN_MAPS = create("on_abandoned_camp_pale_garden");
+   TagKey<Structure> ON_ABANDONED_CAMP_SWAMP_MAPS = create("on_abandoned_camp_swamp");
+   TagKey<Structure> ON_ABANDONED_CAMP_WINDSWEPT_FOREST_MAPS = create("on_abandoned_camp_windswept");
 
    private static TagKey<Structure> create(final String name) {
       return TagKey.<Structure>create(Registries.STRUCTURE, Identifier.withDefaultNamespace(name));

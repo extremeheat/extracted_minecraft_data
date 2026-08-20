@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 
 public class LastSeenMessagesValidator {
    private final int lastSeenCount;
-   private final ObjectList<LastSeenTrackedEntry> trackedMessages = new ObjectArrayList();
+   private final ObjectList<@Nullable LastSeenTrackedEntry> trackedMessages = new ObjectArrayList();
    private @Nullable MessageSignature lastPendingMessage;
 
    public LastSeenMessagesValidator(final int lastSeenCount) {

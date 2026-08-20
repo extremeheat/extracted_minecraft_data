@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.KeyframeTrack;
@@ -145,7 +145,7 @@ public class Timeline {
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<Timeline>>create(Registries.TIMELINE);
+      CODEC = RegistryCodecs.holder(Registries.TIMELINE);
       TRACKS_CODEC = Codec.dispatchedMap(EnvironmentAttributes.CODEC, Util.memoize(AttributeTrack::createCodec));
       DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(WorldClock.CODEC.fieldOf("clock").forGetter((t) -> t.clock), ExtraCodecs.POSITIVE_INT.optionalFieldOf("period_ticks").forGetter((t) -> t.periodTicks), TRACKS_CODEC.optionalFieldOf("tracks", Map.of()).forGetter((t) -> t.tracks), Codec.unboundedMap(ClockTimeMarker.KEY_CODEC, Timeline.TimeMarkerInfo.CODEC).optionalFieldOf("time_markers", Map.of()).forGetter((t) -> t.timeMarkers)).apply(i, Timeline::new)).validate(Timeline::validateInternal);
       NETWORK_CODEC = DIRECT_CODEC.xmap(Timeline::filterSyncableTracks, Timeline::filterSyncableTracks);

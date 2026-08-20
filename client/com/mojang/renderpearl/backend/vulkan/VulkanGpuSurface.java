@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.sdl.SDLError;
+import org.lwjgl.sdl.SDLVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSurface;
@@ -72,7 +73,10 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
 
       try {
          LongBuffer handlePtr = stack.longs(0L);
-         VulkanUtils.crashIfFailure(device, GLFWVulkan.glfwCreateWindowSurface(device.vkDevice().getPhysicalDevice().getInstance(), windowHandle, (VkAllocationCallbacks)null, handlePtr), "Failed to create window surface");
+         if (!SDLVulkan.SDL_Vulkan_CreateSurface(windowHandle, device.vkDevice().getPhysicalDevice().getInstance(), (VkAllocationCallbacks)null, handlePtr)) {
+            throw new IllegalStateException("Failed to create window surface: " + SDLError.SDL_GetError());
+         }
+
          this.surface = handlePtr.get(0);
          IntBuffer countPtr = stack.callocInt(1);
          VulkanUtils.crashIfFailure(device, KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(device.vkDevice().getPhysicalDevice(), this.surface, countPtr, (IntBuffer)null), "Failed to enumerate surface present modes");

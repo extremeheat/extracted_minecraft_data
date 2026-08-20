@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.predicates.entity.EntityTypePredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
@@ -39,9 +40,9 @@ public class VanillaChargedCreeperExplosionLoot implements LootTableSubProvider 
       List<LootPoolEntryContainer.Builder<?>> alternatives = new ArrayList(ENTRIES.size());
 
       for(Entry entry : ENTRIES) {
-         this.output.accept(entry.lootTable, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(entry.item))));
+         Holder.Reference<LootTable> innerLootTable = this.output.accept(entry.lootTable, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(entry.item))));
          LootItemCondition.Builder predicate = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(this.entityTypes, entry.entityType)));
-         alternatives.add(NestedLootTable.lootTableReference(entry.lootTable).when(predicate));
+         alternatives.add((LootPoolEntryContainer.Builder)NestedLootTable.lootTableReference(innerLootTable).when(predicate));
       }
 
       this.output.accept(BuiltInLootTables.CHARGED_CREEPER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(AlternativesEntry.alternatives((LootPoolEntryContainer.Builder[])alternatives.toArray((x$0) -> new LootPoolEntryContainer.Builder[x$0])))));

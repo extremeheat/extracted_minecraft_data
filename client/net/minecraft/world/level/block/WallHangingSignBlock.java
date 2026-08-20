@@ -57,7 +57,7 @@ public class WallHangingSignBlock extends SignBlock implements HangingSignBlock 
    }
 
    private boolean shouldTryToChainAnotherHangingSign(final BlockState state, final Player player, final BlockHitResult hitResult, final SignBlockEntity signEntity, final ItemStack itemStack) {
-      return !signEntity.canExecuteClickCommands(signEntity.isFacingFrontText(player), player) && itemStack.getItem() instanceof HangingSignItem && !this.isHittingEditableSide(hitResult, state);
+      return !signEntity.canExecuteClickCommands(signEntity.getSlotPlayerIsFacing(player), player) && itemStack.getItem() instanceof HangingSignItem && !this.isHittingEditableSide(hitResult, state);
    }
 
    private boolean isHittingEditableSide(final BlockHitResult hitResult, final BlockState state) {

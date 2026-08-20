@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
@@ -89,7 +90,7 @@ public class MiscOverworldPlacements {
       PlacementUtils.register(context, DISK_GRASS, diskGrass, CountPlacement.of(1), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, OffsetPlacement.vertical(ConstantInt.of(-1)), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(Blocks.MUD)), BiomeFilter.biome());
       PlacementUtils.register(context, FREEZE_TOP_LAYER, freezeTopLayer, BiomeFilter.biome());
       PlacementUtils.register(context, VOID_START_PLATFORM, voidStartPlatform, BiomeFilter.biome());
-      PlacementUtils.register(context, DESERT_WELL, desertWell, RarityFilter.onAverageOnceEvery(1000), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome());
+      PlacementUtils.register(context, DESERT_WELL, desertWell, RarityFilter.onAverageOnceEvery(1000), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, OffsetPlacement.of(Direction.DOWN), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.matchesBlocks(Blocks.SAND), BlockPredicate.volumeMatch(new Vec3i(-2, -2, -2), new Vec3i(2, -1, 2), BlockPredicate.not(BlockPredicate.ONLY_IN_AIR_PREDICATE)))), BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_LAVA, springLavaOverworld, CountPlacement.of(20), InSquarePlacement.spread(), HeightRangePlacement.of(VeryBiasedToBottomHeight.of(VerticalAnchor.bottom(), VerticalAnchor.belowTop(8), 8)), BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_LAVA_FROZEN, springLavaFrozen, CountPlacement.of(20), InSquarePlacement.spread(), HeightRangePlacement.of(VeryBiasedToBottomHeight.of(VerticalAnchor.bottom(), VerticalAnchor.belowTop(8), 8)), BiomeFilter.biome());
       PlacementUtils.register(context, SPRING_WATER, springWater, CountPlacement.of(25), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(192)), BiomeFilter.biome());

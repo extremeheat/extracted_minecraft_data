@@ -7,6 +7,7 @@ import java.util.Map;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 
 public record SpawnTargetPoint(Map<Holder<DensityFunction>, Climate.Parameter> parameters) {
    public static final Codec<SpawnTargetPoint> CODEC;
@@ -37,7 +38,7 @@ public record SpawnTargetPoint(Map<Holder<DensityFunction>, Climate.Parameter> p
 
          for(Pair<DensityFunction, Climate.Parameter> parameter : this.parameters) {
             DensityFunction function = (DensityFunction)parameter.getFirst();
-            long value = Climate.quantizeCoord((float)function.compute(context));
+            long value = Climate.quantizeCoord(function.compute(context));
             fitness += Mth.square(((Climate.Parameter)parameter.getSecond()).distance(value));
          }
 

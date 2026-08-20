@@ -39,7 +39,7 @@ public class MappableRingBuffer implements AutoCloseable {
    public GpuBuffer currentBuffer() {
       GpuFence fence = this.fences[this.current];
       if (fence != null) {
-         fence.awaitCompletion(9223372036854775807L);
+         fence.awaitCompletion(-1L);
          fence.close();
          this.fences[this.current] = null;
       }

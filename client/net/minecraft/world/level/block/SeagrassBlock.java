@@ -52,11 +52,11 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
       return result;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return level.getBlockState(pos.above()).is(Blocks.WATER);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
@@ -64,7 +64,7 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
       return Fluids.WATER.getSource(false);
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockState lowerState = Blocks.TALL_SEAGRASS.defaultBlockState();
       BlockState upperState = (BlockState)lowerState.setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER);
       BlockPos above = pos.above();

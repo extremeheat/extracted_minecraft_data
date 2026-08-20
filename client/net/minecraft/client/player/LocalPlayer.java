@@ -49,7 +49,6 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
@@ -66,6 +65,7 @@ import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
@@ -83,6 +83,7 @@ import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.AttackRange;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -92,6 +93,7 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -115,6 +117,8 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
+   private static final float PORTAL_SPINNING_SPEED = 20.0F;
+   private static final float NAUSEA_SPINNING_SPEED = 7.0F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
@@ -148,6 +152,10 @@ public class LocalPlayer extends AbstractClientPlayer {
    private float jumpRidingScale;
    public float portalEffectIntensity;
    public float oPortalEffectIntensity;
+   private float spinningEffectTime;
+   private float spinningEffectSpeed;
+   private final ItemActivation itemActivation;
+   private final FirstPersonHandsAndItems firstPersonHandsAndItems;
    private boolean startedUsingItem;
    private @Nullable InteractionHand usingItemHand;
    private boolean handsBusy;
@@ -158,11 +166,12 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean showDeathScreen;
    private boolean doLimitedCrafting;
 
-   public LocalPlayer(final Minecraft minecraft, final ClientLevel level, final ClientPacketListener connection, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ChatAbilities chatAbilities) {
+   public LocalPlayer(final Minecraft minecraft, final ClientLevel level, final ClientPacketListener connection, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ChatAbilities chatAbilities, final ItemActivation itemActivation) {
       super(level, connection.getLocalGameProfile());
       this.permissions = PermissionSet.NO_PERMISSIONS;
       this.input = new ClientInput();
       this.experienceDisplayStartTick = -2147483648;
+      this.firstPersonHandsAndItems = new FirstPersonHandsAndItems();
       this.autoJumpEnabled = true;
       this.showDeathScreen = true;
       this.doLimitedCrafting = false;
@@ -176,6 +185,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
       this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, minecraft.getSoundManager()));
       this.chatAbilities = chatAbilities;
+      this.itemActivation = itemActivation;
    }
 
    public void heal(final float heal) {
@@ -206,24 +216,41 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.handsBusy = false;
    }
 
-   public float getViewXRot(final float a) {
-      return this.getXRot();
-   }
-
    public float getViewYRot(final float a) {
-      return this.isPassenger() ? super.getViewYRot(a) : this.getYRot();
+      return this.getYRot(a);
    }
 
    public void tick() {
       if (this.connection.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
+         this.firstPersonHandsAndItems.tick(this);
 
          for(AmbientSoundHandler soundHandler : this.ambientSoundHandlers) {
             soundHandler.tick();
          }
 
       }
+   }
+
+   public void displayItemActivation(final ItemStack itemStack) {
+      this.itemActivation.activate(itemStack, this.random);
+   }
+
+   public void resetItemActivation() {
+      this.itemActivation.reset();
+   }
+
+   public ItemActivation itemActivation() {
+      return this.itemActivation;
+   }
+
+   public void itemUsed(final InteractionHand hand) {
+      this.firstPersonHandsAndItems.itemUsed(hand);
+   }
+
+   public FirstPersonHandsAndItems firstPersonHandsAndItems() {
+      return this.firstPersonHandsAndItems;
    }
 
    public void sendChanges() {
@@ -307,16 +334,14 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public boolean drop(final boolean all) {
+   public void drop(final boolean all) {
       ServerboundPlayerActionPacket.Action action = all ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
       ItemStack prediction = this.getInventory().removeFromSelected(all);
       this.connection.send(new ServerboundPlayerActionPacket(action, BlockPos.ZERO, Direction.DOWN));
-      return !prediction.isEmpty();
-   }
+      if (!prediction.isEmpty()) {
+         this.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+      }
 
-   public void swing(final InteractionHand hand) {
-      super.swing(hand);
-      this.connection.send(new ServerboundSwingPacket(hand));
    }
 
    public void respawn() {
@@ -340,11 +365,11 @@ public class LocalPlayer extends AbstractClientPlayer {
          if (dmg <= 0.0F) {
             this.setHealth(newHealth);
             if (dmg < 0.0F) {
-               this.invulnerableTime = 10;
+               this.damageCooldownTime = 10;
             }
          } else {
             this.lastHurt = dmg;
-            this.invulnerableTime = 20;
+            this.damageCooldownTime = 20;
             this.setHealth(newHealth);
             this.hurtDuration = 10;
             this.hurtTime = this.hurtDuration;
@@ -491,7 +516,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       switch (id) {
          case 24 -> this.setPermissions(PermissionSet.NO_PERMISSIONS);
          case 25 -> this.setPermissions(LevelBasedPermissionSet.MODERATOR);
@@ -593,11 +618,11 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.minecraft.isTextFilteringEnabled();
    }
 
-   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final SignBlockEntity sign, final SignTextSlot slot) {
       if (sign instanceof HangingSignBlockEntity hangingSign) {
-         this.minecraft.gui.setScreen(new HangingSignEditScreen(hangingSign, isFrontText, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.gui.setScreen(new HangingSignEditScreen(hangingSign, slot, this.minecraft.isTextFilteringEnabled()));
       } else {
-         this.minecraft.gui.setScreen(new SignEditScreen(sign, isFrontText, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.gui.setScreen(new SignEditScreen(sign, slot, this.minecraft.isTextFilteringEnabled()));
       }
 
    }
@@ -743,6 +768,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.processPortalCooldown();
       }
 
+      this.tickSpinningEffect();
       boolean wasJumping = this.input.keyPresses.jump();
       boolean wasShiftKeyDown = this.input.keyPresses.shift();
       boolean hasForwardImpulse = this.input.hasForwardImpulse();
@@ -757,7 +783,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.input.makeJump();
       }
 
-      if (!this.noPhysics) {
+      if (!this.noPhysics && !this.isPassenger()) {
          this.moveTowardsClosestSpace(this.getX() - (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
          this.moveTowardsClosestSpace(this.getX() - (double)this.getBbWidth() * 0.35, this.getZ() - (double)this.getBbWidth() * 0.35);
          this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35, this.getZ() - (double)this.getBbWidth() * 0.35);
@@ -927,6 +953,22 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       this.portalEffectIntensity = Mth.clamp(this.portalEffectIntensity + step, 0.0F, 1.0F);
+   }
+
+   private void tickSpinningEffect() {
+      float portalIntensity = this.portalEffectIntensity;
+      float nauseaIntensity = this.getEffectBlendFactor(MobEffects.NAUSEA, 1.0F);
+      if (!(portalIntensity > 0.0F) && !(nauseaIntensity > 0.0F)) {
+         this.spinningEffectSpeed = 0.0F;
+      } else {
+         this.spinningEffectSpeed = (portalIntensity * 20.0F + nauseaIntensity * 7.0F) / (portalIntensity + nauseaIntensity);
+         this.spinningEffectTime += this.spinningEffectSpeed;
+      }
+
+   }
+
+   public float getSpinningEffectAngle(final float partialTick) {
+      return this.spinningEffectTime + partialTick * this.spinningEffectSpeed;
    }
 
    public void rideTick() {

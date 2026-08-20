@@ -3,14 +3,14 @@ package net.minecraft.world.level.redstone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public abstract class RedstoneWireEvaluator {
-   protected final RedStoneWireBlock wireBlock;
+   protected final RedstoneWireBlock wireBlock;
 
-   protected RedstoneWireEvaluator(final RedStoneWireBlock wireBlock) {
+   protected RedstoneWireEvaluator(final RedstoneWireBlock wireBlock) {
       super();
       this.wireBlock = wireBlock;
    }
@@ -22,7 +22,7 @@ public abstract class RedstoneWireEvaluator {
    }
 
    protected int getWireSignal(final BlockPos pos, final BlockState state) {
-      return state.is(this.wireBlock) ? (Integer)state.getValue(RedStoneWireBlock.POWER) : 0;
+      return state.is(this.wireBlock) ? (Integer)state.getValue(RedstoneWireBlock.POWER) : 0;
    }
 
    protected int getIncomingWireSignal(final Level level, final BlockPos pos) {

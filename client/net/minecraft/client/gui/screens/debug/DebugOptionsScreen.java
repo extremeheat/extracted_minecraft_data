@@ -69,9 +69,12 @@ public class DebugOptionsScreen extends Screen {
       header.addChild(title, (Consumer)(LayoutSettings::alignHorizontallyCenter));
       header.addChild((new MultiLineTextWidget(SUBTITLE, this.font)).setMaxWidth(optionListWidth).setCentered(true), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       this.layout.addToContents(this.optionList);
-      LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(4));
       this.addProfileButton(DebugScreenProfile.DEFAULT, bottomButtons);
       this.addProfileButton(DebugScreenProfile.PERFORMANCE, bottomButtons);
+      AbstractWidget guiScaleButton = this.minecraft.options.debugGuiScale().createButton(this.minecraft.options);
+      guiScaleButton.setWidth(110);
+      bottomButtons.addChild(guiScaleButton);
       bottomButtons.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(60).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();

@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -141,11 +141,11 @@ public class BlockTintSources {
    public static BlockTintSource redstone() {
       return new BlockTintSource() {
          public int color(final BlockState state) {
-            return RedStoneWireBlock.getColorForPower((Integer)state.getValue(RedStoneWireBlock.POWER));
+            return RedstoneWireBlock.getColorForPower((Integer)state.getValue(RedstoneWireBlock.POWER));
          }
 
          public Set<Property<?>> relevantProperties() {
-            return Set.of(RedStoneWireBlock.POWER);
+            return Set.of(RedstoneWireBlock.POWER);
          }
       };
    }

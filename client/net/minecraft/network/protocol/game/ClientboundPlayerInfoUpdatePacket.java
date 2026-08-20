@@ -3,11 +3,13 @@ package net.minecraft.network.protocol.game;
 import com.google.common.base.MoreObjects;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
+import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.IntFunction;
 import net.minecraft.Optionull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -19,6 +21,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
 import org.jspecify.annotations.Nullable;
@@ -45,30 +48,34 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       return new ClientboundPlayerInfoUpdatePacket(actions, players);
    }
 
-   private ClientboundPlayerInfoUpdatePacket(final RegistryFriendlyByteBuf input) {
-      super();
-      this.actions = input.readEnumSet(Action.class);
-      this.entries = input.readList((buf) -> {
-         EntryBuilder builder = new EntryBuilder(buf.readUUID());
+   private static StreamCodec<RegistryFriendlyByteBuf, Entry> entryCodec(final EnumSet<Action> actions) {
+      return StreamCodec.<RegistryFriendlyByteBuf, Entry>of((output, entry) -> {
+         output.writeUUID(entry.profileId());
 
-         for(Action action : this.actions) {
-            action.reader.read(builder, (RegistryFriendlyByteBuf)buf);
+         for(Action action : actions) {
+            action.writer.write(output, entry);
+         }
+
+      }, (input) -> {
+         EntryBuilder builder = new EntryBuilder(input.readUUID());
+
+         for(Action action : actions) {
+            action.reader.read(builder, input);
          }
 
          return builder.build();
       });
    }
 
+   private ClientboundPlayerInfoUpdatePacket(final RegistryFriendlyByteBuf input) {
+      super();
+      this.actions = input.readEnumSet(Action.class);
+      this.entries = (List)entryCodec(this.actions).apply(ByteBufCodecs.list()).decode(input);
+   }
+
    private void write(final RegistryFriendlyByteBuf output) {
       output.writeEnumSet(this.actions, Action.class);
-      output.writeCollection(this.entries, (buf, entry) -> {
-         buf.writeUUID(entry.profileId());
-
-         for(Action action : this.actions) {
-            action.writer.write((RegistryFriendlyByteBuf)buf, entry);
-         }
-
-      });
+      entryCodec(this.actions).apply(ByteBufCodecs.list()).encode(output, this.entries);
    }
 
    public PacketType<ClientboundPlayerInfoUpdatePacket> type() {
@@ -96,7 +103,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
    }
 
    public static enum Action {
-      ADD_PLAYER((entry, input) -> {
+      ADD_PLAYER(0, (entry, input) -> {
          String name = (String)ByteBufCodecs.PLAYER_NAME.decode(input);
          PropertyMap properties = (PropertyMap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(input);
          entry.profile = new GameProfile(entry.profileId, name, properties);
@@ -105,18 +112,22 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          ByteBufCodecs.PLAYER_NAME.encode(output, profile.name());
          ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(output, profile.properties());
       }),
-      INITIALIZE_CHAT((entry, input) -> entry.chatSession = (RemoteChatSession.Data)input.readNullable(RemoteChatSession.Data::read), (output, entry) -> output.writeNullable(entry.chatSession, RemoteChatSession.Data::write)),
-      UPDATE_GAME_MODE((entry, input) -> entry.gameMode = GameType.byId(input.readVarInt()), (output, entry) -> output.writeVarInt(entry.gameMode().getId())),
-      UPDATE_LISTED((entry, input) -> entry.listed = input.readBoolean(), (output, entry) -> output.writeBoolean(entry.listed())),
-      UPDATE_LATENCY((entry, input) -> entry.latency = input.readVarInt(), (output, entry) -> output.writeVarInt(entry.latency())),
-      UPDATE_DISPLAY_NAME((entry, input) -> entry.displayName = (Component)FriendlyByteBuf.readNullable(input, ComponentSerialization.TRUSTED_STREAM_CODEC), (output, entry) -> FriendlyByteBuf.writeNullable(output, entry.displayName(), ComponentSerialization.TRUSTED_STREAM_CODEC)),
-      UPDATE_LIST_ORDER((entry, input) -> entry.listOrder = input.readVarInt(), (output, entry) -> output.writeVarInt(entry.listOrder)),
-      UPDATE_HAT((entry, input) -> entry.showHat = input.readBoolean(), (output, entry) -> output.writeBoolean(entry.showHat));
+      INITIALIZE_CHAT(1, (entry, input) -> entry.chatSession = (RemoteChatSession.Data)input.readNullable(RemoteChatSession.Data.STREAM_CODEC), (output, entry) -> output.writeNullable(entry.chatSession, RemoteChatSession.Data.STREAM_CODEC)),
+      UPDATE_GAME_MODE(2, (entry, input) -> entry.gameMode = (GameType)GameType.STREAM_CODEC.decode(input), (output, entry) -> GameType.STREAM_CODEC.encode(output, entry.gameMode)),
+      UPDATE_LISTED(3, (entry, input) -> entry.listed = input.readBoolean(), (output, entry) -> output.writeBoolean(entry.listed())),
+      UPDATE_LATENCY(4, (entry, input) -> entry.latency = input.readVarInt(), (output, entry) -> output.writeVarInt(entry.latency())),
+      UPDATE_DISPLAY_NAME(5, (entry, input) -> entry.displayName = (Component)FriendlyByteBuf.readNullable(input, ComponentSerialization.TRUSTED_STREAM_CODEC), (output, entry) -> FriendlyByteBuf.writeNullable(output, entry.displayName(), ComponentSerialization.TRUSTED_STREAM_CODEC)),
+      UPDATE_LIST_ORDER(6, (entry, input) -> entry.listOrder = input.readVarInt(), (output, entry) -> output.writeVarInt(entry.listOrder)),
+      UPDATE_HAT(7, (entry, input) -> entry.showHat = input.readBoolean(), (output, entry) -> output.writeBoolean(entry.showHat));
 
+      private final int id;
       private final Reader reader;
       private final Writer writer;
+      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((a) -> a.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (a) -> a.id);
 
-      private Action(final Reader reader, final Writer writer) {
+      private Action(final int id, final Reader reader, final Writer writer) {
+         this.id = id;
          this.reader = reader;
          this.writer = writer;
       }

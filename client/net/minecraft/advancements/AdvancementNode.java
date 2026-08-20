@@ -9,6 +9,8 @@ public class AdvancementNode {
    private final AdvancementHolder holder;
    private final @Nullable AdvancementNode parent;
    private final Set<AdvancementNode> children = new ReferenceOpenHashSet();
+   private float x;
+   private float y;
 
    @VisibleForTesting
    public AdvancementNode(final AdvancementHolder holder, final @Nullable AdvancementNode parent) {
@@ -23,6 +25,14 @@ public class AdvancementNode {
 
    public AdvancementHolder holder() {
       return this.holder;
+   }
+
+   public boolean isTask() {
+      return this.parent != null;
+   }
+
+   public boolean isRoot() {
+      return this.parent == null;
    }
 
    public @Nullable AdvancementNode parent() {
@@ -53,6 +63,19 @@ public class AdvancementNode {
    @VisibleForTesting
    public void addChild(final AdvancementNode child) {
       this.children.add(child);
+   }
+
+   public void setLocation(final float x, final float y) {
+      this.x = x;
+      this.y = y;
+   }
+
+   public float x() {
+      return this.x;
+   }
+
+   public float y() {
+      return this.y;
    }
 
    public boolean equals(final Object obj) {

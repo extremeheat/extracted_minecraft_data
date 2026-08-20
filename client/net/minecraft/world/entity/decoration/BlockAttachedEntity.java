@@ -12,6 +12,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -20,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BlockAttachedEntity extends Entity {
+   public static final String TAG_BLOCK_POS = "block_pos";
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int CHECK_INTERVAL = 100;
    private int ticksSinceLastCheck;
@@ -69,6 +71,19 @@ public abstract class BlockAttachedEntity extends Entity {
       }
    }
 
+   public void kill(final ServerLevel level) {
+      this.kill(level, this);
+   }
+
+   public void kill(final ServerLevel level, final @Nullable Entity attributedTo) {
+      this.onKilled();
+      this.remove(Entity.RemovalReason.KILLED);
+      this.gameEvent(GameEvent.ENTITY_DIE, (Entity)(attributedTo != null ? attributedTo : this));
+   }
+
+   protected void onKilled() {
+   }
+
    public boolean hurtClient(final DamageSource source) {
       return !this.isInvulnerableToBase(source);
    }
@@ -80,7 +95,7 @@ public abstract class BlockAttachedEntity extends Entity {
          return false;
       } else {
          if (!this.isRemoved()) {
-            this.kill(level);
+            this.kill(level, source.getEntity());
             this.markHurt();
             this.dropItem(level, source.getEntity());
          }

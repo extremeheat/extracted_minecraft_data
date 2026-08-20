@@ -82,12 +82,8 @@ public class ChatListener {
       return this.delayedMessageQueue.removeIf((message) -> signature.equals(message.signature()));
    }
 
-   private boolean willDelayMessages() {
-      return this.messageDelay > 0L && Util.getMillis() < this.previousMessageTime + this.messageDelay;
-   }
-
    private void handleMessage(final @Nullable MessageSignature signature, final BooleanSupplier handler) {
-      if (this.willDelayMessages()) {
+      if (this.messageDelay > 0L) {
          this.delayedMessageQueue.add(new Message(signature, handler));
       } else {
          handler.getAsBoolean();

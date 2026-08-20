@@ -124,7 +124,7 @@ public class PostPass implements AutoCloseable {
                }
 
                for(InputTexture input : inputTextures) {
-                  renderPass.bindTexture(input.samplerName() + "Sampler", input.view(), input.sampler());
+                  renderPass.setUniform(input.samplerName() + "Sampler", input.view(), input.sampler());
                }
 
                renderPass.draw(3, 1, 0, 0);

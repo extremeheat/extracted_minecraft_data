@@ -8,7 +8,7 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -103,7 +103,7 @@ public abstract class AbstractSpreadingStructurePlacement implements StructurePl
    /** @deprecated */
    @Deprecated
    public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
-      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(i, ExclusionZone::new));
+      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.holder(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(i, ExclusionZone::new));
 
       public ExclusionZone {
          super();

@@ -68,15 +68,15 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       builder.add(FACING, AMOUNT);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int currentAmount = (Integer)state.getValue(AMOUNT);
       if (currentAmount < 4) {
          level.setBlock(pos, (BlockState)state.setValue(AMOUNT, currentAmount + 1), 2);

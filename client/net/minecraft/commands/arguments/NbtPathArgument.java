@@ -683,9 +683,9 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
          if (parent instanceof CompoundTag compound) {
             Tag result = compound.get(this.name);
             if (result == null) {
-               Tag var6 = this.pattern.copy();
-               compound.put(this.name, var6);
-               output.add(var6);
+               result = this.pattern.copy();
+               compound.put(this.name, result);
+               output.add(result);
             } else if (this.predicate.test(result)) {
                output.add(result);
             }

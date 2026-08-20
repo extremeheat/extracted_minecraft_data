@@ -6,7 +6,7 @@ import com.mojang.renderpearl.api.textures.GpuSampler;
 import java.util.OptionalDouble;
 import org.lwjgl.opengl.GL33C;
 
-public class GlSampler extends GpuSampler {
+public class GlSampler implements GpuSampler {
    private final int id;
    private final AddressMode addressModeU;
    private final AddressMode addressModeV;

@@ -6,9 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementTree;
-import net.minecraft.advancements.TreeNodePosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -33,13 +31,7 @@ public class ServerAdvancementManager {
       this.advancements = builder.buildOrThrow();
       AdvancementTree tree = new AdvancementTree();
       tree.addAll(this.advancements.values());
-
-      for(AdvancementNode root : tree.roots()) {
-         if (root.holder().value().display().isPresent()) {
-            TreeNodePosition.run(root);
-         }
-      }
-
+      tree.repositionNodes();
       this.tree = tree;
    }
 

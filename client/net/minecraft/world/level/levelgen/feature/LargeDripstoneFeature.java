@@ -8,8 +8,8 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public record LargeDripstoneFeature(HolderSet<Block> replaceableBlocks, int floorToCeilingSearchRange, IntProvider columnRadius, FloatProvider heightScale, float maxColumnRadiusToCaveHeightRatio, FloatProvider stalactiteBluntness, FloatProvider stalagmiteBluntness, FloatProvider windSpeed, int minRadiusForWind, float minBluntnessForWind) implements Feature {
-   public static final MapCodec<LargeDripstoneFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("replaceable_blocks").forGetter(LargeDripstoneFeature::replaceableBlocks), Codec.intRange(1, 512).optionalFieldOf("floor_to_ceiling_search_range", 30).forGetter(LargeDripstoneFeature::floorToCeilingSearchRange), IntProviders.codec(1, 16).fieldOf("column_radius").forGetter(LargeDripstoneFeature::columnRadius), FloatProviders.codec(0.0F, 20.0F).fieldOf("height_scale").forGetter(LargeDripstoneFeature::heightScale), Codec.floatRange(0.1F, 1.0F).fieldOf("max_column_radius_to_cave_height_ratio").forGetter(LargeDripstoneFeature::maxColumnRadiusToCaveHeightRatio), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalactite_bluntness").forGetter(LargeDripstoneFeature::stalactiteBluntness), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalagmite_bluntness").forGetter(LargeDripstoneFeature::stalagmiteBluntness), FloatProviders.codec(0.0F, 2.0F).fieldOf("wind_speed").forGetter(LargeDripstoneFeature::windSpeed), Codec.intRange(0, 100).fieldOf("min_radius_for_wind").forGetter(LargeDripstoneFeature::minRadiusForWind), Codec.floatRange(0.0F, 5.0F).fieldOf("min_bluntness_for_wind").forGetter(LargeDripstoneFeature::minBluntnessForWind)).apply(i, LargeDripstoneFeature::new));
+   public static final MapCodec<LargeDripstoneFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("replaceable_blocks").forGetter(LargeDripstoneFeature::replaceableBlocks), Codec.intRange(1, 512).optionalFieldOf("floor_to_ceiling_search_range", 30).forGetter(LargeDripstoneFeature::floorToCeilingSearchRange), IntProviders.codec(1, 16).fieldOf("column_radius").forGetter(LargeDripstoneFeature::columnRadius), FloatProviders.codec(0.0F, 20.0F).fieldOf("height_scale").forGetter(LargeDripstoneFeature::heightScale), Codec.floatRange(0.1F, 1.0F).fieldOf("max_column_radius_to_cave_height_ratio").forGetter(LargeDripstoneFeature::maxColumnRadiusToCaveHeightRatio), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalactite_bluntness").forGetter(LargeDripstoneFeature::stalactiteBluntness), FloatProviders.codec(0.1F, 10.0F).fieldOf("stalagmite_bluntness").forGetter(LargeDripstoneFeature::stalagmiteBluntness), FloatProviders.codec(0.0F, 2.0F).fieldOf("wind_speed").forGetter(LargeDripstoneFeature::windSpeed), Codec.intRange(0, 100).fieldOf("min_radius_for_wind").forGetter(LargeDripstoneFeature::minRadiusForWind), Codec.floatRange(0.0F, 5.0F).fieldOf("min_bluntness_for_wind").forGetter(LargeDripstoneFeature::minBluntnessForWind)).apply(i, LargeDripstoneFeature::new));
 
    public LargeDripstoneFeature {
       super();

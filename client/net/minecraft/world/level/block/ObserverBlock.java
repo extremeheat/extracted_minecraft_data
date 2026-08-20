@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
+import org.jspecify.annotations.Nullable;
 
 public class ObserverBlock extends DirectionalBlock {
    public static final BooleanProperty POWERED;
@@ -73,6 +74,10 @@ public class ObserverBlock extends DirectionalBlock {
 
    protected boolean isSignalSource(final BlockState state) {
       return true;
+   }
+
+   protected boolean shouldRedstoneWireConnectTo(final BlockState state, final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+      return direction == state.getValue(FACING);
    }
 
    protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {

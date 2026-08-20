@@ -5,8 +5,6 @@ import com.google.common.primitives.Floats;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
@@ -28,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -121,6 +118,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
@@ -138,7 +136,6 @@ import net.minecraft.network.protocol.game.ServerboundSetStructureBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSetTestBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundSpectatorActionPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -156,6 +153,7 @@ import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.StringUtil;
@@ -194,6 +192,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.PiercingWeapon;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -237,7 +236,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
    private static final Component INVALID_COMMAND_SIGNATURE;
-   private static final int MAX_COMMAND_SUGGESTIONS = 1000;
    public ServerPlayer player;
    public final PlayerChunkSender chunkSender;
    private int tickCount;
@@ -277,6 +275,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private boolean waitingForSwitchToConfig;
    private boolean waitingForRespawn;
    private int clientLoadedTimeoutTimer;
+   private final ServerCommandSuggestionsProvider commandSuggestionsProvider;
 
    public ServerGamePacketListenerImpl(final MinecraftServer server, final Connection connection, final ServerPlayer player, final CommonListenerCookie cookie) {
       super(server, connection, cookie);
@@ -291,6 +290,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       Objects.requireNonNull(server);
       this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(var10001, server::enforceSecureProfile);
       this.chatMessageChain = new FutureChain(server);
+      this.commandSuggestionsProvider = new ServerCommandSuggestionsProvider(player);
    }
 
    public void tick() {
@@ -304,6 +304,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.chatSpamThrottler.tick();
          this.commandSpamThrottler.tick();
          this.dropSpamThrottler.tick();
+         this.commandSuggestionsProvider.tick();
          if (this.player.getLastActionTime() > 0L && this.server.playerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.playerIdleTimeout()) && !this.player.wonGame) {
             this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
          }
@@ -579,17 +580,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleCustomCommandSuggestions(final ServerboundCommandSuggestionPacket packet) {
-      PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
-      StringReader command = new StringReader(packet.getCommand());
-      if (command.canRead() && command.peek() == '/') {
-         command.skip();
-      }
-
-      ParseResults<CommandSourceStack> parse = this.server.getCommands().getDispatcher().parse(command, this.player.createCommandSourceStack());
-      this.server.getCommands().getDispatcher().getCompletionSuggestions(parse).thenAccept((results) -> {
-         Suggestions suggestions = results.getList().size() <= 1000 ? results : new Suggestions(results.getRange(), results.getList().subList(0, 1000));
-         this.send(new ClientboundCommandSuggestionsPacket(packet.getId(), suggestions));
-      });
+      int clientId = packet.id();
+      this.commandSuggestionsProvider.request(packet.command()).thenAccept((suggestions) -> this.send(new ClientboundCommandSuggestionsPacket(clientId, suggestions)));
    }
 
    public void handleSetCommandBlock(final ServerboundSetCommandBlockPacket packet) {
@@ -1335,12 +1327,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleUseItemOn(final ServerboundUseItemOnPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       if (this.hasClientLoaded()) {
-         this.ackBlockChangesUpTo(packet.getSequence());
+         this.ackBlockChangesUpTo(packet.sequence());
          ServerLevel level = this.player.level();
-         InteractionHand hand = packet.getHand();
+         InteractionHand hand = packet.hand();
          ItemStack itemStack = this.player.getItemInHand(hand);
          if (itemStack.isItemEnabled(level.enabledFeatures())) {
-            BlockHitResult blockHit = packet.getHitResult();
+            BlockHitResult blockHit = packet.hitResult();
             Vec3 location = blockHit.getLocation();
             BlockPos pos = blockHit.getBlockPos();
             if (this.player.isWithinBlockInteractionRange(pos, 1.0)) {
@@ -1356,6 +1348,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   } else if (pos.getY() < minY) {
                      this.player.sendBuildLimitMessage(false, minY);
                   } else {
+                     SwingAnimation swingAnimation = itemStack.getInteractAnimation();
                      if (this.server.isUnderSpawnProtection(level, pos, this.player)) {
                         this.player.sendSpawnProtectionMessage(pos);
                      } else if (this.awaitingPositionFromClient == null && level.mayInteract(this.player, pos)) {
@@ -1368,8 +1361,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            this.player.sendBuildLimitMessage(true, maxY);
                         } else if (interactionResult instanceof InteractionResult.Success) {
                            InteractionResult.Success success = (InteractionResult.Success)interactionResult;
-                           if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
-                              this.player.swing(hand, true);
+                           if (success.shouldSwing()) {
+                              this.player.swingAndResetAttackStrength(hand, swingAnimation, success.swingSource() != InteractionResult.SwingSource.PREDICTED);
                            }
                         }
 
@@ -1381,8 +1374,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            }
                         } else if (interactionResult instanceof InteractionResult.Success) {
                            InteractionResult.Success success = (InteractionResult.Success)interactionResult;
-                           if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
-                              this.player.swing(hand, true);
+                           if (success.shouldSwing()) {
+                              this.player.swingAndResetAttackStrength(hand, swingAnimation, success.swingSource() != InteractionResult.SwingSource.PREDICTED);
                            }
                         }
                      } else {
@@ -1403,14 +1396,15 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleUseItem(final ServerboundUseItemPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       if (this.hasClientLoaded()) {
-         this.ackBlockChangesUpTo(packet.getSequence());
+         this.ackBlockChangesUpTo(packet.sequence());
          ServerLevel level = this.player.level();
-         InteractionHand hand = packet.getHand();
+         InteractionHand hand = packet.hand();
          ItemStack itemStack = this.player.getItemInHand(hand);
          this.player.resetLastActionTime();
          if (!itemStack.isEmpty() && itemStack.isItemEnabled(level.enabledFeatures())) {
-            float targetYRot = Mth.wrapDegrees(packet.getYRot());
-            float targetXRot = Mth.wrapDegrees(packet.getXRot());
+            SwingAnimation swingAnimation = itemStack.getInteractAnimation();
+            float targetYRot = Mth.wrapDegrees(packet.yRot());
+            float targetXRot = Mth.wrapDegrees(packet.xRot());
             if (targetXRot != this.player.getXRot() || targetYRot != this.player.getYRot()) {
                this.player.absSnapRotationTo(targetYRot, targetXRot);
             }
@@ -1418,8 +1412,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             InteractionResult useResult = this.player.gameMode.useItem(this.player, level, itemStack, hand);
             if (useResult instanceof InteractionResult.Success) {
                InteractionResult.Success success = (InteractionResult.Success)useResult;
-               if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
-                  this.player.swing(hand, true);
+               if (success.shouldSwing()) {
+                  this.player.swingAndResetAttackStrength(hand, swingAnimation, success.swingSource() != InteractionResult.SwingSource.PREDICTED);
                }
             }
 
@@ -1648,7 +1642,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private PlayerChatMessage getSignedMessage(final ServerboundChatPacket packet, final LastSeenMessages lastSeenMessages) throws SignedMessageChain.DecodeException {
       SignedMessageBody body = new SignedMessageBody(packet.message(), packet.timeStamp(), packet.salt(), lastSeenMessages);
-      return this.signedMessageDecoder.unpack(packet.signature(), body);
+      return this.signedMessageDecoder.unpack((MessageSignature)packet.signature().orElse((Object)null), body);
    }
 
    private void broadcastChatMessage(final PlayerChatMessage message) {
@@ -1684,10 +1678,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   public void handleAnimate(final ServerboundSwingPacket packet) {
+   public void handlePunch(final ServerboundPunchPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       this.player.resetLastActionTime();
-      this.player.swing(packet.getHand());
+      SwingAnimation swingAnimation = this.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation();
+      this.player.swing(InteractionHand.MAIN_HAND, swingAnimation, false);
+      this.player.resetAttackStrengthTicker();
    }
 
    public void handlePlayerCommand(final ServerboundPlayerCommandPacket packet) {
@@ -1744,7 +1740,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void sendPlayerChatMessage(final PlayerChatMessage message, final ChatType.Bound chatType) {
-      this.send(new ClientboundPlayerChatPacket(this.nextChatIndex++, message.link().sender(), message.link().index(), message.signature(), message.signedBody().pack(this.messageSignatureCache), message.unsignedContent(), message.filterMask(), chatType));
+      this.send(new ClientboundPlayerChatPacket(this.nextChatIndex++, message.link().sender(), message.link().index(), Optional.ofNullable(message.signature()), message.signedBody().pack(this.messageSignatureCache), Optional.ofNullable(message.unsignedContent()), message.filterMask(), chatType));
       MessageSignature signature = message.signature();
       if (signature != null) {
          this.messageSignatureCache.push(message.signedBody(), message.signature());
@@ -1841,8 +1837,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                      InteractionResult.Success success = (InteractionResult.Success)result;
                      ItemStack awardedForStack = success.wasItemInteraction() ? usedItemStack : ItemStack.EMPTY;
                      CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(this.player, awardedForStack, target);
-                     if (success.swingSource() == InteractionResult.SwingSource.SERVER) {
-                        this.player.swing(hand, true);
+                     if (success.shouldSwing()) {
+                        SwingAnimation swingAnimation = usedItemStack.getInteractAnimation();
+                        this.player.swingAndResetAttackStrength(hand, swingAnimation, success.swingSource() != InteractionResult.SwingSource.PREDICTED);
                      }
                   }
 
@@ -2027,7 +2024,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          } else if (drop && validData) {
             if (this.dropSpamThrottler.isUnderThreshold()) {
                this.dropSpamThrottler.increment();
-               this.player.drop(itemStack, true);
+               this.player.drop(itemStack, true, Prediction.PREDICTED);
             } else {
                LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
             }
@@ -2037,14 +2034,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSignUpdate(final ServerboundSignUpdatePacket packet) {
-      List<String> lines = (List)Stream.of(packet.getLines()).map(ChatFormatting::stripFormatting).collect(Collectors.toList());
+      List<String> lines = (List)packet.lines().stream().map(ChatFormatting::stripFormatting).collect(Collectors.toList());
       this.filterTextPacket(lines).thenAcceptAsync((filteredLines) -> this.updateSignText(packet, filteredLines), this.server);
    }
 
    private void updateSignText(final ServerboundSignUpdatePacket packet, final List<FilteredText> lines) {
       this.player.resetLastActionTime();
       ServerLevel level = this.player.level();
-      BlockPos pos = packet.getPos();
+      BlockPos pos = packet.pos();
       if (level.hasChunkAt(pos)) {
          BlockEntity blockEntity = level.getBlockEntity(pos);
          if (!(blockEntity instanceof SignBlockEntity)) {
@@ -2052,7 +2049,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          }
 
          SignBlockEntity sign = (SignBlockEntity)blockEntity;
-         sign.updateSignText(this.player, packet.isFrontText(), lines);
+         sign.updateSignText(this.player, packet.slot(), lines);
       }
 
    }
@@ -2173,6 +2170,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public boolean hasInfiniteMaterials() {
       return this.player.hasInfiniteMaterials();
+   }
+
+   public boolean canUseCommandBlocks() {
+      return this.player.canUseGameMasterBlocks();
    }
 
    public ServerPlayer getPlayer() {

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -29,6 +30,14 @@ public interface ProblemReporter {
    ProblemReporter forChild(PathElement path);
 
    void report(Problem problem);
+
+   public interface Problem {
+      String description();
+
+      default boolean isFatal() {
+         return false;
+      }
+   }
 
    public static record RootFieldPathElement(String name) implements PathElement {
       public RootFieldPathElement {
@@ -102,6 +111,17 @@ public interface ProblemReporter {
       }
    }
 
+   public static record CollectionReferencePathElement(TagKey<?> id) implements PathElement {
+      public CollectionReferencePathElement {
+         super();
+      }
+
+      public String get() {
+         String var10000 = String.valueOf(this.id.location());
+         return "->{#" + var10000 + "@" + String.valueOf(this.id.registry()) + "}";
+      }
+   }
+
    public static class Collector implements ProblemReporter {
       public static final PathElement EMPTY_ROOT = () -> "";
       private final @Nullable Collector parent;
@@ -136,6 +156,16 @@ public interface ProblemReporter {
 
       public boolean isEmpty() {
          return this.problems.isEmpty();
+      }
+
+      public boolean hasFatalProblems() {
+         for(Entry entry : this.problems) {
+            if (entry.problem.isFatal()) {
+               return true;
+            }
+         }
+
+         return false;
       }
 
       public void forEach(final BiConsumer<String, Problem> output) {
@@ -263,9 +293,5 @@ public interface ProblemReporter {
    @FunctionalInterface
    public interface PathElement {
       String get();
-   }
-
-   public interface Problem {
-      String description();
    }
 }

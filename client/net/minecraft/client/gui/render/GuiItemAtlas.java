@@ -94,7 +94,7 @@ public class GuiItemAtlas implements AutoCloseable {
       int bottom = top + this.slotTextureSize;
       GpuDevice device = RenderSystem.getDevice();
       if (clear) {
-         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
+         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize, 0);
       }
 
       this.poseStack.pushPose();

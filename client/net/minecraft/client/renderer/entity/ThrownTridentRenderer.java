@@ -38,8 +38,8 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected AABB getBoundingBoxForCulling(final ThrownTrident entity) {
-      return super.getBoundingBoxForCulling(entity).inflate(1.5);
+   protected AABB getBoundingBoxForCulling(final ThrownTrident entity, final float partialTicks) {
+      return super.getBoundingBoxForCulling(entity, partialTicks).inflate(1.5);
    }
 
    public ThrownTridentRenderState createRenderState() {

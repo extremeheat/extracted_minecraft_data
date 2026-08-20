@@ -1,14 +1,14 @@
 package net.minecraft.world.entity.monster.skeleton;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.function.BiConsumer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.ConversionParams;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ConversionTracker;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
@@ -16,15 +16,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public class Skeleton extends AbstractSkeleton {
-   private static final int TOTAL_CONVERSION_TIME = 300;
    private static final EntityDataAccessor<Boolean> DATA_STRAY_CONVERSION_ID;
-   public static final String CONVERSION_TAG = "StrayConversionTime";
-   private static final int NOT_CONVERTING = -1;
-   private int inPowderSnowTime;
-   private int conversionTime;
+   private final ConversionTracker<AbstractSkeleton> freezingTracker;
 
    public Skeleton(final EntityType<? extends Skeleton> type, final Level level) {
       super(type, level);
+      this.freezingTracker = new ConversionTracker<AbstractSkeleton>(this, DATA_STRAY_CONVERSION_ID, () -> EntityTypes.STRAY, () -> 1048, () -> this.isInPowderSnow, "FreezingTime", 140, "StrayConversionTime", 300, (BiConsumer)null);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -32,70 +29,28 @@ public class Skeleton extends AbstractSkeleton {
       entityData.define(DATA_STRAY_CONVERSION_ID, false);
    }
 
-   public boolean isFreezeConverting() {
-      return (Boolean)this.getEntityData().get(DATA_STRAY_CONVERSION_ID);
-   }
-
-   public void setFreezeConverting(final boolean isConverting) {
-      this.entityData.set(DATA_STRAY_CONVERSION_ID, isConverting);
-   }
-
    public boolean isShaking() {
-      return this.isFreezeConverting();
+      return this.freezingTracker.isConverting();
    }
 
    public void tick() {
-      if (!this.level().isClientSide() && this.isAlive() && !this.isNoAi()) {
-         if (this.isInPowderSnow) {
-            if (this.isFreezeConverting()) {
-               --this.conversionTime;
-               if (this.conversionTime < 0) {
-                  this.doFreezeConversion();
-               }
-            } else {
-               ++this.inPowderSnowTime;
-               if (this.inPowderSnowTime >= 140) {
-                  this.startFreezeConversion(300);
-               }
-            }
-         } else {
-            this.inPowderSnowTime = -1;
-            this.setFreezeConverting(false);
-         }
-      }
-
+      this.freezingTracker.tick();
       super.tick();
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
       super.addAdditionalSaveData(output);
-      output.putInt("StrayConversionTime", this.isFreezeConverting() ? this.conversionTime : -1);
+      this.freezingTracker.addAdditionalSaveData(output);
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
-      int conversionTime = input.getIntOr("StrayConversionTime", -1);
-      if (conversionTime != -1) {
-         this.startFreezeConversion(conversionTime);
-      } else {
-         this.setFreezeConverting(false);
-      }
-
+      this.freezingTracker.readAdditionalSaveData(input);
    }
 
    @VisibleForTesting
    public void startFreezeConversion(final int time) {
-      this.conversionTime = time;
-      this.setFreezeConverting(true);
-   }
-
-   protected void doFreezeConversion() {
-      this.convertTo(EntityTypes.STRAY, ConversionParams.single(this, true, true), (stray) -> {
-         if (!this.isSilent()) {
-            this.level().levelEvent((Entity)null, 1048, this.blockPosition(), 0);
-         }
-
-      });
+      this.freezingTracker.startConversion(time);
    }
 
    public boolean canFreeze() {

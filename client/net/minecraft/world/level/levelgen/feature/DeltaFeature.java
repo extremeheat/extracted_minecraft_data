@@ -39,7 +39,7 @@ public record DeltaFeature(BlockState contents, BlockState rim, IntProvider size
       int radiusZ = this.size.sample(random);
       int radiusLimit = Math.max(radiusX, radiusZ);
 
-      for(BlockPos pos : BlockPos.withinManhattan(origin, radiusX, 0, radiusZ)) {
+      for(BlockPos pos : BlockPos.withinBoxByManhattanDistance(origin, radiusX, 0, radiusZ)) {
          if (pos.distManhattan(origin) > radiusLimit) {
             break;
          }

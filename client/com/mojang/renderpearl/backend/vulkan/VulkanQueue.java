@@ -1,5 +1,6 @@
 package com.mojang.renderpearl.backend.vulkan;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +58,7 @@ public record VulkanQueue(VkQueue vkQueue, int queueFamilyIndex) {
       VK12.vkQueueWaitIdle(this.vkQueue);
    }
 
-   public class Submission implements AutoCloseable {
+   public class Submission implements UncheckedAutoCloseable {
       private boolean closed;
       private final ReferenceArrayList<SubmitStage> stages;
 

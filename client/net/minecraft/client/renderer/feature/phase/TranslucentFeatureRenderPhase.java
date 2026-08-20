@@ -39,7 +39,10 @@ public class TranslucentFeatureRenderPhase implements FeatureRenderPhase<Translu
       for(int i = 0; i < this.submits.size(); indices[i] = i++) {
       }
 
-      IntArrays.unstableSort(indices, (i1, i2) -> Floats.compare(this.distances.getFloat(i2), this.distances.getFloat(i1)));
+      IntArrays.unstableSort(indices, (i1, i2) -> {
+         int byDistance = Floats.compare(this.distances.getFloat(i2), this.distances.getFloat(i1));
+         return byDistance != 0 ? byDistance : Integer.compare(i1, i2);
+      });
       return indices;
    }
 

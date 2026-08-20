@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.social;
 import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.response.PresenceResponse;
 import com.mojang.authlib.services.response.PresenceStatus;
+import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,8 +18,11 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 
 public class PresenceHandler {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Duration PRESENCE_UPDATE_INTERVAL = Duration.ofMinutes(1L);
    private static final long MAX_PRESENCE_INTERVAL_MULTIPLIER = 5L;
    private final Minecraft minecraft;
@@ -39,32 +43,47 @@ public class PresenceHandler {
       this.lastPresencePost = Instant.now();
       PresenceStatus publicPresenceStatus = this.getPublicPresenceStatus();
       CompletableFuture.runAsync(() -> {
-         PresenceResponse newPresence = this.friendsService.presence(publicPresenceStatus.name());
-         this.minecraft.execute(() -> {
-            boolean refreshPresence = !Objects.equals(this.latestPresence, newPresence);
-            this.latestPresence = newPresence;
-            if (refreshPresence) {
-               Screen patt0$temp = this.minecraft.gui.screen();
-               if (patt0$temp instanceof FriendsOverlayScreen) {
-                  FriendsOverlayScreen friendsOverlayScreen = (FriendsOverlayScreen)patt0$temp;
-                  friendsOverlayScreen.applyPresenceUpdate();
+         PresenceResponse newPresence = this.postPresence(publicPresenceStatus);
+         if (newPresence != null) {
+            this.minecraft.execute(() -> {
+               boolean refreshPresence = !Objects.equals(this.latestPresence, newPresence);
+               this.latestPresence = newPresence;
+               if (refreshPresence) {
+                  Screen patt0$temp = this.minecraft.gui.screen();
+                  if (patt0$temp instanceof FriendsOverlayScreen) {
+                     FriendsOverlayScreen friendsOverlayScreen = (FriendsOverlayScreen)patt0$temp;
+                     friendsOverlayScreen.applyPresenceUpdate();
+                  }
                }
-            }
 
-         });
+            });
+         }
       }, Util.nonCriticalIoPool());
    }
 
-   private boolean shouldRefreshPresence() {
+   private @Nullable PresenceResponse postPresence(final PresenceStatus status) {
+      try {
+         return this.friendsService.presence(status.name());
+      } catch (Exception e) {
+         LOGGER.warn("Failed to post presence {}", status, e);
+         return null;
+      }
+   }
+
+   private boolean isPresenceSharingDisabled() {
       PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
-      if (socialManager.isFriendListEnabled() && !socialManager.getFriends().isEmpty()) {
+      return !socialManager.isFriendListEnabled() || socialManager.getFriends().isEmpty();
+   }
+
+   private boolean shouldRefreshPresence() {
+      if (this.isPresenceSharingDisabled()) {
+         return false;
+      } else {
          Duration sinceLastPresence = Duration.between(this.lastPresencePost, Instant.now());
          Optional<Duration> presencePollInterval = this.friendsService.getPresencePollInterval();
          Duration interval = !presencePollInterval.isEmpty() && ((Duration)presencePollInterval.get()).isPositive() ? (Duration)presencePollInterval.get() : PRESENCE_UPDATE_INTERVAL;
          Duration maxInterval = interval.multipliedBy(5L);
          return this.updatePresence && sinceLastPresence.compareTo(interval) >= 0 || sinceLastPresence.compareTo(maxInterval) >= 0;
-      } else {
-         return false;
       }
    }
 
@@ -77,6 +96,12 @@ public class PresenceHandler {
 
    public void tryUpdatePresence() {
       this.updatePresence = true;
+   }
+
+   public void sendOfflinePresence() {
+      if (!this.isPresenceSharingDisabled()) {
+         Util.ioPool().execute(() -> this.postPresence(PresenceStatus.OFFLINE));
+      }
    }
 
    public PresenceResponse getLatestPresence() {

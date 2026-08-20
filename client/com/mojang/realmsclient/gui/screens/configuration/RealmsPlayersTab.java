@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.CommonComponents;
@@ -49,7 +50,9 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
       this.serverData = serverData;
       GridLayout.RowHelper helper = this.layout.spacing(8).createRowHelper(1);
       this.invitedList = (InvitedObjectSelectionList)helper.addChild(new InvitedObjectSelectionList(configurationScreen.width, this.calculateListHeight()), LayoutSettings.defaults().alignVerticallyTop().alignHorizontallyCenter());
-      helper.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (var3) -> minecraft.gui.setScreen(new RealmsInviteScreen(configurationScreen, serverData))).build(), LayoutSettings.defaults().alignVerticallyBottom().alignHorizontallyCenter());
+      LinearLayout actions = (LinearLayout)helper.addChild(LinearLayout.horizontal().spacing(8), LayoutSettings.defaults().alignVerticallyBottom().alignHorizontallyCenter());
+      actions.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (var3) -> minecraft.gui.setScreen(new RealmsInviteScreen(configurationScreen, serverData))).build());
+      actions.addChild(Button.builder(RealmsInviteCodesScreen.TITLE, (var3) -> minecraft.gui.setScreen(new RealmsInviteCodesScreen(configurationScreen, serverData))).build());
       this.updateData(serverData);
    }
 

@@ -11,6 +11,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -179,7 +180,25 @@ public record HugeFungusFeature(BlockState validBaseState, BlockState stemState,
 
          int minVineAge = 23;
          int maxVineAge = 25;
-         WeepingVinesFeature.placeWeepingVinesColumn(level, random, placePos, goalVineHeight, 23, 25);
+         placeWeepingVinesColumn(level, random, placePos, goalVineHeight, 23, 25);
       }
+   }
+
+   private static void placeWeepingVinesColumn(final LevelAccessor level, final RandomSource random, final BlockPos origin, final int totalHeight, final int minAge, final int naxAge) {
+      BlockPos.MutableBlockPos placePos = origin.mutable();
+
+      for(int height = 0; height <= totalHeight; ++height) {
+         if (level.isEmptyBlock(placePos)) {
+            if (height == totalHeight || !level.isEmptyBlock(placePos.below())) {
+               level.setBlock(placePos, (BlockState)Blocks.WEEPING_VINES.defaultBlockState().setValue(GrowingPlantHeadBlock.AGE, Mth.nextInt(random, minAge, naxAge)), 2);
+               break;
+            }
+
+            level.setBlock(placePos, Blocks.WEEPING_VINES_PLANT.defaultBlockState(), 2);
+         }
+
+         placePos.move(Direction.DOWN);
+      }
+
    }
 }

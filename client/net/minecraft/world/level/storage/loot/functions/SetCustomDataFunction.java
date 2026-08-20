@@ -2,7 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -15,8 +16,8 @@ public class SetCustomDataFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetCustomDataFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(TagParser.LENIENT_CODEC.fieldOf("tag").forGetter((f) -> f.tag)).apply(i, SetCustomDataFunction::new));
    private final CompoundTag tag;
 
-   private SetCustomDataFunction(final List<LootItemCondition> predicates, final CompoundTag tag) {
-      super(predicates);
+   private SetCustomDataFunction(final Optional<Holder<LootItemCondition>> condition, final CompoundTag tag) {
+      super(condition);
       this.tag = tag;
    }
 

@@ -62,7 +62,7 @@ public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlo
    }
 
    private boolean shouldTryToChainAnotherHangingSign(final Player player, final BlockHitResult hitResult, final SignBlockEntity signEntity, final ItemStack itemStack) {
-      return !signEntity.canExecuteClickCommands(signEntity.isFacingFrontText(player), player) && itemStack.getItem() instanceof HangingSignItem && hitResult.getDirection().equals(Direction.DOWN);
+      return !signEntity.canExecuteClickCommands(signEntity.getSlotPlayerIsFacing(player), player) && itemStack.getItem() instanceof HangingSignItem && hitResult.getDirection().equals(Direction.DOWN);
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {

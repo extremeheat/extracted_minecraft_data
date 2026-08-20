@@ -35,6 +35,7 @@ import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -481,7 +482,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 8) {
          this.isShaking = true;
          this.shakeAnim = 0.0F;

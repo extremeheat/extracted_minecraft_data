@@ -35,8 +35,8 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
    private final Optional<List<DataComponentType<?>>> exclude;
    private final Predicate<DataComponentType<?>> bakedPredicate;
 
-   private CopyComponentsFunction(final List<LootItemCondition> predicates, final LootContextArg<DataComponentGetter> source, final Optional<List<DataComponentType<?>>> include, final Optional<List<DataComponentType<?>>> exclude) {
-      super(predicates);
+   private CopyComponentsFunction(final Optional<Holder<LootItemCondition>> condition, final LootContextArg<DataComponentGetter> source, final Optional<List<DataComponentType<?>>> include, final Optional<List<DataComponentType<?>>> exclude) {
+      super(condition);
       this.source = source;
       this.include = include.map(List::copyOf);
       this.exclude = exclude.map(List::copyOf);
@@ -121,7 +121,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new CopyComponentsFunction(this.getConditions(), this.source, this.include.map(ImmutableList.Builder::build), this.exclude.map(ImmutableList.Builder::build));
+         return new CopyComponentsFunction(this.getCondition(), this.source, this.include.map(ImmutableList.Builder::build), this.exclude.map(ImmutableList.Builder::build));
       }
    }
 

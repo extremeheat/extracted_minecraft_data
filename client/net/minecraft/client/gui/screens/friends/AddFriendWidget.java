@@ -57,7 +57,7 @@ class AddFriendWidget extends AbstractContainerWidget {
          }
 
          public boolean keyPressed(final KeyEvent event) {
-            boolean enterPressed = event.key() == 257 || event.key() == 335;
+            boolean enterPressed = event.shortcutKey() == 13 || event.shortcutKey() == 1073741912;
             boolean elementsActive = this.isActive() && AddFriendWidget.this.addButton.active;
             if (elementsActive && this.isFocused() && enterPressed) {
                AddFriendWidget.this.addButton.playDownSound(AddFriendWidget.this.minecraft.getSoundManager());

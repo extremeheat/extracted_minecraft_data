@@ -20,7 +20,7 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
    private final List<BlockState> lowStates;
    private final List<BlockState> highStates;
 
-   public NoiseThresholdProvider(final long seed, final NormalNoise.NoiseParameters parameters, final float scale, final float threshold, final float highChance, final BlockState defaultState, final List<BlockState> lowStates, final List<BlockState> highStates) {
+   public NoiseThresholdProvider(final long seed, final NormalNoise parameters, final float scale, final float threshold, final float highChance, final BlockState defaultState, final List<BlockState> lowStates, final List<BlockState> highStates) {
       super(seed, parameters, scale);
       this.threshold = threshold;
       this.highChance = highChance;
@@ -34,7 +34,7 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
    }
 
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
-      double localValue = this.getNoiseValue(pos, (double)this.scale);
+      double localValue = (double)this.getNoiseValue(pos, (double)this.scale);
       if (localValue < (double)this.threshold) {
          return (BlockState)Util.getRandom(this.lowStates, random);
       } else {

@@ -29,10 +29,12 @@ import net.minecraft.world.level.levelgen.GeodeCrackSettings;
 import net.minecraft.world.level.levelgen.GeodeLayerSettings;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.synth.Noise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.FluidState;
 
 public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings layerSettings, GeodeCrackSettings crackSettings, double usePotentialPlacementsChance, double useAlternateLayer0Chance, boolean placementsRequireLayer0Alternate, IntProvider outerWallDistance, IntProvider distributionPoints, IntProvider pointOffset, int minGenOffset, int maxGenOffset, double noiseMultiplier, int invalidBlocksThreshold) implements Feature {
+   private static final NormalNoise NOISE_PARAMETERS = NormalNoise.createParity(-4, (double[])(1.0));
    public static final Codec<Double> CHANCE_RANGE = Codec.doubleRange(0.0, 1.0);
    public static final MapCodec<GeodeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(GeodeBlockSettings.CODEC.fieldOf("blocks").forGetter(GeodeFeature::blockSettings), GeodeLayerSettings.CODEC.fieldOf("layers").forGetter(GeodeFeature::layerSettings), GeodeCrackSettings.CODEC.fieldOf("crack").forGetter(GeodeFeature::crackSettings), CHANCE_RANGE.optionalFieldOf("use_potential_placements_chance", 0.35).forGetter(GeodeFeature::usePotentialPlacementsChance), CHANCE_RANGE.optionalFieldOf("use_alternate_layer0_chance", 0.0).forGetter(GeodeFeature::useAlternateLayer0Chance), Codec.BOOL.optionalFieldOf("placements_require_layer0_alternate", true).forGetter(GeodeFeature::placementsRequireLayer0Alternate), IntProviders.codec(1, 20).optionalFieldOf("outer_wall_distance", UniformInt.of(4, 5)).forGetter(GeodeFeature::outerWallDistance), IntProviders.codec(1, 20).optionalFieldOf("distribution_points", UniformInt.of(3, 4)).forGetter(GeodeFeature::distributionPoints), IntProviders.codec(0, 10).optionalFieldOf("point_offset", UniformInt.of(1, 2)).forGetter(GeodeFeature::pointOffset), Codec.INT.optionalFieldOf("min_gen_offset", -16).forGetter(GeodeFeature::minGenOffset), Codec.INT.optionalFieldOf("max_gen_offset", 16).forGetter(GeodeFeature::maxGenOffset), CHANCE_RANGE.optionalFieldOf("noise_multiplier", 0.05).forGetter(GeodeFeature::noiseMultiplier), Codec.INT.fieldOf("invalid_blocks_threshold").forGetter(GeodeFeature::invalidBlocksThreshold)).apply(i, GeodeFeature::new));
    private static final Direction[] DIRECTIONS = Direction.values();
@@ -48,8 +50,7 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       List<Pair<BlockPos, Integer>> points = Lists.newLinkedList();
       int numPoints = this.distributionPoints.sample(random);
-      WorldgenRandom random1 = new WorldgenRandom(new LegacyRandomSource(level.getSeed()));
-      NormalNoise noise = NormalNoise.create(random1, -4, 1.0);
+      Noise noise = NOISE_PARAMETERS.create(new WorldgenRandom(new LegacyRandomSource(level.getSeed())));
       List<BlockPos> crackPoints = Lists.newLinkedList();
       double crackSizeAdjustment = (double)numPoints / (double)this.outerWallDistance.maxInclusive();
       double innerAir = 1.0 / Math.sqrt(this.layerSettings.filling);
@@ -103,7 +104,7 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
       Predicate<BlockState> canReplace = (s) -> !s.is(cantReplace);
 
       for(BlockPos pointInside : BlockPos.betweenClosed(origin.offset(this.minGenOffset, this.minGenOffset, this.minGenOffset), origin.offset(this.maxGenOffset, this.maxGenOffset, this.maxGenOffset))) {
-         double noiseOffset = noise.getValue((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * this.noiseMultiplier;
+         double noiseOffset = (double)noise.get((double)pointInside.getX(), (double)pointInside.getY(), (double)pointInside.getZ()) * this.noiseMultiplier;
          double distSumShell = 0.0;
 
          for(Pair<BlockPos, Integer> point : points) {

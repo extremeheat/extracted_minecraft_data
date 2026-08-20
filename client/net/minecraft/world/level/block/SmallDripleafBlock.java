@@ -84,22 +84,22 @@ public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterl
       builder.add(HALF, WATERLOGGED, FACING);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
          BlockPos above = pos.above();
          level.setBlock(above, level.getFluidState(above).createLegacyBlock(), 18);
          BigDripleafBlock.placeWithRandomHeight(level, random, pos, (Direction)state.getValue(FACING));
       } else {
          BlockPos belowPos = pos.below();
-         this.performBonemeal(level, random, belowPos, level.getBlockState(belowPos));
+         this.performBonemeal(level, random, belowPos, level.getBlockState(belowPos), source);
       }
 
    }

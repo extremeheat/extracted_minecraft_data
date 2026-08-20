@@ -43,7 +43,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
       this.featureRenderers.put(ShadowFeatureRenderer.TYPE, new ShadowFeatureRenderer());
       this.featureRenderers.put(FlameFeatureRenderer.TYPE, new FlameFeatureRenderer());
       this.featureRenderers.put(ModelFeatureRenderer.TYPE, new ModelFeatureRenderer());
-      this.featureRenderers.put(NameTagFeatureRenderer.TYPE, new NameTagFeatureRenderer());
       this.featureRenderers.put(TextFeatureRenderer.TYPE, new TextFeatureRenderer());
       this.featureRenderers.put(LeashFeatureRenderer.TYPE, new LeashFeatureRenderer());
       this.featureRenderers.put(ItemFeatureRenderer.TYPE, new ItemFeatureRenderer());
@@ -99,6 +98,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
       frame.executeSolid(renderPass);
       frame.executeTranslucent(renderPass);
       frame.executeTranslucentAfterTerrain(renderPass);
+      frame.executeSeeThrough(renderPass);
       frame.executeAlwaysOnTop(renderPass);
    }
 
@@ -152,7 +152,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
             SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
             this.executePhase(collection.shadows, context, renderPass);
             this.executePhase(collection.translucentModels, context, renderPass);
-            this.executePhase(collection.seeThroughNameTags, context, renderPass);
             this.executePhase(collection.nameTags, context, renderPass);
             this.executePhase(collection.texts, context, renderPass);
             this.executePhase(collection.translucentCustomGeometry, context, renderPass);
@@ -225,6 +224,12 @@ public class FeatureRenderDispatcher implements AutoCloseable {
 
       }
 
+      public void executeSeeThrough(final RenderPass renderPass) {
+         FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         this.executePhase(submitNodeStorage.seeThrough(), context, renderPass);
+      }
+
       public void executeAlwaysOnTop(final RenderPass renderPass) {
          FeatureFrameContext context = (FeatureFrameContext)Objects.requireNonNull(this.context);
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
@@ -255,20 +260,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
 
       }
 
-      public boolean hasAnyAlwaysOnTop() {
-         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
-         ObjectIterator var2 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
-
-         while(var2.hasNext()) {
-            SubmitNodeCollection collection = (SubmitNodeCollection)var2.next();
-            if (!((List)this.groupsByPhase.getOrDefault(collection.alwaysOnTopGizmos, List.of())).isEmpty()) {
-               return true;
-            }
-         }
-
-         return false;
-      }
-
       public boolean hasAnyOutline() {
          SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
          ObjectIterator var2 = submitNodeStorage.getSubmitsPerOrder().values().iterator();
@@ -295,6 +286,15 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          }
 
          return false;
+      }
+
+      public boolean hasAnySeeThrough() {
+         SubmitNodeStorage submitNodeStorage = (SubmitNodeStorage)Objects.requireNonNull(this.submitNodeStorage);
+         return !((List)this.groupsByPhase.getOrDefault(submitNodeStorage.seeThrough(), List.of())).isEmpty();
+      }
+
+      public boolean isEmpty() {
+         return this.allSubmits.isEmpty();
       }
 
       public void close() {

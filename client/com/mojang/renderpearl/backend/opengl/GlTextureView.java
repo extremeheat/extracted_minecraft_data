@@ -1,10 +1,10 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.common.BaseGpuTextureView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GlTextureView extends GpuTextureView implements FrameBufferAttachment {
+public class GlTextureView extends BaseGpuTextureView implements FrameBufferAttachment {
    private static final int EMPTY = -1;
    private boolean closed;
    private final FrameBufferCache frameBufferCache;

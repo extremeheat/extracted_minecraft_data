@@ -3,11 +3,11 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public UsedEnderEyeTrigger() {
@@ -25,8 +25,8 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<TriggerInstance>
       this.trigger(player, (t) -> t.matches(sqrDist));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Doubles distance) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::distance)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, MinMaxBounds.Doubles distance) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::distance)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();

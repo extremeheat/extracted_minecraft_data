@@ -31,6 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PostChain implements AutoCloseable {
    public static final Identifier MAIN_TARGET_ID = Identifier.withDefaultNamespace("main");
+   private final Identifier id;
    private final List<PostPass> passes;
    private final Map<Identifier, PostChainConfig.InternalTarget> internalTargets;
    private final Set<Identifier> externalTargets;
@@ -38,8 +39,9 @@ public class PostChain implements AutoCloseable {
    private final Projection projection;
    private final ProjectionMatrixBuffer projectionMatrixBuffer;
 
-   private PostChain(final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) {
+   private PostChain(final Identifier id, final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) {
       super();
+      this.id = id;
       this.passes = passes;
       this.internalTargets = internalTargets;
       this.externalTargets = externalTargets;
@@ -47,9 +49,12 @@ public class PostChain implements AutoCloseable {
       this.projectionMatrixBuffer = projectionMatrixBuffer;
    }
 
+   public Identifier id() {
+      return this.id;
+   }
+
    public static PostChain load(final PostChainConfig config, final TextureManager textureManager, final Set<Identifier> allowedExternalTargets, final Identifier id, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) throws ShaderManager.CompilationException {
-      Stream<Identifier> referencedTargets = config.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
-      Set<Identifier> referencedExternalTargets = (Set)referencedTargets.filter((targetId) -> !config.internalTargets().containsKey(targetId)).collect(Collectors.toSet());
+      Set<Identifier> referencedExternalTargets = getReferencedExternalTargets(config);
       Set<Identifier> invalidExternalTargets = Sets.difference(referencedExternalTargets, allowedExternalTargets);
       if (!invalidExternalTargets.isEmpty()) {
          throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + String.valueOf(invalidExternalTargets));
@@ -61,8 +66,13 @@ public class PostChain implements AutoCloseable {
             passes.add(createPass(textureManager, pass, id.withSuffix("/" + i)));
          }
 
-         return new PostChain(passes.build(), config.internalTargets(), referencedExternalTargets, projection, projectionMatrixBuffer);
+         return new PostChain(id, passes.build(), config.internalTargets(), referencedExternalTargets, projection, projectionMatrixBuffer);
       }
+   }
+
+   public static Set<Identifier> getReferencedExternalTargets(final PostChainConfig config) {
+      Stream<Identifier> referencedTargets = config.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
+      return (Set)referencedTargets.filter((targetId) -> !config.internalTargets().containsKey(targetId)).collect(Collectors.toSet());
    }
 
    private static PostPass createPass(final TextureManager textureManager, final PostChainConfig.Pass config, final Identifier id) throws ShaderManager.CompilationException {
@@ -70,7 +80,7 @@ public class PostChain implements AutoCloseable {
       BindGroupLayout.Builder bindGroupLayoutBuilder = BindGroupLayout.builder();
 
       for(PostChainConfig.Input input : config.inputs()) {
-         bindGroupLayoutBuilder.withSampler(input.samplerName() + "Sampler");
+         bindGroupLayoutBuilder.withUniform(input.samplerName() + "Sampler", UniformType.COMBINED_IMAGE_SAMPLER);
       }
 
       bindGroupLayoutBuilder.withUniform("SamplerInfo", UniformType.UNIFORM_BUFFER);

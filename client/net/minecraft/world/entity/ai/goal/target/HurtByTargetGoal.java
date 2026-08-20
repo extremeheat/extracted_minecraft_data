@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.goal.target;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,11 +22,13 @@ public class HurtByTargetGoal extends TargetGoal {
    private boolean alertSameType;
    private int timestamp;
    private final Class<?>[] toIgnoreDamage;
+   private BooleanSupplier alertCondition;
    private Class<?> @Nullable [] toIgnoreAlert;
 
    public HurtByTargetGoal(final PathfinderMob mob, final Class<?>... ignoreDamageFromTheseTypes) {
       super(mob, true);
       this.toIgnoreDamage = ignoreDamageFromTheseTypes;
+      this.alertCondition = () -> true;
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
@@ -55,6 +58,11 @@ public class HurtByTargetGoal extends TargetGoal {
       return this;
    }
 
+   public HurtByTargetGoal setAlertCondition(final BooleanSupplier alertCondition) {
+      this.alertCondition = alertCondition;
+      return this;
+   }
+
    public void start() {
       this.mob.setTarget(this.mob.getLastHurtByMob());
       this.targetMob = this.mob.getTarget();
@@ -68,54 +76,56 @@ public class HurtByTargetGoal extends TargetGoal {
    }
 
    protected void alertOthers() {
-      double within = this.getFollowDistance();
-      AABB searchAabb = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(within, 10.0, within);
-      List<? extends Mob> nearby = this.mob.level().getEntitiesOfClass(this.mob.getClass(), searchAabb, EntitySelector.NO_SPECTATORS);
-      Iterator var5 = nearby.iterator();
+      if (this.alertCondition.getAsBoolean()) {
+         double within = this.getFollowDistance();
+         AABB searchAabb = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(within, 10.0, within);
+         List<? extends Mob> nearby = this.mob.level().getEntitiesOfClass(this.mob.getClass(), searchAabb, EntitySelector.NO_SPECTATORS);
+         Iterator var5 = nearby.iterator();
 
-      while(true) {
-         Mob other;
          while(true) {
+            Mob other;
             while(true) {
-               if (!var5.hasNext()) {
-                  return;
+               while(true) {
+                  if (!var5.hasNext()) {
+                     return;
+                  }
+
+                  other = (Mob)var5.next();
+                  if (this.mob != other && other.getTarget() == null) {
+                     Mob var8 = this.mob;
+                     if (!(var8 instanceof TamableAnimal)) {
+                        break;
+                     }
+
+                     TamableAnimal tamableAnimal = (TamableAnimal)var8;
+                     if (tamableAnimal.getOwner() == ((TamableAnimal)other).getOwner()) {
+                        break;
+                     }
+                  }
                }
 
-               other = (Mob)var5.next();
-               if (this.mob != other && other.getTarget() == null) {
-                  Mob var8 = this.mob;
-                  if (!(var8 instanceof TamableAnimal)) {
+               if (!other.isAlliedTo(this.mob.getLastHurtByMob())) {
+                  if (this.toIgnoreAlert == null) {
                      break;
                   }
 
-                  TamableAnimal tamableAnimal = (TamableAnimal)var8;
-                  if (tamableAnimal.getOwner() == ((TamableAnimal)other).getOwner()) {
+                  boolean ignore = false;
+
+                  for(Class<?> ignoreClass : this.toIgnoreAlert) {
+                     if (other.getClass() == ignoreClass) {
+                        ignore = true;
+                        break;
+                     }
+                  }
+
+                  if (!ignore) {
                      break;
                   }
                }
             }
 
-            if (!other.isAlliedTo(this.mob.getLastHurtByMob())) {
-               if (this.toIgnoreAlert == null) {
-                  break;
-               }
-
-               boolean ignore = false;
-
-               for(Class<?> ignoreClass : this.toIgnoreAlert) {
-                  if (other.getClass() == ignoreClass) {
-                     ignore = true;
-                     break;
-                  }
-               }
-
-               if (!ignore) {
-                  break;
-               }
-            }
+            this.alertOther(other, this.mob.getLastHurtByMob());
          }
-
-         this.alertOther(other, this.mob.getLastHurtByMob());
       }
    }
 

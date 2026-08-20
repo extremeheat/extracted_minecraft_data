@@ -9,11 +9,11 @@ import net.minecraft.client.renderer.entity.layers.EnderEyesLayer;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState, EndermanModel<EndermanRenderState>> {
+public class EndermanRenderer extends MobRenderer<Enderman, EndermanRenderState, EndermanModel<EndermanRenderState>> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private static final Identifier ENDERMAN_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderman/enderman.png");
    private final RandomSource random = RandomSource.create();
@@ -44,7 +44,7 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState,
       return new EndermanRenderState();
    }
 
-   public void extractRenderState(final EnderMan entity, final EndermanRenderState state, final float partialTicks) {
+   public void extractRenderState(final Enderman entity, final EndermanRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       HumanoidMobRenderer.extractHumanoidRenderState(entity, state, partialTicks, this.itemModelResolver);
       state.isCreepy = entity.isCreepy();

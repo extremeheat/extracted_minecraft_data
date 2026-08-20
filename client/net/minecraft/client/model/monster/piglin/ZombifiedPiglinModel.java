@@ -9,8 +9,8 @@ public abstract class ZombifiedPiglinModel extends AbstractPiglinModel<Zombified
       super(root);
    }
 
-   public void setupAnim(final ZombifiedPiglinRenderState state) {
-      super.setupAnim(state);
+   protected void setupAttackAnimation(final ZombifiedPiglinRenderState state) {
+      super.setupAttackAnimation(state);
       AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, state.isAggressive, state);
    }
 }

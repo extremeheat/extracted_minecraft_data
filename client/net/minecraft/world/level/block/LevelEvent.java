@@ -1,5 +1,10 @@
 package net.minecraft.world.level.block;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 public class LevelEvent {
    public static final int SOUND_DISPENSER_DISPENSE = 1000;
    public static final int SOUND_DISPENSER_FAIL = 1001;
@@ -66,6 +71,7 @@ public class LevelEvent {
    public static final int PARTICLES_TURTLE_EGG_PLACEMENT = 2012;
    public static final int PARTICLES_SMASH_ATTACK = 2013;
    public static final int PARTICLES_DESTROY_BLOCK = 2014;
+   public static final int PARTICLES_DRAGON_EGG = 2015;
    public static final int ANIMATION_END_GATEWAY_SPAWN = 3000;
    public static final int ANIMATION_DRAGON_SUMMON_ROAR = 3001;
    public static final int PARTICLES_ELECTRIC_SPARK = 3002;
@@ -90,5 +96,10 @@ public class LevelEvent {
 
    public LevelEvent() {
       super();
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.TYPE_USE})
+   public @interface Value {
    }
 }

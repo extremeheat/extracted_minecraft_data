@@ -1,14 +1,15 @@
 package net.minecraft.util.context;
 
 import com.google.common.collect.Sets;
-import java.util.IdentityHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
-public class ContextMap {
+public final class ContextMap {
+   public static final ContextMap EMPTY = new ContextMap(Map.of());
    private final Map<ContextKey<?>, Object> params;
 
    private ContextMap(final Map<ContextKey<?>, Object> params) {
@@ -16,12 +17,16 @@ public class ContextMap {
       this.params = params;
    }
 
+   public static Builder builder() {
+      return new Builder();
+   }
+
    public boolean has(final ContextKey<?> key) {
       return this.params.containsKey(key);
    }
 
    public <T> T getOrThrow(final ContextKey<T> key) {
-      T value = (T)this.params.get(key);
+      T value = (T)this.get(key);
       if (value == null) {
          throw new NoSuchElementException(key.name().toString());
       } else {
@@ -29,7 +34,7 @@ public class ContextMap {
       }
    }
 
-   public <T> @Nullable T getOptional(final ContextKey<T> key) {
+   public <T> @Nullable T get(final ContextKey<T> key) {
       return (T)this.params.get(key);
    }
 
@@ -39,18 +44,13 @@ public class ContextMap {
    }
 
    public static class Builder {
-      private final Map<ContextKey<?>, Object> params = new IdentityHashMap();
+      private final Map<ContextKey<?>, Object> params = new Reference2ObjectOpenHashMap();
 
-      public Builder() {
+      private Builder() {
          super();
       }
 
-      public <T> Builder withParameter(final ContextKey<T> param, final T value) {
-         this.params.put(param, value);
-         return this;
-      }
-
-      public <T> Builder withOptionalParameter(final ContextKey<T> param, final @Nullable T value) {
+      public <T> Builder set(final ContextKey<T> param, final @Nullable T value) {
          if (value == null) {
             this.params.remove(param);
          } else {
@@ -60,20 +60,15 @@ public class ContextMap {
          return this;
       }
 
-      public <T> T getParameter(final ContextKey<T> param) {
-         T value = (T)this.params.get(param);
-         if (value == null) {
-            throw new NoSuchElementException(param.name().toString());
-         } else {
-            return value;
-         }
-      }
-
-      public <T> @Nullable T getOptionalParameter(final ContextKey<T> param) {
+      public <T> @Nullable T get(final ContextKey<T> param) {
          return (T)this.params.get(param);
       }
 
-      public ContextMap create(final ContextKeySet paramSet) {
+      public ContextMap build() {
+         return new ContextMap(new Reference2ObjectOpenHashMap(this.params));
+      }
+
+      public ContextMap buildAndValidate(final ContextKeySet paramSet) {
          Set<ContextKey<?>> notAllowed = Sets.difference(this.params.keySet(), paramSet.allowed());
          if (!notAllowed.isEmpty()) {
             throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + String.valueOf(notAllowed));
@@ -82,7 +77,7 @@ public class ContextMap {
             if (!missingRequired.isEmpty()) {
                throw new IllegalArgumentException("Missing required parameters: " + String.valueOf(missingRequired));
             } else {
-               return new ContextMap(this.params);
+               return this.build();
             }
          }
       }

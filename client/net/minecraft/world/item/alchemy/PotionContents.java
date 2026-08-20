@@ -20,6 +20,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffect;
@@ -61,7 +62,15 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public boolean is(final Holder<Potion> potion) {
-      return this.potion.isPresent() && ((Holder)this.potion.get()).is(potion) && this.customEffects.isEmpty();
+      return this.isPotionWithoutCustomEffects() && ((Holder)this.potion.get()).is(potion);
+   }
+
+   public boolean is(final TagKey<Potion> potion) {
+      return this.isPotionWithoutCustomEffects() && ((Holder)this.potion.get()).is(potion);
+   }
+
+   public boolean isPotionWithoutCustomEffects() {
+      return this.potion.isPresent() && this.customEffects.isEmpty();
    }
 
    public Iterable<MobEffectInstance> getAllEffects() {

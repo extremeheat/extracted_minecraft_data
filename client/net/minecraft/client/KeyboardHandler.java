@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.ClipboardManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -27,6 +28,7 @@ import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.IMECandidatesEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
@@ -73,6 +75,7 @@ public class KeyboardHandler {
    private long debugCrashKeyReportedCount = -1L;
    private boolean usedDebugKeyAsModifier;
    private @Nullable PreeditEvent lastPreeditEvent;
+   private @Nullable IMECandidatesEvent lastIMECandidatesEvent;
 
    public KeyboardHandler(final Minecraft minecraft) {
       super();
@@ -81,8 +84,8 @@ public class KeyboardHandler {
 
    private boolean handleChunkDebugKeys(final KeyEvent event) {
       boolean var10000;
-      switch (event.key()) {
-         case 69:
+      switch (event.shortcutKey()) {
+         case 101:
             if (this.minecraft.player == null) {
                var10000 = false;
             } else {
@@ -91,32 +94,36 @@ public class KeyboardHandler {
                var10000 = true;
             }
             break;
-         case 70:
+         case 102:
             boolean fogEnabled = FogRenderer.toggleFog();
             this.debugFeedbackEnabledStatus("Fog: ", fogEnabled);
             var10000 = true;
             break;
-         case 71:
-         case 72:
-         case 73:
-         case 74:
-         case 75:
-         case 77:
-         case 78:
-         case 80:
-         case 81:
-         case 82:
-         case 83:
-         case 84:
+         case 103:
+         case 104:
+         case 105:
+         case 106:
+         case 107:
+         case 110:
+         case 112:
+         case 113:
+         case 114:
+         case 115:
+         case 116:
          default:
             var10000 = false;
             break;
-         case 76:
+         case 108:
             this.minecraft.smartCull = !this.minecraft.smartCull;
             this.debugFeedbackEnabledStatus("SmartCull: ", this.minecraft.smartCull);
             var10000 = true;
             break;
-         case 79:
+         case 109:
+            this.minecraft.multiDrawIndirect = !this.minecraft.multiDrawIndirect;
+            this.debugFeedbackEnabledStatus("MultiDrawIndirect: ", this.minecraft.multiDrawIndirect);
+            var10000 = true;
+            break;
+         case 111:
             if (this.minecraft.player == null) {
                var10000 = false;
             } else {
@@ -125,7 +132,7 @@ public class KeyboardHandler {
                var10000 = true;
             }
             break;
-         case 85:
+         case 117:
             if (event.hasShiftDown()) {
                this.minecraft.gameRenderer.mainCamera().killFrustum();
                this.debugFeedback("Killed frustum");
@@ -136,7 +143,7 @@ public class KeyboardHandler {
 
             var10000 = true;
             break;
-         case 86:
+         case 118:
             if (this.minecraft.player == null) {
                var10000 = false;
             } else {
@@ -145,9 +152,15 @@ public class KeyboardHandler {
                var10000 = true;
             }
             break;
-         case 87:
+         case 119:
             this.minecraft.wireframe = !this.minecraft.wireframe;
-            this.debugFeedbackEnabledStatus("WireFrame: ", this.minecraft.wireframe);
+            if (this.minecraft.wireframe && !RenderSystem.isWireframeAvailable()) {
+               this.minecraft.wireframe = false;
+               this.debugFeedback("Unable to enable WireFrame");
+            } else {
+               this.debugFeedbackEnabledStatus("WireFrame: ", this.minecraft.wireframe);
+            }
+
             var10000 = true;
       }
 
@@ -185,11 +198,11 @@ public class KeyboardHandler {
          return true;
       } else {
          if (SharedConstants.DEBUG_FEATURE_COUNT) {
-            switch (event.key()) {
-               case 76:
+            switch (event.shortcutKey()) {
+               case 108:
                   FeatureCountTracker.logCounts();
                   return true;
-               case 82:
+               case 114:
                   FeatureCountTracker.clearCounts();
                   return true;
             }
@@ -425,14 +438,14 @@ public class KeyboardHandler {
       this.setClipboard(command);
    }
 
-   private void keyPress(final long handle, final @KeyEvent.Action int action, final KeyEvent event) {
+   public void keyPress(final long handle, final @KeyEvent.Action int action, final KeyEvent event) {
       Window window = this.minecraft.getWindow();
-      if (handle == window.handle()) {
+      if (handle != 0L && handle == window.handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();
          Options options = this.minecraft.options;
          boolean modifierAndOverlayIsSame = options.keyDebugModifier.key.getValue() == options.keyDebugOverlay.key.getValue();
          boolean debugModifierDown = options.keyDebugModifier.isDown();
-         boolean debugCrash = !options.keyDebugCrash.isUnbound() && InputConstants.isKeyDown(this.minecraft.getWindow(), options.keyDebugCrash.key.getValue());
+         boolean debugCrash = !options.keyDebugCrash.isUnbound() && InputConstants.isKeyDown(options.keyDebugCrash.key.getValue());
          if (this.debugCrashKeyTime > 0L) {
             if (!debugCrash || !debugModifierDown) {
                this.debugCrashKeyTime = -1L;
@@ -446,28 +459,24 @@ public class KeyboardHandler {
 
          Screen screen = this.minecraft.gui.screen();
          if (screen != null) {
-            switch (event.key()) {
-               case 258:
+            switch (event.shortcutKey()) {
+               case 9:
                   this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
-               case 259:
-               case 260:
-               case 261:
-               default:
                   break;
-               case 262:
-               case 263:
-               case 264:
-               case 265:
+               case 1073741903:
+               case 1073741904:
+               case 1073741905:
+               case 1073741906:
                   this.minecraft.setLastInputType(InputType.KEYBOARD_ARROW);
             }
          }
 
          if (action == 1) {
-            label194: {
+            label193: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label194;
+                     break label193;
                   }
                }
 
@@ -480,7 +489,7 @@ public class KeyboardHandler {
          if (action != 0) {
             boolean hasNoEditboxFocused = screen == null || !(screen.getFocused() instanceof EditBox) || !((EditBox)screen.getFocused()).canConsumeInput();
             if (hasNoEditboxFocused) {
-               if (event.hasControlDownWithQuirk() && event.key() == 66 && this.minecraft.getNarrator().isActive() && (Boolean)options.narratorHotkey().get()) {
+               if (event.hasControlDownWithQuirk() && event.shortcutKey() == 98 && this.minecraft.getNarrator().isActive() && (Boolean)options.narratorHotkey().get()) {
                   boolean wasDisabled = options.narrator().get() == NarratorStatus.OFF;
                   options.narrator().set(NarratorStatus.byId(((NarratorStatus)options.narrator().get()).getId() + 1));
                   options.save();
@@ -495,7 +504,7 @@ public class KeyboardHandler {
 
          if (screen != null) {
             try {
-               if (action != 1 && action != 2) {
+               if (action != 1 && action != -1) {
                   if (action == 0 && screen.keyReleased(event)) {
                      if (options.keyDebugModifier.matches(event)) {
                         this.usedDebugKeyAsModifier = false;
@@ -518,8 +527,8 @@ public class KeyboardHandler {
                CrashReport report = CrashReport.forThrowable(t, "keyPressed event handler");
                screen.fillCrashDetails(report);
                CrashReportCategory keyDetails = report.addCategory("Key");
-               keyDetails.setDetail("Key", event.key());
-               keyDetails.setDetail("Scancode", event.scancode());
+               keyDetails.setDetail("Scancode", event.key());
+               keyDetails.setDetail("Keycode", event.keycode());
                keyDetails.setDetail("Mods", event.modifiers());
                throw new ReportedException(report);
             }
@@ -528,22 +537,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label173: {
+         label172: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label171: {
+               label170: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label171;
+                        break label170;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label173;
+                     break label172;
                   }
                }
             }
@@ -585,10 +594,7 @@ public class KeyboardHandler {
             }
 
             if (this.minecraft.getDebugOverlay().showProfilerChart() && !debugModifierDown) {
-               int digit = event.getDigit();
-               if (digit != -1) {
-                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(digit);
-               }
+               InputConstants.getKey(event).getNumericKeyValue().ifPresent((digit) -> this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(digit));
             }
 
             if (handlesGameInput) {
@@ -606,8 +612,8 @@ public class KeyboardHandler {
       }
    }
 
-   private void charTyped(final long handle, final CharacterEvent event) {
-      if (handle == this.minecraft.getWindow().handle()) {
+   public void charTyped(final long handle, final CharacterEvent event) {
+      if (handle != 0L && handle == this.minecraft.getWindow().handle()) {
          Screen screen = this.minecraft.gui.screen();
          if (screen != null && this.minecraft.gui.overlay() == null) {
             try {
@@ -623,14 +629,33 @@ public class KeyboardHandler {
       }
    }
 
-   private void preeditCallback(final long handle, final @Nullable PreeditEvent event) {
-      if (handle == this.minecraft.getWindow().handle()) {
+   public void textInput(final long handle, final String text) {
+      this.textEditing(handle, (PreeditEvent)null);
+      text.codePoints().forEach((codepoint) -> this.charTyped(handle, new CharacterEvent(codepoint)));
+   }
+
+   public void textEditing(final long handle, final @Nullable PreeditEvent event) {
+      if (handle != 0L && handle == this.minecraft.getWindow().handle()) {
          this.lastPreeditEvent = event;
+         if (event == null) {
+            this.lastIMECandidatesEvent = null;
+         }
+
          Screen screen = this.minecraft.gui.screen();
          if (screen != null && this.minecraft.gui.overlay() == null) {
             submitPreeditEvent(screen, event);
          }
       }
+   }
+
+   public void textEditingCandidates(final long handle, final @Nullable IMECandidatesEvent event) {
+      if (handle != 0L && handle == this.minecraft.getWindow().handle()) {
+         this.lastIMECandidatesEvent = event;
+      }
+   }
+
+   public @Nullable IMECandidatesEvent getIMECandidates() {
+      return this.lastIMECandidatesEvent;
    }
 
    public void resubmitLastPreeditEvent(final GuiEventListener screen) {
@@ -652,31 +677,13 @@ public class KeyboardHandler {
       }
    }
 
-   public void setup(final Window window) {
-      InputConstants.setupKeyboardCallbacks(window, (window1, keysym, scancode, action, mods) -> {
-         KeyEvent event = new KeyEvent(keysym, scancode, mods);
-         this.minecraft.execute(() -> this.keyPress(window1, action, event));
-      }, (window1, codepoint) -> {
-         CharacterEvent event = new CharacterEvent(codepoint);
-         this.minecraft.execute(() -> this.charTyped(window1, event));
-      }, (window1, preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret) -> {
-         PreeditEvent event = PreeditEvent.createFromCallback(preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret);
-         this.minecraft.execute(() -> this.preeditCallback(window1, event));
-      }, (window1) -> this.minecraft.textInputManager().notifyIMEChanged());
-   }
-
    public String getClipboard() {
-      return this.clipboardManager.getClipboard(this.minecraft.getWindow(), (error, description) -> {
-         if (error != 65545) {
-            this.minecraft.getWindow().defaultErrorCallback(error, description);
-         }
-
-      });
+      return this.clipboardManager.getClipboard();
    }
 
    public void setClipboard(final String clipboard) {
       if (!clipboard.isEmpty()) {
-         this.clipboardManager.setClipboard(this.minecraft.getWindow(), clipboard);
+         this.clipboardManager.setClipboard(clipboard);
       }
 
    }

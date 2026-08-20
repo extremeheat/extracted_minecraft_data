@@ -183,11 +183,11 @@ public class BookEditScreen extends Screen {
    }
 
    public boolean keyPressed(final KeyEvent event) {
-      switch (event.key()) {
-         case 266:
+      switch (event.shortcutKey()) {
+         case 1073741899:
             this.backButton.onPress(event);
             return true;
-         case 267:
+         case 1073741902:
             this.forwardButton.onPress(event);
             return true;
          default:

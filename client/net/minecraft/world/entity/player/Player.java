@@ -30,7 +30,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,6 +64,7 @@ import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEquipment;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -82,7 +82,6 @@ import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -99,7 +98,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -113,6 +111,7 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -394,7 +393,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return 20;
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 9) {
          this.completeUsingItem();
       } else if (id == 23) {
@@ -434,7 +433,6 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       super.aiStep();
-      this.updateSwingTime();
       this.yHeadRot = this.getYRot();
       this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
@@ -558,10 +556,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void handleCreativeModeItemDrop(final ItemStack stack) {
-   }
-
-   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand) {
-      return this.drop(itemStack, false, thrownFromHand);
    }
 
    public float getDestroySpeed(final BlockState state) {
@@ -740,7 +734,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final SignBlockEntity sign, final SignTextSlot slot) {
    }
 
    public void openMinecartCommandBlock(final MinecartCommandBlock commandBlock) {
@@ -959,7 +953,7 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    private boolean deflectProjectile(final Entity entity) {
       if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectile) {
-         if (projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true)) {
+         if (projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true, 1.0)) {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource());
             return true;
          }
@@ -1237,9 +1231,12 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public Either<BedSleepingProblem, Unit> startSleepInBed(final AbstractBedBlock bedBlock, final BlockState bedBlockState, final BedRule rule, final BlockPos pos) {
-      this.startSleeping(pos);
-      this.sleepCounter = 0;
-      return Either.right(Unit.INSTANCE);
+      if (!this.startSleeping(pos)) {
+         return Either.left(Player.BedSleepingProblem.OTHER_PROBLEM);
+      } else {
+         this.sleepCounter = 0;
+         return Either.right(Unit.INSTANCE);
+      }
    }
 
    public void stopSleepInBed(final boolean forcefulWakeUp, final boolean updateLevelList) {
@@ -1292,13 +1289,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void triggerRecipeCrafted(final RecipeHolder<?> recipe, final List<ItemStack> itemStacks) {
-   }
-
-   public void awardRecipesByKey(final List<ResourceKey<Recipe<?>>> recipeIds) {
-   }
-
-   public int resetRecipes(final Collection<RecipeHolder<?>> recipe) {
-      return 0;
    }
 
    public void travel(final Vec3 input) {

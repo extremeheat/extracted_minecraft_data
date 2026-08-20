@@ -5,6 +5,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 
 public record LocalCoordinates(double left, double up, double forwards) implements Coordinates {
    public static final char PREFIX_LOCAL_COORDINATE = '^';
@@ -15,7 +17,13 @@ public record LocalCoordinates(double left, double up, double forwards) implemen
 
    public Vec3 getPosition(final CommandSourceStack sender) {
       Vec3 source = sender.getAnchor().apply(sender);
-      return Vec3.applyLocalCoordinatesToRotation(sender.getRotation(), new Vec3(this.left, this.up, this.forwards)).add(source.x, source.y, source.z);
+      Quaterniond localToWorld = localToWorld(sender.getRotation());
+      Vector3d relative = localToWorld.transform(this.left, this.up, this.forwards, new Vector3d());
+      return source.add(relative.x, relative.y, relative.z);
+   }
+
+   private static Quaterniond localToWorld(final Vec2 rotation) {
+      return (new Quaterniond()).rotationY((double)(-rotation.y * 0.017453292F)).rotateX((double)(rotation.x * 0.017453292F));
    }
 
    public Vec2 getRotation(final CommandSourceStack sender) {

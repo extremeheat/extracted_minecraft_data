@@ -2,7 +2,7 @@ package com.mojang.renderpearl.api.device;
 
 import com.mojang.renderpearl.api.GpuFormat;
 
-public record DeviceLimits(int maxAnisotropy, int minUniformOffsetAlignment, int maxTextureSize, long maxMemoryAllocationSize, int maxMultiDrawDirectInterleavedDrawCount, int maxColorAttachments) {
+public record DeviceLimits(int maxAnisotropy, int minUniformOffsetAlignment, int maxTextureSize, long maxMemoryAllocationSize, int maxMultiDrawDirectInterleavedDrawCount, int maxColorAttachments, int maxDrawIndirectDrawCount) {
    public DeviceLimits {
       super();
    }

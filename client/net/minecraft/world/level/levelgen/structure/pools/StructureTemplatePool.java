@@ -13,7 +13,7 @@ import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
@@ -97,7 +97,7 @@ public class StructureTemplatePool {
    }
 
    static {
-      RegistryFileCodec var10000 = RegistryFileCodec.create(Registries.TEMPLATE_POOL, DIRECT_CODEC);
+      Codec var10000 = RegistryCodecs.holder(Registries.TEMPLATE_POOL, DIRECT_CODEC);
       MutableObject var10001 = CODEC_REFERENCE;
       Objects.requireNonNull(var10001);
       CODEC = (Codec)Util.make(var10000, var10001::setValue);

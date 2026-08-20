@@ -121,7 +121,7 @@ public class JigsawPlacement {
    private static Optional<BlockPos> getRandomNamedJigsaw(final StructurePoolElement element, final Identifier targetJigsawId, final BlockPos position, final Rotation rotation, final StructureTemplateManager structureTemplateManager, final WorldgenRandom random) {
       for(StructureTemplate.JigsawBlockInfo jigsaw : element.getShuffledJigsawBlocks(structureTemplateManager, position, rotation, random)) {
          if (targetJigsawId.equals(jigsaw.name())) {
-            return Optional.of(jigsaw.info().pos());
+            return Optional.of(jigsaw.pos());
          }
       }
 
@@ -144,7 +144,8 @@ public class JigsawPlacement {
       StructureTemplateManager structureTemplateManager = level.getStructureManager();
       StructureManager structureManager = level.structureManager();
       RandomSource random = level.getRandom();
-      Structure.GenerationContext generationContext = new Structure.GenerationContext(level.registryAccess(), generator, generator.getBiomeSource(), level.getChunkSource().randomState(), structureTemplateManager, level.getSeed(), ChunkPos.containing(position), level, (b) -> true);
+      RandomState randomState = level.getChunkSource().randomState();
+      Structure.GenerationContext generationContext = new Structure.GenerationContext(level.registryAccess(), generator, level.uncachedBiomeResolver(), randomState, structureTemplateManager, level.getSeed(), ChunkPos.containing(position), level, (b) -> true);
       Optional<Structure.GenerationStub> stub = addPieces(generationContext, pool, Optional.of(target), maxDepth, position, false, Optional.empty(), new JigsawStructure.MaxDistance(128), PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
       if (stub.isPresent()) {
          StructurePiecesBuilder builder = ((Structure.GenerationStub)stub.get()).getPiecesBuilder();
@@ -199,9 +200,8 @@ public class JigsawPlacement {
 
          label129:
          for(StructureTemplate.JigsawBlockInfo sourceJigsaw : sourceElement.getShuffledJigsawBlocks(this.structureTemplateManager, sourceBoxPosition, sourceRotation, this.random)) {
-            StructureTemplate.StructureBlockInfo sourceJigsawInfo = sourceJigsaw.info();
-            Direction sourceDirection = JigsawBlock.getFrontFacing(sourceJigsawInfo.state());
-            BlockPos sourceJigsawPos = sourceJigsawInfo.pos();
+            Direction sourceDirection = JigsawBlock.getFrontFacing(sourceJigsaw.state());
+            BlockPos sourceJigsawPos = sourceJigsaw.pos();
             BlockPos targetJigsawPos = sourceJigsawPos.relative(sourceDirection);
             int sourceJigsawLocalY = sourceJigsawPos.getY() - sourceBoxY;
             int sourceJigsawBaseHeight = -2147483648;
@@ -248,8 +248,7 @@ public class JigsawPlacement {
                            int expandTo;
                            if (doExpansionHack && hackBox.getYSpan() <= 16) {
                               expandTo = targetJigsaws.stream().mapToInt((targetJigsawx) -> {
-                                 StructureTemplate.StructureBlockInfo targetJigsawInfo = targetJigsawx.info();
-                                 if (!hackBox.isInside(targetJigsawInfo.pos().relative(JigsawBlock.getFrontFacing(targetJigsawInfo.state())))) {
+                                 if (!hackBox.isInside(targetJigsawx.pos().relative(JigsawBlock.getFrontFacing(targetJigsawx.state())))) {
                                     return 0;
                                  } else {
                                     ResourceKey<StructureTemplatePool> childPoolName = poolAliasLookup.lookup(targetJigsawx.pool());
@@ -266,14 +265,14 @@ public class JigsawPlacement {
 
                            for(StructureTemplate.JigsawBlockInfo targetJigsaw : targetJigsaws) {
                               if (JigsawBlock.canAttach(sourceJigsaw, targetJigsaw)) {
-                                 BlockPos targetJigsawLocalPos = targetJigsaw.info().pos();
+                                 BlockPos targetJigsawLocalPos = targetJigsaw.pos();
                                  BlockPos rawTargetBoxPos = targetJigsawPos.subtract(targetJigsawLocalPos);
                                  BoundingBox rawTargetBB = targetElement.getBoundingBox(this.structureTemplateManager, rawTargetBoxPos, targetRotation);
                                  int rawTargetY = rawTargetBB.minY();
                                  StructureTemplatePool.Projection targetProjection = targetElement.getProjection();
                                  boolean targetRigid = targetProjection == StructureTemplatePool.Projection.RIGID;
                                  int targetJigsawLocalY = targetJigsawLocalPos.getY();
-                                 int deltaY = sourceJigsawLocalY - targetJigsawLocalY + JigsawBlock.getFrontFacing(sourceJigsawInfo.state()).getStepY();
+                                 int deltaY = sourceJigsawLocalY - targetJigsawLocalY + JigsawBlock.getFrontFacing(sourceJigsaw.state()).getStepY();
                                  int targetBoxY;
                                  if (sourceRigid && targetRigid) {
                                     targetBoxY = sourceBoxY + deltaY;

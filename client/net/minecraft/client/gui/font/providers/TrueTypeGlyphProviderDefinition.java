@@ -51,7 +51,7 @@ public record TrueTypeGlyphProviderDefinition(Identifier location, float size, f
 
                try {
                   PointerBuffer faceBuffer = stack.mallocPointer(1);
-                  FreeTypeUtil.assertError(FreeType.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), fontData, 0L, faceBuffer), "Initializing font face");
+                  FreeTypeUtil.assertError(FreeTypeButNotCrashing.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), fontData, 0, faceBuffer), "Initializing font face");
                   face = FT_Face.create(faceBuffer.get());
                } catch (Throwable var14) {
                   if (stack != null) {

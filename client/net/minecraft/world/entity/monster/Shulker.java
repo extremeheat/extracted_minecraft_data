@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
@@ -364,7 +365,7 @@ public class Shulker extends AbstractGolem implements Enemy {
             BlockPos target = current.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
             if (target.getY() > this.level().getMinY() && this.level().isEmptyBlock(target) && this.level().getWorldBorder().isWithinBounds(target) && this.level().noCollision(this, (new AABB(target)).deflate(1.0E-6))) {
                Direction attachmentDirection = this.findAttachableSurface(target);
-               if (attachmentDirection != null) {
+               if (attachmentDirection != null && !this.level().getBlockState(target.relative(attachmentDirection)).is(BlockTags.SHULKER_DOES_NOT_TELEPORT_TO)) {
                   this.unRide();
                   this.setAttachFace(attachmentDirection);
                   this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
@@ -383,8 +384,8 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   public InterpolationHandler getInterpolation() {
-      return null;
+   protected InterpolationHandler createInterpolationHandler() {
+      return InterpolationHandler.NO_OP;
    }
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {

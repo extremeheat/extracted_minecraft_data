@@ -44,7 +44,7 @@ public interface ContainerEventHandler extends GuiEventListener {
          GuiEventListener widget = (GuiEventListener)child.get();
          if (widget.mouseClicked(event, doubleClick) && widget.shouldTakeFocusAfterInteraction()) {
             this.setFocused(widget);
-            if (event.button() == 0) {
+            if (event.button() == 1) {
                this.setDragging(true);
             }
          }
@@ -54,7 +54,7 @@ public interface ContainerEventHandler extends GuiEventListener {
    }
 
    default boolean mouseReleased(final MouseButtonEvent event) {
-      if (event.button() == 0 && this.isDragging()) {
+      if (event.button() == 1 && this.isDragging()) {
          this.setDragging(false);
          if (this.getFocused() != null) {
             return this.getFocused().mouseReleased(event);
@@ -65,7 +65,7 @@ public interface ContainerEventHandler extends GuiEventListener {
    }
 
    default boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
-      return this.getFocused() != null && this.isDragging() && event.button() == 0 ? this.getFocused().mouseDragged(event, dx, dy) : false;
+      return this.getFocused() != null && this.isDragging() && event.button() == 1 ? this.getFocused().mouseDragged(event, dx, dy) : false;
    }
 
    boolean isDragging();

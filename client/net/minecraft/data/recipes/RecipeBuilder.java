@@ -18,12 +18,17 @@ public interface RecipeBuilder {
 
    RecipeBuilder group(@Nullable String group);
 
-   ResourceKey<Recipe<?>> defaultId();
+   @Nullable ResourceKey<Recipe<?>> defaultId();
 
    void save(RecipeOutput output, ResourceKey<Recipe<?>> location);
 
    default void save(final RecipeOutput output) {
-      this.save(output, this.defaultId());
+      ResourceKey<Recipe<?>> defaultKey = this.defaultId();
+      if (defaultKey == null) {
+         throw new IllegalStateException("Recipe has no name to derive an id from - save it with an explicit id");
+      } else {
+         this.save(output, defaultKey);
+      }
    }
 
    default void save(final RecipeOutput output, final String id) {

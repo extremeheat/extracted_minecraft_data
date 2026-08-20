@@ -43,7 +43,7 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return this.parameters().values().stream().map(Pair::getSecond);
    }
 
-   protected MapCodec<? extends BiomeSource> codec() {
+   protected MapCodec<MultiNoiseBiomeSource> codec() {
       return CODEC;
    }
 
@@ -52,8 +52,8 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return preset.isPresent() && ((Holder)preset.get()).is(expected);
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler) {
-      return this.getNoiseBiome(sampler.sample(quartX, quartY, quartZ));
+   public BiomeResolver createResolver(final Climate.Sampler sampler) {
+      return (quartX, quartY, quartZ) -> this.getNoiseBiome(sampler.sample(quartX, quartY, quartZ));
    }
 
    @VisibleForDebug

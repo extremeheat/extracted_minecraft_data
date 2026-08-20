@@ -61,6 +61,8 @@ public final class ItemTags {
    public static final TagKey<Item> TERRACOTTA;
    public static final TagKey<Item> GLAZED_TERRACOTTA;
    public static final TagKey<Item> CONCRETE;
+   public static final TagKey<Item> CONCRETE_STAIRS;
+   public static final TagKey<Item> CONCRETE_SLABS;
    public static final TagKey<Item> CONCRETE_POWDERS;
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Item> SHULKER_BOXES;
@@ -88,7 +90,6 @@ public final class ItemTags {
    public static final TagKey<Item> IGNORED_BY_PIGLIN_BABIES;
    public static final TagKey<Item> PIGLIN_SAFE_ARMOR;
    public static final TagKey<Item> DUPLICATES_ALLAYS;
-   public static final TagKey<Item> BREWING_FUEL;
    public static final TagKey<Item> EGGS;
    public static final TagKey<Item> MEAT;
    public static final TagKey<Item> SNIFFER_FOOD;
@@ -159,6 +160,8 @@ public final class ItemTags {
    public static final TagKey<Item> FREEZE_IMMUNE_WEARABLES;
    public static final TagKey<Item> CLUSTER_MAX_HARVESTABLES;
    public static final TagKey<Item> COMPASSES;
+   public static final TagKey<Item> CLONABLE_MAPS;
+   public static final TagKey<Item> EXTENDABLE_MAPS;
    public static final TagKey<Item> CREEPER_IGNITERS;
    public static final TagKey<Item> NOTE_BLOCK_TOP_INSTRUMENTS;
    public static final TagKey<Item> FOOT_ARMOR;
@@ -196,6 +199,7 @@ public final class ItemTags {
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM;
    public static final TagKey<Item> METAL_NUGGETS;
    public static final TagKey<Item> DOUSES_CAMPFIRES;
+   public static final TagKey<Item> BREWING_POTION_INPUTS;
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE;
@@ -285,6 +289,8 @@ public final class ItemTags {
       TERRACOTTA = BlockItemTags.TERRACOTTA.item();
       GLAZED_TERRACOTTA = BlockItemTags.GLAZED_TERRACOTTA.item();
       CONCRETE = BlockItemTags.CONCRETE.item();
+      CONCRETE_STAIRS = BlockItemTags.CONCRETE_STAIRS.item();
+      CONCRETE_SLABS = BlockItemTags.CONCRETE_SLABS.item();
       CONCRETE_POWDERS = BlockItemTags.CONCRETE_POWDERS.item();
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.item();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.item();
@@ -312,7 +318,6 @@ public final class ItemTags {
       IGNORED_BY_PIGLIN_BABIES = bind("ignored_by_piglin_babies");
       PIGLIN_SAFE_ARMOR = bind("piglin_safe_armor");
       DUPLICATES_ALLAYS = bind("duplicates_allays");
-      BREWING_FUEL = bind("brewing_fuel");
       EGGS = bind("eggs");
       MEAT = bind("meat");
       SNIFFER_FOOD = bind("sniffer_food");
@@ -383,6 +388,8 @@ public final class ItemTags {
       FREEZE_IMMUNE_WEARABLES = bind("freeze_immune_wearables");
       CLUSTER_MAX_HARVESTABLES = bind("cluster_max_harvestables");
       COMPASSES = bind("compasses");
+      CLONABLE_MAPS = bind("clonable_maps");
+      EXTENDABLE_MAPS = bind("extendable_maps");
       CREEPER_IGNITERS = bind("creeper_igniters");
       NOTE_BLOCK_TOP_INSTRUMENTS = bind("noteblock_top_instruments");
       FOOT_ARMOR = bind("foot_armor");
@@ -420,6 +427,7 @@ public final class ItemTags {
       SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
       METAL_NUGGETS = bind("metal_nuggets");
       DOUSES_CAMPFIRES = bind("douses_campfires");
+      BREWING_POTION_INPUTS = bind("brewing_potion_inputs");
       FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
       LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
       CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

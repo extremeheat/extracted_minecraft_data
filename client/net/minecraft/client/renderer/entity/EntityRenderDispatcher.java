@@ -9,14 +9,12 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -52,7 +50,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
-   private final ItemInHandRenderer itemInHandRenderer;
    private final AtlasManager atlasManager;
    private final Font font;
    public final Options options;
@@ -65,7 +62,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(entity).getPackedLightCoords(entity, partialTickTime);
    }
 
-   public EntityRenderDispatcher(final Minecraft minecraft, final TextureManager textureManager, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final AtlasManager atlasManager, final Font font, final Options options, final Supplier<EntityModelSet> entityModels, final EquipmentAssetManager equipmentAssets, final PlayerSkinRenderCache playerSkinRenderCache, final PalettedTextureManager palettedTextures) {
+   public EntityRenderDispatcher(final TextureManager textureManager, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final AtlasManager atlasManager, final Font font, final Options options, final Supplier<EntityModelSet> entityModels, final EquipmentAssetManager equipmentAssets, final PlayerSkinRenderCache playerSkinRenderCache, final PalettedTextureManager palettedTextures) {
       super();
       this.textureManager = textureManager;
       this.blockModelResolver = blockModelResolver;
@@ -73,7 +70,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.mapRenderer = mapRenderer;
       this.atlasManager = atlasManager;
       this.playerSkinRenderCache = playerSkinRenderCache;
-      this.itemInHandRenderer = new ItemInHandRenderer(minecraft, this, itemModelResolver);
       this.font = font;
       this.options = options;
       this.entityModels = entityModels;
@@ -104,21 +100,20 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return (EntityRenderer<? super T, ?>)var10000;
    }
 
-   public AvatarRenderer<AbstractClientPlayer> getPlayerRenderer(final AbstractClientPlayer player) {
-      return this.<AbstractClientPlayer>getAvatarRenderer(this.playerRenderers, player);
-   }
-
    private <T extends Avatar & ClientAvatarEntity> AvatarRenderer<T> getAvatarRenderer(final Map<PlayerModelType, AvatarRenderer<T>> renderers, final T entity) {
       PlayerModelType model = ((ClientAvatarEntity)entity).getSkin().model();
       AvatarRenderer<T> playerRenderer = (AvatarRenderer)renderers.get(model);
       return playerRenderer != null ? playerRenderer : (AvatarRenderer)renderers.get(PlayerModelType.WIDE);
    }
 
+   public AvatarRenderer<?> getRenderer(final AvatarRenderState state) {
+      AvatarRenderer<AbstractClientPlayer> playerRenderer = (AvatarRenderer)this.playerRenderers.get(state.skin.model());
+      return playerRenderer != null ? playerRenderer : (AvatarRenderer)this.playerRenderers.get(PlayerModelType.WIDE);
+   }
+
    public <S extends EntityRenderState> EntityRenderer<?, ? super S> getRenderer(final S entityRenderState) {
-      if (entityRenderState instanceof AvatarRenderState player) {
-         PlayerModelType model = player.skin.model();
-         EntityRenderer<? extends Avatar, ?> playerRenderer = (EntityRenderer)this.playerRenderers.get(model);
-         return playerRenderer != null ? playerRenderer : (EntityRenderer)this.playerRenderers.get(PlayerModelType.WIDE);
+      if (entityRenderState instanceof AvatarRenderState avatarRenderState) {
+         return this.getRenderer(avatarRenderState);
       } else {
          return (EntityRenderer)this.renderers.get(entityRenderState.entityType);
       }
@@ -129,9 +124,9 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.crosshairPickEntity = crosshairPickEntity;
    }
 
-   public <E extends Entity> boolean shouldRender(final E entity, final Frustum culler, final double camX, final double camY, final double camZ) {
+   public <E extends Entity> boolean shouldRender(final E entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
       EntityRenderer<? super E, ?> renderer = this.getRenderer(entity);
-      return renderer.shouldRender(entity, culler, camX, camY, camZ);
+      return renderer.shouldRender(entity, culler, camX, camY, camZ, partialTicks);
    }
 
    public <E extends Entity> EntityRenderState extractEntity(final E entity, final float partialTicks) {
@@ -198,10 +193,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
    public double distanceToSqr(final Entity entity) {
       return this.camera.position().distanceToSqr(entity.position());
-   }
-
-   public ItemInHandRenderer getItemInHandRenderer() {
-      return this.itemInHandRenderer;
    }
 
    public void onResourceManagerReload(final ResourceManager resourceManager) {

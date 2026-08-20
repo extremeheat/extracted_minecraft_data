@@ -3,8 +3,8 @@ package net.minecraft.world.item.enchantment.providers;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -16,7 +16,7 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public record EnchantmentsByCost(HolderSet<Enchantment> enchantments, IntProvider cost) implements EnchantmentProvider {
-   public static final MapCodec<EnchantmentsByCost> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).fieldOf("enchantments").forGetter(EnchantmentsByCost::enchantments), IntProviders.CODEC.fieldOf("cost").forGetter(EnchantmentsByCost::cost)).apply(i, EnchantmentsByCost::new));
+   public static final MapCodec<EnchantmentsByCost> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.ENCHANTMENT).fieldOf("enchantments").forGetter(EnchantmentsByCost::enchantments), IntProviders.CODEC.fieldOf("cost").forGetter(EnchantmentsByCost::cost)).apply(i, EnchantmentsByCost::new));
 
    public EnchantmentsByCost {
       super();

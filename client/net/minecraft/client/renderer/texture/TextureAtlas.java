@@ -181,7 +181,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
                renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT));
 
                for(int i = 0; i < staticSprites.size(); ++i) {
-                  renderPass.bindTexture("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
+                  renderPass.setUniform("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
                   renderPass.setUniform("SpriteAnimationInfo", ubo.slice((long)(i * uboBlockSize + level * spriteUboSize), (long)SpriteContents.UBO_SIZE));
                   renderPass.draw(6, 1, 0, 0);
                }

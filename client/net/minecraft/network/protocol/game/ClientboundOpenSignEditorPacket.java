@@ -1,31 +1,17 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 
-public class ClientboundOpenSignEditorPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenSignEditorPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundOpenSignEditorPacket>codec(ClientboundOpenSignEditorPacket::write, ClientboundOpenSignEditorPacket::new);
-   private final BlockPos pos;
-   private final boolean isFrontText;
+public record ClientboundOpenSignEditorPacket(BlockPos pos, SignTextSlot slot) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<ByteBuf, ClientboundOpenSignEditorPacket> STREAM_CODEC;
 
-   public ClientboundOpenSignEditorPacket(final BlockPos pos, final boolean isFrontText) {
+   public ClientboundOpenSignEditorPacket {
       super();
-      this.pos = pos;
-      this.isFrontText = isFrontText;
-   }
-
-   private ClientboundOpenSignEditorPacket(final FriendlyByteBuf input) {
-      super();
-      this.pos = input.readBlockPos();
-      this.isFrontText = input.readBoolean();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeBlockPos(this.pos);
-      output.writeBoolean(this.isFrontText);
    }
 
    public PacketType<ClientboundOpenSignEditorPacket> type() {
@@ -36,11 +22,7 @@ public class ClientboundOpenSignEditorPacket implements Packet<ClientGamePacketL
       listener.handleOpenSignEditor(this);
    }
 
-   public BlockPos getPos() {
-      return this.pos;
-   }
-
-   public boolean isFrontText() {
-      return this.isFrontText;
+   static {
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ClientboundOpenSignEditorPacket::pos, SignTextSlot.STREAM_CODEC, ClientboundOpenSignEditorPacket::slot, ClientboundOpenSignEditorPacket::new);
    }
 }

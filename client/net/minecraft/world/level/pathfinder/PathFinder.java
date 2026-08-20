@@ -125,7 +125,7 @@ public class PathFinder {
       } else {
          Path path = (Path)optPath.get();
          if (captureDebug) {
-            path.setDebug(this.openSet.getHeap(), (Node[])closedSet.toArray((x$0) -> new Node[x$0]), targets);
+            path.setDebug(List.of(this.openSet.getHeap()), List.copyOf(closedSet), targets);
          }
 
          return path;

@@ -186,7 +186,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             }
 
             if (!pistonPiece) {
-               if (b0 != 1 || movingState.isAir() || !isPushable(movingState, level, twoPos, direction.getOpposite(), false, direction) || movingState.getPistonPushReaction() != PushReaction.NORMAL && !movingState.is(Blocks.PISTON) && !movingState.is(Blocks.STICKY_PISTON)) {
+               if (b0 != 1 || movingState.isAir() || !isPushable(movingState, level, twoPos, direction.getOpposite(), false, direction) || movingState.getPistonPushReaction() != PushReaction.PUSH_PULL && !movingState.is(Blocks.PISTON) && !movingState.is(Blocks.STICKY_PISTON)) {
                   level.removeBlock(pos.relative(direction), false);
                } else {
                   this.moveBlocks(level, pos, direction, false);
@@ -219,13 +219,13 @@ public class PistonBaseBlock extends DirectionalBlock {
                   }
 
                   switch (state.getPistonPushReaction()) {
-                     case BLOCK -> {
+                     case IMMOVEABLE -> {
                         return false;
                      }
-                     case DESTROY -> {
+                     case POPPED -> {
                         return allowDestroyable;
                      }
-                     case PUSH_ONLY -> {
+                     case PUSH -> {
                         return direction == connectionDirection;
                      }
                   }

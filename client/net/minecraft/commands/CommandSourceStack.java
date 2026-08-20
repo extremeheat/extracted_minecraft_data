@@ -15,17 +15,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.execution.TraceCallbacks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -332,22 +331,15 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
       return Suggestions.empty();
    }
 
-   public CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<?>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context) {
-      if (key == Registries.RECIPE) {
-         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((e) -> e.id().identifier()), builder);
-      } else if (key == Registries.ADVANCEMENT) {
-         Collection<AdvancementHolder> advancements = this.server.getAdvancements().getAllAdvancements();
-         return SharedSuggestionProvider.suggestResource(advancements.stream().map(AdvancementHolder::id), builder);
-      } else {
-         return (CompletableFuture)this.getLookup(key).map((registry) -> {
-            this.suggestRegistryElements(registry, elements, builder);
-            return builder.buildFuture();
-         }).orElseGet(Suggestions::empty);
-      }
+   public <E> CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<E>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context, final Predicate<E> filter) {
+      return (CompletableFuture)this.getLookup(key).map((registry) -> {
+         this.suggestRegistryElements(registry, elements, builder, filter);
+         return builder.buildFuture();
+      }).orElseGet(Suggestions::empty);
    }
 
-   private Optional<? extends HolderLookup<?>> getLookup(final ResourceKey<? extends Registry<?>> key) {
-      Optional<? extends Registry<?>> lookup = this.registryAccess().lookup(key);
+   private <E> Optional<? extends HolderLookup<E>> getLookup(final ResourceKey<? extends Registry<E>> key) {
+      Optional<? extends Registry<E>> lookup = this.registryAccess().lookup(key);
       return lookup.isPresent() ? lookup : this.server.reloadableRegistries().lookup().lookup(key);
    }
 

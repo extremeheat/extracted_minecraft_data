@@ -15,6 +15,10 @@ public class NumberProviderTypes {
       Registry.register(registry, (String)"score", ScoreboardValue.MAP_CODEC);
       Registry.register(registry, (String)"storage", StorageValue.MAP_CODEC);
       Registry.register(registry, (String)"sum", Sum.MAP_CODEC);
+      Registry.register(registry, (String)"product", Product.MAP_CODEC);
+      Registry.register(registry, (String)"minimum", Minimum.MAP_CODEC);
+      Registry.register(registry, (String)"maximum", Maximum.MAP_CODEC);
+      Registry.register(registry, (String)"average", Average.MAP_CODEC);
       Registry.register(registry, (String)"enchantment_level", EnchantmentLevelProvider.MAP_CODEC);
       Registry.register(registry, (String)"weighted_list", WeightedListValue.MAP_CODEC);
       Registry.register(registry, (String)"conditional", ConditionalValue.MAP_CODEC);

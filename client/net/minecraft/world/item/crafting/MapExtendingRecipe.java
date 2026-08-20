@@ -7,22 +7,21 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class MapExtendingRecipe extends CustomRecipe {
-   public static final MapCodec<MapExtendingRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("map").forGetter((o) -> o.map), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, MapExtendingRecipe::new));
+   public static final MapCodec<MapExtendingRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("map").forGetter((o) -> o.map), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), TransmuteResult.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, MapExtendingRecipe::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, MapExtendingRecipe> STREAM_CODEC;
    public static final RecipeSerializer<MapExtendingRecipe> SERIALIZER;
    private final ShapedRecipePattern pattern;
    private final Ingredient map;
    private final Ingredient material;
-   private final ItemStackTemplate result;
+   private final TransmuteResult result;
 
-   public MapExtendingRecipe(final Ingredient map, final Ingredient material, final ItemStackTemplate result) {
+   public MapExtendingRecipe(final Ingredient map, final Ingredient material, final TransmuteResult result) {
       super();
       this.map = map;
       this.material = material;
@@ -41,8 +40,6 @@ public class MapExtendingRecipe extends CustomRecipe {
             MapItemSavedData data = MapItem.getSavedData(map, level);
             if (data == null) {
                return false;
-            } else if (data.isExplorationMap()) {
-               return false;
             } else {
                return data.scale < 4;
             }
@@ -52,7 +49,7 @@ public class MapExtendingRecipe extends CustomRecipe {
 
    public ItemStack assemble(final CraftingInput input) {
       ItemStack sourceMap = findFilledMap(input);
-      ItemStack map = TransmuteRecipe.createWithOriginalComponents(this.result, sourceMap);
+      ItemStack map = TransmuteRecipe.createWithOriginalComponents(this.result.resolve(sourceMap.typeHolder()), sourceMap);
       map.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
       return map;
    }
@@ -73,7 +70,7 @@ public class MapExtendingRecipe extends CustomRecipe {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.map, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, MapExtendingRecipe::new);
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.map, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, TransmuteResult.STREAM_CODEC, (o) -> o.result, MapExtendingRecipe::new);
       SERIALIZER = new RecipeSerializer<MapExtendingRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

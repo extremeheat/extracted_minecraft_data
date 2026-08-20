@@ -36,6 +36,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -268,7 +269,7 @@ public class Warden extends Monster implements VibrationSystem {
       WardenAi.updateActivity(this.getBrain());
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.roarAnimationState.stop();
          this.attackAnimationState.start(this.tickCount);

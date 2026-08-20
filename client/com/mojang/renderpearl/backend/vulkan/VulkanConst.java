@@ -9,6 +9,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.PolygonMode;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
@@ -293,6 +294,17 @@ public final class VulkanConst {
          case MAILBOX -> var10000 = 1;
          case FIFO -> var10000 = 2;
          case FIFO_RELAXED -> var10000 = 3;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toVk(final ShaderType shaderType) {
+      byte var10000;
+      switch (shaderType) {
+         case VERTEX -> var10000 = 1;
+         case FRAGMENT -> var10000 = 16;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

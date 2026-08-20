@@ -19,6 +19,7 @@ public class RenderType {
    public static final int SMALL_BUFFER_SIZE = 786432;
    public static final int TRANSIENT_BUFFER_SIZE = 1536;
    private final RenderSetup state;
+   private final boolean hasBlending;
    private final Optional<RenderType> outline;
    protected final String name;
 
@@ -27,6 +28,7 @@ public class RenderType {
       this.name = name;
       this.state = state;
       this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? state.textures.values().stream().findFirst().map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
+      this.hasBlending = this.calculateHasBlending();
    }
 
    static RenderType create(final String name, final RenderSetup state) {
@@ -39,9 +41,11 @@ public class RenderType {
    }
 
    public boolean hasBlending() {
-      ColorTargetState[] colorTargetStates = this.state.pipeline.getColorTargetStates();
+      return this.hasBlending;
+   }
 
-      for(ColorTargetState colorTargetState : colorTargetStates) {
+   private boolean calculateHasBlending() {
+      for(ColorTargetState colorTargetState : this.state.pipeline.getColorTargetStates()) {
          if (colorTargetState != null && colorTargetState.blendFunction().isPresent()) {
             return true;
          }
@@ -53,7 +57,7 @@ public class RenderType {
    public PreparedRenderType prepare() {
       Minecraft minecraft = Minecraft.getInstance();
       List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
-      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.state.opaquePartsPipeline, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
+      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
    }
 
    private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {
@@ -95,10 +99,6 @@ public class RenderType {
 
    public boolean sortOnUpload() {
       return this.state.sortOnUpload;
-   }
-
-   public boolean bothSolidAndTranslucent() {
-      return this.state.opaquePartsPipeline != null && Minecraft.getInstance().gameRenderer.useImprovedTransparency() && RenderSystem.isRenderingLevel;
    }
 
    public boolean forceSolidModelPhase() {

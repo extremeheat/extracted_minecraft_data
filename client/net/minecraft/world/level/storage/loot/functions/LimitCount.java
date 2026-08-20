@@ -2,7 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -14,8 +15,8 @@ public class LimitCount extends LootItemConditionalFunction {
    public static final MapCodec<LimitCount> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(IntRange.CODEC.fieldOf("limit").forGetter((f) -> f.limit)).apply(i, LimitCount::new));
    private final IntRange limit;
 
-   private LimitCount(final List<LootItemCondition> predicates, final IntRange limit) {
-      super(predicates);
+   private LimitCount(final Optional<Holder<LootItemCondition>> condition, final IntRange limit) {
+      super(condition);
       this.limit = limit;
    }
 

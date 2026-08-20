@@ -18,6 +18,7 @@ import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProvider
 import org.jspecify.annotations.Nullable;
 
 public class SkeletonTrapGoal extends Goal {
+   private static final int LIGHTNING_INVULNERABLE_TICKS = 60;
    private final SkeletonHorse horse;
 
    public SkeletonTrapGoal(final SkeletonHorse horse) {
@@ -66,7 +67,7 @@ public class SkeletonTrapGoal extends Goal {
       if (horse != null) {
          horse.finalizeSpawn((ServerLevel)this.horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          horse.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
-         horse.invulnerableTime = 60;
+         horse.setInvulnerableTime(60);
          horse.setPersistenceRequired();
          horse.setTamed(true);
          horse.setAge(0);
@@ -80,7 +81,7 @@ public class SkeletonTrapGoal extends Goal {
       if (skeleton != null) {
          skeleton.finalizeSpawn((ServerLevel)horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          skeleton.setPos(horse.getX(), horse.getY(), horse.getZ());
-         skeleton.invulnerableTime = 60;
+         skeleton.setInvulnerableTime(60);
          skeleton.setPersistenceRequired();
          if (skeleton.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
             skeleton.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));

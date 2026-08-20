@@ -8,10 +8,10 @@ import net.minecraft.advancements.predicates.MobEffectsPredicate;
 import net.minecraft.advancements.predicates.SingleComponentItemPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,7 +20,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 
 public record PotionsPredicate(Optional<HolderSet<Potion>> potions, Optional<CollectionPredicate<MobEffectInstance, MobEffectsPredicate>> effects) implements SingleComponentItemPredicate<PotionContents> {
-   public static final Codec<PotionsPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.POTION).optionalFieldOf("potions").forGetter(PotionsPredicate::potions), CollectionPredicate.codec(MobEffectsPredicate.CODEC).optionalFieldOf("effects").forGetter(PotionsPredicate::effects)).apply(i, PotionsPredicate::new));
+   public static final Codec<PotionsPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.holderSet(Registries.POTION).optionalFieldOf("potions").forGetter(PotionsPredicate::potions), CollectionPredicate.codec(MobEffectsPredicate.CODEC).optionalFieldOf("effects").forGetter(PotionsPredicate::effects)).apply(i, PotionsPredicate::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, PotionsPredicate> STREAM_CODEC;
 
    public PotionsPredicate {

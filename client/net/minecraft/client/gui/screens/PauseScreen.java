@@ -27,7 +27,6 @@ import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
-import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -62,7 +61,7 @@ public class PauseScreen extends Screen {
    private static final Component SEND_FEEDBACK = Component.translatable("menu.sendFeedback");
    private static final Component REPORT_BUGS = Component.translatable("menu.reportBugs");
    private static final Component OPTIONS = Component.translatable("menu.options");
-   private static final Component MULTIPLAYER_OPTIONS = Component.translatable("menu.multiplayerOptions.button");
+   private static final Component WORLD_OPTIONS = Component.translatable("options.worldOptions.button");
    private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
    private static final Component GAME = Component.translatable("menu.game");
    private static final Component PAUSED = Component.translatable("menu.paused");
@@ -80,6 +79,14 @@ public class PauseScreen extends Screen {
 
    public boolean showsPauseMenu() {
       return this.showPauseMenu;
+   }
+
+   public void added() {
+      super.added();
+      if (this.showPauseMenu && this.minecraft.getPlayerSocialManager().isFriendListEnabled()) {
+         this.minecraft.getPlayerSocialManager().addFriendListUpdateListener(this.friendListUpdateListener);
+      }
+
    }
 
    protected void init() {
@@ -110,11 +117,6 @@ public class PauseScreen extends Screen {
       iconButtonRow.addChild(reportBugsButton);
       SpriteIconButton feedbackButton = SpriteIconButton.builder(SEND_FEEDBACK, ConfirmLinkScreen.confirmLink(this, (URI)(SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/social_interactions"), 15, 15).withTootip().build();
       iconButtonRow.addChild(feedbackButton);
-      PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
-      if (playerSocialManager.isFriendListEnabled()) {
-         playerSocialManager.addFriendListUpdateListener(this.friendListUpdateListener);
-      }
-
       this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode());
       iconButtonRow.addChild(this.friends);
       SpriteIconButton playerReportingButton = SpriteIconButton.builder(PLAYER_REPORTING, (var1) -> this.minecraft.gui.setScreen(new SocialInteractionsScreen(this)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/player_reporting"), 15, 15).withTootip().build();
@@ -131,11 +133,9 @@ public class PauseScreen extends Screen {
       helper.addChild(iconButtonRow, 2, gridLayout.newCellSettings().alignHorizontallyCenter());
       Optional<? extends Holder<Dialog>> additions = this.getCustomAdditions();
       additions.ifPresent((dialogHolder) -> this.addCustomDialogButtons(this.minecraft, dialogHolder, helper));
-      if (this.minecraft.hasSingleplayerServer()) {
-         helper.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options, true)));
-         helper.addChild(this.openScreenButton(MULTIPLAYER_OPTIONS, () -> new MultiplayerOptionsScreen(this)));
-      } else {
-         helper.addChild(Button.builder(OPTIONS, (var1) -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options, true))).width(204).build(), 2);
+      if (this.minecraft.level != null) {
+         helper.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options)));
+         helper.addChild(this.openScreenButton(WORLD_OPTIONS, () -> new WorldOptionsScreen(this, this.minecraft.level)));
       }
 
       this.disconnectButton = (Button)helper.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (button) -> {
@@ -200,9 +200,9 @@ public class PauseScreen extends Screen {
 
    }
 
-   public void onClose() {
-      super.onClose();
+   public void removed() {
       this.minecraft.getPlayerSocialManager().removeFriendListUpdateListener(this.friendListUpdateListener);
+      super.removed();
    }
 
    public boolean rendersNowPlayingToast() {

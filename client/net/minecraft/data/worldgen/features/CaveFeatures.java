@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.CaveVinesBlock;
 import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
+import net.minecraft.world.level.block.SculkShriekerBlock;
 import net.minecraft.world.level.block.SmallDripleafBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -40,9 +41,11 @@ import net.minecraft.world.level.levelgen.feature.GeodeFeature;
 import net.minecraft.world.level.levelgen.feature.LargeDripstoneFeature;
 import net.minecraft.world.level.levelgen.feature.MonsterRoomFeature;
 import net.minecraft.world.level.levelgen.feature.MultifaceGrowthFeature;
+import net.minecraft.world.level.levelgen.feature.OverlayFeature;
 import net.minecraft.world.level.levelgen.feature.RandomBooleanSelectorFeature;
 import net.minecraft.world.level.levelgen.feature.RootSystemFeature;
 import net.minecraft.world.level.levelgen.feature.SculkPatchFeature;
+import net.minecraft.world.level.levelgen.feature.SequenceFeature;
 import net.minecraft.world.level.levelgen.feature.SimpleBlockFeature;
 import net.minecraft.world.level.levelgen.feature.SimpleRandomSelectorFeature;
 import net.minecraft.world.level.levelgen.feature.SpeleothemClusterFeature;
@@ -53,10 +56,13 @@ import net.minecraft.world.level.levelgen.feature.WaterloggedVegetationPatchFeat
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RandomizedIntStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
+import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.EnvironmentScanPlacement;
 import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.placement.RandomChancePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
 public class CaveFeatures {
@@ -134,8 +140,10 @@ public class CaveFeatures {
       context.register(MOSS_PATCH_CEILING, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.simple(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(CAVE_VINE_IN_MOSS)), CaveSurface.CEILING, UniformInt.of(1, 2), 0.0F, 5, 0.08F, UniformInt.of(4, 7), 0.3F));
       context.register(SPORE_BLOSSOM, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SPORE_BLOSSOM)));
       context.register(AMETHYST_GEODE, new GeodeFeature(new GeodeBlockSettings(BlockStateProvider.simple(Blocks.AIR), BlockStateProvider.simple(Blocks.AMETHYST_BLOCK), BlockStateProvider.simple(Blocks.BUDDING_AMETHYST), BlockStateProvider.simple(Blocks.CALCITE), BlockStateProvider.simple(Blocks.SMOOTH_BASALT), List.of(Blocks.SMALL_AMETHYST_BUD.defaultBlockState(), Blocks.MEDIUM_AMETHYST_BUD.defaultBlockState(), Blocks.LARGE_AMETHYST_BUD.defaultBlockState(), Blocks.AMETHYST_CLUSTER.defaultBlockState()), blocks.getOrThrow(BlockTags.FEATURES_CANNOT_REPLACE), blocks.getOrThrow(BlockTags.GEODE_INVALID_BLOCKS)), new GeodeLayerSettings(1.7, 2.2, 3.2, 4.2), new GeodeCrackSettings(0.95, 2.0, 2), 0.35, 0.083, true, UniformInt.of(4, 6), UniformInt.of(3, 4), UniformInt.of(1, 2), -16, 16, 0.05, 1));
-      context.register(SCULK_PATCH_DEEP_DARK, new SculkPatchFeature(10, 32, 64, 0, 1, ConstantInt.of(0), 0.5F));
-      context.register(SCULK_PATCH_ANCIENT_CITY, new SculkPatchFeature(10, 32, 64, 0, 1, UniformInt.of(1, 3), 0.5F));
+      Holder<PlacedFeature> sculkPatchCatalyst = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SCULK_CATALYST)), new RandomChancePlacement(0.5F), BlockPredicateFilter.forPredicate(BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP)));
+      context.register(SCULK_PATCH_DEEP_DARK, new SequenceFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SculkPatchFeature(10, 32, 64, 0, 1)), sculkPatchCatalyst)));
+      Holder<PlacedFeature> sculkPatchShriekers = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple((BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, true))), CountPlacement.of(UniformInt.of(1, 3)), OffsetPlacement.of(UniformInt.of(-2, 2), UniformInt.of(-2, 2)), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP))));
+      context.register(SCULK_PATCH_ANCIENT_CITY, new SequenceFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SculkPatchFeature(10, 32, 64, 0, 1)), PlacementUtils.inlinePlaced(new OverlayFeature(HolderSet.direct(sculkPatchCatalyst, sculkPatchShriekers))))));
       MultifaceSpreadeableBlock sculkVeinBlock = (MultifaceSpreadeableBlock)Blocks.SCULK_VEIN;
       context.register(SCULK_VEIN, new MultifaceGrowthFeature(sculkVeinBlock, 20, true, true, true, 1.0F, HolderSet.direct(Block::builtInRegistryHolder, Blocks.STONE, Blocks.ANDESITE, Blocks.DIORITE, Blocks.GRANITE, Blocks.DRIPSTONE_BLOCK, Blocks.CALCITE, Blocks.TUFF, Blocks.DEEPSLATE)));
    }

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.world.item.Item;
 
 public record FlatLevelGeneratorPreset(Holder<Item> displayItem, FlatLevelGeneratorSettings settings) {
@@ -16,6 +16,6 @@ public record FlatLevelGeneratorPreset(Holder<Item> displayItem, FlatLevelGenera
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<FlatLevelGeneratorPreset>>create(Registries.FLAT_LEVEL_GENERATOR_PRESET, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.FLAT_LEVEL_GENERATOR_PRESET, DIRECT_CODEC);
    }
 }

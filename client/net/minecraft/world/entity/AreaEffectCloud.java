@@ -366,7 +366,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public PushReaction getPistonPushReaction() {
-      return PushReaction.IGNORE;
+      return PushReaction.IGNORE_ENTITY;
    }
 
    public EntityDimensions getDimensions(final Pose pose) {

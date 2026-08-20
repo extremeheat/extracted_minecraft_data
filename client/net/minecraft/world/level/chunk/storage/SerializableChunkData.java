@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -104,7 +105,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          BelowZeroRetrogen belowZeroRetrogen = (BelowZeroRetrogen)chunkData.read("below_zero_retrogen", BelowZeroRetrogen.CODEC).orElse((Object)null);
          Map<Heightmap.Types, long[]> heightmaps = new EnumMap(Heightmap.Types.class);
          chunkData.getCompound("Heightmaps").ifPresent((heightmapsTag) -> {
-            for(Heightmap.Types type : status.heightmapsAfter()) {
+            for(Heightmap.Types type : Heightmap.Types.values()) {
                heightmapsTag.getLongArray(type.getSerializationKey()).ifPresent((longs) -> heightmaps.put(type, longs));
             }
 
@@ -226,15 +227,11 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       }
 
       chunk.setLightCorrect(this.lightCorrect);
-      EnumSet<Heightmap.Types> toPrime = EnumSet.noneOf(Heightmap.Types.class);
+      Set<Heightmap.Types> toPrime = EnumSet.copyOf(chunk.getPersistedStatus().heightmapsAfter());
 
-      for(Heightmap.Types type : chunk.getPersistedStatus().heightmapsAfter()) {
-         long[] heightmap = (long[])this.heightmaps.get(type);
-         if (heightmap != null) {
-            chunk.setHeightmap(type, heightmap);
-         } else {
-            toPrime.add(type);
-         }
+      for(Map.Entry<Heightmap.Types, long[]> entry : this.heightmaps.entrySet()) {
+         chunk.setHeightmap((Heightmap.Types)entry.getKey(), (long[])entry.getValue());
+         toPrime.remove(entry.getKey());
       }
 
       Heightmap.primeHeightmaps(chunk, toPrime);
@@ -309,10 +306,8 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          Map<Heightmap.Types, long[]> heightmaps = new EnumMap(Heightmap.Types.class);
 
          for(Map.Entry<Heightmap.Types, Heightmap> entry : chunk.getHeightmaps()) {
-            if (chunk.getPersistedStatus().heightmapsAfter().contains(entry.getKey())) {
-               long[] data = ((Heightmap)entry.getValue()).getRawData();
-               heightmaps.put((Heightmap.Types)entry.getKey(), (long[])(([J)data).clone());
-            }
+            long[] data = ((Heightmap)entry.getValue()).getRawData();
+            heightmaps.put((Heightmap.Types)entry.getKey(), (long[])(([J)data).clone());
          }
 
          ChunkAccess.PackedTicks ticksForSerialization = chunk.getTicksForSerialization(level.getGameTime());

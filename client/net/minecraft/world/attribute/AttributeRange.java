@@ -5,6 +5,7 @@ import net.minecraft.util.Mth;
 
 public interface AttributeRange<Value> {
    AttributeRange<Float> UNIT_FLOAT = ofFloat(0.0F, 1.0F);
+   AttributeRange<Float> UNIT_FLOAT_EPSILON = ofFloat(0.0F, 0.9999999F);
    AttributeRange<Float> NON_NEGATIVE_FLOAT = ofFloat(0.0F, 1.0F / 0.0F);
 
    static <Value> AttributeRange<Value> any() {

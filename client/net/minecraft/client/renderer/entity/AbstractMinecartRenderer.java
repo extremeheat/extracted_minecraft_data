@@ -161,8 +161,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       blockModel.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
    }
 
-   protected AABB getBoundingBoxForCulling(final T entity) {
-      AABB aabb = super.getBoundingBoxForCulling(entity);
+   protected AABB getBoundingBoxForCulling(final T entity, final float partialTicks) {
+      AABB aabb = super.getBoundingBoxForCulling(entity, partialTicks);
       return !entity.getDisplayBlockState().isAir() ? aabb.expandTowards(0.0, (double)((float)entity.getDisplayOffset() * 0.75F / 16.0F), 0.0) : aabb;
    }
 

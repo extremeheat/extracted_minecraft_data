@@ -13,7 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import org.jspecify.annotations.Nullable;
 
-public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseBiomeSource {
+public class FixedBiomeSource extends BiomeSource implements BiomeResolver {
    public static final MapCodec<FixedBiomeSource> CODEC;
    private final Holder<Biome> biome;
 
@@ -26,12 +26,12 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
       return Stream.of(this.biome);
    }
 
-   protected MapCodec<? extends BiomeSource> codec() {
+   protected MapCodec<FixedBiomeSource> codec() {
       return CODEC;
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler) {
-      return this.biome;
+   public BiomeResolver createResolver(final Climate.Sampler sampler) {
+      return this;
    }
 
    public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
@@ -50,7 +50,7 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
       return allowed.test(this.biome) ? Pair.of(origin.atY(Mth.clamp(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1)), this.biome) : null;
    }
 
-   public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int r, final Climate.Sampler sampler) {
+   public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int radius) {
       return Sets.newHashSet(Set.of(this.biome));
    }
 

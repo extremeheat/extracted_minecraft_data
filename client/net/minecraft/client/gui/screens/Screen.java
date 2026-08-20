@@ -138,27 +138,13 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          return true;
       } else {
          Object var10000;
-         switch (event.key()) {
-            case 258:
-               var10000 = this.createTabEvent(!event.hasShiftDown());
-               break;
-            case 259:
-            case 260:
-            case 261:
-            default:
-               var10000 = null;
-               break;
-            case 262:
-               var10000 = this.createArrowEvent(ScreenDirection.RIGHT);
-               break;
-            case 263:
-               var10000 = this.createArrowEvent(ScreenDirection.LEFT);
-               break;
-            case 264:
-               var10000 = this.createArrowEvent(ScreenDirection.DOWN);
-               break;
-            case 265:
-               var10000 = this.createArrowEvent(ScreenDirection.UP);
+         switch (event.shortcutKey()) {
+            case 9 -> var10000 = this.createTabEvent(!event.hasShiftDown());
+            case 1073741903 -> var10000 = this.createArrowEvent(ScreenDirection.RIGHT);
+            case 1073741904 -> var10000 = this.createArrowEvent(ScreenDirection.LEFT);
+            case 1073741905 -> var10000 = this.createArrowEvent(ScreenDirection.DOWN);
+            case 1073741906 -> var10000 = this.createArrowEvent(ScreenDirection.UP);
+            default -> var10000 = null;
          }
 
          FocusNavigationEvent navigationEvent = (FocusNavigationEvent)var10000;

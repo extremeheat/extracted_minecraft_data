@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.function.Predicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -15,11 +16,13 @@ import net.minecraft.commands.arguments.ResourceKeyArgument;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeCommand {
    private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.recipe.give.failed"));
    private static final SimpleCommandExceptionType ERROR_TAKE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.recipe.take.failed"));
+   private static final Predicate<Recipe<?>> LEARNABLE_RECIPE = (r) -> !r.isSpecial();
    private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_GIVE;
    private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_TAKE;
 
@@ -28,7 +31,7 @@ public class RecipeCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("recipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getRecipes())))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getRecipes()))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("recipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE, LEARNABLE_RECIPE)).executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getLearnableRecipes())))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE, LEARNABLE_RECIPE)).executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getLearnableRecipes()))))));
    }
 
    private static int giveRecipes(final CommandSourceStack source, final Collection<ServerPlayer> players, final Collection<RecipeHolder<?>> recipes) throws CommandSyntaxException {

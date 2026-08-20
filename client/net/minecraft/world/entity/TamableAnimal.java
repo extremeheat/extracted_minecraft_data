@@ -97,7 +97,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 7) {
          this.spawnTamingParticles(true);
       } else if (id == 6) {

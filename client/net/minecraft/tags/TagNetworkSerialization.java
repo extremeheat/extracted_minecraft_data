@@ -1,6 +1,7 @@
 package net.minecraft.tags;
 
 import com.mojang.datafixers.util.Pair;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.HashMap;
@@ -14,7 +15,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySynchronization;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.RegistryLayer;
@@ -59,21 +61,13 @@ public class TagNetworkSerialization {
       return new TagLoader.LoadResult<T>(registryKey, tags);
    }
 
-   public static final class NetworkPayload {
+   public static record NetworkPayload(Map<Identifier, IntList> tags) {
       public static final NetworkPayload EMPTY = new NetworkPayload(Map.of());
-      private final Map<Identifier, IntList> tags;
+      private static final StreamCodec<ByteBuf, IntList> ID_LIST_STREAM_CODEC;
+      public static final StreamCodec<ByteBuf, NetworkPayload> STREAM_CODEC;
 
-      public NetworkPayload(final Map<Identifier, IntList> tags) {
+      public NetworkPayload {
          super();
-         this.tags = tags;
-      }
-
-      public void write(final FriendlyByteBuf buf) {
-         buf.writeMap(this.tags, FriendlyByteBuf::writeIdentifier, FriendlyByteBuf::writeIntIdList);
-      }
-
-      public static NetworkPayload read(final FriendlyByteBuf buf) {
-         return new NetworkPayload(buf.readMap(FriendlyByteBuf::readIdentifier, FriendlyByteBuf::readIntIdList));
       }
 
       public boolean isEmpty() {
@@ -86,6 +80,11 @@ public class TagNetworkSerialization {
 
       public <T> TagLoader.LoadResult<T> resolve(final Registry<T> registry) {
          return TagNetworkSerialization.<T>deserializeTagsFromNetwork(registry, this);
+      }
+
+      static {
+         ID_LIST_STREAM_CODEC = ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.collection(IntArrayList::new));
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(HashMap::new, Identifier.STREAM_CODEC, ID_LIST_STREAM_CODEC), NetworkPayload::tags, NetworkPayload::new);
       }
    }
 }

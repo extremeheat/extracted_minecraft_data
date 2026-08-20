@@ -7,9 +7,8 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -39,8 +38,8 @@ public record PlacedFeature(Holder<Feature> feature, List<PlacementModifier> pla
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<PlacedFeature>>create(Registries.PLACED_FEATURE, DIRECT_CODEC);
-      LIST_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC);
-      LIST_OF_LISTS_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC, true).listOf();
+      CODEC = RegistryCodecs.holder(Registries.PLACED_FEATURE, DIRECT_CODEC);
+      LIST_CODEC = RegistryCodecs.holderSet(Registries.PLACED_FEATURE, DIRECT_CODEC);
+      LIST_OF_LISTS_CODEC = RegistryCodecs.holderSet(Registries.PLACED_FEATURE, DIRECT_CODEC, true).listOf();
    }
 }

@@ -1,7 +1,9 @@
 package net.minecraft.client.resources.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,11 +13,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 
-public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identifier, Identifier> trimPaletteReplacements) {
+public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, List<TrimOverride> trimOverrides) {
    private static final Codec<List<Layer>> LAYER_LIST_CODEC;
    public static final Codec<EquipmentClientInfo> CODEC;
 
@@ -33,7 +40,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identi
 
    static {
       LAYER_LIST_CODEC = ExtraCodecs.nonEmptyList(EquipmentClientInfo.Layer.CODEC.listOf());
-      CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers), Codec.unboundedMap(Identifier.CODEC, Identifier.CODEC).optionalFieldOf("trim_palette_replacements", Map.of()).forGetter(EquipmentClientInfo::trimPaletteReplacements)).apply(i, EquipmentClientInfo::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers), EquipmentClientInfo.TrimOverride.CODEC.listOf().optionalFieldOf("trim_overrides", List.of()).forGetter(EquipmentClientInfo::trimOverrides)).apply(i, EquipmentClientInfo::new));
    }
 
    public static record Layer(Identifier textureId, Optional<Dyeable> dyeable, boolean usePlayerTexture) {
@@ -73,7 +80,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identi
 
    public static class Builder {
       private final Map<LayerType, List<Layer>> layersByType = new EnumMap(LayerType.class);
-      private final ImmutableMap.Builder<Identifier, Identifier> trimPaletteReplacements = ImmutableMap.builder();
+      private final ImmutableList.Builder<TrimOverride> trimOverrides = ImmutableList.builder();
 
       private Builder() {
          super();
@@ -100,13 +107,14 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identi
          return this;
       }
 
-      public Builder replaceTrimPalette(final Identifier fromPaletteId, final Identifier toPaletteId) {
-         this.trimPaletteReplacements.put(fromPaletteId, toPaletteId);
+      public Builder replaceTrimPalette(final ResourceKey<TrimMaterial> fromMaterial, final Identifier toPaletteId) {
+         TrimPredicate predicate = new TrimPredicate(Optional.of(fromMaterial), Optional.empty());
+         this.trimOverrides.add(new TrimOverride(predicate, Optional.empty(), Optional.of(toPaletteId)));
          return this;
       }
 
       public EquipmentClientInfo build() {
-         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> List.copyOf((Collection)entry.getValue()))), this.trimPaletteReplacements.build());
+         return new EquipmentClientInfo((Map)this.layersByType.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> List.copyOf((Collection)entry.getValue()))), this.trimOverrides.build());
       }
    }
 
@@ -149,6 +157,34 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers, Map<Identi
       // $FF: synthetic method
       private static LayerType[] $values() {
          return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, HUMANOID_BABY, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, CAMEL_HUSK_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY, NAUTILUS_SADDLE, NAUTILUS_BODY};
+      }
+   }
+
+   public static record TrimOverride(TrimPredicate predicate, Optional<Identifier> textureId, Optional<Identifier> paletteId) {
+      public static final Codec<TrimOverride> CODEC = RecordCodecBuilder.create((i) -> i.group(EquipmentClientInfo.TrimPredicate.CODEC.fieldOf("when").forGetter(TrimOverride::predicate), Identifier.CODEC.optionalFieldOf("texture").forGetter(TrimOverride::textureId), Identifier.CODEC.optionalFieldOf("palette").forGetter(TrimOverride::paletteId)).apply(i, TrimOverride::new)).validate(TrimOverride::validate);
+
+      public TrimOverride {
+         super();
+      }
+
+      private static DataResult<TrimOverride> validate(final TrimOverride override) {
+         return override.textureId.isEmpty() && override.paletteId.isEmpty() ? DataResult.error(() -> "One of texture or palette must be specified") : DataResult.success(override);
+      }
+   }
+
+   public static record TrimPredicate(Optional<ResourceKey<TrimMaterial>> material, Optional<ResourceKey<TrimPattern>> pattern) {
+      public static final Codec<TrimPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(ResourceKey.codec(Registries.TRIM_MATERIAL).optionalFieldOf("material").forGetter(TrimPredicate::material), ResourceKey.codec(Registries.TRIM_PATTERN).optionalFieldOf("pattern").forGetter(TrimPredicate::pattern)).apply(i, TrimPredicate::new)).validate(TrimPredicate::validate);
+
+      public TrimPredicate {
+         super();
+      }
+
+      private static DataResult<TrimPredicate> validate(final TrimPredicate override) {
+         return override.material.isEmpty() && override.pattern.isEmpty() ? DataResult.error(() -> "One of material or pattern must be specified") : DataResult.success(override);
+      }
+
+      public boolean matches(final ArmorTrim trim) {
+         return (this.material.isEmpty() || trim.material().is((ResourceKey)this.material.get())) && (this.pattern.isEmpty() || trim.pattern().is((ResourceKey)this.pattern.get()));
       }
    }
 }

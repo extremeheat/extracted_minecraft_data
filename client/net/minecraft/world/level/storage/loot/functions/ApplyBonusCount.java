@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,8 +31,8 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    private final Holder<Enchantment> enchantment;
    private final Formula formula;
 
-   private ApplyBonusCount(final List<LootItemCondition> predicates, final Holder<Enchantment> enchantment, final Formula formula) {
-      super(predicates);
+   private ApplyBonusCount(final Optional<Holder<LootItemCondition>> condition, final Holder<Enchantment> enchantment, final Formula formula) {
+      super(condition);
       this.enchantment = enchantment;
       this.formula = formula;
    }

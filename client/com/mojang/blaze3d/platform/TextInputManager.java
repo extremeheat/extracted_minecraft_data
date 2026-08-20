@@ -1,13 +1,19 @@
 package com.mojang.blaze3d.platform;
 
-import org.lwjgl.glfw.GLFW;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.sdl.SDLKeyboard;
+import org.lwjgl.sdl.SDL_Rect;
+import org.lwjgl.system.MemoryStack;
 
 public class TextInputManager {
    private final Window window;
    private boolean textInputEnabled;
-   private boolean imeRequested;
-   private volatile boolean imeStatusChanged = true;
-   private boolean cachedIMEStatus;
+   private @Nullable Object owner;
+   private boolean hasTextInputArea;
+   private int areaX;
+   private int areaY;
+   private int areaWidth;
+   private int areaHeight;
 
    public TextInputManager(final Window window) {
       super();
@@ -15,65 +21,80 @@ public class TextInputManager {
    }
 
    public void setTextInputArea(final int x0, final int y0, final int x1, final int y1) {
-      int guiScale = this.window.getGuiScale();
-      GLFW.glfwSetPreeditCursorRectangle(this.window.handle(), x0 * guiScale, y0 * guiScale, (x1 - x0) * guiScale, (y1 - y0) * guiScale);
+      double windowScale = (double)this.window.getGuiScale() / (double)this.window.getPixelDensity();
+      int x = (int)Math.round((double)x0 * windowScale);
+      int y = (int)Math.round((double)y0 * windowScale);
+      int width = Math.max(1, (int)Math.round((double)(x1 - x0) * windowScale));
+      int height = Math.max(1, (int)Math.round((double)(y1 - y0) * windowScale));
+      if (!this.hasTextInputArea || x != this.areaX || y != this.areaY || width != this.areaWidth || height != this.areaHeight) {
+         this.areaX = x;
+         this.areaY = y;
+         this.areaWidth = width;
+         this.areaHeight = height;
+         this.hasTextInputArea = true;
+         this.applyTextInputArea();
+      }
    }
 
-   public void notifyIMEChanged() {
-      this.imeStatusChanged = true;
-   }
+   private void applyTextInputArea() {
+      MemoryStack stack = MemoryStack.stackPush();
 
-   public void tick() {
-      if (this.textInputEnabled) {
-         this.tickDuringTextInput();
-      } else {
-         this.tickOutsideTextInput();
+      try {
+         SDL_Rect.Buffer rect = SDL_Rect.malloc(1, stack).x(this.areaX).y(this.areaY).w(this.areaWidth).h(this.areaHeight);
+         SDLKeyboard.SDL_SetTextInputArea(this.window.handle(), rect, -1);
+      } catch (Throwable var5) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (stack != null) {
+         stack.close();
       }
 
    }
 
-   private boolean getIMEStatus() {
-      if (this.imeStatusChanged) {
-         this.imeStatusChanged = false;
-         this.cachedIMEStatus = GLFW.glfwGetInputMode(this.window.handle(), 208903) == 1;
-      }
+   public void startTextInput(final Object owner) {
+      this.owner = owner;
+      if (!this.textInputEnabled) {
+         if (this.hasTextInputArea) {
+            this.applyTextInputArea();
+         }
 
-      return this.cachedIMEStatus;
-   }
-
-   private void tickOutsideTextInput() {
-      if (this.window.isFocused() && this.getIMEStatus()) {
-         this.setIMEInputMode(false);
+         this.textInputEnabled = true;
+         SDLKeyboard.SDL_StartTextInput(this.window.handle());
       }
 
    }
 
-   private void tickDuringTextInput() {
-      this.imeRequested = this.getIMEStatus();
-   }
-
-   public void startTextInput() {
-      this.textInputEnabled = true;
-      if (this.imeRequested) {
-         this.setIMEInputMode(true);
-      }
-
-   }
-
-   public void stopTextInput() {
-      this.textInputEnabled = false;
-   }
-
-   public void onTextInputFocusChange(final boolean focused) {
-      if (focused) {
-         this.startTextInput();
-      } else {
+   public void stopTextInput(final Object owner) {
+      if (this.owner == owner) {
          this.stopTextInput();
       }
 
    }
 
-   private void setIMEInputMode(final boolean value) {
-      GLFW.glfwSetInputMode(this.window.handle(), 208903, GLX.glfwBool(value));
+   public void stopTextInput() {
+      this.owner = null;
+      if (this.textInputEnabled) {
+         this.textInputEnabled = false;
+         SDLKeyboard.SDL_StopTextInput(this.window.handle());
+      }
+
+   }
+
+   public void onTextInputFocusChange(final Object owner, final boolean focused) {
+      if (focused) {
+         this.startTextInput(owner);
+      } else {
+         this.stopTextInput(owner);
+      }
+
    }
 }

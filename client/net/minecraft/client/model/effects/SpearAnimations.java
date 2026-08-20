@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.KineticWeapon;
@@ -24,8 +23,8 @@ public class SpearAnimations {
       return Mth.clamp(Mth.inverseLerp(time, start, end), 0.0F, 1.0F);
    }
 
-   public static <T extends HumanoidRenderState> void thirdPersonHandUse(final ModelPart arm, final ModelPart head, final boolean holdingInRightArm, final ItemStack item, final T state) {
-      int invert = holdingInRightArm ? 1 : -1;
+   public static <T extends HumanoidRenderState> void thirdPersonHandUse(final ModelPart arm, final ModelPart head, final HumanoidArm holdingArm, final ItemStack item, final T state) {
+      int invert = holdingArm == HumanoidArm.RIGHT ? 1 : -1;
       arm.yRot = -0.1F * (float)invert + head.yRot;
       arm.xRot = -1.5707964F + head.xRot + 0.8F;
       if (state.isFallFlying || state.swimAmount > 0.0F) {
@@ -34,7 +33,7 @@ public class SpearAnimations {
 
       arm.yRot = 0.017453292F * Math.clamp(57.295776F * arm.yRot, -60.0F, 60.0F);
       arm.xRot = 0.017453292F * Math.clamp(57.295776F * arm.xRot, -120.0F, 30.0F);
-      if (!(state.ticksUsingItem <= 0.0F) && (!state.isUsingItem || state.useItemHand == (holdingInRightArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND))) {
+      if (!(state.ticksUsingItem <= 0.0F) && (!state.isUsingItem || state.useItemHand.asArm(state.mainArm) == holdingArm)) {
          KineticWeapon kineticWeapon = (KineticWeapon)item.get(DataComponents.KINETIC_WEAPON);
          if (kineticWeapon != null) {
             UseParams params = SpearAnimations.UseParams.fromKineticWeapon(kineticWeapon, state.ticksUsingItem);
@@ -48,8 +47,8 @@ public class SpearAnimations {
    public static <S extends ArmedEntityRenderState> void thirdPersonUseItem(final S state, final PoseStack poseStack, final float timeHeld, final HumanoidArm arm, final ItemStack actualItem) {
       KineticWeapon kineticWeapon = (KineticWeapon)actualItem.get(DataComponents.KINETIC_WEAPON);
       if (kineticWeapon != null && timeHeld != 0.0F) {
-         float attack = Ease.inQuad(progress(state.attackTime, 0.05F, 0.2F));
-         float retract = Ease.inOutExpo(progress(state.attackTime, 0.4F, 1.0F));
+         float attack = Ease.inQuad(progress(state.swingAnimation, 0.05F, 0.2F));
+         float retract = Ease.inOutExpo(progress(state.swingAnimation, 0.4F, 1.0F));
          UseParams params = SpearAnimations.UseParams.fromKineticWeapon(kineticWeapon, timeHeld);
          int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
          float raiseProgressModified = 1.0F - Ease.outBack(1.0F - params.raiseProgress());
@@ -61,30 +60,28 @@ public class SpearAnimations {
       }
    }
 
-   public static <T extends HumanoidRenderState> void thirdPersonAttackHand(final HumanoidModel<T> model, final T state) {
-      float attackTime = state.attackTime;
-      HumanoidArm arm = state.attackArm;
+   public static <T extends HumanoidRenderState> void thirdPersonAttackHand(final HumanoidModel<T> model, final float animation, final HumanoidArm arm) {
       ModelPart var10000 = model.rightArm;
       var10000.yRot -= model.body.yRot;
       var10000 = model.leftArm;
       var10000.yRot -= model.body.yRot;
       var10000 = model.leftArm;
       var10000.xRot -= model.body.yRot;
-      float prepare = Ease.inOutSine(progress(attackTime, 0.0F, 0.05F));
-      float attack = Ease.inQuad(progress(attackTime, 0.05F, 0.2F));
-      float retract = Ease.inOutExpo(progress(attackTime, 0.4F, 1.0F));
+      float prepare = Ease.inOutSine(progress(animation, 0.0F, 0.05F));
+      float attack = Ease.inQuad(progress(animation, 0.05F, 0.2F));
+      float retract = Ease.inOutExpo(progress(animation, 0.4F, 1.0F));
       var10000 = model.getArm(arm);
       var10000.xRot += (90.0F * prepare - 120.0F * attack + 30.0F * retract) * 0.017453292F;
    }
 
    public static <S extends ArmedEntityRenderState> void thirdPersonAttackItem(final S state, final PoseStack poseStack) {
-      if (!(state.attackTime <= 0.0F)) {
+      float animation = state.swingAnimation;
+      if (!(animation <= 0.0F)) {
          KineticWeapon kineticWeapon = (KineticWeapon)state.getMainHandItemStack().get(DataComponents.KINETIC_WEAPON);
          float jetForward = kineticWeapon != null ? kineticWeapon.forwardMovement() : 0.0F;
          float itemInHandDepth = 0.125F;
-         float attackTime = state.attackTime;
-         float attack = Ease.inQuad(progress(attackTime, 0.05F, 0.2F));
-         float retract = Ease.inOutExpo(progress(attackTime, 0.4F, 1.0F));
+         float attack = Ease.inQuad(progress(animation, 0.05F, 0.2F));
+         float retract = Ease.inOutExpo(progress(animation, 0.4F, 1.0F));
          poseStack.rotateAround(Axis.XN.rotationDegrees(70.0F * (attack - retract)), 0.0F, -0.125F, 0.125F);
          poseStack.translate(0.0F, jetForward * (attack - retract), 0.0F);
       }

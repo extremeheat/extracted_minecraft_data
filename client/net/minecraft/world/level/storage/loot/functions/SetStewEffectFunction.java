@@ -7,6 +7,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -28,8 +29,8 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetStewEffectFunction> MAP_CODEC;
    private final List<EffectEntry> effects;
 
-   private SetStewEffectFunction(final List<LootItemCondition> predicates, final List<EffectEntry> effects) {
-      super(predicates);
+   private SetStewEffectFunction(final Optional<Holder<LootItemCondition>> condition, final List<EffectEntry> effects) {
+      super(condition);
       this.effects = effects;
    }
 
@@ -46,7 +47,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
       if (itemStack.is(Items.SUSPICIOUS_STEW) && !this.effects.isEmpty()) {
          EffectEntry entry = (EffectEntry)Util.getRandom(this.effects, context.getRandom());
          Holder<MobEffect> effect = entry.effect();
-         int duration = entry.duration().getInt(context);
+         int duration = ((NumberProvider)entry.duration().value()).getInt(context);
          if (!((MobEffect)effect.value()).isInstantaneous()) {
             duration *= 20;
          }
@@ -89,18 +90,18 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public Builder withEffect(final Holder<MobEffect> effect, final NumberProvider duration) {
+      public Builder withEffect(final Holder<MobEffect> effect, final Holder<NumberProvider> duration) {
          this.effects.add(new EffectEntry(effect, duration));
          return this;
       }
 
       public LootItemFunction build() {
-         return new SetStewEffectFunction(this.getConditions(), this.effects.build());
+         return new SetStewEffectFunction(this.getCondition(), this.effects.build());
       }
    }
 
-   private static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) implements LootContextUser {
-      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.DIRECT_CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(i, EffectEntry::new));
+   private static record EffectEntry(Holder<MobEffect> effect, Holder<NumberProvider> duration) implements LootContextUser {
+      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(i, EffectEntry::new));
 
       private EffectEntry {
          super();
@@ -108,7 +109,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
 
       public void validate(final ValidationContext context) {
          LootContextUser.super.validate(context);
-         Validatable.validate(context, "duration", this.duration);
+         Validatable.validateHolder(context, "duration", this.duration);
       }
    }
 }

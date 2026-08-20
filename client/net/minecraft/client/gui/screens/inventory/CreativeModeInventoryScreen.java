@@ -39,6 +39,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -171,14 +172,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                }
 
                if (buttonNum == 0) {
-                  this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true);
+                  this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true, Prediction.PREDICTED);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(((ItemPickerMenu)this.menu).getCarried());
                   ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
                }
 
                if (buttonNum == 1) {
                   ItemStack removedItem = ((ItemPickerMenu)this.menu).getCarried().split(1);
-                  this.minecraft.player.drop(removedItem, true);
+                  this.minecraft.player.drop(removedItem, true, Prediction.PREDICTED);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(removedItem);
                }
             }
@@ -198,11 +199,11 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                } else if (containerInput == ContainerInput.THROW && slot != null && slot.hasItem()) {
                   ItemStack toDrop = slot.remove(buttonNum == 0 ? 1 : slot.getItem().getMaxStackSize());
                   ItemStack afterDrop = slot.getItem();
-                  this.minecraft.player.drop(toDrop, true);
+                  this.minecraft.player.drop(toDrop, true, Prediction.PREDICTED);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(toDrop);
                   this.minecraft.gameMode.handleCreativeModeItemAdd(afterDrop, ((SlotWrapper)slot).target.index);
                } else if (containerInput == ContainerInput.THROW && slotId == -999 && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
-                  this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true);
+                  this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true, Prediction.PREDICTED);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(((ItemPickerMenu)this.menu).getCarried());
                   ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
                } else {
@@ -233,7 +234,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                if (containerInput == ContainerInput.THROW) {
                   if (!clicked.isEmpty()) {
                      ItemStack toDrop = clicked.copyWithCount(buttonNum == 0 ? 1 : clicked.getMaxStackSize());
-                     this.minecraft.player.drop(toDrop, true);
+                     this.minecraft.player.drop(toDrop, true, Prediction.PREDICTED);
                      this.minecraft.gameMode.handleCreativeModeItemDrop(toDrop);
                   }
 
@@ -270,7 +271,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                      int numToDrop = buttonNum == 0 ? 1 : oldItemStack.getCount();
                      ItemStack toDrop = oldItemStack.copyWithCount(numToDrop);
                      oldItemStack.shrink(numToDrop);
-                     this.minecraft.player.drop(toDrop, true);
+                     this.minecraft.player.drop(toDrop, true, Prediction.PREDICTED);
                      this.minecraft.gameMode.handleCreativeModeItemDrop(toDrop);
                   }
 
@@ -455,7 +456,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 0) {
+      if (event.button() == 1) {
          double xm = event.x() - (double)this.leftPos;
          double ym = event.y() - (double)this.topPos;
 
@@ -475,7 +476,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public boolean mouseReleased(final MouseButtonEvent event) {
-      if (event.button() == 0) {
+      if (event.button() == 1) {
          double xm = event.x() - (double)this.leftPos;
          double ym = event.y() - (double)this.topPos;
          this.scrolling = false;

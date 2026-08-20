@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -22,7 +23,7 @@ public record EnchantmentLevelProvider(LevelBasedValue amount) implements Number
       return this.amount.calculate(level);
    }
 
-   public static EnchantmentLevelProvider forEnchantmentLevel(final LevelBasedValue amount) {
-      return new EnchantmentLevelProvider(amount);
+   public static Holder<NumberProvider> forEnchantmentLevel(final LevelBasedValue amount) {
+      return Holder.<NumberProvider>direct(new EnchantmentLevelProvider(amount));
    }
 }

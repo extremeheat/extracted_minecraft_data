@@ -2,16 +2,15 @@ package com.mojang.renderpearl.backend.vulkan.checkpoints;
 
 import com.mojang.renderpearl.backend.vulkan.VulkanDevice;
 import com.mojang.renderpearl.backend.vulkan.VulkanQueue;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.util.List;
 import java.util.function.Supplier;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
-public interface CheckpointExtension extends AutoCloseable {
+public interface CheckpointExtension extends UncheckedAutoCloseable {
    CheckpointStorage createStorage(VulkanDevice device, VulkanQueue queue, int maxFramesInFlight);
 
    List<QueueCheckpoints> retrieveCheckpoints(boolean isDeviceLost);
-
-   void close();
 
    public static enum CheckpointType {
       BEGIN_RENDER_PASS,

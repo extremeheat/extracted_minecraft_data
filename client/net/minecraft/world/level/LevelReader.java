@@ -15,7 +15,11 @@ import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.blockscan.BlockMatcher;
+import net.minecraft.world.level.blockscan.BoxBlockMatcher;
+import net.minecraft.world.level.blockscan.OrderedBlockMatcher;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -23,7 +27,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
+public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeResolver {
    @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate);
 
    /** @deprecated */
@@ -151,12 +155,28 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
       return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
    }
 
-   default BlockScanUtils.BlockMatcher findBlocksIn(final AABB box) {
-      return new BlockScanUtils.BlockMatcher(this, box);
+   default BlockMatcher findBlocksIn(final AABB box) {
+      return this.findBlocksIn(BlockPos.containing(box.getMinPosition()), BlockPos.containing(box.getMaxPosition()));
    }
 
-   default BlockScanUtils.BlockMatcher findBlocksIn(final BlockPos from, final BlockPos to) {
-      return new BlockScanUtils.BlockMatcher(this, from, to);
+   default BlockMatcher findBlocksIn(final BlockPos from, final BlockPos to) {
+      return new BoxBlockMatcher(this, from, to);
+   }
+
+   default OrderedBlockMatcher findBlocksIn(final Iterable<BlockPos> positions) {
+      return new OrderedBlockMatcher(this, positions);
+   }
+
+   default OrderedBlockMatcher findBlocksInBoxByManhattanDistance(final BlockPos origin, final int range) {
+      return this.findBlocksIn(BlockPos.withinBoxByManhattanDistance(origin, range, range, range));
+   }
+
+   default OrderedBlockMatcher findBlocksInBoxByManhattanDistance(final BlockPos origin, final int rangeXZ, final int rangeY) {
+      return this.findBlocksIn(BlockPos.withinBoxByManhattanDistance(origin, rangeXZ, rangeY, rangeXZ));
+   }
+
+   default OrderedBlockMatcher findBlocksInManhattan(final BlockPos origin, final int range) {
+      return this.findBlocksIn(BlockPos.withinManhattan(origin, range));
    }
 
    /** @deprecated */

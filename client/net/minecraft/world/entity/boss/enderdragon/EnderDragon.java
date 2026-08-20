@@ -236,7 +236,6 @@ public class EnderDragon extends Mob implements Enemy {
                   this.setDeltaMovement(this.getDeltaMovement().multiply(slide, 0.9100000262260437, slide));
                }
             } else {
-               this.interpolation.interpolate();
                this.phaseManager.getCurrentPhase().doClientTick();
             }
 
@@ -438,7 +437,7 @@ public class EnderDragon extends Mob implements Enemy {
          return false;
       } else {
          damage = this.phaseManager.getCurrentPhase().onHurt(source, damage);
-         if (part != this.head) {
+         if (part != this.head && part != this.neck) {
             damage = damage / 4.0F + Math.min(damage, 1.0F);
          }
 
@@ -512,7 +511,7 @@ public class EnderDragon extends Mob implements Enemy {
          xpCount = 12000;
       }
 
-      Level level = this.level();
+      ServerLevel level = this.level();
       if (level instanceof ServerLevel level) {
          if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && (Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
             ExperienceOrb.award(level, this.position(), Mth.floor((float)xpCount * 0.08F));
@@ -534,7 +533,7 @@ public class EnderDragon extends Mob implements Enemy {
       if (this.dragonDeathTime >= 200) {
          Level var13 = this.level();
          if (var13 instanceof ServerLevel) {
-            ServerLevel level = (ServerLevel)var13;
+            level = (ServerLevel)var13;
             if ((Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
                ExperienceOrb.award(level, this.position(), Mth.floor((float)xpCount * 0.2F));
             }

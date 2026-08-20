@@ -6,22 +6,11 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.InteractionHand;
 
-public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundOpenBookPacket>codec(ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new);
-   private final InteractionHand hand;
+public record ClientboundOpenBookPacket(InteractionHand hand) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC;
 
-   public ClientboundOpenBookPacket(final InteractionHand hand) {
+   public ClientboundOpenBookPacket {
       super();
-      this.hand = hand;
-   }
-
-   private ClientboundOpenBookPacket(final FriendlyByteBuf input) {
-      super();
-      this.hand = (InteractionHand)input.readEnum(InteractionHand.class);
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeEnum(this.hand);
    }
 
    public PacketType<ClientboundOpenBookPacket> type() {
@@ -32,7 +21,7 @@ public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListene
       listener.handleOpenBook(this);
    }
 
-   public InteractionHand getHand() {
-      return this.hand;
+   static {
+      STREAM_CODEC = StreamCodec.composite(InteractionHand.STREAM_CODEC, ClientboundOpenBookPacket::hand, ClientboundOpenBookPacket::new);
    }
 }

@@ -10,8 +10,8 @@ public abstract class BufferStorage {
       super();
    }
 
-   public static BufferStorage create(final GLCapabilities capabilities, final Set<String> enabledExtensions) {
-      if (capabilities.GL_ARB_buffer_storage && GlDevice.USE_GL_ARB_buffer_storage) {
+   public static BufferStorage create(final GLCapabilities capabilities, final Set<String> enabledExtensions, final boolean forceMutable) {
+      if (!forceMutable && capabilities.GL_ARB_buffer_storage && GlDevice.USE_GL_ARB_buffer_storage) {
          enabledExtensions.add("GL_ARB_buffer_storage");
          return new Immutable();
       } else {

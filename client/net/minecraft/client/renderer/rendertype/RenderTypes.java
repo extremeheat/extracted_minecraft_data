@@ -52,12 +52,10 @@ public class RenderTypes {
    private static final RenderType TRIMMED_ARMOR_GLINT;
    private static final Function<Identifier, RenderType> CRUMBLING;
    private static final Function<Identifier, RenderType> TEXT;
-   private static final RenderType TEXT_BACKGROUND;
    private static final Function<Identifier, RenderType> TEXT_GRAYSCALE;
    private static final Function<Identifier, RenderType> TEXT_POLYGON_OFFSET;
    private static final Function<Identifier, RenderType> TEXT_GRAYSCALE_POLYGON_OFFSET;
    private static final Function<Identifier, RenderType> TEXT_SEE_THROUGH;
-   private static final RenderType TEXT_BACKGROUND_SEE_THROUGH;
    private static final Function<Identifier, RenderType> TEXT_GRAYSCALE_SEE_THROUGH;
    private static final RenderType LIGHTNING;
    private static final RenderType DRAGON_RAYS;
@@ -65,6 +63,7 @@ public class RenderTypes {
    private static final RenderType END_GATEWAY;
    public static final RenderType LINES;
    public static final RenderType LINES_TRANSLUCENT;
+   public static final RenderType LINES_TRANSLUCENT_NO_DEPTH_WRITE;
    public static final RenderType LINES_DEPTH_BIAS;
    public static final RenderType SECONDARY_BLOCK_OUTLINE;
    private static final RenderType DEBUG_FILLED_BOX;
@@ -216,7 +215,7 @@ public class RenderTypes {
    }
 
    public static RenderType breezeWind(final Identifier texture, final float uOffset, final float vOffset) {
-      return RenderType.create("breeze_wind", RenderSetup.builder(RenderPipelines.BREEZE_WIND).setOitPipelines(RenderPipelines.OIT_BREEZE_WIND).setOpaquePartsPipeline(RenderPipelines.BREEZE_WIND_OPAQUE_PARTS).withTexture("Sampler0", texture).setTextureTransform(new TextureTransform.OffsetTextureTransform(uOffset, vOffset)).useLightmap().sortOnUpload().createRenderSetup());
+      return RenderType.create("breeze_wind", RenderSetup.builder(RenderPipelines.BREEZE_WIND).setOitPipelines(RenderPipelines.OIT_BREEZE_WIND).withTexture("Sampler0", texture).setTextureTransform(new TextureTransform.OffsetTextureTransform(uOffset, vOffset)).useLightmap().sortOnUpload().createRenderSetup());
    }
 
    public static RenderType energySwirl(final Identifier texture, final float uOffset, final float vOffset) {
@@ -251,10 +250,6 @@ public class RenderTypes {
       return (RenderType)TEXT.apply(texture);
    }
 
-   public static RenderType textBackground() {
-      return TEXT_BACKGROUND;
-   }
-
    public static RenderType textGrayscale(final Identifier texture) {
       return (RenderType)TEXT_GRAYSCALE.apply(texture);
    }
@@ -269,10 +264,6 @@ public class RenderTypes {
 
    public static RenderType textSeeThrough(final Identifier texture) {
       return (RenderType)TEXT_SEE_THROUGH.apply(texture);
-   }
-
-   public static RenderType textBackgroundSeeThrough() {
-      return TEXT_BACKGROUND_SEE_THROUGH;
    }
 
    public static RenderType textGrayscaleSeeThrough(final Identifier texture) {
@@ -301,6 +292,10 @@ public class RenderTypes {
 
    public static RenderType linesTranslucent() {
       return LINES_TRANSLUCENT;
+   }
+
+   public static RenderType linesTranslucentNoDepthWrite() {
+      return LINES_TRANSLUCENT_NO_DEPTH_WRITE;
    }
 
    public static RenderType linesDepthBias() {
@@ -388,7 +383,7 @@ public class RenderTypes {
          return RenderType.create("entity_cutout_dissolve", state);
       }));
       ENTITY_TRANSLUCENT_CULL = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL).setOitPipelines(RenderPipelines.OIT_ENTITY_CULL).setOpaquePartsPipeline(RenderPipelines.ENTITY_TRANSLUCENT_CULL_OPAQUE_PARTS).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL).setOitPipelines(RenderPipelines.OIT_ENTITY_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("entity_translucent_cull_item_target", state);
       }));
       ITEM_CUTOUT = Util.memoize((Function)((texture) -> {
@@ -404,23 +399,23 @@ public class RenderTypes {
          return RenderType.create("item_cutout_glint_special", state);
       }));
       ITEM_TRANSLUCENT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).setOitPipelines(RenderPipelines.OIT_ITEM).setOpaquePartsPipeline(RenderPipelines.ITEM_TRANSLUCENT_OPAQUE_PARTS).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).setOitPipelines(RenderPipelines.OIT_ITEM).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_translucent", state);
       }));
       ITEM_TRANSLUCENT_GLINT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT_GLINT).setOitPipelines(RenderPipelines.OIT_ITEM_GLINT).setOpaquePartsPipeline(RenderPipelines.ITEM_TRANSLUCENT_GLINT_OPAQUE_PARTS).withTexture("Sampler0", texture).withTexture("GlintSampler", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT_GLINT).setOitPipelines(RenderPipelines.OIT_ITEM_GLINT).withTexture("Sampler0", texture).withTexture("GlintSampler", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_translucent_glint", state);
       }));
       ITEM_TRANSLUCENT_GLINT_SPECIAL = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT_GLINT_SPECIAL).setOitPipelines(RenderPipelines.OIT_ITEM_GLINT_SPECIAL).setOpaquePartsPipeline(RenderPipelines.ITEM_TRANSLUCENT_GLINT_SPECIAL_OPAQUE_PARTS).withTexture("Sampler0", texture).withTexture("GlintSampler", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT_GLINT_SPECIAL).setOitPipelines(RenderPipelines.OIT_ITEM_GLINT_SPECIAL).withTexture("Sampler0", texture).withTexture("GlintSampler", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_translucent_glint_special", state);
       }));
       ENTITY_TRANSLUCENT = Util.memoize((BiFunction)((texture, affectsOutline) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT).setOitPipelines(RenderPipelines.OIT_ENTITY).setOpaquePartsPipeline(RenderPipelines.ENTITY_TRANSLUCENT_OPAQUE_PARTS).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT).setOitPipelines(RenderPipelines.OIT_ENTITY).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
          return RenderType.create("entity_translucent", state);
       }));
       ENTITY_TRANSLUCENT_EMISSIVE = Util.memoize((BiFunction)((texture, affectsOutline) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE).setOitPipelines(RenderPipelines.OIT_ENTITY_EMISSIVE).setOpaquePartsPipeline(RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE_OPAQUE_PARTS).withTexture("Sampler0", texture).useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE).setOitPipelines(RenderPipelines.OIT_ENTITY_EMISSIVE).withTexture("Sampler0", texture).useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
          return RenderType.create("entity_translucent_emissive", state);
       }));
       END_CRYSTAL_BEAM = Util.memoize((Function)((texture) -> {
@@ -443,7 +438,7 @@ public class RenderTypes {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_SHADOW).setOitPipelines(RenderPipelines.OIT_ENTITY_SHADOW).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup();
          return RenderType.create("entity_shadow", state);
       }));
-      EYES = Util.memoize((Function)((texture) -> RenderType.create("eyes", RenderSetup.builder(RenderPipelines.EYES).setOitPipelines(RenderPipelines.OIT_EYES).setOpaquePartsPipeline(RenderPipelines.EYES_OPAQUE_PARTS).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
+      EYES = Util.memoize((Function)((texture) -> RenderType.create("eyes", RenderSetup.builder(RenderPipelines.EYES).setOitPipelines(RenderPipelines.OIT_EYES).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       LEASH = RenderType.create("leash", RenderSetup.builder(RenderPipelines.LEASH).useLightmap().createRenderSetup());
       WATER_MASK = RenderType.create("water_mask", RenderSetup.builder(RenderPipelines.WATER_MASK).createRenderSetup());
       OIT_WATER_MASK = RenderType.create("oit_water_mask", RenderSetup.builder(RenderPipelines.OIT_WATER_MASK).createRenderSetup());
@@ -451,21 +446,20 @@ public class RenderTypes {
       TRIMMED_ARMOR_GLINT = RenderType.create("trimmed_armor_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ARMOR).setTextureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).withForcedSolidModelPhase().createRenderSetup());
       CRUMBLING = Util.memoize((Function)((texture) -> RenderType.create("crumbling", RenderSetup.builder(RenderPipelines.CRUMBLING).setOitPipelines(RenderPipelines.OIT_CRUMBLING).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       TEXT = Util.memoize((Function)((texture) -> RenderType.create("text", RenderSetup.builder(RenderPipelines.TEXT).setOitPipelines(RenderPipelines.OIT_TEXT).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
-      TEXT_BACKGROUND = RenderType.create("text_background", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND).setOitPipelines(RenderPipelines.OIT_TEXT_BACKGROUND).useLightmap().sortOnUpload().createRenderSetup());
       TEXT_GRAYSCALE = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).setOitPipelines(RenderPipelines.OIT_TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
       TEXT_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_POLYGON_OFFSET).setOitPipelines(RenderPipelines.OIT_TEXT_POLYGON_OFFSET).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       TEXT_GRAYSCALE_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE_POLYGON_OFFSET).setOitPipelines(RenderPipelines.OIT_TEXT_GRAYSCALE_POLYGON_OFFSET).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
-      TEXT_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_see_through", RenderSetup.builder(RenderPipelines.TEXT_SEE_THROUGH).setOitPipelines(RenderPipelines.OIT_TEXT_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
-      TEXT_BACKGROUND_SEE_THROUGH = RenderType.create("text_background_see_through", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND_SEE_THROUGH).setOitPipelines(RenderPipelines.OIT_TEXT_BACKGROUND_SEE_THROUGH).useLightmap().sortOnUpload().createRenderSetup());
-      TEXT_GRAYSCALE_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_see_through", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE_SEE_THROUGH).setOitPipelines(RenderPipelines.OIT_TEXT_GRAYSCALE_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
+      TEXT_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_see_through", RenderSetup.builder(RenderPipelines.TEXT_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
+      TEXT_GRAYSCALE_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_see_through", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       LIGHTNING = RenderType.create("lightning", RenderSetup.builder(RenderPipelines.LIGHTNING).setOitPipelines(RenderPipelines.OIT_LIGHTNING).sortOnUpload().createRenderSetup());
       DRAGON_RAYS = RenderType.create("dragon_rays", RenderSetup.builder(RenderPipelines.DRAGON_RAYS).setOitPipelines(RenderPipelines.OIT_DRAGON_RAYS).createRenderSetup());
       END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       LINES = RenderType.create("lines", RenderSetup.builder(RenderPipelines.LINES).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
-      LINES_TRANSLUCENT = RenderType.create("lines_translucent", RenderSetup.builder(RenderPipelines.LINES_TRANSLUCENT).setOitPipelines(RenderPipelines.OIT_LINES_TRANSLUCENT).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
+      LINES_TRANSLUCENT = RenderType.create("lines_translucent", RenderSetup.builder(RenderPipelines.LINES_TRANSLUCENT).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
+      LINES_TRANSLUCENT_NO_DEPTH_WRITE = RenderType.create("lines_translucent_no_depth_write", RenderSetup.builder(RenderPipelines.LINES_TRANSLUCENT_NO_DEPTH_WRITE).setOitPipelines(RenderPipelines.OIT_LINES_TRANSLUCENT).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
       LINES_DEPTH_BIAS = RenderType.create("lines_translucent_depth_bias", RenderSetup.builder(RenderPipelines.LINES_DEPTH_BIAS).setOitPipelines(RenderPipelines.OIT_LINES_TRANSLUCENT).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
-      SECONDARY_BLOCK_OUTLINE = RenderType.create("secondary_block_outline", RenderSetup.builder(RenderPipelines.SECONDARY_BLOCK_OUTLINE).setOitPipelines(RenderPipelines.OIT_SECONDARY_BLOCK_OUTLINE).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
+      SECONDARY_BLOCK_OUTLINE = RenderType.create("secondary_block_outline", RenderSetup.builder(RenderPipelines.SECONDARY_BLOCK_OUTLINE).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
       DEBUG_FILLED_BOX = RenderType.create("debug_filled_box", RenderSetup.builder(RenderPipelines.DEBUG_FILLED_BOX).setOitPipelines(RenderPipelines.OIT_DEBUG_FILLED_BOX).sortOnUpload().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
       DEBUG_POINT = RenderType.create("debug_point", RenderSetup.builder(RenderPipelines.DEBUG_POINTS).setOitPipelines(RenderPipelines.OIT_DEBUG_POINTS).createRenderSetup());
       DEBUG_QUADS = RenderType.create("debug_quads", RenderSetup.builder(RenderPipelines.DEBUG_QUADS).setOitPipelines(RenderPipelines.OIT_DEBUG_QUADS).sortOnUpload().createRenderSetup());

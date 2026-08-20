@@ -10,7 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
@@ -21,7 +21,7 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    private final Deque<BlockPos> wiresToTurnOn = new ArrayDeque();
    private final Object2IntMap<BlockPos> updatedWires = new Object2IntLinkedOpenHashMap();
 
-   public ExperimentalRedstoneWireEvaluator(final RedStoneWireBlock wireBlock) {
+   public ExperimentalRedstoneWireEvaluator(final RedstoneWireBlock wireBlock) {
       super(wireBlock);
    }
 
@@ -36,13 +36,13 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
          int packed = next.getIntValue();
          int newLevel = unpackPower(packed);
          BlockState state = level.getBlockState(pos);
-         if (state.is(this.wireBlock) && !((Integer)state.getValue(RedStoneWireBlock.POWER)).equals(newLevel)) {
+         if (state.is(this.wireBlock) && !((Integer)state.getValue(RedstoneWireBlock.POWER)).equals(newLevel)) {
             int updateFlags = 2;
             if (!shapeUpdateWiresAroundInitialPosition || !initialWire) {
                updateFlags |= 128;
             }
 
-            level.setBlock(pos, (BlockState)state.setValue(RedStoneWireBlock.POWER, newLevel), updateFlags);
+            level.setBlock(pos, (BlockState)state.setValue(RedstoneWireBlock.POWER, newLevel), updateFlags);
          } else {
             iterator.remove();
          }
@@ -82,7 +82,7 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    }
 
    private static boolean isConnected(final BlockState state, final Direction direction) {
-      EnumProperty<RedstoneSide> property = (EnumProperty)RedStoneWireBlock.PROPERTY_BY_DIRECTION.get(direction);
+      EnumProperty<RedstoneSide> property = (EnumProperty)RedstoneWireBlock.PROPERTY_BY_DIRECTION.get(direction);
       if (property == null) {
          return direction == Direction.DOWN;
       } else {
@@ -104,7 +104,7 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    private void calculateCurrentChanges(final Level level, final BlockPos initialPosition, final Orientation initialOrientation) {
       BlockState initialState = level.getBlockState(initialPosition);
       if (initialState.is(this.wireBlock)) {
-         this.setPower(initialPosition, (Integer)initialState.getValue(RedStoneWireBlock.POWER), initialOrientation);
+         this.setPower(initialPosition, (Integer)initialState.getValue(RedstoneWireBlock.POWER), initialOrientation);
          this.wiresToTurnOff.add(initialPosition);
       } else {
          this.propagateChangeToNeighbors(level, initialPosition, 0, initialOrientation, true);

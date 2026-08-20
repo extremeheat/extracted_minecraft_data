@@ -1,57 +1,51 @@
 package net.minecraft.world.level.levelgen;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 
-public final class OreVeinifier {
-   private static final float VEININESS_THRESHOLD = 0.4F;
-   private static final int EDGE_ROUNDOFF_BEGIN = 20;
-   private static final double MAX_EDGE_ROUNDOFF = 0.2;
-   private static final float VEIN_SOLIDNESS = 0.7F;
-   private static final float MIN_RICHNESS = 0.1F;
-   private static final float MAX_RICHNESS = 0.3F;
-   private static final float MAX_RICHNESS_THRESHOLD = 0.6F;
+public record OreVeinifier(BlockState oreBlock, BlockState rawOreBlock, BlockState fillerBlock, float rawOreChance, DensityFunction density, DensityFunction richness, DensityFunction fillerGap) {
+   public static final float VEININESS_THRESHOLD = 0.4F;
+   public static final int EDGE_ROUNDOFF_BEGIN = 20;
+   public static final float MAX_EDGE_ROUNDOFF = 0.2F;
+   public static final float VEIN_SOLIDNESS = 0.7F;
+   public static final float MIN_RICHNESS = 0.1F;
+   public static final float MAX_RICHNESS = 0.3F;
+   public static final float MAX_RICHNESS_THRESHOLD = 0.6F;
    private static final float CHANCE_OF_RAW_ORE_BLOCK = 0.02F;
-   private static final float SKIP_ORE_IF_GAP_NOISE_IS_BELOW = -0.3F;
+   public static final float SKIP_ORE_IF_GAP_NOISE_IS_BELOW = -0.3F;
+   public static final Codec<OreVeinifier> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("ore_block").forGetter(OreVeinifier::oreBlock), BlockState.CODEC.fieldOf("raw_ore_block").forGetter(OreVeinifier::rawOreBlock), BlockState.CODEC.fieldOf("filler_block").forGetter(OreVeinifier::fillerBlock), Codec.floatRange(0.0F, 1.0F).fieldOf("raw_ore_chance").forGetter(OreVeinifier::rawOreChance), DensityFunction.CODEC.fieldOf("density").forGetter(OreVeinifier::density), DensityFunction.CODEC.fieldOf("richness").forGetter(OreVeinifier::richness), DensityFunction.CODEC.fieldOf("filler_gap").forGetter(OreVeinifier::fillerGap)).apply(i, OreVeinifier::new));
 
-   private OreVeinifier() {
+   public OreVeinifier {
       super();
    }
 
-   static NoiseChunk.BlockStateFiller create(final DensityFunction veinToggle, final DensityFunction veinRidged, final DensityFunction veinGap, final PositionalRandomFactory oreVeinsPositionalRandomFactory) {
+   public OreVeinifier mapAll(final DensityFunction.Visitor visitor) {
+      return new OreVeinifier(this.oreBlock, this.rawOreBlock, this.fillerBlock, this.rawOreChance, this.density.mapAll(visitor), this.richness.mapAll(visitor), this.fillerGap.mapAll(visitor));
+   }
+
+   public NoiseChunk.BlockStateFiller createFiller(final PositionalRandomFactory randomFactory) {
       BlockState defaultState = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
       return (context) -> {
-         double oreVeininessNoiseValue = veinToggle.compute(context);
-         int posY = context.blockY();
-         VeinType veinType = oreVeininessNoiseValue > 0.0 ? OreVeinifier.VeinType.COPPER : OreVeinifier.VeinType.IRON;
-         double veininessRidged = Math.abs(oreVeininessNoiseValue);
-         int distanceFromTop = veinType.maxY - posY;
-         int distanceFromBottom = posY - veinType.minY;
-         if (distanceFromBottom >= 0 && distanceFromTop >= 0) {
-            int distanceFromEdge = Math.min(distanceFromTop, distanceFromBottom);
-            double edgeRoundoff = Mth.clampedMap((double)distanceFromEdge, 0.0, 20.0, -0.2, 0.0);
-            if (veininessRidged + edgeRoundoff < 0.4000000059604645) {
+         double density = (double)this.density.compute(context);
+         if (density <= 0.0) {
+            return defaultState;
+         } else {
+            RandomSource random = randomFactory.at(context.blockX(), context.blockY(), context.blockZ());
+            if ((double)random.nextFloat() > density) {
                return defaultState;
             } else {
-               RandomSource positionalRandom = oreVeinsPositionalRandomFactory.at(context.blockX(), posY, context.blockZ());
-               if (positionalRandom.nextFloat() > 0.7F) {
-                  return defaultState;
-               } else if (veinRidged.compute(context) >= 0.0) {
-                  return defaultState;
+               double richness = (double)this.richness.compute(context);
+               if ((double)random.nextFloat() < richness && (double)this.fillerGap.compute(context) < 0.0) {
+                  return random.nextFloat() < this.rawOreChance ? this.rawOreBlock : this.oreBlock;
                } else {
-                  double richness = Mth.clampedMap(veininessRidged, 0.4000000059604645, 0.6000000238418579, 0.10000000149011612, 0.30000001192092896);
-                  if ((double)positionalRandom.nextFloat() < richness && veinGap.compute(context) > -0.30000001192092896) {
-                     return positionalRandom.nextFloat() < 0.02F ? veinType.rawOreBlock : veinType.ore;
-                  } else {
-                     return SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : veinType.filler;
-                  }
+                  return SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : this.fillerBlock;
                }
             }
-         } else {
-            return defaultState;
          }
       };
    }
@@ -60,18 +54,22 @@ public final class OreVeinifier {
       COPPER(Blocks.COPPER_ORE.defaultBlockState(), Blocks.RAW_COPPER_BLOCK.defaultBlockState(), Blocks.GRANITE.defaultBlockState(), 0, 50),
       IRON(Blocks.DEEPSLATE_IRON_ORE.defaultBlockState(), Blocks.RAW_IRON_BLOCK.defaultBlockState(), Blocks.TUFF.defaultBlockState(), -60, -8);
 
-      private final BlockState ore;
+      private final BlockState oreBlock;
       private final BlockState rawOreBlock;
-      private final BlockState filler;
+      private final BlockState fillerBlock;
       protected final int minY;
       protected final int maxY;
 
-      private VeinType(final BlockState ore, final BlockState rawOreBlock, final BlockState filler, final int minY, final int maxY) {
-         this.ore = ore;
+      private VeinType(final BlockState oreBlock, final BlockState rawOreBlock, final BlockState fillerBlock, final int minY, final int maxY) {
+         this.oreBlock = oreBlock;
          this.rawOreBlock = rawOreBlock;
-         this.filler = filler;
+         this.fillerBlock = fillerBlock;
          this.minY = minY;
          this.maxY = maxY;
+      }
+
+      public OreVeinifier create(final DensityFunction density, final DensityFunction richness, final DensityFunction fillerGap) {
+         return new OreVeinifier(this.oreBlock, this.rawOreBlock, this.fillerBlock, 0.02F, density, richness, fillerGap);
       }
 
       // $FF: synthetic method

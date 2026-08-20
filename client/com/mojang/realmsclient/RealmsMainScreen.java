@@ -16,6 +16,7 @@ import com.mojang.realmsclient.gui.RealmsServerList;
 import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import com.mojang.realmsclient.gui.screens.RealmsCreateRealmScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
+import com.mojang.realmsclient.gui.screens.RealmsJoinRealmWithCodeScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPendingInvitesScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
@@ -119,6 +120,8 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final Component NO_REALMS_TEXT;
    private static final Component NO_PENDING_INVITES;
    private static final Component PENDING_INVITES;
+   private static final Component ADD_REALM_TEXT;
+   private static final Component JOIN_REALM_TEXT;
    private static final Component INCOMPATIBLE_POPUP_TITLE;
    private static final Component INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE;
    private static final int BUTTON_WIDTH = 100;
@@ -151,6 +154,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private volatile @Nullable String newsLink;
    private final List<RealmsNotification> notifications = new ArrayList();
    private Button addRealmButton;
+   private Button joinRealmButton;
    private NotificationButton pendingInvitesButton;
    private NotificationButton newsButton;
    private LayoutState activeLayoutState;
@@ -185,7 +189,8 @@ public class RealmsMainScreen extends RealmsScreen {
       this.configureButton = Button.builder(CONFIGURE_SERVER_TEXT, (button) -> this.configureClicked(this.getSelectedServer())).width(100).build();
       this.renewButton = Button.builder(SUBSCRIPTION_RENEW_TEXT, (button) -> this.onRenew(this.getSelectedServer())).width(100).build();
       this.leaveButton = Button.builder(LEAVE_SERVER_TEXT, (button) -> this.leaveClicked(this.getSelectedServer())).width(100).build();
-      this.addRealmButton = Button.builder(Component.translatable("mco.selectServer.purchase"), (button) -> this.openTrialAvailablePopup()).size(100, 20).build();
+      this.addRealmButton = Button.builder(ADD_REALM_TEXT, (button) -> this.openTrialAvailablePopup()).size(100, 20).build();
+      this.joinRealmButton = Button.builder(JOIN_REALM_TEXT, (button) -> this.openJoinRealmScreen()).width(this.font.width((FormattedText)JOIN_REALM_TEXT) + 16).build();
       this.backButton = Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(100).build();
       if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
          this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(5, 5, 100, 20, Component.literal("Realm"), (button, value) -> {
@@ -269,11 +274,16 @@ public class RealmsMainScreen extends RealmsScreen {
       buttons.defaultCellSetting().alignVerticallyMiddle();
       buttons.addChild(this.pendingInvitesButton);
       buttons.addChild(this.newsButton);
-      LinearLayout header = LinearLayout.horizontal();
+      LinearLayout centeredContent = LinearLayout.horizontal();
+      centeredContent.defaultCellSetting().alignVerticallyMiddle();
+      centeredContent.addChild(SpacerElement.width(90));
+      centeredContent.addChild(realmsLogo(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      ((FrameLayout)centeredContent.addChild(new FrameLayout(90, 44))).addChild(buttons, (Consumer)(LayoutSettings::alignHorizontallyRight));
+      LinearLayout header = LinearLayout.horizontal().spacing(4);
       header.defaultCellSetting().alignVerticallyMiddle();
-      header.addChild(SpacerElement.width(90));
-      header.addChild(realmsLogo(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
-      ((FrameLayout)header.addChild(new FrameLayout(90, 44))).addChild(buttons, (Consumer)(LayoutSettings::alignHorizontallyRight));
+      header.addChild(SpacerElement.width(this.joinRealmButton.getWidth()));
+      header.addChild(centeredContent);
+      header.addChild(this.joinRealmButton);
       return header;
    }
 
@@ -304,6 +314,7 @@ public class RealmsMainScreen extends RealmsScreen {
       RealmsServer server = this.getSelectedServer();
       boolean serverSelected = server != null;
       this.addRealmButton.active = this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING;
+      this.joinRealmButton.active = this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING;
       this.playButton.active = serverSelected && server.shouldPlayButtonBeActive();
       if (!this.playButton.active && serverSelected && server.state == RealmsServer.State.CLOSED) {
          this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
@@ -580,6 +591,10 @@ public class RealmsMainScreen extends RealmsScreen {
       this.minecraft.gui.setScreen(new AddRealmPopupScreen(this, this.trialsAvailable));
    }
 
+   private void openJoinRealmScreen() {
+      this.minecraft.gui.setScreen(new RealmsJoinRealmWithCodeScreen(this));
+   }
+
    public static void play(final @Nullable RealmsServer server, final Screen cancelScreen) {
       play(server, cancelScreen, false);
    }
@@ -653,6 +668,8 @@ public class RealmsMainScreen extends RealmsScreen {
       NO_REALMS_TEXT = Component.translatable("mco.selectServer.noRealms");
       NO_PENDING_INVITES = Component.translatable("mco.invites.nopending");
       PENDING_INVITES = Component.translatable("mco.invites.pending");
+      ADD_REALM_TEXT = Component.translatable("mco.selectServer.purchase");
+      JOIN_REALM_TEXT = Component.translatable("mco.selectServer.joinRealm");
       INCOMPATIBLE_POPUP_TITLE = Component.translatable("mco.compatibility.incompatible.popup.title");
       INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE = Component.translatable("mco.compatibility.incompatible.releaseType.popup.message");
       SNAPSHOT = !SharedConstants.getCurrentVersion().stable();

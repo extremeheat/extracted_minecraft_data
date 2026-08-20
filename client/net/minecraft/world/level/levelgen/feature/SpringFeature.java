@@ -5,8 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.material.FluidState;
 
 public record SpringFeature(FluidState state, boolean requiresBlockBelow, int rockCount, int holeCount, HolderSet<Block> validBlocks) implements Feature {
-   public static final MapCodec<SpringFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter(SpringFeature::state), Codec.BOOL.optionalFieldOf("requires_block_below", true).forGetter(SpringFeature::requiresBlockBelow), Codec.INT.optionalFieldOf("rock_count", 4).forGetter(SpringFeature::rockCount), Codec.INT.optionalFieldOf("hole_count", 1).forGetter(SpringFeature::holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter(SpringFeature::validBlocks)).apply(i, SpringFeature::new));
+   public static final MapCodec<SpringFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter(SpringFeature::state), Codec.BOOL.optionalFieldOf("requires_block_below", true).forGetter(SpringFeature::requiresBlockBelow), Codec.INT.optionalFieldOf("rock_count", 4).forGetter(SpringFeature::rockCount), Codec.INT.optionalFieldOf("hole_count", 1).forGetter(SpringFeature::holeCount), RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("valid_blocks").forGetter(SpringFeature::validBlocks)).apply(i, SpringFeature::new));
 
    public SpringFeature {
       super();

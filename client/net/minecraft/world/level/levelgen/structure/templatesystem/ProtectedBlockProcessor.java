@@ -4,14 +4,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
 public record ProtectedBlockProcessor(HolderSet<Block> cannotReplace) implements StructureProcessor {
-   public static final MapCodec<ProtectedBlockProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("value").forGetter(ProtectedBlockProcessor::cannotReplace)).apply(i, ProtectedBlockProcessor::new));
+   public static final MapCodec<ProtectedBlockProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("value").forGetter(ProtectedBlockProcessor::cannotReplace)).apply(i, ProtectedBlockProcessor::new));
 
    public ProtectedBlockProcessor {
       super();

@@ -15,11 +15,15 @@ public class FrameBufferCache {
    }
 
    public int getFbo(final DirectStateAccess dsa, final List<@Nullable FrameBufferAttachment> colorTextures, final @Nullable FrameBufferAttachment depthTexture) {
-      CacheKey cacheKey = new CacheKey(colorTextures, depthTexture);
-      return this.cache.computeIfAbsent(cacheKey, (var5) -> this.createFbo(cacheKey, dsa, colorTextures, depthTexture));
+      return this.getFbo(dsa, colorTextures, depthTexture, 0);
    }
 
-   private int createFbo(final CacheKey key, final DirectStateAccess dsa, final List<@Nullable FrameBufferAttachment> colorAttachments, final @Nullable FrameBufferAttachment depthAttachment) {
+   public int getFbo(final DirectStateAccess dsa, final List<@Nullable FrameBufferAttachment> colorTextures, final @Nullable FrameBufferAttachment depthTexture, final int mipOffset) {
+      CacheKey cacheKey = new CacheKey(colorTextures, depthTexture, mipOffset);
+      return this.cache.computeIfAbsent(cacheKey, (var6) -> this.createFbo(cacheKey, dsa, colorTextures, depthTexture, mipOffset));
+   }
+
+   private int createFbo(final CacheKey key, final DirectStateAccess dsa, final List<@Nullable FrameBufferAttachment> colorAttachments, final @Nullable FrameBufferAttachment depthAttachment, final int mipOffset) {
       int fbo = dsa.createFrameBufferObject();
       int colorAttachmentCount = colorAttachments.size();
       int[] colorIds = new int[colorAttachmentCount];
@@ -29,7 +33,7 @@ public class FrameBufferCache {
          FrameBufferAttachment attachment = (FrameBufferAttachment)colorAttachments.get(i);
          if (attachment != null) {
             colorIds[i] = attachment.glId();
-            mipLevels[i] = attachment.fboMipLevel();
+            mipLevels[i] = attachment.fboMipLevel() + mipOffset;
             attachment.addAssociatedFbo(key);
          } else {
             colorIds[i] = 0;
@@ -63,7 +67,7 @@ public class FrameBufferCache {
       private final int hash;
       public final List<@Nullable FrameBufferAttachment> associatedAttachments;
 
-      public CacheKey(final List<@Nullable FrameBufferAttachment> colorAttachments, final @Nullable FrameBufferAttachment depthAttachment) {
+      public CacheKey(final List<@Nullable FrameBufferAttachment> colorAttachments, final @Nullable FrameBufferAttachment depthAttachment, final int mipOffset) {
          super();
          int colorAttachmentCount = colorAttachments.size();
          this.data = new int[(colorAttachmentCount + (depthAttachment != null ? 1 : 0)) * 2];
@@ -72,7 +76,7 @@ public class FrameBufferCache {
             FrameBufferAttachment attachment = (FrameBufferAttachment)colorAttachments.get(i);
             if (attachment != null) {
                this.data[i * 2] = attachment.glId();
-               this.data[i * 2 + 1] = attachment.fboMipLevel();
+               this.data[i * 2 + 1] = attachment.fboMipLevel() + mipOffset;
             } else {
                this.data[i * 2] = 0;
                this.data[i * 2 + 1] = 0;
@@ -82,7 +86,7 @@ public class FrameBufferCache {
          this.associatedAttachments = new ArrayList(colorAttachments);
          if (depthAttachment != null) {
             this.data[colorAttachmentCount * 2] = depthAttachment.glId();
-            this.data[colorAttachmentCount * 2 + 1] = depthAttachment.fboMipLevel();
+            this.data[colorAttachmentCount * 2 + 1] = depthAttachment.fboMipLevel() + mipOffset;
             this.associatedAttachments.add(depthAttachment);
          }
 

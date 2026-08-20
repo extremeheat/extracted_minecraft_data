@@ -20,7 +20,6 @@ public class ItemTintSources {
       ID_MAPPER.put(Identifier.withDefaultNamespace("grass"), GrassColorSource.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("firework"), Firework.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("potion"), Potion.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("map_color"), MapColor.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("team"), TeamColor.MAP_CODEC);
    }
 

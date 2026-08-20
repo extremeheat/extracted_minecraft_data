@@ -1,8 +1,5 @@
 package net.minecraft.client.gui.screens.options;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import java.util.Arrays;
-import java.util.stream.Stream;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,11 +17,6 @@ public class MouseSettingsScreen extends OptionsSubScreen {
    }
 
    protected void addOptions() {
-      if (InputConstants.isRawMouseInputSupported()) {
-         this.list.addSmall((OptionInstance[])Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray((x$0) -> new OptionInstance[x$0]));
-      } else {
-         this.list.addSmall(options(this.options));
-      }
-
+      this.list.addSmall(options(this.options));
    }
 }

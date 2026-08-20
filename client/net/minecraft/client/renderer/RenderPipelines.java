@@ -19,12 +19,12 @@ import net.minecraft.resources.Identifier;
 
 public class RenderPipelines {
    private static final Map<Identifier, RenderPipeline> PIPELINES_BY_LOCATION = new HashMap();
+   private static final Map<Identifier, RenderPipeline> OPTIONAL_PIPELINES_BY_LOCATION = new HashMap();
    private static final float ALPHA_CUTOUT_THRESHOLD_DEFAULT = 0.1F;
    private static final float ALPHA_CUTOUT_THRESHOLD_CUTOUT_TERRAIN = 0.5F;
    private static final RenderPipeline.Snippet GLOBALS_SNIPPET;
    private static final RenderPipeline.Snippet MATRICES_FOG_SNIPPET;
    private static final RenderPipeline.Snippet MATRICES_FOG_LIGHT_DIR_SNIPPET;
-   public static final RenderPipeline.Snippet OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET;
    private static final RenderPipeline.Snippet OIT_SNIPPET;
    public static final RenderPipeline.Snippet OIT_DEPTH_BOUNDS_SNIPPET;
    public static final RenderPipeline.Snippet OIT_TRANSMITTANCE_SNIPPET;
@@ -32,6 +32,7 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet GENERIC_BLOCKS_SNIPPET;
    private static final RenderPipeline.Snippet LIT_BLOCKS_SNIPPET;
    private static final RenderPipeline.Snippet TERRAIN_SNIPPET;
+   private static final RenderPipeline.Snippet MULTIDRAW_TERRAIN_SNIPPET;
    private static final RenderPipeline.Snippet BLOCK_SNIPPET;
    private static final RenderPipeline.Snippet WATER_MASK_SNIPPET;
    private static final RenderPipeline.Snippet LIGHTNING_SNIPPET;
@@ -45,7 +46,6 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet ITEM_SNIPPET;
    private static final RenderPipeline.Snippet OIT_ITEM_SNIPPET;
    private static final RenderPipeline.Snippet TEXT_SNIPPET;
-   private static final RenderPipeline.Snippet TEXT_BACKGROUND_SNIPPET;
    private static final RenderPipeline.Snippet WORLD_TEXT_SNIPPET;
    private static final RenderPipeline.Snippet END_PORTAL_SNIPPET;
    private static final RenderPipeline.Snippet CLOUDS_SNIPPET;
@@ -66,11 +66,16 @@ public class RenderPipelines {
    public static final RenderPipeline.Snippet POST_PROCESSING_SNIPPET;
    public static final RenderPipeline SOLID_BLOCK;
    public static final RenderPipeline SOLID_TERRAIN;
+   public static final RenderPipeline SOLID_TERRAIN_MULTIDRAW;
    public static final RenderPipeline WIREFRAME;
+   public static final RenderPipeline WIREFRAME_MULTIDRAW;
    public static final RenderPipeline CUTOUT_BLOCK;
    public static final RenderPipeline CUTOUT_TERRAIN;
+   public static final RenderPipeline CUTOUT_TERRAIN_MULTIDRAW;
    public static final RenderPipeline TRANSLUCENT_TERRAIN;
+   public static final RenderPipeline TRANSLUCENT_TERRAIN_MULTIDRAW;
    public static final OitPipelineSet OIT_TERRAIN;
+   public static final OitPipelineSet OIT_TERRAIN_MULTIDRAW;
    public static final RenderPipeline TRANSLUCENT_BLOCK;
    public static final OitPipelineSet OIT_TRANSLUCENT_BLOCK;
    public static final RenderPipeline ARMOR_CUTOUT_NO_CULL;
@@ -83,24 +88,19 @@ public class RenderPipelines {
    public static final RenderPipeline ENTITY_CUTOUT_Z_OFFSET;
    public static final RenderPipeline ENTITY_CUTOUT_DISSOLVE;
    public static final RenderPipeline ENTITY_TRANSLUCENT;
-   public static final RenderPipeline ENTITY_TRANSLUCENT_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_ENTITY;
    public static final RenderPipeline ENTITY_TRANSLUCENT_EMISSIVE;
-   public static final RenderPipeline ENTITY_TRANSLUCENT_EMISSIVE_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_ENTITY_EMISSIVE;
    public static final RenderPipeline ENTITY_TRANSLUCENT_CULL;
-   public static final RenderPipeline ENTITY_TRANSLUCENT_CULL_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_ENTITY_CULL;
    public static final RenderPipeline END_CRYSTAL_BEAM;
    public static final RenderPipeline BANNER_PATTERN;
    public static final RenderPipeline BREEZE_WIND;
-   public static final RenderPipeline BREEZE_WIND_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_BREEZE_WIND;
    private static final RenderPipeline.Snippet ENERGY_SWIRL_SNIPPET;
    public static final RenderPipeline ENERGY_SWIRL;
    public static final OitPipelineSet OIT_ENERGY_SWIRL;
    public static final RenderPipeline EYES;
-   public static final RenderPipeline EYES_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_EYES;
    private static final RenderPipeline.Snippet ENTITY_SHADOW_SNIPPET;
    public static final RenderPipeline ENTITY_SHADOW;
@@ -113,12 +113,9 @@ public class RenderPipelines {
    public static final RenderPipeline ITEM_CUTOUT_GLINT;
    public static final RenderPipeline ITEM_CUTOUT_GLINT_SPECIAL;
    public static final RenderPipeline ITEM_TRANSLUCENT;
-   public static final RenderPipeline ITEM_TRANSLUCENT_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_ITEM;
    public static final RenderPipeline ITEM_TRANSLUCENT_GLINT;
    public static final RenderPipeline ITEM_TRANSLUCENT_GLINT_SPECIAL;
-   public static final RenderPipeline ITEM_TRANSLUCENT_GLINT_OPAQUE_PARTS;
-   public static final RenderPipeline ITEM_TRANSLUCENT_GLINT_SPECIAL_OPAQUE_PARTS;
    public static final OitPipelineSet OIT_ITEM_GLINT;
    public static final OitPipelineSet OIT_ITEM_GLINT_SPECIAL;
    public static final RenderPipeline BEACON_BEAM_OPAQUE;
@@ -133,8 +130,6 @@ public class RenderPipelines {
    public static final RenderPipeline TEXT;
    public static final OitPipelineSet OIT_TEXT;
    public static final RenderPipeline GUI_TEXT;
-   public static final RenderPipeline TEXT_BACKGROUND;
-   public static final OitPipelineSet OIT_TEXT_BACKGROUND;
    public static final RenderPipeline TEXT_GRAYSCALE;
    public static final OitPipelineSet OIT_TEXT_GRAYSCALE;
    public static final RenderPipeline GUI_TEXT_GRAYSCALE;
@@ -143,11 +138,7 @@ public class RenderPipelines {
    public static final RenderPipeline TEXT_GRAYSCALE_POLYGON_OFFSET;
    public static final OitPipelineSet OIT_TEXT_GRAYSCALE_POLYGON_OFFSET;
    public static final RenderPipeline TEXT_SEE_THROUGH;
-   public static final OitPipelineSet OIT_TEXT_SEE_THROUGH;
-   public static final RenderPipeline TEXT_BACKGROUND_SEE_THROUGH;
-   public static final OitPipelineSet OIT_TEXT_BACKGROUND_SEE_THROUGH;
    public static final RenderPipeline TEXT_GRAYSCALE_SEE_THROUGH;
-   public static final OitPipelineSet OIT_TEXT_GRAYSCALE_SEE_THROUGH;
    public static final RenderPipeline LIGHTNING;
    public static final OitPipelineSet OIT_LIGHTNING;
    public static final RenderPipeline DRAGON_RAYS;
@@ -160,10 +151,10 @@ public class RenderPipelines {
    public static final OitPipelineSet OIT_FLAT_CLOUDS;
    public static final RenderPipeline LINES;
    public static final RenderPipeline LINES_TRANSLUCENT;
+   public static final RenderPipeline LINES_TRANSLUCENT_NO_DEPTH_WRITE;
    public static final OitPipelineSet OIT_LINES_TRANSLUCENT;
    public static final RenderPipeline LINES_DEPTH_BIAS;
    public static final RenderPipeline SECONDARY_BLOCK_OUTLINE;
-   public static final OitPipelineSet OIT_SECONDARY_BLOCK_OUTLINE;
    public static final RenderPipeline DEBUG_POINTS;
    public static final OitPipelineSet OIT_DEBUG_POINTS;
    public static final RenderPipeline DEBUG_FILLED_BOX;
@@ -205,7 +196,9 @@ public class RenderPipelines {
    public static final RenderPipeline.Snippet ANIMATE_SPRITE_SNIPPET;
    public static final RenderPipeline ANIMATE_SPRITE_BLIT;
    public static final RenderPipeline ANIMATE_SPRITE_INTERPOLATE;
+   public static final RenderPipeline OIT_DEPTH_BOUNDS_CULL;
    public static final RenderPipeline OIT_COMPOSITE;
+   public static final RenderPipeline INTEGRATE_DEPTH;
 
    public RenderPipelines() {
       super();
@@ -223,22 +216,31 @@ public class RenderPipelines {
       return oitPipelineSet;
    }
 
-   public static List<RenderPipeline> getStaticPipelines() {
+   private static RenderPipeline registerOptional(final RenderPipeline pipeline) {
+      OPTIONAL_PIPELINES_BY_LOCATION.put(pipeline.getLocation(), pipeline);
+      return pipeline;
+   }
+
+   public static List<RenderPipeline> requiredPipelines() {
       return PIPELINES_BY_LOCATION.values().stream().toList();
+   }
+
+   public static List<RenderPipeline> optionalPipelines() {
+      return OPTIONAL_PIPELINES_BY_LOCATION.values().stream().toList();
    }
 
    static {
       GLOBALS_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.GLOBALS).buildSnippet();
       MATRICES_FOG_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).buildSnippet();
       MATRICES_FOG_LIGHT_DIR_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withBindGroupLayout(BindGroupLayouts.LIGHTING).buildSnippet();
-      OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET = RenderPipeline.builder().withShaderDefine("OIT_OPAQUE_PARTS_THRESHOLD", 0.995F).buildSnippet();
-      OIT_SNIPPET = RenderPipeline.builder(OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET, GLOBALS_SNIPPET).withShaderDefine("OIT").withShaderDefine("WAVELET_RANK", 2).withShaderDefine("COEFF_COUNT", LevelRenderer.OIT_COEFFICIENT_COUNT).withShaderDefine("COEFF_ATTACHMENT_COUNT", LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT).buildSnippet();
-      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), GpuFormat.RGBA32_FLOAT, 7)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
+      OIT_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withShaderDefine("OIT").withShaderDefine("OIT_WAVELET_RANK", 2).withShaderDefine("OIT_COEFF_COUNT", LevelRenderer.OIT_COEFFICIENT_COUNT).withShaderDefine("OIT_COEFF_ATTACHMENT_COUNT", LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT).buildSnippet();
+      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
       OIT_TRANSMITTANCE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_TRANSMITTANCE").withColorTargetStates(0, LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT - 1, () -> new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       OIT_ACCUMULATE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ACCUMULATE").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       GENERIC_BLOCKS_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.FOG).withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.BLOCK).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
       LIT_BLOCKS_SNIPPET = RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.SAMPLER2).buildSnippet();
-      TERRAIN_SNIPPET = RenderPipeline.builder(LIT_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.CHUNK_SECTION).withVertexShader("core/terrain").withFragmentShader("core/terrain").buildSnippet();
+      TERRAIN_SNIPPET = RenderPipeline.builder(LIT_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.CHUNK_SECTION).withBindGroupLayout(BindGroupLayouts.TERRAIN_INFO).withVertexShader("core/terrain").withFragmentShader("core/terrain").buildSnippet();
+      MULTIDRAW_TERRAIN_SNIPPET = RenderPipeline.builder(LIT_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.TERRAIN_INFO).withVertexBinding(1, DefaultVertexFormat.CHUNK_DATA_INSTANCED).withVertexShader("core/terrain").withFragmentShader("core/terrain").withShaderDefine("MULTIDRAW_TERRAIN").buildSnippet();
       BLOCK_SNIPPET = RenderPipeline.builder(LIT_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/block").withFragmentShader("core/block").buildSnippet();
       WATER_MASK_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/rendertype_water_mask").withFragmentShader("core/rendertype_water_mask").withVertexBinding(0, DefaultVertexFormat.POSITION).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
       LIGHTNING_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/rendertype_lightning").withFragmentShader("core/rendertype_lightning").withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
@@ -252,7 +254,6 @@ public class RenderPipelines {
       ITEM_SNIPPET = RenderPipeline.builder(MATRICES_FOG_LIGHT_DIR_SNIPPET).withVertexShader("core/item").withFragmentShader("core/item").withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER1_SAMPLER2).withVertexBinding(0, DefaultVertexFormat.ENTITY).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
       OIT_ITEM_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).withBindGroupLayout(BindGroupLayouts.LIGHTING).withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexShader("core/item").withFragmentShader("core/item").withVertexBinding(0, DefaultVertexFormat.ENTITY).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("ALPHA_CUTOUT", 0.1F).buildSnippet();
       TEXT_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexShader("core/text").withFragmentShader("core/text").withDepthStencilState(DepthStencilState.DEFAULT).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
-      TEXT_BACKGROUND_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/text_background").withFragmentShader("core/text_background").withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
       WORLD_TEXT_SNIPPET = RenderPipeline.builder(TEXT_SNIPPET).withBindGroupLayout(BindGroupLayouts.FOG).withBindGroupLayout(BindGroupLayouts.SAMPLER2).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_LIGHTMAP_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
       END_PORTAL_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).withVertexShader("core/rendertype_end_portal").withFragmentShader("core/rendertype_end_portal").withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER1).withVertexBinding(0, DefaultVertexFormat.POSITION).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
       CLOUDS_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/clouds").withFragmentShader("core/clouds").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withPrimitiveTopology(PrimitiveTopology.QUADS).withBindGroupLayout(BindGroupLayouts.CLOUD_INFO).withDepthStencilState(DepthStencilState.DEFAULT).buildSnippet();
@@ -273,13 +274,18 @@ public class RenderPipelines {
       POST_PROCESSING_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).buildSnippet();
       SOLID_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/solid_block").withColorTargetState(ColorTargetState.DEFAULT).build());
       SOLID_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/solid_terrain").withColorTargetState(ColorTargetState.DEFAULT).build());
-      WIREFRAME = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/wireframe").withPolygonMode(PolygonMode.WIREFRAME).withColorTargetState(ColorTargetState.DEFAULT).build());
+      SOLID_TERRAIN_MULTIDRAW = register(RenderPipeline.builder(MULTIDRAW_TERRAIN_SNIPPET).withLocation("pipeline/solid_terrain_multidraw").withColorTargetState(ColorTargetState.DEFAULT).build());
+      WIREFRAME = registerOptional(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/wireframe").withPolygonMode(PolygonMode.WIREFRAME).withColorTargetState(ColorTargetState.DEFAULT).build());
+      WIREFRAME_MULTIDRAW = registerOptional(RenderPipeline.builder(MULTIDRAW_TERRAIN_SNIPPET).withLocation("pipeline/wireframe_multidraw").withPolygonMode(PolygonMode.WIREFRAME).withColorTargetState(ColorTargetState.DEFAULT).build());
       CUTOUT_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/cutout_block").withShaderDefine("ALPHA_CUTOUT", 0.5F).withColorTargetState(ColorTargetState.DEFAULT).build());
       CUTOUT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/cutout_terrain").withShaderDefine("ALPHA_CUTOUT", 0.5F).withColorTargetState(ColorTargetState.DEFAULT).build());
+      CUTOUT_TERRAIN_MULTIDRAW = register(RenderPipeline.builder(MULTIDRAW_TERRAIN_SNIPPET).withLocation("pipeline/cutout_terrain_multidraw").withShaderDefine("ALPHA_CUTOUT", 0.5F).withColorTargetState(ColorTargetState.DEFAULT).build());
       TRANSLUCENT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/translucent_terrain").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withShaderDefine("ALPHA_CUTOUT", 0.1F).build());
-      OIT_TERRAIN = register(OitPipelineSet.builder("terrain", RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withVertexShader("core/terrain").withFragmentShader("core/terrain").withBindGroupLayout(BindGroupLayouts.CHUNK_SECTION).withShaderDefine("ALPHA_CUTOUT", 0.1F)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
+      TRANSLUCENT_TERRAIN_MULTIDRAW = register(RenderPipeline.builder(MULTIDRAW_TERRAIN_SNIPPET).withLocation("pipeline/translucent_terrain_multidraw").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withShaderDefine("ALPHA_CUTOUT", 0.1F).build());
+      OIT_TERRAIN = register(OitPipelineSet.builder("terrain", RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withVertexShader("core/terrain").withFragmentShader("core/terrain").withBindGroupLayout(BindGroupLayouts.CHUNK_SECTION).withBindGroupLayout(BindGroupLayouts.TERRAIN_INFO).withShaderDefine("ALPHA_CUTOUT", 0.1F)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
+      OIT_TERRAIN_MULTIDRAW = register(OitPipelineSet.builder("terrain_multidraw", RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withVertexShader("core/terrain").withFragmentShader("core/terrain").withBindGroupLayout(BindGroupLayouts.TERRAIN_INFO).withVertexBinding(1, DefaultVertexFormat.CHUNK_DATA_INSTANCED).withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("MULTIDRAW_TERRAIN")).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       TRANSLUCENT_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/translucent_block").withShaderDefine("ALPHA_CUTOUT", 0.1F).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(DepthStencilState.DEFAULT).build());
-      OIT_TRANSLUCENT_BLOCK = register(OitPipelineSet.builder("translucent_block", RenderPipeline.builder(LIT_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/block").withFragmentShader("core/block").withShaderDefine("ALPHA_CUTOUT", 0.1F)).build());
+      OIT_TRANSLUCENT_BLOCK = register(OitPipelineSet.builder("translucent_block", RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/block").withFragmentShader("core/block").withShaderDefine("ALPHA_CUTOUT", 0.1F)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       ARMOR_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).withColorTargetState(ColorTargetState.DEFAULT).build());
       ARMOR_DECAL_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_decal_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false)).build());
       WOLF_ARMOR_CRACKS = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_translucent").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false).build());
@@ -290,24 +296,19 @@ public class RenderPipelines {
       ENTITY_CUTOUT_Z_OFFSET = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_cutout_z_offset").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("PER_FACE_LIGHTING").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withCull(false).withColorTargetState(ColorTargetState.DEFAULT).build());
       ENTITY_CUTOUT_DISSOLVE = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_cutout_dissolve").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("PER_FACE_LIGHTING").withShaderDefine("DISSOLVE").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.DISSOLVE_MASK_SAMPLER).withCull(false).withColorTargetState(ColorTargetState.DEFAULT).build());
       ENTITY_TRANSLUCENT = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_translucent").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("PER_FACE_LIGHTING").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false).build());
-      ENTITY_TRANSLUCENT_OPAQUE_PARTS = register(RenderPipeline.builder(ENTITY_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/entity_translucent_opaque_parts").withShaderDefine("PER_FACE_LIGHTING").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(ColorTargetState.DEFAULT).withCull(false).build());
       OIT_ENTITY = register(OitPipelineSet.builder("entity", RenderPipeline.builder(OIT_ENTITY_SNIPPET).withCull(false)).withAccumulateModifier((accumulate) -> accumulate.withShaderDefine("PER_FACE_LIGHTING").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       ENTITY_TRANSLUCENT_EMISSIVE = register(RenderPipeline.builder(ENTITY_EMISSIVE_SNIPPET).withLocation("pipeline/entity_translucent_emissive").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("PER_FACE_LIGHTING").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
-      ENTITY_TRANSLUCENT_EMISSIVE_OPAQUE_PARTS = register(RenderPipeline.builder(ENTITY_EMISSIVE_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/entity_translucent_emissive_opaque_parts").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(ColorTargetState.DEFAULT).withCull(false).build());
       OIT_ENTITY_EMISSIVE = register(OitPipelineSet.builder("entity_emissive", RenderPipeline.builder(OIT_ENTITY_SNIPPET).withCull(false)).withAccumulateModifier((accumulate) -> accumulate.withShaderDefine("PER_FACE_LIGHTING").withShaderDefine("EMISSIVE").withBindGroupLayout(BindGroupLayouts.SAMPLER1)).build());
       ENTITY_TRANSLUCENT_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_translucent_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
-      ENTITY_TRANSLUCENT_CULL_OPAQUE_PARTS = register(RenderPipeline.builder(ENTITY_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/entity_translucent_cull_opaque_parts").withBindGroupLayout(BindGroupLayouts.SAMPLER1).withColorTargetState(ColorTargetState.DEFAULT).build());
       OIT_ENTITY_CULL = register(OitPipelineSet.builder("entity_cull", RenderPipeline.builder(OIT_ENTITY_SNIPPET)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       END_CRYSTAL_BEAM = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/end_crystal_beam").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withCull(false).withColorTargetState(ColorTargetState.DEFAULT).build());
       BANNER_PATTERN = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/banner_pattern").withShaderDefine("NO_OVERLAY").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
       BREEZE_WIND = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/breeze_wind").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("APPLY_TEXTURE_MATRIX").withShaderDefine("NO_OVERLAY").withShaderDefine("NO_CARDINAL_LIGHTING").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false).build());
-      BREEZE_WIND_OPAQUE_PARTS = register(RenderPipeline.builder(ENTITY_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/breeze_wind_opaque_parts").withShaderDefine("APPLY_TEXTURE_MATRIX").withShaderDefine("NO_OVERLAY").withShaderDefine("NO_CARDINAL_LIGHTING").withColorTargetState(ColorTargetState.DEFAULT).withCull(false).build());
       OIT_BREEZE_WIND = register(OitPipelineSet.builder("breeze_wind", RenderPipeline.builder(OIT_ENTITY_SNIPPET).withShaderDefine("APPLY_TEXTURE_MATRIX").withShaderDefine("NO_OVERLAY").withShaderDefine("NO_CARDINAL_LIGHTING").withCull(false)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       ENERGY_SWIRL_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/entity").withFragmentShader("core/entity").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("EMISSIVE").withShaderDefine("NO_OVERLAY").withShaderDefine("NO_CARDINAL_LIGHTING").withShaderDefine("APPLY_TEXTURE_MATRIX").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withCull(false).withVertexBinding(0, DefaultVertexFormat.ENTITY).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
       ENERGY_SWIRL = register(RenderPipeline.builder(ENERGY_SWIRL_SNIPPET).withLocation("pipeline/energy_swirl").withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE)).withDepthStencilState(DepthStencilState.DEFAULT).build());
       OIT_ENERGY_SWIRL = register(OitPipelineSet.builder("energy_swirl", RenderPipeline.builder(ENERGY_SWIRL_SNIPPET).withShaderDefine("OIT_ADDITIVE")).build());
       EYES = register(RenderPipeline.builder(ENTITY_NO_LIGHTMAP_SNIPPET, EYES_SNIPPET).withLocation("pipeline/eyes").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
-      EYES_OPAQUE_PARTS = register(RenderPipeline.builder(ENTITY_NO_LIGHTMAP_SNIPPET, EYES_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/eyes_opaque_parts").withColorTargetState(ColorTargetState.DEFAULT).build());
       OIT_EYES = register(OitPipelineSet.builder("eyes", RenderPipeline.builder(OIT_ENTITY_SNIPPET, EYES_SNIPPET)).build());
       ENTITY_SHADOW_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/rendertype_entity_shadow").withFragmentShader("core/rendertype_entity_shadow").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.ENTITY).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       ENTITY_SHADOW = register(RenderPipeline.builder(ENTITY_SHADOW_SNIPPET).withLocation("pipeline/entity_shadow").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
@@ -320,14 +321,11 @@ public class RenderPipelines {
       ITEM_CUTOUT_GLINT = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SNIPPET).withLocation("pipeline/item_cutout").withShaderDefine("ALPHA_CUTOUT", 0.1F).withColorTargetState(ColorTargetState.DEFAULT).build());
       ITEM_CUTOUT_GLINT_SPECIAL = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SPECIAL_SNIPPET).withLocation("pipeline/item_cutout").withShaderDefine("ALPHA_CUTOUT", 0.1F).withVertexBinding(0, DefaultVertexFormat.ENTITY_GLINT_SPECIAL).withColorTargetState(ColorTargetState.DEFAULT).build());
       ITEM_TRANSLUCENT = register(RenderPipeline.builder(ITEM_SNIPPET).withLocation("pipeline/item_translucent").withShaderDefine("ALPHA_CUTOUT", 0.1F).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
-      ITEM_TRANSLUCENT_OPAQUE_PARTS = register(RenderPipeline.builder(ITEM_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/item_translucent_opaque_parts").withColorTargetState(ColorTargetState.DEFAULT).build());
       OIT_ITEM = register(OitPipelineSet.builder("item", RenderPipeline.builder(OIT_ITEM_SNIPPET)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       ITEM_TRANSLUCENT_GLINT = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SNIPPET).withLocation("pipeline/item_translucent_glint").withShaderDefine("ALPHA_CUTOUT", 0.1F).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
       ITEM_TRANSLUCENT_GLINT_SPECIAL = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SPECIAL_SNIPPET).withLocation("pipeline/item_translucent_glint").withShaderDefine("ALPHA_CUTOUT", 0.1F).withVertexBinding(0, DefaultVertexFormat.ENTITY_GLINT_SPECIAL).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
-      ITEM_TRANSLUCENT_GLINT_OPAQUE_PARTS = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/item_translucent_glint_opaque_parts").withColorTargetState(ColorTargetState.DEFAULT).build());
-      ITEM_TRANSLUCENT_GLINT_SPECIAL_OPAQUE_PARTS = register(RenderPipeline.builder(ITEM_SNIPPET, GLINT_SPECIAL_SNIPPET, OIT_OPAQUE_PARTS_THRESHOLD_SNIPPET).withLocation("pipeline/item_translucent_glint_opaque_parts").withVertexBinding(0, DefaultVertexFormat.ENTITY_GLINT_SPECIAL).withColorTargetState(ColorTargetState.DEFAULT).build());
-      OIT_ITEM_GLINT = register(OitPipelineSet.builder("item_glint", RenderPipeline.builder(OIT_ITEM_SNIPPET, GLINT_SNIPPET)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
-      OIT_ITEM_GLINT_SPECIAL = register(OitPipelineSet.builder("item_glint_special", RenderPipeline.builder(OIT_ITEM_SNIPPET, GLINT_SPECIAL_SNIPPET).withVertexBinding(0, DefaultVertexFormat.ENTITY_GLINT_SPECIAL)).withAccumulateModifier((accumulate) -> accumulate.withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
+      OIT_ITEM_GLINT = register(OitPipelineSet.builder("item_glint", RenderPipeline.builder(OIT_ITEM_SNIPPET)).withAccumulateModifier((accumulate) -> accumulate.withSnippet(GLINT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
+      OIT_ITEM_GLINT_SPECIAL = register(OitPipelineSet.builder("item_glint_special", RenderPipeline.builder(OIT_ITEM_SNIPPET).withVertexBinding(0, DefaultVertexFormat.ENTITY_GLINT_SPECIAL)).withAccumulateModifier((accumulate) -> accumulate.withSnippet(GLINT_SPECIAL_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.SAMPLER1).withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
       BEACON_BEAM_OPAQUE = register(RenderPipeline.builder(BEACON_BEAM_SNIPPET).withLocation("pipeline/beacon_beam_opaque").withColorTargetState(ColorTargetState.DEFAULT).build());
       BEACON_BEAM_TRANSLUCENT = register(RenderPipeline.builder(BEACON_BEAM_SNIPPET).withLocation("pipeline/beacon_beam_translucent").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
       OIT_BEACON_BEAM = register(OitPipelineSet.builder("beacon_beam", RenderPipeline.builder(BEACON_BEAM_SNIPPET)).build());
@@ -340,8 +338,6 @@ public class RenderPipelines {
       TEXT = register(RenderPipeline.builder(WORLD_TEXT_SNIPPET).withLocation("pipeline/text").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
       OIT_TEXT = register(OitPipelineSet.builder("text", RenderPipeline.builder(WORLD_TEXT_SNIPPET)).build());
       GUI_TEXT = register(RenderPipeline.builder(GUI_TEXT_SNIPPET).withLocation("pipeline/gui_text").build());
-      TEXT_BACKGROUND = register(RenderPipeline.builder(TEXT_BACKGROUND_SNIPPET).withBindGroupLayout(BindGroupLayouts.FOG).withLocation("pipeline/text_background").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(DepthStencilState.DEFAULT).withBindGroupLayout(BindGroupLayouts.SAMPLER2).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP).build());
-      OIT_TEXT_BACKGROUND = register(OitPipelineSet.builder("text_background", RenderPipeline.builder(TEXT_BACKGROUND_SNIPPET).withBindGroupLayout(BindGroupLayouts.FOG).withBindGroupLayout(BindGroupLayouts.SAMPLER2).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP)).build());
       TEXT_GRAYSCALE = register(RenderPipeline.builder(WORLD_TEXT_SNIPPET).withLocation("pipeline/text_grayscale").withShaderDefine("IS_GRAYSCALE").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
       OIT_TEXT_GRAYSCALE = register(OitPipelineSet.builder("text_grayscale", RenderPipeline.builder(WORLD_TEXT_SNIPPET).withShaderDefine("IS_GRAYSCALE")).build());
       GUI_TEXT_GRAYSCALE = register(RenderPipeline.builder(GUI_TEXT_SNIPPET).withLocation("pipeline/gui_text_grayscale").withShaderDefine("IS_GRAYSCALE").build());
@@ -350,11 +346,7 @@ public class RenderPipelines {
       TEXT_GRAYSCALE_POLYGON_OFFSET = register(RenderPipeline.builder(WORLD_TEXT_SNIPPET).withLocation("pipeline/text_grayscale_polygon_offset").withShaderDefine("IS_GRAYSCALE").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true, 1.0F, 10.0F)).build());
       OIT_TEXT_GRAYSCALE_POLYGON_OFFSET = register(OitPipelineSet.builder("text_grayscale_polygon_offset", RenderPipeline.builder(WORLD_TEXT_SNIPPET).withShaderDefine("IS_GRAYSCALE")).build());
       TEXT_SEE_THROUGH = register(RenderPipeline.builder(TEXT_SNIPPET).withLocation("pipeline/text_see_through").withShaderDefine("IS_SEE_THROUGH").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(Optional.empty()).build());
-      OIT_TEXT_SEE_THROUGH = register(OitPipelineSet.builder("text_see_through", RenderPipeline.builder(TEXT_SNIPPET).withShaderDefine("IS_SEE_THROUGH").withShaderDefine("OIT_FORCE_ZERO_DEPTH")).withoutDepthTest().build());
-      TEXT_BACKGROUND_SEE_THROUGH = register(RenderPipeline.builder(TEXT_BACKGROUND_SNIPPET).withLocation("pipeline/text_background_see_through").withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withShaderDefine("IS_SEE_THROUGH").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(Optional.empty()).build());
-      OIT_TEXT_BACKGROUND_SEE_THROUGH = register(OitPipelineSet.builder("text_background_see_through", RenderPipeline.builder(TEXT_BACKGROUND_SNIPPET).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withShaderDefine("IS_SEE_THROUGH").withShaderDefine("OIT_FORCE_ZERO_DEPTH")).withoutDepthTest().build());
       TEXT_GRAYSCALE_SEE_THROUGH = register(RenderPipeline.builder(TEXT_SNIPPET).withLocation("pipeline/text_grayscale_see_through").withShaderDefine("IS_GRAYSCALE").withShaderDefine("IS_SEE_THROUGH").withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(Optional.empty()).build());
-      OIT_TEXT_GRAYSCALE_SEE_THROUGH = register(OitPipelineSet.builder("text_grayscale_see_through", RenderPipeline.builder(TEXT_SNIPPET).withShaderDefine("IS_GRAYSCALE").withShaderDefine("IS_SEE_THROUGH").withShaderDefine("OIT_FORCE_ZERO_DEPTH")).withoutDepthTest().build());
       LIGHTNING = register(RenderPipeline.builder(LIGHTNING_SNIPPET).withLocation("pipeline/lightning").withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING)).build());
       OIT_LIGHTNING = register(OitPipelineSet.builder("lightning", RenderPipeline.builder(LIGHTNING_SNIPPET).withShaderDefine("OIT_ADDITIVE")).build());
       DRAGON_RAYS = register(RenderPipeline.builder(DRAGON_RAYS_SNIPPET).withLocation("pipeline/dragon_rays").withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING)).build());
@@ -366,11 +358,11 @@ public class RenderPipelines {
       OIT_CLOUDS = register(OitPipelineSet.builder("clouds", RenderPipeline.builder(OIT_CLOUDS_SNIPPET)).withDepthBoundsModifier((depthBounds) -> depthBounds.withDepthStencilState(DepthStencilState.DEFAULT)).build());
       OIT_FLAT_CLOUDS = register(OitPipelineSet.builder("flat_clouds", RenderPipeline.builder(OIT_CLOUDS_SNIPPET).withCull(false)).build());
       LINES = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines").withColorTargetState(ColorTargetState.DEFAULT).build());
-      LINES_TRANSLUCENT = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines_translucent").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
+      LINES_TRANSLUCENT = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines_translucent").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
+      LINES_TRANSLUCENT_NO_DEPTH_WRITE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines_translucent_no_depth_write").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
       OIT_LINES_TRANSLUCENT = register(OitPipelineSet.builder("lines_translucent", RenderPipeline.builder(OIT_LINES_SNIPPET)).build());
       LINES_DEPTH_BIAS = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines_depth_bias").withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true, 1.0F, 1.0F)).build());
-      SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).build());
-      OIT_SECONDARY_BLOCK_OUTLINE = register(OitPipelineSet.builder("secondary_block_outline", RenderPipeline.builder(OIT_LINES_SNIPPET)).build());
+      SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(DepthStencilState.DEFAULT).build());
       DEBUG_POINTS = register(RenderPipeline.builder(DEBUG_POINTS_SNIPPET).withLocation("pipeline/debug_points").withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(DepthStencilState.DEFAULT).build());
       OIT_DEBUG_POINTS = register(OitPipelineSet.builder("debug_points", RenderPipeline.builder(DEBUG_POINTS_SNIPPET)).build());
       DEBUG_FILLED_BOX = register(RenderPipeline.builder(DEBUG_FILLED_SNIPPET).withLocation("pipeline/debug_filled_box").build());
@@ -412,6 +404,8 @@ public class RenderPipelines {
       ANIMATE_SPRITE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withVertexShader("core/animate_sprite").withBindGroupLayout(BindGroupLayouts.SPRITE_ANIMATION_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
       ANIMATE_SPRITE_BLIT = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withBindGroupLayout(BindGroupLayouts.SPRITE).build());
       ANIMATE_SPRITE_INTERPOLATE = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withBindGroupLayout(BindGroupLayouts.CURRENT_SPRITE_NEXT_SPRITE).build());
+      OIT_DEPTH_BOUNDS_CULL = register(RenderPipeline.builder(OIT_SNIPPET).withVertexShader("core/screenquad").withFragmentShader("core/oit_depth_bounds_cull").withLocation("pipeline/oit_depth_bounds_cull").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(DepthStencilState.DEFAULT).build());
       OIT_COMPOSITE = register(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screenquad").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), GpuFormat.RGBA8_UNORM, 15)).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
+      INTEGRATE_DEPTH = register(RenderPipeline.builder().withVertexShader("core/screenquad").withFragmentShader("core/integrate_depth").withLocation("pipeline/integrate_depth").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
    }
 }

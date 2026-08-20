@@ -40,9 +40,9 @@ import net.minecraft.util.RandomSource;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.Version;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.sdl.SDL;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.Library;
@@ -50,7 +50,6 @@ import org.lwjgl.system.Platform;
 import org.lwjgl.util.freetype.FreeType;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.lwjgl.util.spvc.Spvc;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK;
 import org.slf4j.Logger;
@@ -83,11 +82,10 @@ public class NativeLibrariesBootstrap {
 
          loadLibrary(stopCapturing, "LWJGL system", NativeLibrariesBootstrap::loadLWJGLSystem);
          vulkanLoaderAvailable = tryLoadingVulkan();
-         entries.add(new LibraryLoadEntry("GLFW", NativeLibrariesBootstrap::loadGlfw));
+         entries.add(new LibraryLoadEntry("SDL", NativeLibrariesBootstrap::loadSdl));
          entries.add(new LibraryLoadEntry("OpenGL", NativeLibrariesBootstrap::loadOpenGL));
          entries.add(new LibraryLoadEntry("OpenAL", NativeLibrariesBootstrap::loadOpenAL));
          entries.add(new LibraryLoadEntry("STB", NativeLibrariesBootstrap::loadSTB));
-         entries.add(new LibraryLoadEntry("tinyfd", NativeLibrariesBootstrap::loadTinyFD));
          entries.add(new LibraryLoadEntry("freetype", NativeLibrariesBootstrap::loadFreeType));
          if (vulkanLoaderAvailable) {
             entries.add(new LibraryLoadEntry("shaderc", NativeLibrariesBootstrap::loadShaderc));
@@ -201,7 +199,7 @@ public class NativeLibrariesBootstrap {
       if (libraryPathString != null) {
          String version = Version.getVersion().replace(' ', '-');
          String arch = Platform.getArchitecture().name().toLowerCase(Locale.ROOT);
-         Path newLibraryDir = Path.of(libraryPathString).resolve(version, new String[]{arch});
+         Path newLibraryDir = Path.of(libraryPathString).resolve(version, arch);
          Configuration.SHARED_LIBRARY_EXTRACT_PATH.set(newLibraryDir.toString());
       }
 
@@ -324,8 +322,8 @@ public class NativeLibrariesBootstrap {
       Library.initialize();
    }
 
-   private static void loadGlfw() {
-      Objects.requireNonNull(GLFW.getLibrary());
+   private static void loadSdl() {
+      Objects.requireNonNull(SDL.getLibrary());
    }
 
    private static void loadOpenGL() {
@@ -375,10 +373,6 @@ public class NativeLibrariesBootstrap {
       } catch (NullPointerException var1) {
       }
 
-   }
-
-   private static void loadTinyFD() {
-      Objects.requireNonNull(TinyFileDialogs.tinyfd_getGlobalChar("tinyfd_version"));
    }
 
    private static void loadFreeType() {

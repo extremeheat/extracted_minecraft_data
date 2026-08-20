@@ -8,10 +8,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
@@ -20,8 +19,8 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public interface Feature {
    Codec<Feature> DIRECT_CODEC = BuiltInRegistries.FEATURE_TYPE.byNameCodec().dispatch(Feature::codec, (t) -> t);
-   Codec<Holder<Feature>> CODEC = RegistryFileCodec.<Holder<Feature>>create(Registries.FEATURE, DIRECT_CODEC);
-   Codec<HolderSet<Feature>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.FEATURE, DIRECT_CODEC);
+   Codec<Holder<Feature>> CODEC = RegistryCodecs.holder(Registries.FEATURE, DIRECT_CODEC);
+   Codec<HolderSet<Feature>> LIST_CODEC = RegistryCodecs.holderSet(Registries.FEATURE, DIRECT_CODEC);
 
    MapCodec<? extends Feature> codec();
 

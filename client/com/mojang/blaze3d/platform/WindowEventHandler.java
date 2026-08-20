@@ -6,4 +6,6 @@ public interface WindowEventHandler {
    void resizeGui();
 
    void cursorEntered();
+
+   void fullscreenStateChanged(boolean fullscreen);
 }

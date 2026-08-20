@@ -1,6 +1,7 @@
 package com.mojang.blaze3d;
 
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.util.TimeUtil;
+import org.lwjgl.sdl.SDLTimer;
 import org.lwjgl.system.MemoryUtil;
 
 public class Blaze3D {
@@ -9,7 +10,7 @@ public class Blaze3D {
    }
 
    public static double getTime() {
-      return GLFW.glfwGetTime();
+      return (double)SDLTimer.SDL_GetTicksNS() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
    }
 
    private Blaze3D() {

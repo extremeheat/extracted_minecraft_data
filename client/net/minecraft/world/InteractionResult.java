@@ -4,8 +4,8 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public sealed interface InteractionResult {
-   Success SUCCESS = new Success(InteractionResult.SwingSource.CLIENT, InteractionResult.ItemContext.DEFAULT);
-   Success SUCCESS_SERVER = new Success(InteractionResult.SwingSource.SERVER, InteractionResult.ItemContext.DEFAULT);
+   Success SUCCESS = new Success(InteractionResult.SwingSource.PREDICTED, InteractionResult.ItemContext.DEFAULT);
+   Success SUCCESS_SERVER = new Success(InteractionResult.SwingSource.SERVER_ONLY, InteractionResult.ItemContext.DEFAULT);
    Success CONSUME = new Success(InteractionResult.SwingSource.NONE, InteractionResult.ItemContext.DEFAULT);
    Fail FAIL = new Fail();
    Pass PASS = new Pass();
@@ -17,21 +17,25 @@ public sealed interface InteractionResult {
 
    public static enum SwingSource {
       NONE,
-      CLIENT,
-      SERVER;
+      PREDICTED,
+      SERVER_ONLY;
 
       private SwingSource() {
       }
 
       // $FF: synthetic method
       private static SwingSource[] $values() {
-         return new SwingSource[]{NONE, CLIENT, SERVER};
+         return new SwingSource[]{NONE, PREDICTED, SERVER_ONLY};
       }
    }
 
    public static record Success(SwingSource swingSource, ItemContext itemContext) implements InteractionResult {
       public Success {
          super();
+      }
+
+      public boolean shouldSwing() {
+         return this.swingSource != InteractionResult.SwingSource.NONE;
       }
 
       public boolean consumesAction() {

@@ -4,82 +4,49 @@ import net.minecraft.core.PositionAndRotation;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public abstract class InterpolationHandler {
-   public static final int DEFAULT_INTERPOLATION_STEPS = 3;
-   protected final Entity entity;
-   protected int interpolationSteps;
-   protected final PositionAndRotation.Mutable lastPositionAndRotation;
+public interface InterpolationHandler {
+   InterpolationHandler NO_OP = new NoOpInterpolationHandler();
 
-   public InterpolationHandler(final Entity entity) {
-      this(entity, 3);
+   default InterpolationTracker interpolationTracker() {
+      return InterpolationTracker.NO_OP;
    }
 
-   public InterpolationHandler(final Entity entity, final int interpolationSteps) {
-      super();
-      this.lastPositionAndRotation = new PositionAndRotation.Mutable();
-      this.entity = entity;
-      this.interpolationSteps = interpolationSteps;
-   }
+   @Nullable PositionAndRotation target();
 
-   public @Nullable InterpolationTracker interpolationTracker() {
-      return null;
-   }
+   boolean interpolateTo(@Nullable PositionPath position, float yRot, float xRot, boolean hasRotation);
 
-   protected abstract PositionAndRotation.Mutable interpolationData();
+   void interpolate();
 
-   protected abstract void startInterpolating(PositionPath position, float yRot, float xRot);
+   void applyPredictedMovement(Vec3 delta);
 
-   protected abstract void doInterpolate();
+   boolean hasActiveInterpolation();
 
-   public abstract boolean hasActiveInterpolation();
+   void cancel();
 
-   public abstract void cancel();
-
-   public PositionAndRotation getCurrentPositionAndRotation() {
-      return this.hasActiveInterpolation() ? this.interpolationData().immutable() : this.entity.storePositionAndRotation();
-   }
-
-   public void interpolateTo(final PositionPath position, final float yRot, final float xRot) {
-      if (this.interpolationSteps == 0) {
-         this.entity.snapTo(position.endPosition(), yRot, xRot);
-         this.cancel();
-      } else if (!this.hasActiveInterpolation() || !this.interpolationData().is(position.endPosition(), yRot, xRot)) {
-         this.startInterpolating(position, yRot, xRot);
-         this.setLastPositionAndRotation();
-         this.entity.onInterpolationStart(this);
-      }
-   }
-
-   public void applyPredictedMovement(final Vec3 delta) {
-      this.interpolationData().addDelta(delta);
-      this.lastPositionAndRotation.addDelta(delta);
-   }
-
-   public void interpolate() {
-      if (!this.hasActiveInterpolation()) {
-         this.cancel();
-      } else {
-         this.adjustInterpolationTargetFromDeltas();
-         this.doInterpolate();
-         this.setLastPositionAndRotation();
-      }
-   }
-
-   private void adjustInterpolationTargetFromDeltas() {
-      Vec3 deltaSinceLastInterpolation = this.entity.position().subtract(this.lastPositionAndRotation.position());
-      if (deltaSinceLastInterpolation.lengthSqr() > 9.999999747378752E-6) {
-         Vec3 adjustedPosition = this.interpolationData().position().add(deltaSinceLastInterpolation);
-         if (this.entity.level().noCollision(this.entity, this.entity.makeBoundingBox(adjustedPosition))) {
-            this.interpolationData().addDelta(deltaSinceLastInterpolation);
-         }
+   public static class NoOpInterpolationHandler implements InterpolationHandler {
+      public NoOpInterpolationHandler() {
+         super();
       }
 
-      float deltaYRotSinceLastInterpolation = this.entity.getYRot() - this.lastPositionAndRotation.yRot();
-      float deltaXRotSinceLastInterpolation = this.entity.getXRot() - this.lastPositionAndRotation.xRot();
-      this.interpolationData().addRotation(deltaYRotSinceLastInterpolation, deltaXRotSinceLastInterpolation);
-   }
+      public @Nullable PositionAndRotation target() {
+         return null;
+      }
 
-   private void setLastPositionAndRotation() {
-      this.lastPositionAndRotation.set(this.entity.position(), this.entity.getYRot(), this.entity.getXRot());
+      public boolean interpolateTo(final @Nullable PositionPath position, final float yRot, final float xRot, final boolean hasRotation) {
+         return false;
+      }
+
+      public void interpolate() {
+      }
+
+      public void applyPredictedMovement(final Vec3 delta) {
+      }
+
+      public boolean hasActiveInterpolation() {
+         return false;
+      }
+
+      public void cancel() {
+      }
    }
 }

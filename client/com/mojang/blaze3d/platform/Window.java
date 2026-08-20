@@ -1,46 +1,43 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.GLFWErrorCapture;
-import com.mojang.blaze3d.GLFWErrorScope;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import com.mojang.renderpearl.api.device.BackendCreationException;
 import com.mojang.renderpearl.api.device.GpuBackend;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.main.SilentInitException;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.Callbacks;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWErrorCallbackI;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWWindowCloseCallback;
+import org.lwjgl.sdl.SDLError;
+import org.lwjgl.sdl.SDLHints;
+import org.lwjgl.sdl.SDLPlatform;
+import org.lwjgl.sdl.SDLSurface;
+import org.lwjgl.sdl.SDLVideo;
+import org.lwjgl.sdl.SDL_DisplayMode;
+import org.lwjgl.sdl.SDL_Event;
+import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public final class Window implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
+   public static final int MIN_WINDOW_WIDTH = 320;
+   public static final int MIN_WINDOW_HEIGHT = 240;
    public static final int BASE_WIDTH = 320;
    public static final int BASE_HEIGHT = 240;
-   private final GLFWErrorCallback defaultErrorCallback = GLFWErrorCallback.create(this::defaultErrorCallback);
    private final WindowEventHandler eventHandler;
    private final MonitorManager monitorManager;
    private final long handle;
@@ -49,8 +46,8 @@ public final class Window implements AutoCloseable {
    private int windowedWidth;
    private int windowedHeight;
    private Optional<VideoMode> preferredFullscreenVideoMode;
+   private boolean fullscreenRequested;
    private boolean fullscreen;
-   private boolean actuallyFullscreen;
    private int x;
    private int y;
    private int width;
@@ -62,16 +59,16 @@ public final class Window implements AutoCloseable {
    private int guiScale;
    private String errorSection = "Startup";
    private boolean dirty;
-   private boolean vsync;
    private boolean iconified;
    private boolean focused = true;
-   private boolean minimized;
+   private boolean shouldClose;
+   private @Nullable Runnable closeCallback;
    private boolean allowCursorChanges;
+   private boolean quitShortcuts;
    private CursorType currentCursor;
-   private final boolean exclusiveFullscreen;
-   private final GpuBackend backend;
+   private boolean exclusiveFullscreen;
 
-   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend) throws BackendCreationException {
+   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend) {
       super();
       this.currentCursor = CursorType.DEFAULT;
       this.monitorManager = monitorManager;
@@ -86,178 +83,192 @@ public final class Window implements AutoCloseable {
          this.preferredFullscreenVideoMode = Optional.empty();
       }
 
-      this.actuallyFullscreen = this.fullscreen = displayData.isFullscreen();
-      Monitor initialMonitor = monitorManager.getMonitor(GLFW.glfwGetPrimaryMonitor());
-      this.windowedWidth = this.width = allowedWindowMinSize(displayData.width());
-      this.windowedHeight = this.height = allowedWindowMinSize(displayData.height());
-      this.handle = this.createWindow(backend, this.width, this.height, title, this.fullscreen && initialMonitor != null ? initialMonitor.monitor() : 0L);
-      this.backend = backend;
+      this.fullscreenRequested = displayData.isFullscreen();
+      Monitor initialMonitor = monitorManager.getMonitor(SDLVideo.SDL_GetPrimaryDisplay());
+      this.windowedWidth = this.width = allowedWindowMinSize(displayData.width(), 320);
+      this.windowedHeight = this.height = allowedWindowMinSize(displayData.height(), 240);
+      this.handle = this.createWindow(backend, this.width, this.height, title);
+      if (Util.getPlatform() == Util.OS.OSX) {
+         MacosUtil.disableCloseWindowMenuItem();
+      }
+
       if (initialMonitor != null) {
-         VideoMode mode = initialMonitor.getPreferredVidMode(this.fullscreen ? this.preferredFullscreenVideoMode : Optional.empty());
+         VideoMode mode = initialMonitor.getPreferredVideoMode(this.fullscreenRequested ? this.preferredFullscreenVideoMode : Optional.empty());
          this.windowedX = this.x = initialMonitor.x() + mode.getWidth() / 2 - this.width / 2;
          this.windowedY = this.y = initialMonitor.y() + mode.getHeight() / 2 - this.height / 2;
       } else {
-         int[] actualX = new int[1];
-         int[] actualY = new int[1];
-         GLFW.glfwGetWindowPos(this.handle, actualX, actualY);
-         this.windowedX = this.x = actualX[0];
-         this.windowedY = this.y = actualY[0];
+         MemoryStack stack = MemoryStack.stackPush();
+
+         try {
+            IntBuffer actualX = stack.mallocInt(1);
+            IntBuffer actualY = stack.mallocInt(1);
+            SDLVideo.SDL_GetWindowPosition(this.handle, actualX, actualY);
+            this.windowedX = this.x = actualX.get(0);
+            this.windowedY = this.y = actualY.get(0);
+         } catch (Throwable var14) {
+            if (stack != null) {
+               try {
+                  stack.close();
+               } catch (Throwable var13) {
+                  var14.addSuppressed(var13);
+               }
+            }
+
+            throw var14;
+         }
+
+         if (stack != null) {
+            stack.close();
+         }
       }
 
       this.setMode();
       this.refreshFramebufferSize();
-      GLFW.glfwSetFramebufferSizeCallback(this.handle, this::onFramebufferResize);
-      GLFW.glfwSetWindowPosCallback(this.handle, this::onMove);
-      GLFW.glfwSetWindowSizeCallback(this.handle, this::onResize);
-      GLFW.glfwSetWindowFocusCallback(this.handle, this::onFocus);
-      GLFW.glfwSetCursorEnterCallback(this.handle, this::onEnter);
-      GLFW.glfwSetWindowIconifyCallback(this.handle, this::onIconify);
-   }
-
-   public static long createGlfwWindow(final int width, final int height, final String title, final long monitor, final GpuBackend backend) throws BackendCreationException {
-      GLFWErrorCapture glfwErrors = new GLFWErrorCapture();
-
-      long windowHandle;
-      try (GLFWErrorScope var9 = new GLFWErrorScope(glfwErrors)) {
-         backend.setWindowHints();
-         GLFW.glfwWindowHint(131076, 0);
-         windowHandle = GLFW.glfwCreateWindow(width, height, title, monitor, 0L);
-         if (windowHandle == 0L) {
-            backend.handleWindowCreationErrors(glfwErrors.firstError());
-         }
-      }
-
-      for(GLFWErrorCapture.Error error : glfwErrors) {
-         LOGGER.error("GLFW error collected during GL backend initialization: {}", error);
-      }
-
-      return windowHandle;
-   }
-
-   private long createWindow(final GpuBackend backend, final int width, final int height, final String title, final long initialMonitor) throws BackendCreationException {
-      return createGlfwWindow(width, height, title, initialMonitor, backend);
    }
 
    public static String getPlatform() {
-      int platform = GLX.getGlfwPlatform();
-      String var10000;
-      switch (platform) {
-         case 0 -> var10000 = "<error>";
-         case 393217 -> var10000 = "win32";
-         case 393218 -> var10000 = "cocoa";
-         case 393219 -> var10000 = "wayland";
-         case 393220 -> var10000 = "x11";
-         case 393221 -> var10000 = "null";
-         default -> var10000 = String.format(Locale.ROOT, "unknown (%08X)", platform);
-      }
-
-      return var10000;
+      String platform = SDLPlatform.SDL_GetPlatform();
+      return platform == null ? "unknown platform" : platform;
    }
 
-   public int getRefreshRate() {
+   private static @Nullable SDL_Surface createIconSurface(final NativeImage image) {
+      int pitch = image.getWidth() * 4;
+      return SDLSurface.SDL_CreateSurfaceFrom(image.getWidth(), image.getHeight(), 376840196, image.getPixelBytes(), pitch);
+   }
+
+   private long createWindow(final GpuBackend backend, final int width, final int height, final String title) {
+      long flags = 8224L;
+      long windowHandle = backend.createWindow(title, width, height, 8224L);
+      if (windowHandle == 0L) {
+         String var10002 = SDLError.SDL_GetError();
+         throw new IllegalStateException("Failed to create window: " + (String)Objects.requireNonNullElse(var10002, "<no error>"));
+      } else {
+         SDLVideo.SDL_SetWindowMinimumSize(windowHandle, 320, 240);
+         LOGGER.info("Created window using SDL video driver: {}", SDLVideo.SDL_GetCurrentVideoDriver());
+         return windowHandle;
+      }
+   }
+
+   public @Nullable VideoMode getActiveVideoMode() {
       RenderSystem.assertOnRenderThread();
-      return GLX._getRefreshRate(this);
+      SDL_DisplayMode mode = this.getActiveDisplayMode();
+      return mode == null ? null : new VideoMode(mode);
+   }
+
+   private @Nullable SDL_DisplayMode getActiveDisplayMode() {
+      SDL_DisplayMode windowMode = SDLVideo.SDL_GetWindowFullscreenMode(this.handle);
+      if (windowMode != null) {
+         return windowMode;
+      } else {
+         int displayId = SDLVideo.SDL_GetDisplayForWindow(this.handle);
+         return displayId == 0 ? null : SDLVideo.SDL_GetCurrentDisplayMode(displayId);
+      }
    }
 
    public boolean shouldClose() {
-      return GLX._shouldClose(this);
+      return this.shouldClose;
    }
 
-   public static void checkGlfwError(final BiConsumer<Integer, String> errorConsumer) {
-      MemoryStack stack = MemoryStack.stackPush();
-
-      try {
-         PointerBuffer errorDescription = stack.mallocPointer(1);
-         int errorCode = GLFW.glfwGetError(errorDescription);
-         if (errorCode != 0) {
-            long errorDescriptionAddress = errorDescription.get();
-            String errorMessage = errorDescriptionAddress == 0L ? "" : MemoryUtil.memUTF8(errorDescriptionAddress);
-            errorConsumer.accept(errorCode, errorMessage);
-         }
-      } catch (Throwable var8) {
-         if (stack != null) {
-            try {
-               stack.close();
-            } catch (Throwable var7) {
-               var8.addSuppressed(var7);
-            }
-         }
-
-         throw var8;
-      }
-
-      if (stack != null) {
-         stack.close();
+   public void handleEvent(final SDL_Event event) {
+      switch (event.type()) {
+         case 256:
+         case 528:
+            this.onQuitRequested();
+            break;
+         case 257:
+            this.requestClose();
+            break;
+         case 338:
+            this.monitorManager.onDisplayConnected(event.display().displayID());
+            break;
+         case 339:
+            this.monitorManager.onDisplayDisconnected(event.display().displayID());
+            break;
+         case 342:
+            this.onDisplayModeChanged();
+            break;
+         case 517:
+            this.onMove(event.window().data1(), event.window().data2());
+            break;
+         case 518:
+            this.onResize(event.window().data1(), event.window().data2());
+            break;
+         case 519:
+            this.onFramebufferResize(event.window().data1(), event.window().data2());
+            break;
+         case 521:
+            this.onIconified(true);
+            break;
+         case 522:
+         case 523:
+            this.onIconified(false);
+            break;
+         case 524:
+         case 525:
+            this.eventHandler.cursorEntered();
+            break;
+         case 526:
+            this.onFocus(true);
+            break;
+         case 527:
+            this.onFocus(false);
+            break;
+         case 531:
+            this.eventHandler.framebufferSizeChanged();
+            break;
+         case 535:
+         case 536:
+            this.updateFullscreenState();
       }
 
    }
 
-   public void setIcon(final PackResources resources, final IconSet iconSet) throws IOException {
-      int platform = GLX.getGlfwPlatform();
+   private void onDisplayModeChanged() {
+      if (Util.getPlatform() == Util.OS.OSX && this.fullscreenRequested && this.fullscreen && !this.isRuntimeExclusiveFullscreen()) {
+         this.fullscreenRequested = false;
+         this.setMode();
+         if (this.fullscreen) {
+            this.fullscreenRequested = true;
+         } else {
+            this.fullscreenRequested = true;
+            this.setMode();
+            this.eventHandler.framebufferSizeChanged();
+         }
+      }
+   }
+
+   private void onQuitRequested() {
+      if (this.quitShortcuts || !InputQuirks.isQuitShortcutDown()) {
+         this.requestClose();
+      }
+
+   }
+
+   private void updateFullscreenState() {
+      boolean newFullscreen = this.isWindowFullscreen();
+      if (this.fullscreen != newFullscreen) {
+         this.fullscreen = newFullscreen;
+         this.eventHandler.fullscreenStateChanged(newFullscreen);
+      }
+
+   }
+
+   private void requestClose() {
+      this.shouldClose = true;
+      if (this.closeCallback != null) {
+         this.closeCallback.run();
+      }
+
+   }
+
+   public void setIcon(final PackMetadataResources resources, final IconSet iconSet) throws IOException {
+      Util.OS platform = Util.getPlatform();
       switch (platform) {
-         case 393217:
-         case 393220:
-            List<IoSupplier<InputStream>> iconStreams = iconSet.getStandardIcons(resources);
-            List<ByteBuffer> allocatedBuffers = new ArrayList(iconStreams.size());
-
-            try {
-               MemoryStack stack = MemoryStack.stackPush();
-
-               try {
-                  GLFWImage.Buffer icons = GLFWImage.malloc(iconStreams.size(), stack);
-
-                  for(int i = 0; i < iconStreams.size(); ++i) {
-                     NativeImage image = NativeImage.read((InputStream)((IoSupplier)iconStreams.get(i)).get());
-
-                     try {
-                        ByteBuffer pixels = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4);
-                        allocatedBuffers.add(pixels);
-                        pixels.asIntBuffer().put(image.getPixelsABGR());
-                        icons.position(i);
-                        icons.width(image.getWidth());
-                        icons.height(image.getHeight());
-                        icons.pixels(pixels);
-                     } catch (Throwable var20) {
-                        if (image != null) {
-                           try {
-                              image.close();
-                           } catch (Throwable var19) {
-                              var20.addSuppressed(var19);
-                           }
-                        }
-
-                        throw var20;
-                     }
-
-                     if (image != null) {
-                        image.close();
-                     }
-                  }
-
-                  GLFW.glfwSetWindowIcon(this.handle, (GLFWImage.Buffer)icons.position(0));
-               } catch (Throwable var21) {
-                  if (stack != null) {
-                     try {
-                        stack.close();
-                     } catch (Throwable var18) {
-                        var21.addSuppressed(var18);
-                     }
-                  }
-
-                  throw var21;
-               }
-
-               if (stack != null) {
-                  stack.close();
-               }
-               break;
-            } finally {
-               allocatedBuffers.forEach(MemoryUtil::memFree);
-            }
-         case 393218:
-            MacosUtil.loadIcon(iconSet.getMacIcon(resources));
-         case 393219:
-         case 393221:
+         case WINDOWS:
+         case LINUX:
+         case SOLARIS:
+         case OSX:
+            this.setIcon(iconSet.getStandardIcons(resources));
             break;
          default:
             LOGGER.warn("Not setting icon for unrecognized platform: {}", platform);
@@ -265,123 +276,147 @@ public final class Window implements AutoCloseable {
 
    }
 
+   private void setIcon(final List<IoSupplier<InputStream>> iconStreams) throws IOException {
+      if (!iconStreams.isEmpty()) {
+         List<NativeImage> images = new ArrayList(iconStreams.size());
+
+         try {
+            SDL_Surface primarySurface = createIconSurface((IoSupplier)iconStreams.getFirst(), images);
+            if (primarySurface != null) {
+               for(IoSupplier<InputStream> iconStream : iconStreams.subList(1, iconStreams.size())) {
+                  SDL_Surface surface = createIconSurface(iconStream, images);
+                  if (surface != null) {
+                     if (!SDLSurface.SDL_AddSurfaceAlternateImage(primarySurface, surface)) {
+                        LOGGER.warn("Failed to add {}x{} icon as alternate window icon image: {}", new Object[]{surface.w(), surface.h(), SDLError.SDL_GetError()});
+                     }
+
+                     SDLSurface.SDL_DestroySurface(surface);
+                  }
+               }
+
+               if (!SDLVideo.SDL_SetWindowIcon(this.handle, primarySurface)) {
+                  LOGGER.warn("Failed to set window icon: {}", SDLError.SDL_GetError());
+               }
+
+               SDLSurface.SDL_DestroySurface(primarySurface);
+               return;
+            }
+         } finally {
+            images.forEach(NativeImage::close);
+         }
+
+      }
+   }
+
+   private static @Nullable SDL_Surface createIconSurface(final IoSupplier<InputStream> iconStream, final List<NativeImage> images) throws IOException {
+      NativeImage image = NativeImage.read(iconStream.get());
+      images.add(image);
+      SDL_Surface surface = createIconSurface(image);
+      if (surface == null) {
+         LOGGER.warn("Failed to create SDL surface for {}x{} icon: {}", new Object[]{image.getWidth(), image.getHeight(), SDLError.SDL_GetError()});
+      }
+
+      return surface;
+   }
+
+   public String getErrorSection() {
+      return this.errorSection;
+   }
+
    public void setErrorSection(final String string) {
       this.errorSection = string;
    }
 
-   public static void setBootErrorCallback() {
-      GLFW.glfwSetErrorCallback(Window::bootCrash);
-   }
-
-   private static void bootCrash(final int error, final long description) {
-      String var10000 = HEX_FORMAT.toHexDigits(error);
-      String message = "Unexpected GLFW error " + var10000 + ": " + MemoryUtil.memUTF8(description);
-      throw new IllegalStateException(message);
-   }
-
-   public void defaultErrorCallback(final int errorCode, final long description) {
-      if (!RenderSystem.isOnRenderThread()) {
-         LOGGER.error("Error callback from invalid thread ({})", Thread.currentThread().getName());
-      }
-
-      String errorString = MemoryUtil.memUTF8(description);
-      LOGGER.error("GLFW error @ {}: {}[{}]", new Object[]{this.errorSection, errorString, HEX_FORMAT.toHexDigits(errorCode)});
-   }
-
-   public void setDefaultErrorCallback() {
-      GLFWErrorCallback previousCallback = GLFW.glfwSetErrorCallback(this.defaultErrorCallback);
-      if (previousCallback != null) {
-         previousCallback.free();
-      }
-
-   }
-
    public void close() {
       RenderSystem.assertOnRenderThread();
-      Callbacks.glfwFreeCallbacks(this.handle);
-      GLFW.glfwSetErrorCallback((GLFWErrorCallbackI)null);
-      this.defaultErrorCallback.close();
-      GLFW.glfwDestroyWindow(this.handle);
+      SDLVideo.SDL_DestroyWindow(this.handle);
    }
 
-   private void onMove(final long handle, final int x, final int y) {
+   private void onMove(final int x, final int y) {
       this.x = x;
       this.y = y;
+      if (!this.fullscreen) {
+         this.windowedX = x;
+         this.windowedY = y;
+      }
+
    }
 
-   private boolean isSoftScreen() {
-      return Util.getPlatform() == Util.OS.WINDOWS && this.fullscreen && !this.exclusiveFullscreen;
+   private void onResize(final int newWidth, final int newHeight) {
+      this.width = newWidth;
+      this.height = newHeight;
+      if (!this.fullscreen) {
+         this.windowedWidth = allowedWindowMinSize(newWidth, 320);
+         this.windowedHeight = allowedWindowMinSize(newHeight, 240);
+      }
+
    }
 
-   private void onFramebufferResize(final long handle, final int newWidth, final int newHeight) {
-      if (handle == this.handle) {
-         int oldWidth = this.getWidth();
-         int oldHeight = this.getHeight();
-         if (newWidth != 0 && newHeight != 0) {
-            int newFrameBufferHeight = this.isSoftScreen() ? newHeight - 1 : newHeight;
-            if (newWidth != oldWidth || newFrameBufferHeight != oldHeight || this.minimized) {
-               this.minimized = false;
-               this.framebufferWidth = newWidth;
-               this.framebufferHeight = newFrameBufferHeight;
+   private void onFramebufferResize(final int newWidth, final int newHeight) {
+      int oldWidth = this.getWidth();
+      int oldHeight = this.getHeight();
+      this.framebufferWidth = newWidth;
+      this.framebufferHeight = newHeight;
 
-               try {
-                  this.eventHandler.framebufferSizeChanged();
-               } catch (Exception e) {
-                  CrashReport report = CrashReport.forThrowable(e, "Window resize");
-                  CrashReportCategory windowSizeDetails = report.addCategory("Window Dimensions");
-                  windowSizeDetails.setDetail("Old", oldWidth + "x" + oldHeight);
-                  windowSizeDetails.setDetail("New", newWidth + "x" + newHeight);
-                  throw new ReportedException(report);
-               }
-            }
-         } else {
-            this.minimized = true;
-         }
+      try {
+         this.eventHandler.framebufferSizeChanged();
+      } catch (Exception e) {
+         CrashReport report = CrashReport.forThrowable(e, "Window resize");
+         CrashReportCategory windowSizeDetails = report.addCategory("Window Dimensions");
+         windowSizeDetails.setDetail("Old", oldWidth + "x" + oldHeight);
+         windowSizeDetails.setDetail("New", newWidth + "x" + newHeight);
+         throw new ReportedException(report);
       }
    }
 
    private void refreshFramebufferSize() {
-      int[] outWidth = new int[1];
-      int[] outHeight = new int[1];
-      GLFW.glfwGetFramebufferSize(this.handle, outWidth, outHeight);
-      outHeight[0] = this.isSoftScreen() ? outHeight[0] - 1 : outHeight[0];
-      this.framebufferWidth = outWidth[0] > 0 ? outWidth[0] : 1;
-      this.framebufferHeight = outHeight[0] > 0 ? outHeight[0] : 1;
+      FramebufferSize size = this.queryFramebufferSize();
+      this.framebufferWidth = size.width();
+      this.framebufferHeight = size.height();
    }
 
-   private void onResize(final long handle, final int newWidth, final int newHeight) {
-      this.width = newWidth;
-      this.height = newHeight;
-   }
+   public FramebufferSize queryFramebufferSize() {
+      MemoryStack stack = MemoryStack.stackPush();
 
-   private void onFocus(final long handle, final boolean focused) {
-      if (handle == this.handle) {
-         this.focused = focused;
+      FramebufferSize var4;
+      try {
+         IntBuffer outWidth = stack.mallocInt(1);
+         IntBuffer outHeight = stack.mallocInt(1);
+         SDLVideo.SDL_GetWindowSizeInPixels(this.handle, outWidth, outHeight);
+         var4 = new FramebufferSize(Math.max(outWidth.get(0), 1), Math.max(outHeight.get(0), 1));
+      } catch (Throwable var6) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
       }
 
-   }
-
-   private void onEnter(final long handle, final boolean entered) {
-      if (entered) {
-         this.eventHandler.cursorEntered();
+      if (stack != null) {
+         stack.close();
       }
 
+      return var4;
    }
 
-   private void onIconify(final long handle, final boolean iconified) {
+   private void onFocus(final boolean focused) {
+      this.focused = focused;
+   }
+
+   private void onIconified(final boolean iconified) {
       this.iconified = iconified;
+      Minecraft.getInstance().invalidateSurfaceConfiguration();
    }
 
    public void updateFullscreenIfChanged() {
-      if (this.fullscreen != this.actuallyFullscreen) {
-         this.actuallyFullscreen = this.fullscreen;
-
-         try {
-            this.setMode();
-            this.eventHandler.framebufferSizeChanged();
-         } catch (Exception e) {
-            LOGGER.error("Couldn't toggle fullscreen", e);
-         }
+      RenderSystem.assertOnRenderThread();
+      if (this.fullscreenRequested != this.fullscreen) {
+         this.setMode();
+         this.eventHandler.framebufferSizeChanged();
       }
 
    }
@@ -400,7 +435,8 @@ public final class Window implements AutoCloseable {
    }
 
    public void changeFullscreenVideoMode() {
-      if (this.fullscreen && this.dirty) {
+      RenderSystem.assertOnRenderThread();
+      if (this.fullscreenRequested && this.dirty) {
          this.dirty = false;
          this.setMode();
          this.eventHandler.framebufferSizeChanged();
@@ -409,53 +445,146 @@ public final class Window implements AutoCloseable {
    }
 
    private void setMode() {
-      boolean wasFullscreen = GLFW.glfwGetWindowMonitor(this.handle) != 0L;
-      if (this.fullscreen) {
-         Monitor monitor = this.monitorManager.findBestMonitor(this);
-         if (monitor == null) {
-            LOGGER.warn("Failed to find suitable monitor for fullscreen mode");
-            this.fullscreen = false;
-         } else {
-            if (MacosUtil.IS_MACOS) {
-               MacosUtil.exitNativeFullscreen(this);
-            }
+      RenderSystem.assertOnRenderThread();
+      if (this.fullscreenRequested && !this.fullscreen) {
+         this.windowedX = this.x;
+         this.windowedY = this.y;
+         this.windowedWidth = allowedWindowMinSize(this.width, 320);
+         this.windowedHeight = allowedWindowMinSize(this.height, 240);
+      }
 
-            VideoMode mode = monitor.getPreferredVidMode(this.preferredFullscreenVideoMode);
-            if (!wasFullscreen) {
-               this.windowedX = this.x;
-               this.windowedY = this.y;
-               this.windowedWidth = allowedWindowMinSize(this.width);
-               this.windowedHeight = allowedWindowMinSize(this.height);
-            }
-
-            this.x = 0;
-            this.y = 0;
-            this.width = allowedWindowMinSize(mode.getWidth());
-            this.height = allowedWindowMinSize(mode.getHeight());
-            GLFW.glfwSetWindowMonitor(this.handle, monitor.monitor(), this.x, this.y, this.width, this.height, mode.getRefreshRate());
-            if (MacosUtil.IS_MACOS) {
-               MacosUtil.clearResizableBit(this);
-            }
+      boolean success = this.fullscreenRequested ? this.applyFullscreen() : this.applyWindowed();
+      if (!success) {
+         LOGGER.error("Couldn't {} fullscreen: {}", this.fullscreenRequested ? "enter" : "leave", SDLError.SDL_GetError());
+         this.fullscreenRequested = this.fullscreen;
+         this.eventHandler.fullscreenStateChanged(this.fullscreen);
+      } else {
+         if (!SDLVideo.SDL_SyncWindow(this.handle)) {
+            LOGGER.warn("Failed to synchronize SDL window after fullscreen change: {}", SDLError.SDL_GetError());
          }
+
+         this.updateFullscreenState();
+         if (this.useExclusiveFullscreen() && this.fullscreen && !this.isRuntimeExclusiveFullscreen()) {
+            LOGGER.info("Exclusive fullscreen request resolved to borderless desktop");
+         }
+
+      }
+   }
+
+   private boolean isWindowFullscreen() {
+      return (SDLVideo.SDL_GetWindowFlags(this.handle) & 1L) != 0L;
+   }
+
+   private boolean isRuntimeExclusiveFullscreen() {
+      return this.isWindowFullscreen() && SDLVideo.SDL_GetWindowFullscreenMode(this.handle) != null;
+   }
+
+   private boolean applyFullscreen() {
+      return this.applyFullscreenMode() && SDLVideo.SDL_SetWindowFullscreen(this.handle, true);
+   }
+
+   private boolean applyFullscreenMode() {
+      return !this.useExclusiveFullscreen() ? this.applyBorderlessFullscreen() : this.applyExclusiveFullscreen();
+   }
+
+   private boolean applyExclusiveFullscreen() {
+      Monitor monitor = this.monitorManager.findBestMonitor(this);
+      if (monitor == null) {
+         LOGGER.warn("Failed to find suitable monitor for exclusive fullscreen, falling back to borderless fullscreen");
+         return this.applyBorderlessFullscreen();
+      } else {
+         Optional var10000 = this.preferredFullscreenVideoMode;
+         Objects.requireNonNull(monitor);
+         VideoMode videoMode = (VideoMode)var10000.orElseGet(monitor::getPreferredVideoMode);
+         LOGGER.info("Exclusive target {} on monitor {}", videoMode, monitor);
+         MemoryStack stack = MemoryStack.stackPush();
+
+         boolean var8;
+         label47: {
+            try {
+               SDL_DisplayMode mode = SDL_DisplayMode.malloc(stack);
+               if (SDLVideo.SDL_GetClosestFullscreenDisplayMode(monitor.id(), videoMode.getWidth(), videoMode.getHeight(), videoMode.getRefreshRate(), true, mode)) {
+                  var8 = SDLVideo.SDL_SetWindowFullscreenMode(this.handle, mode);
+                  break label47;
+               }
+
+               LOGGER.warn("No matching exclusive fullscreen mode found for {}, falling back to borderless fullscreen", videoMode);
+               var8 = this.applyBorderlessFullscreen();
+            } catch (Throwable var7) {
+               if (stack != null) {
+                  try {
+                     stack.close();
+                  } catch (Throwable var6) {
+                     var7.addSuppressed(var6);
+                  }
+               }
+
+               throw var7;
+            }
+
+            if (stack != null) {
+               stack.close();
+            }
+
+            return var8;
+         }
+
+         if (stack != null) {
+            stack.close();
+         }
+
+         return var8;
+      }
+   }
+
+   private boolean applyWindowed() {
+      if (!SDLVideo.SDL_SetWindowFullscreen(this.handle, false)) {
+         return false;
       } else {
          this.x = this.windowedX;
          this.y = this.windowedY;
-         this.width = allowedWindowMinSize(this.windowedWidth);
-         this.height = allowedWindowMinSize(this.windowedHeight);
-         GLFW.glfwSetWindowMonitor(this.handle, 0L, this.x, this.y, this.width, this.height, -1);
+         this.width = allowedWindowMinSize(this.windowedWidth, 320);
+         this.height = allowedWindowMinSize(this.windowedHeight, 240);
+         if (!SDLVideo.SDL_SetWindowSize(this.handle, this.width, this.height)) {
+            return false;
+         } else {
+            if (!SDLVideo.SDL_SetWindowPosition(this.handle, this.x, this.y)) {
+               LOGGER.debug("Window manager declined window positioning: {}", SDLError.SDL_GetError());
+            }
+
+            return true;
+         }
+      }
+   }
+
+   private boolean applyBorderlessFullscreen() {
+      return SDLVideo.SDL_SetWindowFullscreenMode(this.handle, (SDL_DisplayMode)null);
+   }
+
+   public void setExclusiveFullscreen(final boolean exclusiveFullscreen) {
+      if (this.exclusiveFullscreen != exclusiveFullscreen) {
+         this.exclusiveFullscreen = exclusiveFullscreen;
+         if (this.fullscreenRequested) {
+            this.setMode();
+            this.eventHandler.framebufferSizeChanged();
+         }
       }
 
    }
 
-   public void toggleFullScreen() {
-      this.fullscreen = !this.fullscreen;
+   public void setWindowed(final int width, final int height) {
+      this.windowedWidth = allowedWindowMinSize(width, 320);
+      this.windowedHeight = allowedWindowMinSize(height, 240);
+      this.fullscreenRequested = false;
+      this.setMode();
    }
 
-   public void setWindowed(final int width, final int height) {
-      this.windowedWidth = allowedWindowMinSize(width);
-      this.windowedHeight = allowedWindowMinSize(height);
-      this.fullscreen = false;
-      this.setMode();
+   private boolean useExclusiveFullscreen() {
+      return this.exclusiveFullscreen && this.supportsExclusiveFullscreen();
+   }
+
+   public boolean supportsExclusiveFullscreen() {
+      return Util.getPlatform() != Util.OS.OSX;
    }
 
    public int calculateScale(final int maxScale, final boolean enforceUnicode) {
@@ -470,17 +599,12 @@ public final class Window implements AutoCloseable {
       return scale;
    }
 
-   public void setGuiScale(final int guiScale) {
-      this.guiScale = guiScale;
-      double doubleGuiScale = (double)guiScale;
-      int width = (int)((double)this.framebufferWidth / doubleGuiScale);
-      this.guiScaledWidth = (double)this.framebufferWidth / doubleGuiScale > (double)width ? width + 1 : width;
-      int height = (int)((double)this.framebufferHeight / doubleGuiScale);
-      this.guiScaledHeight = (double)this.framebufferHeight / doubleGuiScale > (double)height ? height + 1 : height;
+   public void setTitle(final String title) {
+      SDLVideo.SDL_SetWindowTitle(this.handle, title);
    }
 
-   public void setTitle(final String title) {
-      GLFW.glfwSetWindowTitle(this.handle, title);
+   public void setWindowMaxSize(final int width, final int height) {
+      SDLVideo.SDL_SetWindowMaximumSize(this.handle, width, height);
    }
 
    public long handle() {
@@ -489,6 +613,10 @@ public final class Window implements AutoCloseable {
 
    public boolean isFullscreen() {
       return this.fullscreen;
+   }
+
+   public void setFullscreen(final boolean fullscreen) {
+      this.fullscreenRequested = fullscreen;
    }
 
    public boolean isIconified() {
@@ -503,12 +631,12 @@ public final class Window implements AutoCloseable {
       return this.framebufferWidth;
    }
 
-   public int getHeight() {
-      return this.framebufferHeight;
-   }
-
    public void setWidth(final int width) {
       this.framebufferWidth = width;
+   }
+
+   public int getHeight() {
+      return this.framebufferHeight;
    }
 
    public void setHeight(final int height) {
@@ -543,35 +671,43 @@ public final class Window implements AutoCloseable {
       return this.guiScale;
    }
 
+   public void setGuiScale(final int guiScale) {
+      this.guiScale = guiScale;
+      this.guiScaledWidth = (int)Math.ceil((double)this.framebufferWidth / (double)guiScale);
+      this.guiScaledHeight = (int)Math.ceil((double)this.framebufferHeight / (double)guiScale);
+   }
+
+   public float getPixelDensity() {
+      float density = SDLVideo.SDL_GetWindowPixelDensity(this.handle);
+      return density > 0.0F ? density : 1.0F;
+   }
+
    public @Nullable Monitor findBestMonitor() {
       return this.monitorManager.findBestMonitor(this);
    }
 
-   public void updateRawMouseInput(final boolean value) {
-      InputConstants.updateRawMouseInput(this, value);
-   }
-
    public void setWindowCloseCallback(final Runnable task) {
-      GLFWWindowCloseCallback prev = GLFW.glfwSetWindowCloseCallback(this.handle, (id) -> task.run());
-      if (prev != null) {
-         prev.free();
-      }
-
-   }
-
-   public boolean isMinimized() {
-      return this.minimized;
+      this.closeCallback = task;
    }
 
    public void setAllowCursorChanges(final boolean value) {
       this.allowCursorChanges = value;
    }
 
+   public void setQuitShortcuts(final boolean value) {
+      this.quitShortcuts = value;
+      SDLHints.SDL_SetHint("SDL_WINDOWS_CLOSE_ON_ALT_F4", value ? "1" : "0");
+   }
+
+   public void setMacCtrlClickEmulatesRightClick(final boolean value) {
+      SDLHints.SDL_SetHint("SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK", value ? "1" : "0");
+   }
+
    public void selectCursor(final CursorType cursor) {
       CursorType effectiveCursor = this.allowCursorChanges ? cursor : CursorType.DEFAULT;
       if (this.currentCursor != effectiveCursor) {
          this.currentCursor = effectiveCursor;
-         effectiveCursor.select(this);
+         effectiveCursor.select();
       }
 
    }
@@ -580,12 +716,14 @@ public final class Window implements AutoCloseable {
       return Math.max(2.5F, (float)this.getWidth() / 1920.0F * 2.5F);
    }
 
-   public GpuBackend backend() {
-      return this.backend;
+   private static int allowedWindowMinSize(final int size, final int minSize) {
+      return Math.max(size, minSize);
    }
 
-   private static int allowedWindowMinSize(final int size) {
-      return Math.max(size, 1);
+   public static record FramebufferSize(int width, int height) {
+      public FramebufferSize {
+         super();
+      }
    }
 
    public static class WindowInitFailed extends SilentInitException {

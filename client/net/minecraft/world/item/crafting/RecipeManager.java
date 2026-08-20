@@ -1,10 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
@@ -38,11 +34,13 @@ public class RecipeManager implements RecipeAccess {
    private SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
    private List<ServerDisplayInfo> allDisplays = List.of();
    private Map<ResourceKey<Recipe<?>>, List<ServerDisplayInfo>> recipeToDisplay = Map.of();
+   private final Collection<RecipeHolder<?>> learnableRecipes;
 
    public RecipeManager(final HolderLookup.Provider registries) {
       super();
       HolderLookup.RegistryLookup<Recipe<?>> recipeRegistries = registries.lookupOrThrow(Registries.RECIPE);
       this.recipes = RecipeMap.create(recipeRegistries);
+      this.learnableRecipes = (Collection)this.recipes.values().stream().filter((r) -> !r.value().isSpecial()).collect(Collectors.toUnmodifiableList());
    }
 
    public void finalizeRecipeLoading(final FeatureFlagSet enabledFlags) {
@@ -120,6 +118,10 @@ public class RecipeManager implements RecipeAccess {
       return this.recipes.values();
    }
 
+   public Collection<RecipeHolder<?>> getLearnableRecipes() {
+      return this.learnableRecipes;
+   }
+
    public @Nullable ServerDisplayInfo getRecipeFromDisplay(final RecipeDisplayId id) {
       int index = id.index();
       return index >= 0 && index < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(index) : null;
@@ -131,12 +133,6 @@ public class RecipeManager implements RecipeAccess {
          recipes.forEach((e) -> output.accept(e.display));
       }
 
-   }
-
-   @VisibleForTesting
-   protected static RecipeHolder<?> fromJson(final ResourceKey<Recipe<?>> id, final JsonObject object, final HolderLookup.Provider registries) {
-      Recipe<?> recipe = (Recipe)Recipe.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), object).getOrThrow(JsonParseException::new);
-      return new RecipeHolder(id, recipe);
    }
 
    public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> type) {

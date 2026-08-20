@@ -26,8 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.PackedBitStorage;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -46,6 +49,20 @@ public class ChunkPalettedStorageFix extends DataFix {
 
    public ChunkPalettedStorageFix(final Schema outputSchema, final boolean changesType) {
       super(outputSchema, changesType);
+   }
+
+   private static Dynamic<?> legacyBlockState(final String id, final Map<String, String> properties) {
+      Dynamic<Tag> dynamic = new Dynamic(NbtOps.INSTANCE, new CompoundTag());
+      Dynamic<Tag> blockState = dynamic.set("Name", dynamic.createString(id));
+      if (!properties.isEmpty()) {
+         blockState = blockState.set("Properties", dynamic.createMap((Map)properties.entrySet().stream().collect(Collectors.toMap((entry) -> dynamic.createString((String)entry.getKey()), (entry) -> dynamic.createString((String)entry.getValue())))));
+      }
+
+      return blockState;
+   }
+
+   private static Dynamic<?> legacyBlockState(final String id) {
+      return legacyBlockState(id, Map.of());
    }
 
    public static String getName(final Dynamic<?> state) {
@@ -106,39 +123,39 @@ public class ChunkPalettedStorageFix extends DataFix {
    private static class MappingConstants {
       private static final BitSet VIRTUAL = new BitSet(256);
       private static final BitSet FIX = new BitSet(256);
-      private static final Dynamic<?> PUMPKIN = ExtraDataFixUtils.blockState("minecraft:pumpkin");
-      private static final Dynamic<?> SNOWY_PODZOL = ExtraDataFixUtils.blockState("minecraft:podzol", Map.of("snowy", "true"));
-      private static final Dynamic<?> SNOWY_GRASS = ExtraDataFixUtils.blockState("minecraft:grass_block", Map.of("snowy", "true"));
-      private static final Dynamic<?> SNOWY_MYCELIUM = ExtraDataFixUtils.blockState("minecraft:mycelium", Map.of("snowy", "true"));
-      private static final Dynamic<?> UPPER_SUNFLOWER = ExtraDataFixUtils.blockState("minecraft:sunflower", Map.of("half", "upper"));
-      private static final Dynamic<?> UPPER_LILAC = ExtraDataFixUtils.blockState("minecraft:lilac", Map.of("half", "upper"));
-      private static final Dynamic<?> UPPER_TALL_GRASS = ExtraDataFixUtils.blockState("minecraft:tall_grass", Map.of("half", "upper"));
-      private static final Dynamic<?> UPPER_LARGE_FERN = ExtraDataFixUtils.blockState("minecraft:large_fern", Map.of("half", "upper"));
-      private static final Dynamic<?> UPPER_ROSE_BUSH = ExtraDataFixUtils.blockState("minecraft:rose_bush", Map.of("half", "upper"));
-      private static final Dynamic<?> UPPER_PEONY = ExtraDataFixUtils.blockState("minecraft:peony", Map.of("half", "upper"));
+      private static final Dynamic<?> PUMPKIN = ChunkPalettedStorageFix.legacyBlockState("minecraft:pumpkin");
+      private static final Dynamic<?> SNOWY_PODZOL = ChunkPalettedStorageFix.legacyBlockState("minecraft:podzol", Map.of("snowy", "true"));
+      private static final Dynamic<?> SNOWY_GRASS = ChunkPalettedStorageFix.legacyBlockState("minecraft:grass_block", Map.of("snowy", "true"));
+      private static final Dynamic<?> SNOWY_MYCELIUM = ChunkPalettedStorageFix.legacyBlockState("minecraft:mycelium", Map.of("snowy", "true"));
+      private static final Dynamic<?> UPPER_SUNFLOWER = ChunkPalettedStorageFix.legacyBlockState("minecraft:sunflower", Map.of("half", "upper"));
+      private static final Dynamic<?> UPPER_LILAC = ChunkPalettedStorageFix.legacyBlockState("minecraft:lilac", Map.of("half", "upper"));
+      private static final Dynamic<?> UPPER_TALL_GRASS = ChunkPalettedStorageFix.legacyBlockState("minecraft:tall_grass", Map.of("half", "upper"));
+      private static final Dynamic<?> UPPER_LARGE_FERN = ChunkPalettedStorageFix.legacyBlockState("minecraft:large_fern", Map.of("half", "upper"));
+      private static final Dynamic<?> UPPER_ROSE_BUSH = ChunkPalettedStorageFix.legacyBlockState("minecraft:rose_bush", Map.of("half", "upper"));
+      private static final Dynamic<?> UPPER_PEONY = ChunkPalettedStorageFix.legacyBlockState("minecraft:peony", Map.of("half", "upper"));
       private static final Map<String, Dynamic<?>> FLOWER_POT_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
-         map.put("minecraft:air0", ExtraDataFixUtils.blockState("minecraft:flower_pot"));
-         map.put("minecraft:red_flower0", ExtraDataFixUtils.blockState("minecraft:potted_poppy"));
-         map.put("minecraft:red_flower1", ExtraDataFixUtils.blockState("minecraft:potted_blue_orchid"));
-         map.put("minecraft:red_flower2", ExtraDataFixUtils.blockState("minecraft:potted_allium"));
-         map.put("minecraft:red_flower3", ExtraDataFixUtils.blockState("minecraft:potted_azure_bluet"));
-         map.put("minecraft:red_flower4", ExtraDataFixUtils.blockState("minecraft:potted_red_tulip"));
-         map.put("minecraft:red_flower5", ExtraDataFixUtils.blockState("minecraft:potted_orange_tulip"));
-         map.put("minecraft:red_flower6", ExtraDataFixUtils.blockState("minecraft:potted_white_tulip"));
-         map.put("minecraft:red_flower7", ExtraDataFixUtils.blockState("minecraft:potted_pink_tulip"));
-         map.put("minecraft:red_flower8", ExtraDataFixUtils.blockState("minecraft:potted_oxeye_daisy"));
-         map.put("minecraft:yellow_flower0", ExtraDataFixUtils.blockState("minecraft:potted_dandelion"));
-         map.put("minecraft:sapling0", ExtraDataFixUtils.blockState("minecraft:potted_oak_sapling"));
-         map.put("minecraft:sapling1", ExtraDataFixUtils.blockState("minecraft:potted_spruce_sapling"));
-         map.put("minecraft:sapling2", ExtraDataFixUtils.blockState("minecraft:potted_birch_sapling"));
-         map.put("minecraft:sapling3", ExtraDataFixUtils.blockState("minecraft:potted_jungle_sapling"));
-         map.put("minecraft:sapling4", ExtraDataFixUtils.blockState("minecraft:potted_acacia_sapling"));
-         map.put("minecraft:sapling5", ExtraDataFixUtils.blockState("minecraft:potted_dark_oak_sapling"));
-         map.put("minecraft:red_mushroom0", ExtraDataFixUtils.blockState("minecraft:potted_red_mushroom"));
-         map.put("minecraft:brown_mushroom0", ExtraDataFixUtils.blockState("minecraft:potted_brown_mushroom"));
-         map.put("minecraft:deadbush0", ExtraDataFixUtils.blockState("minecraft:potted_dead_bush"));
-         map.put("minecraft:tallgrass2", ExtraDataFixUtils.blockState("minecraft:potted_fern"));
-         map.put("minecraft:cactus0", ExtraDataFixUtils.blockState("minecraft:potted_cactus"));
+         map.put("minecraft:air0", ChunkPalettedStorageFix.legacyBlockState("minecraft:flower_pot"));
+         map.put("minecraft:red_flower0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_poppy"));
+         map.put("minecraft:red_flower1", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_blue_orchid"));
+         map.put("minecraft:red_flower2", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_allium"));
+         map.put("minecraft:red_flower3", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_azure_bluet"));
+         map.put("minecraft:red_flower4", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_red_tulip"));
+         map.put("minecraft:red_flower5", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_orange_tulip"));
+         map.put("minecraft:red_flower6", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_white_tulip"));
+         map.put("minecraft:red_flower7", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_pink_tulip"));
+         map.put("minecraft:red_flower8", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_oxeye_daisy"));
+         map.put("minecraft:yellow_flower0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_dandelion"));
+         map.put("minecraft:sapling0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_oak_sapling"));
+         map.put("minecraft:sapling1", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_spruce_sapling"));
+         map.put("minecraft:sapling2", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_birch_sapling"));
+         map.put("minecraft:sapling3", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_jungle_sapling"));
+         map.put("minecraft:sapling4", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_acacia_sapling"));
+         map.put("minecraft:sapling5", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_dark_oak_sapling"));
+         map.put("minecraft:red_mushroom0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_red_mushroom"));
+         map.put("minecraft:brown_mushroom0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_brown_mushroom"));
+         map.put("minecraft:deadbush0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_dead_bush"));
+         map.put("minecraft:tallgrass2", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_fern"));
+         map.put("minecraft:cactus0", ChunkPalettedStorageFix.legacyBlockState("minecraft:potted_cactus"));
       });
       private static final Map<String, Dynamic<?>> SKULL_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
          mapSkull(map, 0, "skeleton", "skull");
@@ -159,8 +176,8 @@ public class ChunkPalettedStorageFix extends DataFix {
       });
       private static final Map<String, Dynamic<?>> NOTE_BLOCK_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
          for(int i = 0; i < 26; ++i) {
-            map.put("true" + i, ExtraDataFixUtils.blockState("minecraft:note_block", Map.of("powered", "true", "note", String.valueOf(i))));
-            map.put("false" + i, ExtraDataFixUtils.blockState("minecraft:note_block", Map.of("powered", "false", "note", String.valueOf(i))));
+            map.put("true" + i, ChunkPalettedStorageFix.legacyBlockState("minecraft:note_block", Map.of("powered", "true", "note", String.valueOf(i))));
+            map.put("false" + i, ChunkPalettedStorageFix.legacyBlockState("minecraft:note_block", Map.of("powered", "false", "note", String.valueOf(i))));
          }
 
       });
@@ -211,109 +228,109 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
 
       private static void mapSkull(final Map<String, Dynamic<?>> map, final int i, final String name, final String type) {
-         map.put(i + "north", ExtraDataFixUtils.blockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "north")));
-         map.put(i + "east", ExtraDataFixUtils.blockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "east")));
-         map.put(i + "south", ExtraDataFixUtils.blockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "south")));
-         map.put(i + "west", ExtraDataFixUtils.blockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "west")));
+         map.put(i + "north", ChunkPalettedStorageFix.legacyBlockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "north")));
+         map.put(i + "east", ChunkPalettedStorageFix.legacyBlockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "east")));
+         map.put(i + "south", ChunkPalettedStorageFix.legacyBlockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "south")));
+         map.put(i + "west", ChunkPalettedStorageFix.legacyBlockState("minecraft:" + name + "_wall_" + type, Map.of("facing", "west")));
 
          for(int rot = 0; rot < 16; ++rot) {
-            map.put("" + i + rot, ExtraDataFixUtils.blockState("minecraft:" + name + "_" + type, Map.of("rotation", String.valueOf(rot))));
+            map.put("" + i + rot, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + name + "_" + type, Map.of("rotation", String.valueOf(rot))));
          }
 
       }
 
       private static void mapDoor(final Map<String, Dynamic<?>> map, final String type) {
          String id = "minecraft:" + type;
-         map.put("minecraft:" + type + "eastlowerleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "eastlowerleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "eastlowerlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "eastlowerlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "eastlowerrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "eastlowerrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "eastlowerrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "eastlowerrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "eastupperleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "eastupperleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "eastupperlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "eastupperlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "eastupperrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "eastupperrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "eastupperrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "eastupperrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "northlowerleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "northlowerleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "northlowerlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "northlowerlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "northlowerrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "northlowerrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "northlowerrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "northlowerrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "northupperleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "northupperleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "northupperlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "northupperlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "northupperrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "northupperrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "northupperrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "northupperrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "southlowerleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "southlowerleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "southlowerlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "southlowerlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "southlowerrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "southlowerrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "southlowerrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "southlowerrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "southupperleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "southupperleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "southupperlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "southupperlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "southupperrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "southupperrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "southupperrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "southupperrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "westlowerleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "westlowerleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "westlowerlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "westlowerlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "westlowerrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "westlowerrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "westlowerrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "westlowerrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "westupperleftfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "westupperleftfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "westupperlefttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "westupperlefttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
-         map.put("minecraft:" + type + "westupperrightfalsefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
-         map.put("minecraft:" + type + "westupperrightfalsetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
-         map.put("minecraft:" + type + "westupperrighttruefalse", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
-         map.put("minecraft:" + type + "westupperrighttruetrue", ExtraDataFixUtils.blockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "eastlowerleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "eastlowerleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "eastlowerlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "eastlowerlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "eastlowerrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "eastlowerrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "eastlowerrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "eastlowerrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "eastupperleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "eastupperleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "eastupperlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "eastupperlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "eastupperrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "eastupperrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "eastupperrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "eastupperrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "northlowerleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "northlowerleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "northlowerlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "northlowerlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "northlowerrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "northlowerrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "northlowerrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "northlowerrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "northupperleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "northupperleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "northupperlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "northupperlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "northupperrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "northupperrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "northupperrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "northupperrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "southlowerleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "southlowerleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "southlowerlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "southlowerlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "southlowerrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "southlowerrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "southlowerrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "southlowerrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "southupperleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "southupperleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "southupperlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "southupperlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "southupperrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "southupperrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "southupperrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "southupperrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "westlowerleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "westlowerleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "westlowerlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "westlowerlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "westlowerrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "westlowerrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "westlowerrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "westlowerrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "westupperleftfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "westupperleftfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "westupperlefttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "westupperlefttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "true")));
+         map.put("minecraft:" + type + "westupperrightfalsefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "false")));
+         map.put("minecraft:" + type + "westupperrightfalsetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "true")));
+         map.put("minecraft:" + type + "westupperrighttruefalse", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "false")));
+         map.put("minecraft:" + type + "westupperrighttruetrue", ChunkPalettedStorageFix.legacyBlockState(id, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "true")));
       }
 
       private static void addBeds(final Map<String, Dynamic<?>> map, final int colorId, final String color) {
-         map.put("southfalsefoot" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "false", "part", "foot")));
-         map.put("westfalsefoot" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "false", "part", "foot")));
-         map.put("northfalsefoot" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "false", "part", "foot")));
-         map.put("eastfalsefoot" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "false", "part", "foot")));
-         map.put("southfalsehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "false", "part", "head")));
-         map.put("westfalsehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "false", "part", "head")));
-         map.put("northfalsehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "false", "part", "head")));
-         map.put("eastfalsehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "false", "part", "head")));
-         map.put("southtruehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "true", "part", "head")));
-         map.put("westtruehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "true", "part", "head")));
-         map.put("northtruehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "true", "part", "head")));
-         map.put("easttruehead" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "true", "part", "head")));
+         map.put("southfalsefoot" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "false", "part", "foot")));
+         map.put("westfalsefoot" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "false", "part", "foot")));
+         map.put("northfalsefoot" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "false", "part", "foot")));
+         map.put("eastfalsefoot" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "false", "part", "foot")));
+         map.put("southfalsehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "false", "part", "head")));
+         map.put("westfalsehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "false", "part", "head")));
+         map.put("northfalsehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "false", "part", "head")));
+         map.put("eastfalsehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "false", "part", "head")));
+         map.put("southtruehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "south", "occupied", "true", "part", "head")));
+         map.put("westtruehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "west", "occupied", "true", "part", "head")));
+         map.put("northtruehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "north", "occupied", "true", "part", "head")));
+         map.put("easttruehead" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_bed", Map.of("facing", "east", "occupied", "true", "part", "head")));
       }
 
       private static void addBanners(final Map<String, Dynamic<?>> map, final int colorId, final String color) {
          for(int i = 0; i < 16; ++i) {
-            map.put(i + "_" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_banner", Map.of("rotation", String.valueOf(i))));
+            map.put(i + "_" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_banner", Map.of("rotation", String.valueOf(i))));
          }
 
-         map.put("north_" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_wall_banner", Map.of("facing", "north")));
-         map.put("south_" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_wall_banner", Map.of("facing", "south")));
-         map.put("west_" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_wall_banner", Map.of("facing", "west")));
-         map.put("east_" + colorId, ExtraDataFixUtils.blockState("minecraft:" + color + "_wall_banner", Map.of("facing", "east")));
+         map.put("north_" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_wall_banner", Map.of("facing", "north")));
+         map.put("south_" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_wall_banner", Map.of("facing", "south")));
+         map.put("west_" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_wall_banner", Map.of("facing", "west")));
+         map.put("east_" + colorId, ChunkPalettedStorageFix.legacyBlockState("minecraft:" + color + "_wall_banner", Map.of("facing", "east")));
       }
 
       static {
@@ -377,7 +394,7 @@ public class ChunkPalettedStorageFix extends DataFix {
          VIRTUAL.set(132);
          VIRTUAL.set(139);
          VIRTUAL.set(199);
-         AIR = ExtraDataFixUtils.blockState("minecraft:air");
+         AIR = ChunkPalettedStorageFix.legacyBlockState("minecraft:air");
       }
    }
 

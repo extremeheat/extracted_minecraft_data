@@ -9,8 +9,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 
 public class GameTestBatchFactory {
@@ -22,12 +24,18 @@ public class GameTestBatchFactory {
    }
 
    public static List<GameTestBatch> divideIntoBatches(final Collection<Holder.Reference<GameTestInstance>> allTests, final TestDecorator decorator, final MinecraftServer server) {
-      Map<Holder<TestEnvironmentDefinition<?>>, List<Holder.Reference<GameTestInstance>>> testsPerBatch = (Map)allTests.stream().collect(Collectors.groupingBy((instance) -> ((GameTestInstance)instance.value()).batch()));
+      Map<BatchKey, List<Holder.Reference<GameTestInstance>>> testsPerBatch = (Map)allTests.stream().collect(Collectors.groupingBy((instance) -> new BatchKey(((GameTestInstance)instance.value()).batch(), ((GameTestInstance)instance.value()).info().dimension())));
       return testsPerBatch.entrySet().stream().flatMap((e) -> {
-         Holder<TestEnvironmentDefinition<?>> batchKey = (Holder)e.getKey();
-         ServerLevel level = server.getLevel(TestFinder.Builder.levelForDimension(batchKey.value()));
-         List<GameTestInfo> testsInBatch = ((List)e.getValue()).stream().flatMap((test) -> decorator.decorate(test, level)).toList();
-         return Streams.mapWithIndex(Lists.partition(testsInBatch, 50).stream(), (tests, index) -> toGameTestBatch(tests, batchKey, (int)index));
+         BatchKey key = (BatchKey)e.getKey();
+         Holder<TestEnvironmentDefinition<?>> batchKey = key.environment();
+         ResourceKey<Level> dimensionKey = key.dimension();
+         ServerLevel level = server.getLevel(dimensionKey);
+         if (level == null) {
+            throw new IllegalStateException("Missing level for dimension: " + String.valueOf(dimensionKey.identifier()));
+         } else {
+            List<GameTestInfo> testsInBatch = ((List)e.getValue()).stream().flatMap((test) -> decorator.decorate(test, level)).toList();
+            return Streams.mapWithIndex(Lists.partition(testsInBatch, 50).stream(), (tests, index) -> toGameTestBatch(tests, batchKey, (int)index, dimensionKey));
+         }
       }).toList();
    }
 
@@ -37,17 +45,23 @@ public class GameTestBatchFactory {
 
    public static GameTestRunner.GameTestBatcher fromGameTestInfo(final int maxTestsPerBatch) {
       return (gameTestInfos) -> {
-         Map<Holder<TestEnvironmentDefinition<?>>, List<GameTestInfo>> testFunctionsPerBatch = (Map)gameTestInfos.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((gameTestInfo) -> gameTestInfo.getTest().batch()));
-         return testFunctionsPerBatch.entrySet().stream().flatMap((e) -> {
-            Holder<TestEnvironmentDefinition<?>> batchKey = (Holder)e.getKey();
+         Map<BatchKey, List<GameTestInfo>> testsPerBatch = (Map)gameTestInfos.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((info) -> new BatchKey(info.getTest().batch(), info.getTest().info().dimension())));
+         return testsPerBatch.entrySet().stream().flatMap((e) -> {
+            BatchKey key = (BatchKey)e.getKey();
             List<GameTestInfo> testsInBatch = (List)e.getValue();
-            return Streams.mapWithIndex(Lists.partition(testsInBatch, maxTestsPerBatch).stream(), (tests, index) -> toGameTestBatch(List.copyOf(tests), batchKey, (int)index));
+            return Streams.mapWithIndex(Lists.partition(testsInBatch, maxTestsPerBatch).stream(), (tests, index) -> toGameTestBatch(List.copyOf(tests), key.environment(), (int)index, key.dimension()));
          }).toList();
       };
    }
 
-   public static GameTestBatch toGameTestBatch(final Collection<GameTestInfo> tests, final Holder<TestEnvironmentDefinition<?>> batch, final int counter) {
-      return new GameTestBatch(counter, tests, batch);
+   public static GameTestBatch toGameTestBatch(final Collection<GameTestInfo> tests, final Holder<TestEnvironmentDefinition<?>> batch, final int counter, final ResourceKey<Level> dimension) {
+      return new GameTestBatch(counter, tests, batch, dimension);
+   }
+
+   private static record BatchKey(Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Level> dimension) {
+      private BatchKey {
+         super();
+      }
    }
 
    @FunctionalInterface

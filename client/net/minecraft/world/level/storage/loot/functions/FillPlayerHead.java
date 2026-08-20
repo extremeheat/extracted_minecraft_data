@@ -2,8 +2,9 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.player.Player;
@@ -17,8 +18,8 @@ public class FillPlayerHead extends LootItemConditionalFunction {
    public static final MapCodec<FillPlayerHead> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter((f) -> f.entityTarget)).apply(i, FillPlayerHead::new));
    private final LootContext.EntityTarget entityTarget;
 
-   public FillPlayerHead(final List<LootItemCondition> predicates, final LootContext.EntityTarget entityTarget) {
-      super(predicates);
+   public FillPlayerHead(final Optional<Holder<LootItemCondition>> condition, final LootContext.EntityTarget entityTarget) {
+      super(condition);
       this.entityTarget = entityTarget;
    }
 

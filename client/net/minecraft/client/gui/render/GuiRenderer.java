@@ -340,15 +340,15 @@ public class GuiRenderer implements AutoCloseable {
          }
 
          if (draw.textureSetup.texure0() != null) {
-            renderPass.bindTexture("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
+            renderPass.setUniform("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
          }
 
          if (draw.textureSetup.texure1() != null) {
-            renderPass.bindTexture("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
+            renderPass.setUniform("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
          }
 
          if (draw.textureSetup.texure2() != null) {
-            renderPass.bindTexture("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
+            renderPass.setUniform("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
          }
 
          renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());

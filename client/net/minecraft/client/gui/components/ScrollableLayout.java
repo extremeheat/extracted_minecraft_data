@@ -110,6 +110,10 @@ public class ScrollableLayout implements Layout {
       return this.container.getHeight();
    }
 
+   public double getScrollAmount() {
+      return this.container.scrollAmount();
+   }
+
    private class Container extends AbstractContainerWidget {
       private final Minecraft minecraft;
       private final List<AbstractWidget> children;

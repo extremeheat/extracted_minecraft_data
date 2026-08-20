@@ -109,21 +109,21 @@ public class OptimizeWorldScreen extends Screen {
       int y0 = this.height / 4 + 100;
       int y1 = y0 + 10;
       Font var10001 = this.font;
-      Component var10002 = this.upgrader.getStatus();
+      MutableComponent var10002 = this.upgrader.getStatus();
       int var10003 = this.width / 2;
       Objects.requireNonNull(this.font);
-      graphics.centeredText(var10001, var10002, var10003, y0 - 9 - 2, -6250336);
+      graphics.centeredText(var10001, (Component)var10002, var10003, y0 - 9 - 2, -6250336);
       if (this.upgrader.getTotalChunks() > 0) {
          graphics.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, -16777216);
          graphics.text(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), x0, 40, -6250336);
          var10001 = this.font;
-         MutableComponent var20 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
+         var10002 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
          Objects.requireNonNull(this.font);
-         graphics.text(var10001, (Component)var20, x0, 40 + 9 + 3, -6250336);
+         graphics.text(var10001, (Component)var10002, x0, 40 + 9 + 3, -6250336);
          var10001 = this.font;
-         var20 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
+         var10002 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
          Objects.requireNonNull(this.font);
-         graphics.text(var10001, (Component)var20, x0, 40 + (9 + 3) * 2, -6250336);
+         graphics.text(var10001, (Component)var10002, x0, 40 + (9 + 3) * 2, -6250336);
          int progress = 0;
 
          for(ResourceKey<Level> dimension : this.upgrader.levels()) {

@@ -91,7 +91,7 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (level instanceof ServerLevel serverLevel) {
          Optional<? extends Holder<Feature>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
          if (featureHolder.isPresent()) {
@@ -111,11 +111,11 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
       }
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (double)random.nextFloat() < 0.4;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.growMushroom(level, pos, state, random);
    }
 }

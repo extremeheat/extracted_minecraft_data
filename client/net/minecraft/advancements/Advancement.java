@@ -12,7 +12,6 @@ import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -22,10 +21,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
-import org.jspecify.annotations.Nullable;
 
 public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> display, AdvancementRewards rewards, Map<String, Criterion<?>> criteria, AdvancementRequirements requirements, boolean sendsTelemetryEvent, Optional<Component> name) {
    private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC;
@@ -41,30 +39,29 @@ public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> dis
    }
 
    private static DataResult<Advancement> validate(final Advancement advancement) {
-      return advancement.requirements().validate(advancement.criteria().keySet()).map((r) -> advancement);
+      boolean isRoot = advancement.parent.isEmpty();
+      boolean isVisible = advancement.display.isPresent();
+      boolean hasBackground = isVisible && ((DisplayInfo)advancement.display.get()).background().isPresent();
+      if (isRoot && isVisible && !hasBackground) {
+         return DataResult.error(() -> "Visible advancement roots must have background");
+      } else if (!isRoot && hasBackground) {
+         return DataResult.error(() -> "Only advancement roots can have background");
+      } else {
+         DataResult<AdvancementRequirements> requirementValidation = advancement.requirements().validate(advancement.criteria().keySet());
+         return requirementValidation.isError() ? requirementValidation.map((var1) -> advancement) : DataResult.success(advancement);
+      }
    }
 
    private static Component decorateName(final DisplayInfo display) {
-      Component displayTitle = display.getTitle();
-      ChatFormatting color = display.getType().getChatColor();
-      Component tooltip = ComponentUtils.mergeStyles(displayTitle.copy(), Style.EMPTY.withColor(color)).append("\n").append(display.getDescription());
+      Component displayTitle = display.title();
+      ChatFormatting color = display.type().getChatColor();
+      Component tooltip = ComponentUtils.mergeStyles(displayTitle.copy(), Style.EMPTY.withColor(color)).append("\n").append(display.description());
       Component title = displayTitle.copy().withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(tooltip))));
       return ComponentUtils.wrapInSquareBrackets(title).withStyle(color);
    }
 
    public static Component name(final AdvancementHolder holder) {
       return (Component)holder.value().name().orElseGet(() -> Component.literal(holder.id().toString()));
-   }
-
-   private void write(final RegistryFriendlyByteBuf output) {
-      output.writeOptional(this.parent, FriendlyByteBuf::writeIdentifier);
-      DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).encode(output, this.display);
-      this.requirements.write(output);
-      output.writeBoolean(this.sendsTelemetryEvent);
-   }
-
-   private static Advancement read(final RegistryFriendlyByteBuf input) {
-      return new Advancement(input.readOptional(FriendlyByteBuf::readIdentifier), (Optional)DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).decode(input), AdvancementRewards.EMPTY, Map.of(), new AdvancementRequirements(input), input.readBoolean());
    }
 
    public boolean isRoot() {
@@ -84,7 +81,7 @@ public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> dis
             AdvancementRequirements requirements = (AdvancementRequirements)requirementsOpt.orElseGet(() -> AdvancementRequirements.allOf(criteria.keySet()));
             return new Advancement(parent, display, rewards, criteria, requirements, sendsTelemetryEvent);
          })).validate(Advancement::validate);
-      STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, Advancement>ofMember(Advancement::write, Advancement::read);
+      STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), Advancement::parent, DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional), Advancement::display, AdvancementRequirements.STREAM_CODEC, Advancement::requirements, ByteBufCodecs.BOOL, Advancement::sendsTelemetryEvent, (parent, display, requirements, sendsTelemetryEvent) -> new Advancement(parent, display, AdvancementRewards.EMPTY, Map.of(), requirements, sendsTelemetryEvent));
    }
 
    public static class Builder {
@@ -126,12 +123,20 @@ public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> dis
          return this;
       }
 
-      public Builder display(final ItemStackTemplate icon, final Component title, final Component description, final @Nullable Identifier background, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
-         return this.display(new DisplayInfo(icon, title, description, Optional.ofNullable(background).map(ClientAsset.ResourceTexture::new), frame, showToast, announceChat, hidden));
+      public Builder rootDisplay(final ItemStackTemplate icon, final Component title, final Component description, final Identifier background, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
+         return this.display(new DisplayInfo(icon, title, description, Optional.of(new ClientAsset.ResourceTexture(background)), frame, showToast, announceChat, hidden));
       }
 
-      public Builder display(final ItemLike icon, final Component title, final Component description, final @Nullable Identifier background, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
-         return this.display(new DisplayInfo(new ItemStackTemplate(icon.asItem()), title, description, Optional.ofNullable(background).map(ClientAsset.ResourceTexture::new), frame, showToast, announceChat, hidden));
+      public Builder rootDisplay(final Item icon, final Component title, final Component description, final Identifier background, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
+         return this.rootDisplay(new ItemStackTemplate(icon), title, description, background, frame, showToast, announceChat, hidden);
+      }
+
+      public Builder display(final ItemStackTemplate icon, final Component title, final Component description, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
+         return this.display(new DisplayInfo(icon, title, description, Optional.empty(), frame, showToast, announceChat, hidden));
+      }
+
+      public Builder display(final Item icon, final Component title, final Component description, final AdvancementType frame, final boolean showToast, final boolean announceChat, final boolean hidden) {
+         return this.display(new ItemStackTemplate(icon), title, description, frame, showToast, announceChat, hidden);
       }
 
       public Builder display(final DisplayInfo display) {

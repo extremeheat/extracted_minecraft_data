@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -31,8 +32,8 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
    private final List<Modifier> modifiers;
    private final boolean replace;
 
-   private SetAttributesFunction(final List<LootItemCondition> predicates, final List<Modifier> modifiers, final boolean replace) {
-      super(predicates);
+   private SetAttributesFunction(final Optional<Holder<LootItemCondition>> condition, final List<Modifier> modifiers, final boolean replace) {
+      super(condition);
       this.modifiers = List.copyOf(modifiers);
       this.replace = replace;
    }
@@ -61,13 +62,13 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       for(Modifier modifier : this.modifiers) {
          EquipmentSlotGroup slot = (EquipmentSlotGroup)Util.getRandom(modifier.slots, random);
-         itemModifiers = itemModifiers.withModifierAdded(modifier.attribute, new AttributeModifier(modifier.id, (double)modifier.amount.getFloat(context), modifier.operation), slot);
+         itemModifiers = itemModifiers.withModifierAdded(modifier.attribute, new AttributeModifier(modifier.id, (double)((NumberProvider)modifier.amount.value()).getFloat(context), modifier.operation), slot);
       }
 
       return itemModifiers;
    }
 
-   public static ModifierBuilder modifier(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final NumberProvider amount) {
+   public static ModifierBuilder modifier(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final Holder<NumberProvider> amount) {
       return new ModifierBuilder(id, attribute, operation, amount);
    }
 
@@ -79,10 +80,10 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       private final Identifier id;
       private final Holder<Attribute> attribute;
       private final AttributeModifier.Operation operation;
-      private final NumberProvider amount;
+      private final Holder<NumberProvider> amount;
       private final Set<EquipmentSlotGroup> slots = EnumSet.noneOf(EquipmentSlotGroup.class);
 
-      public ModifierBuilder(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final NumberProvider amount) {
+      public ModifierBuilder(final Identifier id, final Holder<Attribute> attribute, final AttributeModifier.Operation operation, final Holder<NumberProvider> amount) {
          super();
          this.id = id;
          this.attribute = attribute;
@@ -124,11 +125,11 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new SetAttributesFunction(this.getConditions(), this.modifiers, this.replace);
+         return new SetAttributesFunction(this.getCondition(), this.modifiers, this.replace);
       }
    }
 
-   private static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots) implements LootContextUser {
+   private static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, Holder<NumberProvider> amount, List<EquipmentSlotGroup> slots) implements LootContextUser {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC;
       public static final Codec<Modifier> CODEC;
 
@@ -138,12 +139,12 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       public void validate(final ValidationContext context) {
          LootContextUser.super.validate(context);
-         Validatable.validate(context, "amount", this.amount);
+         Validatable.validateHolder(context, "amount", this.amount);
       }
 
       static {
          SLOTS_CODEC = ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(EquipmentSlotGroup.CODEC));
-         CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.DIRECT_CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(i, Modifier::new));
+         CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(i, Modifier::new));
       }
    }
 }

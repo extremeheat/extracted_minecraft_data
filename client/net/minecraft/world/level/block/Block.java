@@ -31,6 +31,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -240,8 +241,8 @@ public class Block extends BlockBehaviour implements ItemLike {
       return state.getBlock() instanceof LeavesBlock || state.is(Blocks.BARRIER) || state.is(Blocks.CARVED_PUMPKIN) || state.is(Blocks.JACK_O_LANTERN) || state.is(Blocks.MELON) || state.is(Blocks.PUMPKIN) || state.is(BlockTags.SHULKER_BOXES);
    }
 
-   public static boolean dropFromBlockInteractLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final BlockState interactedBlockState, final @Nullable BlockEntity interactedBlockEntity, final @Nullable ItemInstance tool, final @Nullable Entity interactingEntity, final BiConsumer<ServerLevel, ItemStack> consumer) {
-      return dropFromLootTable(level, key, (params) -> params.withParameter(LootContextParams.BLOCK_STATE, interactedBlockState).withOptionalParameter(LootContextParams.BLOCK_ENTITY, interactedBlockEntity).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, interactingEntity).withOptionalParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.BLOCK_INTERACT), consumer);
+   public static boolean dropFromBlockInteractLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final BlockPos interactedBlockPos, final BlockState interactedBlockState, final @Nullable BlockEntity interactedBlockEntity, final @Nullable ItemInstance tool, final @Nullable Entity interactingEntity, final BiConsumer<ServerLevel, ItemStack> consumer) {
+      return dropFromLootTable(level, key, (params) -> params.withParameter(LootContextParams.BLOCK_STATE, interactedBlockState).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(interactedBlockPos)).withOptionalParameter(LootContextParams.BLOCK_ENTITY, interactedBlockEntity).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, interactingEntity).withOptionalParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.BLOCK_INTERACT), consumer);
    }
 
    protected static boolean dropFromLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final Function<LootParams.Builder, LootParams> paramsBuilder, final BiConsumer<ServerLevel, ItemStack> consumer) {
@@ -403,7 +404,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.defaultBlockState();
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       player.awardStat(Stats.BLOCK_MINED.get(this));
       player.causeFoodExhaustion(0.005F);
       dropResources(state, level, pos, blockEntity, player, destroyedWith);

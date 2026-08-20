@@ -272,7 +272,7 @@ public class SpreadPlayersCommand {
       public boolean isSafe(final BlockGetter level, final int maxHeight) {
          BlockPos pos = BlockPos.containing(this.x, (double)(this.getSpawnY(level, maxHeight) - 1), this.z);
          BlockState state = level.getBlockState(pos);
-         return pos.getY() < maxHeight && !state.liquid() && !state.is(BlockTags.FIRE);
+         return pos.getY() < maxHeight && !state.liquid() && state.is(BlockTags.ENTITIES_CAN_TELEPORT_TO);
       }
 
       public void randomize(final RandomSource random, final double minX, final double minZ, final double maxX, final double maxZ) {

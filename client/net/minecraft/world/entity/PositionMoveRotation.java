@@ -17,12 +17,8 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
    }
 
    public static PositionMoveRotation of(final Entity entity) {
-      if (entity.isInterpolating()) {
-         PositionAndRotation current = entity.getInterpolation().getCurrentPositionAndRotation();
-         return new PositionMoveRotation(current.position(), entity.getKnownMovement(), current.yRot(), current.xRot());
-      } else {
-         return new PositionMoveRotation(entity.position(), entity.getKnownMovement(), entity.getYRot(), entity.getXRot());
-      }
+      PositionAndRotation current = entity.getClientPositionAndRotation();
+      return new PositionMoveRotation(current.position(), entity.getKnownMovement(), current.yRot(), current.xRot());
    }
 
    public PositionMoveRotation withRotation(final float yRot, final float xRot) {

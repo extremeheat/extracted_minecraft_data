@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.renderpearl.api.textures.FilterMode;
@@ -195,39 +196,61 @@ public class DebugScreenOverlay {
                leftLines.add("To edit: press " + var10001);
             }
 
-            this.extractLines(graphics, leftLines, true);
-            this.extractLines(graphics, rightLines, false);
+            Window window = this.minecraft.getWindow();
+            int standardGuiScale = window.getGuiScale();
+            int newScale = (Integer)this.minecraft.options.debugGuiScale().get();
+            if (newScale == -1) {
+               newScale = standardGuiScale;
+            } else if (newScale == 0) {
+               int maxGuiScale = this.minecraft.getWindow().calculateScale(0, this.minecraft.isEnforceUnicode());
+               newScale = maxGuiScale / 2;
+            } else {
+               newScale = window.calculateScale(newScale, this.minecraft.isEnforceUnicode());
+            }
+
+            graphics.pose().pushMatrix();
+            int scaledScreenHeight;
+            int scaledScreenWidth;
+            if (newScale < standardGuiScale && newScale > 0) {
+               graphics.pose().scale((float)newScale / (float)standardGuiScale, (float)newScale / (float)standardGuiScale);
+               scaledScreenWidth = window.getWidth() / newScale;
+               scaledScreenHeight = window.getHeight() / newScale;
+            } else {
+               scaledScreenWidth = graphics.guiWidth();
+               scaledScreenHeight = graphics.guiHeight();
+            }
+
+            this.extractLines(graphics, leftLines, true, scaledScreenWidth);
+            this.extractLines(graphics, rightLines, false, scaledScreenWidth);
             graphics.nextStratum();
             this.profilerPieChart.setBottomOffset(10);
             if (this.showFpsCharts()) {
-               int scaledWidth = graphics.guiWidth();
-               int maxWidth = scaledWidth / 2;
-               this.fpsChart.extractRenderState(graphics, 0, this.fpsChart.getWidth(maxWidth));
+               int maxWidth = scaledScreenWidth / 2;
+               this.fpsChart.extractRenderState(graphics, 0, this.fpsChart.getWidth(maxWidth), scaledScreenHeight);
                if (this.tickTimeLogger.size() > 0) {
                   int width = this.tpsChart.getWidth(maxWidth);
-                  this.tpsChart.extractRenderState(graphics, scaledWidth - width, width);
+                  this.tpsChart.extractRenderState(graphics, scaledScreenWidth - width, width, scaledScreenHeight);
                }
 
                this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
             }
 
             if (this.showNetworkCharts() && this.minecraft.getConnection() != null) {
-               int scaledWidth = graphics.guiWidth();
-               int maxWidth = scaledWidth / 2;
+               int maxWidth = scaledScreenWidth / 2;
                if (!this.minecraft.isLocalServer()) {
-                  this.bandwidthChart.extractRenderState(graphics, 0, this.bandwidthChart.getWidth(maxWidth));
+                  this.bandwidthChart.extractRenderState(graphics, 0, this.bandwidthChart.getWidth(maxWidth), scaledScreenHeight);
                }
 
                int width = this.pingChart.getWidth(maxWidth);
-               this.pingChart.extractRenderState(graphics, scaledWidth - width, width);
+               this.pingChart.extractRenderState(graphics, scaledScreenWidth - width, width, scaledScreenHeight);
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 
             if (this.showLightmapTexture()) {
                GpuTextureView lightmapTextureView = this.minecraft.gameRenderer.levelLightmap();
                int displaySize = 64;
-               int x = graphics.guiWidth() - 64 - 2;
-               int y = graphics.guiHeight() - 64 - 2;
+               int x = scaledScreenWidth - 64 - 2;
+               int y = scaledScreenHeight - 64 - 2;
                graphics.fill(x - 1, y - 1, x + 64 + 1, y + 64 + 1, -16777216);
                graphics.blit(lightmapTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST), x, y, x + 64, y + 64, 0.0F, 1.0F, 1.0F, 0.0F);
             }
@@ -237,14 +260,15 @@ public class DebugScreenOverlay {
                if (singleplayerServer != null && this.minecraft.player != null) {
                   ChunkLoadStatusView statusView = singleplayerServer.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
                   statusView.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
-                  LevelLoadingScreen.extractChunksForRendering(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2, 4, 1, statusView);
+                  LevelLoadingScreen.extractChunksForRendering(graphics, scaledScreenWidth / 2, scaledScreenHeight / 2, 4, 1, statusView);
                }
             }
 
             try (Zone ignored = profiler.zone("profilerPie")) {
-               this.profilerPieChart.extractRenderState(graphics);
+               this.profilerPieChart.extractRenderState(graphics, scaledScreenWidth, scaledScreenHeight);
             }
 
+            graphics.pose().popMatrix();
             profiler.pop();
          }
       }
@@ -259,7 +283,7 @@ public class DebugScreenOverlay {
       return "[" + var10000 + keybind.getTranslatedKeyMessage().getString() + "]";
    }
 
-   private void extractLines(final GuiGraphicsExtractor graphics, final List<String> lines, final boolean alignLeft) {
+   private void extractLines(final GuiGraphicsExtractor graphics, final List<String> lines, final boolean alignLeft, final int scaledScreenWidth) {
       Objects.requireNonNull(this.font);
       int height = 9;
 
@@ -267,7 +291,7 @@ public class DebugScreenOverlay {
          String line = (String)lines.get(i);
          if (!Strings.isNullOrEmpty(line)) {
             int width = this.font.width(line);
-            int left = alignLeft ? 2 : graphics.guiWidth() - 2 - width;
+            int left = alignLeft ? 2 : scaledScreenWidth - 2 - width;
             int top = 2 + height * i;
             graphics.fill(left - 1, top - 1, left + width + 1, top + height - 1, -1873784752);
          }
@@ -277,7 +301,7 @@ public class DebugScreenOverlay {
          String line = (String)lines.get(i);
          if (!Strings.isNullOrEmpty(line)) {
             int width = this.font.width(line);
-            int left = alignLeft ? 2 : graphics.guiWidth() - 2 - width;
+            int left = alignLeft ? 2 : scaledScreenWidth - 2 - width;
             int top = 2 + height * i;
             graphics.text(this.font, line, left, top, -2039584, false);
          }

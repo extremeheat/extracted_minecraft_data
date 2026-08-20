@@ -219,7 +219,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
 
    }
 
-   protected abstract int getStalactiteLandingSound();
+   protected abstract @LevelEvent.Value int getStalactiteLandingSound();
 
    public DamageSource getFallDamageSource(final Entity entity) {
       return entity.damageSources().fallingStalactite(entity);

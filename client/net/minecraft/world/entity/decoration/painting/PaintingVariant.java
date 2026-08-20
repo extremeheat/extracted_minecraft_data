@@ -5,13 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.util.ExtraCodecs;
 
 public record PaintingVariant(int width, int height, Identifier assetId, Optional<Component> title, Optional<Component> author) {
@@ -30,7 +30,7 @@ public record PaintingVariant(int width, int height, Identifier assetId, Optiona
 
    static {
       DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, PaintingVariant::width, ByteBufCodecs.VAR_INT, PaintingVariant::height, Identifier.STREAM_CODEC, PaintingVariant::assetId, ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC, PaintingVariant::title, ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC, PaintingVariant::author, PaintingVariant::new);
-      CODEC = RegistryFixedCodec.<Holder<PaintingVariant>>create(Registries.PAINTING_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.PAINTING_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.PAINTING_VARIANT, DIRECT_STREAM_CODEC);
    }
 }

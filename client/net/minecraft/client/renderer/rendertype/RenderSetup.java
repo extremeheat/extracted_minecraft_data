@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 public final class RenderSetup {
    final RenderPipeline pipeline;
    final @Nullable OitPipelineSet oitPipelineSet;
-   final @Nullable RenderPipeline opaquePartsPipeline;
    final Map<String, TextureBinding> textures;
    final TextureTransform textureTransform;
    final OutlineProperty outlineProperty;
@@ -31,11 +30,10 @@ public final class RenderSetup {
    final LayeringTransform layeringTransform;
    final boolean forceSolidModelPhase;
 
-   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final @Nullable RenderPipeline opaquePartsPipeline, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
+   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
       super();
       this.pipeline = pipeline;
       this.oitPipelineSet = oitPipelineSet;
-      this.opaquePartsPipeline = opaquePartsPipeline;
       this.textures = textures;
       this.textureTransform = textureTransform;
       this.useLightmap = useLightmap;
@@ -103,12 +101,9 @@ public final class RenderSetup {
    public static class RenderSetupBuilder {
       private final RenderPipeline pipeline;
       private @Nullable OitPipelineSet oitPipelineSet;
-      private @Nullable RenderPipeline opaquePartsPipeline;
       private boolean useLightmap = false;
       private boolean useOverlay = false;
       private LayeringTransform layeringTransform;
-      private OutputTarget outputTarget;
-      private @Nullable OutputTarget oitOutputTarget;
       private TextureTransform textureTransform;
       private boolean affectsCrumbling;
       private boolean sortOnUpload;
@@ -119,7 +114,6 @@ public final class RenderSetup {
       private RenderSetupBuilder(final RenderPipeline pipeline) {
          super();
          this.layeringTransform = LayeringTransform.NO_LAYERING;
-         this.outputTarget = OutputTarget.MAIN_TARGET;
          this.textureTransform = TextureTransform.DEFAULT_TEXTURING;
          this.affectsCrumbling = false;
          this.sortOnUpload = false;
@@ -178,18 +172,13 @@ public final class RenderSetup {
          return this;
       }
 
-      public RenderSetupBuilder setOpaquePartsPipeline(final RenderPipeline opaquePartsPipeline) {
-         this.opaquePartsPipeline = opaquePartsPipeline;
-         return this;
-      }
-
       public RenderSetupBuilder withForcedSolidModelPhase() {
          this.forceSolidModelPhase = true;
          return this;
       }
 
       public RenderSetup createRenderSetup() {
-         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.opaquePartsPipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
+         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
       }
    }
 

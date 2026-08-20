@@ -197,7 +197,7 @@ public class TreeNodePosition {
    }
 
    private void finalizePosition() {
-      this.node.advancement().display().ifPresent((display) -> display.setLocation((float)this.x, this.y));
+      this.node.setLocation((float)this.x, this.y);
       if (!this.children.isEmpty()) {
          for(TreeNodePosition child : this.children) {
             child.finalizePosition();

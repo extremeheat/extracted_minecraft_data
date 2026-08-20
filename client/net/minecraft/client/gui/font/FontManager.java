@@ -213,6 +213,8 @@ public class FontManager implements AutoCloseable, PreparableReloadListener {
          value.reload(fontOptions);
       }
 
+      this.anyGlyphs.invalidate();
+      this.nonFishyGlyphs.invalidate();
    }
 
    private static List<Pair<BuilderId, GlyphProviderDefinition.Conditional>> loadResourceStack(final List<Resource> resourceStack, final Identifier fontName) {

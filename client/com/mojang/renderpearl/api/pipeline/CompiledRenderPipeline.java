@@ -1,9 +1,7 @@
 package com.mojang.renderpearl.api.pipeline;
 
-public interface CompiledRenderPipeline extends AutoCloseable {
-   RenderPipeline info();
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 
+public interface CompiledRenderPipeline extends UncheckedAutoCloseable {
    boolean isClosed();
-
-   void close();
 }

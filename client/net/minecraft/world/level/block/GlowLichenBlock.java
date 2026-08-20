@@ -21,15 +21,15 @@ public class GlowLichenBlock extends MultifaceSpreadeableBlock implements Boneme
       return (state) -> MultifaceBlock.hasAnyFace(state) ? lightEmission : 0;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return Direction.stream().anyMatch((face) -> this.spreader.canSpreadInAnyDirection(state, level, pos, face.getOpposite()));
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.spreader.spreadFromRandomFaceTowardRandomDirection(state, level, pos, random);
    }
 

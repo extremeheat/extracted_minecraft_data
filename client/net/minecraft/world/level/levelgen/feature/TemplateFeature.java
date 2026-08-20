@@ -4,8 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
@@ -15,14 +17,29 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public record TemplateFeature(WeightedList<TemplateEntry> templates) implements Feature {
-   public static final MapCodec<TemplateFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedList.codec(TemplateFeature.TemplateEntry.CODEC).fieldOf("templates").forGetter(TemplateFeature::templates)).apply(i, TemplateFeature::new));
+public record TemplateFeature(WeightedList<TemplateEntry> templates, Optional<Holder<StructureProcessorList>> processors) implements Feature {
+   public static final MapCodec<TemplateFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedList.codec(TemplateFeature.TemplateEntry.CODEC).fieldOf("templates").forGetter(TemplateFeature::templates), StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(TemplateFeature::processors)).apply(i, TemplateFeature::new));
+
+   public TemplateFeature(final WeightedList<TemplateEntry> templates) {
+      this(templates, Optional.empty());
+   }
 
    public TemplateFeature {
       super();
+   }
+
+   public static TemplateFeature simple(final Identifier id, final Holder<StructureProcessorList> processors) {
+      return new TemplateFeature(WeightedList.of(TemplateFeature.TemplateEntry.of(id)), Optional.of(processors));
+   }
+
+   public static TemplateFeature simple(final Identifier id) {
+      return new TemplateFeature(WeightedList.of(TemplateFeature.TemplateEntry.of(id)), Optional.empty());
    }
 
    public MapCodec<TemplateFeature> codec() {
@@ -38,6 +55,12 @@ public record TemplateFeature(WeightedList<TemplateEntry> templates) implements 
       Vec3i offsetZ = this.getRotatedOffset(rotation, Direction.Axis.Z, template);
       BlockPos pos = origin.offset(offsetX).offset(offsetZ);
       StructurePlaceSettings settings = (new StructurePlaceSettings()).setRotation(rotation).setRandom(random);
+      if (this.processors.isPresent()) {
+         for(StructureProcessor processor : ((StructureProcessorList)((Holder)this.processors.get()).value()).list()) {
+            settings.addProcessor(processor);
+         }
+      }
+
       return template.placeInWorld(level, pos, pos, settings, random, 3);
    }
 

@@ -43,9 +43,13 @@ public class MapItem extends Item {
 
    public static ItemStack create(final ServerLevel level, final int originX, final int originZ, final byte scale, final boolean trackPosition, final boolean unlimitedTracking) {
       ItemStack map = new ItemStack(Items.FILLED_MAP);
+      applyNewSavedData(level, map, originX, originZ, scale, trackPosition, unlimitedTracking);
+      return map;
+   }
+
+   public static void applyNewSavedData(final ServerLevel level, final ItemStack map, final int originX, final int originZ, final byte scale, final boolean trackPosition, final boolean unlimitedTracking) {
       MapId newId = createNewSavedData(level, originX, originZ, scale, trackPosition, unlimitedTracking, level.dimension());
       map.set(DataComponents.MAP_ID, newId);
-      return map;
    }
 
    public static @Nullable MapItemSavedData getSavedData(final @Nullable MapId id, final Level level) {

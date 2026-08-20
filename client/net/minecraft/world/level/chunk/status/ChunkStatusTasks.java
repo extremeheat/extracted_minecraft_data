@@ -1,11 +1,14 @@
 package net.minecraft.world.level.chunk.status;
 
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
@@ -15,7 +18,7 @@ import net.minecraft.util.StaticCache2D;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.CarvingMask;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -70,6 +73,19 @@ public class ChunkStatusTasks {
       return context.generator().createBiomes(level.getChunkSource().randomState(), Blender.of(region), level.structureManager().forWorldGenRegion(region), chunk);
    }
 
+   private static Set<Holder<Biome>> collectPossibleBiomes(final WorldGenRegion region, final int chunkRadius) {
+      Set<Holder<Biome>> chunkBiomes = new ObjectOpenHashSet();
+      ChunkPos center = region.getCenter();
+
+      for(int z = center.z() - chunkRadius; z <= center.z() + chunkRadius; ++z) {
+         for(int x = center.x() - chunkRadius; x <= center.x() + chunkRadius; ++x) {
+            region.getChunk(x, z).collectBiomesInPalette(chunkBiomes);
+         }
+      }
+
+      return chunkBiomes;
+   }
+
    public static CompletableFuture<ChunkAccess> generateNoise(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
@@ -91,22 +107,15 @@ public class ChunkStatusTasks {
    public static CompletableFuture<ChunkAccess> generateSurface(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
-      context.generator().buildSurface(region, level.structureManager().forWorldGenRegion(region), level.getChunkSource().randomState(), chunk);
+      Set<Holder<Biome>> possibleBiomes = collectPossibleBiomes(region, 1);
+      context.generator().buildSurface(level.structureManager().forWorldGenRegion(region), level.getChunkSource().randomState(), chunk, region.getBiomeManager(), Blender.of(region), possibleBiomes);
       return CompletableFuture.completedFuture(chunk);
    }
 
    public static CompletableFuture<ChunkAccess> generateCarvers(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
-      CarvingMask.Filter var10000;
-      if (chunk instanceof ProtoChunk protoChunk) {
-         var10000 = Blender.createAroundOldChunksCarvingMaskFilter(region, protoChunk);
-      } else {
-         var10000 = null;
-      }
-
-      CarvingMask.Filter filter = var10000;
-      context.generator().applyCarvers(region, level.getSeed(), level.getChunkSource().randomState(), level.getBiomeManager(), level.structureManager().forWorldGenRegion(region), chunk, filter);
+      context.generator().applyCarvers(region, level.getChunkSource().randomState(), level.getBiomeManager(), level.structureManager().forWorldGenRegion(region), chunk, Blender.of(region));
       Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
       return CompletableFuture.completedFuture(chunk);
    }

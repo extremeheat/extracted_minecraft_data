@@ -108,7 +108,7 @@ public class MultiPartModel implements BlockStateModel {
 
             for(int i = 0; i < this.selectors.size(); ++i) {
                if (selected.get(i)) {
-                  result.add((BlockStateModel)((Selector)this.selectors.get(i)).model);
+                  result.add(((Selector)this.selectors.get(i)).model);
                }
             }
 

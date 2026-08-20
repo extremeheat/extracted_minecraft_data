@@ -41,6 +41,7 @@ import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.commands.arguments.SlotSourceArgument;
 import net.minecraft.commands.arguments.SlotsArgument;
 import net.minecraft.commands.arguments.StyleArgument;
+import net.minecraft.commands.arguments.SwingAnimationArgument;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.commands.arguments.TeamColorArgument;
 import net.minecraft.commands.arguments.TemplateMirrorArgument;
@@ -136,6 +137,7 @@ public class ArgumentTypeInfos {
       register(registry, "slot_source", SlotSourceArgument.class, SingletonArgumentInfo.contextAware(SlotSourceArgument::slotSource));
       register(registry, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
       register(registry, "feature", ResourceOrIdArgument.FeatureArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::feature));
+      register(registry, "swing_animation", SwingAnimationArgument.class, SingletonArgumentInfo.contextFree(SwingAnimationArgument::swingAnimationType));
       return register(registry, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 

@@ -1,27 +1,24 @@
 package com.mojang.renderpearl.backend.opengl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
-import com.mojang.renderpearl.api.vertex.VertexFormat;
-import com.mojang.renderpearl.api.vertex.VertexFormatElement;
-import java.util.HashMap;
+import com.mojang.renderpearl.util.ShaderCompileException;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
-import net.minecraft.client.renderer.ShaderManager;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
-public class GlProgram implements AutoCloseable {
+public class GlProgram implements UncheckedAutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Set<String> BUILT_IN_UNIFORMS = Sets.newHashSet(new String[]{"Projection", "Lighting", "Fog", "Globals"});
-   private final Map<String, Uniform> uniformsByName = new HashMap();
+   private final List<@Nullable Uniform> uniforms = new ReferenceArrayList();
+   private Uniform.@Nullable Ubo pushConstant = null;
    private final int programId;
    private final String debugLabel;
 
@@ -31,122 +28,106 @@ public class GlProgram implements AutoCloseable {
       this.debugLabel = debugLabel;
    }
 
-   public static GlProgram link(final GlShaderModule vertexShader, final GlShaderModule fragmentShader, final @Nullable VertexFormat[] vertexBindings, final String debugLabel) throws ShaderManager.CompilationException {
+   public static GlProgram link(final List<GlShaderModule> compiledShaders, final String debugLabel) throws ShaderCompileException {
       int programId = GlStateManager.glCreateProgram();
       if (programId <= 0) {
-         throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + programId + ")");
+         throw new ShaderCompileException("Could not create shader program (returned program ID " + programId + ")");
       } else {
-         int attributeLocation = 0;
-         String previousName = null;
-
-         for(VertexFormat vertexFormat : vertexBindings) {
-            if (vertexFormat != null) {
-               for(VertexFormatElement attribute : vertexFormat.getElements()) {
-                  String attributeName = attribute.name();
-                  if (!attributeName.equals(previousName)) {
-                     GlStateManager._glBindAttribLocation(programId, attributeLocation, attributeName);
-                  }
-
-                  previousName = attributeName;
-                  ++attributeLocation;
-               }
-            }
+         for(GlShaderModule shaderModule : compiledShaders) {
+            GlStateManager.glAttachShader(programId, shaderModule.getShaderId());
          }
 
-         GlStateManager.glAttachShader(programId, vertexShader.getShaderId());
-         GlStateManager.glAttachShader(programId, fragmentShader.getShaderId());
          GlStateManager.glLinkProgram(programId);
          int linkStatus = GlStateManager.glGetProgrami(programId, 35714);
          String linkMessage = GlStateManager.glGetProgramInfoLog(programId, 32768);
          if (linkStatus != 0 && !linkMessage.contains("Failed for unknown reason")) {
             if (!linkMessage.isEmpty()) {
-               LOGGER.info("Info log when linking program containing VS {} and FS {}. Log output: {}", new Object[]{vertexShader.getId(), fragmentShader.getId(), linkMessage});
+               LOGGER.info("Info log when linking program containing {}. Log output: {}", shaderList(compiledShaders), linkMessage);
             }
 
             return new GlProgram(programId, debugLabel);
          } else {
-            String var10002 = String.valueOf(vertexShader.getId());
-            throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(fragmentShader.getId()) + ". Log output: " + linkMessage);
+            String var10002 = shaderList(compiledShaders);
+            throw new ShaderCompileException("Error encountered when linking program containing " + var10002 + ". Log output: " + linkMessage);
          }
       }
    }
 
-   public void setupBindGroupLayouts(final List<BindGroupLayout> bindGroupLayouts) {
-      BindGroupLayout.ensureCompatible(bindGroupLayouts);
-      List<BindGroupLayout.UniformDescription> uniforms = BindGroupLayout.flattenUniforms(bindGroupLayouts);
-      List<String> samplers = BindGroupLayout.flattenSamplers(bindGroupLayouts);
+   private static String shaderList(final List<GlShaderModule> compiledShaders) {
+      return (String)compiledShaders.stream().map((shader) -> {
+         String var10000 = String.valueOf(shader.getType());
+         return var10000 + " " + shader.getLabel();
+      }).collect(Collectors.joining(", "));
+   }
+
+   public void setupBindGroupLayouts(final List<BindGroupLayout.UniformDescription> uniforms) {
       int nextUboBinding = 0;
       int nextSamplerIndex = 0;
+      GlStateManager._glUseProgram(this.programId);
+      int pushConstantBlock = GL33C.glGetUniformBlockIndex(this.programId, "_push_constants");
+      if (pushConstantBlock != -1) {
+         int uboBinding = nextUboBinding++;
+         GL33C.glUniformBlockBinding(this.programId, pushConstantBlock, uboBinding);
+         this.pushConstant = new Uniform.Ubo(uboBinding);
+      }
 
-      for(BindGroupLayout.UniformDescription uniformDescription : uniforms) {
-         String uniformName = uniformDescription.name();
-         Object var10000;
+      for(int i = 0; i < uniforms.size(); ++i) {
+         BindGroupLayout.UniformDescription uniformDescription = (BindGroupLayout.UniformDescription)uniforms.get(i);
+         String uniformName = String.format(Locale.ROOT, "_uniform_%02d_%02d", 0, i);
+         Object var16;
          switch (uniformDescription.type()) {
             case UNIFORM_BUFFER:
                int index = GL33C.glGetUniformBlockIndex(this.programId, uniformName);
                if (index == -1) {
-                  var10000 = null;
+                  var16 = null;
                } else {
                   int uboBinding = nextUboBinding++;
                   GL33C.glUniformBlockBinding(this.programId, index, uboBinding);
-                  var10000 = new Uniform.Ubo(uboBinding);
+                  var16 = new Uniform.Ubo(uboBinding);
                }
                break;
             case TEXEL_BUFFER:
                int location = GlStateManager._glGetUniformLocation(this.programId, uniformName);
                if (location == -1) {
-                  LOGGER.warn("{} shader program does not use utb {} defined in the pipeline. This might be a bug.", this.debugLabel, uniformName);
-                  var10000 = null;
+                  var16 = null;
                } else {
                   int samplerIndex = nextSamplerIndex++;
-                  var10000 = new Uniform.Utb(location, samplerIndex, (GpuFormat)Objects.requireNonNull(uniformDescription.gpuFormat()));
+                  GL33C.glUniform1i(location, samplerIndex);
+                  var16 = new Uniform.Utb(samplerIndex, (GpuFormat)Objects.requireNonNull(uniformDescription.gpuFormat()));
+               }
+               break;
+            case COMBINED_IMAGE_SAMPLER:
+               int location = GlStateManager._glGetUniformLocation(this.programId, uniformName);
+               if (location == -1) {
+                  var16 = null;
+               } else {
+                  int samplerIndex = nextSamplerIndex++;
+                  GL33C.glUniform1i(location, samplerIndex);
+                  var16 = new Uniform.Sampler(samplerIndex);
                }
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
 
-         Uniform uniform = (Uniform)var10000;
-         if (uniform != null) {
-            this.uniformsByName.put(uniformName, uniform);
-         }
+         Uniform uniform = (Uniform)var16;
+         this.uniforms.add(uniform);
       }
 
-      for(String sampler : samplers) {
-         int location = GlStateManager._glGetUniformLocation(this.programId, sampler);
-         if (location == -1) {
-            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, sampler);
-         } else {
-            int samplerIndex = nextSamplerIndex++;
-            this.uniformsByName.put(sampler, new Uniform.Sampler(location, samplerIndex));
-         }
-      }
-
-      int totalDefinedBlocks = GlStateManager.glGetProgrami(this.programId, 35382);
-
-      for(int i = 0; i < totalDefinedBlocks; ++i) {
-         String name = GL33C.glGetActiveUniformBlockName(this.programId, i);
-         if (!this.uniformsByName.containsKey(name)) {
-            if (!samplers.contains(name) && BUILT_IN_UNIFORMS.contains(name)) {
-               int uboBinding = nextUboBinding++;
-               GL33C.glUniformBlockBinding(this.programId, i, uboBinding);
-               this.uniformsByName.put(name, new Uniform.Ubo(uboBinding));
-            } else {
-               LOGGER.warn("Found unknown and unsupported uniform {} in {}", name, this.debugLabel);
-            }
-         }
-      }
-
+      GlStateManager._glUseProgram(0);
    }
 
    public void close() {
-      this.uniformsByName.values().forEach(Uniform::close);
+      this.uniforms.forEach(UncheckedAutoCloseable::safeClose);
       GlStateManager.glDeleteProgram(this.programId);
    }
 
-   public @Nullable Uniform getUniform(final String name) {
-      RenderSystem.assertOnRenderThread();
-      return (Uniform)this.uniformsByName.get(name);
+   public @Nullable Uniform getUniform(final int index) {
+      return index >= this.uniforms.size() ? null : (Uniform)this.uniforms.get(index);
+   }
+
+   public int uniformCount() {
+      return this.uniforms.size();
    }
 
    @VisibleForTesting
@@ -162,7 +143,7 @@ public class GlProgram implements AutoCloseable {
       return this.debugLabel;
    }
 
-   public Map<String, Uniform> getUniforms() {
-      return this.uniformsByName;
+   public Uniform.@Nullable Ubo pushConstant() {
+      return this.pushConstant;
    }
 }

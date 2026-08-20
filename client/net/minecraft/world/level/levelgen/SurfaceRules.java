@@ -16,12 +16,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.synth.Noise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
@@ -88,19 +88,19 @@ public class SurfaceRules {
       return new BiomeConditionSource(HolderSet.direct(biomes::getOrThrow, target));
    }
 
-   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange) {
+   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise> noise, final double minRange) {
       return noiseCondition2d(noise, minRange, 1.7976931348623157E308);
    }
 
-   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange, final double maxRange) {
+   public static ConditionSource noiseCondition2d(final ResourceKey<NormalNoise> noise, final double minRange, final double maxRange) {
       return new NoiseThresholdConditionSource(noise, minRange, maxRange, false);
    }
 
-   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange) {
+   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise> noise, final double minRange) {
       return noiseCondition3d(noise, minRange, 1.7976931348623157E308);
    }
 
-   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise.NoiseParameters> noise, final double minRange, final double maxRange) {
+   public static ConditionSource noiseCondition3d(final ResourceKey<NormalNoise> noise, final double minRange, final double maxRange) {
       return new NoiseThresholdConditionSource(noise, minRange, maxRange, true);
    }
 
@@ -166,8 +166,8 @@ public class SurfaceRules {
       private final @Nullable Set<Holder<Biome>> possibleBiomes;
       private long lastPreliminarySurfaceCellOrigin = 9223372036854775807L;
       private final int[] preliminarySurfaceCache = new int[4];
-      private final Map<ResourceKey<NormalNoise.NoiseParameters>, DoubleSupplier> noiseSamplers2d = new IdentityHashMap();
-      private final Map<ResourceKey<NormalNoise.NoiseParameters>, DoubleSupplier> noiseSamplers3d = new IdentityHashMap();
+      private final Map<ResourceKey<NormalNoise>, DoubleSupplier> noiseSamplers2d = new IdentityHashMap();
+      private final Map<ResourceKey<NormalNoise>, DoubleSupplier> noiseSamplers3d = new IdentityHashMap();
       private long lastUpdateXZ = -9223372036854775807L;
       private int blockX;
       private int blockZ;
@@ -253,25 +253,25 @@ public class SurfaceRules {
             long preliminarySurfaceCellOrigin = ChunkPos.pack(cornerCellX, cornerCellZ);
             if (this.lastPreliminarySurfaceCellOrigin != preliminarySurfaceCellOrigin) {
                this.lastPreliminarySurfaceCellOrigin = preliminarySurfaceCellOrigin;
-               this.preliminarySurfaceCache[0] = this.noiseChunk.preliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX), surfaceCellToBlockCoord(cornerCellZ));
-               this.preliminarySurfaceCache[1] = this.noiseChunk.preliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX + 1), surfaceCellToBlockCoord(cornerCellZ));
-               this.preliminarySurfaceCache[2] = this.noiseChunk.preliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX), surfaceCellToBlockCoord(cornerCellZ + 1));
-               this.preliminarySurfaceCache[3] = this.noiseChunk.preliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX + 1), surfaceCellToBlockCoord(cornerCellZ + 1));
+               this.preliminarySurfaceCache[0] = this.noiseChunk.computePreliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX), surfaceCellToBlockCoord(cornerCellZ));
+               this.preliminarySurfaceCache[1] = this.noiseChunk.computePreliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX + 1), surfaceCellToBlockCoord(cornerCellZ));
+               this.preliminarySurfaceCache[2] = this.noiseChunk.computePreliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX), surfaceCellToBlockCoord(cornerCellZ + 1));
+               this.preliminarySurfaceCache[3] = this.noiseChunk.computePreliminarySurfaceLevel(surfaceCellToBlockCoord(cornerCellX + 1), surfaceCellToBlockCoord(cornerCellZ + 1));
             }
 
-            int preliminarySurfaceLevel = Mth.floor(Mth.lerp2((double)((float)(this.blockX & 15) / 16.0F), (double)((float)(this.blockZ & 15) / 16.0F), (double)this.preliminarySurfaceCache[0], (double)this.preliminarySurfaceCache[1], (double)this.preliminarySurfaceCache[2], (double)this.preliminarySurfaceCache[3]));
+            int preliminarySurfaceLevel = Mth.floor(Mth.lerp2((float)(this.blockX & 15) / 16.0F, (float)(this.blockZ & 15) / 16.0F, (float)this.preliminarySurfaceCache[0], (float)this.preliminarySurfaceCache[1], (float)this.preliminarySurfaceCache[2], (float)this.preliminarySurfaceCache[3]));
             this.minSurfaceLevel = preliminarySurfaceLevel + this.surfaceDepth - 8;
          }
 
          return this.minSurfaceLevel;
       }
 
-      protected DoubleSupplier getNoiseSampler(final ResourceKey<NormalNoise.NoiseParameters> noiseId, final boolean is3d) {
+      protected DoubleSupplier getNoiseSampler(final ResourceKey<NormalNoise> noiseId, final boolean is3d) {
          return is3d ? (DoubleSupplier)this.noiseSamplers3d.computeIfAbsent(noiseId, this::createNoiseSampler3d) : (DoubleSupplier)this.noiseSamplers2d.computeIfAbsent(noiseId, this::createNoiseSampler2d);
       }
 
-      private DoubleSupplier createNoiseSampler2d(final ResourceKey<NormalNoise.NoiseParameters> noiseId) {
-         final NormalNoise noise = this.randomState.getOrCreateNoise(noiseId);
+      private DoubleSupplier createNoiseSampler2d(final ResourceKey<NormalNoise> noiseId) {
+         final Noise noise = this.randomState.getOrCreateNoise(noiseId);
          return new DoubleSupplier() {
             private long lastUpdateXZ;
             private double lastNoise;
@@ -283,7 +283,7 @@ public class SurfaceRules {
 
             public double getAsDouble() {
                if (this.lastUpdateXZ != Context.this.lastUpdateXZ) {
-                  this.lastNoise = noise.getValue((double)Context.this.blockX, 0.0, (double)Context.this.blockZ);
+                  this.lastNoise = (double)noise.get((double)Context.this.blockX, 0.0, (double)Context.this.blockZ);
                   this.lastUpdateXZ = Context.this.lastUpdateXZ;
                }
 
@@ -292,8 +292,8 @@ public class SurfaceRules {
          };
       }
 
-      private DoubleSupplier createNoiseSampler3d(final ResourceKey<NormalNoise.NoiseParameters> noiseId) {
-         final NormalNoise noise = this.randomState.getOrCreateNoise(noiseId);
+      private DoubleSupplier createNoiseSampler3d(final ResourceKey<NormalNoise> noiseId) {
+         final Noise noise = this.randomState.getOrCreateNoise(noiseId);
          return new DoubleSupplier() {
             private long lastUpdateY;
             private double lastNoise;
@@ -305,7 +305,7 @@ public class SurfaceRules {
 
             public double getAsDouble() {
                if (this.lastUpdateY != Context.this.lastUpdateY) {
-                  this.lastNoise = noise.getValue((double)Context.this.blockX, (double)Context.this.blockY, (double)Context.this.blockZ);
+                  this.lastNoise = (double)noise.get((double)Context.this.blockX, (double)Context.this.blockY, (double)Context.this.blockZ);
                   this.lastUpdateY = Context.this.lastUpdateY;
                }
 
@@ -471,7 +471,7 @@ public class SurfaceRules {
 
    public interface ConditionSource extends Function<Context, Condition> {
       Codec<ConditionSource> DIRECT_CODEC = BuiltInRegistries.MATERIAL_CONDITION_TYPE.byNameCodec().dispatch(ConditionSource::codec, Function.identity());
-      Codec<ConditionSource> CODEC = RegistryFileCodec.create(Registries.MATERIAL_CONDITION, DIRECT_CODEC).xmap((holder) -> {
+      Codec<ConditionSource> CODEC = RegistryCodecs.holder(Registries.MATERIAL_CONDITION, DIRECT_CODEC).xmap((holder) -> {
          Objects.requireNonNull(holder);
          int index$1 = 0;
          Object var10000;
@@ -552,7 +552,7 @@ public class SurfaceRules {
 
    public interface RuleSource extends Function<Context, SurfaceRule> {
       Codec<RuleSource> DIRECT_CODEC = BuiltInRegistries.MATERIAL_RULE_TYPE.byNameCodec().dispatch(RuleSource::codec, Function.identity());
-      Codec<Holder<RuleSource>> HOLDER_CODEC = RegistryFileCodec.<Holder<RuleSource>>create(Registries.MATERIAL_RULE, DIRECT_CODEC);
+      Codec<Holder<RuleSource>> HOLDER_CODEC = RegistryCodecs.holder(Registries.MATERIAL_RULE, DIRECT_CODEC);
       Codec<RuleSource> CODEC = HOLDER_CODEC.xmap((holder) -> {
          Objects.requireNonNull(holder);
          int index$1 = 0;
@@ -776,7 +776,7 @@ public class SurfaceRules {
    }
 
    private static record BiomeConditionSource(HolderSet<Biome> biomes) implements ConditionSource {
-      private static final MapCodec<BiomeConditionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biome_is").forGetter(BiomeConditionSource::biomes)).apply(i, BiomeConditionSource::new));
+      private static final MapCodec<BiomeConditionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BIOME).fieldOf("biome_is").forGetter(BiomeConditionSource::biomes)).apply(i, BiomeConditionSource::new));
 
       private BiomeConditionSource {
          super();
@@ -836,7 +836,7 @@ public class SurfaceRules {
       }
    }
 
-   private static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold, boolean is3d) implements ConditionSource {
+   private static record NoiseThresholdConditionSource(ResourceKey<NormalNoise> noise, double minThreshold, double maxThreshold, boolean is3d) implements ConditionSource {
       private static final MapCodec<NoiseThresholdConditionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold), Codec.BOOL.optionalFieldOf("is_3d", false).forGetter(NoiseThresholdConditionSource::is3d)).apply(i, NoiseThresholdConditionSource::new));
 
       private NoiseThresholdConditionSource {

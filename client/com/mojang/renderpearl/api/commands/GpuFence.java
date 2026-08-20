@@ -1,6 +1,10 @@
 package com.mojang.renderpearl.api.commands;
 
-public interface GpuFence extends AutoCloseable {
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
+
+public interface GpuFence extends UncheckedAutoCloseable {
+   long NO_TIMEOUT = -1L;
+
    void close();
 
    boolean awaitCompletion(final long timeoutNS);

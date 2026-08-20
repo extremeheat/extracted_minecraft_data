@@ -73,8 +73,10 @@ public class SleepInBed extends Behavior<LivingEntity> {
             InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(level, body, (Node)null, (Node)null, doors, nearestEntities);
          }
 
-         body.startSleeping(((GlobalPos)body.getBrain().getMemory(MemoryModuleType.HOME).get()).pos());
-         brain.setMemory(MemoryModuleType.LAST_SLEPT, timestamp);
+         if (body.startSleeping(((GlobalPos)body.getBrain().getMemory(MemoryModuleType.HOME).get()).pos())) {
+            brain.setMemory(MemoryModuleType.LAST_SLEPT, timestamp);
+         }
+
          brain.eraseMemory(MemoryModuleType.WALK_TARGET);
          brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
       }

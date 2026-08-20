@@ -1,67 +1,34 @@
 package com.mojang.renderpearl.api.textures;
 
 import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-public abstract class GpuTexture implements AutoCloseable {
-   public static final int USAGE_COPY_DST = 1;
-   public static final int USAGE_COPY_SRC = 2;
-   public static final int USAGE_TEXTURE_BINDING = 4;
-   public static final int USAGE_RENDER_ATTACHMENT = 8;
-   public static final int USAGE_CUBEMAP_COMPATIBLE = 16;
-   private final GpuFormat format;
-   private final int width;
-   private final int height;
-   private final int depthOrLayers;
-   private final int mipLevels;
-   private final @GpuTexture.Usage int usage;
-   private final String label;
+public interface GpuTexture extends UncheckedAutoCloseable {
+   int USAGE_COPY_DST = 1;
+   int USAGE_COPY_SRC = 2;
+   int USAGE_TEXTURE_BINDING = 4;
+   int USAGE_RENDER_ATTACHMENT = 8;
+   int USAGE_CUBEMAP_COMPATIBLE = 16;
 
-   public GpuTexture(final @GpuTexture.Usage int usage, final String label, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
-      super();
-      this.usage = usage;
-      this.label = label;
-      this.format = format;
-      this.width = width;
-      this.height = height;
-      this.depthOrLayers = depthOrLayers;
-      this.mipLevels = mipLevels;
-   }
+   int getWidth(int mipLevel);
 
-   public int getWidth(final int mipLevel) {
-      return this.width >> mipLevel;
-   }
+   int getHeight(int mipLevel);
 
-   public int getHeight(final int mipLevel) {
-      return this.height >> mipLevel;
-   }
+   int getDepthOrLayers();
 
-   public int getDepthOrLayers() {
-      return this.depthOrLayers;
-   }
+   int getMipLevels();
 
-   public int getMipLevels() {
-      return this.mipLevels;
-   }
+   GpuFormat getFormat();
 
-   public GpuFormat getFormat() {
-      return this.format;
-   }
+   @GpuTexture.Usage int usage();
 
-   public @GpuTexture.Usage int usage() {
-      return this.usage;
-   }
+   String getLabel();
 
-   public String getLabel() {
-      return this.label;
-   }
-
-   public abstract void close();
-
-   public abstract boolean isClosed();
+   boolean isClosed();
 
    @Retention(RetentionPolicy.CLASS)
    @Target({ElementType.TYPE_USE})

@@ -4,12 +4,13 @@ import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.backend.common.BaseGpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
-public abstract class GlBuffer extends GpuBuffer {
+public abstract class GlBuffer extends BaseGpuBuffer {
    protected static final MemoryPool MEMORY_POOL = TracyClient.createMemoryPool("GPU Buffers");
    private final int handle;
    protected final boolean canPersistentMap;
@@ -25,7 +26,7 @@ public abstract class GlBuffer extends GpuBuffer {
       return this.handle;
    }
 
-   protected void checkCanBeUsed() {
+   public void checkCanBeUsed() {
       if (!this.canPersistentMap) {
          if (this.mappingRefCount != 0) {
             throw new IllegalStateException("Attempt to use buffer while mapped without persistent mapping capability");
@@ -49,11 +50,11 @@ public abstract class GlBuffer extends GpuBuffer {
          }
 
          if ((usage & 2) != 0) {
-            mappingFlags |= 50;
+            mappingFlags |= 34;
          }
 
          if (canPersistentMap) {
-            mappingFlags |= 64;
+            mappingFlags |= 192;
          }
 
          this.mappingFlags = mappingFlags;
@@ -117,10 +118,6 @@ public abstract class GlBuffer extends GpuBuffer {
                   public void run() {
                      if (!this.closed) {
                         this.closed = true;
-                        if ((Direct.this.mappingFlags & 16) != 0) {
-                           Direct.this.dsa.flushMappedBufferRange(Direct.this.handle(), Direct.this.slice().offset(), Direct.this.slice().length(), Direct.this.usage());
-                        }
-
                         Direct.this.unmap();
                      }
                   }

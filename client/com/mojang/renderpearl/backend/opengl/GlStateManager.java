@@ -1,6 +1,5 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
@@ -9,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import net.minecraft.util.Util;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
@@ -21,16 +21,18 @@ public class GlStateManager {
    private static int numTextures = 0;
    private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
    private static int numBuffers = 0;
-   private static final BlendState[] BLEND = new BlendState[8];
-   private static final DepthState DEPTH = new DepthState();
-   private static final CullState CULL = new CullState();
-   private static final PolygonOffsetState POLY_OFFSET = new PolygonOffsetState();
-   private static final ColorLogicState COLOR_LOGIC = new ColorLogicState();
-   private static final ScissorState SCISSOR = new ScissorState();
+   private static final boolean IS_MACOS;
+   private static final BlendState BLEND;
+   private static final boolean[] BLEND_ENABLE;
+   private static final DepthState DEPTH;
+   private static final CullState CULL;
+   private static final PolygonOffsetState POLY_OFFSET;
+   private static final ColorLogicState COLOR_LOGIC;
+   private static final ScissorState SCISSOR;
    private static int activeTexture;
    private static final int TEXTURE_COUNT = 12;
-   private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
-   private static final @ColorTargetState.WriteMask int[] COLOR_MASK = new int[8];
+   private static final TextureState[] TEXTURES;
+   private static final @ColorTargetState.WriteMask int[] COLOR_MASK;
    private static int readFbo;
    private static int writeFbo;
 
@@ -83,22 +85,27 @@ public class GlStateManager {
 
    public static void _disableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
-      BLEND[index].mode.disable();
+      if (BLEND_ENABLE[index]) {
+         BLEND_ENABLE[index] = false;
+         GL33C.glDisablei(3042, index);
+      }
    }
 
    public static void _enableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
-      BLEND[index].mode.enable();
+      if (!BLEND_ENABLE[index]) {
+         BLEND_ENABLE[index] = true;
+         GL33C.glEnablei(3042, index);
+      }
    }
 
    public static void _blendFuncSeparate(final int srcRgb, final int dstRgb, final int srcAlpha, final int dstAlpha) {
       RenderSystem.assertOnRenderThread();
-      BlendState firstBlend = BLEND[0];
-      if (srcRgb != firstBlend.srcRgb || dstRgb != firstBlend.dstRgb || srcAlpha != firstBlend.srcAlpha || dstAlpha != firstBlend.dstAlpha) {
-         firstBlend.srcRgb = srcRgb;
-         firstBlend.dstRgb = dstRgb;
-         firstBlend.srcAlpha = srcAlpha;
-         firstBlend.dstAlpha = dstAlpha;
+      if (srcRgb != BLEND.srcRgb || dstRgb != BLEND.dstRgb || srcAlpha != BLEND.srcAlpha || dstAlpha != BLEND.dstAlpha) {
+         BLEND.srcRgb = srcRgb;
+         BLEND.dstRgb = dstRgb;
+         BLEND.srcAlpha = srcAlpha;
+         BLEND.dstAlpha = dstAlpha;
          glBlendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
       }
 
@@ -106,10 +113,9 @@ public class GlStateManager {
 
    public static void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
       RenderSystem.assertOnRenderThread();
-      BlendState firstBlend = BLEND[0];
-      if (modeRgb != firstBlend.modeRgb || modeAlpha != firstBlend.modeAlpha) {
-         firstBlend.modeRgb = modeRgb;
-         firstBlend.modeAlpha = modeAlpha;
+      if (modeRgb != BLEND.modeRgb || modeAlpha != BLEND.modeAlpha) {
+         BLEND.modeRgb = modeRgb;
+         BLEND.modeAlpha = modeAlpha;
          glBlendEquationSeparate(modeRgb, modeAlpha);
       }
 
@@ -488,7 +494,7 @@ public class GlStateManager {
    public static void _clear(final int mask) {
       RenderSystem.assertOnRenderThread();
       GL33C.glClear(mask);
-      if (MacosUtil.IS_MACOS) {
+      if (IS_MACOS) {
          _getError();
       }
 
@@ -497,7 +503,7 @@ public class GlStateManager {
    public static void _clearBuffer(final int index, final Vector4fc clearColor) {
       RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6144, index, new float[]{clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w()});
-      if (MacosUtil.IS_MACOS) {
+      if (IS_MACOS) {
          _getError();
       }
 
@@ -506,7 +512,7 @@ public class GlStateManager {
    public static void _clearBuffer(final double clearDepth) {
       RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6145, 0, new float[]{(float)clearDepth});
-      if (MacosUtil.IS_MACOS) {
+      if (IS_MACOS) {
          _getError();
       }
 
@@ -586,8 +592,18 @@ public class GlStateManager {
    }
 
    static {
+      IS_MACOS = Util.getPlatform() == Util.OS.OSX;
+      BLEND = new BlendState();
+      BLEND_ENABLE = new boolean[8];
+      DEPTH = new DepthState();
+      CULL = new CullState();
+      POLY_OFFSET = new PolygonOffsetState();
+      COLOR_LOGIC = new ColorLogicState();
+      SCISSOR = new ScissorState();
+      TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
+      COLOR_MASK = new int[8];
       Arrays.setAll(COLOR_MASK, (var0) -> 15);
-      Arrays.setAll(BLEND, (var0) -> new BlendState());
+      Arrays.fill(BLEND_ENABLE, false);
    }
 
    private static class TextureState {
@@ -599,7 +615,6 @@ public class GlStateManager {
    }
 
    private static class BlendState {
-      public final BooleanState mode = new BooleanState(3042);
       public int srcRgb = 1;
       public int dstRgb = 0;
       public int modeRgb = 32774;

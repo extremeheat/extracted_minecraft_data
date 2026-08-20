@@ -37,8 +37,8 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       super(context, new GuardianModel(context.bakeLayer(modelId)), shadow);
    }
 
-   public boolean shouldRender(final Guardian entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      if (super.shouldRender(entity, culler, camX, camY, camZ)) {
+   public boolean shouldRender(final Guardian entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      if (super.shouldRender(entity, culler, camX, camY, camZ, partialTicks)) {
          return true;
       } else {
          if (entity.hasActiveAttackTarget()) {

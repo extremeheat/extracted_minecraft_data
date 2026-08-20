@@ -262,9 +262,9 @@ public class ClientChunkCache extends ChunkSource {
          if (this.inRange(sectionX, sectionZ)) {
             long sectionNode = SectionPos.asLong(sectionX, sectionY, sectionZ);
             if (empty) {
-               this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionEmpty(sectionNode);
             } else {
-               this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionNotEmpty(sectionNode);
             }
 
          }
@@ -272,24 +272,31 @@ public class ClientChunkCache extends ChunkSource {
 
       private void onChunkRemoved(final LevelChunk chunk) {
          ChunkPos chunkPos = chunk.getPos();
-         this.removedLoadedChunks[this.updatingSetsIndex].add(chunkPos.pack());
+         long chunkNode = chunkPos.pack();
+         this.addedLoadedChunks[this.updatingSetsIndex].remove(chunkNode);
+         this.removedLoadedChunks[this.updatingSetsIndex].add(chunkNode);
          LevelChunkSection[] sections = chunk.getSections();
 
          for(int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
-            this.removedEmptySections[this.updatingSetsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+            this.markSectionEmpty(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
          }
 
       }
 
       private void onChunkAdded(final LevelChunk chunk) {
          ChunkPos chunkPos = chunk.getPos();
-         this.addedLoadedChunks[this.updatingSetsIndex].add(chunkPos.pack());
+         long chunkNode = chunkPos.pack();
+         this.removedLoadedChunks[this.updatingSetsIndex].remove(chunkNode);
+         this.addedLoadedChunks[this.updatingSetsIndex].add(chunkNode);
          LevelChunkSection[] sections = chunk.getSections();
 
          for(int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
             LevelChunkSection section = sections[sectionIndex];
+            long sectionNode = SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z());
             if (section.hasOnlyAir()) {
-               this.addedEmptySections[this.updatingSetsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+               this.markSectionEmpty(sectionNode);
+            } else {
+               this.markSectionNotEmpty(sectionNode);
             }
          }
 
@@ -303,12 +310,22 @@ public class ClientChunkCache extends ChunkSource {
             LevelChunkSection section = sections[sectionIndex];
             long sectionNode = SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z());
             if (section.hasOnlyAir()) {
-               this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionEmpty(sectionNode);
             } else {
-               this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionNotEmpty(sectionNode);
             }
          }
 
+      }
+
+      private void markSectionEmpty(final long sectionNode) {
+         this.removedEmptySections[this.updatingSetsIndex].remove(sectionNode);
+         this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+      }
+
+      private void markSectionNotEmpty(final long sectionNode) {
+         this.addedEmptySections[this.updatingSetsIndex].remove(sectionNode);
+         this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
       }
 
       private boolean inRange(final int chunkX, final int chunkZ) {

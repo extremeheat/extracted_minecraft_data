@@ -2,6 +2,7 @@ package com.mojang.renderpearl.backend.vulkan;
 
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.backend.common.BaseGpuTexture;
 import java.nio.LongBuffer;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -15,7 +16,7 @@ import org.lwjgl.vulkan.VkImageMemoryBarrier;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
 import org.lwjgl.vulkan.VkMemoryBarrier;
 
-public class VulkanGpuTexture extends GpuTexture implements Destroyable {
+public class VulkanGpuTexture extends BaseGpuTexture implements Destroyable {
    private final VulkanDevice device;
    private final long vkImage;
    private final long vmaAllocation;
@@ -61,7 +62,7 @@ public class VulkanGpuTexture extends GpuTexture implements Destroyable {
          subresourceRange.levelCount(this.getMipLevels());
          subresourceRange.baseArrayLayer(0);
          subresourceRange.layerCount(depthOrLayers);
-         VK12.vkCmdPipelineBarrier(device.createCommandEncoder().textureInitCommandBuffer(), 1, 65536, 0, (VkMemoryBarrier.Buffer)null, (VkBufferMemoryBarrier.Buffer)null, barrier);
+         VK12.vkCmdPipelineBarrier(device.createCommandEncoder().objectInitCommandBuffer(), 1, 8192, 0, (VkMemoryBarrier.Buffer)null, (VkBufferMemoryBarrier.Buffer)null, barrier);
          device.instance().debug().setObjectName(device.vkDevice(), 10, this.vkImage, label);
       } catch (Throwable var17) {
          if (stack != null) {

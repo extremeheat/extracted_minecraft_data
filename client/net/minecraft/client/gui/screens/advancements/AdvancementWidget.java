@@ -3,7 +3,9 @@ package net.minecraft.client.gui.screens.advancements;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.DisplayInfo;
@@ -40,7 +42,6 @@ public class AdvancementWidget {
    private static final int TITLE_MAX_WIDTH = 163;
    private static final int TITLE_MIN_WIDTH = 80;
    private static final int[] TEST_SPLIT_OFFSETS = new int[]{0, 10, -10, 25, -25};
-   private final AdvancementTab tab;
    private final AdvancementNode advancementNode;
    private final DisplayInfo display;
    private final ItemStack icon;
@@ -54,29 +55,33 @@ public class AdvancementWidget {
    private final int x;
    private final int y;
 
-   public AdvancementWidget(final AdvancementTab tab, final Minecraft minecraft, final AdvancementNode advancementNode, final DisplayInfo display) {
+   private AdvancementWidget(final Minecraft minecraft, final AdvancementNode advancementNode, final DisplayInfo display) {
       super();
-      this.tab = tab;
       this.advancementNode = advancementNode;
       this.display = display;
       this.minecraft = minecraft;
-      this.titleLines = minecraft.font.split(display.getTitle(), 163);
-      this.x = Mth.floor(display.getX() * 28.0F);
-      this.y = Mth.floor(display.getY() * 27.0F);
+      this.titleLines = minecraft.font.split(display.title(), 163);
+      this.x = Mth.floor(advancementNode.x() * 28.0F);
+      this.y = Mth.floor(advancementNode.y() * 27.0F);
       Stream var10000 = this.titleLines.stream();
       Font var10001 = minecraft.font;
       Objects.requireNonNull(var10001);
       int titleWidth = Math.max(var10000.mapToInt(var10001::width).max().orElse(0), 80);
       int maxProgressWidth = this.getMaxProgressWidth();
       int longestDescLine = 29 + titleWidth + maxProgressWidth;
-      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(display.getDescription(), Style.EMPTY.withColor(display.getType().getChatColor())), longestDescLine));
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(display.description(), Style.EMPTY.withColor(display.type().getChatColor())), longestDescLine));
 
       for(FormattedCharSequence line : this.description) {
          longestDescLine = Math.max(longestDescLine, minecraft.font.width(line));
       }
 
       this.width = longestDescLine + 3 + 5;
-      this.icon = display.getIcon().create();
+      this.icon = display.icon().create();
+   }
+
+   public static @Nullable AdvancementWidget createWidget(final Minecraft minecraft, final AdvancementNode node) {
+      Optional<DisplayInfo> display = node.advancement().display();
+      return display.isEmpty() ? null : new AdvancementWidget(minecraft, node, (DisplayInfo)display.get());
    }
 
    private int getMaxProgressWidth() {
@@ -117,13 +122,13 @@ public class AdvancementWidget {
       return bestSplit;
    }
 
-   private @Nullable AdvancementWidget getFirstVisibleParent(AdvancementNode node) {
+   private static @Nullable AdvancementHolder findFirstVisibleParent(AdvancementNode node) {
       do {
          node = node.parent();
       } while(node != null && node.advancement().display().isEmpty());
 
       if (node != null && !node.advancement().display().isEmpty()) {
-         return this.tab.getWidget(node.holder());
+         return node.holder();
       } else {
          return null;
       }
@@ -160,7 +165,7 @@ public class AdvancementWidget {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
-      if (!this.display.isHidden() || this.progress != null && this.progress.isDone()) {
+      if (!this.display.hidden() || this.progress != null && this.progress.isDone()) {
          float amount = this.progress == null ? 0.0F : this.progress.getPercent();
          AdvancementWidgetType iconFrame;
          if (amount >= 1.0F) {
@@ -169,7 +174,7 @@ public class AdvancementWidget {
             iconFrame = AdvancementWidgetType.UNOBTAINED;
          }
 
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.type()), xo + this.x + 3, yo + this.y, 26, 26);
          graphics.fakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
       }
 
@@ -191,7 +196,7 @@ public class AdvancementWidget {
       this.children.add(widget);
    }
 
-   public void extractHover(final GuiGraphicsExtractor graphics, final int xo, final int yo, final float fade, final int screenxo, final int screenyo) {
+   public void extractHover(final GuiGraphicsExtractor graphics, final int xo, final int yo, final float fade, final int screenxo, final int screenyo, final int screenWidth) {
       Font font = this.minecraft.font;
       Objects.requireNonNull(font);
       int titleBarHeight = 9 * this.titleLines.size() + 9 + 8;
@@ -201,7 +206,7 @@ public class AdvancementWidget {
       Objects.requireNonNull(font);
       int descriptionTextHeight = var10000 * 9;
       int descriptionHeight = 6 + descriptionTextHeight;
-      boolean leftSide = screenxo + xo + this.x + this.width + 26 >= this.tab.getScreen().width;
+      boolean leftSide = screenxo + xo + this.x + this.width + 26 >= screenWidth;
       Component progressText = this.progress == null ? null : this.progress.getProgressText();
       int progressWidth = progressText == null ? 0 : font.width((FormattedText)progressText);
       boolean topSide = titleBarBottom + descriptionHeight >= 113;
@@ -255,7 +260,7 @@ public class AdvancementWidget {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, firstHalf.boxSprite(), titleLeft, titleTop, this.width, titleBarHeight);
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.type()), xo + this.x + 3, yo + this.y, 26, 26);
       int descriptionLeft = titleLeft + 5;
       if (leftSide) {
          this.extractMultilineText(graphics, this.titleLines, descriptionLeft, titleTop + 9, -1);
@@ -290,7 +295,7 @@ public class AdvancementWidget {
    }
 
    public boolean isMouseOver(final int xo, final int yo, final int mouseX, final int mouseY) {
-      if (!this.display.isHidden() || this.progress != null && this.progress.isDone()) {
+      if (!this.display.hidden() || this.progress != null && this.progress.isDone()) {
          int x0 = xo + this.x;
          int x1 = x0 + 26;
          int y0 = yo + this.y;
@@ -301,11 +306,14 @@ public class AdvancementWidget {
       }
    }
 
-   public void attachToParent() {
-      if (this.parent == null && this.advancementNode.parent() != null) {
-         this.parent = this.getFirstVisibleParent(this.advancementNode);
-         if (this.parent != null) {
-            this.parent.addChild(this);
+   public void attachToParent(final AdvancementTab tab) {
+      if (this.parent == null) {
+         AdvancementHolder result = findFirstVisibleParent(this.advancementNode);
+         if (result != null) {
+            this.parent = tab.getWidget(result);
+            if (this.parent != null) {
+               this.parent.addChild(this);
+            }
          }
       }
 
@@ -317,5 +325,13 @@ public class AdvancementWidget {
 
    public int getX() {
       return this.x;
+   }
+
+   public AdvancementHolder getAdvancement() {
+      return this.advancementNode.holder();
+   }
+
+   public DisplayInfo getDisplay() {
+      return this.display;
    }
 }

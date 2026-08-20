@@ -2,10 +2,12 @@ package net.minecraft.client.gui.components.tabs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -195,9 +197,9 @@ public class TabNavigationBar extends AbstractContainerWidget {
    }
 
    private int getNextTabIndex(final int currentTab, final KeyEvent event) {
-      int digit = event.getDigit();
-      if (digit != -1) {
-         return Math.floorMod(digit - 1, 10);
+      OptionalInt numericKeyValue = InputConstants.getKey(event).getNumericKeyValue();
+      if (numericKeyValue.isPresent()) {
+         return Math.floorMod(numericKeyValue.getAsInt() - 1, 10);
       } else if (event.isCycleFocus() && currentTab != -1) {
          int nextTabIndex = event.hasShiftDown() ? currentTab - 1 : currentTab + 1;
          int index = Math.floorMod(nextTabIndex, this.tabs.size());

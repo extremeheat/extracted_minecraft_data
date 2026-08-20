@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -22,8 +22,8 @@ public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
    private final Optional<Boolean> trail;
    private final Optional<Boolean> twinkle;
 
-   public SetFireworkExplosionFunction(final List<LootItemCondition> predicates, final Optional<FireworkExplosion.Shape> shape, final Optional<IntList> colors, final Optional<IntList> fadeColors, final Optional<Boolean> hasTrail, final Optional<Boolean> hasTwinkle) {
-      super(predicates);
+   public SetFireworkExplosionFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<FireworkExplosion.Shape> shape, final Optional<IntList> colors, final Optional<IntList> fadeColors, final Optional<Boolean> hasTrail, final Optional<Boolean> hasTwinkle) {
+      super(condition);
       this.shape = shape;
       this.colors = colors;
       this.fadeColors = fadeColors;

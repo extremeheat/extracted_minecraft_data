@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -15,8 +16,8 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
    private static final int TEXTURE_HEIGHT = 16;
    private final Identifier texture;
 
-   public HangingSignEditScreen(final SignBlockEntity sign, final boolean isFrontText, final boolean shouldFilter) {
-      super(sign, isFrontText, shouldFilter, Component.translatable("hanging_sign.edit"));
+   public HangingSignEditScreen(final SignBlockEntity sign, final SignTextSlot slot, final boolean shouldFilter) {
+      super(sign, slot, shouldFilter, Component.translatable("hanging_sign.edit"));
       this.texture = Identifier.withDefaultNamespace("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
    }
 

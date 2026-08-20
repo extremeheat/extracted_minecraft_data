@@ -1,22 +1,29 @@
 package net.minecraft.world.item.slot;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 
 public interface SlotSources {
-   Codec<SlotSource> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(BuiltInRegistries.SLOT_SOURCE_TYPE.byNameCodec().dispatch(SlotSource::codec, (c) -> c), GroupSlotSource.INLINE_CODEC));
-   Codec<Holder<SlotSource>> CODEC = RegistryFileCodec.<Holder<SlotSource>>create(Registries.SLOT_SOURCE, DIRECT_CODEC);
+   Codec<SlotSource> TYPED_CODEC = BuiltInRegistries.SLOT_SOURCE_TYPE.byNameCodec().dispatch(SlotSource::codec, (c) -> c);
+   Codec<SlotSource> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.either(TYPED_CODEC, GroupSlotSource.INLINE_CODEC).xmap((typedOrInline) -> (SlotSource)typedOrInline.map((e) -> e, (e) -> e), (slotSource) -> {
+         Either var10000;
+         if (slotSource instanceof GroupSlotSource composite) {
+            var10000 = Either.right(composite);
+         } else {
+            var10000 = Either.left(slotSource);
+         }
+
+         return var10000;
+      }));
+   Codec<Holder<SlotSource>> CODEC = RegistryCodecs.holder(Registries.SLOT_SOURCE, DIRECT_CODEC);
+   Codec<HolderSet<SlotSource>> LIST_CODEC = RegistryCodecs.holderSet(Registries.SLOT_SOURCE, TYPED_CODEC);
 
    static MapCodec<? extends SlotSource> bootstrap(final Registry<MapCodec<? extends SlotSource>> registry) {
       Registry.register(registry, (String)"group", GroupSlotSource.MAP_CODEC);
@@ -24,39 +31,6 @@ public interface SlotSources {
       Registry.register(registry, (String)"limit_slots", LimitSlotSource.MAP_CODEC);
       Registry.register(registry, (String)"slot_range", RangeSlotSource.MAP_CODEC);
       Registry.register(registry, (String)"contents", ContentsSlotSource.MAP_CODEC);
-      Registry.register(registry, (String)"reference", SlotSourceReference.MAP_CODEC);
       return (MapCodec)Registry.register(registry, (String)"empty", EmptySlotSource.MAP_CODEC);
-   }
-
-   static Function<LootContext, SlotCollection> group(final Collection<? extends SlotSource> list) {
-      List<SlotSource> terms = List.copyOf(list);
-      Function var10000;
-      switch (terms.size()) {
-         case 0:
-            var10000 = (context) -> SlotCollection.EMPTY;
-            break;
-         case 1:
-            SlotSource var4 = (SlotSource)terms.getFirst();
-            Objects.requireNonNull(var4);
-            var10000 = var4::provide;
-            break;
-         case 2:
-            SlotSource first = (SlotSource)terms.get(0);
-            SlotSource second = (SlotSource)terms.get(1);
-            var10000 = (context) -> SlotCollection.concat(first.provide(context), second.provide(context));
-            break;
-         default:
-            var10000 = (context) -> {
-               List<SlotCollection> collections = new ArrayList();
-
-               for(SlotSource term : terms) {
-                  collections.add(term.provide(context));
-               }
-
-               return SlotCollection.concat(collections);
-            };
-      }
-
-      return var10000;
    }
 }

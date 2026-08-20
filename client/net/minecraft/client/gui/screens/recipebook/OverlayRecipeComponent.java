@@ -104,7 +104,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() != 0) {
+      if (event.button() != 1) {
          return false;
       } else {
          for(OverlayRecipeButton recipeButton : this.recipeButtons) {

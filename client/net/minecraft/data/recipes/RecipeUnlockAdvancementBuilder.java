@@ -9,6 +9,7 @@ import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 
@@ -27,7 +28,7 @@ public class RecipeUnlockAdvancementBuilder {
       if (this.criteria.isEmpty()) {
          throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(id.identifier()));
       } else {
-         Advancement.Builder advancement = output.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id)).rewards(AdvancementRewards.Builder.recipe(id)).requirements(AdvancementRequirements.Strategy.OR);
+         Advancement.Builder advancement = output.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(output.lookup(Registries.RECIPE).getOrThrow(id))).rewards(AdvancementRewards.Builder.recipe(id)).requirements(AdvancementRequirements.Strategy.OR);
          Map var10000 = this.criteria;
          Objects.requireNonNull(advancement);
          var10000.forEach(advancement::addCriterion);

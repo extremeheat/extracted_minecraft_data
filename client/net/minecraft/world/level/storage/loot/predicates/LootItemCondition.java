@@ -4,15 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 
 public interface LootItemCondition extends LootContextUser, Predicate<LootContext> {
-   Codec<LootItemCondition> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(BuiltInRegistries.LOOT_CONDITION_TYPE.byNameCodec().dispatch("condition", LootItemCondition::codec, (c) -> c), AllOfCondition.INLINE_CODEC));
-   Codec<Holder<LootItemCondition>> CODEC = RegistryFileCodec.<Holder<LootItemCondition>>create(Registries.PREDICATE, DIRECT_CODEC);
+   Codec<LootItemCondition> DIRECT_CODEC = BuiltInRegistries.LOOT_CONDITION_TYPE.byNameCodec().dispatch(LootItemCondition::codec, (c) -> c);
+   Codec<Holder<LootItemCondition>> CODEC = RegistryCodecs.holder(Registries.PREDICATE, DIRECT_CODEC);
+   Codec<HolderSet<LootItemCondition>> LIST_CODEC = RegistryCodecs.holderSet(Registries.PREDICATE, DIRECT_CODEC);
 
    MapCodec<? extends LootItemCondition> codec();
 

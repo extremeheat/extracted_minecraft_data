@@ -86,19 +86,19 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return !isHanging(state) || !isFullyGrown(state);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(level, random, pos, state);
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
+      return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(level, random, pos, state, source);
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (isHanging(state) && !isFullyGrown(state)) {
          level.setBlock(pos, (BlockState)state.cycle(AGE), 2);
       } else {
-         super.performBonemeal(level, random, pos, state);
+         super.performBonemeal(level, random, pos, state, source);
       }
 
    }

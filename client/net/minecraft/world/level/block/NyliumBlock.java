@@ -35,29 +35,19 @@ public class NyliumBlock extends Block implements BonemealableBlock {
 
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      BlockState blockState = level.getBlockState(pos);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos abovePos = pos.above();
       ChunkGenerator generator = level.getChunkSource().getGenerator();
       Registry<Feature> configuredFeatures = level.registryAccess().lookupOrThrow(Registries.FEATURE);
-      if (blockState.is(Blocks.CRIMSON_NYLIUM)) {
-         this.place(configuredFeatures, NetherFeatures.CRIMSON_FOREST_VEGETATION_BONEMEAL, level, generator, random, abovePos);
-      } else if (blockState.is(Blocks.WARPED_NYLIUM)) {
-         this.place(configuredFeatures, NetherFeatures.WARPED_FOREST_VEGETATION_BONEMEAL, level, generator, random, abovePos);
-         this.place(configuredFeatures, NetherFeatures.NETHER_SPROUTS_BONEMEAL, level, generator, random, abovePos);
-         if (random.nextInt(8) == 0) {
-            this.place(configuredFeatures, NetherFeatures.TWISTING_VINES_BONEMEAL, level, generator, random, abovePos);
-         }
-      }
-
+      this.place(configuredFeatures, NetherFeatures.NYLIUM_BONEMEAL, level, generator, random, abovePos);
    }
 
    private void place(final Registry<Feature> configuredFeatures, final ResourceKey<Feature> id, final ServerLevel level, final ChunkGenerator generator, final RandomSource random, final BlockPos pos) {

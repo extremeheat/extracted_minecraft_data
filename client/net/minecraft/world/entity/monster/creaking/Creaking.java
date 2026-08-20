@@ -19,6 +19,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -306,7 +307,7 @@ public class Creaking extends Monster {
       this.makeSound(SoundEvents.CREAKING_TWITCH);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 66) {
          this.invulnerabilityAnimationRemainingTicks = 8;
          this.playHurtSound(this.damageSources().generic());

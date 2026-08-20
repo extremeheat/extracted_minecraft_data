@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 public class BlockFamilies {
    private static final Map<Block, BlockFamily> MAP = Maps.newHashMap();
    private static final String RECIPE_GROUP_PREFIX_WOODEN = "wooden";
+   private static final String RECIPE_GROUP_PREFIX_WOOLEN = "woolen";
    private static final String RECIPE_UNLOCKED_BY_HAS_PLANKS = "has_planks";
    public static final BlockFamily ACACIA_PLANKS;
    public static final BlockFamily CHERRY_PLANKS;
@@ -78,6 +79,7 @@ public class BlockFamilies {
    public static final BlockFamily DEEPSLATE_BRICKS;
    public static final BlockFamily DEEPSLATE_TILES;
    public static final ColorCollection<BlockFamily> WOOL;
+   public static final ColorCollection<BlockFamily> CONCRETE;
 
    public BlockFamilies() {
       super();
@@ -165,6 +167,7 @@ public class BlockFamilies {
       POLISHED_DEEPSLATE = familyBuilder(Blocks.POLISHED_DEEPSLATE).slab(Blocks.POLISHED_DEEPSLATE_SLAB).stairs(Blocks.POLISHED_DEEPSLATE_STAIRS).wall(Blocks.POLISHED_DEEPSLATE_WALL).bricks(Blocks.DEEPSLATE_BRICKS).generateStonecutterRecipe().getFamily();
       DEEPSLATE_BRICKS = familyBuilder(Blocks.DEEPSLATE_BRICKS).slab(Blocks.DEEPSLATE_BRICK_SLAB).stairs(Blocks.DEEPSLATE_BRICK_STAIRS).wall(Blocks.DEEPSLATE_BRICK_WALL).cracked(Blocks.CRACKED_DEEPSLATE_BRICKS).tiles(Blocks.DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
       DEEPSLATE_TILES = familyBuilder(Blocks.DEEPSLATE_TILES).slab(Blocks.DEEPSLATE_TILE_SLAB).stairs(Blocks.DEEPSLATE_TILE_STAIRS).wall(Blocks.DEEPSLATE_TILE_WALL).cracked(Blocks.CRACKED_DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
-      WOOL = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.WOOL.pick(color)).carpet(Blocks.CARPET.pick(color)).stairs(Blocks.WOOL_STAIRS.pick(color)).slab(Blocks.WOOL_SLAB.pick(color)).getFamily());
+      WOOL = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.WOOL.pick(color)).carpet(Blocks.CARPET.pick(color)).stairs(Blocks.WOOL_STAIRS.pick(color)).slab(Blocks.WOOL_SLAB.pick(color)).recipeGroupPrefix("woolen").getFamily());
+      CONCRETE = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.CONCRETE.pick(color)).stairs(Blocks.CONCRETE_STAIRS.pick(color)).slab(Blocks.CONCRETE_SLAB.pick(color)).recipeGroupPrefix("concrete").generateStonecutterRecipe().getFamily());
    }
 }

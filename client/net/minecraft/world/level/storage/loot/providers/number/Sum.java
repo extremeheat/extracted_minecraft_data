@@ -1,50 +1,44 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
+import com.google.common.primitives.Ints;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
-import net.minecraft.util.Mth;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.Validatable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
 
-public record Sum(List<NumberProvider> summands) implements NumberProvider {
-   public static final MapCodec<Sum> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.DIRECT_CODEC.listOf().fieldOf("summands").forGetter(Sum::summands)).apply(i, Sum::new));
+public record Sum(HolderSet<NumberProvider> operands) implements Aggregate {
+   public static final MapCodec<Sum> MAP_CODEC = Aggregate.<Sum>codec(Sum::new);
 
    public Sum {
       super();
    }
 
-   public static Sum sum(final NumberProvider... summands) {
-      return new Sum(List.of(summands));
+   @SafeVarargs
+   public static Holder<NumberProvider> sum(final Holder<NumberProvider>... operands) {
+      return Holder.<NumberProvider>direct(new Sum(HolderSet.direct(operands)));
    }
 
    public MapCodec<Sum> codec() {
       return MAP_CODEC;
    }
 
-   public int getInt(final LootContext context) {
-      float value = 0.0F;
-
-      for(NumberProvider provider : this.summands) {
-         value += provider.getFloat(context);
-      }
-
-      return Mth.floor(value);
-   }
-
    public float getFloat(final LootContext context) {
       float value = 0.0F;
 
-      for(NumberProvider provider : this.summands) {
-         value += provider.getFloat(context);
+      for(Holder<NumberProvider> operand : this.operands) {
+         value += ((NumberProvider)operand.value()).getFloat(context);
       }
 
       return value;
    }
 
-   public void validate(final ValidationContext context) {
-      NumberProvider.super.validate(context);
-      Validatable.validate(context, "summands", this.summands);
+   public int getInt(final LootContext context) {
+      long value = 0L;
+
+      for(Holder<NumberProvider> operand : this.operands) {
+         value += (long)((NumberProvider)operand.value()).getInt(context);
+      }
+
+      return Ints.saturatedCast(value);
    }
 }

@@ -81,12 +81,20 @@ public class PlacementUtils {
       return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(block));
    }
 
-   public static Holder<PlacedFeature> inlinePlaced(final Holder<Feature> configuredFeature, final PlacementModifier... placedFeatures) {
-      return Holder.<PlacedFeature>direct(new PlacedFeature(configuredFeature, List.of(placedFeatures)));
+   public static Holder<PlacedFeature> inlinePlaced(final Holder<Feature> feature, final List<PlacementModifier> placementModifiers) {
+      return Holder.<PlacedFeature>direct(new PlacedFeature(feature, placementModifiers));
    }
 
-   public static Holder<PlacedFeature> inlinePlaced(final Feature feature, final PlacementModifier... placedFeatures) {
-      return inlinePlaced(Holder.direct(feature), placedFeatures);
+   public static Holder<PlacedFeature> inlinePlaced(final Holder<Feature> feature, final PlacementModifier... placementModifiers) {
+      return inlinePlaced(feature, List.of(placementModifiers));
+   }
+
+   public static Holder<PlacedFeature> inlinePlaced(final Feature feature, final PlacementModifier... placementModifiers) {
+      return inlinePlaced(Holder.direct(feature), placementModifiers);
+   }
+
+   public static Holder<PlacedFeature> inlinePlaced(final Feature feature, final List<PlacementModifier> placementModifiers) {
+      return inlinePlaced(Holder.direct(feature), placementModifiers);
    }
 
    static {

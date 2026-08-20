@@ -111,7 +111,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
          return input;
       } else {
          BlockState targetBlockState = level.getBlockState(targetPos);
-         return Math.max(input, targetBlockState.is(Blocks.REDSTONE_WIRE) ? (Integer)targetBlockState.getValue(RedStoneWireBlock.POWER) : 0);
+         return Math.max(input, targetBlockState.is(Blocks.REDSTONE_WIRE) ? (Integer)targetBlockState.getValue(RedstoneWireBlock.POWER) : 0);
       }
    }
 

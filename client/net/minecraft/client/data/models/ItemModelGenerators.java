@@ -8,7 +8,6 @@ import java.util.function.BiConsumer;
 import net.minecraft.client.color.item.Dye;
 import net.minecraft.client.color.item.Firework;
 import net.minecraft.client.color.item.ItemTintSource;
-import net.minecraft.client.color.item.MapColor;
 import net.minecraft.client.color.item.Potion;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelInstance;
@@ -90,6 +89,11 @@ public class ItemModelGenerators {
 
    private void generateFlatItem(final Item item, final Item textureDonor, final ModelTemplate template) {
       this.itemModelOutput.accept(item, ItemModelUtils.plainModel(this.createFlatItemModel(item, textureDonor, template)));
+   }
+
+   private void generateFlatItem(final Item item, final Identifier textureId, final ModelTemplate template) {
+      Identifier model = template.create(ModelLocationUtils.getModelLocation(item), TextureMapping.layer0(new Material(textureId)), this.modelOutput);
+      this.itemModelOutput.accept(item, ItemModelUtils.plainModel(model));
    }
 
    private void generateItemWithTintedOverlay(final Item item, final ItemTintSource overlayTint) {
@@ -626,7 +630,23 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.OMINOUS_TRIAL_KEY, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
       this.generateItemWithTintedOverlay(Items.FIREWORK_STAR, new Firework());
-      this.generateItemWithTintedOverlay(Items.FILLED_MAP, "_markings", new MapColor());
+      this.generateFlatItem(Items.FILLED_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OCEAN_EXPLORER_MAP, Identifier.withDefaultNamespace("item/ocean_monument_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WOODLAND_EXPLORER_MAP, Identifier.withDefaultNamespace("item/woodland_mansion_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TRIAL_EXPLORER_MAP, Identifier.withDefaultNamespace("item/trial_chamber_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.JUNGLE_EXPLORER_MAP, Identifier.withDefaultNamespace("item/jungle_temple_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SWAMP_EXPLORER_MAP, Identifier.withDefaultNamespace("item/swamp_hut_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DESERT_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PLAINS_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SAVANNA_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SNOWY_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TAIGA_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BURIED_TREASURE_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BURIED_ANCIENT_CITY_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BURIED_MINESHAFT_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DESERT_PYRAMID_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ABANDONED_CAMP_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WARM_OCEAN_RUINS_MAP, ModelTemplates.FLAT_ITEM);
       this.generateBundleModels(Items.BUNDLE);
       Items.DYED_BUNDLE.forEach(this::generateBundleModels);
       this.generateSpyglass(Items.SPYGLASS);

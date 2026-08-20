@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
@@ -66,7 +67,6 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    private final float[] paddlePositions = new float[2];
    private float outOfControlTicks;
    private float deltaRotation;
-   private final InterpolationHandler interpolation = new LinearInterpolationHandler(this, 3);
    private boolean inputLeft;
    private boolean inputRight;
    private boolean inputUp;
@@ -186,8 +186,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return !this.isRemoved();
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
+   protected InterpolationHandler createInterpolationHandler() {
+      return LinearInterpolationHandler.create(this, 3);
    }
 
    public Direction getMotionDirection() {
@@ -216,7 +216,6 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       }
 
       super.tick();
-      this.interpolation.interpolate();
       if (this.isLocalInstanceAuthoritative()) {
          if (!(this.getFirstPassenger() instanceof Player)) {
             this.setPaddleState(false, false);
@@ -231,6 +230,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          this.move(MoverType.SELF, this.getDeltaMovement());
       } else {
          this.setDeltaMovement(Vec3.ZERO);
+         this.deltaRotation = 0.0F;
       }
 
       this.applyEffectsFromBlocks();
@@ -313,7 +313,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       super.handleEntityEvent(id);
       if (id == 71) {
          this.handleBubbleColumnEffect(true);
@@ -623,8 +623,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
       super.positionRider(passenger, moveFunction);
       if (!passenger.is(EntityTypeTags.CAN_TURN_IN_BOATS)) {
-         passenger.setYRot(passenger.getYRot() + this.deltaRotation);
-         passenger.setYHeadRot(passenger.getYHeadRot() + this.deltaRotation);
+         if (passenger.isLocalInstanceAuthoritative()) {
+            passenger.setYRot(passenger.getYRot() + this.deltaRotation);
+            passenger.setYHeadRot(passenger.getYHeadRot() + this.deltaRotation);
+         }
+
          this.clampRotation(passenger);
       }
    }
@@ -664,22 +667,20 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return super.getDismountLocationForPassenger(passenger);
    }
 
-   protected void clampRotation(final Entity passenger) {
+   protected float clampRotation(final Entity passenger) {
       float passengerBodyYRot = this.calculatePassengerBodyYRot(passenger);
       passenger.setYBodyRot(passengerBodyYRot);
       if (passenger instanceof Mob mob) {
-         passenger.yRotO += Mth.wrapDegrees(passengerBodyYRot - passenger.getYRot());
          passenger.setYRot(passengerBodyYRot);
          mob.clampHeadRotationToBody();
+         return Mth.wrapDegrees(passengerBodyYRot - passenger.getYRot());
       } else {
          float delta = Mth.wrapDegrees(passenger.getYRot() - passengerBodyYRot);
          float maxHeadRotation = 105.0F;
          float targetDelta = Mth.clamp(delta, -105.0F, 105.0F);
-         passenger.yRotO += targetDelta - delta;
          passenger.setYRot(passenger.getYRot() + targetDelta - delta);
-         passenger.setYHeadRot(passenger.getYRot());
+         return targetDelta - delta;
       }
-
    }
 
    private float calculatePassengerBodyYRot(final Entity passenger) {
@@ -687,7 +688,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public void onPassengerTurned(final Entity passenger) {
-      this.clampRotation(passenger);
+      float yDelta = this.clampRotation(passenger);
+      passenger.yRotO += yDelta;
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

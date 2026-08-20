@@ -27,8 +27,14 @@ public class PotDecorationsComponentUnflatteningFix extends DataFix {
          List<Optional<String>> decorationIdList = ((Stream)decorationIds.get()).map((s) -> s.asString().result()).toList();
          Map<Dynamic<T>, Dynamic<T>> result = new HashMap(4);
 
-         for(int i = 0; i < decorationIdList.size(); ++i) {
-            Optional<String> decorationId = (Optional)decorationIdList.get(i);
+         for(int i = 0; i < 4; ++i) {
+            String decorationId;
+            if (i < decorationIdList.size()) {
+               decorationId = (String)((Optional)decorationIdList.get(i)).orElse("minecraft:brick");
+            } else {
+               decorationId = "minecraft:brick";
+            }
+
             if (decorationId.isEmpty()) {
                return original;
             }
@@ -39,14 +45,12 @@ public class PotDecorationsComponentUnflatteningFix extends DataFix {
                case 1 -> var10000 = "left";
                case 2 -> var10000 = "right";
                case 3 -> var10000 = "front";
-               default -> var10000 = null;
+               default -> throw new IndexOutOfBoundsException();
             }
 
             String sideName = var10000;
-            if (sideName != null) {
-               Map<Dynamic<T>, Dynamic<T>> newStack = Map.of(original.createString("id"), original.createString((String)decorationId.get()));
-               result.put(original.createString(sideName), original.createMap(newStack));
-            }
+            Map<Dynamic<T>, Dynamic<T>> newStack = Map.of(original.createString("id"), original.createString(decorationId));
+            result.put(original.createString(sideName), original.createMap(newStack));
          }
 
          return original.createMap(result);

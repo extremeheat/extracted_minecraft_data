@@ -83,7 +83,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
 
    public void handleUpdateTags(final ClientboundUpdateTagsPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.registryDataCollector.appendTags(packet.getTags());
+      this.registryDataCollector.appendTags(packet.tags());
    }
 
    public void handleEnabledFeatures(final ClientboundUpdateEnabledFeaturesPacket packet) {
@@ -155,6 +155,10 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
          }
 
          public boolean hasInfiniteMaterials() {
+            return true;
+         }
+
+         public boolean canUseCommandBlocks() {
             return true;
          }
       }));

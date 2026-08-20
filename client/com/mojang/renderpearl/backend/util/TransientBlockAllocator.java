@@ -1,14 +1,17 @@
 package com.mojang.renderpearl.backend.util;
 
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongFunction;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.system.MemoryUtil;
 
-public class TransientBlockAllocator<T> implements AutoCloseable {
+public class TransientBlockAllocator<T extends TransientBlockAllocator.Allocator.Block> implements UncheckedAutoCloseable {
    private final long blockSize;
    private final long maxAlignment;
    private final Allocator<T> allocator;
@@ -62,11 +65,18 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
          ReferenceArrayList<T> specialBlocksUsedThisRotation = this.specialBlocks.clone();
          this.specialBlocks.clear();
          return () -> {
-            if (!blocksUsedThisRotation.isEmpty()) {
-               this.allocator.free(blocksUsedThisRotation.pop());
+            this.freeBlocks.ensureCapacity(this.freeBlocks.size() + blocksUsedThisRotation.size());
+            Iterator i$ = blocksUsedThisRotation.iterator();
+
+            while(i$.hasNext()) {
+               T usedBlock = (T)(i$.next());
+               if (usedBlock.suboptimal()) {
+                  this.allocator.free(usedBlock);
+               } else {
+                  this.freeBlocks.add(usedBlock);
+               }
             }
 
-            this.freeBlocks.addAll(blocksUsedThisRotation);
             Allocator var10001 = this.allocator;
             Objects.requireNonNull(var10001);
             specialBlocksUsedThisRotation.forEach(var10001::free);
@@ -98,7 +108,7 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
          this.freeBlocks.add(this.allocator.alloc(this.blockSize));
       }
 
-      T block = (T)this.freeBlocks.pop();
+      T block = (T)(this.freeBlocks.pop());
       this.onBlockUse.accept(block);
       this.usedBlocks.add(block);
       return block;
@@ -116,7 +126,7 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
          return new Allocation<T>(specialBlock, 0L, size);
       } else {
          if (this.currentBlock == null) {
-            this.currentBlock = (T)this.allocateBlock();
+            this.currentBlock = this.allocateBlock();
             this.currentOffset = 0L;
          }
 
@@ -136,7 +146,7 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
             T block = this.currentBlock;
             return new Allocation<T>(block, alignedOffset, allocatedSize);
          } else {
-            T newBlock = (T)this.allocateBlock();
+            T newBlock = this.allocateBlock();
             if (this.currentOffset > size) {
                this.currentBlock = newBlock;
                this.currentOffset = size;
@@ -153,21 +163,42 @@ public class TransientBlockAllocator<T> implements AutoCloseable {
       }
    }
 
-   public interface Allocator<T> {
+   public interface Allocator<T extends Allocator.Block> {
       T alloc(long size);
 
       void free(T t);
 
-      static <T> Allocator<T> create(final LongFunction<T> alloc, final Consumer<T> free) {
+      static <T extends Block> Allocator<T> create(final LongFunction<T> alloc, final Consumer<T> free) {
          return new Allocator<T>() {
             public T alloc(final long size) {
-               return (T)alloc.apply(size);
+               return (T)((Block)alloc.apply(size));
             }
 
             public void free(final T t) {
                free.accept(t);
             }
          };
+      }
+
+      public static record CpuBlock(long address) implements Block {
+         public CpuBlock {
+            super();
+            if (address == 0L) {
+               throw new IllegalArgumentException("Failed to allocate CPU block");
+            }
+         }
+
+         public boolean suboptimal() {
+            return false;
+         }
+
+         public static Allocator<CpuBlock> memalloc() {
+            return TransientBlockAllocator.Allocator.<CpuBlock>create((size) -> new CpuBlock(MemoryUtil.nmemAlloc(size)), (block) -> MemoryUtil.nmemFree(block.address));
+         }
+      }
+
+      public interface Block {
+         boolean suboptimal();
       }
    }
 }

@@ -53,6 +53,9 @@ public class ReloadableServerRegistries {
       ValidationContextSource contextSource = new ValidationContextSource(problems, fullContextWithNewTags);
       LootDataType.values().forEach((lootDataType) -> lootDataType.runValidation(contextSource, fullContextWithNewTags));
       problems.forEach((id, problem) -> LOGGER.warn("Found loot table element validation problem in {}: {}", id, problem.description()));
+      if (problems.hasFatalProblems()) {
+         throw new IllegalStateException("Found loot table validation problems");
+      }
    }
 
    public static record LoadResult(LayeredRegistryAccess<RegistryLayer> layers, HolderLookup.Provider lookupWithUpdatedTags) {

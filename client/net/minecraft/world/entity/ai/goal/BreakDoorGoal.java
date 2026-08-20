@@ -57,8 +57,8 @@ public class BreakDoorGoal extends DoorInteractGoal {
       super.tick();
       if (this.mob.getRandom().nextInt(20) == 0) {
          this.mob.level().levelEvent(1019, this.doorPos, 0);
-         if (!this.mob.swinging) {
-            this.mob.swing(this.mob.getUsedItemHand());
+         if (!this.mob.isSwinging()) {
+            this.mob.swingForAttack(this.mob.getUsedItemHand());
          }
       }
 

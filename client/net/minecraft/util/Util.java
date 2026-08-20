@@ -111,6 +111,7 @@ public class Util {
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
    private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS;
    public static final long NANOS_PER_MILLI = 1000000L;
+   public static final long MILLIS_PER_SECOND = 1000L;
    private static TimeSource.NanoTimeSource timeSource;
    private static final TimeSource.NanoTimeSource INDIRECT_TIME_SOURCE;
    public static final Ticker TICKER;
@@ -162,6 +163,10 @@ public class Util {
 
    public static long getEpochMillis() {
       return Instant.now().toEpochMilli();
+   }
+
+   public static long toMillis(final double seconds) {
+      return (long)Mth.floor(seconds * 1000.0);
    }
 
    public static String getFilenameFormattedDateTime() {
@@ -548,6 +553,10 @@ public class Util {
    public static boolean isAarch64() {
       String arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
       return arch.equals("aarch64");
+   }
+
+   public static boolean isAppleSiliconMac(final String renderer) {
+      return renderer.startsWith("Apple");
    }
 
    public static URI parseAndValidateUntrustedUri(final String uri) throws URISyntaxException {

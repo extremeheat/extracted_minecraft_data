@@ -10,7 +10,6 @@ public class IllagerRenderState extends UndeadRenderState {
    public AbstractIllager.IllagerArmPose armPose;
    public int maxCrossbowChargeDuration;
    public float ticksUsingItem;
-   public float attackAnim;
 
    public IllagerRenderState() {
       super();

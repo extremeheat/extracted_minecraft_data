@@ -12,10 +12,13 @@ import java.util.OptionalInt;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.WorldOptionsScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.multiplayer.prediction.PredictiveAction;
+import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -53,6 +56,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.PiercingWeapon;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
@@ -108,6 +112,11 @@ public class MultiPlayerGameMode {
       }
 
       this.localPlayerMode = mode;
+      Screen var3 = this.minecraft.gui.screen();
+      if (var3 instanceof WorldOptionsScreen worldOptionsScreen) {
+         worldOptionsScreen.updatePersonalGameModeButton(mode);
+      }
+
       this.localPlayerMode.updatePlayerAbilities(this.minecraft.player.getAbilities());
    }
 
@@ -403,12 +412,12 @@ public class MultiPlayerGameMode {
       }
    }
 
-   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook) {
-      return this.createPlayer(level, stats, recipeBook, Input.EMPTY, false);
+   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final ItemActivation itemActivation) {
+      return this.createPlayer(level, stats, recipeBook, Input.EMPTY, false, itemActivation);
    }
 
-   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting) {
-      return new LocalPlayer(this.minecraft, level, this.connection, stats, recipeBook, lastSentInput, wasSprinting, this.minecraft.computeChatAbilities());
+   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ItemActivation itemActivation) {
+      return new LocalPlayer(this.minecraft, level, this.connection, stats, recipeBook, lastSentInput, wasSprinting, this.minecraft.computeChatAbilities(), itemActivation);
    }
 
    public void attack(final Player player, final Entity entity) {
@@ -416,7 +425,10 @@ public class MultiPlayerGameMode {
       this.connection.send(new ServerboundAttackPacket(entity.getId()));
       player.attack(entity);
       player.resetAttackStrengthTicker();
-      this.destroyDelay = 5;
+      if (player.getAbilities().instabuild) {
+         this.destroyDelay = 5;
+      }
+
    }
 
    public void spectate(final Entity entity) {
@@ -493,11 +505,12 @@ public class MultiPlayerGameMode {
       player.releaseUsingItem();
    }
 
-   public void piercingAttack(final PiercingWeapon weapon) {
+   public void piercingAttack(final SwingAnimation swingAnimation, final PiercingWeapon weapon) {
       this.ensureHasSentCarriedItem();
       this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
       this.minecraft.player.onAttack();
       this.minecraft.player.postPiercingAttack();
+      this.minecraft.player.swing(InteractionHand.MAIN_HAND, swingAnimation, false);
       weapon.makeSound(this.minecraft.player);
    }
 

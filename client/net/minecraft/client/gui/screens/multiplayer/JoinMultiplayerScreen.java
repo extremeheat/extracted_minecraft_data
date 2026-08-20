@@ -164,7 +164,7 @@ public class JoinMultiplayerScreen extends Screen {
          ServerData current = onlineServerEntry.getServerData();
          current.name = this.editingServer.name;
          current.ip = this.editingServer.ip;
-         current.copyFrom(this.editingServer);
+         current.setState(ServerData.State.INITIAL);
          this.servers.save();
          this.serverSelectionList.updateOnlineServers(this.servers);
       }
@@ -209,7 +209,7 @@ public class JoinMultiplayerScreen extends Screen {
    public boolean keyPressed(final KeyEvent event) {
       if (super.keyPressed(event)) {
          return true;
-      } else if (event.key() == 294) {
+      } else if (event.shortcutKey() == 1073741886) {
          this.refreshServerList();
          return true;
       } else {

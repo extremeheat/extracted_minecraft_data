@@ -1,21 +1,19 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.GpuQueryPool;
+import com.mojang.renderpearl.api.device.BackendCreationException;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.GpuDebugOptions;
 import com.mojang.renderpearl.api.device.GpuOutOfMemoryException;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
-import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import com.mojang.renderpearl.backend.api.CommandEncoderBackend;
 import com.mojang.renderpearl.backend.api.GpuDeviceBackend;
 import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
@@ -23,20 +21,19 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.client.renderer.ShaderManager;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.ARBClipControl;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.sdl.SDLError;
+import org.lwjgl.sdl.SDLVideo;
 import org.slf4j.Logger;
 
 class GlDevice implements GpuDeviceBackend {
@@ -51,66 +48,83 @@ class GlDevice implements GpuDeviceBackend {
    protected static boolean USE_GL_ARB_draw_indirect = true;
    protected static boolean USE_GL_ARB_multi_draw_indirect = true;
    protected static boolean USE_GL_ARB_shader_draw_parameters = true;
+   private final long initialWindowHandle;
+   private final long glContext;
    private final GlCommandEncoder encoder;
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
    private final DirectStateAccess directStateAccess;
    private final FrameBufferCache frameBufferCache = new FrameBufferCache();
-   private final VertexArrayCache vertexArrayCache;
+   private final BiFunction<GlProgram, BackendRenderPipeline.CreateInfo, VertexArray> vertexArraySource;
    private final BufferStorage bufferStorage;
    private final DeviceInfo deviceInfo;
-   private final ShaderDefines globalDefines;
+   private final GlPipelineRecompiler recompiler;
    private boolean shaderCompilerRequiresSacrifice = true;
+   private long currentWindow = 0L;
 
-   public GlDevice(final long windowHandle, final GpuDebugOptions debugOptions) {
+   public GlDevice(final GlBackend backend, final GpuDebugOptions debugOptions) throws BackendCreationException {
       super();
-      GLFW.glfwMakeContextCurrent(windowHandle);
-      GLCapabilities capabilities = GL.createCapabilities();
-      Set<String> enabledExtensions = new HashSet();
-      int maxSupportedAnisotropy;
-      if (capabilities.GL_EXT_texture_filter_anisotropic) {
-         maxSupportedAnisotropy = Mth.floor(GL33C.glGetFloat(34047));
-         enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
+      this.initialWindowHandle = backend.createWindow("Minecraft - RenderPearl OpenGL Hidden Utility Window", 320, 480, 2147614728L);
+      if (this.initialWindowHandle == 0L) {
+         throw new BackendCreationException("Failed to create window for OpenGL context: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.OPENGL_MISSING);
       } else {
-         maxSupportedAnisotropy = 1;
-      }
+         long glContext = SDLVideo.SDL_GL_CreateContext(this.initialWindowHandle);
+         if (glContext == 0L) {
+            SDLVideo.SDL_DestroyWindow(this.initialWindowHandle);
+            throw new BackendCreationException("Failed to create OpenGL context: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.OPENGL_MISSING);
+         } else {
+            this.glContext = glContext;
+            this.makeCurrent(this.initialWindowHandle);
 
-      GlHeuristics heuristics = new GlHeuristics(GlStateManager._getString(7937));
-      this.debugLog = GlDebug.enableDebugCallback(debugOptions.logLevel(), debugOptions.synchronousLogs(), enabledExtensions);
-      this.debugLabels = GlDebugLabel.create(capabilities, debugOptions.useLabels(), enabledExtensions);
-      this.vertexArrayCache = VertexArrayCache.create(capabilities, this.debugLabels, enabledExtensions);
-      this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions);
-      this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
-      GL33C.glEnable(34895);
-      GL33C.glEnable(34370);
-      if (capabilities.GL_ARB_clip_control) {
-         ARBClipControl.glClipControl(36001, 37727);
-         enabledExtensions.add("GL_ARB_clip_control");
-      }
+            try {
+               GLCapabilities capabilities = GL.createCapabilities();
+               Set<String> enabledExtensions = new HashSet();
+               int maxSupportedAnisotropy;
+               if (capabilities.GL_EXT_texture_filter_anisotropic) {
+                  maxSupportedAnisotropy = Mth.floor(GL33C.glGetFloat(34047));
+                  enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
+               } else {
+                  maxSupportedAnisotropy = 1;
+               }
 
-      if (capabilities.GL_ARB_shader_draw_parameters && USE_GL_ARB_shader_draw_parameters) {
-         enabledExtensions.add("GL_ARB_shader_draw_parameters");
-      }
+               GlHeuristics heuristics = new GlHeuristics(GlStateManager._getString(7937), GlStateManager._getString(7936));
+               this.debugLog = GlDebug.enableDebugCallback(debugOptions.logLevel(), debugOptions.synchronousLogs(), enabledExtensions);
+               this.debugLabels = GlDebugLabel.create(capabilities, debugOptions.useLabels(), enabledExtensions);
+               this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions, heuristics.couldBeIntelGen7() || heuristics.isNvidia());
+               this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
+               this.vertexArraySource = VertexArray.createSource(capabilities, enabledExtensions);
+               GL33C.glEnable(34895);
+               GL33C.glEnable(34370);
+               if (capabilities.GL_ARB_clip_control) {
+                  ARBClipControl.glClipControl(36001, 37727);
+                  enabledExtensions.add("GL_ARB_clip_control");
+               }
 
-      if (capabilities.GL_ARB_draw_indirect && USE_GL_ARB_draw_indirect) {
-         enabledExtensions.add("GL_ARB_draw_indirect");
-         if (capabilities.GL_ARB_multi_draw_indirect && USE_GL_ARB_multi_draw_indirect) {
-            enabledExtensions.add("GL_ARB_multi_draw_indirect");
+               if (capabilities.GL_ARB_shader_draw_parameters && USE_GL_ARB_shader_draw_parameters) {
+                  enabledExtensions.add("GL_ARB_shader_draw_parameters");
+               }
+
+               if (capabilities.GL_ARB_draw_indirect && USE_GL_ARB_draw_indirect) {
+                  enabledExtensions.add("GL_ARB_draw_indirect");
+                  if (capabilities.GL_ARB_multi_draw_indirect && USE_GL_ARB_multi_draw_indirect) {
+                     enabledExtensions.add("GL_ARB_multi_draw_indirect");
+                  }
+               }
+
+               if (capabilities.GL_ARB_base_instance && USE_GL_ARB_base_instance) {
+                  enabledExtensions.add("GL_ARB_base_instance");
+               }
+
+               this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
+               this.encoder = new GlCommandEncoder(this);
+               this.recompiler = new GlPipelineRecompiler(this.debugLabels, false);
+            } catch (Throwable throwable) {
+               SDLVideo.SDL_GL_DestroyContext(glContext);
+               SDLVideo.SDL_DestroyWindow(this.initialWindowHandle);
+               throw throwable;
+            }
          }
       }
-
-      if (capabilities.GL_ARB_base_instance && USE_GL_ARB_base_instance) {
-         enabledExtensions.add("GL_ARB_base_instance");
-      }
-
-      this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
-      this.encoder = new GlCommandEncoder(this);
-      ShaderDefines.Builder globalDefinesBuilder = ShaderDefines.builder();
-      if (this.deviceInfo.isZZeroToOne()) {
-         globalDefinesBuilder.define("B3D_DEPTH_IS_ZERO_TO_ONE");
-      }
-
-      this.globalDefines = globalDefinesBuilder.build();
    }
 
    public GlDebugLabel debugLabels() {
@@ -127,10 +141,6 @@ class GlDevice implements GpuDeviceBackend {
 
    public GpuSampler createSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {
       return new GlSampler(addressModeU, addressModeV, minFilter, magFilter, maxAnisotropy, maxLod);
-   }
-
-   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
-      return this.createTexture(this.debugLabels.exists() && label != null ? (String)label.get() : null, usage, format, width, height, depthOrLayers, mipLevels);
    }
 
    public GpuTexture createTexture(@Nullable String label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
@@ -186,10 +196,6 @@ class GlDevice implements GpuDeviceBackend {
       } else {
          throw new IllegalArgumentException(String.valueOf(format) + " format cannot be used to create textures");
       }
-   }
-
-   public GpuTextureView createTextureView(final GpuTexture texture) {
-      return this.createTextureView(texture, 0, texture.getMipLevels());
    }
 
    public GpuTextureView createTextureView(final GpuTexture texture, final int baseMipLevel, final int mipLevels) {
@@ -253,65 +259,23 @@ class GlDevice implements GpuDeviceBackend {
 
    public void close() {
       this.encoder.close();
+      SDLVideo.SDL_GL_DestroyContext(this.glContext);
+      SDLVideo.SDL_DestroyWindow(this.initialWindowHandle);
    }
 
    public DirectStateAccess directStateAccess() {
       return this.directStateAccess;
    }
 
-   protected GlShaderModule compileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
-      String source = shaderSource.get(id, type);
-      if (source == null) {
-         LOGGER.error("Couldn't find source for {} shader ({})", type, id);
-         return GlShaderModule.INVALID_SHADER;
-      } else {
-         String sourceWithDefines = GlslPreprocessor.injectDefines(source, defines);
-         sourceWithDefines = GlslPreprocessor.injectDefines(sourceWithDefines, this.globalDefines);
-         int shaderId = GlStateManager.glCreateShader(GlConst.toGl(type));
-         GlStateManager.glShaderSource(shaderId, sourceWithDefines);
-         GlStateManager.glCompileShader(shaderId);
-         if (GlStateManager.glGetShaderi(shaderId, 35713) == 0) {
-            String logInfo = StringUtils.trim(GlStateManager.glGetShaderInfoLog(shaderId, 32768));
-            LOGGER.error("Couldn't compile {} shader ({}): {}", new Object[]{type.getName(), id, logInfo});
-            return GlShaderModule.INVALID_SHADER;
-         } else {
-            GlShaderModule module = new GlShaderModule(shaderId, id, type);
-            this.debugLabels.applyLabel(module);
-            return module;
-         }
-      }
-   }
-
-   private @Nullable GlProgram compileProgram(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      GlShaderModule vertexShader = this.compileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
-      GlShaderModule fragmentShader = this.compileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
-      if (vertexShader == GlShaderModule.INVALID_SHADER) {
-         LOGGER.error("Couldn't compile pipeline {}: vertex shader {} was invalid", pipeline.getLocation(), pipeline.getVertexShader());
-         return null;
-      } else if (fragmentShader == GlShaderModule.INVALID_SHADER) {
-         LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", pipeline.getLocation(), pipeline.getFragmentShader());
-         return null;
-      } else {
-         try {
-            GlProgram compiled = GlProgram.link(vertexShader, fragmentShader, pipeline.getVertexFormatBindings(), pipeline.getLocation().toString());
-            compiled.setupBindGroupLayouts(pipeline.getBindGroupLayouts());
-            this.debugLabels.applyLabel(compiled);
-            return compiled;
-         } catch (ShaderManager.CompilationException | IllegalArgumentException e) {
-            LOGGER.error("Couldn't compile program for pipeline {}", pipeline.getLocation(), e);
-            return null;
-         }
-      }
-   }
-
-   public @Nullable GlRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
+   public @Nullable BackendRenderPipeline compilePipeline(final BackendRenderPipeline.CreateInfo createInfo) {
       this.sacrificeShaderToOpenGlAndAmd();
-      GlProgram glProgram = this.compileProgram(pipeline, shaderSource);
-      return glProgram == null ? null : new GlRenderPipeline(this, pipeline, glProgram);
-   }
-
-   public VertexArrayCache vertexArrayCache() {
-      return this.vertexArrayCache;
+      GlProgram glProgram = this.recompiler.compileProgram(createInfo);
+      if (glProgram == null) {
+         return null;
+      } else {
+         VertexArray vertexArray = (VertexArray)this.vertexArraySource.apply(glProgram, createInfo);
+         return new GlRenderPipeline(this, createInfo, glProgram, vertexArray);
+      }
    }
 
    public BufferStorage getBufferStorage() {
@@ -326,11 +290,20 @@ class GlDevice implements GpuDeviceBackend {
       return new GlQueryPool(size);
    }
 
-   public long getTimestampNow() {
-      return GL33C.glGetInteger64(36392);
+   public long getTimestampCalibrationOffset() {
+      long deviceTime = GL33C.glGetInteger64(36392);
+      long hostTime = System.nanoTime();
+      return hostTime - deviceTime;
    }
 
    public DeviceInfo getDeviceInfo() {
       return this.deviceInfo;
+   }
+
+   void makeCurrent(final long windowHandle) {
+      if (windowHandle != this.currentWindow) {
+         this.currentWindow = windowHandle;
+         SDLVideo.SDL_GL_MakeCurrent(windowHandle, this.glContext);
+      }
    }
 }

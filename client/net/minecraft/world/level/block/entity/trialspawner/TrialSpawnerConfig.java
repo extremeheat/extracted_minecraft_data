@@ -6,8 +6,8 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
@@ -56,7 +56,7 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<TrialSpawnerConfig>>create(Registries.TRIAL_SPAWNER_CONFIG, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.TRIAL_SPAWNER_CONFIG, DIRECT_CODEC);
    }
 
    public static class Builder {

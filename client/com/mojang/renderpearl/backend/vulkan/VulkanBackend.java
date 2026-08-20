@@ -1,6 +1,5 @@
 package com.mojang.renderpearl.backend.vulkan;
 
-import com.mojang.blaze3d.GLFWErrorCapture;
 import com.mojang.blaze3d.platform.NativeLibrariesBootstrap;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.device.BackendCreationException;
@@ -13,22 +12,26 @@ import com.mojang.renderpearl.backend.vulkan.checkpoints.NoopCheckpointExtension
 import com.mojang.renderpearl.backend.vulkan.checkpoints.NvidiaCheckpointExtension;
 import com.mojang.renderpearl.backend.vulkan.init.FeatureSet;
 import com.mojang.renderpearl.backend.vulkan.init.VulkanFeature;
+import com.mojang.renderpearl.frontend.FrontendGpuDevice;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.IntBuffer;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.sdl.SDLError;
+import org.lwjgl.sdl.SDLVideo;
+import org.lwjgl.sdl.SDLVulkan;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.SharedLibrary;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo;
 import org.lwjgl.util.vma.VmaVulkanFunctions;
+import org.lwjgl.vulkan.VK;
 import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkDevice;
@@ -42,6 +45,8 @@ import org.slf4j.Logger;
 
 public class VulkanBackend implements GpuBackend {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private boolean libraryLoaded;
+   private @Nullable BackendCreationException libraryLoadFailure;
 
    public VulkanBackend() {
       super();
@@ -51,48 +56,78 @@ public class VulkanBackend implements GpuBackend {
       return "Vulkan";
    }
 
-   public void setWindowHints() {
-      GLFW.glfwWindowHint(139265, 0);
-   }
-
-   public static @Nullable BackendCreationException checkBackendAvailable() {
-      if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
-         return new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
-      } else if (!GLFWVulkan.glfwVulkanSupported()) {
-         return new BackendCreationException("Vulkan is not supported", BackendCreationException.Reason.GLFW_ERROR);
-      } else {
-         Set<FeatureSet> requiredFeatureSets = VulkanFeatureSets.requiredFeatureSets();
-         Set<FeatureSet> requiredIfExtensionsAvailableFeatureSets = VulkanFeatureSets.requiredIfExtensionsAvailableFeatureSets();
-
-         try {
-            Object var4;
-            try (
-               VulkanInstance instance = new VulkanInstance(0, false, false);
-               VulkanPhysicalDevice physicalDevice = findPhysicalDevice(instance, requiredFeatureSets, requiredIfExtensionsAvailableFeatureSets);
-            ) {
-               var4 = null;
-            }
-
-            return (BackendCreationException)var4;
-         } catch (BackendCreationException e) {
-            return e;
+   public void loadLibrary() throws BackendCreationException {
+      if (!this.libraryLoaded) {
+         if (this.libraryLoadFailure != null) {
+            throw this.libraryLoadFailure;
+         } else if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
+            this.libraryLoadFailure = new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
+            throw this.libraryLoadFailure;
+         } else if (!SDLVulkan.SDL_Vulkan_LoadLibrary(((SharedLibrary)VK.getFunctionProvider()).getPath())) {
+            this.libraryLoadFailure = new BackendCreationException("Vulkan is not supported: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.PLATFORM_ERROR);
+            throw this.libraryLoadFailure;
+         } else if (VK.getFunctionProvider().getFunctionAddress("vkGetInstanceProcAddr") != SDLVulkan.SDL_Vulkan_GetVkGetInstanceProcAddr()) {
+            this.libraryLoadFailure = new BackendCreationException("vkGetInstanceProcAddr mismatch", BackendCreationException.Reason.PLATFORM_ERROR);
+            SDLVulkan.SDL_Vulkan_UnloadLibrary();
+            throw this.libraryLoadFailure;
+         } else {
+            this.libraryLoaded = true;
          }
       }
    }
 
-   public void handleWindowCreationErrors(final GLFWErrorCapture.@Nullable Error error) throws BackendCreationException {
-      if (error != null) {
-         throw new BackendCreationException(String.format(Locale.ROOT, "GLFW_ERROR: 0x%X", error.error()), BackendCreationException.Reason.GLFW_ERROR);
-      } else {
-         throw new BackendCreationException("Failed to create window for Vulkan", BackendCreationException.Reason.GLFW_ERROR);
+   public void unloadLibrary() {
+      if (this.libraryLoaded) {
+         SDLVulkan.SDL_Vulkan_UnloadLibrary();
+         this.libraryLoaded = false;
       }
    }
 
-   public GpuDevice createDevice(final long window, final GpuDebugOptions debugOptions) throws BackendCreationException {
+   public static @Nullable BackendCreationException checkBackendAvailable() {
+      VulkanBackend probe = new VulkanBackend();
+
+      try {
+         probe.loadLibrary();
+      } catch (BackendCreationException e) {
+         return e;
+      }
+
+      BackendCreationException e;
+      try {
+         e = probe.checkBackendAvailableWithLoadedLibrary();
+      } finally {
+         probe.unloadLibrary();
+      }
+
+      return e;
+   }
+
+   private @Nullable BackendCreationException checkBackendAvailableWithLoadedLibrary() {
+      Set<FeatureSet> requiredFeatureSets = VulkanFeatureSets.requiredFeatureSets();
+      Set<FeatureSet> requiredIfExtensionsAvailableFeatureSets = VulkanFeatureSets.requiredIfExtensionsAvailableFeatureSets();
+
+      try {
+         Object var5;
+         try (
+            VulkanInstance instance = new VulkanInstance(0, false, false);
+            VulkanPhysicalDevice physicalDevice = findPhysicalDevice(instance, requiredFeatureSets, requiredIfExtensionsAvailableFeatureSets);
+         ) {
+            var5 = null;
+         }
+
+         return (BackendCreationException)var5;
+      } catch (BackendCreationException e) {
+         return e;
+      }
+   }
+
+   public long createWindow(final @Nullable String title, final int width, final int height, final long flags) {
+      return SDLVideo.SDL_CreateWindow(title, width, height, 268435456L | flags);
+   }
+
+   public GpuDevice createDevice(final GpuDebugOptions debugOptions) throws BackendCreationException {
       if (!NativeLibrariesBootstrap.isVulkanLoaderAvailable()) {
          throw new BackendCreationException("Vulkan loader library is missing", BackendCreationException.Reason.VULKAN_LOADER_MISSING);
-      } else if (!GLFWVulkan.glfwVulkanSupported()) {
-         throw new BackendCreationException("Vulkan is not supported", BackendCreationException.Reason.GLFW_ERROR);
       } else {
          Set<FeatureSet> requiredFeatureSets = VulkanFeatureSets.requiredFeatureSets();
          Set<FeatureSet> requiredIfExtensionsAvailableFeatureSets = VulkanFeatureSets.requiredIfExtensionsAvailableFeatureSets();
@@ -160,7 +195,7 @@ public class VulkanBackend implements GpuBackend {
             throw e;
          }
 
-         return new GpuDevice(new VulkanDevice(instance, physicalDevice, enabledFeatures, device, vma, checkpointExtension));
+         return new FrontendGpuDevice(new VulkanDevice(instance, physicalDevice, enabledFeatures, device, vma, checkpointExtension));
       }
    }
 

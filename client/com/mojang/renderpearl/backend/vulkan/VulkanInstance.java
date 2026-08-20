@@ -2,6 +2,7 @@ package com.mojang.renderpearl.backend.vulkan;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.device.BackendCreationException;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,7 +11,7 @@ import java.util.Set;
 import net.minecraft.SharedConstants;
 import net.minecraft.util.Util;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.sdl.SDLVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK12;
@@ -22,7 +23,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkLayerProperties;
 import org.slf4j.Logger;
 
-public class VulkanInstance implements AutoCloseable {
+public class VulkanInstance implements UncheckedAutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String APPLICATION_NAME = "Minecraft Java Edition";
    private static final int APPLICATION_VERSION = SharedConstants.getCurrentVersion().dataVersion().version();
@@ -52,13 +53,16 @@ public class VulkanInstance implements AutoCloseable {
          }
 
          Set<String> availableExtensions = this.getSupportedInstanceExtensions();
-         PointerBuffer glfwExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
-         if (glfwExtensions == null) {
-            throw new BackendCreationException("Failed to find the GLFW platform surface extensions", BackendCreationException.Reason.GLFW_ERROR);
+         PointerBuffer sdlExtensions = SDLVulkan.SDL_Vulkan_GetInstanceExtensions();
+         if (sdlExtensions == null) {
+            throw new BackendCreationException("Failed to find the SDL platform surface extensions", BackendCreationException.Reason.PLATFORM_ERROR);
          }
 
-         while(glfwExtensions.remaining() > 0) {
-            this.enabledExtensions.add(MemoryUtil.memUTF8(glfwExtensions.get()));
+         while(sdlExtensions.remaining() > 0) {
+            String extensionName = MemoryUtil.memUTF8(sdlExtensions.get());
+            if (!extensionName.equals("VK_KHR_portability_enumeration")) {
+               this.enabledExtensions.add(extensionName);
+            }
          }
 
          this.debug = VulkanDebug.create(debugVerbosity, wantsDebugLabels, availableExtensions, this.enabledExtensions);

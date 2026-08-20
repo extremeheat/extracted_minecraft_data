@@ -1,22 +1,20 @@
 package net.minecraft.world.level.storage.loot.functions;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.List;
-import java.util.function.BiFunction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 
 public class LootItemFunctions {
-   public static final BiFunction<ItemStack, LootContext, ItemStack> IDENTITY = (stack, context) -> stack;
+   public static final Codec<LootItemFunction> TYPED_CODEC;
    public static final Codec<LootItemFunction> DIRECT_CODEC;
-   public static final Codec<LootItemFunction> ROOT_CODEC;
    public static final Codec<Holder<LootItemFunction>> CODEC;
+   public static final Codec<HolderSet<LootItemFunction>> LIST_CODEC;
 
    public LootItemFunctions() {
       super();
@@ -54,7 +52,6 @@ public class LootItemFunctions {
       Registry.register(registry, (String)"set_random_dyes", SetRandomDyesFunction.MAP_CODEC);
       Registry.register(registry, (String)"set_random_potion", SetRandomPotionFunction.MAP_CODEC);
       Registry.register(registry, (String)"set_instrument", SetInstrumentFunction.MAP_CODEC);
-      Registry.register(registry, (String)"reference", FunctionReference.MAP_CODEC);
       Registry.register(registry, (String)"sequence", SequenceFunction.MAP_CODEC);
       Registry.register(registry, (String)"copy_components", CopyComponentsFunction.MAP_CODEC);
       Registry.register(registry, (String)"set_fireworks", SetFireworksFunction.MAP_CODEC);
@@ -68,37 +65,21 @@ public class LootItemFunctions {
       return (MapCodec)Registry.register(registry, (String)"discard", DiscardItem.MAP_CODEC);
    }
 
-   public static BiFunction<ItemStack, LootContext, ItemStack> compose(final List<? extends BiFunction<ItemStack, LootContext, ItemStack>> functions) {
-      List<BiFunction<ItemStack, LootContext, ItemStack>> terms = List.copyOf(functions);
-      BiFunction var10000;
-      switch (terms.size()) {
-         case 0:
-            var10000 = IDENTITY;
-            break;
-         case 1:
-            var10000 = (BiFunction)terms.get(0);
-            break;
-         case 2:
-            BiFunction<ItemStack, LootContext, ItemStack> first = (BiFunction)terms.get(0);
-            BiFunction<ItemStack, LootContext, ItemStack> second = (BiFunction)terms.get(1);
-            var10000 = (itemStack, context) -> (ItemStack)second.apply((ItemStack)first.apply(itemStack, context), context);
-            break;
-         default:
-            var10000 = (itemStack, context) -> {
-               for(BiFunction<ItemStack, LootContext, ItemStack> function : terms) {
-                  itemStack = (ItemStack)function.apply(itemStack, context);
-               }
-
-               return itemStack;
-            };
-      }
-
-      return var10000;
-   }
-
    static {
-      DIRECT_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE.byNameCodec().dispatch("function", LootItemFunction::codec, (c) -> c);
-      ROOT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(DIRECT_CODEC, SequenceFunction.INLINE_CODEC));
-      CODEC = RegistryFileCodec.<Holder<LootItemFunction>>create(Registries.ITEM_MODIFIER, ROOT_CODEC);
+      TYPED_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE.byNameCodec().dispatch(LootItemFunction::codec, (c) -> c);
+      DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.either(TYPED_CODEC, SequenceFunction.INLINE_CODEC).xmap((typedOrList) -> (LootItemFunction)typedOrList.map((f) -> f, (f) -> f), (function) -> {
+            Either var10000;
+            if (function instanceof SequenceFunction sequence) {
+               if (sequence.canUseInlineCodec()) {
+                  var10000 = Either.right(sequence);
+                  return var10000;
+               }
+            }
+
+            var10000 = Either.left(function);
+            return var10000;
+         }));
+      CODEC = RegistryCodecs.holder(Registries.ITEM_MODIFIER, DIRECT_CODEC);
+      LIST_CODEC = RegistryCodecs.holderSet(Registries.ITEM_MODIFIER, TYPED_CODEC);
    }
 }

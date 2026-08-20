@@ -616,7 +616,7 @@ public class Cat extends TamableAnimal {
          RandomSource random = this.cat.getRandom();
          BlockPos.MutableBlockPos catPos = new BlockPos.MutableBlockPos();
          catPos.set(this.cat.isLeashed() ? this.cat.getLeashHolder().blockPosition() : this.cat.blockPosition());
-         this.cat.randomTeleport((double)(catPos.getX() + random.nextInt(11) - 5), (double)(catPos.getY() + random.nextInt(5) - 2), (double)(catPos.getZ() + random.nextInt(11) - 5), false);
+         this.cat.randomTeleport((double)(catPos.getX() + random.nextInt(11) - 5), (double)(catPos.getY() + random.nextInt(5) - 2), (double)(catPos.getZ() + random.nextInt(11) - 5), false, BlockTags.CAT_DOES_NOT_TELEPORT_TO);
          catPos.set(this.cat.blockPosition());
          this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (level, itemStack) -> level.addFreshEntity(new ItemEntity(level, (double)catPos.getX() - (double)Mth.sin((double)(this.cat.yBodyRot * 0.017453292F)), (double)catPos.getY(), (double)catPos.getZ() + (double)Mth.cos((double)(this.cat.yBodyRot * 0.017453292F)), itemStack)));
       }

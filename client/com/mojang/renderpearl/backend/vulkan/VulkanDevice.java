@@ -1,44 +1,43 @@
 package com.mojang.renderpearl.backend.vulkan;
 
-import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.GpuQueryPool;
 import com.mojang.renderpearl.api.device.DeviceFeatures;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.DeviceLimits;
 import com.mojang.renderpearl.api.device.HintsAndWorkarounds;
-import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
-import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import com.mojang.renderpearl.backend.api.GpuDeviceBackend;
 import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
 import com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension;
-import com.mojang.renderpearl.backend.vulkan.glsl.GlslCompiler;
-import com.mojang.renderpearl.backend.vulkan.glsl.IntermediaryShaderModule;
-import com.mojang.renderpearl.backend.vulkan.glsl.ShaderCompileException;
 import com.mojang.renderpearl.backend.vulkan.init.FeatureSet;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.function.Supplier;
-import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.Vma;
+import org.lwjgl.vulkan.EXTCalibratedTimestamps;
 import org.lwjgl.vulkan.VK12;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
+import org.lwjgl.vulkan.VkBufferCopy;
+import org.lwjgl.vulkan.VkCalibratedTimestampInfoEXT;
+import org.lwjgl.vulkan.VkCalibratedTimestampInfoKHR;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceLimits;
 import org.lwjgl.vulkan.VkPhysicalDeviceVulkan11Properties;
@@ -49,12 +48,12 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final VulkanInstance instance;
    private final VkDevice vkDevice;
    private final long vma;
-   private final GlslCompiler glslCompiler = new GlslCompiler();
    private final DeviceInfo deviceInfo;
    private final VulkanQueue graphicsQueue;
    private final VulkanQueue computeQueue;
    private final VulkanQueue transferQueue;
    private final boolean isIntegratedIntelMoltenVK;
+   private final FeatureSet enabledFeatures;
    private final VulkanCommandEncoder commandEncoder;
    private final CheckpointExtension checkpointExtension;
 
@@ -63,6 +62,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       this.instance = instance;
       this.vkDevice = vkDevice;
       this.vma = vma;
+      this.enabledFeatures = enabledFeatureSet;
       this.checkpointExtension = checkpointExtension;
       Set<String> extensionNames = new HashSet();
 
@@ -76,7 +76,8 @@ public class VulkanDevice implements GpuDeviceBackend {
 
       VkPhysicalDeviceLimits limits = physicalDevice.vkPhysicalDeviceProperties().limits();
       VkPhysicalDeviceVulkan11Properties vk11Properties = physicalDevice.vkPhysicalDeviceVulkan11Properties();
-      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments()), new DeviceFeatures(true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false), physicalDevice.deviceType());
+      int indirectDrawCount = Integer.compareUnsigned(limits.maxDrawIndirectCount(), 2147483647) > 0 ? 2147483647 : limits.maxDrawIndirectCount();
+      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments(), indirectDrawCount), new DeviceFeatures(enabledFeatureSet.contains(VulkanFeatureSets.WIREFRAME_FEATURESET), true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false, Util.isAppleSiliconMac(physicalDevice.deviceName())), physicalDevice.deviceType());
       IntIntPair graphicsQueueFamily = physicalDevice.graphicsQueueFamilyAndIndex();
 
       assert graphicsQueueFamily != null;
@@ -107,7 +108,6 @@ public class VulkanDevice implements GpuDeviceBackend {
       Vma.vmaDestroyAllocator(this.vma);
       VK12.vkDestroyDevice(this.vkDevice, (VkAllocationCallbacks)null);
       this.instance.close();
-      this.glslCompiler.close();
    }
 
    public DeviceInfo getDeviceInfo() {
@@ -150,16 +150,8 @@ public class VulkanDevice implements GpuDeviceBackend {
       return new VulkanGpuSampler(this, addressModeU, addressModeV, minFilter, magFilter, maxAnisotropy, maxLod);
    }
 
-   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
-      return new VulkanGpuTexture(this, usage, this.isDebuggingEnabled() && label != null ? (String)label.get() : "", format, width, height, depthOrLayers, mipLevels);
-   }
-
    public GpuTexture createTexture(final @Nullable String label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       return new VulkanGpuTexture(this, usage, this.isDebuggingEnabled() && label != null ? label : "", format, width, height, depthOrLayers, mipLevels);
-   }
-
-   public GpuTextureView createTextureView(final GpuTexture texture) {
-      return this.createTextureView(texture, 0, texture.getMipLevels());
    }
 
    public GpuTextureView createTextureView(final GpuTexture texture, final int baseMipLevel, final int mipLevels) {
@@ -171,8 +163,29 @@ public class VulkanDevice implements GpuDeviceBackend {
    }
 
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final ByteBuffer data) {
-      GpuBuffer buffer = this.createBuffer(label, usage | 8, (long)data.remaining());
-      this.createCommandEncoder().writeToBuffer(buffer.slice(), data);
+      VulkanGpuBuffer buffer = this.createBuffer(label, usage | 8, (long)data.remaining());
+      GpuBufferSlice stagingBuffer = this.commandEncoder.transientMemory().uploadStaging(data, 1L, 16);
+      MemoryStack stack = MemoryStack.stackPush();
+
+      try {
+         VkBufferCopy.Buffer regions = VkBufferCopy.calloc(1, stack).srcOffset(stagingBuffer.offset()).dstOffset(0L).size((long)data.remaining());
+         VK12.vkCmdCopyBuffer(this.commandEncoder.objectInitCommandBuffer(), ((VulkanGpuBuffer)stagingBuffer.buffer()).vkBuffer(), buffer.vkBuffer(), regions);
+      } catch (Throwable var10) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var9) {
+               var10.addSuppressed(var9);
+            }
+         }
+
+         throw var10;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
       return buffer;
    }
 
@@ -184,54 +197,54 @@ public class VulkanDevice implements GpuDeviceBackend {
       return this.instance.debug().enabled();
    }
 
-   protected @Nullable IntermediaryShaderModule compileShader(final Identifier id, final ShaderType type, final ShaderDefines defines, final ShaderSource shaderSource) {
-      String source = shaderSource.get(id, type);
-      if (source == null) {
-         LOGGER.error("Couldn't find source for {} shader ({})", type, id);
-         return null;
-      } else {
-         String sourceWithDefines = GlslPreprocessor.injectDefines(source, defines);
-
-         try {
-            return this.glslCompiler.createIntermediary(id.toDebugFileName(), sourceWithDefines, type);
-         } catch (ShaderCompileException e) {
-            LOGGER.error("Couldn't compile {} shader {}", new Object[]{type, id, e});
-            return null;
-         }
-      }
-   }
-
-   public @Nullable CompiledRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      IntermediaryShaderModule vertexShader = this.compileShader(pipeline.getVertexShader(), ShaderType.VERTEX, pipeline.getShaderDefines(), shaderSource);
-      if (vertexShader == null) {
-         LOGGER.error("Couldn't compile pipeline {}: vertex shader {} was invalid", pipeline.getLocation(), pipeline.getVertexShader());
-         return null;
-      } else {
-         IntermediaryShaderModule fragmentShader = this.compileShader(pipeline.getFragmentShader(), ShaderType.FRAGMENT, pipeline.getShaderDefines(), shaderSource);
-         if (fragmentShader == null) {
-            LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", pipeline.getLocation(), pipeline.getFragmentShader());
-            vertexShader.close();
-            return null;
-         } else {
-            try {
-               GlslCompiler.CompiledModules modules = this.glslCompiler.compile(this, pipeline, vertexShader, fragmentShader);
-               return VulkanRenderPipeline.compile(this, modules.layout(), pipeline, modules.vertex(), modules.fragment());
-            } catch (ShaderCompileException e) {
-               LOGGER.error("Couldn't compile pipeline {}", pipeline.getLocation(), e);
-               vertexShader.close();
-               fragmentShader.close();
-               return null;
-            }
-         }
-      }
+   public @Nullable BackendRenderPipeline compilePipeline(final BackendRenderPipeline.CreateInfo pipelineCreateInfo) {
+      return VulkanRenderPipeline.compile(this, pipelineCreateInfo);
    }
 
    public GpuQueryPool createTimestampQueryPool(final int size) {
       return new VulkanQueryPool(this, size);
    }
 
-   public long getTimestampNow() {
-      return this.commandEncoder.getTimestampNow();
+   public long getTimestampCalibrationOffset() {
+      double timestampPeriod = (double)this.deviceInfo.timestampPeriod();
+      if (!this.enabledFeatures.contains(VulkanFeatureSets.CALIBRATED_TIMESTAMP_FEATURESET)) {
+         long deviceTime = this.commandEncoder.getTimestampNow();
+         long hostTime = System.nanoTime();
+         long deviceTimeInNanos = timestampPeriod == 1.0 ? deviceTime : (long)((double)deviceTime * timestampPeriod);
+         return hostTime - deviceTimeInNanos;
+      } else {
+         MemoryStack stack = MemoryStack.stackPush();
+
+         long var13;
+         try {
+            VkCalibratedTimestampInfoEXT.Buffer infos = VkCalibratedTimestampInfoEXT.calloc(2, stack);
+            ((VkCalibratedTimestampInfoKHR)infos.get(0)).sType$Default().timeDomain(0);
+            ((VkCalibratedTimestampInfoKHR)infos.get(1)).sType$Default().timeDomain(1);
+            LongBuffer timestampValues = stack.callocLong(infos.capacity());
+            LongBuffer deviation = stack.callocLong(1);
+            EXTCalibratedTimestamps.vkGetCalibratedTimestampsEXT(this.vkDevice, infos, timestampValues, deviation);
+            long deviceTime = timestampValues.get(0);
+            long hostTime = timestampValues.get(1);
+            long deviceInNanos = timestampPeriod == 1.0 ? deviceTime : (long)((double)deviceTime * timestampPeriod);
+            var13 = hostTime - deviceInNanos;
+         } catch (Throwable var16) {
+            if (stack != null) {
+               try {
+                  stack.close();
+               } catch (Throwable var15) {
+                  var16.addSuppressed(var15);
+               }
+            }
+
+            throw var16;
+         }
+
+         if (stack != null) {
+            stack.close();
+         }
+
+         return var13;
+      }
    }
 
    public CheckpointExtension checkpointExtension() {

@@ -2,13 +2,11 @@ package net.minecraft.client.input;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import java.nio.IntBuffer;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 
 public record PreeditEvent(String fullText, int caretPosition, List<String> blocks, int focusedBlock) {
    public PreeditEvent {
@@ -16,48 +14,37 @@ public record PreeditEvent(String fullText, int caretPosition, List<String> bloc
       Preconditions.checkElementIndex(focusedBlock, blocks.size());
    }
 
-   public static @Nullable PreeditEvent createFromCallback(final int preeditSize, final long preeditPtr, final int blockCount, final long blockSizesPtr, final int focusedBlock, final int caret) {
-      if (preeditSize == 0) {
-         return null;
-      } else {
-         int[] codepoints = readIntBuffer(preeditSize, preeditPtr);
-         int[] blockSizes = readIntBuffer(blockCount, blockSizesPtr);
-         StringBuilder fullText = new StringBuilder();
-         ImmutableList.Builder<String> blocks = ImmutableList.builder();
-         int offset = 0;
-         int convertedCaret = 0;
-
-         for(int blockSize : blockSizes) {
-            StringBuilder blockBuilder = new StringBuilder();
-
-            for(int i = 0; i < blockSize; ++i) {
-               int codepoint = codepoints[offset];
-               if (offset == caret) {
-                  convertedCaret = fullText.length() + blockBuilder.length();
+   public static @Nullable PreeditEvent fromSdlTextEditing(final @Nullable String text, final int selectionStart, final int selectionLength) {
+      if (text != null && !text.isEmpty()) {
+         int totalCodepoints = text.codePointCount(0, text.length());
+         int caretCodepoint = selectionStart < 0 ? totalCodepoints : Math.min(selectionStart, totalCodepoints);
+         int caretChar = text.offsetByCodePoints(0, caretCodepoint);
+         if (selectionLength > 0) {
+            int selectionEndCodepoint = Math.min(caretCodepoint + selectionLength, totalCodepoints);
+            int selectionEndChar = text.offsetByCodePoints(0, selectionEndCodepoint);
+            if (selectionEndChar <= caretChar) {
+               return new PreeditEvent(text, caretChar, List.of(text), 0);
+            } else {
+               ImmutableList.Builder<String> blocks = ImmutableList.builder();
+               int focusedBlock = 0;
+               if (caretChar > 0) {
+                  blocks.add(text.substring(0, caretChar));
+                  focusedBlock = 1;
                }
 
-               blockBuilder.appendCodePoint(codepoint);
-               ++offset;
+               blocks.add(text.substring(caretChar, selectionEndChar));
+               if (selectionEndChar < text.length()) {
+                  blocks.add(text.substring(selectionEndChar));
+               }
+
+               return new PreeditEvent(text, caretChar, blocks.build(), focusedBlock);
             }
-
-            String block = blockBuilder.toString();
-            blocks.add(block);
-            fullText.append(block);
+         } else {
+            return new PreeditEvent(text, caretChar, ImmutableList.of(text), 0);
          }
-
-         if (offset == caret) {
-            convertedCaret = fullText.length();
-         }
-
-         return new PreeditEvent(fullText.toString(), convertedCaret, blocks.build(), focusedBlock);
+      } else {
+         return null;
       }
-   }
-
-   private static int[] readIntBuffer(final int size, final long ptr) {
-      IntBuffer buffer = MemoryUtil.memIntBuffer(ptr, size);
-      int[] result = new int[size];
-      buffer.get(result);
-      return result;
    }
 
    public MutableComponent toFormattedText(final Style focusedStyle) {

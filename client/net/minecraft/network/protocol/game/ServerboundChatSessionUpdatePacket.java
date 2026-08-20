@@ -1,24 +1,16 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSession) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChatSessionUpdatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatSessionUpdatePacket>codec(ServerboundChatSessionUpdatePacket::write, ServerboundChatSessionUpdatePacket::new);
-
-   private ServerboundChatSessionUpdatePacket(final FriendlyByteBuf input) {
-      this(RemoteChatSession.Data.read(input));
-   }
+   public static final StreamCodec<ByteBuf, ServerboundChatSessionUpdatePacket> STREAM_CODEC;
 
    public ServerboundChatSessionUpdatePacket {
       super();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      RemoteChatSession.Data.write(output, this.chatSession);
    }
 
    public PacketType<ServerboundChatSessionUpdatePacket> type() {
@@ -27,5 +19,9 @@ public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSess
 
    public void handle(final ServerGamePacketListener listener) {
       listener.handleChatSessionUpdate(this);
+   }
+
+   static {
+      STREAM_CODEC = RemoteChatSession.Data.STREAM_CODEC.map(ServerboundChatSessionUpdatePacket::new, ServerboundChatSessionUpdatePacket::chatSession);
    }
 }

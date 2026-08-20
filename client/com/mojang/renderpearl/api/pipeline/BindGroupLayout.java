@@ -7,13 +7,10 @@ import java.util.List;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
-public class BindGroupLayout {
-   private final List<String> samplers;
-   private final List<UniformDescription> uniforms;
-
-   private BindGroupLayout(final List<String> samplers, final List<UniformDescription> uniforms) {
+public record BindGroupLayout(List<UniformDescription> uniforms) {
+   public BindGroupLayout(List<UniformDescription> uniforms) {
       super();
-      this.samplers = samplers;
+      uniforms = List.copyOf(uniforms);
       this.uniforms = uniforms;
    }
 
@@ -21,29 +18,11 @@ public class BindGroupLayout {
       return new Builder();
    }
 
-   public List<String> getSamplers() {
-      return this.samplers;
-   }
-
-   public List<UniformDescription> getUniforms() {
-      return this.uniforms;
-   }
-
-   public static List<String> flattenSamplers(final List<BindGroupLayout> bindGroupLayouts) {
-      List<String> flattened = new ArrayList();
-
-      for(BindGroupLayout bindGroupLayout : bindGroupLayouts) {
-         flattened.addAll(bindGroupLayout.getSamplers());
-      }
-
-      return flattened;
-   }
-
    public static List<UniformDescription> flattenUniforms(final List<BindGroupLayout> bindGroupLayouts) {
       List<UniformDescription> flattened = new ArrayList();
 
       for(BindGroupLayout bindGroupLayout : bindGroupLayouts) {
-         flattened.addAll(bindGroupLayout.getUniforms());
+         flattened.addAll(bindGroupLayout.uniforms());
       }
 
       return flattened;
@@ -55,16 +34,10 @@ public class BindGroupLayout {
       for(int layoutIndex = 0; layoutIndex < bindGroupLayouts.size(); ++layoutIndex) {
          BindGroupLayout bindGroupLayout = (BindGroupLayout)bindGroupLayouts.get(layoutIndex);
 
-         for(UniformDescription uniform : bindGroupLayout.getUniforms()) {
+         for(UniformDescription uniform : bindGroupLayout.uniforms()) {
             if (!names.add(uniform.name())) {
                String var10002 = uniform.name();
                throw new IllegalArgumentException("Duplicate bind name '" + var10002 + "' in bind group layout " + layoutIndex);
-            }
-         }
-
-         for(String sampler : bindGroupLayout.getSamplers()) {
-            if (!names.add(sampler)) {
-               throw new IllegalArgumentException("Duplicate bind name '" + sampler + "' in bind group layout " + layoutIndex);
             }
          }
       }
@@ -72,16 +45,10 @@ public class BindGroupLayout {
    }
 
    public static class Builder {
-      private final List<String> samplers = new ArrayList();
       private final List<UniformDescription> uniforms = new ArrayList();
 
       private Builder() {
          super();
-      }
-
-      public Builder withSampler(final String sampler) {
-         this.samplers.add(sampler);
-         return this;
       }
 
       public Builder withUniform(final String name, final UniformType type) {
@@ -103,7 +70,7 @@ public class BindGroupLayout {
       }
 
       public BindGroupLayout build() {
-         return new BindGroupLayout(List.copyOf(this.samplers), List.copyOf(this.uniforms));
+         return new BindGroupLayout(this.uniforms);
       }
    }
 

@@ -35,5 +35,17 @@ public class StructureTagsProvider extends TagsProvider<Structure> {
       this.tag(StructureTags.ON_SNOWY_VILLAGE_MAPS).add(BuiltinStructures.VILLAGE_SNOWY);
       this.tag(StructureTags.ON_SWAMP_EXPLORER_MAPS).add(BuiltinStructures.SWAMP_HUT);
       this.tag(StructureTags.ON_JUNGLE_EXPLORER_MAPS).add(BuiltinStructures.JUNGLE_TEMPLE);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_BAMBOO_JUNGLE_MAPS).add(BuiltinStructures.ABANDONED_CAMP_BAMBOO_JUNGLE);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_CHERRY_GROVE_MAPS).add(BuiltinStructures.ABANDONED_CAMP_CHERRY_GROVE);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_BIRCH_FOREST_MAPS).add(BuiltinStructures.ABANDONED_CAMP_BIRCH_FOREST);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_DAPPLED_FOREST_MAPS).add(BuiltinStructures.ABANDONED_CAMP_DAPPLED_FOREST);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_FLOWER_FOREST_MAPS).add(BuiltinStructures.ABANDONED_CAMP_FLOWER_FOREST);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_PALE_GARDEN_MAPS).add(BuiltinStructures.ABANDONED_CAMP_PALE_GARDEN);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_SWAMP_MAPS).add(BuiltinStructures.ABANDONED_CAMP_SWAMP);
+      this.tag(StructureTags.ON_ABANDONED_CAMP_WINDSWEPT_FOREST_MAPS).add(BuiltinStructures.ABANDONED_CAMP_WINDSWEPT_FOREST);
+      this.tag(StructureTags.ON_ANCIENT_CITY_MAPS).add(BuiltinStructures.ANCIENT_CITY);
+      this.tag(StructureTags.ON_MINESHAFT_MAPS).add(BuiltinStructures.MINESHAFT);
+      this.tag(StructureTags.ON_DESERT_PYRAMID_MAPS).add(BuiltinStructures.DESERT_PYRAMID);
+      this.tag(StructureTags.ON_OCEAN_RUIN_WARM_MAPS).add(BuiltinStructures.OCEAN_RUIN_WARM);
    }
 }

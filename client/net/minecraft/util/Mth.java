@@ -560,6 +560,14 @@ public class Mth {
       return p0 + alpha1 * (p1 - p0);
    }
 
+   public static float lerp2(final float alpha1, final float alpha2, final float x00, final float x10, final float x01, final float x11) {
+      return lerp(alpha2, lerp(alpha1, x00, x10), lerp(alpha1, x01, x11));
+   }
+
+   public static float lerp3(final float alpha1, final float alpha2, final float alpha3, final float x000, final float x100, final float x010, final float x110, final float x001, final float x101, final float x011, final float x111) {
+      return lerp(alpha3, lerp2(alpha1, alpha2, x000, x100, x010, x110), lerp2(alpha1, alpha2, x001, x101, x011, x111));
+   }
+
    public static Vec3 lerp(final double alpha, final Vec3 p1, final Vec3 p2) {
       return new Vec3(lerp(alpha, p1.x, p2.x), lerp(alpha, p1.y, p2.y), lerp(alpha, p1.z, p2.z));
    }
@@ -580,12 +588,12 @@ public class Mth {
       return 0.5F * (2.0F * p1 + (p2 - p0) * alpha + (2.0F * p0 - 5.0F * p1 + 4.0F * p2 - p3) * alpha * alpha + (3.0F * p1 - p0 - 3.0F * p2 + p3) * alpha * alpha * alpha);
    }
 
-   public static double smoothstep(final double x) {
-      return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
+   public static float smoothstep(final float x) {
+      return x * x * x * (x * (x * 6.0F - 15.0F) + 10.0F);
    }
 
-   public static double smoothstepDerivative(final double x) {
-      return 30.0 * x * x * (x - 1.0) * (x - 1.0);
+   public static float smoothstepDerivative(final float x) {
+      return 30.0F * x * x * (x - 1.0F) * (x - 1.0F);
    }
 
    public static int sign(final double number) {
@@ -692,12 +700,16 @@ public class Mth {
       return x * x + y * y;
    }
 
+   public static float lengthSquared(final float x, final float y) {
+      return x * x + y * y;
+   }
+
    public static double length(final double x, final double y) {
       return Math.sqrt(lengthSquared(x, y));
    }
 
    public static float length(final float x, final float y) {
-      return (float)Math.sqrt(lengthSquared((double)x, (double)y));
+      return (float)Math.sqrt((double)lengthSquared(x, y));
    }
 
    public static double lengthSquared(final double x, final double y, final double z) {
@@ -706,6 +718,10 @@ public class Mth {
 
    public static double length(final double x, final double y, final double z) {
       return Math.sqrt(lengthSquared(x, y, z));
+   }
+
+   public static float length(final float x, final float y, final float z) {
+      return sqrt(lengthSquared(x, y, z));
    }
 
    public static float lengthSquared(final float x, final float y, final float z) {

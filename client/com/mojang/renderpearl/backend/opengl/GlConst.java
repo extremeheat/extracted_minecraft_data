@@ -636,11 +636,11 @@ public class GlConst {
    public static int bufferUsageToGlFlag(final @GpuBuffer.Usage int usage) {
       int result = 0;
       if ((usage & 1) != 0) {
-         result |= 65;
+         result |= 193;
       }
 
       if ((usage & 2) != 0) {
-         result |= 66;
+         result |= 194;
       }
 
       if ((usage & 8) != 0) {

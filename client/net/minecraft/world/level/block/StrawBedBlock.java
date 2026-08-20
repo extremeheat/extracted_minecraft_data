@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import java.util.Map;
+import java.util.OptionalDouble;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -55,12 +56,15 @@ public class StrawBedBlock extends AbstractBedBlock {
       return Stats.SLEEP_IN_STRAW_BED;
    }
 
-   public double getSleepHeight(final BlockState state, final Level level, final BlockPos pos) {
+   public OptionalDouble getSleepHeight(final BlockState state, final Level level, final BlockPos pos) {
       BlockPos layingOnPos;
       BlockState layingOnState;
       if (state.getValue(BedBlock.PART) == BedPart.HEAD) {
          layingOnPos = pos.relative(getConnectedDirection(state));
          layingOnState = level.getBlockState(layingOnPos);
+         if (!layingOnState.is(this) || layingOnState.getValue(BedBlock.PART) != BedPart.FOOT) {
+            return OptionalDouble.empty();
+         }
       } else {
          layingOnPos = pos;
          layingOnState = state;
