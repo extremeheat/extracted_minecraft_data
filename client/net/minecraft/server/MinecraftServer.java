@@ -143,7 +143,6 @@ import net.minecraft.world.Stopwatches;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.clock.WorldClocks;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.CatSpawner;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
@@ -1662,7 +1661,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel level = this.findRespawnDimension();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, "Server", Component.literal("Server"), this, (Entity)null);
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, Component.literal("Server"), this);
    }
 
    public ServerLevel findRespawnDimension() {
@@ -2041,7 +2040,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return true;
    }
 
-   public StructureTemplateManager getStructureManager() {
+   public StructureTemplateManager getStructureTemplateManager() {
       return this.structureTemplateManager;
    }
 

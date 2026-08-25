@@ -30,9 +30,13 @@ public class BiomeManager {
    }
 
    public Holder<Biome> getBiome(final BlockPos pos) {
-      int absX = pos.getX() - 2;
-      int absY = pos.getY() - 2;
-      int absZ = pos.getZ() - 2;
+      return this.getBiome(pos.getX(), pos.getY(), pos.getZ());
+   }
+
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
+      int absX = x - 2;
+      int absY = y - 2;
+      int absZ = z - 2;
       int parentX = absX >> 2;
       int parentY = absY >> 2;
       int parentZ = absZ >> 2;

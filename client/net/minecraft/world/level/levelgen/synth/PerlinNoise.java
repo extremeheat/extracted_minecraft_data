@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 
 public class PerlinNoise extends GradientNoise {
@@ -69,7 +70,7 @@ public class PerlinNoise extends GradientNoise {
       return Mth.lerp3(xAlpha, yAlpha, zAlpha, d000, d100, d010, d110, d001, d101, d011, d111);
    }
 
-   public void addToVolume(final float[] buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
+   public void addToVolume(final DensityBuffer buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
       float d000xz = 0.0F;
       float d100xz = 0.0F;
       float d010xz = 0.0F;
@@ -140,7 +141,7 @@ public class PerlinNoise extends GradientNoise {
                   lastFloorY = floorY;
                }
 
-               buffer[index] += amplitude * Mth.lerp3(alphaX, alphaY, alphaZ, d000xz + g000y * relativeY, d100xz + g100y * relativeY, d010xz + g010y * (relativeY - 1.0F), d110xz + g110y * (relativeY - 1.0F), d001xz + g001y * relativeY, d101xz + g101y * relativeY, d011xz + g011y * (relativeY - 1.0F), d111xz + g111y * (relativeY - 1.0F));
+               buffer.addTo(index, amplitude * Mth.lerp3(alphaX, alphaY, alphaZ, d000xz + g000y * relativeY, d100xz + g100y * relativeY, d010xz + g010y * (relativeY - 1.0F), d110xz + g110y * (relativeY - 1.0F), d001xz + g001y * relativeY, d101xz + g101y * relativeY, d011xz + g011y * (relativeY - 1.0F), d111xz + g111y * (relativeY - 1.0F)));
                ++index;
             }
          }

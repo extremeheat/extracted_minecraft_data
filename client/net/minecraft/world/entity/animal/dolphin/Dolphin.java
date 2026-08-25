@@ -51,7 +51,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
-import net.minecraft.world.entity.ai.goal.TryFindWaterGoal;
+import net.minecraft.world.entity.ai.goal.TryFindLiquidGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
@@ -145,7 +145,7 @@ public class Dolphin extends AgeableWaterCreature {
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new BreathAirGoal(this));
-      this.goalSelector.addGoal(0, new TryFindWaterGoal(this));
+      this.goalSelector.addGoal(0, new TryFindLiquidGoal(this, FluidTags.DOLPHIN_TRIES_TO_FIND));
       this.goalSelector.addGoal(1, new DolphinSwimToTreasureGoal(this));
       this.goalSelector.addGoal(2, new DolphinSwimWithPlayerGoal(this, 4.0));
       this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, 1.0, 10));

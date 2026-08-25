@@ -65,7 +65,7 @@ import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.CommonLinks;
@@ -94,12 +94,11 @@ import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
+public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, ResourceManagerReloadListener {
    private static final Identifier BLUR_POST_CHAIN_ID = Identifier.withDefaultNamespace("blur");
    public static Identifier END_OF_FRAME_POST_EFFECT = Identifier.withDefaultNamespace("end_of_frame");
    public static final int MAX_BLUR_RADIUS = 10;
@@ -327,8 +326,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
       return this.appliedPostEffects.stream().map(PostChain::id).toList();
    }
 
-   public PreparableReloadListener createReloadListener() {
-      return (ResourceManagerReloadListener)(var1) -> this.shouldResetFailedPostEffects = true;
+   public void onResourceManagerReload(final ResourceManager resourceManager) {
+      this.shouldResetFailedPostEffects = true;
    }
 
    public void resize(final int width, final int height) {
@@ -343,7 +342,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
          float hurt = cameraState.entityRenderState.hurtTime;
          if (cameraState.entityRenderState.isDeadOrDying) {
             float duration = Math.min(cameraState.entityRenderState.deathTime, 20.0F);
-            poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(40.0F - 8000.0F / (duration + 200.0F)));
+            poseStack.rotateDegrees(Axis.ZP, 40.0F - 8000.0F / (duration + 200.0F));
          }
 
          if (hurt < 0.0F) {
@@ -353,10 +352,10 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
          hurt /= (float)cameraState.entityRenderState.hurtDuration;
          hurt = Mth.sin((double)(hurt * hurt * hurt * hurt * 3.1415927F));
          float rr = cameraState.entityRenderState.hurtDir;
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-rr));
+         poseStack.rotateDegrees(Axis.YP, -rr);
          float tiltAmount = (float)((double)(-hurt) * 14.0 * this.gameRenderState.optionsRenderState.damageTiltStrength);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(tiltAmount));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(rr));
+         poseStack.rotateDegrees(Axis.ZP, tiltAmount);
+         poseStack.rotateDegrees(Axis.YP, rr);
       }
 
    }
@@ -366,8 +365,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector {
          float backwardsInterpolatedWalkDistance = cameraState.entityRenderState.backwardsInterpolatedWalkDistance;
          float bob = cameraState.entityRenderState.bob;
          poseStack.translate(Mth.sin((double)(backwardsInterpolatedWalkDistance * 3.1415927F)) * bob * 0.5F, -Math.abs(Mth.cos((double)(backwardsInterpolatedWalkDistance * 3.1415927F)) * bob), 0.0F);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin((double)(backwardsInterpolatedWalkDistance * 3.1415927F)) * bob * 3.0F));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Math.abs(Mth.cos((double)(backwardsInterpolatedWalkDistance * 3.1415927F - 0.2F)) * bob) * 5.0F));
+         poseStack.rotateDegrees(Axis.ZP, Mth.sin((double)(backwardsInterpolatedWalkDistance * 3.1415927F)) * bob * 3.0F);
+         poseStack.rotateDegrees(Axis.XP, Math.abs(Mth.cos((double)(backwardsInterpolatedWalkDistance * 3.1415927F - 0.2F)) * bob) * 5.0F);
       }
    }
 

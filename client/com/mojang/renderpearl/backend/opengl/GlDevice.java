@@ -21,10 +21,12 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
@@ -117,7 +119,7 @@ class GlDevice implements GpuDeviceBackend {
 
                this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
                this.encoder = new GlCommandEncoder(this);
-               this.recompiler = new GlPipelineRecompiler(this.debugLabels, false);
+               this.recompiler = new GlPipelineRecompiler(this.debugLabels, this.deviceInfo.features().shaderDrawParameters());
             } catch (Throwable throwable) {
                SDLVideo.SDL_GL_DestroyContext(glContext);
                SDLVideo.SDL_DestroyWindow(this.initialWindowHandle);
@@ -131,8 +133,8 @@ class GlDevice implements GpuDeviceBackend {
       return this.debugLabels;
    }
 
-   public GpuSurfaceBackend createSurface(final long windowHandle) {
-      return new GlSurface(windowHandle);
+   public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified) {
+      return new GlSurface(windowHandle, isIconified);
    }
 
    public CommandEncoderBackend createCommandEncoder() {
@@ -267,15 +269,18 @@ class GlDevice implements GpuDeviceBackend {
       return this.directStateAccess;
    }
 
-   public @Nullable BackendRenderPipeline compilePipeline(final BackendRenderPipeline.CreateInfo createInfo) {
-      this.sacrificeShaderToOpenGlAndAmd();
-      GlProgram glProgram = this.recompiler.compileProgram(createInfo);
-      if (glProgram == null) {
-         return null;
-      } else {
-         VertexArray vertexArray = (VertexArray)this.vertexArraySource.apply(glProgram, createInfo);
-         return new GlRenderPipeline(this, createInfo, glProgram, vertexArray);
-      }
+   public BackendRenderPipeline.Pending compilePipeline(final BackendRenderPipeline.CreateInfo createInfo) {
+      Map<BackendRenderPipeline.CreateInfo.Shader, String> decompiledShaders = this.recompiler.decompileShaders(createInfo);
+      return decompiledShaders == null ? BackendRenderPipeline.Pending.NULL : () -> {
+         this.sacrificeShaderToOpenGlAndAmd();
+         GlProgram glProgram = this.recompiler.compileProgram(createInfo, decompiledShaders);
+         if (glProgram == null) {
+            return null;
+         } else {
+            VertexArray vertexArray = (VertexArray)this.vertexArraySource.apply(glProgram, createInfo);
+            return new GlRenderPipeline(this, createInfo, glProgram, vertexArray);
+         }
+      };
    }
 
    public BufferStorage getBufferStorage() {

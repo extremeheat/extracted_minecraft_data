@@ -160,14 +160,13 @@ public class Inventory implements Container, Nameable {
       return this.selected;
    }
 
-   public int clearOrCountMatchingItems(final Predicate<ItemStack> predicate, final int amountToRemove, final Container craftSlots) {
+   public int clearOrCountMatchingItems(final Predicate<ItemStack> predicate, final boolean countingOnly, final int amountToRemove, final Container craftSlots) {
       int count = 0;
-      boolean countingOnly = amountToRemove == 0;
       count += ContainerHelper.clearOrCountMatchingItems((Container)this, predicate, amountToRemove - count, countingOnly);
       count += ContainerHelper.clearOrCountMatchingItems(craftSlots, predicate, amountToRemove - count, countingOnly);
       ItemStack carried = this.player.containerMenu.getCarried();
       count += ContainerHelper.clearOrCountMatchingItems(carried, predicate, amountToRemove - count, countingOnly);
-      if (carried.isEmpty()) {
+      if (!countingOnly && carried.isEmpty()) {
          this.player.containerMenu.setCarried(ItemStack.EMPTY);
       }
 

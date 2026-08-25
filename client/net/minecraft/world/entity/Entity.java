@@ -86,7 +86,6 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
@@ -163,6 +162,7 @@ import net.minecraft.world.scores.TeamColor;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 import org.joml.Quaternionf;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -1648,6 +1648,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.isInWater() || this.isInLava();
    }
 
+   public boolean isInFloatableFluid() {
+      return this.fluidInteraction.isInFluid(FluidTags.ENTITY_FLOATABLE);
+   }
+
    public boolean isUnderWater() {
       return this.wasEyeInWater && this.isInWater();
    }
@@ -1657,7 +1661,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public boolean isInClouds() {
-      if (ARGB.alpha((Integer)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_COLOR, this.position())) == 0) {
+      if (((Vector4fc)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_COLOR, this.position())).w() == 0.0F) {
          return false;
       } else {
          float cloudBottom = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_HEIGHT, this.position());
@@ -3759,7 +3763,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(final ServerLevel level) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), level, PermissionSet.NO_PERMISSIONS, this.getPlainTextName(), this.getDisplayName(), level.getServer(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), level, PermissionSet.NO_PERMISSIONS, level.getServer(), this);
    }
 
    public void lookAt(final EntityAnchorArgument.Anchor anchor, final Vec3 pos) {
@@ -4235,6 +4239,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void setInvulnerableTime(final int invulnerableTime) {
       this.invulnerableTime = invulnerableTime;
+   }
+
+   public int getInvulnerableTime() {
+      return this.invulnerableTime;
    }
 
    protected @Nullable AABB modifyPassengerFluidInteractionBox(final AABB passengerBox) {

@@ -557,6 +557,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationSuppressTime = narrationSuppressTime;
    }
 
+   public void scheduleNarration() {
+      this.scheduleNarration(0L, true, NarrationTrigger.SYSTEM);
+   }
+
    public void afterMouseMove() {
       this.scheduleNarration(750L, false, NarrationTrigger.MOUSE);
    }

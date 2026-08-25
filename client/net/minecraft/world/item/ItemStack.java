@@ -407,7 +407,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
    }
 
-   public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+   public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable ServerPlayer player, final Consumer<ItemStack> onBreak) {
       int newAmount = this.processDurabilityChange(amount, level, player);
       if (newAmount != 0) {
          this.applyDamage(this.getDamageValue() + newAmount, player, onBreak);
@@ -425,16 +425,16 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       }
    }
 
-   private void applyDamage(final int newDamage, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+   private void applyDamage(final int newDamage, final @Nullable ServerPlayer player, final Consumer<ItemStack> onBreak) {
       if (player != null) {
          CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(player, this, newDamage);
       }
 
       this.setDamageValue(newDamage);
       if (this.isBroken()) {
-         Item item = this.getItem();
+         ItemStack broken = this.copy();
          this.shrink(1);
-         onBreak.accept(item);
+         onBreak.accept(broken);
       }
 
    }

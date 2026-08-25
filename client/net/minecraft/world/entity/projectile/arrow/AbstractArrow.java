@@ -27,7 +27,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -38,7 +37,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
@@ -374,7 +372,7 @@ public abstract class AbstractArrow extends Projectile {
 
    }
 
-   public void onItemBreak(final Item item) {
+   public void onItemBreak(final ItemStack item) {
       this.firedFromWeapon = null;
    }
 
@@ -438,17 +436,12 @@ public abstract class AbstractArrow extends Projectile {
          livingOwner.setLastHurtMob(entity);
       }
 
-      boolean isEnderman = entity.is(EntityTypes.ENDERMAN);
       int remainingFireTicks = entity.getRemainingFireTicks();
-      if (this.isOnFire() && !isEnderman) {
+      if (this.isOnFire()) {
          entity.igniteForSeconds(5.0F);
       }
 
       if (entity.hurtOrSimulate(damageSource, (float)damage)) {
-         if (isEnderman) {
-            return;
-         }
-
          if (entity instanceof LivingEntity) {
             LivingEntity mob = (LivingEntity)entity;
             if (!this.level().isClientSide() && this.getPierceLevel() <= 0) {
@@ -456,9 +449,9 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             this.doKnockback(mob, damageSource);
-            Level var13 = this.level();
-            if (var13 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var13;
+            Level var12 = this.level();
+            if (var12 instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)var12;
                EnchantmentHelper.doPostAttackEffectsWithItemSource(serverLevel, mob, damageSource, this.getWeaponItem());
             }
 
@@ -491,9 +484,9 @@ public abstract class AbstractArrow extends Projectile {
       } else {
          entity.setRemainingFireTicks(remainingFireTicks);
          this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, 0.2);
-         Level var21 = this.level();
-         if (var21 instanceof ServerLevel) {
-            ServerLevel level = (ServerLevel)var21;
+         Level var20 = this.level();
+         if (var20 instanceof ServerLevel) {
+            ServerLevel level = (ServerLevel)var20;
             if (this.getDeltaMovement().lengthSqr() < 1.0E-7) {
                if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
                   this.spawnAtLocation(level, this.getPickupItem(), 0.1F);

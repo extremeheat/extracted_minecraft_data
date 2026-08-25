@@ -90,7 +90,6 @@ public class Zombie extends Monster {
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE;
    private static final boolean DEFAULT_BABY = false;
    private static final boolean DEFAULT_CAN_BREAK_DOORS = false;
-   private static final float RANGED_MODE_DISTANCE_SQR = 9.0F;
    private final BreakDoorGoal breakDoorGoal;
    private boolean canBreakDoors;
    private final ConversionTracker<Zombie> drowningTracker;
@@ -142,10 +141,6 @@ public class Zombie extends Monster {
 
    public boolean canBreakDoors() {
       return this.canBreakDoors;
-   }
-
-   protected boolean hasTargetInRangedDistance() {
-      return this.getTarget() != null && this.distanceToSqr(this.getTarget()) >= 9.0;
    }
 
    public void setCanBreakDoors(final boolean canBreakDoors) {

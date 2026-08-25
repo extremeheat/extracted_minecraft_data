@@ -31,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -57,6 +58,7 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.FeatureSorter;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -68,6 +70,8 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBufferPool;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
 import net.minecraft.world.level.levelgen.placement.FeaturePlacer;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -121,12 +125,28 @@ public abstract class ChunkGenerator {
 
    public CompletableFuture<ChunkAccess> createBiomes(final RandomState randomState, final Blender blender, final StructureManager structureManager, final ChunkAccess protoChunk) {
       return CompletableFuture.supplyAsync(() -> {
-         protoChunk.fillBiomesFromNoise(this.biomeSource.createResolver(randomState.sampler()));
+         this.doCreateBiomes(blender, randomState, protoChunk);
          return protoChunk;
-      }, Util.backgroundExecutor().forName("init_biomes"));
+      }, Util.backgroundExecutor().forName("createBiomes"));
    }
 
-   public abstract void applyCarvers(@Nullable WorldGenRegion biomeRegion, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunk, Blender blender);
+   private void doCreateBiomes(final Blender blender, final RandomState randomState, final ChunkAccess protoChunk) {
+      DensityBufferPool bufferPool = randomState.acquireDensityBufferPool();
+
+      try {
+         Climate.Sampler climateSampler = randomState.createClimateSampler(SamplerContext.builder().enableCaches().useBufferArena(bufferPool).build());
+         ChunkPos pos = protoChunk.getPos();
+         BiomeResolver biomeResolver = this.biomeSource.createResolverForChunk(climateSampler, QuartPos.fromBlock(pos.getMinBlockX()), QuartPos.fromBlock(protoChunk.getMinY()), QuartPos.fromBlock(pos.getMinBlockZ()), QuartPos.fromBlock(16), QuartPos.fromBlock(protoChunk.getHeight()), QuartPos.fromBlock(16));
+         protoChunk.fillBiomesFromNoise(this.decorateBiomeResolver(blender, protoChunk, biomeResolver));
+      } finally {
+         randomState.releaseDensityBufferPool(bufferPool);
+      }
+
+   }
+
+   protected BiomeResolver decorateBiomeResolver(final Blender blender, final ChunkAccess protoChunk, final BiomeResolver biomeResolver) {
+      return biomeResolver;
+   }
 
    public @Nullable Pair<BlockPos, Holder<Structure>> findNearestMapStructure(final ServerLevel level, final HolderSet<Structure> wantedStructures, final BlockPos pos, final int maxSearchRadius, final boolean createReference) {
       if (SharedConstants.DEBUG_DISABLE_FEATURES) {
@@ -258,7 +278,7 @@ public abstract class ChunkGenerator {
             }
 
             ChunkAccess chunk = level.getChunk(chunkTarget.x(), chunkTarget.z(), ChunkStatus.STRUCTURE_STARTS);
-            StructureStart start = structureManager.getStartForStructure(SectionPos.bottomOf(chunk), structure.value(), chunk);
+            StructureStart start = structureManager.getStartForStructure(structure.value(), chunk);
             if (start != null && start.isValid() && (!createReference || tryAddReference(structureManager, start))) {
                return Pair.of(config.getLocatePos(start.getChunkPos()), structure);
             }
@@ -319,7 +339,7 @@ public abstract class ChunkGenerator {
 
                      try {
                         level.setCurrentlyGenerating(currentlyGenerating);
-                        structureManager.startsForStructure(sectionPos, structure).forEach((start) -> start.placeInChunk(level, structureManager, this, random, getWritableArea(chunk), centerPos));
+                        structureManager.startsForStructure(sectionPos.x(), sectionPos.z(), structure).forEach((start) -> start.placeInChunk(level, structureManager, this, random, getWritableArea(chunk), centerPos));
                      } catch (Exception e) {
                         CrashReport report = CrashReport.forThrowable(e, "Feature placement");
                         CrashReportCategory var10000 = report.addCategory("Feature");
@@ -396,8 +416,6 @@ public abstract class ChunkGenerator {
       return new BoundingBox(targetBlockX, minY, targetBlockZ, targetBlockX + 15, maxY, targetBlockZ + 15);
    }
 
-   public abstract void buildSurface(StructureManager structureManager, RandomState randomState, ChunkAccess protoChunk, BiomeManager biomeManager, Blender blender, Set<Holder<Biome>> possibleBiomes);
-
    public abstract void spawnOriginalMobs(WorldGenRegion worldGenRegion);
 
    public int getSpawnHeight(final LevelHeightAccessor heightAccessor) {
@@ -437,15 +455,14 @@ public abstract class ChunkGenerator {
    public void createStructures(final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
       if (!SharedConstants.DEBUG_DISABLE_STRUCTURES) {
          ChunkPos sourceChunkPos = centerChunk.getPos();
-         SectionPos sectionPos = SectionPos.bottomOf(centerChunk);
          RandomState randomState = state.randomState();
-         BiomeResolver biomeResolver = this.biomeSource.createResolver(randomState.sampler());
+         Climate.Sampler climateSampler = randomState.createClimateSampler(SamplerContext.builder().enableCaches().build());
          state.possibleStructureSets().forEach((set) -> {
             StructurePlacement featurePlacement = ((StructureSet)set.value()).placement();
             List<StructureSet.StructureSelectionEntry> structures = ((StructureSet)set.value()).structures();
 
             for(StructureSet.StructureSelectionEntry structure : structures) {
-               StructureStart existingStart = structureManager.getStartForStructure(sectionPos, (Structure)structure.structure().value(), centerChunk);
+               StructureStart existingStart = structureManager.getStartForStructure((Structure)structure.structure().value(), centerChunk);
                if (existingStart != null && existingStart.isValid()) {
                   return;
                }
@@ -453,7 +470,7 @@ public abstract class ChunkGenerator {
 
             if (featurePlacement.isStructureChunk(state, sourceChunkPos.x(), sourceChunkPos.z())) {
                if (structures.size() == 1) {
-                  this.tryGenerateStructure((StructureSet.StructureSelectionEntry)structures.get(0), structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, sectionPos, level, biomeResolver);
+                  this.tryGenerateStructure((StructureSet.StructureSelectionEntry)structures.get(0), structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler);
                } else {
                   ArrayList<StructureSet.StructureSelectionEntry> options = new ArrayList(structures.size());
                   options.addAll(structures);
@@ -479,7 +496,7 @@ public abstract class ChunkGenerator {
                      }
 
                      StructureSet.StructureSelectionEntry selected = (StructureSet.StructureSelectionEntry)options.get(index);
-                     if (this.tryGenerateStructure(selected, structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, sectionPos, level, biomeResolver)) {
+                     if (this.tryGenerateStructure(selected, structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler)) {
                         return;
                      }
 
@@ -493,23 +510,23 @@ public abstract class ChunkGenerator {
       }
    }
 
-   private boolean tryGenerateStructure(final StructureSet.StructureSelectionEntry selected, final StructureManager structureManager, final RegistryAccess registryAccess, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkAccess centerChunk, final ChunkPos sourceChunkPos, final SectionPos sectionPos, final ResourceKey<Level> level, final BiomeResolver biomeResolver) {
+   private boolean tryGenerateStructure(final StructureSet.StructureSelectionEntry selected, final StructureManager structureManager, final RegistryAccess registryAccess, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkAccess centerChunk, final ChunkPos sourceChunkPos, final ResourceKey<Level> level, final Climate.Sampler climateSampler) {
       Structure structure = (Structure)selected.structure().value();
-      int references = fetchReferences(structureManager, centerChunk, sectionPos, structure);
+      int references = fetchReferences(structureManager, centerChunk, structure);
       HolderSet<Biome> biomeAllowedForStructure = structure.biomes();
       Objects.requireNonNull(biomeAllowedForStructure);
       Predicate<Holder<Biome>> biomePredicate = biomeAllowedForStructure::contains;
-      StructureStart start = structure.generate(selected.structure(), level, registryAccess, this, biomeResolver, randomState, structureTemplateManager, seed, sourceChunkPos, references, centerChunk, biomePredicate);
+      StructureStart start = structure.generate(selected.structure(), level, registryAccess, this, this.biomeSource, climateSampler, randomState, structureTemplateManager, seed, sourceChunkPos, references, centerChunk, biomePredicate);
       if (start.isValid()) {
-         structureManager.setStartForStructure(sectionPos, structure, start, centerChunk);
+         structureManager.setStartForStructure(structure, start, centerChunk);
          return true;
       } else {
          return false;
       }
    }
 
-   private static int fetchReferences(final StructureManager structureManager, final ChunkAccess centerChunk, final SectionPos sectionPos, final Structure structure) {
-      StructureStart prevEntry = structureManager.getStartForStructure(sectionPos, structure, centerChunk);
+   private static int fetchReferences(final StructureManager structureManager, final ChunkAccess centerChunk, final Structure structure) {
+      StructureStart prevEntry = structureManager.getStartForStructure(structure, centerChunk);
       return prevEntry != null ? prevEntry.getReferences() : 0;
    }
 
@@ -529,7 +546,7 @@ public abstract class ChunkGenerator {
             for(StructureStart start : level.getChunk(sourceX, sourceZ).getAllStarts().values()) {
                try {
                   if (start.isValid() && start.getBoundingBox().intersects(targetBlockX, targetBlockZ, targetBlockX + 15, targetBlockZ + 15)) {
-                     structureManager.addReferenceForStructure(pos, start.getStructure(), sourceChunkKey, centerChunk);
+                     structureManager.addReferenceForStructure(start.getStructure(), sourceChunkKey, centerChunk);
                   }
                } catch (Exception e) {
                   CrashReport report = CrashReport.forThrowable(e, "Generating structure reference");
@@ -546,7 +563,7 @@ public abstract class ChunkGenerator {
 
    }
 
-   public abstract CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunk);
+   public abstract CompletableFuture<ChunkAccess> buildTerrain(ChunkAccess chunk, Blender blender, RandomState randomState, StructureManager structureManager, BiomeManager biomeManager, @Nullable WorldGenRegion carverBiomeRegion, Set<Holder<Biome>> possibleBiomes);
 
    public abstract int getSeaLevel();
 
@@ -564,7 +581,7 @@ public abstract class ChunkGenerator {
       return this.getBaseHeight(x, z, type, heightAccessor, randomState) - 1;
    }
 
-   public abstract void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos);
+   public abstract void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext);
 
    /** @deprecated */
    @Deprecated

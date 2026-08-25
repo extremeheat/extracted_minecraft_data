@@ -18,6 +18,9 @@ public class LootContextParamSets {
    public static final ContextKeySet CHEST;
    public static final ContextKeySet COMMAND;
    public static final ContextKeySet COMMAND_SLOT_SOURCE;
+   public static final ContextKeySet COMMAND_COMPUTE_DEFAULT;
+   public static final ContextKeySet COMMAND_COMPUTE_POSITION;
+   public static final ContextKeySet COMMAND_COMPUTE_ENTITY;
    public static final ContextKeySet SELECTOR;
    public static final ContextKeySet VILLAGER_TRADE;
    public static final ContextKeySet FISHING;
@@ -71,6 +74,9 @@ public class LootContextParamSets {
       CHEST = register("chest", (builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
       COMMAND = register("command", (builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
       COMMAND_SLOT_SOURCE = register("command_slot_source", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.CONTAINER).optional(LootContextParams.THIS_ENTITY));
+      COMMAND_COMPUTE_DEFAULT = register("command_compute_default", (builder) -> builder.optional(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN));
+      COMMAND_COMPUTE_POSITION = register("command_compute_position", (builder) -> builder.optional(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE).optional(LootContextParams.BLOCK_ENTITY));
+      COMMAND_COMPUTE_ENTITY = register("command_compute_entity", (builder) -> builder.optional(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.TARGET_ENTITY));
       SELECTOR = register("selector", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY));
       VILLAGER_TRADE = register("villager_trade", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED));
       FISHING = register("fishing", (builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.TOOL).optional(LootContextParams.THIS_ENTITY));

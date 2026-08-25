@@ -1,27 +1,88 @@
 package net.minecraft.world.level.levelgen.densityfunction;
 
-public record DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int minBlockY, int minBlockZ) {
-   public DensityVolume {
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+
+public record DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int minBlockY, int minBlockZ, int stepBlockX, int stepBlockY, int stepBlockZ) {
+   public static final int NO_BLOCK = -1;
+
+   public DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int minBlockY, int minBlockZ, int stepBlockX, int stepBlockY, int stepBlockZ) {
       super();
+      if (sizeX > 0 && sizeY > 0 && sizeZ > 0) {
+         if (stepBlockX > 0 && stepBlockY > 0 && stepBlockZ > 0) {
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+            this.sizeZ = sizeZ;
+            this.minBlockX = minBlockX;
+            this.minBlockY = minBlockY;
+            this.minBlockZ = minBlockZ;
+            this.stepBlockX = stepBlockX;
+            this.stepBlockY = stepBlockY;
+            this.stepBlockZ = stepBlockZ;
+         } else {
+            throw new IllegalArgumentException("Step must be positive, was: " + stepBlockX + "; " + stepBlockY + "; " + stepBlockZ);
+         }
+      } else {
+         throw new IllegalArgumentException("Size must be positive, was: " + sizeX + "x" + sizeY + "x" + sizeZ);
+      }
+   }
+
+   public DensityVolume(final int sizeX, final int sizeY, final int sizeZ, final int minBlockX, final int minBlockY, final int minBlockZ) {
+      this(sizeX, sizeY, sizeZ, minBlockX, minBlockY, minBlockZ, 1, 1, 1);
    }
 
    public int indexUnchecked(final int indexX, final int indexY, final int indexZ) {
       return indexY + (indexX + indexZ * this.sizeX) * this.sizeY;
    }
 
-   public int blockX(final int indexX) {
-      return this.minBlockX + indexX;
+   public int blockX(final int x) {
+      return this.minBlockX + x * this.stepBlockX;
    }
 
-   public int blockY(final int indexY) {
-      return this.minBlockY + indexY;
+   public int blockY(final int y) {
+      return this.minBlockY + y * this.stepBlockY;
    }
 
-   public int blockZ(final int indexZ) {
-      return this.minBlockZ + indexZ;
+   public int blockZ(final int z) {
+      return this.minBlockZ + z * this.stepBlockZ;
+   }
+
+   public int maxBlockX() {
+      return this.minBlockX + this.sizeX * this.stepBlockX - 1;
+   }
+
+   public int maxBlockY() {
+      return this.minBlockY + this.sizeY * this.stepBlockY - 1;
+   }
+
+   public int maxBlockZ() {
+      return this.minBlockZ + this.sizeZ * this.stepBlockZ - 1;
    }
 
    public int size() {
       return this.sizeX * this.sizeY * this.sizeZ;
+   }
+
+   public boolean intersects(final BoundingBox box) {
+      return box.intersects(this.minBlockX, this.minBlockY, this.minBlockZ, this.maxBlockX(), this.maxBlockY(), this.maxBlockZ());
+   }
+
+   private boolean containsBlockRelative(final int relativeX, final int relativeY, final int relativeZ) {
+      return relativeX >= 0 && relativeY >= 0 && relativeZ >= 0 && relativeX < this.sizeX * this.stepBlockX && relativeY < this.sizeY * this.stepBlockY && relativeZ < this.sizeZ * this.stepBlockZ && Math.floorMod(relativeX, this.stepBlockX) == 0 && Math.floorMod(relativeY, this.stepBlockY) == 0 && Math.floorMod(relativeZ, this.stepBlockZ) == 0;
+   }
+
+   public int indexOfBlock(final int blockX, final int blockY, final int blockZ) {
+      int relativeX = blockX - this.minBlockX;
+      int relativeY = blockY - this.minBlockY;
+      int relativeZ = blockZ - this.minBlockZ;
+      if (this.stepBlockX == 1 && this.stepBlockY == 1 && this.stepBlockZ == 1) {
+         if (relativeX >= 0 && relativeY >= 0 && relativeZ >= 0 && relativeX < this.sizeX && relativeY < this.sizeY && relativeZ < this.sizeZ) {
+            return this.indexUnchecked(relativeX, relativeY, relativeZ);
+         }
+      } else if (this.containsBlockRelative(relativeX, relativeY, relativeZ)) {
+         return this.indexUnchecked(Mth.floorDiv(relativeX, this.stepBlockX), Mth.floorDiv(relativeY, this.stepBlockY), Mth.floorDiv(relativeZ, this.stepBlockZ));
+      }
+
+      return -1;
    }
 }

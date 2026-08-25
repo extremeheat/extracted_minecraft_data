@@ -14,6 +14,8 @@ import net.minecraft.core.QuartPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 
 public class MultiNoiseBiomeSource extends BiomeSource {
    private static final MapCodec<Holder<Biome>> ENTRY_CODEC;
@@ -54,6 +56,26 @@ public class MultiNoiseBiomeSource extends BiomeSource {
 
    public BiomeResolver createResolver(final Climate.Sampler sampler) {
       return (quartX, quartY, quartZ) -> this.getNoiseBiome(sampler.sample(quartX, quartY, quartZ));
+   }
+
+   public BiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
+      DensityVolume volume = new DensityVolume(quartSizeX, quartSizeY, quartSizeZ, QuartPos.toBlock(minQuartX), QuartPos.toBlock(minQuartY), QuartPos.toBlock(minQuartZ), 4, 4, 4);
+      DensityBuffer temperature = DensityBuffer.createUnpooled(volume.size());
+      DensityBuffer vegetation = DensityBuffer.createUnpooled(volume.size());
+      DensityBuffer continents = DensityBuffer.createUnpooled(volume.size());
+      DensityBuffer erosion = DensityBuffer.createUnpooled(volume.size());
+      DensityBuffer depth = DensityBuffer.createUnpooled(volume.size());
+      DensityBuffer ridges = DensityBuffer.createUnpooled(volume.size());
+      sampler.temperature().sampleVolume(temperature, volume);
+      sampler.humidity().sampleVolume(vegetation, volume);
+      sampler.continentalness().sampleVolume(continents, volume);
+      sampler.erosion().sampleVolume(erosion, volume);
+      sampler.depth().sampleVolume(depth, volume);
+      sampler.weirdness().sampleVolume(ridges, volume);
+      return (quartX, quartY, quartZ) -> {
+         int index = volume.indexUnchecked(quartX - minQuartX, quartY - minQuartY, quartZ - minQuartZ);
+         return this.getNoiseBiome(Climate.target(temperature.get(index), vegetation.get(index), continents.get(index), erosion.get(index), depth.get(index), ridges.get(index)));
+      };
    }
 
    @VisibleForDebug

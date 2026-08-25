@@ -21,15 +21,15 @@ public class DynamicGpuData implements AutoCloseable {
    public static final int TERRAIN_TRANSFORM_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putIVec2().get();
    public static final int CHUNK_SECTION_UBO_SIZE = (new Std140SizeCalculator()).putIVec3().putFloat().get();
    private static final int INITIAL_CAPACITY = 2;
-   private final DynamicGpuDataStorage<Transform> transforms;
-   private final DynamicGpuDataStorage<TerrainTransform> terrain;
+   private final DynamicGpuDataStorageMapped<Transform> transforms;
+   private final DynamicGpuDataStorageMapped<TerrainTransform> terrain;
    private @Nullable DynamicGpuDataStorage<ChunkSectionInfo> chunkSections = null;
-   private @Nullable DynamicGpuDataStorage<IndexedDraw> chunkSectionsCommandBuffer = null;
+   private @Nullable DynamicGpuDataStorageMapped<IndexedDraw> chunkSectionsCommandBuffer = null;
 
    public DynamicGpuData() {
       super();
-      this.transforms = new DynamicGpuDataStorage<Transform>("Dynamic Transforms UBO", TRANSFORM_UBO_SIZE, 128, 2);
-      this.terrain = new DynamicGpuDataStorage<TerrainTransform>("Terrain UBO", TERRAIN_TRANSFORM_UBO_SIZE, 128, 1);
+      this.transforms = new DynamicGpuDataStorageMapped<Transform>("Dynamic Transforms UBO", TRANSFORM_UBO_SIZE, 128, 2);
+      this.terrain = new DynamicGpuDataStorageMapped<TerrainTransform>("Terrain UBO", TERRAIN_TRANSFORM_UBO_SIZE, 128, 1);
    }
 
    public void reset() {
@@ -93,7 +93,7 @@ public class DynamicGpuData implements AutoCloseable {
       }
 
       if (this.chunkSections == null) {
-         this.chunkSections = new DynamicGpuDataStorage<ChunkSectionInfo>("Chunk Sections UBO", CHUNK_SECTION_UBO_SIZE, 128, 2);
+         this.chunkSections = new DynamicGpuDataStorageMapped<ChunkSectionInfo>("Chunk Sections UBO", CHUNK_SECTION_UBO_SIZE, 128, 2);
       }
 
       return this.chunkSections.writeData(infos);
@@ -106,7 +106,7 @@ public class DynamicGpuData implements AutoCloseable {
       }
 
       if (this.chunkSections == null) {
-         this.chunkSections = new DynamicGpuDataStorage<ChunkSectionInfo>("Chunk Sections Instanced", CHUNK_SECTION_UBO_SIZE, 32, 2);
+         this.chunkSections = new DynamicGpuDataStorageNonMapped<ChunkSectionInfo>("Chunk Sections Instanced", CHUNK_SECTION_UBO_SIZE, 32, 2);
       }
 
       return this.chunkSections.writeDataBatched(infos);
@@ -114,7 +114,7 @@ public class DynamicGpuData implements AutoCloseable {
 
    public GpuBufferSlice[] writeChunkSectionCommands(final List<List<IndexedDraw>> draws) {
       if (this.chunkSectionsCommandBuffer == null) {
-         this.chunkSectionsCommandBuffer = new DynamicGpuDataStorage<IndexedDraw>("Chunk Sections Command Buffer", 20, 512, 2);
+         this.chunkSectionsCommandBuffer = new DynamicGpuDataStorageMapped<IndexedDraw>("Chunk Sections Command Buffer", 20, 512, 2);
       }
 
       return this.chunkSectionsCommandBuffer.writeDataBatchedMultiple(draws);

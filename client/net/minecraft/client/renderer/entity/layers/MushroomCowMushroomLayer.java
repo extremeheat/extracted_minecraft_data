@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.MushroomCowRenderState;
-import org.joml.Quaternionfc;
 
 public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState, CowModel> {
    public MushroomCowMushroomLayer(final RenderLayerParent<MushroomCowRenderState, CowModel> renderer) {
@@ -22,16 +21,16 @@ public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState
             int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
             poseStack.pushPose();
             poseStack.translate(0.2F, -0.35F, 0.5F);
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
+            poseStack.rotateDegrees(Axis.YP, -48.0F);
             poseStack.scale(-1.0F, -1.0F, 1.0F);
             poseStack.translate(-0.5F, -0.5F, -0.5F);
             this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, state.mushroomModel, overlayCoords);
             poseStack.popPose();
             poseStack.pushPose();
             poseStack.translate(0.2F, -0.35F, 0.5F);
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(42.0F));
+            poseStack.rotateDegrees(Axis.YP, 42.0F);
             poseStack.translate(0.1F, 0.0F, -0.6F);
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-48.0F));
+            poseStack.rotateDegrees(Axis.YP, -48.0F);
             poseStack.scale(-1.0F, -1.0F, 1.0F);
             poseStack.translate(-0.5F, -0.5F, -0.5F);
             this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, state.mushroomModel, overlayCoords);
@@ -39,7 +38,7 @@ public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState
             poseStack.pushPose();
             ((CowModel)this.getParentModel()).getHead().translateAndRotate(poseStack);
             poseStack.translate(0.0F, -0.7F, -0.2F);
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-78.0F));
+            poseStack.rotateDegrees(Axis.YP, -78.0F);
             poseStack.scale(-1.0F, -1.0F, 1.0F);
             poseStack.translate(-0.5F, -0.5F, -0.5F);
             this.submitMushroomBlock(poseStack, submitNodeCollector, lightCoords, appearsGlowingWithInvisibility, state.outlineColor, state.mushroomModel, overlayCoords);

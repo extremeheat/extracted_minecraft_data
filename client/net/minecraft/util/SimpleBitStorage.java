@@ -1,5 +1,6 @@
 package net.minecraft.util;
 
+import java.util.Arrays;
 import java.util.function.IntConsumer;
 import org.apache.commons.lang3.Validate;
 import org.jspecify.annotations.Nullable;
@@ -97,6 +98,19 @@ public class SimpleBitStorage implements BitStorage {
       long cellValue = this.data[cellIndex];
       int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
       this.data[cellIndex] = cellValue & ~(this.mask << bitIndex) | ((long)value & this.mask) << bitIndex;
+   }
+
+   public void fill(final int value) {
+      Validate.inclusiveBetween(0L, this.mask, (long)value);
+      long cellValue = (long)value & this.mask;
+      int offset = this.bits;
+
+      do {
+         cellValue |= cellValue << offset;
+         offset <<= 1;
+      } while(offset < 64);
+
+      Arrays.fill(this.data, cellValue);
    }
 
    public int get(final int index) {

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -234,6 +235,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private static final int MAXIMUM_FLYING_TICKS = 80;
    private static final int ATTACK_INDICATOR_TOLERANCE_TICKS = 5;
    public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
+   private static final int MIN_SUPPORTED_BLOCKS_RESEND_TICKS = 200;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
    private static final Component INVALID_COMMAND_SIGNATURE;
    public ServerPlayer player;
@@ -266,6 +268,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private int receivedMovePacketCount;
    private int knownMovePacketCount;
    private boolean receivedMovementThisTick;
+   private boolean receivedPositionThisTick;
    private @Nullable RemoteChatSession chatSession;
    private SignedMessageChain.Decoder signedMessageDecoder;
    private final LastSeenMessagesValidator lastSeenMessages = new LastSeenMessagesValidator(20);
@@ -275,6 +278,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private boolean waitingForSwitchToConfig;
    private boolean waitingForRespawn;
    private int clientLoadedTimeoutTimer;
+   private int lastSupportedBlocksSend;
    private final ServerCommandSuggestionsProvider commandSuggestionsProvider;
 
    public ServerGamePacketListenerImpl(final MinecraftServer server, final Connection connection, final ServerPlayer player, final CommonListenerCookie cookie) {
@@ -527,7 +531,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleAcceptTeleportPacket(final ServerboundAcceptTeleportationPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
-      if (packet.getId() == this.awaitingTeleport) {
+      if (packet.id() == this.awaitingTeleport) {
          if (this.awaitingPositionFromClient == null) {
             this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
             return;
@@ -539,6 +543,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.lastGoodZ = this.awaitingPositionFromClient.z;
          this.player.hasChangedDimension();
          this.awaitingPositionFromClient = null;
+         this.handlePlayerPositionChange(packet.x(), packet.y(), packet.z(), packet.yRot(), packet.xRot(), false, false);
       }
 
    }
@@ -1066,7 +1071,15 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (containsInvalidValues(packet.getX(0.0), packet.getY(0.0), packet.getZ(0.0), packet.getYRot(0.0F), packet.getXRot(0.0F))) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
       } else {
-         ServerLevel level = this.player.level();
+         if (packet.hasPosition()) {
+            if (this.receivedPositionThisTick) {
+               this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
+               return;
+            }
+
+            this.receivedPositionThisTick = true;
+         }
+
          if (!this.player.wonGame) {
             if (this.tickCount == 0) {
                this.resetPosition();
@@ -1081,98 +1094,107 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   double targetX = clampHorizontal(packet.getX(this.player.getX()));
                   double targetY = clampVertical(packet.getY(this.player.getY()));
                   double targetZ = clampHorizontal(packet.getZ(this.player.getZ()));
-                  if (this.player.isPassenger()) {
-                     this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), targetYRot, targetXRot);
-                     this.player.level().getChunkSource().move(this.player);
-                  } else {
-                     double startX = this.player.getX();
-                     double startY = this.player.getY();
-                     double startZ = this.player.getZ();
-                     double xDist = targetX - this.firstGoodX;
-                     double yDist = targetY - this.firstGoodY;
-                     double zDist = targetZ - this.firstGoodZ;
-                     double expectedDist = this.player.getDeltaMovement().lengthSqr();
-                     double movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
-                     if (this.player.isSleeping()) {
-                        if (movedDist > 1.0) {
-                           this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), targetYRot, targetXRot);
-                        }
+                  this.handlePlayerPositionChange(targetX, targetY, targetZ, targetYRot, targetXRot, packet.isOnGround(), packet.horizontalCollision());
+               }
+            }
+         }
+      }
+   }
 
-                     } else {
-                        boolean isFallFlying = this.player.isFallFlying();
-                        if (level.tickRateManager().runsNormally()) {
-                           ++this.receivedMovePacketCount;
-                           int deltaPackets = this.receivedMovePacketCount - this.knownMovePacketCount;
-                           if (deltaPackets > 5) {
-                              LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getPlainTextName(), deltaPackets);
-                              deltaPackets = 1;
-                           }
+   private void handlePlayerPositionChange(final double targetX, final double targetY, final double targetZ, final float targetYRot, final float targetXRot, final boolean isOnGround, final boolean horizontalCollision) {
+      if (this.player.isPassenger()) {
+         this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), targetYRot, targetXRot);
+         this.player.level().getChunkSource().move(this.player);
+      } else {
+         double startX = this.player.getX();
+         double startY = this.player.getY();
+         double startZ = this.player.getZ();
+         double xDist = targetX - this.firstGoodX;
+         double yDist = targetY - this.firstGoodY;
+         double zDist = targetZ - this.firstGoodZ;
+         double expectedDist = this.player.getDeltaMovement().lengthSqr();
+         double movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
+         if (this.player.isSleeping()) {
+            if (movedDist > 1.0) {
+               this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), targetYRot, targetXRot);
+            }
 
-                           if (this.shouldCheckPlayerMovement(isFallFlying)) {
-                              float metersPerTick = isFallFlying ? 300.0F : 100.0F;
-                              if (movedDist - expectedDist > (double)(metersPerTick * (float)deltaPackets)) {
-                                 LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getPlainTextName(), xDist, yDist, zDist});
-                                 this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
-                                 return;
-                              }
-                           }
-                        }
+         } else {
+            boolean isFallFlying = this.player.isFallFlying();
+            ServerLevel level = this.player.level();
+            if (level.tickRateManager().runsNormally()) {
+               ++this.receivedMovePacketCount;
+               int deltaPackets = this.receivedMovePacketCount - this.knownMovePacketCount;
+               if (deltaPackets > 5) {
+                  LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getPlainTextName(), deltaPackets);
+                  deltaPackets = 1;
+               }
 
-                        AABB oldAABB = this.player.getBoundingBox();
-                        xDist = targetX - this.lastGoodX;
-                        yDist = targetY - this.lastGoodY;
-                        zDist = targetZ - this.lastGoodZ;
-                        boolean movedUpwards = yDist > 0.0;
-                        if (this.player.onGround() && !packet.isOnGround() && movedUpwards) {
-                           this.player.jumpFromGround();
-                        }
-
-                        boolean playerStandsOnSomething = this.player.verticalCollisionBelow;
-                        this.player.move(MoverType.PLAYER, new Vec3(xDist, yDist, zDist));
-                        double oyDist = yDist;
-                        xDist = targetX - this.player.getX();
-                        yDist = targetY - this.player.getY();
-                        if (yDist > -0.5 || yDist < 0.5) {
-                           yDist = 0.0;
-                        }
-
-                        zDist = targetZ - this.player.getZ();
-                        movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
-                        boolean fail = false;
-                        if (!this.player.isChangingDimension() && movedDist > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator() && !this.player.isInPostImpulseGraceTime()) {
-                           fail = true;
-                           LOGGER.warn("{} moved wrongly!", this.player.getPlainTextName());
-                        }
-
-                        if (this.player.noPhysics || this.player.isSleeping() || (!fail || !level.noCollision(this.player, oldAABB)) && !this.isEntityCollidingWithAnythingNew(level, this.player, oldAABB, targetX, targetY, targetZ)) {
-                           this.player.absSnapTo(targetX, targetY, targetZ, targetYRot, targetXRot);
-                           boolean isAutoSpinAttack = this.player.isAutoSpinAttack();
-                           this.clientIsFloating = oyDist >= -0.03125 && !playerStandsOnSomething && !this.player.isSpectator() && !this.server.allowFlight() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !isFallFlying && !isAutoSpinAttack && this.noBlocksAround(this.player);
-                           this.player.level().getChunkSource().move(this.player);
-                           Vec3 clientDeltaMovement = new Vec3(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
-                           this.player.setOnGroundWithMovement(packet.isOnGround(), packet.horizontalCollision(), clientDeltaMovement);
-                           this.player.doCheckFallDamage(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z, packet.isOnGround());
-                           this.handlePlayerKnownMovement(clientDeltaMovement);
-                           if (movedUpwards) {
-                              this.player.resetFallDistance();
-                           }
-
-                           if (packet.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || isFallFlying || isAutoSpinAttack) {
-                              this.player.tryResetCurrentImpulseContext();
-                           }
-
-                           this.player.checkMovementStatistics(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
-                           this.lastGoodX = this.player.getX();
-                           this.lastGoodY = this.player.getY();
-                           this.lastGoodZ = this.player.getZ();
-                        } else {
-                           this.teleport(startX, startY, startZ, targetYRot, targetXRot);
-                           this.player.doCheckFallDamage(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ, packet.isOnGround());
-                           this.player.removeLatestMovementRecording();
-                        }
-                     }
+               if (this.shouldCheckPlayerMovement(isFallFlying)) {
+                  float metersPerTick = isFallFlying ? 300.0F : 100.0F;
+                  if (movedDist - expectedDist > (double)(metersPerTick * (float)deltaPackets)) {
+                     LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getPlainTextName(), xDist, yDist, zDist});
+                     this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
+                     return;
                   }
                }
+            }
+
+            AABB oldAABB = this.player.getBoundingBox();
+            xDist = targetX - this.lastGoodX;
+            yDist = targetY - this.lastGoodY;
+            zDist = targetZ - this.lastGoodZ;
+            boolean movedUpwards = yDist > 0.0;
+            if (this.player.onGround() && !isOnGround && movedUpwards) {
+               this.player.jumpFromGround();
+            }
+
+            boolean playerStandsOnSomething = this.player.verticalCollisionBelow;
+            if (isOnGround && !playerStandsOnSomething) {
+               this.forceSendPlayerSupportBlocks();
+            }
+
+            this.player.move(MoverType.PLAYER, new Vec3(xDist, yDist, zDist));
+            double oyDist = yDist;
+            xDist = targetX - this.player.getX();
+            yDist = targetY - this.player.getY();
+            if (yDist > -0.5 || yDist < 0.5) {
+               yDist = 0.0;
+            }
+
+            zDist = targetZ - this.player.getZ();
+            movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
+            boolean fail = false;
+            if (!this.player.isChangingDimension() && movedDist > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator() && !this.player.isInPostImpulseGraceTime()) {
+               fail = true;
+               LOGGER.warn("{} moved wrongly!", this.player.getPlainTextName());
+            }
+
+            if (this.player.noPhysics || this.player.isSleeping() || (!fail || !level.noCollision(this.player, oldAABB)) && !this.isEntityCollidingWithAnythingNew(level, this.player, oldAABB, targetX, targetY, targetZ)) {
+               this.player.absSnapTo(targetX, targetY, targetZ, targetYRot, targetXRot);
+               boolean isAutoSpinAttack = this.player.isAutoSpinAttack();
+               this.clientIsFloating = oyDist >= -0.03125 && !playerStandsOnSomething && !this.player.isSpectator() && !this.server.allowFlight() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !isFallFlying && !isAutoSpinAttack && this.noBlocksAround(this.player);
+               this.player.level().getChunkSource().move(this.player);
+               Vec3 clientDeltaMovement = new Vec3(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
+               this.player.setOnGroundWithMovement(isOnGround, horizontalCollision, clientDeltaMovement);
+               this.player.doCheckFallDamage(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z, isOnGround);
+               this.handlePlayerKnownMovement(clientDeltaMovement);
+               if (movedUpwards) {
+                  this.player.resetFallDistance();
+               }
+
+               if (isOnGround || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || isFallFlying || isAutoSpinAttack) {
+                  this.player.tryResetCurrentImpulseContext();
+               }
+
+               this.player.checkMovementStatistics(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
+               this.lastGoodX = this.player.getX();
+               this.lastGoodY = this.player.getY();
+               this.lastGoodZ = this.player.getZ();
+            } else {
+               this.teleport(startX, startY, startZ, targetYRot, targetXRot);
+               this.player.doCheckFallDamage(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ, isOnGround);
+               this.player.removeLatestMovementRecording();
             }
          }
       }
@@ -1190,6 +1212,27 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          } else {
             return !isFallFlying || (Boolean)gameRules.get(GameRules.ELYTRA_MOVEMENT_CHECK);
          }
+      }
+   }
+
+   private void forceSendPlayerSupportBlocks() {
+      if (this.tickCount >= this.lastSupportedBlocksSend + 200) {
+         this.lastSupportedBlocksSend = this.tickCount;
+         LOGGER.info("Player {} standing on air - force-sending blocks below", this.player.getPlainTextName());
+         AABB box = this.player.getBoundingBox();
+         double justBelow = box.minY - 9.999999747378752E-6;
+         Stream.of(new Vec3(box.minX, justBelow, box.minZ), new Vec3(box.maxX, justBelow, box.minZ), new Vec3(box.minX, justBelow, box.maxZ), new Vec3(box.maxX, justBelow, box.maxZ)).map(BlockPos::containing).distinct().forEach((blockPos) -> {
+            ServerLevel level = this.player.level();
+            this.send(new ClientboundBlockUpdatePacket(level, blockPos));
+            BlockEntity blockEntity = level.getBlockEntity(blockPos);
+            if (blockEntity != null) {
+               Packet<?> packet = blockEntity.getUpdatePacket();
+               if (packet != null) {
+                  this.send(packet);
+               }
+            }
+
+         });
       }
    }
 
@@ -2157,6 +2200,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
 
       this.receivedMovementThisTick = false;
+      this.receivedPositionThisTick = false;
    }
 
    private void handlePlayerKnownMovement(final Vec3 movement) {

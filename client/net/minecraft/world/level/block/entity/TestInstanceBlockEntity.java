@@ -101,7 +101,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
    }
 
    private static Optional<StructureTemplate> getStructureTemplate(final ServerLevel level, final ResourceKey<GameTestInstance> testKey) {
-      return level.registryAccess().get(testKey).map((test) -> ((GameTestInstance)test.value()).structure()).flatMap((template) -> level.getStructureManager().get(template));
+      return level.registryAccess().get(testKey).map((test) -> ((GameTestInstance)test.value()).structure()).flatMap((template) -> level.getStructureTemplateManager().get(template));
    }
 
    public Optional<ResourceKey<GameTestInstance>> test() {
@@ -266,7 +266,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
    }
 
    public static boolean export(final ServerLevel level, final Identifier structureId, final Consumer<Component> feedbackOutput) {
-      StructureTemplateManager structureManager = level.getStructureManager();
+      StructureTemplateManager structureManager = level.getStructureTemplateManager();
       TemplatePathFactory testTemplatePathFactory = structureManager.testTemplates();
       if (testTemplatePathFactory == null) {
          feedbackOutput.accept(Component.literal("Test structure exporting is disabled").withStyle(ChatFormatting.RED));

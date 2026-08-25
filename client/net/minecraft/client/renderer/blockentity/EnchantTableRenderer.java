@@ -15,7 +15,6 @@ import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity, EnchantTableRenderState> {
@@ -55,8 +54,8 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       poseStack.translate(0.5F, 0.75F, 0.5F);
       poseStack.translate(0.0F, 0.1F + Mth.sin((double)(state.time * 0.1F)) * 0.01F, 0.0F);
       float yRot = state.yRot;
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotation(-yRot));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
+      poseStack.rotate(Axis.YP, -yRot);
+      poseStack.rotateDegrees(Axis.ZP, 80.0F);
       float ff1 = Mth.frac(state.flip + 0.25F) * 1.6F - 0.3F;
       float ff2 = Mth.frac(state.flip + 0.75F) * 1.6F - 0.3F;
       BookModel.State bookState = BookModel.State.forAnimation(state.time, Mth.clamp(ff1, 0.0F, 1.0F), Mth.clamp(ff2, 0.0F, 1.0F), state.open);

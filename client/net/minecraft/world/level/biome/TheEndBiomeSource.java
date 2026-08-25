@@ -8,7 +8,6 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 
 public class TheEndBiomeSource extends BiomeSource {
    public static final MapCodec<TheEndBiomeSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryOps.retrieveElement(Biomes.THE_END), RegistryOps.retrieveElement(Biomes.END_HIGHLANDS), RegistryOps.retrieveElement(Biomes.END_MIDLANDS), RegistryOps.retrieveElement(Biomes.SMALL_END_ISLANDS), RegistryOps.retrieveElement(Biomes.END_BARRENS)).apply(i, i.stable(TheEndBiomeSource::new)));
@@ -54,7 +53,7 @@ public class TheEndBiomeSource extends BiomeSource {
       } else {
          int weirdBlockX = (SectionPos.blockToSectionCoord(blockX) * 2 + 1) * 8;
          int weirdBlockZ = (SectionPos.blockToSectionCoord(blockZ) * 2 + 1) * 8;
-         double heightValue = (double)sampler.erosion().compute(new DensityFunction.SinglePointContext(weirdBlockX, blockY, weirdBlockZ));
+         double heightValue = (double)sampler.erosion().sampleValue(weirdBlockX, blockY, weirdBlockZ);
          if (heightValue > 0.25) {
             return this.highlands;
          } else if (heightValue >= -0.0625) {

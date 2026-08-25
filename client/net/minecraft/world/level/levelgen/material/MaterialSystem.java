@@ -1,4 +1,4 @@
-package net.minecraft.world.level.levelgen;
+package net.minecraft.world.level.levelgen.material;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -21,10 +22,21 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.BlockColumn;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.NoiseChunk;
+import net.minecraft.world.level.levelgen.Noises;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
+import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
+import net.minecraft.world.level.levelgen.material.rule.RuleEvaluator;
 import net.minecraft.world.level.levelgen.synth.Noise;
 import org.jspecify.annotations.Nullable;
 
-public class SurfaceSystem {
+public class MaterialSystem {
    private static final BlockState WHITE_TERRACOTTA;
    private static final BlockState ORANGE_TERRACOTTA;
    private static final BlockState TERRACOTTA;
@@ -36,6 +48,7 @@ public class SurfaceSystem {
    private static final BlockState SNOW_BLOCK;
    private final BlockState defaultBlock;
    private final int seaLevel;
+   private final DensityFunction preliminarySurfaceFunction;
    private final BlockState[] clayBands;
    private final Noise clayBandsOffsetNoise;
    private final Noise badlandsPillarNoise;
@@ -48,10 +61,11 @@ public class SurfaceSystem {
    private final Noise surfaceNoise;
    private final Noise surfaceSecondaryNoise;
 
-   public SurfaceSystem(final RandomState randomState, final BlockState defaultBlock, final int seaLevel, final PositionalRandomFactory noiseRandom) {
+   public MaterialSystem(final RandomState randomState, final BlockState defaultBlock, final int seaLevel, final DensityFunction preliminarySurfaceFunction, final PositionalRandomFactory noiseRandom) {
       super();
       this.defaultBlock = defaultBlock;
       this.seaLevel = seaLevel;
+      this.preliminarySurfaceFunction = preliminarySurfaceFunction;
       this.noiseRandom = noiseRandom;
       this.clayBandsOffsetNoise = randomState.getOrCreateNoise(Noises.CLAY_BANDS_OFFSET);
       this.clayBands = generateBands(noiseRandom.fromHashOf(Identifier.withDefaultNamespace("clay_bands")));
@@ -65,14 +79,17 @@ public class SurfaceSystem {
       this.icebergSurfaceNoise = randomState.getOrCreateNoise(Noises.ICEBERG_SURFACE);
    }
 
-   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final SurfaceRules.RuleSource ruleSource, final @Nullable Set<Holder<Biome>> possibleBiomes) {
+   public void buildSurface(final RandomState randomState, final BiomeManager biomeManager, final WorldGenerationContext generationContext, final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final MaterialRule ruleSource, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       final BlockPos.MutableBlockPos columnPos = new BlockPos.MutableBlockPos();
       final ChunkPos chunkPos = protoChunk.getPos();
       int minBlockX = chunkPos.getMinBlockX();
       int minBlockZ = chunkPos.getMinBlockZ();
+      LevelHeightAccessor heightAccessor = protoChunk.getHeightAccessorForGeneration();
+      final int minY = heightAccessor.getMinY();
+      final int maxY = heightAccessor.getMaxY();
       BlockColumn column = new BlockColumn() {
          {
-            Objects.requireNonNull(SurfaceSystem.this);
+            Objects.requireNonNull(MaterialSystem.this);
          }
 
          public BlockState getBlock(final int blockY) {
@@ -80,8 +97,7 @@ public class SurfaceSystem {
          }
 
          public void setBlock(final int blockY, final BlockState state) {
-            LevelHeightAccessor heightAccessor = protoChunk.getHeightAccessorForGeneration();
-            if (heightAccessor.isInsideBuildHeight(blockY)) {
+            if (blockY >= minY && blockY <= maxY) {
                protoChunk.setBlockState(columnPos.setY(blockY), state);
                if (!state.getFluidState().isEmpty()) {
                   protoChunk.markPosForPostProcessing(columnPos);
@@ -94,9 +110,14 @@ public class SurfaceSystem {
             return "ChunkBlockColumn " + String.valueOf(chunkPos);
          }
       };
+      int highestFilledSectionIndex = protoChunk.getHighestFilledSectionIndex();
+      int maxBlockY = protoChunk.getSectionYFromSectionIndex(highestFilledSectionIndex) * 16 + 15;
+      DensityVolume fullVolume = noiseChunk.volume();
+      DensityVolume narrowedVolume = new DensityVolume(fullVolume.sizeX(), Math.max(maxBlockY - fullVolume.minBlockY() + 1, 1), fullVolume.sizeZ(), fullVolume.minBlockX(), fullVolume.minBlockY(), fullVolume.minBlockZ());
+      DensitySamplerSet var10005 = noiseChunk.cachingSamplers();
       Objects.requireNonNull(biomeManager);
-      SurfaceRules.Context context = new SurfaceRules.Context(this, randomState, protoChunk, noiseChunk, biomeManager::getBiome, generationContext, possibleBiomes);
-      SurfaceRules.SurfaceRule rule = (SurfaceRules.SurfaceRule)ruleSource.apply(context);
+      MaterialRuleContext context = new MaterialRuleContext(this, randomState, narrowedVolume, var10005, biomeManager::getBiome, generationContext, possibleBiomes);
+      RuleEvaluator rule = ruleSource.compile(context);
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
       for(int x = 0; x < 16; ++x) {
@@ -111,7 +132,9 @@ public class SurfaceSystem {
             }
 
             int height = protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) + 1;
-            context.updateXZ(blockX, blockZ);
+            int gradientX = getSurfaceGradientX(protoChunk, x, z);
+            int gradientZ = getSurfaceGradientZ(protoChunk, x, z);
+            context.updateXZ(blockX, blockZ, gradientX, gradientZ);
             int stoneAboveDepth = 0;
             int waterHeight = -2147483648;
             int nextCeilingStoneY = 2147483647;
@@ -142,7 +165,7 @@ public class SurfaceSystem {
                   ++stoneAboveDepth;
                   int stoneBelowDepth = y - nextCeilingStoneY + 1;
                   context.updateY(stoneAboveDepth, stoneBelowDepth, waterHeight, y);
-                  if (old == this.defaultBlock) {
+                  if (y >= minY && y <= maxY) {
                      BlockState state = rule.tryApply(blockX, y, blockZ);
                      if (state != null) {
                         column.setBlock(y, state);
@@ -157,6 +180,14 @@ public class SurfaceSystem {
          }
       }
 
+   }
+
+   private static int getSurfaceGradientX(final ChunkAccess protoChunk, final int x, final int z) {
+      return protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, Math.min(x + 1, 15), z) - protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, Math.max(x - 1, 0), z);
+   }
+
+   private static int getSurfaceGradientZ(final ChunkAccess protoChunk, final int x, final int z) {
+      return protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, Math.min(z + 1, 15)) - protoChunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, Math.max(z - 1, 0));
    }
 
    protected int getSurfaceDepth(final int blockX, final int blockZ) {
@@ -178,13 +209,16 @@ public class SurfaceSystem {
 
    /** @deprecated */
    @Deprecated
-   public Optional<BlockState> topMaterial(final SurfaceRules.RuleSource ruleSource, final RandomState randomState, final WorldGenerationContext worldGenerationContext, final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final NoiseChunk noiseChunk, final BlockPos pos, final boolean underFluid) {
-      SurfaceRules.Context context = new SurfaceRules.Context(this, randomState, chunk, noiseChunk, biomeGetter, worldGenerationContext, (Set)null);
-      SurfaceRules.SurfaceRule rule = (SurfaceRules.SurfaceRule)ruleSource.apply(context);
+   public Optional<BlockState> topMaterial(final MaterialRule ruleSource, final RandomState randomState, final WorldGenerationContext worldGenerationContext, final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final DensitySamplerSet densitySamplers, final BlockPos pos, final boolean underFluid) {
+      DensityVolume volume = new DensityVolume(1, 1, 1, pos.getX(), pos.getY(), pos.getZ());
+      MaterialRuleContext context = new MaterialRuleContext(this, randomState, volume, densitySamplers, biomeGetter, worldGenerationContext, (Set)null);
+      RuleEvaluator rule = ruleSource.compile(context);
       int blockX = pos.getX();
       int blockY = pos.getY();
       int blockZ = pos.getZ();
-      context.updateXZ(blockX, blockZ);
+      int gradientX = getSurfaceGradientX(chunk, SectionPos.sectionRelative(pos.getX()), SectionPos.sectionRelative(pos.getZ()));
+      int gradientZ = getSurfaceGradientZ(chunk, SectionPos.sectionRelative(pos.getX()), SectionPos.sectionRelative(pos.getZ()));
+      context.updateXZ(blockX, blockZ, gradientX, gradientZ);
       context.updateY(1, 1, underFluid ? blockY + 1 : -2147483648, blockY);
       BlockState state = rule.tryApply(blockX, blockY, blockZ);
       return Optional.ofNullable(state);
@@ -305,6 +339,10 @@ public class SurfaceSystem {
    protected BlockState getBand(final int worldX, final int y, final int worldZ) {
       int offset = Math.round(this.clayBandsOffsetNoise.get((double)worldX, 0.0, (double)worldZ) * 4.0F);
       return this.clayBands[(y + offset + this.clayBands.length) % this.clayBands.length];
+   }
+
+   public DensityFunction preliminarySurfaceFunction() {
+      return this.preliminarySurfaceFunction;
    }
 
    static {

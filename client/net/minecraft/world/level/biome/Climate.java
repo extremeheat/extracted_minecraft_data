@@ -18,8 +18,7 @@ import java.util.stream.Collectors;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
 import org.jspecify.annotations.Nullable;
 
 public class Climate {
@@ -50,11 +49,6 @@ public class Climate {
 
    public static float unquantizeCoord(final long coord) {
       return (float)coord / 10000.0F;
-   }
-
-   public static Sampler empty() {
-      DensityFunction zero = DensityFunctions.zero();
-      return new Sampler(zero, zero, zero, zero, zero, zero);
    }
 
    protected static final class RTree<T> {
@@ -405,7 +399,7 @@ public class Climate {
       }
    }
 
-   public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness) {
+   public static record Sampler(DensitySampler.Bound temperature, DensitySampler.Bound humidity, DensitySampler.Bound continentalness, DensitySampler.Bound erosion, DensitySampler.Bound depth, DensitySampler.Bound weirdness) {
       public Sampler {
          super();
       }
@@ -414,8 +408,7 @@ public class Climate {
          int blockX = QuartPos.toBlock(quartX);
          int blockY = QuartPos.toBlock(quartY);
          int blockZ = QuartPos.toBlock(quartZ);
-         DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
-         return Climate.target(this.temperature.compute(context), this.humidity.compute(context), this.continentalness.compute(context), this.erosion.compute(context), this.depth.compute(context), this.weirdness.compute(context));
+         return Climate.target(this.temperature.sampleValue(blockX, blockY, blockZ), this.humidity.sampleValue(blockX, blockY, blockZ), this.continentalness.sampleValue(blockX, blockY, blockZ), this.erosion.sampleValue(blockX, blockY, blockZ), this.depth.sampleValue(blockX, blockY, blockZ), this.weirdness.sampleValue(blockX, blockY, blockZ));
       }
    }
 

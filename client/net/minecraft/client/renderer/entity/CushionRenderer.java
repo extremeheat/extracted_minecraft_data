@@ -14,7 +14,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.decoration.Cushion;
 import net.minecraft.world.item.DyeColor;
-import org.joml.Quaternionfc;
 
 public class CushionRenderer extends EntityRenderer<Cushion, CushionRenderState> {
    private static final EnumMap<DyeColor, Identifier> TEXTURES_BY_COLOR = (EnumMap)Util.make(new EnumMap(DyeColor.class), (textures) -> {
@@ -38,8 +37,8 @@ public class CushionRenderer extends EntityRenderer<Cushion, CushionRenderState>
 
    public void submit(final CushionRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - state.direction.toYRot()));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
+      poseStack.rotateDegrees(Axis.YP, 180.0F - state.direction.toYRot());
+      poseStack.rotateDegrees(Axis.XP, 180.0F);
       poseStack.translate(0.0, -0.25, 0.0);
       submitNodeCollector.submitModel(this.model, state, poseStack, this.model.renderType(state.texture), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();

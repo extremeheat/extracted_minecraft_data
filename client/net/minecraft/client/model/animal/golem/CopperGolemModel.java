@@ -18,7 +18,6 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.CopperGolemRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.golem.CopperGolemState;
-import org.joml.Quaternionfc;
 
 public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implements ArmedModel<CopperGolemRenderState>, HeadedModel {
    private static final float MAX_WALK_ANIMATION_SPEED = 2.0F;
@@ -145,7 +144,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       ModelPart activeArm = arm == HumanoidArm.RIGHT ? this.rightArm : this.leftArm;
       activeArm.translateAndRotate(poseStack);
       if (state.copperGolemState.equals(CopperGolemState.IDLE)) {
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(arm == HumanoidArm.RIGHT ? -90.0F : 90.0F));
+         poseStack.rotateDegrees(Axis.YP, arm == HumanoidArm.RIGHT ? -90.0F : 90.0F);
          poseStack.translate(0.0F, 0.0F, 0.125F);
       } else {
          poseStack.scale(0.55F, 0.55F, 0.55F);

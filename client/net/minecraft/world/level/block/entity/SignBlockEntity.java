@@ -232,9 +232,7 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    private static CommandSourceStack createCommandSourceStack(final @Nullable Player player, final ServerLevel level, final BlockPos pos) {
-      String textName = player == null ? "Sign" : player.getPlainTextName();
-      Component displayName = (Component)(player == null ? Component.literal("Sign") : player.getDisplayName());
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(pos), Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, textName, displayName, level.getServer(), player);
+      return player != null ? new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(pos), Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, level.getServer(), player) : new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(pos), Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, Component.literal("Sign"), level.getServer());
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

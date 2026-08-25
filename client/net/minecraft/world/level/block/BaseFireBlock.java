@@ -181,21 +181,16 @@ public abstract class BaseFireBlock extends Block {
          return false;
       } else {
          BlockPos.MutableBlockPos testPos = pos.mutable();
-         boolean hasObsidian = false;
 
          for(Direction face : Direction.values()) {
-            if (level.getBlockState(testPos.set(pos).move(face)).is(Blocks.OBSIDIAN)) {
-               hasObsidian = true;
-               break;
+            BlockState state = level.getBlockState(testPos.set(pos).move(face));
+            if (PortalShape.FRAME.test(state)) {
+               Direction.Axis preferredAxis = forwardDirection.getAxis().isHorizontal() ? forwardDirection.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(level.getRandom());
+               return PortalShape.findEmptyPortalShape(level, pos, preferredAxis).isPresent();
             }
          }
 
-         if (!hasObsidian) {
-            return false;
-         } else {
-            Direction.Axis preferredAxis = forwardDirection.getAxis().isHorizontal() ? forwardDirection.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(level.getRandom());
-            return PortalShape.findEmptyPortalShape(level, pos, preferredAxis).isPresent();
-         }
+         return false;
       }
    }
 }

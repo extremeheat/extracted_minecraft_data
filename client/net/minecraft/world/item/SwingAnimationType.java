@@ -10,8 +10,9 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 public enum SwingAnimationType implements StringRepresentable {
-   WHACK(0, "whack"),
-   STAB(1, "stab");
+   NONE(0, "none"),
+   WHACK(1, "whack"),
+   STAB(2, "stab");
 
    private static final IntFunction<SwingAnimationType> BY_ID = ByIdMap.<SwingAnimationType>continuous(SwingAnimationType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StringRepresentable.EnumCodec<SwingAnimationType> CODEC = StringRepresentable.<SwingAnimationType>fromEnum(SwingAnimationType::values);
@@ -40,6 +41,6 @@ public enum SwingAnimationType implements StringRepresentable {
 
    // $FF: synthetic method
    private static SwingAnimationType[] $values() {
-      return new SwingAnimationType[]{WHACK, STAB};
+      return new SwingAnimationType[]{NONE, WHACK, STAB};
    }
 }

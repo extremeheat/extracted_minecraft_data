@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -44,10 +45,7 @@ public class DragonEggBlock extends FallingBlock {
          for(int i = 0; i < 1000; ++i) {
             BlockPos testPos = pos.offset(random.nextInt(16) - random.nextInt(16), random.nextInt(8) - random.nextInt(8), random.nextInt(16) - random.nextInt(16));
             if (level.getBlockState(testPos).isAir() && !level.getBlockState(testPos.below()).isAir() && worldBorder.isWithinBounds(testPos) && level.isInsideBuildHeight(testPos)) {
-               int xDiff = testPos.getX() - pos.getX() + 16;
-               int yDiff = testPos.getY() - pos.getY() + 8;
-               int zDiff = testPos.getZ() - pos.getZ() + 16;
-               int packedDiff = (xDiff & 255) << 16 | (yDiff & 255) << 8 | zDiff & 255;
+               int packedDiff = BlockUtil.packDifferenceInPosition(pos, testPos, 16, 8, 16);
                level.levelEvent(2015, pos, packedDiff);
                level.setBlock(testPos, state, 2);
                level.removeBlock(pos, false);

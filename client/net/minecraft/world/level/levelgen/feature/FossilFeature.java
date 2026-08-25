@@ -42,7 +42,7 @@ public record FossilFeature(List<Identifier> fossilStructures, List<Identifier> 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       Rotation rotation = Rotation.getRandom(random);
       int fossilIndex = random.nextInt(this.fossilStructures().size());
-      StructureTemplateManager structureTemplateManager = level.getLevel().getServer().getStructureManager();
+      StructureTemplateManager structureTemplateManager = level.getLevel().getServer().getStructureTemplateManager();
       StructureTemplate fossilBase = structureTemplateManager.getOrCreate((Identifier)this.fossilStructures().get(fossilIndex));
       StructureTemplate fossilOverlay = structureTemplateManager.getOrCreate((Identifier)this.overlayStructures().get(fossilIndex));
       ChunkPos chunkPos = ChunkPos.containing(origin);

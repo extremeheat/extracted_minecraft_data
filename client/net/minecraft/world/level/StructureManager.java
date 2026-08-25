@@ -50,8 +50,8 @@ public class StructureManager {
       }
    }
 
-   public List<StructureStart> startsForStructure(final ChunkPos pos, final Predicate<Structure> matcher) {
-      Map<Structure, LongSet> allReferences = this.level.getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
+   public List<StructureStart> startsForStructure(final int sectionX, final int sectionZ, final Predicate<Structure> matcher) {
+      Map<Structure, LongSet> allReferences = this.level.getChunk(sectionX, sectionZ, ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
       ImmutableList.Builder<StructureStart> result = ImmutableList.builder();
 
       for(Map.Entry<Structure, LongSet> entry : allReferences.entrySet()) {
@@ -66,8 +66,8 @@ public class StructureManager {
       return result.build();
    }
 
-   public List<StructureStart> startsForStructure(final SectionPos pos, final Structure structure) {
-      LongSet referencesForStructure = this.level.getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getReferencesForStructure(structure);
+   public List<StructureStart> startsForStructure(final int sectionX, final int sectionZ, final Structure structure) {
+      LongSet referencesForStructure = this.level.getChunk(sectionX, sectionZ, ChunkStatus.STRUCTURE_REFERENCES).getReferencesForStructure(structure);
       ImmutableList.Builder<StructureStart> result = ImmutableList.builder();
       Objects.requireNonNull(result);
       this.fillStartsForStructure(structure, referencesForStructure, result::add);
@@ -79,8 +79,8 @@ public class StructureManager {
 
       while(var4.hasNext()) {
          long key = (Long)var4.next();
-         SectionPos sectionPos = SectionPos.of(ChunkPos.unpack(key), this.level.getMinSectionY());
-         StructureStart start = this.getStartForStructure(sectionPos, structure, this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_STARTS));
+         ChunkPos chunkPos = ChunkPos.unpack(key);
+         StructureStart start = this.getStartForStructure(structure, this.level.getChunk(chunkPos.x(), chunkPos.z(), ChunkStatus.STRUCTURE_STARTS));
          if (start != null && start.isValid()) {
             consumer.accept(start);
          }
@@ -88,15 +88,15 @@ public class StructureManager {
 
    }
 
-   public @Nullable StructureStart getStartForStructure(final SectionPos pos, final Structure structure, final StructureAccess chunk) {
+   public @Nullable StructureStart getStartForStructure(final Structure structure, final StructureAccess chunk) {
       return chunk.getStartForStructure(structure);
    }
 
-   public void setStartForStructure(final SectionPos pos, final Structure structure, final StructureStart start, final StructureAccess chunk) {
+   public void setStartForStructure(final Structure structure, final StructureStart start, final StructureAccess chunk) {
       chunk.setStartForStructure(structure, start);
    }
 
-   public void addReferenceForStructure(final SectionPos pos, final Structure structure, final long reference, final StructureAccess chunk) {
+   public void addReferenceForStructure(final Structure structure, final long reference, final StructureAccess chunk) {
       chunk.addReferenceForStructure(structure, reference);
    }
 
@@ -105,7 +105,10 @@ public class StructureManager {
    }
 
    public StructureStart getStructureAt(final BlockPos blockPos, final Structure structure) {
-      for(StructureStart structureStart : this.startsForStructure(SectionPos.of(blockPos), structure)) {
+      int sectionX = SectionPos.blockToSectionCoord(blockPos.getX());
+      int sectionZ = SectionPos.blockToSectionCoord(blockPos.getZ());
+
+      for(StructureStart structureStart : this.startsForStructure(sectionX, sectionZ, structure)) {
          if (structureStart.getBoundingBox().isInside(blockPos)) {
             return structureStart;
          }
@@ -125,8 +128,10 @@ public class StructureManager {
 
    public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final Predicate<Holder<Structure>> predicate) {
       Registry<Structure> structures = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+      int sectionX = SectionPos.blockToSectionCoord(blockPos.getX());
+      int sectionZ = SectionPos.blockToSectionCoord(blockPos.getZ());
 
-      for(StructureStart structureStart : this.startsForStructure((ChunkPos)ChunkPos.containing(blockPos), (Predicate)((s) -> {
+      for(StructureStart structureStart : this.startsForStructure(sectionX, sectionZ, (Predicate)((s) -> {
          Optional var10000 = structures.get(structures.getId(s));
          Objects.requireNonNull(predicate);
          return (Boolean)var10000.map(predicate::test).orElse(false);
@@ -139,9 +144,12 @@ public class StructureManager {
       return StructureStart.INVALID_START;
    }
 
-   public StructureStart getStructureWithPieceAt(final BlockPos blockPos, final Structure structure) {
-      for(StructureStart structureStart : this.startsForStructure(SectionPos.of(blockPos), structure)) {
-         if (this.structureHasPieceAt(blockPos, structureStart)) {
+   public StructureStart getStructureWithPieceAt(final int x, final int y, final int z, final Structure structure) {
+      int sectionX = SectionPos.blockToSectionCoord(x);
+      int sectionZ = SectionPos.blockToSectionCoord(z);
+
+      for(StructureStart structureStart : this.startsForStructure(sectionX, sectionZ, structure)) {
+         if (this.structureHasPieceAt(x, y, z, structureStart)) {
             return structureStart;
          }
       }
@@ -150,8 +158,12 @@ public class StructureManager {
    }
 
    public boolean structureHasPieceAt(final BlockPos blockPos, final StructureStart structureStart) {
+      return this.structureHasPieceAt(blockPos.getX(), blockPos.getY(), blockPos.getZ(), structureStart);
+   }
+
+   public boolean structureHasPieceAt(final int x, final int y, final int z, final StructureStart structureStart) {
       for(StructurePiece piece : structureStart.getPieces()) {
-         if (piece.getBoundingBox().isInside(blockPos)) {
+         if (piece.getBoundingBox().isInside(x, y, z)) {
             return true;
          }
       }
@@ -159,14 +171,14 @@ public class StructureManager {
       return false;
    }
 
-   public boolean hasAnyStructureAt(final BlockPos pos) {
-      SectionPos sectionPos = SectionPos.of(pos);
-      return this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_REFERENCES).hasAnyStructureReferences();
+   public Map<Structure, LongSet> getAllStructuresAt(final BlockPos pos) {
+      return this.getAllStructuresAt(pos.getX(), pos.getY(), pos.getZ());
    }
 
-   public Map<Structure, LongSet> getAllStructuresAt(final BlockPos pos) {
-      SectionPos sectionPos = SectionPos.of(pos);
-      return this.level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
+   public Map<Structure, LongSet> getAllStructuresAt(final int x, final int y, final int z) {
+      int sectionX = SectionPos.blockToSectionCoord(x);
+      int sectionZ = SectionPos.blockToSectionCoord(z);
+      return this.level.getChunk(sectionX, sectionZ, ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
    }
 
    public StructureCheckResult checkStructurePresence(final ChunkPos pos, final Structure structure, final StructurePlacement placement, final boolean createReference) {

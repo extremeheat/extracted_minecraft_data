@@ -16,7 +16,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Quaternionfc;
 import org.joml.Vector4f;
 
 public class GizmoFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
@@ -51,7 +50,7 @@ public class GizmoFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
             TextGizmo.Style style = text.style();
             this.poseStack.pushPose();
             this.poseStack.translate((float)(text.pos().x() - camX), (float)(text.pos().y() - camY), (float)(text.pos().z() - camZ));
-            this.poseStack.mulPose((Quaternionfc)camera.orientation);
+            this.poseStack.rotate(camera.orientation);
             this.poseStack.scale(style.scale() / 16.0F, -style.scale() / 16.0F, style.scale() / 16.0F);
             float fontX;
             if (style.adjustLeft().isEmpty()) {

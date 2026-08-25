@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
@@ -48,7 +47,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.NoiseChunk;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -71,13 +69,12 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
    /** @deprecated */
    @Deprecated
    private @Nullable BiomeGenerationSettings carverBiomeSettings;
-   protected @Nullable NoiseChunk noiseChunk;
    protected final UpgradeData upgradeData;
    protected final @Nullable BlendingData blendingData;
    protected final Map<Heightmap.Types, Heightmap> heightmaps = Maps.newEnumMap(Heightmap.Types.class);
    protected ChunkSkyLightSources skyLightSources;
    private final Map<Structure, StructureStart> structureStarts = Maps.newHashMap();
-   private final Map<Structure, LongSet> structuresRefences = Maps.newHashMap();
+   private final Map<Structure, LongSet> structureReferences = Maps.newHashMap();
    protected final Map<BlockPos, CompoundTag> pendingBlockEntities = Maps.newHashMap();
    protected final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap();
    protected final LevelHeightAccessor levelHeightAccessor;
@@ -217,21 +214,21 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
    }
 
    public LongSet getReferencesForStructure(final Structure structure) {
-      return (LongSet)this.structuresRefences.getOrDefault(structure, EMPTY_REFERENCE_SET);
+      return (LongSet)this.structureReferences.getOrDefault(structure, EMPTY_REFERENCE_SET);
    }
 
    public void addReferenceForStructure(final Structure structure, final long reference) {
-      ((LongSet)this.structuresRefences.computeIfAbsent(structure, (k) -> new LongOpenHashSet())).add(reference);
+      ((LongSet)this.structureReferences.computeIfAbsent(structure, (k) -> new LongOpenHashSet())).add(reference);
       this.markUnsaved();
    }
 
    public Map<Structure, LongSet> getAllReferences() {
-      return Collections.unmodifiableMap(this.structuresRefences);
+      return Collections.unmodifiableMap(this.structureReferences);
    }
 
    public void setAllReferences(final Map<Structure, LongSet> data) {
-      this.structuresRefences.clear();
-      this.structuresRefences.putAll(data);
+      this.structureReferences.clear();
+      this.structureReferences.putAll(data);
       this.markUnsaved();
    }
 
@@ -402,14 +399,6 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
       return this.levelHeightAccessor.getHeight();
    }
 
-   public NoiseChunk getOrCreateNoiseChunk(final Function<ChunkAccess, NoiseChunk> factory) {
-      if (this.noiseChunk == null) {
-         this.noiseChunk = (NoiseChunk)factory.apply(this);
-      }
-
-      return this.noiseChunk;
-   }
-
    /** @deprecated */
    @Deprecated
    public BiomeGenerationSettings carverBiome(final Supplier<BiomeGenerationSettings> source) {
@@ -447,10 +436,6 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
          section.fillBiomesFromNoise(biomeResolver, quartMinX, quartMinY, quartMinZ);
       }
 
-   }
-
-   public boolean hasAnyStructureReferences() {
-      return !this.getAllReferences().isEmpty();
    }
 
    public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {

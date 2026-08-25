@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -134,9 +133,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       });
       CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.stream().map(PendingReload::newContents).toArray((x$0) -> new CompletableFuture[x$0]));
       Objects.requireNonNull(preparationBarrier);
-      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((unused) -> {
-         AddRealmPopupScreen.updateCarouselImages(this.resourceManager);
-
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((var1) -> {
          for(PendingReload reload : reloads) {
             reload.texture.apply((TextureContents)reload.newContents.join());
          }

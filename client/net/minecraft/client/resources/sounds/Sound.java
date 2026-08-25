@@ -78,6 +78,10 @@ public class Sound implements Weighted<Sound> {
       return this.attenuationDistance;
    }
 
+   public float getAttenuationDistance(final float volume) {
+      return Math.max(volume, 1.0F) * (float)this.attenuationDistance;
+   }
+
    public String toString() {
       return "Sound[" + String.valueOf(this.location) + "]";
    }

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.LlamaSpit;
-import org.joml.Quaternionfc;
 
 public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRenderState> {
    private static final Identifier LLAMA_SPIT_LOCATION = Identifier.withDefaultNamespace("textures/entity/llama/llama_spit.png");
@@ -24,8 +23,8 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRender
    public void submit(final LlamaSpitRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.translate(0.0F, 0.15F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot));
+      poseStack.rotateDegrees(Axis.YP, state.yRot - 90.0F);
+      poseStack.rotateDegrees(Axis.ZP, state.xRot);
       submitNodeCollector.submitModel(this.model, state, poseStack, LLAMA_SPIT_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);

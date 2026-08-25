@@ -6,12 +6,17 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.IntStream;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Interval;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.generator.NoiseFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.BinaryFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.ClampFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.LerpFunction;
 
 public record BlendedNoise(double xzScale, double yScale, double xzFactor, double yFactor, double smearScaleMultiplier) implements DensityFunction {
    private static final Codec<Double> SCALE_RANGE = Codec.doubleRange(0.001, 1000.0);
@@ -21,6 +26,7 @@ public record BlendedNoise(double xzScale, double yScale, double xzFactor, doubl
    private static final double MAIN_FACTOR = 12.75;
    private static final int LIMIT_FIRST_OCTAVE = -15;
    private static final int MAIN_FIRST_OCTAVE = -7;
+   public static final Identifier NOISE_SEED = Identifier.withDefaultNamespace("terrain");
 
    public BlendedNoise {
       super();
@@ -61,7 +67,7 @@ public record BlendedNoise(double xzScale, double yScale, double xzFactor, doubl
    }
 
    private static Interval computeFbmRange(final int firstOctave, final double smearScaleY, double valueFactor) {
-      int octaves = firstOctave + 1;
+      int octaves = -firstOctave + 1;
       double factor = 1.0;
       valueFactor /= Math.pow(2.0, (double)octaves) - 1.0;
       Interval range = Interval.ofExact(0.0F);
@@ -76,62 +82,20 @@ public record BlendedNoise(double xzScale, double yScale, double xzFactor, doubl
       return range;
    }
 
-   public DensityFunction withNewRandom(final RandomSource terrainRandom) {
-      final FbmSet fbms = this.createFbmSet(terrainRandom);
-      final double xzMultiplier = this.xzMultiplier();
-      final double yMultiplier = this.yMultiplier();
-      return new DensityFunction() {
-         {
-            Objects.requireNonNull(BlendedNoise.this);
-         }
-
-         public float compute(final DensityFunction.FunctionContext context) {
-            double limitX = (double)context.blockX() * xzMultiplier;
-            double limitY = (double)context.blockY() * yMultiplier;
-            double limitZ = (double)context.blockZ() * xzMultiplier;
-            double mainX = limitX / BlendedNoise.this.xzFactor;
-            double mainY = limitY / BlendedNoise.this.yFactor;
-            double mainZ = limitZ / BlendedNoise.this.xzFactor;
-            float factor = fbms.mainNoise.get(mainX, mainY, mainZ) + 0.5F;
-            if (factor <= 0.0F) {
-               return fbms.minLimitNoise.get(limitX, limitY, limitZ);
-            } else if (factor >= 1.0F) {
-               return fbms.maxLimitNoise.get(limitX, limitY, limitZ);
-            } else {
-               float blendMin = fbms.minLimitNoise.get(limitX, limitY, limitZ);
-               float blendMax = fbms.maxLimitNoise.get(limitX, limitY, limitZ);
-               return Mth.clampedLerp(factor, blendMin, blendMax);
-            }
-         }
-
-         public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-            contextProvider.fillAllDirectly(output, this);
-         }
-
-         public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-            return this;
-         }
-
-         public Interval range() {
-            return fbms.minLimitNoise.range();
-         }
-
-         public @DensityFunction.Axes int domainAxes() {
-            return 7;
-         }
-
-         public MapCodec<? extends DensityFunction> codec() {
-            throw new UnsupportedOperationException();
-         }
-      };
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      return this.compileSampler(context.createRandom(NOISE_SEED));
    }
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      return 0.0F;
-   }
-
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      contextProvider.fillAllDirectly(output, this);
+   @VisibleForTesting
+   public DensitySampler compileSampler(final RandomSource random) {
+      FbmSet fbms = this.createFbmSet(random);
+      double xzMultiplier = this.xzMultiplier();
+      double yMultiplier = this.yMultiplier();
+      DensitySampler minLimitNoise = new NoiseFunction.Sampler(fbms.minLimitNoise(), xzMultiplier, yMultiplier);
+      DensitySampler maxLimitNoise = new NoiseFunction.Sampler(fbms.maxLimitNoise(), xzMultiplier, yMultiplier);
+      DensitySampler mainNoise = new NoiseFunction.Sampler(fbms.mainNoise(), xzMultiplier / this.xzFactor, yMultiplier / this.yFactor);
+      DensitySampler choice = new ClampFunction.Sampler(new BinaryFunction.ConstAddSampler(mainNoise, 0.5F), 0.0F, 1.0F);
+      return new LerpFunction.Sampler(choice, minLimitNoise, maxLimitNoise);
    }
 
    public Interval range() {
@@ -146,7 +110,7 @@ public record BlendedNoise(double xzScale, double yScale, double xzFactor, doubl
       return CODEC;
    }
 
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
       return this;
    }
 

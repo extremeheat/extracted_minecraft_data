@@ -56,6 +56,7 @@ import net.minecraft.server.commands.BossBarCommands;
 import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.commands.CloneCommands;
+import net.minecraft.server.commands.ComputeCommand;
 import net.minecraft.server.commands.DamageCommand;
 import net.minecraft.server.commands.DataPackCommand;
 import net.minecraft.server.commands.DeOpCommands;
@@ -153,7 +154,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -182,8 +182,9 @@ public class Commands {
       BossBarCommands.register(this.dispatcher, context);
       ClearInventoryCommands.register(this.dispatcher, context);
       CloneCommands.register(this.dispatcher, context);
+      ComputeCommand.register(this.dispatcher, context);
       DamageCommand.register(this.dispatcher, context);
-      DataCommands.register(this.dispatcher);
+      DataCommands.register(this.dispatcher, context);
       DataPackCommand.register(this.dispatcher, context);
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
@@ -522,7 +523,7 @@ public class Commands {
    }
 
    public static CommandSourceStack createCompilationContext(final PermissionSet compilationPermissions) {
-      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, CommonComponents.EMPTY, (MinecraftServer)null);
    }
 
    static {

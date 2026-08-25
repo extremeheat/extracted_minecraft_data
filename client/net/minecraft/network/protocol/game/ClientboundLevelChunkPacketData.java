@@ -7,7 +7,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -79,13 +78,9 @@ public class ClientboundLevelChunkPacketData {
       }
    }
 
-   public Consumer<BlockEntityTagOutput> getBlockEntitiesTagsConsumer(final int x, final int z) {
-      return (output) -> this.getBlockEntitiesTags(output, x, z);
-   }
-
-   private void getBlockEntitiesTags(final BlockEntityTagOutput output, final int x, final int z) {
-      int baseX = 16 * x;
-      int baseZ = 16 * z;
+   public void forEachBlockEntityTag(final int chunkX, final int chunkZ, final BlockEntityTagOutput output) {
+      int baseX = 16 * chunkX;
+      int baseZ = 16 * chunkZ;
       BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
       for(BlockEntityInfo data : this.blockEntitiesData) {

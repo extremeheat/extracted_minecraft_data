@@ -151,8 +151,8 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP;
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_DESERT_MAP;
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_3_COMPASS_EMERALD;
-   public static final ResourceKey<VillagerTrade> CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_EXPLORER_MAP;
-   public static final ResourceKey<VillagerTrade> CARTOGRAPHER_3_EMERALD_AND_COMPASS_TRIAL_CHAMBER_MAP;
+   public static final ResourceKey<VillagerTrade> CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_MONUMENT_MAP;
+   public static final ResourceKey<VillagerTrade> CARTOGRAPHER_3_EMERALD_AND_COMPASS_BURIED_TRIAL_CHAMBERS_MAP;
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_4_EMERALD_ITEM_FRAME;
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_4_EMERALD_WHITE_BANNER;
    public static final ResourceKey<VillagerTrade> CARTOGRAPHER_4_EMERALD_ORANGE_BANNER;
@@ -426,12 +426,12 @@ public class VillagerTrades {
       register(context, CARTOGRAPHER_2_GLASS_PANE_EMERALD, VillagerTrade.builder(new TradeCost(Items.GLASS_PANE, 11), new ItemStackTemplate(Items.EMERALD), 12, 10, 0.05F).build());
       registerBasicExplorerMapTrades(context, villagerVariants, structures);
       register(context, CARTOGRAPHER_3_COMPASS_EMERALD, VillagerTrade.builder(new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.EMERALD), 12, 20, 0.05F).build());
-      register(context, CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_EXPLORER_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 13), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.OCEAN_EXPLORER_MAP), 12, 10, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_OCEAN_EXPLORER_MAPS)).setMapDecoration(MapDecorationTypes.OCEAN_MONUMENT).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
-      register(context, CARTOGRAPHER_3_EMERALD_AND_COMPASS_TRIAL_CHAMBER_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 12), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.TRIAL_EXPLORER_MAP), 12, 10, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_TRIAL_CHAMBERS_MAPS)).setMapDecoration(MapDecorationTypes.TRIAL_CHAMBERS).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
+      register(context, CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_MONUMENT_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 13), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.OCEAN_MONUMENT_MAP), 12, 10, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_OCEAN_MONUMENT_MAPS)).setMapDecoration(MapDecorationTypes.OCEAN_MONUMENT).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
+      register(context, CARTOGRAPHER_3_EMERALD_AND_COMPASS_BURIED_TRIAL_CHAMBERS_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 12), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.BURIED_TRIAL_CHAMBERS_MAP), 12, 10, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_BURIED_TRIAL_CHAMBERS_MAPS)).setMapDecoration(MapDecorationTypes.TRIAL_CHAMBERS).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
       register(context, CARTOGRAPHER_4_EMERALD_ITEM_FRAME, VillagerTrade.builder(new TradeCost(Items.EMERALD, 7), new ItemStackTemplate(Items.ITEM_FRAME), 12, 15, 0.05F).build());
       registerCartographerBannerTrades(context, villagerVariants);
       register(context, CARTOGRAPHER_5_EMERALD_GLOBE_BANNER_PATTERN, VillagerTrade.builder(new TradeCost(Items.EMERALD, 8), new ItemStackTemplate(Items.GLOBE_BANNER_PATTERN), 12, 30, 0.05F).build());
-      register(context, CARTOGRAPHER_5_EMERALD_AND_COMPASS_WOODLAND_MANSION_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 14), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.WOODLAND_EXPLORER_MAP), 12, 30, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_WOODLAND_EXPLORER_MAPS)).setMapDecoration(MapDecorationTypes.WOODLAND_MANSION).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
+      register(context, CARTOGRAPHER_5_EMERALD_AND_COMPASS_WOODLAND_MANSION_MAP, VillagerTrade.builder(new TradeCost(Items.EMERALD, 14), new TradeCost(Items.COMPASS, 1), new ItemStackTemplate(Items.WOODLAND_MANSION_MAP), 12, 30, 0.2F).addModifiers(Holder.direct(ExplorationMapFunction.makeExplorationMap(structures.getOrThrow(StructureTags.ON_WOODLAND_MANSION_MAPS)).setMapDecoration(MapDecorationTypes.WOODLAND_MANSION).setSearchRadius(100).setSkipKnownStructures(true).build()), discardItemIfItsNot(anyValidMap())).build());
       register(context, CLERIC_1_ROTTEN_FLESH_EMERALD, VillagerTrade.builder(new TradeCost(Items.ROTTEN_FLESH, 32), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F).build());
       register(context, CLERIC_1_EMERALD_REDSTONE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.REDSTONE, 2), 12, 1, 0.05F).build());
       register(context, CLERIC_2_GOLD_INGOT_EMERALD, VillagerTrade.builder(new TradeCost(Items.GOLD_INGOT, 3), new ItemStackTemplate(Items.EMERALD), 12, 10, 0.05F).build());
@@ -758,11 +758,11 @@ public class VillagerTrades {
 
    private static void registerBasicExplorerMapTrades(final BootstrapContext<VillagerTrade> context, final HolderGetter<VillagerType> villagerVariants, final HolderGetter<Structure> structures) {
       register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_TAIGA_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_TAIGA_VILLAGE_MAPS, MapDecorationTypes.TAIGA_VILLAGE, Items.TAIGA_VILLAGE_MAP, List.of(VillagerType.SWAMP, VillagerType.SNOW, VillagerType.PLAINS)));
-      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_SWAMP_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_SWAMP_EXPLORER_MAPS, MapDecorationTypes.SWAMP_HUT, Items.SWAMP_EXPLORER_MAP, List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.JUNGLE)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_SWAMP_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_SWAMP_HUT_MAPS, MapDecorationTypes.SWAMP_HUT, Items.SWAMP_HUT_MAP, List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.JUNGLE)));
       register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SNOWY_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_SNOWY_VILLAGE_MAPS, MapDecorationTypes.SNOWY_VILLAGE, Items.SNOWY_VILLAGE_MAP, List.of(VillagerType.TAIGA, VillagerType.SWAMP)));
       register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SAVANNA_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_SAVANNA_VILLAGE_MAPS, MapDecorationTypes.SAVANNA_VILLAGE, Items.SAVANNA_VILLAGE_MAP, List.of(VillagerType.PLAINS, VillagerType.JUNGLE, VillagerType.DESERT)));
       register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_PLAINS_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_PLAINS_VILLAGE_MAPS, MapDecorationTypes.PLAINS_VILLAGE, Items.PLAINS_VILLAGE_MAP, List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.SAVANNA, VillagerType.DESERT)));
-      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_JUNGLE_EXPLORER_MAPS, MapDecorationTypes.JUNGLE_TEMPLE, Items.JUNGLE_EXPLORER_MAP, List.of(VillagerType.SWAMP, VillagerType.SAVANNA, VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_JUNGLE_PYRAMID_MAPS, MapDecorationTypes.JUNGLE_TEMPLE, Items.JUNGLE_PYRAMID_MAP, List.of(VillagerType.SWAMP, VillagerType.SAVANNA, VillagerType.DESERT)));
       register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_DESERT_MAP, createBasicExplorerMapTrades(villagerVariants, structures, StructureTags.ON_DESERT_VILLAGE_MAPS, MapDecorationTypes.DESERT_VILLAGE, Items.DESERT_VILLAGE_MAP, List.of(VillagerType.SAVANNA, VillagerType.JUNGLE)));
    }
 
@@ -892,8 +892,8 @@ public class VillagerTrades {
       CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP = resourceKey("cartographer/2/emerald_and_compass_explorer_jungle_map");
       CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_DESERT_MAP = resourceKey("cartographer/2/emerald_and_compass_village_desert_map");
       CARTOGRAPHER_3_COMPASS_EMERALD = resourceKey("cartographer/3/compass_emerald");
-      CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_EXPLORER_MAP = resourceKey("cartographer/3/emerald_and_compass_ocean_explorer_map");
-      CARTOGRAPHER_3_EMERALD_AND_COMPASS_TRIAL_CHAMBER_MAP = resourceKey("cartographer/3/emerald_and_compass_trial_chamber_map");
+      CARTOGRAPHER_3_EMERALD_AND_COMPASS_OCEAN_MONUMENT_MAP = resourceKey("cartographer/3/emerald_and_compass_ocean_monument_map");
+      CARTOGRAPHER_3_EMERALD_AND_COMPASS_BURIED_TRIAL_CHAMBERS_MAP = resourceKey("cartographer/3/emerald_and_compass_buried_trial_chambers_map");
       CARTOGRAPHER_4_EMERALD_ITEM_FRAME = resourceKey("cartographer/4/emerald_item_frame");
       CARTOGRAPHER_4_EMERALD_WHITE_BANNER = resourceKey("cartographer/4/emerald_white_banner");
       CARTOGRAPHER_4_EMERALD_ORANGE_BANNER = resourceKey("cartographer/4/emerald_orange_banner");

@@ -36,4 +36,11 @@ public interface BackendRenderPipeline extends UncheckedAutoCloseable {
          }
       }
    }
+
+   @FunctionalInterface
+   public interface Pending {
+      Pending NULL = () -> null;
+
+      @Nullable BackendRenderPipeline finishCompile();
+   }
 }

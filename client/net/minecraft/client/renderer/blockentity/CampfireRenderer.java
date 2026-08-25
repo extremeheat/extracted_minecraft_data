@@ -18,7 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity, CampfireRenderState> {
@@ -59,8 +58,8 @@ public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity
             poseStack.translate(0.5F, 0.44921875F, 0.5F);
             Direction direction = Direction.from2DDataValue((slot + facing.get2DDataValue()) % 4);
             float angle = -direction.toYRot();
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(angle));
-            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
+            poseStack.rotateDegrees(Axis.YP, angle);
+            poseStack.rotateDegrees(Axis.XP, 90.0F);
             poseStack.translate(-0.3125F, -0.3125F, 0.0F);
             poseStack.scale(0.375F, 0.375F, 0.375F);
             itemState.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);

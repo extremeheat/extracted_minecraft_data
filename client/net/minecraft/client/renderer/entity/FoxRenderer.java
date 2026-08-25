@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.entity.state.FoxRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.fox.Fox;
-import org.joml.Quaternionfc;
 
 public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxModel> {
    private static final Identifier RED_FOX_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fox/fox.png");
@@ -35,7 +34,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
    protected void setupRotations(final FoxRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
       super.setupRotations(state, poseStack, bodyRot, entityScale);
       if (state.isPouncing || state.isFaceplanted) {
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-state.xRot));
+         poseStack.rotateDegrees(Axis.XP, -state.xRot);
       }
 
    }

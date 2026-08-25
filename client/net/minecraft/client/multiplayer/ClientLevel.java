@@ -133,6 +133,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -252,7 +254,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(final EnvironmentAttributeSystem.Builder environmentAttributes) {
       environmentAttributes.addDefaultLayers(this);
-      int flashColor = ARGB.color(204, 204, 255);
+      Vector3fc flashColor = new Vector3f(0.8F, 0.8F, 1.0F);
       environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_COLOR, (skyColor, cacheTickId) -> this.getSkyFlashTime() > 0 ? ARGB.srgbLerp(0.22F, skyColor, flashColor) : skyColor);
       environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (skyFactor, cacheTickId) -> this.getSkyFlashTime() > 0 ? 1.0F : skyFactor);
       return environmentAttributes;

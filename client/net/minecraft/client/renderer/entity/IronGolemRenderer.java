@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.level.block.Blocks;
-import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
@@ -53,7 +52,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
          float p = 13.0F;
          float wp = state.walkAnimationPos + 6.0F;
          float triangleWave = (Math.abs(wp % 13.0F - 6.5F) - 3.25F) / 3.25F;
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.5F * triangleWave));
+         poseStack.rotateDegrees(Axis.ZP, 6.5F * triangleWave);
       }
    }
 }

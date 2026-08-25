@@ -25,6 +25,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import org.jspecify.annotations.Nullable;
@@ -53,27 +54,24 @@ public class FlatLevelSource extends ChunkGenerator {
       return this.settings;
    }
 
-   public void buildSurface(final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk, final BiomeManager biomeManager, final Blender blender, final Set<Holder<Biome>> possibleBiomes) {
-   }
-
    public int getSpawnHeight(final LevelHeightAccessor heightAccessor) {
       return heightAccessor.getMinY() + Math.min(heightAccessor.getHeight(), this.settings.getLayers().size());
    }
 
-   public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {
+   public CompletableFuture<ChunkAccess> buildTerrain(final ChunkAccess chunk, final Blender blender, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final @Nullable WorldGenRegion carverBiomeRegion, final Set<Holder<Biome>> possibleBiomes) {
       List<BlockState> layers = this.settings.getLayers();
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
-      Heightmap oceanFloor = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-      Heightmap worldSurface = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+      Heightmap oceanFloor = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+      Heightmap worldSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-      for(int layerIndex = 0; layerIndex < Math.min(centerChunk.getHeight(), layers.size()); ++layerIndex) {
+      for(int layerIndex = 0; layerIndex < Math.min(chunk.getHeight(), layers.size()); ++layerIndex) {
          BlockState blockState = (BlockState)layers.get(layerIndex);
          if (blockState != null) {
-            int y = centerChunk.getMinY() + layerIndex;
+            int y = chunk.getMinY() + layerIndex;
 
             for(int x = 0; x < 16; ++x) {
                for(int z = 0; z < 16; ++z) {
-                  centerChunk.setBlockState(blockPos.set(x, y, z), blockState);
+                  chunk.setBlockState(blockPos.set(x, y, z), blockState);
                   oceanFloor.update(x, y, z, blockState);
                   worldSurface.update(x, y, z, blockState);
                }
@@ -81,7 +79,7 @@ public class FlatLevelSource extends ChunkGenerator {
          }
       }
 
-      return CompletableFuture.completedFuture(centerChunk);
+      return CompletableFuture.completedFuture(chunk);
    }
 
    public int getBaseHeight(final int x, final int z, final Heightmap.Types type, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
@@ -101,10 +99,7 @@ public class FlatLevelSource extends ChunkGenerator {
       return new NoiseColumn(heightAccessor.getMinY(), (BlockState[])this.settings.getLayers().stream().limit((long)heightAccessor.getHeight()).map((state) -> state == null ? Blocks.AIR.defaultBlockState() : state).toArray((x$0) -> new BlockState[x$0]));
    }
 
-   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
-   }
-
-   public void applyCarvers(final @Nullable WorldGenRegion biomeRegion, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final Blender blender) {
+   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

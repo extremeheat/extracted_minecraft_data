@@ -212,7 +212,7 @@ public final class ItemContainerContents implements ContainerComponent<ItemConta
       }
    }
 
-   public static class Mutable extends SimpleMutableContainer<ItemContainerContents> {
+   public static class Mutable extends GrowableMutableContainer<ItemContainerContents> {
       private Mutable(final List<ItemStack> items) {
          super(items);
       }

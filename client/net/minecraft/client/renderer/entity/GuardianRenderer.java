@@ -21,7 +21,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState, GuardianModel> {
@@ -79,8 +78,8 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       beamVector = beamVector.normalize();
       float xRot = (float)Math.acos(beamVector.y);
       float yRot = 1.5707964F - (float)Math.atan2(beamVector.z, beamVector.x);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot * 57.295776F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xRot * 57.295776F));
+      poseStack.rotateDegrees(Axis.YP, yRot * 57.295776F);
+      poseStack.rotateDegrees(Axis.XP, xRot * 57.295776F);
       float rot = timeInTicks * 0.05F * -1.5F;
       float colorScale = scale * scale;
       int red = 64 + (int)(colorScale * 191.0F);

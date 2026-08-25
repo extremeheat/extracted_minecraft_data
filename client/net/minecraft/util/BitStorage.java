@@ -7,6 +7,8 @@ public interface BitStorage {
 
    void set(int index, int value);
 
+   void fill(int value);
+
    int get(int index);
 
    long[] getRaw();

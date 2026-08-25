@@ -19,10 +19,11 @@ import net.minecraft.world.level.biome.OverworldBiomeBuilder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
-public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState defaultBlock, BlockState defaultFluid, NoiseRouter noiseRouter, Holder<SurfaceRules.RuleSource> materialRule, List<SpawnTargetPoint> spawnTarget, int seaLevel, boolean disableMobGeneration, Optional<Aquifer.Config> aquifers, List<OreVeinifier> oreVeins, boolean useLegacyRandomSource) {
-   public static final Codec<NoiseGeneratorSettings> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(NoiseSettings.CODEC.fieldOf("noise").forGetter(NoiseGeneratorSettings::noiseSettings), BlockState.CODEC.fieldOf("default_block").forGetter(NoiseGeneratorSettings::defaultBlock), BlockState.CODEC.fieldOf("default_fluid").forGetter(NoiseGeneratorSettings::defaultFluid), NoiseRouter.CODEC.fieldOf("noise_router").forGetter(NoiseGeneratorSettings::noiseRouter), SurfaceRules.RuleSource.HOLDER_CODEC.fieldOf("material_rule").forGetter(NoiseGeneratorSettings::materialRule), SpawnTargetPoint.CODEC.listOf().fieldOf("spawn_target").forGetter(NoiseGeneratorSettings::spawnTarget), Codec.INT.fieldOf("sea_level").forGetter(NoiseGeneratorSettings::seaLevel), Codec.BOOL.fieldOf("disable_mob_generation").forGetter(NoiseGeneratorSettings::disableMobGeneration), Aquifer.Config.CODEC.optionalFieldOf("aquifers").forGetter(NoiseGeneratorSettings::aquifers), OreVeinifier.CODEC.listOf().optionalFieldOf("ore_veins", List.of()).forGetter(NoiseGeneratorSettings::oreVeins), Codec.BOOL.fieldOf("legacy_random_source").forGetter(NoiseGeneratorSettings::useLegacyRandomSource)).apply(i, NoiseGeneratorSettings::new));
+public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState defaultBlock, BlockState defaultFluid, NoiseRouter noiseRouter, Holder<MaterialRule> materialRule, List<SpawnTargetPoint> spawnTarget, int seaLevel, boolean disableMobGeneration, Optional<Aquifer.Config> aquifers, boolean useLegacyRandomSource, DebugFunctions debugFunctions) {
+   public static final Codec<NoiseGeneratorSettings> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(NoiseSettings.CODEC.fieldOf("noise").forGetter(NoiseGeneratorSettings::noiseSettings), BlockState.CODEC.fieldOf("default_block").forGetter(NoiseGeneratorSettings::defaultBlock), BlockState.CODEC.fieldOf("default_fluid").forGetter(NoiseGeneratorSettings::defaultFluid), NoiseRouter.CODEC.fieldOf("noise_router").forGetter(NoiseGeneratorSettings::noiseRouter), MaterialRule.HOLDER_CODEC.fieldOf("material_rule").forGetter(NoiseGeneratorSettings::materialRule), SpawnTargetPoint.CODEC.listOf().fieldOf("spawn_target").forGetter(NoiseGeneratorSettings::spawnTarget), Codec.INT.fieldOf("sea_level").forGetter(NoiseGeneratorSettings::seaLevel), Codec.BOOL.fieldOf("disable_mob_generation").forGetter(NoiseGeneratorSettings::disableMobGeneration), Aquifer.Config.CODEC.optionalFieldOf("aquifers").forGetter(NoiseGeneratorSettings::aquifers), Codec.BOOL.fieldOf("legacy_random_source").forGetter(NoiseGeneratorSettings::useLegacyRandomSource), NoiseGeneratorSettings.DebugFunctions.CODEC.optionalFieldOf("debug_functions", NoiseGeneratorSettings.DebugFunctions.EMPTY).forGetter(NoiseGeneratorSettings::debugFunctions)).apply(i, NoiseGeneratorSettings::new));
    public static final Codec<Holder<NoiseGeneratorSettings>> CODEC;
    public static final ResourceKey<NoiseGeneratorSettings> OVERWORLD;
    public static final ResourceKey<NoiseGeneratorSettings> LARGE_BIOMES;
@@ -57,11 +58,13 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    private static NoiseGeneratorSettings end(final BootstrapContext<?> context) {
-      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.END_STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), NoiseRouterData.end(context.lookup(Registries.DENSITY_FUNCTION)), context.lookup(Registries.MATERIAL_RULE).getOrThrow(EndMaterialRules.END), List.of(), 0, true, Optional.empty(), List.of(), true);
+      NoiseRouter router = NoiseRouterData.end(context.lookup(Registries.DENSITY_FUNCTION));
+      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.END_STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(EndMaterialRules.END), List.of(), 0, true, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()), new DebugFunctionEntry("IS", router.erosion()))));
    }
 
    private static NoiseGeneratorSettings nether(final BootstrapContext<?> context) {
-      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.NETHERRACK.defaultBlockState(), Blocks.LAVA.defaultBlockState(), NoiseRouterData.nether(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE)), context.lookup(Registries.MATERIAL_RULE).getOrThrow(NetherMaterialRules.NETHER), List.of(), 32, false, Optional.empty(), List.of(), true);
+      NoiseRouter router = NoiseRouterData.nether(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE));
+      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.NETHERRACK.defaultBlockState(), Blocks.LAVA.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(NetherMaterialRules.NETHER), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()), new DebugFunctionEntry("T", router.temperature()), new DebugFunctionEntry("V", router.vegetation()))));
    }
 
    private static NoiseGeneratorSettings overworld(final BootstrapContext<?> context, final boolean isAmplified, final boolean largeBiomes) {
@@ -80,15 +83,18 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
       OverworldBiomeBuilder var10000 = new OverworldBiomeBuilder();
       Objects.requireNonNull(functions);
       List<SpawnTargetPoint> spawnTarget = var10000.spawnTarget(functionNames.map(functions::getOrThrow), weirdness);
-      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.overworld(functions, functionNames), context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD), spawnTarget, 63, false, Optional.of(NoiseRouterData.overworldAquifers(functions, noises, functionNames)), NoiseRouterData.overworldOreVeins(functions), false);
+      NoiseRouter router = NoiseRouterData.overworld(functions, functionNames);
+      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD), spawnTarget, 63, false, Optional.of(NoiseRouterData.overworldAquifers(functions, noises, functionNames)), false, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()), new DebugFunctionEntry("T", router.temperature()), new DebugFunctionEntry("V", router.vegetation()), new DebugFunctionEntry("C", router.continents()), new DebugFunctionEntry("E", router.erosion()), new DebugFunctionEntry("D", router.depth()), new DebugFunctionEntry("W", router.ridges()), new DebugFunctionEntry("PV", NoiseRouterData.peaksAndValleys(router.ridges())), new DebugFunctionEntry("PS", NoiseRouterData.getFunction(functions, functionNames.preliminarySurfaceLevel())))));
    }
 
    private static NoiseGeneratorSettings caves(final BootstrapContext<?> context) {
-      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.caves(context.lookup(Registries.DENSITY_FUNCTION)), context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_CAVES), List.of(), 32, false, Optional.empty(), List.of(), true);
+      NoiseRouter router = NoiseRouterData.caves(context.lookup(Registries.DENSITY_FUNCTION));
+      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_CAVES), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()))));
    }
 
    private static NoiseGeneratorSettings floatingIslands(final BootstrapContext<?> context) {
-      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.floatingIslands(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE)), context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_FLOATING_ISLANDS), List.of(), -64, false, Optional.empty(), List.of(), true);
+      NoiseRouter router = NoiseRouterData.floatingIslands(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE));
+      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_FLOATING_ISLANDS), List.of(), -64, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()))));
    }
 
    static {
@@ -100,5 +106,26 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
       END = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("end"));
       CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("caves"));
       FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("floating_islands"));
+   }
+
+   public static record DebugFunctions(List<DebugFunctionEntry> functions) {
+      public static final DebugFunctions EMPTY = new DebugFunctions(List.of());
+      public static final Codec<DebugFunctions> CODEC;
+
+      public DebugFunctions {
+         super();
+      }
+
+      static {
+         CODEC = NoiseGeneratorSettings.DebugFunctionEntry.CODEC.listOf().xmap(DebugFunctions::new, DebugFunctions::functions);
+      }
+   }
+
+   public static record DebugFunctionEntry(String label, DensityFunction function) {
+      public static final Codec<DebugFunctionEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("label").forGetter(DebugFunctionEntry::label), DensityFunction.CODEC.fieldOf("function").forGetter(DebugFunctionEntry::function)).apply(i, DebugFunctionEntry::new));
+
+      public DebugFunctionEntry {
+         super();
+      }
    }
 }

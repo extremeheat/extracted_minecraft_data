@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.entity.state.TntRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
-import org.joml.Quaternionfc;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
@@ -30,9 +29,9 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
          poseStack.scale(scale, scale, scale);
       }
 
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
+      poseStack.rotateDegrees(Axis.YP, -90.0F);
       poseStack.translate(-0.5F, -0.5F, 0.5F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+      poseStack.rotateDegrees(Axis.YP, 90.0F);
       if (!state.blockState.isEmpty()) {
          TntMinecartRenderer.submitWhiteSolidBlock(state.blockState, poseStack, submitNodeCollector, state.lightCoords, isLit(fuse), state.outlineColor);
       }

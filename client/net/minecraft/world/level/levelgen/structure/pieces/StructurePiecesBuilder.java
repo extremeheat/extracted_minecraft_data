@@ -5,10 +5,9 @@ import java.util.List;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import org.jspecify.annotations.Nullable;
 
-public class StructurePiecesBuilder implements StructurePieceAccessor {
+public class StructurePiecesBuilder {
    private final List<StructurePiece> pieces = Lists.newArrayList();
 
    public StructurePiecesBuilder() {

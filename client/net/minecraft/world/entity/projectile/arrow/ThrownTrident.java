@@ -133,10 +133,6 @@ public class ThrownTrident extends AbstractArrow {
 
       this.dealtDamage = true;
       if (entity.hurtOrSimulate(damageSource, dmg)) {
-         if (entity.is(EntityTypes.ENDERMAN)) {
-            return;
-         }
-
          var7 = this.level();
          if (var7 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var7;
@@ -148,10 +144,11 @@ public class ThrownTrident extends AbstractArrow {
             this.doKnockback(mob, damageSource);
             this.doPostHurtEffects(mob);
          }
+
+         this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
       }
 
       this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, new Vec3(0.02, 0.2, 0.02));
-      this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
    }
 
    protected void hitBlockEnchantmentEffects(final ServerLevel level, final BlockHitResult hitResult, final ItemStack weapon) {

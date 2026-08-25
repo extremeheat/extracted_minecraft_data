@@ -18,10 +18,10 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -39,10 +39,10 @@ public class ShipwreckPieces {
       super();
    }
 
-   public static ShipwreckPiece addRandomPiece(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final boolean isBeached) {
+   public static ShipwreckPiece addRandomPiece(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final StructurePiecesBuilder builder, final RandomSource random, final boolean isBeached) {
       Identifier identifier = (Identifier)Util.getRandom(isBeached ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN, random);
       ShipwreckPiece piece = new ShipwreckPiece(structureTemplateManager, identifier, position, rotation, isBeached);
-      structurePieceAccessor.addPiece(piece);
+      builder.addPiece(piece);
       return piece;
    }
 

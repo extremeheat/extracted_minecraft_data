@@ -47,7 +47,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
@@ -110,7 +109,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
          Minecraft minecraft = Minecraft.getInstance();
          poseStack.pushPose();
          poseStack.translate(nameTagAttachment.x, nameTagAttachment.y + 0.5, nameTagAttachment.z);
-         poseStack.mulPose((Quaternionfc)camera.orientation);
+         poseStack.rotate(camera.orientation);
          poseStack.scale(0.025F, -0.025F, 0.025F);
          Matrix4f pose = new Matrix4f(poseStack.last().pose());
          float x = (float)(-minecraft.font.width((FormattedText)name)) / 2.0F;

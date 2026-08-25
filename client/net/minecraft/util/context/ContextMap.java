@@ -65,7 +65,7 @@ public final class ContextMap {
       }
 
       public ContextMap build() {
-         return new ContextMap(new Reference2ObjectOpenHashMap(this.params));
+         return this.params.isEmpty() ? ContextMap.EMPTY : new ContextMap(new Reference2ObjectOpenHashMap(this.params));
       }
 
       public ContextMap buildAndValidate(final ContextKeySet paramSet) {

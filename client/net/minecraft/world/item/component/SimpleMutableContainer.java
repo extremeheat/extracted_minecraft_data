@@ -27,8 +27,7 @@ public abstract class SimpleMutableContainer<T> implements ContainerComponent.Mu
    public int replaceSlotItems(final ItemProvider newItems, final SlotSelector slotSelector) {
       int successCount = 0;
 
-      int index;
-      for(index = 0; index < this.items.size() && newItems.hasNext(); ++index) {
+      for(int index = 0; index < this.items.size() && newItems.hasNext(); ++index) {
          ItemStack currentItem = (ItemStack)this.items.get(index);
          if (slotSelector.trySelectSlot(currentItem)) {
             boolean success = this.setItem(index, newItems.next());
@@ -36,10 +35,6 @@ public abstract class SimpleMutableContainer<T> implements ContainerComponent.Mu
                ++successCount;
             }
          }
-      }
-
-      if (index == this.items.size()) {
-         successCount += this.insertNewSlots(newItems, slotSelector);
       }
 
       return successCount;
@@ -55,30 +50,8 @@ public abstract class SimpleMutableContainer<T> implements ContainerComponent.Mu
 
    }
 
-   protected int insertNewSlots(final ItemProvider newItems, final SlotSelector slotSelector) {
-      int successCount = 0;
-
-      while(newItems.hasNext() && this.canInsertNewSlots() && slotSelector.trySelectSlot(ItemStack.EMPTY)) {
-         boolean success = this.addSlotWithItem(newItems.next());
-         if (success) {
-            ++successCount;
-         }
-      }
-
-      return successCount;
-   }
-
    protected boolean setItem(final int slot, final ItemStack itemStack) {
       this.items.set(slot, itemStack);
       return true;
-   }
-
-   protected boolean addSlotWithItem(final ItemStack itemStack) {
-      this.items.add(itemStack);
-      return true;
-   }
-
-   public boolean canInsertNewSlots() {
-      return false;
    }
 }

@@ -266,17 +266,18 @@ public class GuiGraphicsExtractor {
       this.text(font, text, x - font.width(text) / 2, y, color);
    }
 
-   public void textWithWordWrap(final Font font, final FormattedText string, final int x, final int y, final int width, final int col) {
-      this.textWithWordWrap(font, string, x, y, width, col, true);
+   public int textWithWordWrap(final Font font, final FormattedText string, final int x, final int y, final int width, final int col) {
+      return this.textWithWordWrap(font, string, x, y, width, col, true);
    }
 
-   public void textWithWordWrap(final Font font, final FormattedText string, final int x, int y, final int width, final int col, final boolean dropShadow) {
+   public int textWithWordWrap(final Font font, final FormattedText string, final int x, int y, final int width, final int col, final boolean dropShadow) {
       for(FormattedCharSequence line : font.split(string, width)) {
          this.text(font, line, x, y, col, dropShadow);
          Objects.requireNonNull(font);
          y += 9;
       }
 
+      return y;
    }
 
    public void textWithBackdrop(final Font font, final Component str, final int textX, final int textY, final int textWidth, final int textColor) {

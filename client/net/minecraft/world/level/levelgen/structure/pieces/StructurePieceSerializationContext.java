@@ -13,6 +13,6 @@ public record StructurePieceSerializationContext(ResourceManager resourceManager
 
    public static StructurePieceSerializationContext fromLevel(final ServerLevel level) {
       MinecraftServer server = level.getServer();
-      return new StructurePieceSerializationContext(server.getResourceManager(), server.registryAccess(), server.getStructureManager());
+      return new StructurePieceSerializationContext(server.getResourceManager(), server.registryAccess(), server.getStructureTemplateManager());
    }
 }

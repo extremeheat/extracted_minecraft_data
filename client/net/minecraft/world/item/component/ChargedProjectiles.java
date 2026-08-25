@@ -15,6 +15,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
@@ -123,13 +124,13 @@ public record ChargedProjectiles(List<ItemStackTemplate> items) implements Conta
       STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list(1024)).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
    }
 
-   public static class Mutable extends SimpleMutableContainer<ChargedProjectiles> {
+   public static class Mutable extends GrowableMutableContainer<ChargedProjectiles> {
       private Mutable(final List<ItemStack> items) {
          super(items);
       }
 
-      protected boolean addSlotWithItem(final ItemStack itemStack) {
-         return !itemStack.isEmpty() && super.addSlotWithItem(itemStack);
+      protected boolean addSlotWithItem(final ItemProvider newItems) {
+         return newItems.findNextNonEmpty() && super.addSlotWithItem(newItems);
       }
 
       public boolean canInsertNewSlots() {

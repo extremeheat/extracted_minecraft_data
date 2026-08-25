@@ -19,7 +19,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
-import org.joml.Quaternionfc;
 
 public class CustomHeadLayer<S extends LivingEntityRenderState, M extends EntityModel<S> & HeadedModel> extends RenderLayer<S, M> {
    private static final float ITEM_SCALE = 0.625F;
@@ -75,7 +74,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
 
    public static void translateToHead(final PoseStack poseStack, final Transforms transforms) {
       poseStack.translate(0.0F, -0.25F + transforms.yOffset(), 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+      poseStack.rotateDegrees(Axis.YP, 180.0F);
       poseStack.scale(0.625F, -0.625F, -0.625F);
    }
 

@@ -102,6 +102,7 @@ public class RealmsInviteCodesScreen extends AbstractRealmsCodeScreen {
          this.inviteCodes = result.inviteCodes();
          this.fetchedInviteCodes = true;
          this.rebuildWidgets();
+         this.scheduleNarration();
       }, this.screenExecutor);
    }
 
@@ -174,6 +175,10 @@ public class RealmsInviteCodesScreen extends AbstractRealmsCodeScreen {
 
    protected boolean shouldRenderListBackgroundAndSeparators() {
       return this.inviteCodeList == null;
+   }
+
+   public Component getNarrationMessage() {
+      return (Component)(this.fetchedInviteCodes ? super.getNarrationMessage() : CommonComponents.joinForNarration(super.getNarrationMessage(), LOADING_TEXT));
    }
 
    public void onClose() {

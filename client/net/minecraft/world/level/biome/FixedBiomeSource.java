@@ -11,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.levelgen.RandomState;
 import org.jspecify.annotations.Nullable;
 
 public class FixedBiomeSource extends BiomeSource implements BiomeResolver {
@@ -38,7 +39,7 @@ public class FixedBiomeSource extends BiomeSource implements BiomeResolver {
       return this.biome;
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int r, final int skipStep, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final Climate.Sampler sampler) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int r, final int skipStep, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final RandomState randomState) {
       if (allowed.test(this.biome)) {
          return findClosest ? Pair.of(new BlockPos(originX, originY, originZ), this.biome) : Pair.of(new BlockPos(originX - r + random.nextInt(r * 2 + 1), originY, originZ - r + random.nextInt(r * 2 + 1)), this.biome);
       } else {
@@ -46,7 +47,7 @@ public class FixedBiomeSource extends BiomeSource implements BiomeResolver {
       }
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final Climate.Sampler sampler, final LevelReader level) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final RandomState randomState, final LevelReader level) {
       return allowed.test(this.biome) ? Pair.of(origin.atY(Mth.clamp(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1)), this.biome) : null;
    }
 

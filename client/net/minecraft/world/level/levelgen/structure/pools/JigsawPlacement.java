@@ -27,6 +27,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -85,7 +86,17 @@ public class JigsawPlacement {
          BoundingBox box = centerPiece.getBoundingBox();
          int centerX = (box.maxX() + box.minX()) / 2;
          int centerZ = (box.maxZ() + box.minZ()) / 2;
-         int bottomY = projectStartToHeightmap.isEmpty() ? adjustedPosition.getY() : position.getY() + chunkGenerator.getFirstFreeHeight(centerX, centerZ, (Heightmap.Types)projectStartToHeightmap.get(), heightAccessor, context.randomState());
+         int bottomY;
+         if (projectStartToHeightmap.isEmpty()) {
+            bottomY = adjustedPosition.getY();
+         } else {
+            if (!context.couldStructureExistInColumn(centerX, centerZ, heightAccessor.getMinY(), heightAccessor.getMaxY())) {
+               return Optional.empty();
+            }
+
+            bottomY = position.getY() + chunkGenerator.getFirstFreeHeight(centerX, centerZ, (Heightmap.Types)projectStartToHeightmap.get(), heightAccessor, context.randomState());
+         }
+
          int oldAbsoluteGroundY = box.minY() + centerPiece.getGroundLevelDelta();
          centerPiece.move(0, bottomY - oldAbsoluteGroundY, 0);
          if (isStartTooCloseToWorldHeightLimits(heightAccessor, dimensionPadding, centerPiece.getBoundingBox())) {
@@ -141,11 +152,11 @@ public class JigsawPlacement {
 
    public static boolean generateJigsaw(final ServerLevel level, final Holder<StructureTemplatePool> pool, final Identifier target, final int maxDepth, final BlockPos position, final boolean keepJigsaws) {
       ChunkGenerator generator = level.getChunkSource().getGenerator();
-      StructureTemplateManager structureTemplateManager = level.getStructureManager();
+      StructureTemplateManager structureTemplateManager = level.getStructureTemplateManager();
       StructureManager structureManager = level.structureManager();
       RandomSource random = level.getRandom();
       RandomState randomState = level.getChunkSource().randomState();
-      Structure.GenerationContext generationContext = new Structure.GenerationContext(level.registryAccess(), generator, level.uncachedBiomeResolver(), randomState, structureTemplateManager, level.getSeed(), ChunkPos.containing(position), level, (b) -> true);
+      Structure.GenerationContext generationContext = new Structure.GenerationContext(level.registryAccess(), generator, generator.getBiomeSource(), randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED), randomState, structureTemplateManager, level.getSeed(), ChunkPos.containing(position), level, (b) -> true);
       Optional<Structure.GenerationStub> stub = addPieces(generationContext, pool, Optional.of(target), maxDepth, position, false, Optional.empty(), new JigsawStructure.MaxDistance(128), PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
       if (stub.isPresent()) {
          StructurePiecesBuilder builder = ((Structure.GenerationStub)stub.get()).getPiecesBuilder();

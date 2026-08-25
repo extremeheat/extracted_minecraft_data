@@ -12,7 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.KineticWeapon;
-import org.joml.Quaternionfc;
 
 public class SpearAnimations {
    public SpearAnimations() {
@@ -108,7 +107,7 @@ public class SpearAnimations {
       float middleAmount = Ease.outBack(progress(attack, 0.05F, 0.2F));
       float endingAmount = Ease.inOutExpo(progress(attack, 0.4F, 1.0F));
       poseStack.translate((float)invert * 0.1F * (startingAmount - middleAmount), -0.075F * (startingAmount - endingAmount), 0.65F * (startingAmount - middleAmount));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-70.0F * (startingAmount - endingAmount)));
+      poseStack.rotateDegrees(Axis.XP, -70.0F * (startingAmount - endingAmount));
       poseStack.translate(0.0, 0.0, -0.25 * (double)(endingAmount - middleAmount));
    }
 

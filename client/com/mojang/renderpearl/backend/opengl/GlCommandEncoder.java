@@ -302,13 +302,19 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
    public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel, final int x, final int y, final int width, final int height) {
       ((GlBuffer)destination).checkCanBeUsed();
       GlStateManager.clearGlErrors();
-      this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)source).glId(), 0, mipLevel, 36008);
+      boolean isDepth = source.getFormat().hasDepthAspect();
+      int textureId = ((GlTexture)source).glId();
+      this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, !isDepth ? textureId : 0, isDepth ? textureId : 0, mipLevel, 36008);
       GlStateManager._glBindBuffer(35051, ((GlBuffer)destination).handle());
       GlStateManager._pixelStore(3333, source.getFormat().byteAlignment());
       GlStateManager._pixelStore(3330, width);
+      if (isDepth) {
+         GlStateManager._glReadBuffer(0);
+      }
+
       GlStateManager._readPixels(x, y, width, height, GlConst.toGlExternalId(source.getFormat()), GlConst.toGlType(source.getFormat()), offset);
       RenderSystem.queueFencedTask(callback);
-      GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, 0, mipLevel);
+      GlStateManager._glFramebufferTexture2D(36008, isDepth ? '\u8d00' : '\u8ce0', 3553, 0, mipLevel);
       GlStateManager._glBindFramebuffer(36008, 0);
       GlStateManager._glBindBuffer(35051, 0);
       int error = GlStateManager._getError();

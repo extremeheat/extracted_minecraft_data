@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBlockEntity, BrushableBlockRenderState> {
@@ -47,9 +46,9 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
          poseStack.translate(0.0F, 0.5F, 0.0F);
          float[] translations = this.translations(state.hitDirection, state.dustProgress);
          poseStack.translate(translations[0], translations[1], translations[2]);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(75.0F));
+         poseStack.rotateDegrees(Axis.YP, 75.0F);
          boolean eastWest = state.hitDirection == Direction.EAST || state.hitDirection == Direction.WEST;
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((eastWest ? 90 : 0) + 11)));
+         poseStack.rotateDegrees(Axis.YP, (float)((eastWest ? 90 : 0) + 11));
          poseStack.scale(0.5F, 0.5F, 0.5F);
          state.itemState.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
          poseStack.popPose();

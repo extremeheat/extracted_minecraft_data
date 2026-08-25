@@ -511,12 +511,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          ItemStack sunBlocker = this.getItemBySlot(slot);
          if (!sunBlocker.isEmpty()) {
             if (sunBlocker.isDamageableItem()) {
-               Item sunBlockerItem = sunBlocker.getItem();
-               sunBlocker.setDamageValue(sunBlocker.getDamageValue() + this.random.nextInt(2));
-               if (sunBlocker.getDamageValue() >= sunBlocker.getMaxDamage()) {
-                  this.onEquippedItemBroken(sunBlockerItem, slot);
-                  this.setItemSlot(slot, ItemStack.EMPTY);
-               }
+               sunBlocker.hurtAndBreak(this.random.nextInt(2), this, (EquipmentSlot)slot);
             }
 
          } else {

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.CompositeDirection;
@@ -15,6 +16,7 @@ import net.minecraft.data.worldgen.NoiseData;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
@@ -24,7 +26,10 @@ import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.synth.Noise;
 import net.minecraft.world.level.material.FluidState;
 import org.apache.commons.lang3.mutable.MutableDouble;
@@ -33,12 +38,15 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 
 public class Blender {
+   public static final ContextKey<Blender> CONTEXT_KEY = ContextKey.<Blender>vanilla("blender");
+   public static final ContextKey<DensitySampler> ALPHA_KEY = ContextKey.<DensitySampler>vanilla("blender/alpha");
+   public static final ContextKey<DensitySampler> OFFSET_KEY = ContextKey.<DensitySampler>vanilla("blender/offset");
    private static final Blender EMPTY = new Blender(new Long2ObjectOpenHashMap(), new Long2ObjectOpenHashMap(), (CarvingMask.Filter)null) {
-      public BlendingOutput blendOffsetAndFactor(final int blockX, final int blockZ) {
+      protected BlendingOutput blendOffsetAndFactor(final int blockX, final int blockZ) {
          return new BlendingOutput(1.0F, 0.0F);
       }
 
-      public float blendDensity(final DensityFunction.FunctionContext context, final float noiseValue) {
+      public float blendDensity(final int blockX, final int blockY, final int blockZ, final float noiseValue) {
          return noiseValue;
       }
 
@@ -110,7 +118,29 @@ public class Blender {
       return this.heightAndBiomeBlendingData.isEmpty() && this.densityBlendingData.isEmpty() && this.carvingFilter == null;
    }
 
-   public BlendingOutput blendOffsetAndFactor(final int blockX, final int blockZ) {
+   public OutputBuffer blendOffsetAndFactor(final DensityVolume volume) {
+      int minCellX = QuartPos.fromBlock(volume.minBlockX());
+      int minCellZ = QuartPos.fromBlock(volume.minBlockZ());
+      int maxCellX = QuartPos.fromBlock(volume.maxBlockX()) + 1;
+      int maxCellZ = QuartPos.fromBlock(volume.maxBlockZ()) + 1;
+      int cellCountX = maxCellX - minCellX + 1;
+      int cellCountZ = maxCellZ - minCellZ + 1;
+      float[] alphas = new float[cellCountX * cellCountZ];
+      float[] offsets = new float[cellCountX * cellCountZ];
+
+      for(int cellZ = 0; cellZ < cellCountZ; ++cellZ) {
+         for(int cellX = 0; cellX < cellCountX; ++cellX) {
+            int index = cellX + cellZ * cellCountX;
+            BlendingOutput output = this.blendOffsetAndFactor(QuartPos.toBlock(minCellX + cellX), QuartPos.toBlock(minCellZ + cellZ));
+            alphas[index] = output.alpha;
+            offsets[index] = output.blendingOffset;
+         }
+      }
+
+      return new OutputBuffer(minCellX, minCellZ, cellCountX, cellCountZ, alphas, offsets);
+   }
+
+   protected BlendingOutput blendOffsetAndFactor(final int blockX, final int blockZ) {
       int cellX = QuartPos.fromBlock(blockX);
       int cellZ = QuartPos.fromBlock(blockZ);
       float fixedHeight = this.getBlendingDataValue(cellX, 0, cellZ, BlendingData::getHeight);
@@ -150,10 +180,10 @@ public class Blender {
       return 1.0 * (32.0 * (targetY - 128.0) - 3.0 * (targetY - 120.0) * targetYMod + 3.0 * targetYMod * targetYMod) / (128.0 * (32.0 - 3.0 * targetYMod));
    }
 
-   public float blendDensity(final DensityFunction.FunctionContext context, final float noiseValue) {
-      int cellX = QuartPos.fromBlock(context.blockX());
-      int cellY = context.blockY() / 8;
-      int cellZ = QuartPos.fromBlock(context.blockZ());
+   public float blendDensity(final int blockX, final int blockY, final int blockZ, final float noiseValue) {
+      int cellX = QuartPos.fromBlock(blockX);
+      int cellY = blockY / 8;
+      int cellZ = QuartPos.fromBlock(blockZ);
       float fixedDensity = this.getBlendingDataValue(cellX, cellY, cellZ, BlendingData::getDensity);
       if (fixedDensity != 3.4028235E38F) {
          return fixedDensity;
@@ -381,9 +411,65 @@ public class Blender {
       DENSITY_BLENDING_RANGE_CHUNKS = QuartPos.toSection(5);
    }
 
-   public static record BlendingOutput(float alpha, float blendingOffset) {
-      public BlendingOutput {
+   protected static record BlendingOutput(float alpha, float blendingOffset) {
+      protected BlendingOutput {
          super();
+      }
+   }
+
+   public static record OutputBuffer(int minCellX, int minCellZ, int cellCountX, int cellCountZ, float[] alphas, float[] offsets) {
+      private static final int NO_VALUE = -1;
+
+      public OutputBuffer {
+         super();
+      }
+
+      public DensitySampler createAlphaSampler() {
+         return new DensitySampler() {
+            {
+               Objects.requireNonNull(OutputBuffer.this);
+            }
+
+            public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+               DensitySampler.sampleVolumeNaive(context, outputBuffer, volume, this);
+            }
+
+            public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+               return OutputBuffer.this.getAlpha(blockX, blockZ);
+            }
+         };
+      }
+
+      public DensitySampler createOffsetSampler() {
+         return new DensitySampler() {
+            {
+               Objects.requireNonNull(OutputBuffer.this);
+            }
+
+            public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+               DensitySampler.sampleVolumeNaive(context, outputBuffer, volume, this);
+            }
+
+            public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+               return OutputBuffer.this.getOffset(blockX, blockZ);
+            }
+         };
+      }
+
+      public float getAlpha(final int blockX, final int blockZ) {
+         int index = this.getIndex(blockX, blockZ);
+         return index == -1 ? 1.0F : this.alphas[index];
+      }
+
+      public float getOffset(final int blockX, final int blockZ) {
+         int index = this.getIndex(blockX, blockZ);
+         return index == -1 ? 0.0F : this.offsets[index];
+      }
+
+      private int getIndex(final int blockX, final int blockZ) {
+         int relativeX = QuartPos.fromBlock(blockX) - this.minCellX;
+         int relativeZ = QuartPos.fromBlock(blockZ) - this.minCellZ;
+         return relativeX >= 0 && relativeZ >= 0 && relativeX < this.cellCountX && relativeZ < this.cellCountZ ? relativeX + relativeZ * this.cellCountX : -1;
       }
    }
 

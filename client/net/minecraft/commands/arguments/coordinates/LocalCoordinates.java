@@ -3,10 +3,9 @@ package net.minecraft.commands.arguments.coordinates;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaterniond;
-import org.joml.Vector3d;
 
 public record LocalCoordinates(double left, double up, double forwards) implements Coordinates {
    public static final char PREFIX_LOCAL_COORDINATE = '^';
@@ -17,13 +16,20 @@ public record LocalCoordinates(double left, double up, double forwards) implemen
 
    public Vec3 getPosition(final CommandSourceStack sender) {
       Vec3 source = sender.getAnchor().apply(sender);
-      Quaterniond localToWorld = localToWorld(sender.getRotation());
-      Vector3d relative = localToWorld.transform(this.left, this.up, this.forwards, new Vector3d());
-      return source.add(relative.x, relative.y, relative.z);
+      return this.apply(source, sender.getRotation());
    }
 
-   private static Quaterniond localToWorld(final Vec2 rotation) {
-      return (new Quaterniond()).rotationY((double)(-rotation.y * 0.017453292F)).rotateX((double)(rotation.x * 0.017453292F));
+   public Vec3 apply(final Vec3 source, final Vec2 rotation) {
+      float yCos = Mth.cos((double)((rotation.y + 90.0F) * 0.017453292F));
+      float ySin = Mth.sin((double)((rotation.y + 90.0F) * 0.017453292F));
+      float xCos = Mth.cos((double)(-rotation.x * 0.017453292F));
+      float xSin = Mth.sin((double)(-rotation.x * 0.017453292F));
+      float xCosUp = Mth.cos((double)((-rotation.x + 90.0F) * 0.017453292F));
+      float xSinUp = Mth.sin((double)((-rotation.x + 90.0F) * 0.017453292F));
+      Vec3 forwards = new Vec3((double)(yCos * xCos), (double)xSin, (double)(ySin * xCos));
+      Vec3 up = new Vec3((double)(yCos * xCosUp), (double)xSinUp, (double)(ySin * xCosUp));
+      Vec3 left = forwards.cross(up).scale(-1.0);
+      return source.add(forwards.x * this.forwards + up.x * this.up + left.x * this.left, forwards.y * this.forwards + up.y * this.up + left.y * this.left, forwards.z * this.forwards + up.z * this.up + left.z * this.left);
    }
 
    public Vec2 getRotation(final CommandSourceStack sender) {

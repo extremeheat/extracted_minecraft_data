@@ -173,7 +173,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
          this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value());
       } else {
-         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none(), List.of(), Optional.empty(), List.of());
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none());
       }
 
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);

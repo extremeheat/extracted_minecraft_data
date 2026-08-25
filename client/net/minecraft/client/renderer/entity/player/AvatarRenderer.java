@@ -41,7 +41,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 
 public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity> extends LivingEntityRenderer<AvatarlikeEntity, AvatarRenderState, PlayerModel> {
    public AvatarRenderer(final EntityRendererProvider.Context context, final boolean slimSteve) {
@@ -242,17 +241,17 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
          super.setupRotations(state, poseStack, bodyRot, entityScale);
          float scale = state.fallFlyingScale();
          if (!state.isAutoSpinAttack) {
-            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(scale * (-90.0F - xRot)));
+            poseStack.rotateDegrees(Axis.XP, scale * (-90.0F - xRot));
          }
 
          if (state.shouldApplyFlyingYRot) {
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotation(state.flyingYRot));
+            poseStack.rotate(Axis.YP, state.flyingYRot);
          }
       } else if (swimAmount > 0.0F) {
          super.setupRotations(state, poseStack, bodyRot, entityScale);
          float targetXRot = state.isInWater ? -90.0F - xRot : -90.0F;
          float xAngle = Mth.lerp(swimAmount, 0.0F, targetXRot);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xAngle));
+         poseStack.rotateDegrees(Axis.XP, xAngle);
          if (state.isVisuallySwimming) {
             poseStack.translate(0.0F, -1.0F, 0.3F);
          }

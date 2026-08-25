@@ -1,10 +1,13 @@
 package net.minecraft.world.level.levelgen.densityfunction.generator;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Arrays;
 import net.minecraft.util.Interval;
 import net.minecraft.world.level.levelgen.Beardifier;
+import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.densityfunction.ContextBoundSampler;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 
 public enum SimpleDensityFunction implements DensityFunction {
    BLEND_ALPHA("blend_alpha"),
@@ -18,32 +21,19 @@ public enum SimpleDensityFunction implements DensityFunction {
       this.id = id;
    }
 
-   private float value() {
-      float var10000;
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      ContextBoundSampler var10000;
       switch (this.ordinal()) {
-         case 0:
-            var10000 = 1.0F;
-            break;
-         case 1:
-         case 2:
-            var10000 = 0.0F;
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
+         case 0 -> var10000 = new ContextBoundSampler(Blender.ALPHA_KEY, new ConstantFunction.Sampler(1.0F));
+         case 1 -> var10000 = new ContextBoundSampler(Blender.OFFSET_KEY, new ConstantFunction.Sampler(0.0F));
+         case 2 -> var10000 = new ContextBoundSampler(Beardifier.CONTEXT_KEY, new ConstantFunction.Sampler(0.0F));
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      return this.value();
-   }
-
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      Arrays.fill(output, this.value());
-   }
-
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
       return this;
    }
 

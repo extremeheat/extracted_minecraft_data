@@ -18,7 +18,6 @@ import net.minecraft.util.Util;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -167,7 +166,7 @@ public final class ModelPart {
    public void translateAndRotate(final PoseStack poseStack) {
       poseStack.translate(this.x / 16.0F, this.y / 16.0F, this.z / 16.0F);
       if (this.xRot != 0.0F || this.yRot != 0.0F || this.zRot != 0.0F) {
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
+         poseStack.rotate((new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
       }
 
       if (this.xScale != 1.0F || this.yScale != 1.0F || this.zScale != 1.0F) {

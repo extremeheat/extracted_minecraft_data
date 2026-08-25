@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
-import org.joml.Quaternionfc;
 
 public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFishRenderState, EntityModel<TropicalFishRenderState>> {
    private final EntityModel<TropicalFishRenderState> smallModel = this.getModel();
@@ -68,10 +67,10 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
    protected void setupRotations(final TropicalFishRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
       super.setupRotations(state, poseStack, bodyRot, entityScale);
       float bodyZRot = 4.3F * Mth.sin((double)(0.6F * state.ageInTicks));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(bodyZRot));
+      poseStack.rotateDegrees(Axis.YP, bodyZRot);
       if (!state.isInWater) {
          poseStack.translate(0.2F, 0.1F, 0.0F);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.ZP, 90.0F);
       }
 
    }

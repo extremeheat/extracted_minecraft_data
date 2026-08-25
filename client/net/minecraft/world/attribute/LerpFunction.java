@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.joml.Vector3fc;
+import org.joml.Vector4fc;
 
 public interface LerpFunction<T> {
    LerpFunction<?> CONSTANT = ofStep(1.0F);
@@ -32,6 +34,14 @@ public interface LerpFunction<T> {
    }
 
    static LerpFunction<Integer> ofColor() {
+      return ARGB::srgbLerp;
+   }
+
+   static LerpFunction<Vector3fc> ofColorVec3() {
+      return ARGB::srgbLerp;
+   }
+
+   static LerpFunction<Vector4fc> ofColorVec4() {
       return ARGB::srgbLerp;
    }
 

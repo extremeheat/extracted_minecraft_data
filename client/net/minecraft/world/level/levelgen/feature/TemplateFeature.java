@@ -49,7 +49,7 @@ public record TemplateFeature(WeightedList<TemplateEntry> templates, Optional<Ho
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
       TemplateEntry templateEntry = this.templates.getRandomOrThrow(random);
       Rotation rotation = (Rotation)Util.getRandom(templateEntry.rotations(), random);
-      StructureTemplateManager structureTemplateManager = level.getLevel().getServer().getStructureManager();
+      StructureTemplateManager structureTemplateManager = level.getLevel().getServer().getStructureTemplateManager();
       StructureTemplate template = structureTemplateManager.getOrCreate(templateEntry.template());
       Vec3i offsetX = this.getRotatedOffset(rotation, Direction.Axis.X, template);
       Vec3i offsetZ = this.getRotatedOffset(rotation, Direction.Axis.Z, template);

@@ -3,11 +3,11 @@ package net.minecraft.world.entity.ai.navigation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.pathfinder.Node;
@@ -89,12 +89,12 @@ public class GroundPathNavigation extends PathNavigation {
    }
 
    private int getSurfaceY() {
-      if (this.mob.isInWater() && this.canFloat()) {
+      if (this.mob.isInFloatableFluid() && this.canFloat()) {
          int surface = this.mob.getBlockY();
          BlockState state = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)surface, this.mob.getZ()));
          int steps = 0;
 
-         while(state.is(Blocks.WATER)) {
+         while(state.getFluidState().is(FluidTags.ENTITY_FLOATABLE)) {
             ++surface;
             state = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)surface, this.mob.getZ()));
             ++steps;

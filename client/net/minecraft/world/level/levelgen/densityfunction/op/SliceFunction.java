@@ -5,7 +5,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
 
 public record SliceFunction(Direction.Axis axis, int coordinate, DensityFunction input) implements DensityFunction {
    public static final MapCodec<SliceFunction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Direction.Axis.CODEC.fieldOf("axis").forGetter(SliceFunction::axis), Codec.INT.fieldOf("coordinate").forGetter(SliceFunction::coordinate), DensityFunction.CODEC.fieldOf("input").forGetter(SliceFunction::input)).apply(i, SliceFunction::new));
@@ -14,25 +20,71 @@ public record SliceFunction(Direction.Axis axis, int coordinate, DensityFunction
       super();
    }
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      DensityFunction var10000 = this.input;
-      DensityFunction.SinglePointContext var10001;
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      DensityFunction var6 = this.input;
+      if (var6 instanceof SliceFunction var2) {
+         SliceFunction var10000 = var2;
+
+         try {
+            var17 = var10000.axis();
+         } catch (Throwable var11) {
+            throw new MatchException(var11.toString(), var11);
+         }
+
+         Direction.Axis var7 = var17;
+         Direction.Axis innerAxis = var7;
+         var10000 = var2;
+
+         try {
+            var19 = var10000.coordinate();
+         } catch (Throwable var10) {
+            throw new MatchException(var10.toString(), var10);
+         }
+
+         int var14 = var19;
+         if (true) {
+            int innerCoordinate = var14;
+            var10000 = var2;
+
+            try {
+               var21 = var10000.input();
+            } catch (Throwable var9) {
+               throw new MatchException(var9.toString(), var9);
+            }
+
+            DensityFunction var15 = var21;
+            DensityFunction innerInput = var15;
+            if (this.axis == Direction.Axis.X && innerAxis == Direction.Axis.Z || this.axis == Direction.Axis.Z && innerAxis == Direction.Axis.X) {
+               int x;
+               int z;
+               if (this.axis == Direction.Axis.X) {
+                  x = this.coordinate;
+                  z = innerCoordinate;
+               } else {
+                  x = innerCoordinate;
+                  z = this.coordinate;
+               }
+
+               return new XzSampler(innerInput.compileSampler(context), x, z);
+            }
+         }
+      }
+
+      DensitySampler input = this.input.compileSampler(context);
+      Object var22;
       switch (this.axis) {
-         case X -> var10001 = new DensityFunction.SinglePointContext(this.coordinate, context.blockY(), context.blockZ());
-         case Y -> var10001 = new DensityFunction.SinglePointContext(context.blockX(), this.coordinate, context.blockZ());
-         case Z -> var10001 = new DensityFunction.SinglePointContext(context.blockX(), context.blockY(), this.coordinate);
+         case X -> var22 = new XSampler(input, this.coordinate);
+         case Y -> var22 = new YSampler(input, this.coordinate);
+         case Z -> var22 = new ZSampler(input, this.coordinate);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      return var10000.compute(var10001);
+      return (DensitySampler)var22;
    }
 
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      contextProvider.fillAllDirectly(output, this);
-   }
-
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-      return new SliceFunction(this.axis, this.coordinate, visitor.apply(this.input));
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
+      DensityFunction input = rule.rewrite(this.input);
+      return input == this.input ? this : new SliceFunction(this.axis, this.coordinate, input);
    }
 
    public Interval range() {
@@ -45,5 +97,136 @@ public record SliceFunction(Direction.Axis axis, int coordinate, DensityFunction
 
    public MapCodec<SliceFunction> codec() {
       return CODEC;
+   }
+
+   public static record XSampler(DensitySampler input, int x) implements DensitySampler {
+      public XSampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         if (volume.sizeX() == 1 && volume.minBlockX() == this.x) {
+            this.input.sampleVolume(context, outputBuffer, volume);
+         } else {
+            DensityVolume inputVolume = new DensityVolume(1, volume.sizeY(), volume.sizeZ(), this.x, volume.minBlockY(), volume.minBlockZ(), volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
+
+            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
+               this.input.sampleVolume(context, inputBuffer, inputVolume);
+               int index = 0;
+
+               for(int z = 0; z < volume.sizeZ(); ++z) {
+                  for(int x = 0; x < volume.sizeX(); ++x) {
+                     for(int y = 0; y < volume.sizeY(); ++y) {
+                        outputBuffer.set(index, inputBuffer.get(inputVolume.indexUnchecked(0, y, z)));
+                        ++index;
+                     }
+                  }
+               }
+            }
+
+         }
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return this.input.sampleValue(context, this.x, blockY, blockZ);
+      }
+   }
+
+   public static record YSampler(DensitySampler input, int y) implements DensitySampler {
+      public YSampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         if (volume.sizeY() == 1 && volume.minBlockY() == this.y) {
+            this.input.sampleVolume(context, outputBuffer, volume);
+         } else {
+            DensityVolume inputVolume = new DensityVolume(volume.sizeX(), 1, volume.sizeZ(), volume.minBlockX(), this.y, volume.minBlockZ(), volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
+
+            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
+               this.input.sampleVolume(context, inputBuffer, inputVolume);
+
+               for(int z = 0; z < volume.sizeZ(); ++z) {
+                  for(int x = 0; x < volume.sizeX(); ++x) {
+                     float input = inputBuffer.get(inputVolume.indexUnchecked(x, 0, z));
+                     outputBuffer.setRange(volume.indexUnchecked(x, 0, z), volume.sizeY(), input);
+                  }
+               }
+            }
+
+         }
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return this.input.sampleValue(context, blockX, this.y, blockZ);
+      }
+   }
+
+   public static record ZSampler(DensitySampler input, int z) implements DensitySampler {
+      public ZSampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         if (volume.sizeZ() == 1 && volume.minBlockZ() == this.z) {
+            this.input.sampleVolume(context, outputBuffer, volume);
+         } else {
+            DensityVolume inputVolume = new DensityVolume(volume.sizeX(), volume.sizeY(), 1, volume.minBlockX(), volume.minBlockY(), this.z, volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
+
+            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
+               this.input.sampleVolume(context, inputBuffer, inputVolume);
+               int index = 0;
+
+               for(int z = 0; z < volume.sizeZ(); ++z) {
+                  for(int x = 0; x < volume.sizeX(); ++x) {
+                     for(int y = 0; y < volume.sizeY(); ++y) {
+                        outputBuffer.set(index, inputBuffer.get(inputVolume.indexUnchecked(x, y, 0)));
+                        ++index;
+                     }
+                  }
+               }
+            }
+
+         }
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return this.input.sampleValue(context, blockX, blockY, this.z);
+      }
+   }
+
+   public static record XzSampler(DensitySampler input, int x, int z) implements DensitySampler {
+      public XzSampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         if (volume.sizeX() == 1 && volume.sizeZ() == 1 && volume.minBlockX() == this.x && volume.minBlockZ() == this.z) {
+            this.input.sampleVolume(context, outputBuffer, volume);
+         } else {
+            DensityVolume inputVolume = new DensityVolume(1, volume.sizeY(), 1, this.x, volume.minBlockY(), this.z, volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
+
+            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
+               this.input.sampleVolume(context, inputBuffer, inputVolume);
+
+               for(int y = 0; y < volume.sizeY(); ++y) {
+                  float input = inputBuffer.get(inputVolume.indexUnchecked(0, y, 0));
+                  int index = volume.indexUnchecked(0, y, 0);
+
+                  for(int z = 0; z < volume.sizeZ(); ++z) {
+                     for(int x = 0; x < volume.sizeX(); ++x) {
+                        outputBuffer.set(index, input);
+                        index += volume.sizeY();
+                     }
+                  }
+               }
+            }
+
+         }
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return this.input.sampleValue(context, this.x, blockY, this.z);
+      }
    }
 }

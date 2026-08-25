@@ -4,19 +4,21 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class PowderedSnowFogEnvironment extends FogEnvironment {
-   private static final int COLOR = -6308916;
+   private static final Vector3fc COLOR = ARGB.vector3fFromRGB24(-6308916);
 
    public PowderedSnowFogEnvironment() {
       super();
    }
 
-   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
-      return -6308916;
+   public Vector3fc getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
+      return COLOR;
    }
 
    public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {

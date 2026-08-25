@@ -207,36 +207,32 @@ public class PistonBaseBlock extends DirectionalBlock {
       if (pos.getY() >= level.getMinY() && pos.getY() <= level.getMaxY() && level.getWorldBorder().isWithinBounds(pos)) {
          if (state.isAir()) {
             return true;
-         } else if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.CRYING_OBSIDIAN) && !state.is(Blocks.RESPAWN_ANCHOR) && !state.is(Blocks.REINFORCED_DEEPSLATE)) {
-            if (direction == Direction.DOWN && pos.getY() == level.getMinY()) {
-               return false;
-            } else if (direction == Direction.UP && pos.getY() == level.getMaxY()) {
-               return false;
-            } else {
-               if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
-                  if (state.getDestroySpeed(level, pos) == -1.0F) {
-                     return false;
-                  }
-
-                  switch (state.getPistonPushReaction()) {
-                     case IMMOVEABLE -> {
-                        return false;
-                     }
-                     case POPPED -> {
-                        return allowDestroyable;
-                     }
-                     case PUSH -> {
-                        return direction == connectionDirection;
-                     }
-                  }
-               } else if ((Boolean)state.getValue(EXTENDED)) {
+         } else if (direction == Direction.DOWN && pos.getY() == level.getMinY()) {
+            return false;
+         } else if (direction == Direction.UP && pos.getY() == level.getMaxY()) {
+            return false;
+         } else {
+            if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
+               if (state.getDestroySpeed(level, pos) == -1.0F) {
                   return false;
                }
 
-               return !state.hasBlockEntity();
+               switch (state.getPistonPushReaction()) {
+                  case IMMOVEABLE -> {
+                     return false;
+                  }
+                  case POPPED -> {
+                     return allowDestroyable;
+                  }
+                  case PUSH -> {
+                     return direction == connectionDirection;
+                  }
+               }
+            } else if ((Boolean)state.getValue(EXTENDED)) {
+               return false;
             }
-         } else {
-            return false;
+
+            return !state.hasBlockEntity();
          }
       } else {
          return false;

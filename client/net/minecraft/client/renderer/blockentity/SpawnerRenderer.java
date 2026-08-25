@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity, SpawnerRenderState> {
@@ -46,9 +45,9 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity, 
    public static void submitEntityInSpawner(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final EntityRenderState displayEntity, final EntityRenderDispatcher entityRenderer, final float spin, final float scale, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.translate(0.5F, 0.4F, 0.5F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(spin));
+      poseStack.rotateDegrees(Axis.YP, spin);
       poseStack.translate(0.0F, -0.2F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-30.0F));
+      poseStack.rotateDegrees(Axis.XP, -30.0F);
       poseStack.scale(scale, scale, scale);
       entityRenderer.submit(displayEntity, camera, 0.0, 0.0, 0.0, poseStack, submitNodeCollector);
       poseStack.popPose();

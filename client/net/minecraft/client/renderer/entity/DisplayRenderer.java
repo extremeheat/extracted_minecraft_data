@@ -27,7 +27,6 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
@@ -79,7 +78,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          float interpolationProgress = state.interpolationProgress;
          super.submit(state, poseStack, submitNodeCollector, camera);
          poseStack.pushPose();
-         poseStack.mulPose((Quaternionfc)this.calculateOrientation(renderState, state, new Quaternionf()));
+         poseStack.rotate(this.calculateOrientation(renderState, state, new Quaternionf()));
          Transformation transformation = (Transformation)renderState.transformation().get(interpolationProgress);
          poseStack.mulPose(transformation);
          this.submitInner(state, poseStack, submitNodeCollector, state.lightCoords, interpolationProgress);
@@ -179,7 +178,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
 
       public void submitInner(final ItemDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
          if (!state.item.isEmpty()) {
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
+            poseStack.rotate(Axis.YP, 3.1415927F);
             state.item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          }
       }

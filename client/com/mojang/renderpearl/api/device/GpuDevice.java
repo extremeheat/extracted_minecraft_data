@@ -15,11 +15,14 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface GpuDevice {
-   GpuSurface createSurface(long windowHandle);
+   GpuSurface createSurface(long windowHandle, final BooleanSupplier isIconified);
 
    CommandEncoder createCommandEncoder();
 
@@ -41,7 +44,7 @@ public interface GpuDevice {
 
    boolean isDebuggingEnabled();
 
-   @Nullable CompiledRenderPipeline compilePipeline(RenderPipeline pipeline, ShaderSource shaderSource);
+   CompletableFuture<CompiledRenderPipeline.Pending> compilePipeline(RenderPipeline pipeline, ShaderSource shaderSource, Executor executor);
 
    void close();
 

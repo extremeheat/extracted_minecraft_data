@@ -18,7 +18,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import org.joml.Quaternionfc;
 
 public class MapRenderer {
    private static final float MAP_Z_OFFSET = -0.01F;
@@ -47,7 +46,7 @@ public class MapRenderer {
          if (!showOnlyFrame || decoration.renderOnFrame) {
             poseStack.pushPose();
             poseStack.translate((float)decoration.x / 2.0F + 64.0F, (float)decoration.y / 2.0F + 64.0F, -0.02F);
-            poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)(decoration.rot * 360) / 16.0F));
+            poseStack.rotateDegrees(Axis.ZP, (float)(decoration.rot * 360) / 16.0F);
             poseStack.scale(4.0F, 4.0F, 3.0F);
             poseStack.translate(-0.125F, 0.125F, 0.0F);
             TextureAtlasSprite atlasSprite = decoration.atlasSprite;

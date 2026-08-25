@@ -31,6 +31,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.jspecify.annotations.Nullable;
@@ -79,7 +80,7 @@ public abstract class StructurePiece {
 
    protected abstract void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag);
 
-   public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+   public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
    }
 
    public abstract void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos);

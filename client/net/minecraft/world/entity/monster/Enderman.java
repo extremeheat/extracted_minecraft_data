@@ -17,6 +17,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.PotionTags;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
@@ -69,6 +70,8 @@ import org.jspecify.annotations.Nullable;
 public class Enderman extends Monster implements NeutralMob {
    private static final Identifier SPEED_MODIFIER_ATTACKING_ID = Identifier.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
+   public static final int MAX_TELEPORT_RADIUS = 32;
+   public static final int MAX_TELEPORT_DIAMETER = 64;
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
    private static final EntityDataAccessor<Optional<BlockState>> DATA_CARRY_STATE;
@@ -251,9 +254,13 @@ public class Enderman extends Monster implements NeutralMob {
          Vec3 oldPos = this.position();
          boolean result = this.randomTeleport(x, y, z, true, BlockTags.ENDERMAN_DOES_NOT_TELEPORT_TO);
          if (result) {
-            this.level().gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)this));
+            Level level = this.level();
+            level.gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
-               this.level().playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
+               BlockPos oldBlockPos = BlockPos.containing(oldPos);
+               int packedDiff = BlockUtil.clampedPackDifferenceInPosition(oldBlockPos, this.blockPosition(), 127, 127, 127);
+               level.levelEvent(2018, oldBlockPos, packedDiff);
+               level.playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
@@ -268,16 +275,15 @@ public class Enderman extends Monster implements NeutralMob {
       return !blockState.getFluidState().is(FluidTags.WATER);
    }
 
-   private boolean repeatedlyTryToTeleport() {
+   private void repeatedlyTryToTeleport() {
       if (!this.isPassenger()) {
          for(int i = 0; i < 64; ++i) {
             if (this.teleport()) {
-               return true;
+               return;
             }
          }
       }
 
-      return false;
    }
 
    protected SoundEvent getAmbientSound() {
@@ -330,17 +336,19 @@ public class Enderman extends Monster implements NeutralMob {
 
          AbstractThrownPotion thrownPotion = var10000;
          if (source.is(DamageTypeTags.IS_PROJECTILE) && !this.isPassenger()) {
-            return this.repeatedlyTryToTeleport();
-         } else if (thrownPotion == null) {
+            this.repeatedlyTryToTeleport();
+            return false;
+         } else if (thrownPotion != null) {
+            boolean hurtWithCleanWater = this.hurtWithCleanWater(level, source, thrownPotion, damage);
+            this.repeatedlyTryToTeleport();
+            return hurtWithCleanWater;
+         } else {
             boolean result = super.hurtServer(level, source, damage);
             if (!(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
                this.teleport();
             }
 
             return result;
-         } else {
-            boolean hurtWithCleanWater = this.hurtWithCleanWater(level, source, thrownPotion, damage);
-            return this.repeatedlyTryToTeleport() || hurtWithCleanWater;
          }
       }
    }

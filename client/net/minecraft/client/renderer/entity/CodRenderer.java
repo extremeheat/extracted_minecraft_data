@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.fish.Cod;
-import org.joml.Quaternionfc;
 
 public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodModel> {
    private static final Identifier COD_LOCATION = Identifier.withDefaultNamespace("textures/entity/fish/cod.png");
@@ -28,10 +27,10 @@ public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodMo
    protected void setupRotations(final LivingEntityRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
       super.setupRotations(state, poseStack, bodyRot, entityScale);
       float bodyZRot = 4.3F * Mth.sin((double)(0.6F * state.ageInTicks));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(bodyZRot));
+      poseStack.rotateDegrees(Axis.YP, bodyZRot);
       if (!state.isInWater) {
          poseStack.translate(0.1F, 0.1F, -0.1F);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.ZP, 90.0F);
       }
 
    }

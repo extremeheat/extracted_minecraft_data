@@ -22,6 +22,9 @@ import com.mojang.renderpearl.frontend.shaders.PipelineBuilder;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.util.Mth;
@@ -49,8 +52,8 @@ public class FrontendGpuDevice implements GpuDevice {
       this.pipelineBuilder = new PipelineBuilder(backend);
    }
 
-   public GpuSurface createSurface(final long windowHandle) {
-      return new FrontendGpuSurface(this.backend.createSurface(windowHandle));
+   public GpuSurface createSurface(final long windowHandle, final BooleanSupplier isIconified) {
+      return new FrontendGpuSurface(this.backend.createSurface(windowHandle, isIconified));
    }
 
    public CommandEncoder createCommandEncoder() {
@@ -148,8 +151,8 @@ public class FrontendGpuDevice implements GpuDevice {
       return this.backend.isDebuggingEnabled();
    }
 
-   public @Nullable CompiledRenderPipeline compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource) {
-      return this.pipelineBuilder.compilePipeline(pipeline, shaderSource);
+   public CompletableFuture<CompiledRenderPipeline.Pending> compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource, final Executor executor) {
+      return this.pipelineBuilder.compilePipeline(pipeline, shaderSource, executor);
    }
 
    public void close() {

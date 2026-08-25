@@ -13,6 +13,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.Mth;
 import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -84,7 +85,7 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
          if (biomeWeights != null && attribute.isSpatiallyInterpolated()) {
             return biomeWeights.applyAttributeLayer(attribute, baseValue);
          } else {
-            Holder<Biome> biome = biomeManager.getNoiseBiomeAtPosition(pos.x, pos.y, pos.z);
+            Holder<Biome> biome = attribute.isFullResolutionBiomes() ? biomeManager.getBiome(Mth.floor(pos.x), Mth.floor(pos.y), Mth.floor(pos.z)) : biomeManager.getNoiseBiomeAtPosition(pos.x, pos.y, pos.z);
             return ((Biome)biome.value()).getAttributes().applyModifier(attribute, baseValue);
          }
       });

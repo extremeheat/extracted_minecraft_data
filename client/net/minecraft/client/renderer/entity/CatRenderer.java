@@ -12,7 +12,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.feline.CatVariant;
-import org.joml.Quaternionfc;
 
 public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, AbstractFelineModel<CatRenderState>> {
    public CatRenderer(final EntityRendererProvider.Context context) {
@@ -46,7 +45,7 @@ public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, Abstrac
       float lieDownAmount = state.lieDownAmount;
       if (lieDownAmount > 0.0F) {
          poseStack.translate(0.4F * lieDownAmount, 0.15F * lieDownAmount, 0.1F * lieDownAmount);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.rotLerp(lieDownAmount, 0.0F, 90.0F)));
+         poseStack.rotateDegrees(Axis.ZP, Mth.rotLerp(lieDownAmount, 0.0F, 90.0F));
          if (state.isLyingOnTopOfSleepingPlayer) {
             poseStack.translate(0.15F * lieDownAmount, 0.0F, 0.0F);
          }

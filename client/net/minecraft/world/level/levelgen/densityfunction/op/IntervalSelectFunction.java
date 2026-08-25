@@ -9,11 +9,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public record IntervalSelectFunction(DensityFunction input, FloatList thresholds, List<DensityFunction> functions) implements DensityFunction {
    private static final Codec<FloatList> THRESHOLDS_CODEC;
@@ -34,35 +40,30 @@ public record IntervalSelectFunction(DensityFunction input, FloatList thresholds
       }
    }
 
-   private float compute(final DensityFunction.FunctionContext context, final float input) {
-      for(int i = 0; i < this.thresholds.size(); ++i) {
-         if (input < this.thresholds.getFloat(i)) {
-            return ((DensityFunction)this.functions.get(i)).compute(context);
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      DensitySampler input = this.input.compileSampler(context);
+      if (this.thresholds.size() == 1) {
+         float threshold = this.thresholds.getFloat(0);
+         DensitySampler ifBelow = ((DensityFunction)this.functions.getFirst()).compileSampler(context);
+         DensitySampler ifAbove = ((DensityFunction)this.functions.getLast()).compileSampler(context);
+         return new SingleThresholdSampler(input, threshold, ifBelow, ifAbove);
+      } else {
+         return new Sampler(input, this.thresholds.toFloatArray(), (DensitySampler[])this.functions.stream().map((function) -> function.compileSampler(context)).toArray((x$0) -> new DensitySampler[x$0]));
+      }
+   }
+
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
+      DensityFunction input = rule.rewrite(this.input);
+      MutableBoolean functionsChanged = new MutableBoolean();
+      List<DensityFunction> functions = this.functions.stream().map((function) -> {
+         DensityFunction newFunction = rule.rewrite(function);
+         if (newFunction != function) {
+            functionsChanged.setTrue();
          }
-      }
 
-      return ((DensityFunction)this.functions.getLast()).compute(context);
-   }
-
-   public float compute(final DensityFunction.FunctionContext context) {
-      return this.compute(context, this.input.compute(context));
-   }
-
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      this.input.fillArray(output, contextProvider);
-
-      for(int i = 0; i < output.length; ++i) {
-         output[i] = this.compute(contextProvider.forIndex(i), output[i]);
-      }
-
-   }
-
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-      DensityFunction var10002 = visitor.apply(this.input);
-      FloatList var10003 = this.thresholds;
-      List var10004 = this.functions;
-      Objects.requireNonNull(visitor);
-      return new IntervalSelectFunction(var10002, var10003, List.copyOf(Lists.transform(var10004, visitor::apply)));
+         return newFunction;
+      }).toList();
+      return input == this.input && !functionsChanged.booleanValue() ? this : new IntervalSelectFunction(input, this.thresholds, functions);
    }
 
    public Interval range() {
@@ -86,5 +87,104 @@ public record IntervalSelectFunction(DensityFunction input, FloatList thresholds
    static {
       THRESHOLDS_CODEC = DensityFunctions.NOISE_VALUE_CODEC.listOf().xmap(FloatArrayList::new, Function.identity());
       CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunction.CODEC.fieldOf("input").forGetter(IntervalSelectFunction::input), THRESHOLDS_CODEC.fieldOf("thresholds").forGetter(IntervalSelectFunction::thresholds), DensityFunction.CODEC.listOf(2, 2147483647).fieldOf("functions").forGetter(IntervalSelectFunction::functions)).apply(i, IntervalSelectFunction::new)).validate(IntervalSelectFunction::validate);
+   }
+
+   private static record Sampler(DensitySampler input, float[] thresholds, DensitySampler[] samplers) implements DensitySampler {
+      private Sampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         this.input.sampleVolume(context, outputBuffer, volume);
+         ScopedDensityBuffer[] buffers = new ScopedDensityBuffer[this.samplers.length];
+         boolean var15 = false;
+
+         try {
+            var15 = true;
+
+            for(int i = 0; i < this.samplers.length; ++i) {
+               ScopedDensityBuffer buffer = context.acquireBuffer(volume);
+               buffers[i] = buffer;
+               this.samplers[i].sampleVolume(context, buffer, volume);
+            }
+
+            for(int i = 0; i < outputBuffer.size(); ++i) {
+               int samplerIndex = this.selectSamplerIndex(outputBuffer.get(i));
+               outputBuffer.set(i, buffers[samplerIndex].get(i));
+            }
+
+            var15 = false;
+         } finally {
+            if (var15) {
+               ScopedDensityBuffer[] var10 = buffers;
+               int var11 = buffers.length;
+               int var12 = 0;
+
+               while(true) {
+                  if (var12 >= var11) {
+                     ;
+                  } else {
+                     ScopedDensityBuffer buffer = var10[var12];
+                     if (buffer != null) {
+                        buffer.close();
+                     }
+
+                     ++var12;
+                  }
+               }
+            }
+         }
+
+         for(ScopedDensityBuffer buffer : buffers) {
+            if (buffer != null) {
+               buffer.close();
+            }
+         }
+
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         float input = this.input.sampleValue(context, blockX, blockY, blockZ);
+         return this.samplers[this.selectSamplerIndex(input)].sampleValue(context, blockX, blockY, blockZ);
+      }
+
+      private int selectSamplerIndex(final float input) {
+         for(int i = 0; i < this.thresholds.length; ++i) {
+            if (input < this.thresholds[i]) {
+               return i;
+            }
+         }
+
+         return this.samplers.length - 1;
+      }
+   }
+
+   private static record SingleThresholdSampler(DensitySampler input, float threshold, DensitySampler ifBelow, DensitySampler ifAbove) implements DensitySampler {
+      private SingleThresholdSampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         this.input.sampleVolume(context, outputBuffer, volume);
+
+         try (ScopedDensityBuffer ifBelowBuffer = context.acquireBuffer(volume)) {
+            this.ifBelow.sampleVolume(context, ifBelowBuffer, volume);
+
+            try (ScopedDensityBuffer ifAboveBuffer = context.acquireBuffer(volume)) {
+               this.ifAbove.sampleVolume(context, ifAboveBuffer, volume);
+
+               for(int i = 0; i < outputBuffer.size(); ++i) {
+                  float input = outputBuffer.get(i);
+                  outputBuffer.set(i, input < this.threshold ? ifBelowBuffer.get(i) : ifAboveBuffer.get(i));
+               }
+            }
+         }
+
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         float input = this.input.sampleValue(context, blockX, blockY, blockZ);
+         return input < this.threshold ? this.ifBelow.sampleValue(context, blockX, blockY, blockZ) : this.ifAbove.sampleValue(context, blockX, blockY, blockZ);
+      }
    }
 }

@@ -26,7 +26,6 @@ import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.AdventureModePredicate;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameType;
@@ -293,7 +292,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    protected void onDeflection(final boolean byAttack) {
    }
 
-   protected void onItemBreak(final Item item) {
+   protected void onItemBreak(final ItemStack item) {
    }
 
    protected void onHit(final HitResult hitResult) {

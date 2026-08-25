@@ -17,7 +17,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T, BeaconRenderState> {
@@ -70,7 +69,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       float scroll = height < 0 ? animationTime : -animationTime;
       float texVOff = Mth.frac(scroll * 0.2F - (float)Mth.floor(scroll * 0.1F));
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(animationTime * 2.25F - 45.0F));
+      poseStack.rotateDegrees(Axis.YP, animationTime * 2.25F - 45.0F);
       float wnx = 0.0F;
       float enz = 0.0F;
       float wsx = -solidBeamRadius;

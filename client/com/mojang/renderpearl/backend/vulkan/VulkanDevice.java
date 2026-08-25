@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -77,7 +78,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       VkPhysicalDeviceLimits limits = physicalDevice.vkPhysicalDeviceProperties().limits();
       VkPhysicalDeviceVulkan11Properties vk11Properties = physicalDevice.vkPhysicalDeviceVulkan11Properties();
       int indirectDrawCount = Integer.compareUnsigned(limits.maxDrawIndirectCount(), 2147483647) > 0 ? 2147483647 : limits.maxDrawIndirectCount();
-      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments(), indirectDrawCount), new DeviceFeatures(enabledFeatureSet.contains(VulkanFeatureSets.WIREFRAME_FEATURESET), true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false, Util.isAppleSiliconMac(physicalDevice.deviceName())), physicalDevice.deviceType());
+      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments(), indirectDrawCount), new DeviceFeatures(enabledFeatureSet.contains(VulkanFeatureSets.WIREFRAME_FEATURESET), true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false, Util.isAppleSiliconMac(physicalDevice.deviceName()), false), physicalDevice.deviceType());
       IntIntPair graphicsQueueFamily = physicalDevice.graphicsQueueFamilyAndIndex();
 
       assert graphicsQueueFamily != null;
@@ -138,7 +139,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       return this.vma;
    }
 
-   public GpuSurfaceBackend createSurface(final long windowHandle) {
+   public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified) {
       return new VulkanGpuSurface(this, windowHandle);
    }
 
@@ -197,8 +198,9 @@ public class VulkanDevice implements GpuDeviceBackend {
       return this.instance.debug().enabled();
    }
 
-   public @Nullable BackendRenderPipeline compilePipeline(final BackendRenderPipeline.CreateInfo pipelineCreateInfo) {
-      return VulkanRenderPipeline.compile(this, pipelineCreateInfo);
+   public BackendRenderPipeline.Pending compilePipeline(final BackendRenderPipeline.CreateInfo pipelineCreateInfo) {
+      VulkanRenderPipeline pipeline = VulkanRenderPipeline.compile(this, pipelineCreateInfo);
+      return () -> pipeline;
    }
 
    public GpuQueryPool createTimestampQueryPool(final int size) {

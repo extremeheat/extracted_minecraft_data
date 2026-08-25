@@ -6,6 +6,8 @@ import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
 import it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -30,12 +32,13 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.jspecify.annotations.Nullable;
@@ -44,6 +47,7 @@ import org.slf4j.Logger;
 public class StructureCheck {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int NO_STRUCTURE = -1;
+   private static final int MAX_CHUNKS_WITHOUT_STORED_STARTS = 131072;
    private final ChunkScanAccess storageAccess;
    private final RegistryAccess registryAccess;
    private final StructureTemplateManager structureTemplateManager;
@@ -51,11 +55,13 @@ public class StructureCheck {
    private final ChunkGenerator chunkGenerator;
    private final RandomState randomState;
    private final LevelHeightAccessor heightAccessor;
-   private final BiomeResolver biomeResolver;
+   private final Climate.Sampler climateSampler;
+   private final BiomeSource biomeSource;
    private final long seed;
    private final DataFixer fixerUpper;
    private final Long2ObjectMap<Object2IntMap<Structure>> loadedChunks = new Long2ObjectOpenHashMap();
    private final Map<Structure, Long2BooleanMap> featureChecks = new HashMap();
+   private final LongSet chunksWithoutStartsInStorage = new LongOpenHashSet();
 
    public StructureCheck(final ChunkScanAccess storageAccess, final RegistryAccess registryAccess, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final ChunkGenerator chunkGenerator, final RandomState randomState, final LevelHeightAccessor heightAccessor, final BiomeSource biomeSource, final long seed, final DataFixer fixerUpper) {
       super();
@@ -66,7 +72,8 @@ public class StructureCheck {
       this.chunkGenerator = chunkGenerator;
       this.randomState = randomState;
       this.heightAccessor = heightAccessor;
-      this.biomeResolver = biomeSource.createResolver(randomState.sampler());
+      this.biomeSource = biomeSource;
+      this.climateSampler = randomState.createClimateSampler(SamplerContext.builder().enableCaches().build());
       this.seed = seed;
       this.fixerUpper = fixerUpper;
    }
@@ -77,10 +84,20 @@ public class StructureCheck {
       if (cachedResult != null) {
          return this.checkStructureInfo(cachedResult, structure, requireUnreferenced);
       } else {
-         StructureCheckResult storageCheckResult = this.tryLoadFromStorage(pos, structure, requireUnreferenced, posKey);
-         if (storageCheckResult != null) {
-            return storageCheckResult;
-         } else if (!placement.applyAdditionalChunkRestrictions(pos.x(), pos.z(), this.seed)) {
+         if (!this.chunksWithoutStartsInStorage.contains(posKey)) {
+            StructureCheckResult storageCheckResult = this.tryLoadFromStorage(pos, structure, requireUnreferenced);
+            if (storageCheckResult != null) {
+               return storageCheckResult;
+            }
+
+            if (this.chunksWithoutStartsInStorage.size() >= 131072) {
+               this.chunksWithoutStartsInStorage.clear();
+            }
+
+            this.chunksWithoutStartsInStorage.add(posKey);
+         }
+
+         if (!placement.applyAdditionalChunkRestrictions(pos.x(), pos.z(), this.seed)) {
             return StructureCheckResult.START_NOT_PRESENT;
          } else {
             boolean isFeatureChunk = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(structure, (k) -> new Long2BooleanOpenHashMap())).computeIfAbsent(posKey, (k) -> this.canCreateStructure(pos, structure));
@@ -92,17 +109,18 @@ public class StructureCheck {
    private boolean canCreateStructure(final ChunkPos pos, final Structure structure) {
       RegistryAccess var10003 = this.registryAccess;
       ChunkGenerator var10004 = this.chunkGenerator;
-      BiomeResolver var10005 = this.biomeResolver;
-      RandomState var10006 = this.randomState;
-      StructureTemplateManager var10007 = this.structureTemplateManager;
-      long var10008 = this.seed;
-      LevelHeightAccessor var10010 = this.heightAccessor;
-      HolderSet var10011 = structure.biomes();
-      Objects.requireNonNull(var10011);
-      return structure.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, pos, var10010, var10011::contains)).isPresent();
+      BiomeSource var10005 = this.biomeSource;
+      Climate.Sampler var10006 = this.climateSampler;
+      RandomState var10007 = this.randomState;
+      StructureTemplateManager var10008 = this.structureTemplateManager;
+      long var10009 = this.seed;
+      LevelHeightAccessor var10011 = this.heightAccessor;
+      HolderSet var10012 = structure.biomes();
+      Objects.requireNonNull(var10012);
+      return structure.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var10009, pos, var10011, var10012::contains)).isPresent();
    }
 
-   private @Nullable StructureCheckResult tryLoadFromStorage(final ChunkPos pos, final Structure structure, final boolean requireUnreferenced, final long posKey) {
+   private @Nullable StructureCheckResult tryLoadFromStorage(final ChunkPos pos, final Structure structure, final boolean requireUnreferenced) {
       CollectFields collectFields = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
 
       try {
@@ -129,7 +147,7 @@ public class StructureCheck {
          if (knownStarts == null) {
             return null;
          } else {
-            this.storeFullResults(posKey, knownStarts);
+            this.storeFullResults(pos.pack(), knownStarts);
             return this.checkStructureInfo(knownStarts, structure, requireUnreferenced);
          }
       } else {
@@ -193,10 +211,12 @@ public class StructureCheck {
    private void storeFullResults(final long posKey, final Object2IntMap<Structure> starts) {
       this.loadedChunks.put(posKey, deduplicateEmptyMap(starts));
       this.featureChecks.values().forEach((m) -> m.remove(posKey));
+      this.chunksWithoutStartsInStorage.remove(posKey);
    }
 
    public void incrementReference(final ChunkPos chunkPos, final Structure structure) {
-      this.loadedChunks.compute(chunkPos.pack(), (key, counts) -> {
+      long posKey = chunkPos.pack();
+      this.loadedChunks.compute(posKey, (key, counts) -> {
          if (counts == null || counts.isEmpty()) {
             counts = new Object2IntOpenHashMap();
          }
@@ -204,5 +224,6 @@ public class StructureCheck {
          counts.computeInt(structure, (k, value) -> value == null ? 1 : value + 1);
          return counts;
       });
+      this.chunksWithoutStartsInStorage.remove(posKey);
    }
 }

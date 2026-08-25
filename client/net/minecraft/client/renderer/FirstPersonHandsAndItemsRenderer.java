@@ -23,7 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
-import org.joml.Quaternionfc;
 
 public class FirstPersonHandsAndItemsRenderer {
    private static final RenderType MAP_BACKGROUND = RenderTypes.text(Identifier.withDefaultNamespace("textures/map/map_background.png"));
@@ -129,9 +128,9 @@ public class FirstPersonHandsAndItemsRenderer {
    private void renderMapHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm, final PlayerRenderState playerState) {
       poseStack.pushPose();
       float invert = arm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(92.0F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(45.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * -41.0F));
+      poseStack.rotateDegrees(Axis.YP, 92.0F);
+      poseStack.rotateDegrees(Axis.XP, 45.0F);
+      poseStack.rotateDegrees(Axis.ZP, invert * -41.0F);
       poseStack.translate(invert * 0.3F, -1.1F, 0.45F);
       this.renderPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
       poseStack.popPose();
@@ -144,7 +143,7 @@ public class FirstPersonHandsAndItemsRenderer {
       if (avatarRenderState != null) {
          if (!avatarRenderState.isInvisible) {
             poseStack.pushPose();
-            poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * 10.0F));
+            poseStack.rotateDegrees(Axis.ZP, invert * 10.0F);
             this.renderPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attackValue, arm, playerState);
             poseStack.popPose();
          }
@@ -157,8 +156,8 @@ public class FirstPersonHandsAndItemsRenderer {
          float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
          float zSwingPosition = -0.3F * Mth.sin((double)(attackValue * 3.1415927F));
          poseStack.translate(invert * xSwingPosition, ySwingPosition - 0.3F * xSwing, zSwingPosition);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xSwing * -45.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * xSwing * -30.0F));
+         poseStack.rotateDegrees(Axis.XP, xSwing * -45.0F);
+         poseStack.rotateDegrees(Axis.YP, invert * xSwing * -30.0F);
          this.renderMap(poseStack, submitNodeCollector, lightCoords, map, arm == avatarRenderState.mainArm, state);
          poseStack.popPose();
       }
@@ -171,27 +170,27 @@ public class FirstPersonHandsAndItemsRenderer {
       poseStack.translate(0.0F, -ySwingPosition / 2.0F, zSwingPosition);
       float mapTilt = this.calculateMapTilt(xRot);
       poseStack.translate(0.0F, 0.04F + inverseArmHeight * -1.2F + mapTilt * -0.5F, -0.72F);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(mapTilt * -85.0F));
+      poseStack.rotateDegrees(Axis.XP, mapTilt * -85.0F);
       AvatarRenderState avatarRenderState = playerState.avatarRenderState;
       if (avatarRenderState != null) {
          if (!avatarRenderState.isInvisible) {
             poseStack.pushPose();
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+            poseStack.rotateDegrees(Axis.YP, 90.0F);
             this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.RIGHT, playerState);
             this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.LEFT, playerState);
             poseStack.popPose();
          }
 
          float xzSwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xzSwingRotation * 20.0F));
+         poseStack.rotateDegrees(Axis.XP, xzSwingRotation * 20.0F);
          poseStack.scale(2.0F, 2.0F, 2.0F);
          this.renderMap(poseStack, submitNodeCollector, lightCoords, state.mainHandItem, true, state);
       }
    }
 
    private void renderMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack itemStack, final boolean mainHand, final FirstPersonHandsAndItemsRenderState state) {
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+      poseStack.rotateDegrees(Axis.YP, 180.0F);
+      poseStack.rotateDegrees(Axis.ZP, 180.0F);
       poseStack.scale(0.38F, 0.38F, 0.38F);
       poseStack.translate(-0.5F, -0.5F, 0.0F);
       poseStack.scale(0.0078125F, 0.0078125F, 0.0078125F);
@@ -218,15 +217,15 @@ public class FirstPersonHandsAndItemsRenderer {
       float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
       float zSwingPosition = -0.4F * Mth.sin((double)(attackValue * 3.1415927F));
       poseStack.translate(invert * (xSwingPosition + 0.64000005F), ySwingPosition + -0.6F + inverseArmHeight * -0.6F, zSwingPosition + -0.71999997F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * 45.0F));
+      poseStack.rotateDegrees(Axis.YP, invert * 45.0F);
       float zSwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
       float ySwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * ySwingRotation * 70.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * zSwingRotation * -20.0F));
+      poseStack.rotateDegrees(Axis.YP, invert * ySwingRotation * 70.0F);
+      poseStack.rotateDegrees(Axis.ZP, invert * zSwingRotation * -20.0F);
       poseStack.translate(invert * -1.0F, 3.6F, 3.5F);
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * 120.0F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(200.0F));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * -135.0F));
+      poseStack.rotateDegrees(Axis.ZP, invert * 120.0F);
+      poseStack.rotateDegrees(Axis.XP, 200.0F);
+      poseStack.rotateDegrees(Axis.YP, invert * -135.0F);
       poseStack.translate(invert * 5.6F, 0.0F, 0.0F);
       this.renderPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
    }
@@ -242,9 +241,9 @@ public class FirstPersonHandsAndItemsRenderer {
       float eatJiggle = 1.0F - (float)Math.pow((double)scaledUsageTime, 27.0);
       int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
       poseStack.translate(eatJiggle * 0.6F * (float)invert, eatJiggle * -0.5F, eatJiggle * 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * eatJiggle * 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(eatJiggle * 10.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * eatJiggle * 30.0F));
+      poseStack.rotateDegrees(Axis.YP, (float)invert * eatJiggle * 90.0F);
+      poseStack.rotateDegrees(Axis.XP, eatJiggle * 10.0F);
+      poseStack.rotateDegrees(Axis.ZP, (float)invert * eatJiggle * 30.0F);
    }
 
    private void applyBrushTransform(final PoseStack poseStack, final float partialTicks, final HumanoidArm arm, final float useItemRemainingTicks) {
@@ -259,16 +258,16 @@ public class FirstPersonHandsAndItemsRenderer {
       float currentSwipeAngle = -15.0F + 75.0F * Mth.cos((double)(scaledUsageTime * 2.0F * 3.1415927F));
       if (arm != HumanoidArm.RIGHT) {
          poseStack.translate(0.1, 0.83, 0.35);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(currentSwipeAngle));
+         poseStack.rotateDegrees(Axis.XP, -80.0F);
+         poseStack.rotateDegrees(Axis.YP, -90.0F);
+         poseStack.rotateDegrees(Axis.XP, currentSwipeAngle);
          poseStack.translate(-0.3, 0.22, 0.35);
       } else {
          poseStack.translate(-0.25, 0.22, 0.35);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(0.0F));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(currentSwipeAngle));
+         poseStack.rotateDegrees(Axis.XP, -80.0F);
+         poseStack.rotateDegrees(Axis.YP, 90.0F);
+         poseStack.rotateDegrees(Axis.ZP, 0.0F);
+         poseStack.rotateDegrees(Axis.XP, currentSwipeAngle);
       }
 
    }
@@ -276,11 +275,11 @@ public class FirstPersonHandsAndItemsRenderer {
    private void applyItemArmAttackTransform(final PoseStack poseStack, final HumanoidArm arm, final float attackValue) {
       int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
       float ySwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * (45.0F + ySwingRotation * -20.0F)));
+      poseStack.rotateDegrees(Axis.YP, (float)invert * (45.0F + ySwingRotation * -20.0F));
       float xzSwingRotation = Mth.sin((double)(Mth.sqrt(attackValue) * 3.1415927F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * xzSwingRotation * -20.0F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xzSwingRotation * -80.0F));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * -45.0F));
+      poseStack.rotateDegrees(Axis.ZP, (float)invert * xzSwingRotation * -20.0F);
+      poseStack.rotateDegrees(Axis.XP, xzSwingRotation * -80.0F);
+      poseStack.rotateDegrees(Axis.YP, (float)invert * -45.0F);
    }
 
    private void applyItemArmTransform(final PoseStack poseStack, final HumanoidArm arm, final float inverseArmHeight) {
@@ -294,8 +293,8 @@ public class FirstPersonHandsAndItemsRenderer {
          float attackValue = avatarRenderState.swingAnimation;
          InteractionHand attackHand = state.attackHand;
          float xRot = avatarRenderState.xRot;
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees((state.viewXRot - state.xBob) * 0.1F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((state.viewYRot - state.yBob) * 0.1F));
+         poseStack.rotateDegrees(Axis.XP, (state.viewXRot - state.xBob) * 0.1F);
+         poseStack.rotateDegrees(Axis.YP, (state.viewYRot - state.yBob) * 0.1F);
          if (state.handRenderSelection.renderMainHand) {
             float mainHandAttack = attackHand == InteractionHand.MAIN_HAND ? attackValue : 0.0F;
             float mainhandInverseArmHeight = state.mainHandSwapScale * (1.0F - Mth.lerp(partialTicks, state.oldMainHandHeight, state.mainHandHeight));
@@ -337,9 +336,9 @@ public class FirstPersonHandsAndItemsRenderer {
                int invert = isRightArm ? 1 : -1;
                if (avatarRenderState.isUsingItem && state.useItemRemainingTicks > 0 && avatarRenderState.useItemHand == hand && !charged) {
                   poseStack.translate((float)invert * -0.4785682F, -0.094387F, 0.05731531F);
-                  poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-11.935F));
-                  poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 65.3F));
-                  poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+                  poseStack.rotateDegrees(Axis.XP, -11.935F);
+                  poseStack.rotateDegrees(Axis.YP, (float)invert * 65.3F);
+                  poseStack.rotateDegrees(Axis.ZP, (float)invert * -9.785F);
                   float timeHeld = (float)useDuration - ((float)state.useItemRemainingTicks - partialTicks + 1.0F);
                   float power = timeHeld / (float)chargeDuration;
                   if (power > 1.0F) {
@@ -355,12 +354,12 @@ public class FirstPersonHandsAndItemsRenderer {
 
                   poseStack.translate(power * 0.0F, power * 0.0F, power * 0.04F);
                   poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
-                  poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
+                  poseStack.rotateDegrees(Axis.YN, (float)invert * 45.0F);
                } else {
                   this.swingArm(attack, poseStack, invert, arm);
                   if (charged && attack < 0.001F && isMainHand) {
                      poseStack.translate((float)invert * -0.641864F, 0.0F, 0.0F);
-                     poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 10.0F));
+                     poseStack.rotateDegrees(Axis.YP, (float)invert * 10.0F);
                   }
                }
 
@@ -386,16 +385,16 @@ public class FirstPersonHandsAndItemsRenderer {
                      case BLOCK:
                         if (!(itemStack.getItem() instanceof ShieldItem)) {
                            poseStack.translate((float)invert * -0.14142136F, 0.08F, 0.14142136F);
-                           poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-102.25F));
-                           poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 13.365F));
-                           poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * 78.05F));
+                           poseStack.rotateDegrees(Axis.XP, -102.25F);
+                           poseStack.rotateDegrees(Axis.YP, (float)invert * 13.365F);
+                           poseStack.rotateDegrees(Axis.ZP, (float)invert * 78.05F);
                         }
                         break;
                      case BOW:
                         poseStack.translate((float)invert * -0.2785682F, 0.18344387F, 0.15731531F);
-                        poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-13.935F));
-                        poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 35.3F));
-                        poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+                        poseStack.rotateDegrees(Axis.XP, -13.935F);
+                        poseStack.rotateDegrees(Axis.YP, (float)invert * 35.3F);
+                        poseStack.rotateDegrees(Axis.ZP, (float)invert * -9.785F);
                         float timeHeld = (float)useDuration - ((float)state.useItemRemainingTicks - partialTicks + 1.0F);
                         float power = timeHeld / 20.0F;
                         power = (power * power + power * 2.0F) / 3.0F;
@@ -412,13 +411,13 @@ public class FirstPersonHandsAndItemsRenderer {
 
                         poseStack.translate(power * 0.0F, power * 0.0F, power * 0.04F);
                         poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
-                        poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
+                        poseStack.rotateDegrees(Axis.YN, (float)invert * 45.0F);
                         break;
                      case TRIDENT:
                         poseStack.translate((float)invert * -0.5F, 0.7F, 0.1F);
-                        poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-55.0F));
-                        poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 35.3F));
-                        poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+                        poseStack.rotateDegrees(Axis.XP, -55.0F);
+                        poseStack.rotateDegrees(Axis.YP, (float)invert * 35.3F);
+                        poseStack.rotateDegrees(Axis.ZP, (float)invert * -9.785F);
                         float timeHeld = (float)useDuration - ((float)state.useItemRemainingTicks - partialTicks + 1.0F);
                         float power = timeHeld / 10.0F;
                         if (power > 1.0F) {
@@ -434,7 +433,7 @@ public class FirstPersonHandsAndItemsRenderer {
 
                         poseStack.translate(0.0F, 0.0F, power * 0.2F);
                         poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
-                        poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
+                        poseStack.rotateDegrees(Axis.YN, (float)invert * 45.0F);
                         break;
                      case BRUSH:
                         this.applyBrushTransform(poseStack, partialTicks, arm, (float)state.useItemRemainingTicks);
@@ -450,15 +449,21 @@ public class FirstPersonHandsAndItemsRenderer {
                } else if (avatarRenderState.isAutoSpinAttack) {
                   this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
                   poseStack.translate((float)invert * -0.4F, 0.8F, 0.3F);
-                  poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 65.0F));
-                  poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -85.0F));
+                  poseStack.rotateDegrees(Axis.YP, (float)invert * 65.0F);
+                  poseStack.rotateDegrees(Axis.ZP, (float)invert * -85.0F);
                } else {
                   this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
                   LivingEntity.SwingDescription currentSwing = avatarRenderState.currentSwing;
                   if (currentSwing != null && hand == currentSwing.hand()) {
                      switch (currentSwing.animation().type()) {
-                        case WHACK -> this.swingArm(attack, poseStack, invert, arm);
-                        case STAB -> SpearAnimations.firstPersonAttack(attack, poseStack, invert, arm);
+                        case NONE:
+                        default:
+                           break;
+                        case WHACK:
+                           this.swingArm(attack, poseStack, invert, arm);
+                           break;
+                        case STAB:
+                           SpearAnimations.firstPersonAttack(attack, poseStack, invert, arm);
                      }
                   }
                }

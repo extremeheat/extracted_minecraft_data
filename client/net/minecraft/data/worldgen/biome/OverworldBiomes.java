@@ -42,7 +42,7 @@ public class OverworldBiomes {
    }
 
    private static Biome.BiomeBuilder baseBiome(final float temperature, final float downfall) {
-      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(temperature).downfall(downfall).setAttribute(EnvironmentAttributes.SKY_COLOR, calculateSkyColor(temperature)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4159204).build());
+      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(temperature).downfall(downfall).setAttribute(EnvironmentAttributes.SKY_COLOR, ARGB.vector3fFromRGB24(calculateSkyColor(temperature))).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4159204).build());
    }
 
    private static void globalOverworldGeneration(final BiomeGenerationSettings.Builder generation) {
@@ -338,14 +338,14 @@ public class OverworldBiomes {
       BiomeGenerationSettings.Builder generation = baseOceanGeneration(placedFeatures, carvers);
       generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, deep ? AquaticPlacements.SEAGRASS_DEEP_WARM : AquaticPlacements.SEAGRASS_WARM);
       BiomeDefaultFeatures.addLukeWarmKelp(generation);
-      return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -16509389).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4566514).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-16509389)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4566514).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome warmOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       MobSpawnSettings.Builder mobs = (new MobSpawnSettings.Builder()).addSpawn(EntityTypes.PUFFERFISH, 15, 1, 3).addSpawn(EntityTypes.NAUTILUS, 5, 1, 1);
       BiomeDefaultFeatures.warmOceanSpawns(mobs, 10, 4);
       BiomeGenerationSettings.Builder generation = baseOceanGeneration(placedFeatures, carvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.WARM_OCEAN_VEGETATION).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_WARM).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEA_PICKLE);
-      return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -16507085).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4445678).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseOcean().setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-16507085)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4445678).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome frozenOcean(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean deep) {
@@ -472,7 +472,7 @@ public class OverworldBiomes {
       }
 
       BiomeDefaultFeatures.addDefaultExtraVegetation(generation, true);
-      EnvironmentAttributeMap paleGardenAttributes = EnvironmentAttributeMap.builder().set(EnvironmentAttributes.SKY_COLOR, -4605511).set(EnvironmentAttributes.FOG_COLOR, -8292496).set(EnvironmentAttributes.WATER_FOG_COLOR, -11179648).set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.EMPTY).set(EnvironmentAttributes.MUSIC_VOLUME, 0.0F).build();
+      EnvironmentAttributeMap paleGardenAttributes = EnvironmentAttributeMap.builder().set(EnvironmentAttributes.SKY_COLOR, ARGB.vector3fFromRGB24(-4605511)).set(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(-8292496)).set(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-11179648)).set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.EMPTY).set(EnvironmentAttributes.MUSIC_VOLUME, 0.0F).build();
       EnvironmentAttributeMap darkForestAttributes = EnvironmentAttributeMap.builder().set(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_FOREST)).build();
       return baseBiome(0.7F, 0.8F).putAttributes(isPaleGarden ? paleGardenAttributes : darkForestAttributes).specialEffects(isPaleGarden ? (new BiomeSpecialEffects.Builder()).waterColor(7768221).grassColorOverride(7832178).foliageColorOverride(8883574).dryFoliageColorOverride(10528412).build() : (new BiomeSpecialEffects.Builder()).waterColor(4159204).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
@@ -490,7 +490,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultMushrooms(generation);
       BiomeDefaultFeatures.addSwampExtraVegetation(generation);
       generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -14474473).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).foliageColorOverride(6975545).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-14474473)).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).foliageColorOverride(6975545).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome mangroveSwamp(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
@@ -504,7 +504,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addMangroveSwampDisks(generation);
       BiomeDefaultFeatures.addMangroveSwampVegetation(generation);
       BiomeDefaultFeatures.addMangroveSwampExtraVegetation(generation);
-      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.FOG_COLOR, -4138753).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -11699616).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(-4138753)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-11699616)).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome river(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers, final boolean frozen) {
@@ -582,7 +582,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addInfestedStone(generation);
       if (cherryGrove) {
          BiomeSpecialEffects.Builder effects = (new BiomeSpecialEffects.Builder()).waterColor(6141935).grassColorOverride(11983713).foliageColorOverride(11983713);
-         return baseBiome(0.5F, 0.8F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -10635281).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_CHERRY_GROVE)).specialEffects(effects.build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+         return baseBiome(0.5F, 0.8F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-10635281)).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_CHERRY_GROVE)).specialEffects(effects.build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
       } else {
          return baseBiome(0.5F, 0.8F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_MEADOW)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(937679).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
       }
@@ -601,7 +601,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.farmAnimals(mobs);
       BiomeDefaultFeatures.commonSpawns(mobs);
       mobs.addSpawn(EntityTypes.RABBIT, 4, 2, 4).addSpawn(EntityTypes.FOX, 4, 2, 4);
-      return baseBiome(0.6F, 0.6F).putAttributes(EnvironmentAttributeMap.builder().set(EnvironmentAttributes.BACKGROUND_MUSIC, music).set(EnvironmentAttributes.SKY_COLOR, 8168447).set(EnvironmentAttributes.FOG_COLOR, 13424866).set(EnvironmentAttributes.WATER_FOG_COLOR, 3625300).build()).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3625300).grassColorOverride(14641191).foliageColorOverride(15109680).dryFoliageColorOverride(9189892).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseBiome(0.6F, 0.6F).putAttributes(EnvironmentAttributeMap.builder().set(EnvironmentAttributes.BACKGROUND_MUSIC, music).set(EnvironmentAttributes.SKY_COLOR, ARGB.vector3fFromRGB24(8168447)).set(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(13424866)).set(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(3625300)).build()).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3625300).grassColorOverride(14641191).foliageColorOverride(15109680).dryFoliageColorOverride(9189892).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    private static Biome.BiomeBuilder basePeaks(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
@@ -687,7 +687,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(generation);
       BiomeDefaultFeatures.addDefaultSoftDisks(generation);
       BiomeDefaultFeatures.addSulfurCavesFeatures(generation);
-      return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.FOG_COLOR, -7555023).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SULFUR_CAVES)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -15248324).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).grassColorOverride(11249231).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
+      return baseBiome(0.8F, 0.4F).setAttribute(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(-7555023)).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SULFUR_CAVES)).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(-15248324)).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(-13320311).grassColorOverride(11249231).build()).mobSpawnSettings(mobs.build()).generationSettings(generation.build()).build();
    }
 
    public static Biome lushCaves(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {

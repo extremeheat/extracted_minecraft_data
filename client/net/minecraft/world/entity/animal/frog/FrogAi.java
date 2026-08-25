@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -35,7 +36,7 @@ import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.entity.ai.behavior.TryFindLand;
-import net.minecraft.world.entity.ai.behavior.TryFindLandNearWater;
+import net.minecraft.world.entity.ai.behavior.TryFindLandNearLiquid;
 import net.minecraft.world.entity.ai.behavior.TryLaySpawnOnFluidNearLand;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -85,7 +86,7 @@ public class FrogAi {
    }
 
    private static ActivityData<Frog> initLaySpawnActivity() {
-      return ActivityData.<Frog>create(Activity.LAY_SPAWN, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, StartAttacking.create((level, body) -> canAttack(body), (level, body) -> body.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))), Pair.of(2, TryFindLandNearWater.create(8, 1.0F)), Pair.of(3, TryLaySpawnOnFluidNearLand.create(Blocks.FROGSPAWN)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new Croak(), 2), Pair.of(BehaviorBuilder.triggerIf(Entity::onGround), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.IS_PREGNANT, MemoryStatus.VALUE_PRESENT)));
+      return ActivityData.<Frog>create(Activity.LAY_SPAWN, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, StartAttacking.create((level, body) -> canAttack(body), (level, body) -> body.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))), Pair.of(2, TryFindLandNearLiquid.create(8, 1.0F, FluidTags.FROG_TRIES_TO_FIND_LAND_NEAR)), Pair.of(3, TryLaySpawnOnFluidNearLand.create(Blocks.FROGSPAWN)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new Croak(), 2), Pair.of(BehaviorBuilder.triggerIf(Entity::onGround), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.IS_PREGNANT, MemoryStatus.VALUE_PRESENT)));
    }
 
    private static ActivityData<Frog> initJumpActivity() {

@@ -150,7 +150,6 @@ import net.minecraft.network.protocol.game.ClientboundGameRuleValuesPacket;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
-import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
@@ -644,7 +643,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          if (this.removedPlayerVehicleId.isPresent() && this.removedPlayerVehicleId.getAsInt() == packet.id()) {
             LOGGER.debug("Trying to teleport entity with id {}, that was formerly player vehicle, applying teleport to player instead", packet.id());
             setValuesFromPositionPacket(packet.change(), packet.relatives(), this.minecraft.player, false);
-            this.connection.send(new ServerboundMovePlayerPacket.PosRot(this.minecraft.player.getX(), this.minecraft.player.getY(), this.minecraft.player.getZ(), this.minecraft.player.getYRot(), this.minecraft.player.getXRot(), false, false));
          }
 
       } else {
@@ -761,8 +759,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          setValuesFromPositionPacket(packet.change(), packet.relatives(), player, false);
       }
 
-      this.connection.send(new ServerboundAcceptTeleportationPacket(packet.id()));
-      this.connection.send(new ServerboundMovePlayerPacket.PosRot(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot(), false, false));
+      this.connection.send(new ServerboundAcceptTeleportationPacket(packet.id(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot()));
       this.minecraft.level.getBlockStatePredictionHandler().onTeleport();
    }
 
@@ -807,7 +804,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       int x = packet.x();
       int z = packet.z();
-      this.updateLevelChunk(x, z, packet.chunkData());
+      this.level.getChunkSource().replaceWithPacketData(x, z, packet.chunkData());
       ClientboundLightUpdatePacketData lightData = packet.lightData();
       this.level.queueLightUpdate(() -> {
          this.applyLightData(x, z, lightData, false);
@@ -840,10 +837,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
       }
 
-   }
-
-   private void updateLevelChunk(final int x, final int z, final ClientboundLevelChunkPacketData chunkData) {
-      this.level.getChunkSource().replaceWithPacketData(x, z, chunkData.getReadBuffer(), chunkData.getHeightmaps(), chunkData.getBlockEntitiesTagsConsumer(x, z));
    }
 
    private void enableChunkLight(final LevelChunk chunk, final int x, final int z) {

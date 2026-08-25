@@ -185,18 +185,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    private CommandSourceStack createCommandSourceStack(final @Nullable Player player, final ServerLevel level) {
-      String textName;
-      Component displayName;
-      if (player == null) {
-         textName = "Lectern";
-         displayName = Component.literal("Lectern");
-      } else {
-         textName = player.getPlainTextName();
-         displayName = player.getDisplayName();
-      }
-
       Vec3 pos = Vec3.atCenterOf(this.worldPosition);
-      return new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, textName, displayName, level.getServer(), player);
+      return player != null ? new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, level.getServer(), player) : new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level, LevelBasedPermissionSet.GAMEMASTER, Component.literal("Lectern"), level.getServer());
    }
 
    protected void loadAdditional(final ValueInput input) {

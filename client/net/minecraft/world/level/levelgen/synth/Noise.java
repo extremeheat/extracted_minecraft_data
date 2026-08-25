@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.synth;
 
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 
 public interface Noise {
@@ -10,7 +11,7 @@ public interface Noise {
 
    float get(double x, double y, double z);
 
-   default void addToVolume(final float[] buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
+   default void addToVolume(final DensityBuffer buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
       int index = 0;
 
       for(int indexZ = 0; indexZ < volume.sizeZ(); ++indexZ) {
@@ -21,7 +22,7 @@ public interface Noise {
 
             for(int indexY = 0; indexY < volume.sizeY(); ++indexY) {
                double y = (double)volume.blockY(indexY) * yScale;
-               buffer[index] += amplitude * this.get(x, y, z);
+               buffer.addTo(index, amplitude * this.get(x, y, z));
                ++index;
             }
          }

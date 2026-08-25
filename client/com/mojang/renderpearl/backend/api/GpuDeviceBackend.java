@@ -12,11 +12,12 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface GpuDeviceBackend {
-   GpuSurfaceBackend createSurface(long windowHandle);
+   GpuSurfaceBackend createSurface(long windowHandle, BooleanSupplier isIconified);
 
    CommandEncoderBackend createCommandEncoder();
 
@@ -34,7 +35,7 @@ public interface GpuDeviceBackend {
 
    boolean isDebuggingEnabled();
 
-   @Nullable BackendRenderPipeline compilePipeline(BackendRenderPipeline.CreateInfo pipelineCreateInfo);
+   BackendRenderPipeline.Pending compilePipeline(BackendRenderPipeline.CreateInfo pipelineCreateInfo);
 
    void close();
 

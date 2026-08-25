@@ -24,6 +24,10 @@ public class ZeroBitStorage implements BitStorage {
       Validate.inclusiveBetween(0L, 0L, (long)value);
    }
 
+   public void fill(final int value) {
+      Validate.inclusiveBetween(0L, 0L, (long)value);
+   }
+
    public int get(final int index) {
       Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
       return 0;

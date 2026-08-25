@@ -14,10 +14,10 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -29,9 +29,9 @@ public class NetherFossilPieces {
       super();
    }
 
-   public static void addPieces(final StructureTemplateManager structureTemplateManager, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final BlockPos position) {
+   public static void addPieces(final StructureTemplateManager structureTemplateManager, final StructurePiecesBuilder builder, final RandomSource random, final BlockPos position) {
       Rotation nextRotation = Rotation.getRandom(random);
-      structurePieceAccessor.addPiece(new NetherFossilPiece(structureTemplateManager, (Identifier)Util.getRandom(FOSSILS, random), position, nextRotation));
+      builder.addPiece(new NetherFossilPiece(structureTemplateManager, (Identifier)Util.getRandom(FOSSILS, random), position, nextRotation));
    }
 
    public static class NetherFossilPiece extends TemplateStructurePiece {

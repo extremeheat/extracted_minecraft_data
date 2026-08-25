@@ -116,8 +116,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
    private static final int DEFAULT_RESTOCKS_TODAY = 0;
    private static final EntityDimensions BABY_DIMENSIONS;
-   private int updateMerchantTimer;
-   private boolean increaseProfessionLevelOnUpdate;
    private @Nullable Player lastTradedPlayer;
    private int foodLevel = 0;
    private final GossipContainer gossips = new GossipContainer();
@@ -182,18 +180,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       profiler.push("villagerBrain");
       this.getBrain().tick(level, this);
       profiler.pop();
-      if (this.updateMerchantTimer > 0) {
-         --this.updateMerchantTimer;
-         if (this.updateMerchantTimer <= 0) {
-            if (this.increaseProfessionLevelOnUpdate) {
-               this.increaseMerchantCareer(level);
-               this.increaseProfessionLevelOnUpdate = false;
-            }
-
-            this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0));
-         }
-      }
-
       if (this.lastTradedPlayer != null) {
          level.onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
          level.broadcastEntityEvent(this, (byte)14);
@@ -369,19 +355,16 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    private void updateSpecialPrices(final Player player) {
       this.resetSpecialPrices();
       int reputation = this.getPlayerReputation(player);
-      if (reputation != 0) {
-         for(MerchantOffer offer : this.getOffers()) {
+      MobEffectInstance heroOfTheVillage = player.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
+      double heroModifier = heroOfTheVillage == null ? 0.0 : (double)(0.3F + 0.0625F * (float)heroOfTheVillage.getAmplifier());
+
+      for(MerchantOffer offer : this.getOffers()) {
+         if (reputation != 0) {
             offer.addToSpecialPriceDiff(-Mth.floor((float)reputation * offer.getPriceMultiplier()));
          }
-      }
 
-      if (player.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)) {
-         MobEffectInstance effect = player.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
-         int amplifier = effect.getAmplifier();
-
-         for(MerchantOffer offer : this.getOffers()) {
-            double modifier = 0.3 + 0.0625 * (double)amplifier;
-            int costReduction = (int)Math.floor(modifier * (double)offer.getBaseCostA().getCount());
+         if (heroModifier > 0.0) {
+            int costReduction = (int)Math.floor(heroModifier * (double)offer.getBaseCostA().getCount());
             offer.addToSpecialPriceDiff(-Math.max(costReduction, 1));
          }
       }
@@ -493,8 +476,13 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       this.villagerXp += offer.getXp();
       this.lastTradedPlayer = this.getTradingPlayer();
       if (this.shouldIncreaseLevel()) {
-         this.updateMerchantTimer = 40;
-         this.increaseProfessionLevelOnUpdate = true;
+         Level var4 = this.level();
+         if (var4 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var4;
+            this.increaseMerchantCareer(serverLevel);
+            this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0));
+         }
+
          popXp += 5;
       }
 
@@ -731,7 +719,9 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
             this.increaseMerchantCareer(level);
          }
 
-         if (this.isTrading()) {
+         Player tradingPlayer = this.getTradingPlayer();
+         if (tradingPlayer != null) {
+            this.updateSpecialPrices(tradingPlayer);
             this.resendOffersToTradingPlayer();
          }
 

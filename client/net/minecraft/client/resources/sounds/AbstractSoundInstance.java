@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSoundInstance implements SoundInstance {
    protected @Nullable Sound sound;
+   protected @Nullable WeighedSoundEvents soundEvent;
    protected final SoundSource source;
    protected final Identifier identifier;
    protected float volume;
@@ -41,24 +42,28 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       return this.identifier;
    }
 
-   public @Nullable WeighedSoundEvents resolve(final SoundManager soundManager) {
+   public @Nullable WeighedSoundEvents getOrResolve(final SoundManager soundManager) {
       if (this.identifier.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
          return SoundManager.INTENTIONALLY_EMPTY_SOUND_EVENT;
       } else {
-         WeighedSoundEvents soundEvent = soundManager.getSoundEvent(this.identifier);
-         if (soundEvent == null) {
+         this.soundEvent = soundManager.getSoundEvent(this.identifier);
+         if (this.soundEvent == null) {
             this.sound = SoundManager.EMPTY_SOUND;
          } else {
-            this.sound = soundEvent.getSound(this.random);
+            this.sound = this.soundEvent.getSound(this.random);
          }
 
-         return soundEvent;
+         return this.soundEvent;
       }
    }
 
    public @Nullable Sound getSound() {
       return this.sound;
+   }
+
+   public @Nullable WeighedSoundEvents getSoundEvent() {
+      return this.soundEvent;
    }
 
    public SoundSource getSource() {

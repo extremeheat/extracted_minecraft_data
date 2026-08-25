@@ -5,20 +5,21 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
 
 public class EndMaterialRules {
-   public static final ResourceKey<SurfaceRules.RuleSource> END = createKey("end");
+   public static final ResourceKey<MaterialRule> END = createKey("end");
 
    public EndMaterialRules() {
       super();
    }
 
-   private static ResourceKey<SurfaceRules.RuleSource> createKey(final String name) {
+   private static ResourceKey<MaterialRule> createKey(final String name) {
       return ResourceKey.create(Registries.MATERIAL_RULE, Identifier.withDefaultNamespace(name));
    }
 
-   public static void bootstrap(final BootstrapContext<SurfaceRules.RuleSource> context) {
-      context.register(END, SurfaceRules.state(Blocks.END_STONE.defaultBlockState()));
+   public static void bootstrap(final BootstrapContext<MaterialRule> context) {
+      context.register(END, MaterialRules.state(Blocks.END_STONE.defaultBlockState()));
    }
 }

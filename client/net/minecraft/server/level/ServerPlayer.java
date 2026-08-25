@@ -168,7 +168,6 @@ import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.inventory.RemoteSlot;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
@@ -1779,7 +1778,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.permissions(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.permissions(), this.server, this);
    }
 
    public void sendSystemMessage(final Component message) {
@@ -2163,9 +2162,9 @@ public class ServerPlayer extends Player {
       return EnchantmentHelper.modifyDamage(this.level(), this.getWeaponItem(), entity, damageSource, dmg);
    }
 
-   public void onEquippedItemBroken(final Item brokenItem, final EquipmentSlot inSlot) {
+   public void onEquippedItemBroken(final ItemStack brokenItem, final EquipmentSlot inSlot) {
       super.onEquippedItemBroken(brokenItem, inSlot);
-      this.awardStat(Stats.ITEM_BROKEN.get(brokenItem));
+      this.awardStat(Stats.ITEM_BROKEN.get(brokenItem.getItem()));
    }
 
    public Input getLastClientInput() {

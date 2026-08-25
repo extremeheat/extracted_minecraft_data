@@ -19,6 +19,8 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.WorldOptionsScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Position;
@@ -379,6 +381,15 @@ public class IntegratedServer extends MinecraftServer {
 
    public boolean isPublished() {
       return this.multiplayerScope != MinecraftServer.MultiplayerScope.OFF;
+   }
+
+   public void setDefaultGameType(final GameType gameType) {
+      super.setDefaultGameType(gameType);
+      Screen var3 = this.minecraft.gui.screen();
+      if (var3 instanceof WorldOptionsScreen worldOptionsScreen) {
+         worldOptionsScreen.onDefaultGameModeChanged(gameType);
+      }
+
    }
 
    public int getPort() {

@@ -131,6 +131,7 @@ public enum ConversionType {
       to.setCustomNameVisible(from.isCustomNameVisible());
       to.setSharedFlagOnFire(from.isOnFire());
       to.setPermanentlyInvulnerable(from.isPermanentlyInvulnerable());
+      to.setInvulnerableTime(from.getInvulnerableTime());
       to.setNoGravity(from.isNoGravity());
       to.setPortalCooldown(from.getPortalCooldown());
       to.setSilent(from.isSilent());

@@ -118,6 +118,8 @@ public final class BlockTags {
    public static final TagKey<Block> CAN_GLIDE_THROUGH;
    public static final TagKey<Block> CAUSES_PERIODIC_GEYSER_ERUPTIONS;
    public static final TagKey<Block> CAUSES_CONTINUOUS_GEYSER_ERUPTIONS;
+   public static final TagKey<Block> NETHER_PORTAL_FRAME;
+   public static final TagKey<Block> CONDUIT_EFFECT_BLOCK;
    public static final TagKey<Block> INFINIBURN_OVERWORLD;
    public static final TagKey<Block> INFINIBURN_NETHER;
    public static final TagKey<Block> INFINIBURN_END;
@@ -410,6 +412,8 @@ public final class BlockTags {
       CAN_GLIDE_THROUGH = create("can_glide_through");
       CAUSES_PERIODIC_GEYSER_ERUPTIONS = create("causes_periodic_geyser_eruptions");
       CAUSES_CONTINUOUS_GEYSER_ERUPTIONS = create("causes_continuous_geyser_eruptions");
+      NETHER_PORTAL_FRAME = create("nether_portal_frame");
+      CONDUIT_EFFECT_BLOCK = create("conduit_effect_block");
       INFINIBURN_OVERWORLD = create("infiniburn_overworld");
       INFINIBURN_NETHER = create("infiniburn_nether");
       INFINIBURN_END = create("infiniburn_end");

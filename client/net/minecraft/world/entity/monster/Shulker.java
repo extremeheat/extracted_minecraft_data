@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -74,7 +75,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final int TELEPORT_STEPS = 6;
    private static final byte NO_COLOR = 16;
    private static final byte DEFAULT_COLOR = 16;
-   private static final int MAX_TELEPORT_DISTANCE = 8;
+   public static final int MAX_TELEPORT_DISTANCE = 8;
    private static final int OTHER_SHULKER_SCAN_RADIUS = 8;
    private static final int OTHER_SHULKER_LIMIT = 5;
    private static final float PEEK_PER_TICK = 0.05F;
@@ -359,18 +360,21 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    protected boolean teleportSomewhere() {
       if (!this.isNoAi() && this.isAlive()) {
-         BlockPos current = this.blockPosition();
+         BlockPos oldPos = this.blockPosition();
+         Level level = this.level();
 
          for(int attempt = 0; attempt < 5; ++attempt) {
-            BlockPos target = current.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
-            if (target.getY() > this.level().getMinY() && this.level().isEmptyBlock(target) && this.level().getWorldBorder().isWithinBounds(target) && this.level().noCollision(this, (new AABB(target)).deflate(1.0E-6))) {
+            BlockPos target = oldPos.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
+            if (target.getY() > level.getMinY() && level.isEmptyBlock(target) && level.getWorldBorder().isWithinBounds(target) && level.noCollision(this, (new AABB(target)).deflate(1.0E-6))) {
                Direction attachmentDirection = this.findAttachableSurface(target);
                if (attachmentDirection != null && !this.level().getBlockState(target.relative(attachmentDirection)).is(BlockTags.SHULKER_DOES_NOT_TELEPORT_TO)) {
                   this.unRide();
                   this.setAttachFace(attachmentDirection);
                   this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
                   this.setPos((double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5);
-                  this.level().gameEvent(GameEvent.TELEPORT, current, GameEvent.Context.of((Entity)this));
+                  level.gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)this));
+                  int packedDiff = BlockUtil.packDifferenceInPosition(oldPos, this.blockPosition(), 8, 8, 8);
+                  level.levelEvent(2016, oldPos, packedDiff);
                   this.entityData.set(DATA_PEEK_ID, (byte)0);
                   this.setTarget((LivingEntity)null);
                   return true;

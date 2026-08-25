@@ -40,6 +40,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.jspecify.annotations.Nullable;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
@@ -106,6 +108,14 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return getResource(context, name);
    }
 
+   public static NumberProviderArgument numberProvider(final CommandBuildContext context) {
+      return new NumberProviderArgument(context);
+   }
+
+   public static Holder<NumberProvider> getNumberProvider(final CommandContext<CommandSourceStack> context, final String name) {
+      return getResource(context, name);
+   }
+
    public static FeatureArgument feature(final CommandBuildContext context) {
       return new FeatureArgument(context);
    }
@@ -162,6 +172,12 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    public static class LootPredicateArgument extends ResourceOrIdArgument<LootItemCondition> {
       protected LootPredicateArgument(final CommandBuildContext context) {
          super(context, Registries.PREDICATE, LootItemCondition.DIRECT_CODEC);
+      }
+   }
+
+   public static class NumberProviderArgument extends ResourceOrIdArgument<NumberProvider> {
+      protected NumberProviderArgument(final CommandBuildContext context) {
+         super(context, Registries.NUMBER_PROVIDER, NumberProviders.DIRECT_CODEC);
       }
    }
 

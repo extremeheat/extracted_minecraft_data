@@ -14,7 +14,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NetherPortalBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -28,7 +27,7 @@ public class PortalShape {
    public static final int MAX_WIDTH = 21;
    private static final int MIN_HEIGHT = 3;
    public static final int MAX_HEIGHT = 21;
-   private static final BlockBehaviour.StatePredicate FRAME = (state, level, pos) -> state.is(Blocks.OBSIDIAN);
+   public static final Predicate<BlockState> FRAME = (state) -> state.is(BlockTags.NETHER_PORTAL_FRAME);
    private static final float SAFE_TRAVEL_MAX_ENTITY_XY = 4.0F;
    private static final double SAFE_TRAVEL_MAX_VERTICAL_DELTA = 1.0;
    private final Direction.Axis axis;
@@ -100,14 +99,14 @@ public class PortalShape {
          blockPos.set(pos).move(direction, width);
          BlockState blockState = level.getBlockState(blockPos);
          if (!isEmpty(blockState)) {
-            if (FRAME.test(blockState, level, blockPos)) {
+            if (FRAME.test(blockState)) {
                return width;
             }
             break;
          }
 
          BlockState belowState = level.getBlockState(blockPos.move(Direction.DOWN));
-         if (!FRAME.test(belowState, level, blockPos)) {
+         if (!FRAME.test(belowState)) {
             break;
          }
       }
@@ -124,7 +123,7 @@ public class PortalShape {
    private static boolean hasTopFrame(final BlockGetter level, final BlockPos bottomLeft, final Direction rightDir, final BlockPos.MutableBlockPos pos, final int width, final int height) {
       for(int i = 0; i < width; ++i) {
          BlockPos.MutableBlockPos framePos = pos.set(bottomLeft).move(Direction.UP, height).move(rightDir, i);
-         if (!FRAME.test(level.getBlockState(framePos), level, framePos)) {
+         if (!FRAME.test(level.getBlockState(framePos))) {
             return false;
          }
       }
@@ -135,12 +134,12 @@ public class PortalShape {
    private static int getDistanceUntilTop(final BlockGetter level, final BlockPos bottomLeft, final Direction rightDir, final BlockPos.MutableBlockPos pos, final int width, final MutableInt portalBlockCount) {
       for(int height = 0; height < 21; ++height) {
          pos.set(bottomLeft).move(Direction.UP, height).move(rightDir, -1);
-         if (!FRAME.test(level.getBlockState(pos), level, pos)) {
+         if (!FRAME.test(level.getBlockState(pos))) {
             return height;
          }
 
          pos.set(bottomLeft).move(Direction.UP, height).move(rightDir, width);
-         if (!FRAME.test(level.getBlockState(pos), level, pos)) {
+         if (!FRAME.test(level.getBlockState(pos))) {
             return height;
          }
 

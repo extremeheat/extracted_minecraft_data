@@ -167,7 +167,7 @@ public final class BundleContents implements ContainerComponent<BundleContents>,
       BEEHIVE_WEIGHT = DataResult.success(Fraction.ONE);
    }
 
-   public static class Mutable extends SimpleMutableContainer<BundleContents> {
+   public static class Mutable extends GrowableMutableContainer<BundleContents> {
       private Fraction weight;
       private int selectedItem;
       private boolean needsFlattening;
@@ -298,20 +298,6 @@ public final class BundleContents implements ContainerComponent<BundleContents>,
          super.modifySlots(consumer, slotSelector);
       }
 
-      protected int insertNewSlots(final ItemProvider newItems, final SlotSelector slotSelector) {
-         int successCount;
-         for(successCount = 0; newItems.hasNext() && this.canInsertNewSlots() && slotSelector.trySelectSlot(ItemStack.EMPTY); ++successCount) {
-            boolean success = newItems.findNextNonEmpty() && this.addSlotWithItem(newItems.peek());
-            if (!success) {
-               break;
-            }
-
-            newItems.next();
-         }
-
-         return successCount;
-      }
-
       protected boolean setItem(final int slot, final ItemStack itemStack) {
          ItemStack currentItem = (ItemStack)this.items.get(slot);
          Fraction adjustedWeight = currentItem.isEmpty() ? this.weight : this.weight.subtract(getStackedWeight(currentItem));
@@ -325,12 +311,12 @@ public final class BundleContents implements ContainerComponent<BundleContents>,
          }
       }
 
-      protected boolean addSlotWithItem(final ItemStack itemStack) {
-         if (itemStack.isEmpty()) {
+      protected boolean addSlotWithItem(final ItemProvider newItems) {
+         if (!newItems.findNextNonEmpty()) {
             return false;
          } else {
-            Fraction newWeight = getWeightWithAddedItems(this.weight, itemStack);
-            if (newWeight != null && super.addSlotWithItem(itemStack)) {
+            Fraction newWeight = getWeightWithAddedItems(this.weight, newItems.peek());
+            if (newWeight != null && super.addSlotWithItem(newItems)) {
                this.weight = newWeight;
                this.needsFlattening = true;
                return true;

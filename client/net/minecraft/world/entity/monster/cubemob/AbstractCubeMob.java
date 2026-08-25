@@ -426,7 +426,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
       }
 
       public boolean canUse() {
-         return this.cubeMob.getTarget() == null && (this.cubeMob.onGround() || this.cubeMob.isInWater() || this.cubeMob.isInLava() || this.cubeMob.hasEffect(MobEffects.LEVITATION)) && this.cubeMob.getMoveControl() instanceof CubeMobMoveControl;
+         return this.cubeMob.getTarget() == null && (this.cubeMob.onGround() || this.cubeMob.isInLiquid() || this.cubeMob.hasEffect(MobEffects.LEVITATION)) && this.cubeMob.getMoveControl() instanceof CubeMobMoveControl;
       }
 
       public void tick() {
@@ -454,7 +454,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
       }
 
       public boolean canUse() {
-         return (this.cubeMob.isInWater() || this.cubeMob.isInLava()) && this.cubeMob.getMoveControl() instanceof CubeMobMoveControl;
+         return this.cubeMob.isInLiquid() && this.cubeMob.getMoveControl() instanceof CubeMobMoveControl;
       }
 
       public boolean requiresUpdateEveryTick() {

@@ -10,9 +10,11 @@ import org.jspecify.annotations.Nullable;
 public interface SoundInstance {
    Identifier getIdentifier();
 
-   @Nullable WeighedSoundEvents resolve(SoundManager soundManager);
+   @Nullable WeighedSoundEvents getOrResolve(SoundManager soundManager);
 
    @Nullable Sound getSound();
+
+   @Nullable WeighedSoundEvents getSoundEvent();
 
    SoundSource getSource();
 

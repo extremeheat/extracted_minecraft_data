@@ -8,17 +8,20 @@ import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import org.lwjgl.sdl.SDLVideo;
 
 public class GlSurface implements GpuSurfaceBackend {
    private static final Set<GpuSurface.PresentMode> SUPPORTED_PRESENT_MODES;
    private final long windowHandle;
+   private final BooleanSupplier isIconified;
    private int swapchainWidth;
    private int swapchainHeight;
 
-   public GlSurface(final long windowHandle) {
+   public GlSurface(final long windowHandle, final BooleanSupplier isIconified) {
       super();
       this.windowHandle = windowHandle;
+      this.isIconified = isIconified;
    }
 
    public void configure(final GpuSurface.Configuration config) throws SurfaceException {
@@ -31,7 +34,10 @@ public class GlSurface implements GpuSurfaceBackend {
       return false;
    }
 
-   public void acquireNextTexture() {
+   public void acquireNextTexture() throws SurfaceException {
+      if (this.isIconified.getAsBoolean()) {
+         throw new SurfaceException("Cannot acquire minimized window");
+      }
    }
 
    public void blitFromTexture(final CommandEncoderBackend commandEncoder, final GpuTextureView textureView) {

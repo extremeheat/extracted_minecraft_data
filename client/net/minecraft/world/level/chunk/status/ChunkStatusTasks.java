@@ -86,10 +86,11 @@ public class ChunkStatusTasks {
       return chunkBiomes;
    }
 
-   public static CompletableFuture<ChunkAccess> generateNoise(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
+   public static CompletableFuture<ChunkAccess> buildTerrain(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
       WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
-      return context.generator().fillFromNoise(Blender.of(region), level.getChunkSource().randomState(), level.structureManager().forWorldGenRegion(region), chunk).thenApply((generatedChunk) -> {
+      Set<Holder<Biome>> possibleBiomes = collectPossibleBiomes(region, 1);
+      return context.generator().buildTerrain(chunk, Blender.of(region), level.getChunkSource().randomState(), level.structureManager().forWorldGenRegion(region), region.getBiomeManager(), region, possibleBiomes).thenApply((generatedChunk) -> {
          if (generatedChunk instanceof ProtoChunk protoChunk) {
             BelowZeroRetrogen belowZeroRetrogen = protoChunk.getBelowZeroRetrogen();
             if (belowZeroRetrogen != null) {
@@ -100,24 +101,9 @@ public class ChunkStatusTasks {
             }
          }
 
+         Heightmap.primeHeightmaps(generatedChunk, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
          return generatedChunk;
       });
-   }
-
-   public static CompletableFuture<ChunkAccess> generateSurface(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
-      ServerLevel level = context.level();
-      WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
-      Set<Holder<Biome>> possibleBiomes = collectPossibleBiomes(region, 1);
-      context.generator().buildSurface(level.structureManager().forWorldGenRegion(region), level.getChunkSource().randomState(), chunk, region.getBiomeManager(), Blender.of(region), possibleBiomes);
-      return CompletableFuture.completedFuture(chunk);
-   }
-
-   public static CompletableFuture<ChunkAccess> generateCarvers(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
-      ServerLevel level = context.level();
-      WorldGenRegion region = new WorldGenRegion(level, chunks, step, chunk);
-      context.generator().applyCarvers(region, level.getChunkSource().randomState(), level.getBiomeManager(), level.structureManager().forWorldGenRegion(region), chunk, Blender.of(region));
-      Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
-      return CompletableFuture.completedFuture(chunk);
    }
 
    public static CompletableFuture<ChunkAccess> generateFeatures(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {

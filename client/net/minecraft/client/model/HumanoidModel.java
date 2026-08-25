@@ -380,6 +380,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
                attackArm.xRot -= aa * 1.2F + bb;
                attackArm.yRot += this.body.yRot * 2.0F;
                attackArm.zRot += Mth.sin((double)(swingAnimation * 3.1415927F)) * -0.4F;
+            case NONE:
+            default:
                break;
             case STAB:
                SpearAnimations.thirdPersonAttackHand(this, swingAnimation, swingArm);

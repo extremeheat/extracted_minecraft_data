@@ -68,7 +68,7 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.AttackRange;
-import net.minecraft.world.item.component.BlockTransformerMappings;
+import net.minecraft.world.item.component.BlockTransformers;
 import net.minecraft.world.item.component.BrewingFuel;
 import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.item.component.Consumable;
@@ -203,8 +203,8 @@ public class Item implements ItemLike, FeatureElement {
 
    public InteractionResult useOn(final UseOnContext context) {
       ItemStack stack = context.getItemInHand();
-      BlockTransformer blockTransformer = (BlockTransformer)stack.get(DataComponents.BLOCK_TRANSFORMER);
-      return (InteractionResult)(blockTransformer != null ? blockTransformer.transformBlock(context) : InteractionResult.PASS);
+      Holder<BlockTransformer> blockTransformer = (Holder)stack.get(DataComponents.BLOCK_TRANSFORMER);
+      return (InteractionResult)(blockTransformer != null ? ((BlockTransformer)blockTransformer.value()).transformBlock(context) : InteractionResult.PASS);
    }
 
    public float getDestroySpeed(final ItemStack itemStack, final BlockState state) {
@@ -505,15 +505,15 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties axe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_AXE, attackDamageBaseline, attackSpeedBaseline, 5.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (var0) -> BlockTransformerMappings.AXE);
+         return this.tool(material, BlockTags.MINEABLE_WITH_AXE, attackDamageBaseline, attackSpeedBaseline, 5.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.AXE));
       }
 
       public Properties hoe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_HOE, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (var0) -> BlockTransformerMappings.HOE);
+         return this.tool(material, BlockTags.MINEABLE_WITH_HOE, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.HOE));
       }
 
       public Properties shovel(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_SHOVEL, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (var0) -> BlockTransformerMappings.SHOVEL);
+         return this.tool(material, BlockTags.MINEABLE_WITH_SHOVEL, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.SHOVEL));
       }
 
       public Properties sword(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {

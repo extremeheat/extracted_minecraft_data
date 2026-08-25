@@ -18,6 +18,7 @@ import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.device.DeviceFeatures;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.DeviceLimits;
+import com.mojang.renderpearl.api.device.HintsAndWorkarounds;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.AddressMode;
@@ -160,7 +161,8 @@ public class LevelRenderer implements AutoCloseable {
       DeviceInfo deviceInfo = RenderSystem.getDevice().getDeviceInfo();
       DeviceFeatures deviceFeatures = deviceInfo.features();
       DeviceLimits deviceLimits = deviceInfo.limits();
-      this.multiDrawIndirectAvailable = deviceLimits.maxDrawIndirectDrawCount() > 0 && deviceFeatures.nonZeroFirstInstance();
+      HintsAndWorkarounds hintsAndWorkarounds = deviceInfo.hintsAndWorkarounds();
+      this.multiDrawIndirectAvailable = deviceLimits.maxDrawIndirectDrawCount() > 0 && deviceFeatures.nonZeroFirstInstance() && !hintsAndWorkarounds.multiDrawIndirectHasKnownIssues();
       this.usingMultiDrawIndirectForTerrain = this.multiDrawIndirectAvailable;
    }
 
@@ -333,26 +335,7 @@ public class LevelRenderer implements AutoCloseable {
          if (state.skybox != DimensionType.Skybox.NONE) {
             FramePass pass = frame.addPass("sky");
             this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
-            pass.executes(() -> {
-               RenderSystem.setShaderFog(skyFog);
-               if (state.skybox == DimensionType.Skybox.END) {
-                  this.skyRenderer.renderEndSky();
-                  if (state.endFlashIntensity > 1.0E-5F) {
-                     PoseStack poseStack = new PoseStack();
-                     this.skyRenderer.renderEndFlash(poseStack, state.endFlashIntensity, state.endFlashXAngle, state.endFlashYAngle);
-                  }
-
-               } else {
-                  PoseStack poseStack = new PoseStack();
-                  this.skyRenderer.renderSkyDisc(state.skyColor);
-                  this.skyRenderer.renderSunriseAndSunset(poseStack, state.sunAngle, state.sunriseAndSunsetColor);
-                  this.skyRenderer.renderSunMoonAndStars(poseStack, state.sunAngle, state.moonAngle, state.starAngle, state.moonPhase, state.rainBrightness, state.starBrightness);
-                  if (state.shouldRenderDarkDisc) {
-                     this.skyRenderer.renderDarkDisc();
-                  }
-
-               }
-            });
+            pass.executes(() -> this.skyRenderer.render(skyFog, state));
          }
       }
    }

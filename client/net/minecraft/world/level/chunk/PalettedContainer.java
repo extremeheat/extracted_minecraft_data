@@ -307,12 +307,25 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
       public void copyFrom(final Palette<T> oldPalette, final BitStorage oldStorage) {
          PaletteResize<T> dummyResizer = PaletteResize.<T>noResizeExpected();
+         if (oldPalette.getSize() == 1) {
+            T value = oldPalette.valueFor(0);
+            this.storage.fill(this.palette.idFor(value, dummyResizer));
+         } else {
+            int lastOldId = -1;
+            int newId = -1;
 
-         for(int i = 0; i < oldStorage.getSize(); ++i) {
-            T value = oldPalette.valueFor(oldStorage.get(i));
-            this.storage.set(i, this.palette.idFor(value, dummyResizer));
+            for(int i = 0; i < oldStorage.getSize(); ++i) {
+               int oldId = oldStorage.get(i);
+               if (oldId != lastOldId) {
+                  T value = oldPalette.valueFor(oldId);
+                  newId = this.palette.idFor(value, dummyResizer);
+                  lastOldId = oldId;
+               }
+
+               this.storage.set(i, newId);
+            }
+
          }
-
       }
 
       public int getSerializedSize(final IdMap<T> globalMap) {

@@ -631,11 +631,11 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
       this.generateItemWithTintedOverlay(Items.FIREWORK_STAR, new Firework());
       this.generateFlatItem(Items.FILLED_MAP, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.OCEAN_EXPLORER_MAP, Identifier.withDefaultNamespace("item/ocean_monument_map"), ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.WOODLAND_EXPLORER_MAP, Identifier.withDefaultNamespace("item/woodland_mansion_map"), ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.TRIAL_EXPLORER_MAP, Identifier.withDefaultNamespace("item/trial_chamber_map"), ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.JUNGLE_EXPLORER_MAP, Identifier.withDefaultNamespace("item/jungle_temple_map"), ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.SWAMP_EXPLORER_MAP, Identifier.withDefaultNamespace("item/swamp_hut_map"), ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OCEAN_MONUMENT_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WOODLAND_MANSION_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BURIED_TRIAL_CHAMBERS_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.JUNGLE_PYRAMID_MAP, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SWAMP_HUT_MAP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DESERT_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PLAINS_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SAVANNA_VILLAGE_MAP, ModelTemplates.FLAT_ITEM);

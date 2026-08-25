@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -97,8 +98,12 @@ public class ExtraCodecs {
    private static final String HEX_COLOR_PREFIX = "#";
    public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
+   public static final Codec<Vector3fc> RGB_COLOR_VEC3_CODEC;
+   public static final Codec<Vector4fc> ARGB_COLOR_VEC4_CODEC;
    public static final Codec<Integer> STRING_RGB_COLOR;
    public static final Codec<Integer> STRING_ARGB_COLOR;
+   public static final Codec<Vector3fc> STRING_RGB_VEC3_COLOR;
+   public static final Codec<Vector4fc> STRING_ARGB_VEC4_COLOR;
    public static final Codec<Integer> UNSIGNED_BYTE;
    public static final Codec<Integer> NON_NEGATIVE_INT;
    public static final Codec<Integer> POSITIVE_INT;
@@ -487,12 +492,22 @@ public class ExtraCodecs {
       return Codec.STRING.xmap(pathFactory, (path) -> FilenameUtils.separatorsToUnix(path.toString()));
    }
 
-   public static Codec<Path> relaiveNormalizedSubPathCodec(final Function<String, Path> pathFactory) {
+   public static Codec<Path> relativeNormalizedSubPathCodec(final Function<String, Path> pathFactory) {
       return pathCodec(pathFactory).xmap(Path::normalize, Path::normalize).validate((path) -> {
          if (path.isAbsolute()) {
             return DataResult.error(() -> "Illegal absolute path: " + String.valueOf(path));
          } else {
-            return !path.startsWith("..") && !path.startsWith(".") && !FileUtil.isEmptyPath(path) ? DataResult.success(path) : DataResult.error(() -> "Illegal path traversal: " + String.valueOf(path));
+            for(Path pathElement : path) {
+               if (pathElement.startsWith("..") || pathElement.startsWith(".")) {
+                  return DataResult.error(() -> "Illegal path traversal: " + String.valueOf(path));
+               }
+            }
+
+            if (FileUtil.isEmptyPath(path)) {
+               return DataResult.error(() -> "Path is empty: " + String.valueOf(path));
+            } else {
+               return DataResult.success(path);
+            }
          }
       });
    }
@@ -501,11 +516,11 @@ public class ExtraCodecs {
       FileSystem var10000 = baseFolder.getFileSystem();
       Objects.requireNonNull(var10000);
       FileSystem var1 = var10000;
-      Codec var2 = relaiveNormalizedSubPathCodec((x$0) -> var1.getPath(x$0));
+      Codec var2 = relativeNormalizedSubPathCodec((x$0) -> var1.getPath(x$0));
       Objects.requireNonNull(baseFolder);
       Function var10001 = baseFolder::resolve;
       Objects.requireNonNull(baseFolder);
-      return var2.xmap(var10001, baseFolder::relativize);
+      return var2.xmap(var10001, baseFolder::relativize).validate((path) -> !path.startsWith(baseFolder) ? DataResult.error(() -> String.format(Locale.ROOT, "Path %s does not start with base folder %s", path, baseFolder)) : DataResult.success(path));
    }
 
    public static <A> MapCodec<A> optionalAlwaysPresentFieldOf(final Codec<A> elementCodec, final String name, final A defaultValue, final boolean lenient) {
@@ -546,8 +561,12 @@ public class ExtraCodecs {
       });
       RGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR3F, (v) -> ARGB.colorFromFloat(1.0F, v.x(), v.y(), v.z()));
       ARGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR4F, (v) -> ARGB.colorFromFloat(v.w(), v.x(), v.y(), v.z()));
+      RGB_COLOR_VEC3_CODEC = Codec.withAlternative(VECTOR3F, Codec.INT, ARGB::vector3fFromRGB24);
+      ARGB_COLOR_VEC4_CODEC = Codec.withAlternative(VECTOR4F, Codec.INT, ARGB::vector4fFromARGB32);
       STRING_RGB_COLOR = Codec.withAlternative(hexColor(6).xmap(ARGB::opaque, ARGB::transparent), RGB_COLOR_CODEC);
       STRING_ARGB_COLOR = Codec.withAlternative(hexColor(8), ARGB_COLOR_CODEC);
+      STRING_RGB_VEC3_COLOR = Codec.withAlternative(hexColor(6).xmap(ARGB::opaque, ARGB::transparent).xmap(ARGB::vector3fFromRGB24, ARGB::colorFromVector3f), RGB_COLOR_VEC3_CODEC);
+      STRING_ARGB_VEC4_COLOR = Codec.withAlternative(hexColor(8).xmap(ARGB::vector4fFromARGB32, ARGB::colorFromVector4f), ARGB_COLOR_VEC4_CODEC);
       UNSIGNED_BYTE = Codec.BYTE.flatComapMap(UnsignedBytes::toInt, (integer) -> integer > 255 ? DataResult.error(() -> "Unsigned byte was too large: " + integer + " > 255") : DataResult.success(integer.byteValue()));
       NON_NEGATIVE_INT = intRangeWithMessage(0, 2147483647, (n) -> "Value must be non-negative: " + n);
       POSITIVE_INT = intRangeWithMessage(1, 2147483647, (n) -> "Value must be positive: " + n);

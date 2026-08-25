@@ -29,7 +29,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
@@ -1308,7 +1307,7 @@ public class Fox extends Animal {
       }
 
       public boolean canUse() {
-         return Fox.this.isInWater() && Fox.this.getFluidHeight(FluidTags.WATER) > 0.25 || Fox.this.isInLava();
+         return Fox.this.isInFluidDeeperThan(0.25, this.fluid) || Fox.this.isInLava();
       }
    }
 

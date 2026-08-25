@@ -131,7 +131,7 @@ public class ChunkGeneratorStructureState {
                int var10001 = SectionPos.sectionToBlockCoord(initialX, 8);
                int var10003 = SectionPos.sectionToBlockCoord(initialZ, 8);
                Objects.requireNonNull(preferredBiomes);
-               Pair<BlockPos, Holder<Biome>> closestBiome = var10000.findBiomeHorizontal(var10001, 0, var10003, 112, preferredBiomes::contains, biomeSearchGenerator, this.randomState.sampler());
+               Pair<BlockPos, Holder<Biome>> closestBiome = var10000.findBiomeHorizontal(var10001, 0, var10003, 112, preferredBiomes::contains, biomeSearchGenerator, this.randomState);
                if (closestBiome != null) {
                   BlockPos position = (BlockPos)closestBiome.getFirst();
                   return new ChunkPos(SectionPos.blockToSectionCoord(position.getX()), SectionPos.blockToSectionCoord(position.getZ()));

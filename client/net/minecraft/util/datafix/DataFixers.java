@@ -194,6 +194,7 @@ import net.minecraft.util.datafix.fixes.MapBannerBlockPosFormatFix;
 import net.minecraft.util.datafix.fixes.MapColorComponentRemovalFix;
 import net.minecraft.util.datafix.fixes.MapIdFix;
 import net.minecraft.util.datafix.fixes.MemoryExpiryDataFix;
+import net.minecraft.util.datafix.fixes.MergeTerrainChunkStatusFix;
 import net.minecraft.util.datafix.fixes.MissingDimensionFix;
 import net.minecraft.util.datafix.fixes.MobEffectIdFix;
 import net.minecraft.util.datafix.fixes.MobSpawnerEntityIdentifiersFix;
@@ -240,6 +241,7 @@ import net.minecraft.util.datafix.fixes.RedstoneWireConnectionsFix;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.fixes.RemapChunkStatusFix;
 import net.minecraft.util.datafix.fixes.RemoveBlockEntityTagFix;
+import net.minecraft.util.datafix.fixes.RemoveBlockTransformerComponentFix;
 import net.minecraft.util.datafix.fixes.RemoveEmptyItemInBrushableBlockFix;
 import net.minecraft.util.datafix.fixes.RemoveGolemGossipFix;
 import net.minecraft.util.datafix.fixes.RenameEnchantmentsFix;
@@ -913,9 +915,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var318 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var318);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var318::contains));
+      Set var321 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var321);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var321::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1235,6 +1237,12 @@ public class DataFixers {
       fixerUpper.addFixer(new MapColorComponentRemovalFix(v5008));
       Schema v5009 = fixerUpper.addSchema(5009, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataNoValueHeightFix(v5009));
+      Schema v5012 = fixerUpper.addSchema(5012, SAME_NAMESPACED);
+      fixerUpper.addFixer(ItemRenameFix.create(v5012, "Rename explorer map items", createRenamer(ImmutableMap.of("minecraft:ocean_explorer_map", "minecraft:ocean_monument_map", "minecraft:swamp_explorer_map", "minecraft:swamp_hut_map", "minecraft:trial_explorer_map", "minecraft:buried_trial_chambers_map", "minecraft:woodland_explorer_map", "minecraft:woodland_mansion_map", "minecraft:jungle_explorer_map", "minecraft:jungle_pyramid_map"))));
+      Schema v5013 = fixerUpper.addSchema(5013, SAME_NAMESPACED);
+      fixerUpper.addFixer(new MergeTerrainChunkStatusFix(v5013));
+      Schema v5014 = fixerUpper.addSchema(5014, SAME_NAMESPACED);
+      fixerUpper.addFixer(new RemoveBlockTransformerComponentFix(v5014));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

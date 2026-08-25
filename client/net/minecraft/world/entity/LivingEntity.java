@@ -2351,7 +2351,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected boolean shouldTravelInFluid(final FluidState fluidState) {
-      return (this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(fluidState);
+      return this.isInLiquid() && this.isAffectedByFluids() && !this.canStandOnFluid(fluidState);
    }
 
    protected void travelFlying(final Vec3 input, final float speed) {
@@ -2415,11 +2415,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       double baseGravity = this.getEffectiveGravity();
       if (this.isInWater()) {
          this.travelInWater(input, baseGravity, isFalling, oldY);
-         this.floatInWaterWhileRidden();
       } else {
          this.travelInLava(input, baseGravity, isFalling, oldY);
       }
 
+      this.floatInLiquidWhileRidden(FluidTags.ENTITY_FLOATABLE);
    }
 
    protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
@@ -2481,12 +2481,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   private void floatInWaterWhileRidden() {
-      boolean canEntityFloatInWater = this.is(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN);
-      if (canEntityFloatInWater && this.isVehicle() && this.getFluidHeight(FluidTags.WATER) > this.getFluidJumpThreshold()) {
+   private void floatInLiquidWhileRidden(final TagKey<Fluid> fluidTag) {
+      if (this.isVehicle() && this.is(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN) && this.isInFluidDeeperThan(this.getFluidJumpThreshold(), fluidTag)) {
          this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.03999999910593033, 0.0));
       }
 
+   }
+
+   public boolean isInFluidDeeperThan(final double depth, final TagKey<Fluid> fluidTag) {
+      return this.getFluidHeight(fluidTag) > depth;
    }
 
    private void travelFallFlying(final Vec3 input) {
@@ -3291,6 +3294,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public boolean isPushable() {
+      if (!this.isAlwaysTicking()) {
+         Level var2 = this.level();
+         if (var2 instanceof ServerLevel) {
+            ServerLevel level = (ServerLevel)var2;
+            if (!level.isPositionEntityTicking(this.blockPosition())) {
+               return false;
+            }
+         }
+      }
+
       return this.isAlive() && !this.isSpectator() && !this.onClimbable();
    }
 
@@ -3823,9 +3836,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return var10000;
    }
 
-   public void onEquippedItemBroken(final Item brokenItem, final EquipmentSlot inSlot) {
+   public void onEquippedItemBroken(final ItemStack brokenItem, final EquipmentSlot inSlot) {
       this.level().broadcastEntityEvent(this, entityEventForEquipmentBreak(inSlot));
-      this.stopLocationBasedEffects(this.getItemBySlot(inSlot), inSlot, this.attributes);
+      this.stopLocationBasedEffects(brokenItem, inSlot, this.attributes);
    }
 
    private void stopLocationBasedEffects(final ItemStack previous, final EquipmentSlot inSlot, final AttributeMap attributes) {
@@ -4076,7 +4089,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       public void tick() {
          this.oldAnimation = this.animation;
          if (this.currentSwing != null) {
-            this.animation = Math.min((float)this.ticks / (float)this.currentSwing.durationTicks, 1.0F);
+            if (this.currentSwing.durationTicks > 0) {
+               this.animation = Math.min((float)this.ticks / (float)this.currentSwing.durationTicks, 1.0F);
+            }
+
             if (this.ticks++ > this.currentSwing.durationTicks) {
                this.currentSwing = null;
                this.animation = 0.0F;

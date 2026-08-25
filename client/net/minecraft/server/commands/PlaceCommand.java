@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -52,7 +53,7 @@ public class PlaceCommand {
    private static final DynamicCommandExceptionType ERROR_TEMPLATE_INVALID = new DynamicCommandExceptionType((value) -> Component.translatableEscape("commands.place.template.invalid", value));
    private static final SimpleCommandExceptionType ERROR_TEMPLATE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.place.template.failed"));
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_TEMPLATES = (context, builder) -> {
-      StructureTemplateManager structureManager = ((CommandSourceStack)context.getSource()).getLevel().getStructureManager();
+      StructureTemplateManager structureManager = ((CommandSourceStack)context.getSource()).getLevel().getStructureTemplateManager();
       return SharedSuggestionProvider.suggestResource(structureManager.listTemplates(), builder);
    };
 
@@ -101,7 +102,7 @@ public class PlaceCommand {
       Structure structure = structureHolder.value();
       ChunkGenerator chunkGenerator = level.getChunkSource().getGenerator();
       RandomState randomState = level.getChunkSource().randomState();
-      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, level.uncachedBiomeResolver(), randomState, level.getStructureManager(), level.getSeed(), ChunkPos.containing(pos), 0, level, (b) -> true);
+      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, chunkGenerator.getBiomeSource(), randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED), randomState, level.getStructureTemplateManager(), level.getSeed(), ChunkPos.containing(pos), 0, level, (b) -> true);
       if (!start.isValid()) {
          throw ERROR_STRUCTURE_FAILED.create();
       } else {
@@ -118,7 +119,7 @@ public class PlaceCommand {
 
    public static int placeTemplate(final CommandSourceStack source, final Identifier template, final BlockPos pos, final Rotation rotation, final Mirror mirror, final float integrity, final int seed, final boolean strict) throws CommandSyntaxException {
       ServerLevel level = source.getLevel();
-      StructureTemplateManager manager = level.getStructureManager();
+      StructureTemplateManager manager = level.getStructureTemplateManager();
 
       Optional<StructureTemplate> maybeStructureTemplate;
       try {

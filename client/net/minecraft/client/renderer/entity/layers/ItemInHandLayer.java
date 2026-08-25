@@ -14,7 +14,6 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
-import org.joml.Quaternionfc;
 
 public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityModel<S> & ArmedModel<S>> extends RenderLayer<S, M> {
    public ItemInHandLayer(final RenderLayerParent<S, M> renderer) {
@@ -30,8 +29,8 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
       if (!item.isEmpty()) {
          poseStack.pushPose();
          ((ArmedModel)this.getParentModel()).translateToHand(state, arm, poseStack);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+         poseStack.rotateDegrees(Axis.XP, -90.0F);
+         poseStack.rotateDegrees(Axis.YP, 180.0F);
          boolean isLeftHand = arm == HumanoidArm.LEFT;
          float offsetX = this.useBabyOffset(state) ? 0.0F : 1.0F;
          float offsetY = this.useBabyOffset(state) ? 1.0F : 2.0F;

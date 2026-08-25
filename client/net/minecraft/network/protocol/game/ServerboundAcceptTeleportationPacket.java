@@ -1,26 +1,16 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public class ServerboundAcceptTeleportationPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundAcceptTeleportationPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundAcceptTeleportationPacket>codec(ServerboundAcceptTeleportationPacket::write, ServerboundAcceptTeleportationPacket::new);
-   private final int id;
+public record ServerboundAcceptTeleportationPacket(int id, double x, double y, double z, float yRot, float xRot) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundAcceptTeleportationPacket> STREAM_CODEC;
 
-   public ServerboundAcceptTeleportationPacket(final int id) {
+   public ServerboundAcceptTeleportationPacket {
       super();
-      this.id = id;
-   }
-
-   private ServerboundAcceptTeleportationPacket(final FriendlyByteBuf input) {
-      super();
-      this.id = input.readVarInt();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeVarInt(this.id);
    }
 
    public PacketType<ServerboundAcceptTeleportationPacket> type() {
@@ -31,7 +21,7 @@ public class ServerboundAcceptTeleportationPacket implements Packet<ServerGamePa
       listener.handleAcceptTeleportPacket(this);
    }
 
-   public int getId() {
-      return this.id;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundAcceptTeleportationPacket::id, ByteBufCodecs.DOUBLE, ServerboundAcceptTeleportationPacket::x, ByteBufCodecs.DOUBLE, ServerboundAcceptTeleportationPacket::y, ByteBufCodecs.DOUBLE, ServerboundAcceptTeleportationPacket::z, ByteBufCodecs.FLOAT, ServerboundAcceptTeleportationPacket::yRot, ByteBufCodecs.FLOAT, ServerboundAcceptTeleportationPacket::xRot, ServerboundAcceptTeleportationPacket::new);
    }
 }

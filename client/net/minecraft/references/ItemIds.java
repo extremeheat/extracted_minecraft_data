@@ -188,11 +188,11 @@ public class ItemIds {
    public static final ResourceKey<Item> SUGAR = create("sugar");
    public static final ResourceKey<Item> COOKIE = create("cookie");
    public static final ResourceKey<Item> FILLED_MAP = create("filled_map");
-   public static final ResourceKey<Item> OCEAN_EXPLORER_MAP = create("ocean_explorer_map");
-   public static final ResourceKey<Item> WOODLAND_EXPLORER_MAP = create("woodland_explorer_map");
-   public static final ResourceKey<Item> TRIAL_EXPLORER_MAP = create("trial_explorer_map");
-   public static final ResourceKey<Item> JUNGLE_EXPLORER_MAP = create("jungle_explorer_map");
-   public static final ResourceKey<Item> SWAMP_EXPLORER_MAP = create("swamp_explorer_map");
+   public static final ResourceKey<Item> OCEAN_MONUMENT_MAP = create("ocean_monument_map");
+   public static final ResourceKey<Item> WOODLAND_MANSION_MAP = create("woodland_mansion_map");
+   public static final ResourceKey<Item> BURIED_TRIAL_CHAMBERS_MAP = create("buried_trial_chambers_map");
+   public static final ResourceKey<Item> JUNGLE_PYRAMID_MAP = create("jungle_pyramid_map");
+   public static final ResourceKey<Item> SWAMP_HUT_MAP = create("swamp_hut_map");
    public static final ResourceKey<Item> DESERT_VILLAGE_MAP = create("desert_village_map");
    public static final ResourceKey<Item> PLAINS_VILLAGE_MAP = create("plains_village_map");
    public static final ResourceKey<Item> SAVANNA_VILLAGE_MAP = create("savanna_village_map");

@@ -20,7 +20,6 @@ import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
    private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart/minecart.png");
@@ -52,7 +51,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
       float hurt = state.hurtTime;
       if (hurt > 0.0F) {
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir));
+         poseStack.rotateDegrees(Axis.XP, Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir);
       }
 
       BlockModelRenderState displayBlockModel = state.displayBlockModel;
@@ -60,7 +59,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
          poseStack.pushPose();
          poseStack.scale(0.75F, 0.75F, 0.75F);
          poseStack.translate(-0.5F, (float)(state.displayOffset - 8) / 16.0F, 0.5F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.YP, 90.0F);
          this.submitMinecartContents(state, displayBlockModel, poseStack, submitNodeCollector, state.lightCoords);
          poseStack.popPose();
       }
@@ -71,8 +70,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
    }
 
    private static <S extends MinecartRenderState> void newRender(final S state, final PoseStack poseStack) {
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-state.xRot));
+      poseStack.rotateDegrees(Axis.YP, state.yRot);
+      poseStack.rotateDegrees(Axis.ZP, -state.xRot);
       poseStack.translate(0.0F, 0.375F, 0.0F);
    }
 
@@ -95,8 +94,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       poseStack.translate(0.0F, 0.375F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - rotation));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-xRot));
+      poseStack.rotateDegrees(Axis.YP, 180.0F - rotation);
+      poseStack.rotateDegrees(Axis.ZP, -xRot);
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {

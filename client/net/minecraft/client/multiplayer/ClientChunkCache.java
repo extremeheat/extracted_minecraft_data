@@ -5,11 +5,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -24,7 +22,6 @@ import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -98,7 +95,7 @@ public class ClientChunkCache extends ChunkSource {
       }
    }
 
-   public @Nullable LevelChunk replaceWithPacketData(final int chunkX, final int chunkZ, final FriendlyByteBuf readBuffer, final Map<Heightmap.Types, long[]> heightmaps, final Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities) {
+   public @Nullable LevelChunk replaceWithPacketData(final int chunkX, final int chunkZ, final ClientboundLevelChunkPacketData chunkData) {
       if (!this.storage.inRange(chunkX, chunkZ)) {
          LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", chunkX, chunkZ);
          return null;
@@ -108,10 +105,10 @@ public class ClientChunkCache extends ChunkSource {
          ChunkPos pos = new ChunkPos(chunkX, chunkZ);
          if (!isValidChunk(chunk, chunkX, chunkZ)) {
             chunk = new LevelChunk(this.level, pos);
-            chunk.replaceWithPacketData(readBuffer, heightmaps, blockEntities);
+            chunk.replaceWithPacketData(chunkX, chunkZ, chunkData);
             this.storage.replace(index, chunk);
          } else {
-            chunk.replaceWithPacketData(readBuffer, heightmaps, blockEntities);
+            chunk.replaceWithPacketData(chunkX, chunkZ, chunkData);
             this.storage.refreshEmptySections(chunk);
          }
 

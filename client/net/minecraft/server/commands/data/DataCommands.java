@@ -19,21 +19,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.CompoundTagArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CollectionTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.PrimitiveTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.commands.ArgProvider;
+import net.minecraft.server.commands.LootContextSources;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
 public class DataCommands {
    private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(Component.translatable("commands.data.merge.failed"));
@@ -51,11 +59,11 @@ public class DataCommands {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext buildContext) {
       LiteralArgumentBuilder<CommandSourceStack> root = (LiteralArgumentBuilder)Commands.literal("data").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
       for(ArgProvider<DataAccessor> targetProvider : TARGET_PROVIDERS) {
-         ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)root.then(targetProvider.wrap(Commands.literal("merge"), (p) -> p.then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((c) -> mergeData((CommandSourceStack)c.getSource(), targetProvider.access(c), CompoundTagArgument.getCompoundTag(c, "nbt"))))))).then(targetProvider.wrap(Commands.literal("get"), (p) -> p.executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c))).then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path")))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getNumeric((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"), DoubleArgumentType.getDouble(c, "scale")))))))).then(targetProvider.wrap(Commands.literal("remove"), (p) -> p.then(Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> removeData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"))))))).then(decorateModification((parent, rest) -> parent.then(Commands.literal("insert").then(Commands.argument("index", IntegerArgumentType.integer()).then(rest.create((context, target, targetPath, source) -> targetPath.insert(IntegerArgumentType.getInteger(context, "index"), target, source))))).then(Commands.literal("prepend").then(rest.create((context, target, targetPath, source) -> targetPath.insert(0, target, source)))).then(Commands.literal("append").then(rest.create((context, target, targetPath, source) -> targetPath.insert(-1, target, source)))).then(Commands.literal("set").then(rest.create((context, target, targetPath, source) -> targetPath.set(target, (Tag)Iterables.getLast(source))))).then(Commands.literal("merge").then(rest.create((context, target, targetPath, source) -> {
+         ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)root.then(targetProvider.wrap(Commands.literal("merge"), (p) -> p.then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((c) -> mergeData((CommandSourceStack)c.getSource(), targetProvider.access(c), CompoundTagArgument.getCompoundTag(c, "nbt"))))))).then(targetProvider.wrap(Commands.literal("get"), (p) -> p.executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c))).then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> getData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path")))).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((c) -> getNumeric((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"), DoubleArgumentType.getDouble(c, "scale")))))))).then(targetProvider.wrap(Commands.literal("remove"), (p) -> p.then(Commands.argument("path", NbtPathArgument.nbtPath()).executes((c) -> removeData((CommandSourceStack)c.getSource(), targetProvider.access(c), NbtPathArgument.getPath(c, "path"))))))).then(decorateModification(buildContext, (parent, rest) -> parent.then(Commands.literal("insert").then(Commands.argument("index", IntegerArgumentType.integer()).then(rest.create((context, target, targetPath, source) -> targetPath.insert(IntegerArgumentType.getInteger(context, "index"), target, source))))).then(Commands.literal("prepend").then(rest.create((context, target, targetPath, source) -> targetPath.insert(0, target, source)))).then(Commands.literal("append").then(rest.create((context, target, targetPath, source) -> targetPath.insert(-1, target, source)))).then(Commands.literal("set").then(rest.create((context, target, targetPath, source) -> targetPath.set(target, (Tag)Iterables.getLast(source))))).then(Commands.literal("merge").then(rest.create((context, target, targetPath, source) -> {
                CompoundTag combinedSources = new CompoundTag();
 
                for(Tag sourceTag : source) {
@@ -135,7 +143,7 @@ public class DataCommands {
       return result;
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> decorateModification(final BiConsumer<ArgumentBuilder<CommandSourceStack, ?>, DataManipulatorDecorator> nodeSupplier) {
+   private static ArgumentBuilder<CommandSourceStack, ?> decorateModification(final CommandBuildContext buildContext, final BiConsumer<ArgumentBuilder<CommandSourceStack, ?>, DataManipulatorDecorator> nodeSupplier) {
       LiteralArgumentBuilder<CommandSourceStack> modify = Commands.literal("modify");
 
       for(ArgProvider<DataAccessor> targetProvider : TARGET_PROVIDERS) {
@@ -147,6 +155,17 @@ public class DataCommands {
                nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> sourceProvider.wrap(Commands.literal("string"), (s) -> s.executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(getSingletonSource(c, sourceProvider), (str) -> str))).then(((RequiredArgumentBuilder)Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> str)))).then(((RequiredArgumentBuilder)Commands.argument("start", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start")))))).then(Commands.argument("end", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start"), IntegerArgumentType.getInteger(c, "end"))))))))));
             }
 
+            nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> LootContextSources.addContextSources(Commands.literal("compute"), (contextDecorator) -> ((RequiredArgumentBuilder)Commands.argument("provider", ResourceOrIdArgument.numberProvider(buildContext)).executes((c) -> {
+                     LootContext lootContext = contextDecorator.createContext(c);
+                     Holder<NumberProvider> provider = ResourceOrIdArgument.getNumberProvider(c, "provider");
+                     float value = ((NumberProvider)provider.value()).getFloat(lootContext);
+                     return manipulateData(c, targetProvider, manipulator, List.of(FloatTag.valueOf(value)));
+                  })).then(Commands.literal("integer").executes((c) -> {
+                     LootContext lootContext = contextDecorator.createContext(c);
+                     Holder<NumberProvider> provider = ResourceOrIdArgument.getNumberProvider(c, "provider");
+                     int value = ((NumberProvider)provider.value()).getInt(lootContext);
+                     return manipulateData(c, targetProvider, manipulator, List.of(IntTag.valueOf(value)));
+                  }))));
             nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes((c) -> {
                   List<Tag> source = Collections.singletonList(NbtTagArgument.getNbtTag(c, "value"));
                   return manipulateData(c, targetProvider, manipulator, source);

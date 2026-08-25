@@ -20,7 +20,7 @@ public class Digging<E extends Warden> extends Behavior<E> {
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final E body) {
-      return body.onGround() || body.isInWater() || body.isInLava();
+      return body.onGround() || body.isInLiquid();
    }
 
    protected void start(final ServerLevel level, final E body, final long timestamp) {

@@ -11,6 +11,10 @@ public final class FluidTags {
    public static final TagKey<Fluid> SUPPORTS_LILY_PAD = create("supports_lily_pad");
    public static final TagKey<Fluid> SUPPORTS_FROGSPAWN = create("supports_frogspawn");
    public static final TagKey<Fluid> BUBBLE_COLUMN_CAN_OCCUPY = create("bubble_column_can_occupy");
+   public static final TagKey<Fluid> AXOLOTL_TRIES_TO_FIND = create("axolotl_tries_to_find");
+   public static final TagKey<Fluid> DOLPHIN_TRIES_TO_FIND = create("dolphin_tries_to_find");
+   public static final TagKey<Fluid> FROG_TRIES_TO_FIND_LAND_NEAR = create("frog_tries_to_find_land_near");
+   public static final TagKey<Fluid> ENTITY_FLOATABLE = create("entity_floatable");
 
    private FluidTags() {
       super();

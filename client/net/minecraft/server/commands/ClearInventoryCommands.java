@@ -39,11 +39,14 @@ public class ClearInventoryCommands {
 
    private static int clearInventory(final CommandSourceStack source, final Collection<ServerPlayer> players, final Predicate<ItemStack> predicate, final int maxCount) throws CommandSyntaxException {
       CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+      boolean countingOnly = maxCount == 0;
 
       for(ServerPlayer player : players) {
-         tracker.track(player, player.getInventory().clearOrCountMatchingItems(predicate, maxCount, player.inventoryMenu.getCraftSlots()));
-         player.containerMenu.broadcastChanges();
-         player.inventoryMenu.slotsChanged(player.getInventory());
+         tracker.track(player, player.getInventory().clearOrCountMatchingItems(predicate, countingOnly, maxCount, player.inventoryMenu.getCraftSlots()));
+         if (!countingOnly) {
+            player.containerMenu.broadcastChanges();
+            player.inventoryMenu.slotsChanged(player.getInventory());
+         }
       }
 
       if (tracker.totalValue() == 0) {

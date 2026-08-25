@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.resources.Identifier;
-import org.joml.Quaternionfc;
 
 public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, SulfurCubeModel> {
    private static final Identifier SULFUR_CUBE_INNER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sulfur_cube/sulfur_cube_inner.png");
@@ -34,7 +33,7 @@ public class SulfurCubeInnerLayer extends RenderLayer<SulfurCubeRenderState, Sul
          int overlayCoords = state.fuseRemainingTicks > 0.0F && TntRenderer.isLit(state.fuseRemainingTicks) ? OverlayTexture.pack(OverlayTexture.u(1.0F), 10) : LivingEntityRenderer.getOverlayCoords(state, 0.0F);
          if (!state.containedBlock.isEmpty()) {
             poseStack.pushPose();
-            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
+            poseStack.rotateDegrees(Axis.XP, 180.0F);
             if (state.isBaby) {
                poseStack.scale(0.5F, 0.5F, 0.5F);
             }

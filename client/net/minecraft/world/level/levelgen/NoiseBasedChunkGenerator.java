@@ -1,6 +1,5 @@
 package net.minecraft.world.level.levelgen;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
@@ -21,11 +20,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NaturalSpawner;
@@ -46,12 +49,19 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 
 public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public static final MapCodec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BiomeSource.CODEC.fieldOf("biome_source").forGetter((g) -> g.biomeSource), NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter((g) -> g.settings)).apply(i, i.stable(NoiseBasedChunkGenerator::new)));
    private static final BlockState AIR;
+   private static final DecimalFormat DEBUG_DENSITY_FORMAT;
    private final Holder<NoiseGeneratorSettings> settings;
    private final Supplier<Aquifer.FluidPicker> globalFluidPicker;
 
@@ -75,28 +85,30 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       };
    }
 
-   public CompletableFuture<ChunkAccess> createBiomes(final RandomState randomState, final Blender blender, final StructureManager structureManager, final ChunkAccess protoChunk) {
-      return CompletableFuture.supplyAsync(() -> {
-         this.doCreateBiomes(blender, randomState, structureManager, protoChunk);
-         return protoChunk;
-      }, Util.backgroundExecutor().forName("init_biomes"));
-   }
-
-   private void doCreateBiomes(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess protoChunk) {
-      NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
-      BiomeResolver biomeResolver = this.biomeSource.createResolver(noiseChunk.cachedClimateSampler(randomState.router()));
+   protected BiomeResolver decorateBiomeResolver(final Blender blender, final ChunkAccess protoChunk, BiomeResolver biomeResolver) {
       biomeResolver = blender.getBiomeResolver(biomeResolver);
       biomeResolver = BelowZeroRetrogen.getBiomeResolver(biomeResolver, protoChunk);
-      protoChunk.fillBiomesFromNoise(biomeResolver);
+      return biomeResolver;
    }
 
-   private NoiseChunk createNoiseChunk(final ChunkAccess chunk, final StructureManager structureManager, final Blender blender, final RandomState randomState) {
-      return NoiseChunk.forChunk(chunk, randomState, Beardifier.forStructuresInChunk(structureManager, chunk.getPos()), this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), blender);
+   private NoiseChunk createNoiseChunk(final ChunkAccess chunk, final StructureManager structureManager, final Blender blender, final RandomState randomState, final NoiseSettings noiseSettings) {
+      Beardifier beardifier = Beardifier.forStructuresInChunk(structureManager, chunk.getPos());
+      return new NoiseChunk(randomState, beardifier, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), blender, chunkVolume(chunk, noiseSettings));
+   }
+
+   private static DensityVolume chunkVolume(final ChunkAccess chunk, final NoiseSettings noiseSettings) {
+      ChunkPos pos = chunk.getPos();
+      return new DensityVolume(16, noiseSettings.height(), 16, pos.getMinBlockX(), noiseSettings.minY(), pos.getMinBlockZ());
    }
 
    public ChunkPos getOrigin(final RandomState randomState) {
-      List<SpawnTargetPoint.Wired> spawnTarget = randomState.spawnTarget();
-      return spawnTarget.isEmpty() ? super.getOrigin(randomState) : ChunkPos.containing(NoiseSpawnFinder.findSpawnPosition(spawnTarget));
+      List<SpawnTargetPoint> spawnTarget = ((NoiseGeneratorSettings)this.settings.value()).spawnTarget();
+      if (spawnTarget.isEmpty()) {
+         return super.getOrigin(randomState);
+      } else {
+         SamplerContext samplerContext = SamplerContext.builder().enableCaches().build();
+         return ChunkPos.containing(NoiseSpawnFinder.findSpawnPosition(spawnTarget, randomState.samplersWithContext(samplerContext)));
+      }
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
@@ -121,117 +133,77 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       return (NoiseColumn)result.get();
    }
 
-   @VisibleForTesting
-   public float getInterpolatedNoiseValue(final RandomState randomState, final DensityFunction.FunctionContext context) {
-      NoiseSettings noiseSettings = ((NoiseGeneratorSettings)this.settings.value()).noiseSettings();
-      int cellWidth = noiseSettings.getCellWidth();
-      int cellHeight = noiseSettings.getCellHeight();
-      int minY = noiseSettings.minY();
-      int blockX = context.blockX();
-      int blockY = context.blockY();
-      int blockZ = context.blockZ();
-      if (blockY >= minY && blockY < minY + noiseSettings.height()) {
-         NoiseChunk noiseChunk = new NoiseChunk(1, randomState, blockX - Math.floorMod(blockX, cellWidth), blockZ - Math.floorMod(blockZ, cellWidth), noiseSettings, (Beardifier)null, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty());
-         noiseChunk.initializeForFirstCellX();
-         noiseChunk.advanceCellX(0);
-         noiseChunk.selectCellYZ(Math.floorDiv(blockY - minY, cellHeight), 0);
-         noiseChunk.updateForY(blockY, (float)Math.floorMod(blockY - minY, cellHeight) / (float)cellHeight);
-         noiseChunk.updateForX(blockX, (float)Math.floorMod(blockX, cellWidth) / (float)cellWidth);
-         noiseChunk.updateForZ(blockZ, (float)Math.floorMod(blockZ, cellWidth) / (float)cellWidth);
-         return noiseChunk.getInterpolatedDensity();
-      } else {
-         return 0.0F / 0.0F;
-      }
-   }
+   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
+      List<NoiseGeneratorSettings.DebugFunctionEntry> functions = ((NoiseGeneratorSettings)this.settings.value()).debugFunctions().functions();
+      if (!functions.isEmpty()) {
+         DensitySamplerSet samplers = randomState.samplersWithContext(samplerContext);
+         StringBuilder builder = new StringBuilder("Density ");
 
-   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
-      DecimalFormat format = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.ROOT));
-      NoiseRouter router = randomState.router();
-      DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(feetPos.getX(), feetPos.getY(), feetPos.getZ());
-      double weirdness = (double)router.ridges().compute(context);
-      String var10001 = format.format((double)this.getInterpolatedNoiseValue(randomState, context));
-      result.add("NoiseRouter N: " + var10001 + " T: " + format.format((double)router.temperature().compute(context)) + " V: " + format.format((double)router.vegetation().compute(context)) + " C: " + format.format((double)router.continents().compute(context)) + " E: " + format.format((double)router.erosion().compute(context)) + " D: " + format.format((double)router.depth().compute(context)) + " W: " + format.format(weirdness) + " PV: " + format.format((double)NoiseRouterData.peaksAndValleys((float)weirdness)) + " PS: " + format.format((double)router.preliminarySurfaceLevel().compute(context)));
+         for(NoiseGeneratorSettings.DebugFunctionEntry entry : functions) {
+            builder.append(entry.label()).append(": ");
+            builder.append(DEBUG_DENSITY_FORMAT.format((double)samplers.sampleValue(entry.function(), feetPos.getX(), feetPos.getY(), feetPos.getZ())));
+            builder.append(' ');
+         }
+
+         builder.deleteCharAt(builder.length() - 1);
+         result.add(builder.toString());
+      }
    }
 
    private OptionalInt iterateNoiseColumn(final LevelHeightAccessor heightAccessor, final RandomState randomState, final int blockX, final int blockZ, final @Nullable MutableObject<NoiseColumn> columnReference, final @Nullable Predicate<BlockState> tester) {
       NoiseSettings noiseSettings = ((NoiseGeneratorSettings)this.settings.value()).noiseSettings().clampToHeightAccessor(heightAccessor);
-      int cellHeight = noiseSettings.getCellHeight();
-      int minY = noiseSettings.minY();
-      int cellMinY = Mth.floorDiv(minY, cellHeight);
-      int cellCountY = Mth.floorDiv(noiseSettings.height(), cellHeight);
-      if (cellCountY <= 0) {
+      if (noiseSettings.height() <= 0) {
          return OptionalInt.empty();
       } else {
+         DensityVolume volume = new DensityVolume(1, noiseSettings.height(), 1, blockX, noiseSettings.minY(), blockZ);
          BlockState[] writeTo;
          if (columnReference == null) {
             writeTo = null;
          } else {
-            writeTo = new BlockState[noiseSettings.height()];
-            columnReference.setValue(new NoiseColumn(minY, writeTo));
+            writeTo = new BlockState[volume.sizeY()];
+            columnReference.setValue(new NoiseColumn(volume.minBlockY(), writeTo));
          }
 
-         int cellWidth = noiseSettings.getCellWidth();
-         int noiseChunkX = Math.floorDiv(blockX, cellWidth);
-         int noiseChunkZ = Math.floorDiv(blockZ, cellWidth);
-         int xInCell = Math.floorMod(blockX, cellWidth);
-         int zInCell = Math.floorMod(blockZ, cellWidth);
-         int firstBlockX = noiseChunkX * cellWidth;
-         int firstBlockZ = noiseChunkZ * cellWidth;
-         float factorX = (float)xInCell / (float)cellWidth;
-         float factorZ = (float)zInCell / (float)cellWidth;
-         NoiseChunk noiseChunk = new NoiseChunk(1, randomState, firstBlockX, firstBlockZ, noiseSettings, (Beardifier)null, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty());
-         noiseChunk.initializeForFirstCellX();
-         noiseChunk.advanceCellX(0);
+         try (NoiseChunk noiseChunk = new NoiseChunk(randomState, (Beardifier)null, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty(), volume)) {
+            Aquifer aquifer = noiseChunk.aquifer();
+            BlockState defaultState = ((NoiseGeneratorSettings)this.settings.value()).defaultBlock();
+            DensitySampler.Bound finalDensity = noiseChunk.cachingSamplers().get(((NoiseGeneratorSettings)this.settings.value()).noiseRouter().finalDensity());
 
-         for(int cellYIndex = cellCountY - 1; cellYIndex >= 0; --cellYIndex) {
-            noiseChunk.selectCellYZ(cellYIndex, 0);
+            try (ScopedDensityBuffer densityBuffer = finalDensity.sampleVolume(noiseChunk.volume())) {
+               for(int y = volume.sizeY() - 1; y >= 0; --y) {
+                  float density = densityBuffer.get(volume.indexUnchecked(0, y, 0));
+                  int blockY = volume.blockY(y);
+                  BlockState baseState = aquifer.computeSubstance(blockX, blockY, blockZ, (double)density);
+                  BlockState state = baseState == null ? defaultState : baseState;
+                  if (writeTo != null) {
+                     writeTo[y] = state;
+                  }
 
-            for(int yInCell = cellHeight - 1; yInCell >= 0; --yInCell) {
-               int posY = (cellMinY + cellYIndex) * cellHeight + yInCell;
-               float factorY = (float)yInCell / (float)cellHeight;
-               noiseChunk.updateForY(posY, factorY);
-               noiseChunk.updateForX(blockX, factorX);
-               noiseChunk.updateForZ(blockZ, factorZ);
-               BlockState baseState = noiseChunk.getInterpolatedState();
-               BlockState state = baseState == null ? ((NoiseGeneratorSettings)this.settings.value()).defaultBlock() : baseState;
-               if (writeTo != null) {
-                  int yIndex = cellYIndex * cellHeight + yInCell;
-                  writeTo[yIndex] = state;
-               }
-
-               if (tester != null && tester.test(state)) {
-                  noiseChunk.stopInterpolation();
-                  return OptionalInt.of(posY + 1);
+                  if (tester != null && tester.test(state)) {
+                     OptionalInt var20 = OptionalInt.of(blockY + 1);
+                     return var20;
+                  }
                }
             }
          }
 
-         noiseChunk.stopInterpolation();
          return OptionalInt.empty();
       }
    }
 
-   public void buildSurface(final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk, final BiomeManager biomeManager, final Blender blender, final Set<Holder<Biome>> possibleBiomes) {
+   private void buildSurface(final ChunkAccess protoChunk, final NoiseChunk noiseChunk, final RandomState randomState, final BiomeManager biomeManager, final Set<Holder<Biome>> possibleBiomes, final MaterialRule materialRule) {
       if (!SharedConstants.debugVoidTerrain(protoChunk.getPos()) && !SharedConstants.DEBUG_DISABLE_SURFACE) {
          WorldGenerationContext context = new WorldGenerationContext(this, protoChunk.getHeightAccessorForGeneration());
-         this.buildSurface(protoChunk, context, randomState, structureManager, biomeManager, blender, possibleBiomes);
+         randomState.surfaceSystem().buildSurface(randomState, biomeManager, context, protoChunk, noiseChunk, materialRule, possibleBiomes);
       }
    }
 
-   @VisibleForTesting
-   public void buildSurface(final ChunkAccess protoChunk, final WorldGenerationContext context, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final Blender blender, final @Nullable Set<Holder<Biome>> possibleBiomes) {
-      NoiseChunk noiseChunk = protoChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
-      NoiseGeneratorSettings settings = this.settings.value();
-      randomState.surfaceSystem().buildSurface(randomState, biomeManager, context, protoChunk, noiseChunk, (SurfaceRules.RuleSource)settings.materialRule().value(), possibleBiomes);
-   }
-
-   public void applyCarvers(final @Nullable WorldGenRegion biomeRegion, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk, final Blender blender) {
+   private void generateCarvers(final ChunkAccess chunk, final Blender blender, final NoiseChunk noiseChunk, final RandomState randomState, final BiomeManager biomeManager, final @Nullable WorldGenRegion carverBiomeRegion, final MaterialRule materialRule) {
       if (!SharedConstants.DEBUG_DISABLE_CARVERS && !SharedConstants.debugVoidTerrain(chunk.getPos())) {
-         BiomeResolver biomeResolver = this.biomeSource.createResolver(randomState.sampler());
+         BiomeResolver biomeResolver = this.biomeSource.createUncachedResolver(randomState);
          WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
          int range = 8;
          ChunkPos pos = chunk.getPos();
-         NoiseChunk noiseChunk = chunk.getOrCreateNoiseChunk((c) -> this.createNoiseChunk(c, structureManager, blender, randomState));
          WorldGenerationContext context = new WorldGenerationContext(this, chunk.getHeightAccessorForGeneration());
          int protectedBlocksOnTop = chunk.isUpgrading() ? 0 : 7;
          int maxY = context.getMinGenY() + context.getGenDepth() - 1 - protectedBlocksOnTop;
@@ -241,8 +213,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
             for(int dz = -8; dz <= 8; ++dz) {
                ChunkPos sourcePos = new ChunkPos(pos.x() + dx, pos.z() + dz);
                BiomeGenerationSettings sourceBiomeGenerationSettings;
-               if (biomeRegion != null) {
-                  ChunkAccess carverCenterChunk = biomeRegion.getChunk(sourcePos.x(), sourcePos.z());
+               if (carverBiomeRegion != null) {
+                  ChunkAccess carverCenterChunk = carverBiomeRegion.getChunk(sourcePos.x(), sourcePos.z());
                   sourceBiomeGenerationSettings = carverCenterChunk.carverBiome(() -> this.getBiomeGenerationSettingsForCarver(biomeResolver, sourcePos));
                } else {
                   sourceBiomeGenerationSettings = this.getBiomeGenerationSettingsForCarver(biomeResolver, sourcePos);
@@ -264,20 +236,21 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          }
 
          if (!mask.isEmpty()) {
-            BiomeManager correctBiomeManager = biomeManager.withDifferentSource(biomeResolver);
-            Objects.requireNonNull(correctBiomeManager);
-            this.applyCarvingMask(chunk, mask, randomState, context, noiseChunk, correctBiomeManager::getBiome, blender.getCarvingFilter());
+            try (Zone var27 = Profiler.get().zone("applyCarvingMask")) {
+               BiomeManager correctBiomeManager = biomeManager.withDifferentSource(biomeResolver);
+               Objects.requireNonNull(correctBiomeManager);
+               this.applyCarvingMask(chunk, mask, randomState, materialRule, context, noiseChunk, correctBiomeManager::getBiome, blender.getCarvingFilter());
+            }
          }
 
       }
    }
 
-   private void applyCarvingMask(final ChunkAccess chunk, final CarvingMask mask, final RandomState randomState, final WorldGenerationContext context, final NoiseChunk noiseChunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask.@Nullable Filter filter) {
+   private void applyCarvingMask(final ChunkAccess chunk, final CarvingMask mask, final RandomState randomState, final MaterialRule materialRule, final WorldGenerationContext context, final NoiseChunk noiseChunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final CarvingMask.@Nullable Filter filter) {
       ChunkPos chunkPos = chunk.getPos();
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos helperPos = new BlockPos.MutableBlockPos();
       Aquifer aquifer = noiseChunk.aquifer();
-      SurfaceRules.RuleSource materialRule = (SurfaceRules.RuleSource)(this.settings.value()).materialRule().value();
       mask.visit((x, z, bottomY, topY) -> {
          boolean hasGrass = false;
          int worldX = chunkPos.getBlockX(x);
@@ -292,7 +265,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
                      hasGrass = true;
                   }
 
-                  BlockState state = aquifer.computeSubstance(new DensityFunction.SinglePointContext(worldX, worldY, worldZ), 0.0);
+                  BlockState state = aquifer.computeSubstance(worldX, worldY, worldZ, 0.0);
                   if (state != null) {
                      chunk.setBlockState(blockPos, state);
                      if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
@@ -302,7 +275,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
                      if (hasGrass) {
                         helperPos.setWithOffset(blockPos, (Direction)Direction.DOWN);
                         if (chunk.getBlockState(helperPos).is(Blocks.DIRT)) {
-                           randomState.surfaceSystem().topMaterial(materialRule, randomState, context, biomeGetter, chunk, noiseChunk, helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
+                           randomState.surfaceSystem().topMaterial(materialRule, randomState, context, biomeGetter, chunk, noiseChunk.cachingSamplers(), helperPos, !state.getFluidState().isEmpty()).ifPresent((topMaterial) -> {
                               chunk.setBlockState(helperPos, topMaterial);
                               if (!topMaterial.getFluidState().isEmpty()) {
                                  chunk.markPosForPostProcessing(helperPos);
@@ -325,115 +298,117 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       return this.getBiomeGenerationSettings(biomeResolver.getNoiseBiome(quartX, 0, quartZ));
    }
 
-   public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {
-      NoiseSettings noiseSettings = ((NoiseGeneratorSettings)this.settings.value()).noiseSettings().clampToHeightAccessor(centerChunk.getHeightAccessorForGeneration());
-      int minY = noiseSettings.minY();
-      int cellYMin = Mth.floorDiv(minY, noiseSettings.getCellHeight());
-      int cellCountY = Mth.floorDiv(noiseSettings.height(), noiseSettings.getCellHeight());
-      return cellCountY > 0 && !SharedConstants.debugVoidTerrain(centerChunk.getPos()) ? CompletableFuture.supplyAsync(() -> {
-         int topSectionIndex = centerChunk.getSectionIndex(cellCountY * noiseSettings.getCellHeight() - 1 + minY);
-         int bottomSectionIndex = centerChunk.getSectionIndex(minY);
-         Set<LevelChunkSection> sections = Sets.newHashSet();
+   public CompletableFuture<ChunkAccess> buildTerrain(final ChunkAccess chunk, final Blender blender, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final @Nullable WorldGenRegion carverBiomeRegion, final Set<Holder<Biome>> possibleBiomes) {
+      NoiseSettings noiseSettings = ((NoiseGeneratorSettings)this.settings.value()).noiseSettings().clampToHeightAccessor(chunk.getHeightAccessorForGeneration());
+      return noiseSettings.height() > 0 && !SharedConstants.debugVoidTerrain(chunk.getPos()) ? CompletableFuture.supplyAsync(() -> {
+         ProfilerFiller profiler = Profiler.get();
 
-         for(int sectionIndex = topSectionIndex; sectionIndex >= bottomSectionIndex; --sectionIndex) {
-            LevelChunkSection section = centerChunk.getSection(sectionIndex);
-            section.acquire();
-            sections.add(section);
-         }
+         ChunkAccess var43;
+         try (NoiseChunk noiseChunk = this.createNoiseChunk(chunk, structureManager, blender, randomState, noiseSettings)) {
+            DensityVolume volume = noiseChunk.volume();
+            int topSectionIndex = chunk.getSectionIndex(volume.maxBlockY());
+            int bottomSectionIndex = chunk.getSectionIndex(volume.minBlockY());
+            Set<LevelChunkSection> sections = Sets.newHashSet();
 
-         ChunkAccess sectionIndexx;
-         try {
-            sectionIndexx = this.doFill(blender, structureManager, randomState, centerChunk, cellYMin, cellCountY);
-         } finally {
-            for(LevelChunkSection section : sections) {
-               section.release();
+            for(int sectionIndex = topSectionIndex; sectionIndex >= bottomSectionIndex; --sectionIndex) {
+               LevelChunkSection section = chunk.getSection(sectionIndex);
+               section.acquire();
+               sections.add(section);
             }
 
-         }
+            try {
+               Zone materialRule = profiler.zone("doFill");
 
-         return sectionIndexx;
-      }, Util.backgroundExecutor().forName("wgen_fill_noise")) : CompletableFuture.completedFuture(centerChunk);
-   }
-
-   private ChunkAccess doFill(final Blender blender, final StructureManager structureManager, final RandomState randomState, final ChunkAccess centerChunk, final int cellMinY, final int cellCountY) {
-      NoiseChunk noiseChunk = centerChunk.getOrCreateNoiseChunk((chunk) -> this.createNoiseChunk(chunk, structureManager, blender, randomState));
-      Heightmap oceanFloor = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-      Heightmap worldSurface = centerChunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
-      ChunkPos chunkPos = centerChunk.getPos();
-      int chunkStartBlockX = chunkPos.getMinBlockX();
-      int chunkStartBlockZ = chunkPos.getMinBlockZ();
-      Aquifer aquifer = noiseChunk.aquifer();
-      noiseChunk.initializeForFirstCellX();
-      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
-      int cellWidth = noiseChunk.cellWidth();
-      int cellHeight = noiseChunk.cellHeight();
-      int cellCountX = 16 / cellWidth;
-      int cellCountZ = 16 / cellWidth;
-
-      for(int cellXIndex = 0; cellXIndex < cellCountX; ++cellXIndex) {
-         noiseChunk.advanceCellX(cellXIndex);
-
-         for(int cellZIndex = 0; cellZIndex < cellCountZ; ++cellZIndex) {
-            int lastSectionIndex = centerChunk.getSectionsCount() - 1;
-            LevelChunkSection section = centerChunk.getSection(lastSectionIndex);
-
-            for(int cellYIndex = cellCountY - 1; cellYIndex >= 0; --cellYIndex) {
-               noiseChunk.selectCellYZ(cellYIndex, cellZIndex);
-
-               for(int yInCell = cellHeight - 1; yInCell >= 0; --yInCell) {
-                  int posY = (cellMinY + cellYIndex) * cellHeight + yInCell;
-                  int yInSection = posY & 15;
-                  int sectionIndex = centerChunk.getSectionIndex(posY);
-                  if (lastSectionIndex != sectionIndex) {
-                     lastSectionIndex = sectionIndex;
-                     section = centerChunk.getSection(sectionIndex);
+               try {
+                  this.doFill(noiseChunk, chunk);
+               } catch (Throwable var36) {
+                  if (materialRule != null) {
+                     try {
+                        materialRule.close();
+                     } catch (Throwable x2) {
+                        var36.addSuppressed(x2);
+                     }
                   }
 
-                  float factorY = (float)yInCell / (float)cellHeight;
-                  noiseChunk.updateForY(posY, factorY);
+                  throw var36;
+               }
 
-                  for(int xInCell = 0; xInCell < cellWidth; ++xInCell) {
-                     int posX = chunkStartBlockX + cellXIndex * cellWidth + xInCell;
-                     int xInSection = posX & 15;
-                     float factorX = (float)xInCell / (float)cellWidth;
-                     noiseChunk.updateForX(posX, factorX);
+               if (materialRule != null) {
+                  materialRule.close();
+               }
+            } finally {
+               for(LevelChunkSection section : sections) {
+                  section.release();
+               }
 
-                     for(int zInCell = 0; zInCell < cellWidth; ++zInCell) {
-                        int posZ = chunkStartBlockZ + cellZIndex * cellWidth + zInCell;
-                        int zInSection = posZ & 15;
-                        float factorZ = (float)zInCell / (float)cellWidth;
-                        noiseChunk.updateForZ(posZ, factorZ);
-                        BlockState state = noiseChunk.getInterpolatedState();
-                        if (state == null) {
-                           state = ((NoiseGeneratorSettings)this.settings.value()).defaultBlock();
-                        }
+            }
 
-                        state = this.debugPreliminarySurfaceLevel(noiseChunk, posX, posY, posZ, state);
-                        if (state != AIR) {
-                           section.setBlockState(xInSection, yInSection, zInSection, state, false);
-                           oceanFloor.update(xInSection, posY, zInSection, state);
-                           worldSurface.update(xInSection, posY, zInSection, state);
-                           if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
-                              blockPos.set(posX, posY, posZ);
-                              centerChunk.markPosForPostProcessing(blockPos);
-                           }
-                        }
+            MaterialRule materialRule = (MaterialRule)(this.settings.value()).materialRule().value();
+
+            try (Zone t$ = profiler.zone("buildSurface")) {
+               this.buildSurface(chunk, noiseChunk, randomState, biomeManager, possibleBiomes, materialRule);
+            }
+
+            try (Zone sectionxx = profiler.zone("generateCarvers")) {
+               this.generateCarvers(chunk, blender, noiseChunk, randomState, biomeManager, carverBiomeRegion, materialRule);
+            }
+
+            var43 = chunk;
+         }
+
+         return var43;
+      }, Util.backgroundExecutor().forName("buildTerrain")) : CompletableFuture.completedFuture(chunk);
+   }
+
+   private void doFill(final NoiseChunk noiseChunk, final ChunkAccess chunk) {
+      Heightmap oceanFloor = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+      Heightmap worldSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+      Aquifer aquifer = noiseChunk.aquifer();
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+      DensityVolume volume = noiseChunk.volume();
+      DensitySampler.Bound finalDensity = noiseChunk.cachingSamplers().get(((NoiseGeneratorSettings)this.settings.value()).noiseRouter().finalDensity());
+
+      try (ScopedDensityBuffer densityBuffer = finalDensity.sampleVolume(volume)) {
+         for(int z = 0; z < volume.sizeZ(); ++z) {
+            int blockZ = volume.blockZ(z);
+
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               int blockX = volume.blockX(x);
+
+               for(int y = volume.sizeY() - 1; y >= 0; --y) {
+                  int blockY = volume.blockY(y);
+                  LevelChunkSection section = chunk.getSection(chunk.getSectionIndex(blockY));
+                  float density = densityBuffer.get(volume.indexUnchecked(x, y, z));
+                  BlockState state = aquifer.computeSubstance(blockX, blockY, blockZ, (double)density);
+                  if (state == null) {
+                     state = ((NoiseGeneratorSettings)this.settings.value()).defaultBlock();
+                  }
+
+                  state = this.debugPreliminarySurfaceLevel(noiseChunk, blockX, blockY, blockZ, state);
+                  if (state != AIR) {
+                     section.setBlockState(x, SectionPos.sectionRelative(blockY), z, state, false);
+                     oceanFloor.update(x, blockY, z, state);
+                     worldSurface.update(x, blockY, z, state);
+                     if (aquifer.shouldScheduleFluidUpdate() && !state.getFluidState().isEmpty()) {
+                        blockPos.set(blockX, blockY, blockZ);
+                        chunk.markPosForPostProcessing(blockPos);
                      }
                   }
                }
             }
          }
-
-         noiseChunk.swapSlices();
       }
 
-      noiseChunk.stopInterpolation();
-      return centerChunk;
    }
 
    private BlockState debugPreliminarySurfaceLevel(final NoiseChunk noiseChunk, final int posX, final int posY, final int posZ, BlockState state) {
       if (SharedConstants.DEBUG_AQUIFERS && posZ >= 0 && posZ % 4 == 0) {
-         int preliminarySurfaceLevel = noiseChunk.computePreliminarySurfaceLevel(posX, posZ);
+         DensityFunction surfaceLevelFunction = (DensityFunction)((NoiseGeneratorSettings)this.settings.value()).aquifers().map(Aquifer.Config::surfaceLevel).orElse((Object)null);
+         if (surfaceLevelFunction == null) {
+            return state;
+         }
+
+         int preliminarySurfaceLevel = Mth.floor(noiseChunk.cachingSamplers().sampleValue(surfaceLevelFunction, posX, 0, posZ));
          int adjustedSurfaceLevel = preliminarySurfaceLevel + 8;
          if (posY == adjustedSurfaceLevel) {
             state = adjustedSurfaceLevel < this.getSeaLevel() ? Blocks.SLIME_BLOCK.defaultBlockState() : Blocks.HONEY_BLOCK.defaultBlockState();
@@ -467,5 +442,6 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
 
    static {
       AIR = Blocks.AIR.defaultBlockState();
+      DEBUG_DENSITY_FORMAT = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.ROOT));
    }
 }

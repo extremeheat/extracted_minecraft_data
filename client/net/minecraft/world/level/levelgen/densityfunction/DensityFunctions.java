@@ -14,21 +14,21 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.Interval;
-import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.DistanceToPointFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.EndIslandFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.GradientFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.NoiseFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.ShiftNoiseFunction;
-import net.minecraft.world.level.levelgen.densityfunction.generator.ShiftedNoiseFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.SimpleDensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.BinaryFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.BlendDensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.CacheFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.ClampFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.FindTopSurfaceFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.InterpolatedFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.IntervalSelectFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.LerpFunction;
-import net.minecraft.world.level.levelgen.densityfunction.op.MarkerFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.PowFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.RangeChoiceFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.RoundFunction;
@@ -54,7 +54,6 @@ public final class DensityFunctions {
 
       register(registry, "noise", NoiseFunction.CODEC);
       register(registry, "end_outer_islands", EndIslandFunction.CODEC);
-      register(registry, "shifted_noise", ShiftedNoiseFunction.CODEC);
       register(registry, "distance_to_point", DistanceToPointFunction.CODEC);
       register(registry, "gradient", GradientFunction.CODEC);
       register(registry, "shift_a", ShiftNoiseFunction.ShiftA.CODEC);
@@ -79,11 +78,9 @@ public final class DensityFunctions {
       register(registry, "clamp", ClampFunction.CODEC);
       register(registry, "range_choice", RangeChoiceFunction.CODEC);
       register(registry, "interval_select", IntervalSelectFunction.CODEC);
-
-      for(MarkerFunction.Type value : MarkerFunction.Type.values()) {
-         register(registry, value.getSerializedName(), value.codec);
-      }
-
+      register(registry, "cache", CacheFunction.CODEC);
+      register(registry, "blend_density", BlendDensityFunction.CODEC);
+      register(registry, "interpolated", InterpolatedFunction.CODEC);
       register(registry, "slice", SliceFunction.CODEC);
       register(registry, "find_top_surface", FindTopSurfaceFunction.CODEC);
       register(registry, "old_blended_noise", BlendedNoise.CODEC);
@@ -150,28 +147,16 @@ public final class DensityFunctions {
       return new UnaryFunction(UnaryFunction.Type.SIGN, input);
    }
 
-   public static DensityFunction interpolated(final DensityFunction function) {
-      return new MarkerFunction(MarkerFunction.Type.Interpolated, function);
+   public static DensityFunction interpolated(final DensityFunction function, final int cellSizeXz, final int cellSizeY) {
+      return new InterpolatedFunction(function, cellSizeXz, cellSizeY);
    }
 
-   public static DensityFunction flatCache(final DensityFunction function) {
-      return new MarkerFunction(MarkerFunction.Type.FlatCache, function);
-   }
-
-   public static DensityFunction cache2d(final DensityFunction function) {
-      return new MarkerFunction(MarkerFunction.Type.Cache2D, function);
-   }
-
-   public static DensityFunction cacheOnce(final DensityFunction function) {
-      return new MarkerFunction(MarkerFunction.Type.CacheOnce, function);
-   }
-
-   public static DensityFunction cacheAllInCell(final DensityFunction function) {
-      return new MarkerFunction(MarkerFunction.Type.CacheAllInCell, function);
+   public static DensityFunction cache(final DensityFunction function) {
+      return new CacheFunction(function);
    }
 
    public static DensityFunction mappedNoise(final Holder<NormalNoise> noiseData, @Deprecated final double xzScale, final double yScale, final float minTarget, final float maxTarget) {
-      DensityFunction noise = new NoiseFunction(new DensityFunction.NoiseHolder(noiseData), xzScale, yScale);
+      DensityFunction noise = new NoiseFunction(noiseData, xzScale, yScale, zero(), zero(), zero());
       return remap(noise, -1.0F, 1.0F, minTarget, maxTarget);
    }
 
@@ -184,7 +169,7 @@ public final class DensityFunctions {
    }
 
    public static DensityFunction shiftedNoise2d(final DensityFunction shiftX, final DensityFunction shiftZ, final double xzScale, final Holder<NormalNoise> noiseData) {
-      return new ShiftedNoiseFunction(shiftX, zero(), shiftZ, xzScale, 0.0, new DensityFunction.NoiseHolder(noiseData));
+      return new NoiseFunction(noiseData, xzScale, 0.0, shiftX, zero(), shiftZ);
    }
 
    public static DensityFunction noise(final Holder<NormalNoise> noiseData) {
@@ -192,7 +177,7 @@ public final class DensityFunctions {
    }
 
    public static DensityFunction noise(final Holder<NormalNoise> noiseData, final double xzScale, final double yScale) {
-      return new NoiseFunction(new DensityFunction.NoiseHolder(noiseData), xzScale, yScale);
+      return new NoiseFunction(noiseData, xzScale, yScale, zero(), zero(), zero());
    }
 
    public static DensityFunction noise(final Holder<NormalNoise> noiseData, final double yScale) {
@@ -208,23 +193,23 @@ public final class DensityFunctions {
    }
 
    public static DensityFunction shiftA(final Holder<NormalNoise> noiseData) {
-      return new ShiftNoiseFunction.ShiftA(new DensityFunction.NoiseHolder(noiseData));
+      return new ShiftNoiseFunction.ShiftA(noiseData);
    }
 
    public static DensityFunction shiftB(final Holder<NormalNoise> noiseData) {
-      return new ShiftNoiseFunction.ShiftB(new DensityFunction.NoiseHolder(noiseData));
+      return new ShiftNoiseFunction.ShiftB(noiseData);
    }
 
    public static DensityFunction shift(final Holder<NormalNoise> noiseData) {
-      return new ShiftNoiseFunction.Shift(new DensityFunction.NoiseHolder(noiseData));
+      return new ShiftNoiseFunction.Shift(noiseData);
    }
 
    public static DensityFunction blendDensity(final DensityFunction input) {
-      return new MarkerFunction(MarkerFunction.Type.BlendDensity, input);
+      return new BlendDensityFunction(input);
    }
 
-   public static DensityFunction endOuterIslands(final long seed) {
-      return new EndIslandFunction(seed);
+   public static DensityFunction endOuterIslands() {
+      return new EndIslandFunction();
    }
 
    public static DensityFunction distanceToPoint(final Vec3i point, final DistanceMetric metric) {
@@ -396,26 +381,22 @@ public final class DensityFunctions {
       ZERO = new ConstantFunction(0.0F);
    }
 
-   @VisibleForDebug
    public static record HolderHolder(Holder<DensityFunction> function) implements DensityFunction {
       public HolderHolder {
          super();
       }
 
-      public float compute(final DensityFunction.FunctionContext context) {
-         return ((DensityFunction)this.function.value()).compute(context);
+      public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+         return ((DensityFunction)this.function.value()).compileSampler(context);
       }
 
-      public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-         ((DensityFunction)this.function.value()).fillArray(output, contextProvider);
-      }
-
-      public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-         return new HolderHolder(Holder.direct(visitor.apply(this.function.value())));
+      public DensityFunction rewriteChildren(final DfRewriteRule rule) {
+         DensityFunction newFunction = rule.rewrite(this.function.value());
+         return (DensityFunction)(newFunction == this.function.value() ? this : newFunction);
       }
 
       public Interval range() {
-         return this.function.isBound() ? ((DensityFunction)this.function.value()).range() : Interval.INFINITE;
+         return ((DensityFunction)this.function.value()).range();
       }
 
       public @DensityFunction.Axes int domainAxes() {

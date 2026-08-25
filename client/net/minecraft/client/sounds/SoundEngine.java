@@ -50,6 +50,7 @@ public class SoundEngine {
    private static final int MIN_SOURCE_LIFETIME = 20;
    private static final Set<Identifier> ONLY_WARN_ONCE = Sets.newHashSet();
    public static final String MISSING_SOUND = "FOR THE DEBUG!";
+   public static final int LOOPING_SOUND_SUBTITLE_INTERVAL_TICKS = 10;
    public static final String OPEN_AL_SOFT_PREFIX = "OpenAL Soft on ";
    public static final int OPEN_AL_SOFT_PREFIX_LENGTH = "OpenAL Soft on ".length();
    private final SoundManager soundManager;
@@ -272,6 +273,16 @@ public class SoundEngine {
                   channel.setPitch(pitch);
                   channel.setSelfPosition(position);
                });
+               if (instance.isLooping() && this.tickCount % 10 == 0 && volume > 0.0F && !this.listeners.isEmpty()) {
+                  Sound sound = instance.getSound();
+                  if (sound != null) {
+                     WeighedSoundEvents soundEvent = instance.getSoundEvent();
+                     if (soundEvent != null) {
+                        float attenuationDistance = sound.getAttenuationDistance(instance.getVolume());
+                        this.notifyListeners(instance, soundEvent, attenuationDistance);
+                     }
+                  }
+               }
             }
          }
       }
@@ -295,7 +306,7 @@ public class SoundEngine {
 
                try {
                   this.instanceBySource.remove(instance.getSource(), instance);
-               } catch (RuntimeException var7) {
+               } catch (RuntimeException var10) {
                }
 
                if (instance instanceof TickableSoundInstance) {
@@ -321,6 +332,19 @@ public class SoundEngine {
          }
       }
 
+   }
+
+   private void notifyListeners(final SoundInstance instance, final WeighedSoundEvents soundEvent, final float attenuationDistance) {
+      float range = getRange(instance.isRelative(), instance.getAttenuation(), attenuationDistance);
+
+      for(SoundEventListener listener : this.listeners) {
+         listener.onPlaySound(instance, soundEvent, range);
+      }
+
+   }
+
+   private static float getRange(final boolean isRelative, final SoundInstance.Attenuation instance, final float attenuationDistance) {
+      return !isRelative && instance != SoundInstance.Attenuation.NONE ? attenuationDistance : 1.0F / 0.0F;
    }
 
    private void tickMusicWhenPaused() {
@@ -366,7 +390,7 @@ public class SoundEngine {
       } else if (!instance.canPlaySound()) {
          return SoundEngine.PlayResult.NOT_STARTED;
       } else {
-         WeighedSoundEvents soundEvent = instance.resolve(this.soundManager);
+         WeighedSoundEvents soundEvent = instance.getOrResolve(this.soundManager);
          Identifier eventLocation = instance.getIdentifier();
          if (soundEvent == null) {
             if (ONLY_WARN_ONCE.add(eventLocation)) {
@@ -391,20 +415,13 @@ public class SoundEngine {
             return SoundEngine.PlayResult.NOT_STARTED;
          } else {
             float instanceVolume = instance.getVolume();
-            float attenuationDistance = Math.max(instanceVolume, 1.0F) * (float)sound.getAttenuationDistance();
-            SoundSource soundSource = instance.getSource();
-            float volume = this.calculateVolume(instanceVolume, soundSource);
-            float pitch = this.calculatePitch(instance);
-            SoundInstance.Attenuation attenuation = instance.getAttenuation();
-            boolean isRelative = instance.isRelative();
+            float attenuationDistance = sound.getAttenuationDistance(instanceVolume);
             if (!this.listeners.isEmpty()) {
-               float range = !isRelative && attenuation != SoundInstance.Attenuation.NONE ? attenuationDistance : 1.0F / 0.0F;
-
-               for(SoundEventListener listener : this.listeners) {
-                  listener.onPlaySound(instance, soundEvent, range);
-               }
+               this.notifyListeners(instance, soundEvent, attenuationDistance);
             }
 
+            SoundSource soundSource = instance.getSource();
+            float volume = this.calculateVolume(instanceVolume, soundSource);
             boolean startedSilently = false;
             if (volume == 0.0F) {
                if (!instance.canStartSilent() && soundSource != SoundSource.MUSIC) {
@@ -431,10 +448,11 @@ public class SoundEngine {
                this.soundDeleteTime.put(instance, this.tickCount + 20);
                this.instanceToChannel.put(instance, handle);
                this.instanceBySource.put(soundSource, instance);
+               float pitch = this.calculatePitch(instance);
                handle.execute((channel) -> {
                   channel.setPitch(pitch);
                   channel.setVolume(volume);
-                  if (attenuation == SoundInstance.Attenuation.LINEAR) {
+                  if (instance.getAttenuation() == SoundInstance.Attenuation.LINEAR) {
                      channel.linearAttenuation(attenuationDistance);
                   } else {
                      channel.disableAttenuation();
@@ -442,7 +460,7 @@ public class SoundEngine {
 
                   channel.setLooping(isLooping && !isStreaming);
                   channel.setSelfPosition(position);
-                  channel.setRelative(isRelative);
+                  channel.setRelative(instance.isRelative());
                });
                if (!isStreaming) {
                   this.soundBuffers.getCompleteBuffer(sound.getPath()).thenAccept((soundBuffer) -> handle.execute((channel) -> {

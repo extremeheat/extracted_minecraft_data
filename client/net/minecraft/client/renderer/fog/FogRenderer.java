@@ -22,12 +22,12 @@ import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.client.renderer.fog.environment.LavaFogEnvironment;
 import net.minecraft.client.renderer.fog.environment.PowderedSnowFogEnvironment;
 import net.minecraft.client.renderer.fog.environment.WaterFogEnvironment;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -112,7 +112,7 @@ public class FogRenderer implements AutoCloseable {
       if (colorSourceEnvironment == null) {
          throw new IllegalStateException("No color source environment found");
       } else {
-         int color = colorSourceEnvironment.getBaseColor(level, camera, renderDistance, partialTicks);
+         Vector3fc color = colorSourceEnvironment.getBaseColor(level, camera, renderDistance, partialTicks);
          float voidDarknessOnsetRange = level.getLevelData().voidDarknessOnsetRange();
          float darkness = Mth.clamp((voidDarknessOnsetRange + (float)level.getMinY() - (float)camera.position().y) / voidDarknessOnsetRange, 0.0F, 1.0F);
          if (darknessModifyingEnvironment != null) {
@@ -120,9 +120,9 @@ public class FogRenderer implements AutoCloseable {
             darkness = darknessModifyingEnvironment.getModifiedDarkness(livingEntity, darkness, partialTicks);
          }
 
-         float fogRed = ARGB.redFloat(color);
-         float fogGreen = ARGB.greenFloat(color);
-         float fogBlue = ARGB.blueFloat(color);
+         float fogRed = color.x();
+         float fogGreen = color.y();
+         float fogBlue = color.z();
          if (darkness > 0.0F && fogType != FogType.LAVA && fogType != FogType.POWDER_SNOW) {
             float brightness = Mth.square(1.0F - darkness);
             fogRed *= brightness;
@@ -145,12 +145,12 @@ public class FogRenderer implements AutoCloseable {
                brightenFactor = 1.0F;
             }
          } else {
-            label72: {
+            label57: {
                if (entity instanceof LivingEntity) {
                   LivingEntity livingEntity = (LivingEntity)entity;
                   if (livingEntity.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity.hasEffect(MobEffects.DARKNESS)) {
                      brightenFactor = GameRenderer.nightVisionScale(livingEntity, partialTicks);
-                     break label72;
+                     break label57;
                   }
                }
 
@@ -159,15 +159,10 @@ public class FogRenderer implements AutoCloseable {
          }
 
          if (fogRed != 0.0F && fogGreen != 0.0F && fogBlue != 0.0F) {
-            float maxColor = Math.max(fogRed, Math.max(fogGreen, fogBlue));
-            float targetScale = 1.0F / Math.clamp(maxColor, 0.07F, 1.0F);
-            float targetScaleMax = 1.0F / maxColor;
-            float scale = maxColor != fogRed ? targetScale : targetScaleMax;
-            fogRed = Mth.lerp(brightenFactor, fogRed, fogRed * scale);
-            scale = maxColor != fogGreen ? targetScale : targetScaleMax;
-            fogGreen = Mth.lerp(brightenFactor, fogGreen, fogGreen * scale);
-            scale = maxColor != fogBlue ? targetScale : targetScaleMax;
-            fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * scale);
+            float targetScale = 1.0F / Math.max(fogRed, Math.max(fogGreen, fogBlue));
+            fogRed = Mth.lerp(brightenFactor, fogRed, fogRed * targetScale);
+            fogGreen = Mth.lerp(brightenFactor, fogGreen, fogGreen * targetScale);
+            fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * targetScale);
          }
 
          dest.set(fogRed, fogGreen, fogBlue, 1.0F);

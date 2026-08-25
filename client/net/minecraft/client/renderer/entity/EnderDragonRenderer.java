@@ -24,7 +24,6 @@ import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
@@ -48,8 +47,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       poseStack.pushPose();
       float yr = state.getHistoricalPos(7).yRot();
       float rot2 = (float)(state.getHistoricalPos(5).y() - state.getHistoricalPos(10).y());
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-yr));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(rot2 * 10.0F));
+      poseStack.rotateDegrees(Axis.YP, -yr);
+      poseStack.rotateDegrees(Axis.XP, rot2 * 10.0F);
       poseStack.translate(0.0F, 0.0F, 1.0F);
       poseStack.scale(-1.0F, -1.0F, 1.0F);
       poseStack.translate(0.0F, -1.501F, 0.0F);
@@ -118,8 +117,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       float length = Mth.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
       poseStack.pushPose();
       poseStack.translate(0.0F, 2.0F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)deltaZ, (double)deltaX)) - 1.5707964F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)horizontalLength, (double)deltaY)) - 1.5707964F));
+      poseStack.rotate(Axis.YP, (float)(-Math.atan2((double)deltaZ, (double)deltaX)) - 1.5707964F);
+      poseStack.rotate(Axis.XP, (float)(-Math.atan2((double)horizontalLength, (double)deltaY)) - 1.5707964F);
       float v0 = 0.0F - timeInTicks * 0.01F;
       float v1 = length / 32.0F - timeInTicks * 0.01F;
       submitNodeCollector.submitCustomGeometry(poseStack, BEAM, (pose, buffer) -> {

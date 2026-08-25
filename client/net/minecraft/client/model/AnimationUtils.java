@@ -73,18 +73,12 @@ public class AnimationUtils {
          float attackXRotModifier = Mth.sin((double)((1.0F - (1.0F - state.swingAnimation) * (1.0F - state.swingAnimation)) * 3.1415927F));
          float xRot = armDrop + attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
          float yRot = 0.1F - attackYRotModifier * 0.6F;
-         if (state.rightArmPose != HumanoidModel.ArmPose.THROW_TRIDENT) {
-            rightArm.xRot = xRot;
-            rightArm.yRot = raiseArms ? -yRot : yRot;
-            rightArm.zRot = 0.0F;
-         }
-
-         if (state.leftArmPose != HumanoidModel.ArmPose.THROW_TRIDENT) {
-            leftArm.xRot = xRot;
-            leftArm.yRot = raiseArms ? yRot : -yRot;
-            leftArm.zRot = 0.0F;
-         }
-
+         rightArm.xRot = xRot;
+         rightArm.yRot = raiseArms ? -yRot : yRot;
+         rightArm.zRot = 0.0F;
+         leftArm.xRot = xRot;
+         leftArm.yRot = raiseArms ? yRot : -yRot;
+         leftArm.zRot = 0.0F;
       }
    }
 }

@@ -63,6 +63,8 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    private static final Component FORCE_GAME_MODE;
    private static final Tooltip FORCE_GAME_MODE_ON_TOOLTIP;
    private static final Tooltip FORCE_GAME_MODE_OFF_TOOLTIP;
+   private static final Tooltip FORCE_GAME_MODE_OFF_MULTIPLAYER_TOOLTIP;
+   private static final Tooltip FORCE_GAME_MODE_OFF_HARDCORE_TOOLTIP;
    private static final Tooltip FORCE_GAME_MODE_OFF_COMMANDS_TOOLTIP;
    private static final int PORT_LOWER_BOUND = 1024;
    private static final int PORT_HIGHER_BOUND = 65535;
@@ -183,9 +185,10 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    private CycleButton<Boolean> createAllowCommandsButton(final IntegratedServer singleplayerServer) {
-      CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).create(ALLOW_COMMANDS, (var2, allowCommands) -> {
+      CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).withTooltip((var0) -> ALLOW_COMMANDS_TOOLTIP).create(ALLOW_COMMANDS, (var2, allowCommands) -> {
          this.wantedAllowCommands = allowCommands;
          this.updateGuestCommandAccessButton(singleplayerServer);
+         this.updatePermissionDependentButtons(singleplayerServer, allowCommands);
          this.updateApplyChangesActiveState();
       });
       if (singleplayerServer.isDemo()) {
@@ -203,10 +206,31 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
    private void updateButton(final @Nullable AbstractWidget widget, final @Nullable IntegratedServer singleplayerServer, final @Nullable Tooltip tooltip, final Tooltip disabledTooltip, final Tooltip hardcoreTooltip) {
       if (widget != null) {
-         boolean hardcore = singleplayerServer != null && singleplayerServer.isHardcore();
-         boolean hasGameMasterPermission = this.minecraft.player != null && this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
-         widget.active = !hardcore && hasGameMasterPermission;
-         widget.setTooltip(hardcore ? hardcoreTooltip : (hasGameMasterPermission ? tooltip : disabledTooltip));
+         boolean hardcore;
+         boolean var10000;
+         label42: {
+            label41: {
+               hardcore = singleplayerServer != null && singleplayerServer.isHardcore();
+               if (this.minecraft.player != null) {
+                  if (this.wantedAllowCommands == null) {
+                     if (this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+                        break label41;
+                     }
+                  } else if (this.wantedAllowCommands) {
+                     break label41;
+                  }
+               }
+
+               var10000 = false;
+               break label42;
+            }
+
+            var10000 = true;
+         }
+
+         boolean shouldButtonsBeActive = var10000;
+         widget.active = !hardcore && shouldButtonsBeActive;
+         widget.setTooltip(hardcore ? hardcoreTooltip : (shouldButtonsBeActive ? tooltip : disabledTooltip));
       }
 
    }
@@ -296,9 +320,12 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
          boolean lanScope = this.wantedMultiplayerScope == MinecraftServer.MultiplayerScope.LAN;
          boolean guestCommandAccess = Boolean.TRUE.equals(this.wantedGuestCommandAccess);
          Tooltip tooltip;
-         if (!lanScope) {
+         if (singleplayerServer.isHardcore()) {
             this.wantedForceGameMode = true;
-            tooltip = null;
+            tooltip = FORCE_GAME_MODE_OFF_HARDCORE_TOOLTIP;
+         } else if (!lanScope) {
+            this.wantedForceGameMode = true;
+            tooltip = FORCE_GAME_MODE_OFF_MULTIPLAYER_TOOLTIP;
          } else if (guestCommandAccess) {
             this.wantedForceGameMode = false;
             tooltip = FORCE_GAME_MODE_OFF_COMMANDS_TOOLTIP;
@@ -309,7 +336,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
          this.forceGameModeButton.setValue(this.wantedForceGameMode);
          this.forceGameModeButton.setTooltip(tooltip);
-         this.forceGameModeButton.active = lanScope && !guestCommandAccess;
+         this.forceGameModeButton.active = lanScope && !guestCommandAccess && !singleplayerServer.isHardcore();
       }
 
    }
@@ -388,10 +415,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
-      this.updateButton(this.gameRulesButton, singleplayerServer, (Tooltip)null, GAMERULES_DISABLED_TOOLTIP, GAMERULES_DISABLED_HARDCORE_TOOLTIP);
-      this.updateButton(this.defaultGameModeButton, singleplayerServer, DEFAULT_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
-      this.updateButton(this.personalGameModeButton, singleplayerServer, PERSONAL_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
-      this.difficultyButtons.refresh(this.minecraft, this);
+      this.updatePermissionDependentButtons(singleplayerServer, hasGamemasterPermission);
       if (!hasGamemasterPermission && !this.minecraft.hasSingleplayerServer()) {
          this.minecraft.gui.setScreen(this.lastScreen);
          Screen var4 = this.minecraft.gui.screen();
@@ -401,6 +425,23 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
          }
       }
 
+   }
+
+   private void updatePermissionDependentButtons(final @Nullable IntegratedServer singleplayerServer, final boolean allowCommands) {
+      if (!allowCommands) {
+         if (this.defaultGameModeButton != null && this.personalGameModeButton != null && this.initialDefaultGameMode != null) {
+            this.wantedDefaultGameMode = this.initialDefaultGameMode;
+            this.defaultGameModeButton.setValue(this.wantedDefaultGameMode);
+            this.personalGameModeButton.setValue(this.wantedDefaultGameMode);
+         }
+      } else if (this.personalGameModeButton != null && this.wantedPersonalGameMode != null) {
+         this.personalGameModeButton.setValue(this.wantedPersonalGameMode);
+      }
+
+      this.updateButton(this.gameRulesButton, singleplayerServer, (Tooltip)null, GAMERULES_DISABLED_TOOLTIP, GAMERULES_DISABLED_HARDCORE_TOOLTIP);
+      this.updateButton(this.defaultGameModeButton, singleplayerServer, DEFAULT_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
+      this.updateButton(this.personalGameModeButton, singleplayerServer, PERSONAL_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
+      this.difficultyButtons.refresh(this.minecraft, this);
    }
 
    public void updatePersonalGameModeButton(final GameType mode) {
@@ -416,7 +457,15 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    public void onDifficultyChanged() {
-      this.difficultyButtons.refresh(this.minecraft, this);
+      this.difficultyButtons.refresh(this.minecraft, this, true);
+   }
+
+   public void onDefaultGameModeChanged(final GameType mode) {
+      if (this.defaultGameModeButton != null) {
+         this.initialDefaultGameMode = mode;
+         this.defaultGameModeButton.setValue(mode);
+      }
+
    }
 
    private boolean portIsRequired() {
@@ -539,6 +588,8 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       FORCE_GAME_MODE = Component.translatable("options.worldOptions.guest.force_game_mode");
       FORCE_GAME_MODE_ON_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.guest.force_game_mode.on.tooltip"));
       FORCE_GAME_MODE_OFF_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.guest.force_game_mode.off.tooltip"));
+      FORCE_GAME_MODE_OFF_MULTIPLAYER_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.guest.force_game_mode.off.scope.tooltip"));
+      FORCE_GAME_MODE_OFF_HARDCORE_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.guest.force_game_mode.off.hardcore.tooltip"));
       FORCE_GAME_MODE_OFF_COMMANDS_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.guest.force_game_mode.off.commands.tooltip"));
       PORT_INFO_TEXT = Component.translatable("lanServer.port");
       PORT_UNAVAILABLE = Component.translatable("lanServer.port.unavailable", 1024, 65535);
@@ -596,13 +647,17 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       }
 
       private void refresh(final Minecraft minecraft, final WorldOptionsScreen worldOptionsScreen) {
-         this.difficultyButton.setValue(worldOptionsScreen.wantedDifficulty != null ? worldOptionsScreen.wantedDifficulty : this.level.getDifficulty());
+         this.refresh(minecraft, worldOptionsScreen, false);
+      }
+
+      private void refresh(final Minecraft minecraft, final WorldOptionsScreen worldOptionsScreen, final boolean forceLevelDifficulty) {
+         this.difficultyButton.setValue(forceLevelDifficulty ? this.level.getDifficulty() : (worldOptionsScreen.wantedDifficulty != null ? worldOptionsScreen.wantedDifficulty : this.level.getDifficulty()));
          this.lockButton.setLocked(worldOptionsScreen.wantedDifficultyLocked != null ? worldOptionsScreen.wantedDifficultyLocked : isDifficultyLocked(this.level));
          updateDifficultyButtonsState(minecraft, this.level, this.difficultyButton, this.lockButton);
       }
 
       private static void updateDifficultyButtonsState(final Minecraft minecraft, final Level level, final CycleButton<Difficulty> difficultyButton, final LockIconButton lockButton) {
-         if (minecraft.player != null && minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+         if (minecraft.player != null && (minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) || minecraft.getSingleplayerServer() != null && minecraft.getSingleplayerServer().isSingleplayerOwner(minecraft.player.nameAndId()))) {
             if (level.getLevelData().isDifficultyLocked()) {
                lockButton.active = false;
                difficultyButton.active = false;

@@ -240,7 +240,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       DataFixer fixerUpper = server.getFixerUpper();
       EntityPersistentStorage<Entity> entityStorage = new EntityStorage(new SimpleRegionStorage(new RegionStorageInfo(levelStorage.getLevelId(), dimension, "entities"), levelStorage.getDimensionPath(dimension).resolve("entities"), fixerUpper, syncWrites, DataFixTypes.ENTITY_CHUNK), this, server);
       this.entityManager = new PersistentEntitySectionManager<Entity>(Entity.class, new EntityCallbacks(), entityStorage);
-      StructureTemplateManager var10006 = server.getStructureManager();
+      StructureTemplateManager var10006 = server.getStructureTemplateManager();
       int var10009 = server.getPlayerList().getViewDistance();
       int var10010 = server.getPlayerList().getSimulationDistance();
       PersistentEntitySectionManager var10012 = this.entityManager;
@@ -260,7 +260,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       WorldGenSettings worldGenSettings = server.getWorldGenSettings();
       WorldOptions options = worldGenSettings.options();
       long seed = options.seed();
-      this.structureCheck = new StructureCheck(this.chunkSource.chunkScanner(), this.registryAccess(), server.getStructureManager(), dimension, generator, this.chunkSource.randomState(), this, generator.getBiomeSource(), seed, fixerUpper);
+      this.structureCheck = new StructureCheck(this.chunkSource.chunkScanner(), this.registryAccess(), server.getStructureTemplateManager(), dimension, generator, this.chunkSource.randomState(), this, generator.getBiomeSource(), seed, fixerUpper);
       this.structureManager = new StructureManager(this, options, this.structureCheck);
       if (this.dimensionType().hasEnderDragonFight()) {
          this.dragonFight = (EnderDragonFight)this.getDataStorage().computeIfAbsent(EnderDragonFight.TYPE);
@@ -271,7 +271,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.gameEventDispatcher = new GameEventDispatcher(this);
       this.waypointManager = new ServerWaypointManager();
       this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
-      this.uncachedBiomeResolver = this.getChunkSource().getGenerator().getBiomeSource().createResolver(this.getChunkSource().randomState().sampler());
+      this.uncachedBiomeResolver = this.getChunkSource().getGenerator().getBiomeSource().createUncachedResolver(this.getChunkSource().randomState());
       this.updateSkyBrightness();
    }
 
@@ -432,6 +432,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
       this.debugSynchronizers.tick(this.server.debugSubscribers());
       profiler.pop();
+      this.chunkSource.randomState().garbageCollect();
    }
 
    public boolean shouldTickBlocksAt(final long chunkPos) {
@@ -1218,8 +1219,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return this.portalForcer;
    }
 
-   public StructureTemplateManager getStructureManager() {
-      return this.server.getStructureManager();
+   public StructureTemplateManager getStructureTemplateManager() {
+      return this.server.getStructureTemplateManager();
    }
 
    public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed) {
@@ -1307,7 +1308,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final Predicate<Holder<Biome>> biomeTest, final BlockPos origin, final int maxSearchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical) {
-      return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(origin, maxSearchRadius, sampleResolutionHorizontal, sampleResolutionVertical, biomeTest, this.getChunkSource().randomState().sampler(), this);
+      return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(origin, maxSearchRadius, sampleResolutionHorizontal, sampleResolutionVertical, biomeTest, this.getChunkSource().randomState(), this);
    }
 
    public WorldBorder getWorldBorder() {

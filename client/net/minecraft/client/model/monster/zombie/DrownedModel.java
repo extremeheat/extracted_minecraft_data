@@ -1,6 +1,5 @@
 package net.minecraft.client.model.monster.zombie;
 
-import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -12,7 +11,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.util.Mth;
 
-public class DrownedModel extends HumanoidModel<ZombieRenderState> {
+public class DrownedModel extends ZombieModel<ZombieRenderState> {
    public DrownedModel(final ModelPart root) {
       super(root);
    }
@@ -25,20 +24,30 @@ public class DrownedModel extends HumanoidModel<ZombieRenderState> {
       return LayerDefinition.create(mesh, 64, 64);
    }
 
-   protected void setupAttackAnimation(final ZombieRenderState state) {
-      super.setupAttackAnimation(state);
-      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, state.isAggressive, state);
-   }
+   public void setupAnim(final ZombieRenderState state) {
+      super.setupAnim(state);
+      if (state.leftArmPose == HumanoidModel.ArmPose.THROW_TRIDENT) {
+         this.leftArm.xRot = this.leftArm.xRot * 0.5F - 3.1415927F;
+         this.leftArm.yRot = 0.0F;
+      }
 
-   protected void setupSwimAnimation(final ZombieRenderState state, final float animationPos, final float swimAmount) {
-      this.rightArm.xRot = Mth.rotLerpRad(swimAmount, this.rightArm.xRot, -2.5132742F) + swimAmount * 0.35F * Mth.sin((double)(0.1F * state.ageInTicks));
-      this.leftArm.xRot = Mth.rotLerpRad(swimAmount, this.leftArm.xRot, -2.5132742F) - swimAmount * 0.35F * Mth.sin((double)(0.1F * state.ageInTicks));
-      this.rightArm.zRot = Mth.rotLerpRad(swimAmount, this.rightArm.zRot, -0.15F);
-      this.leftArm.zRot = Mth.rotLerpRad(swimAmount, this.leftArm.zRot, 0.15F);
-      ModelPart var10000 = this.leftLeg;
-      var10000.xRot -= swimAmount * 0.55F * Mth.sin((double)(0.1F * state.ageInTicks));
-      var10000 = this.rightLeg;
-      var10000.xRot += swimAmount * 0.55F * Mth.sin((double)(0.1F * state.ageInTicks));
-      this.head.xRot = 0.0F;
+      if (state.rightArmPose == HumanoidModel.ArmPose.THROW_TRIDENT) {
+         this.rightArm.xRot = this.rightArm.xRot * 0.5F - 3.1415927F;
+         this.rightArm.yRot = 0.0F;
+      }
+
+      float swimAmount = state.swimAmount;
+      if (swimAmount > 0.0F) {
+         this.rightArm.xRot = Mth.rotLerpRad(swimAmount, this.rightArm.xRot, -2.5132742F) + swimAmount * 0.35F * Mth.sin((double)(0.1F * state.ageInTicks));
+         this.leftArm.xRot = Mth.rotLerpRad(swimAmount, this.leftArm.xRot, -2.5132742F) - swimAmount * 0.35F * Mth.sin((double)(0.1F * state.ageInTicks));
+         this.rightArm.zRot = Mth.rotLerpRad(swimAmount, this.rightArm.zRot, -0.15F);
+         this.leftArm.zRot = Mth.rotLerpRad(swimAmount, this.leftArm.zRot, 0.15F);
+         ModelPart var10000 = this.leftLeg;
+         var10000.xRot -= swimAmount * 0.55F * Mth.sin((double)(0.1F * state.ageInTicks));
+         var10000 = this.rightLeg;
+         var10000.xRot += swimAmount * 0.55F * Mth.sin((double)(0.1F * state.ageInTicks));
+         this.head.xRot = 0.0F;
+      }
+
    }
 }

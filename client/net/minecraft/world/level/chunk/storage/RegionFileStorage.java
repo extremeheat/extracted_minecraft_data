@@ -7,7 +7,11 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -21,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 public final class RegionFileStorage implements AutoCloseable {
    public static final String ANVIL_EXTENSION = ".mca";
    private static final int MAX_CACHE_SIZE = 256;
-   private final Long2ObjectLinkedOpenHashMap<RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap();
+   private final Long2ObjectLinkedOpenHashMap<Optional<RegionFile>> regionCache = new Long2ObjectLinkedOpenHashMap();
    private final RegionStorageInfo info;
    private final Path folder;
    private final boolean sync;
@@ -33,49 +37,85 @@ public final class RegionFileStorage implements AutoCloseable {
       this.info = info;
    }
 
-   private RegionFile getRegionFile(final ChunkPos pos) throws IOException {
+   private Path regionPath(final ChunkPos pos) {
+      Path var10000 = this.folder;
+      int var10001 = pos.getRegionX();
+      return var10000.resolve("r." + var10001 + "." + pos.getRegionZ() + ".mca");
+   }
+
+   private @Nullable RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException {
       long key = ChunkPos.pack(pos.getRegionX(), pos.getRegionZ());
-      RegionFile region = (RegionFile)this.regionCache.getAndMoveToFirst(key);
-      if (region != null) {
-         return region;
-      } else {
-         if (this.regionCache.size() >= 256) {
-            ((RegionFile)this.regionCache.removeLast()).close();
+      Optional<RegionFile> cached = (Optional)this.regionCache.getAndMoveToFirst(key);
+      if (cached != null) {
+         if (cached.isPresent()) {
+            return (RegionFile)cached.get();
          }
 
+         if (!create) {
+            return null;
+         }
+      }
+
+      Path path = this.regionPath(pos);
+      if (!create && !Files.isRegularFile(path, new LinkOption[0])) {
+         this.cache(key, Optional.empty());
+         return null;
+      } else {
          FileUtil.createDirectoriesSafe(this.folder);
-         Path var10000 = this.folder;
-         int var10001 = pos.getRegionX();
-         Path file = var10000.resolve("r." + var10001 + "." + pos.getRegionZ() + ".mca");
-         RegionFile newRegion = new RegionFile(this.info, file, this.folder, this.sync);
-         this.regionCache.putAndMoveToFirst(key, newRegion);
+         RegionFile newRegion = new RegionFile(this.info, path, this.folder, this.sync);
+         this.cache(key, Optional.of(newRegion));
          return newRegion;
       }
    }
 
+   private RegionFile getOrCreateRegionFile(final ChunkPos pos) throws IOException {
+      return (RegionFile)Objects.requireNonNull(this.getRegionFile(pos, true));
+   }
+
+   private void cache(final long key, final Optional<RegionFile> entry) throws IOException {
+      this.regionCache.putAndMoveToFirst(key, entry);
+      if (this.regionCache.size() > 256) {
+         Optional<RegionFile> evicted = (Optional)this.regionCache.removeLast();
+         if (evicted.isPresent()) {
+            ((RegionFile)evicted.get()).close();
+         }
+      }
+
+   }
+
    public @Nullable CompoundTag read(final ChunkPos pos) throws IOException {
-      RegionFile region = this.getRegionFile(pos);
-      DataInputStream regionChunkInputStream = region.getChunkDataInputStream(pos);
+      RegionFile region = this.getRegionFile(pos, false);
+      if (region == null) {
+         return null;
+      } else {
+         DataInputStream regionChunkInputStream = region.getChunkDataInputStream(pos);
 
-      CompoundTag var8;
-      label43: {
-         try {
-            if (regionChunkInputStream == null) {
-               var8 = null;
-               break label43;
-            }
-
-            var8 = NbtIo.read((DataInput)regionChunkInputStream);
-         } catch (Throwable var7) {
-            if (regionChunkInputStream != null) {
-               try {
-                  regionChunkInputStream.close();
-               } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
+         CompoundTag var8;
+         label47: {
+            try {
+               if (regionChunkInputStream == null) {
+                  var8 = null;
+                  break label47;
                }
+
+               var8 = NbtIo.read((DataInput)regionChunkInputStream);
+            } catch (Throwable var7) {
+               if (regionChunkInputStream != null) {
+                  try {
+                     regionChunkInputStream.close();
+                  } catch (Throwable var6) {
+                     var7.addSuppressed(var6);
+                  }
+               }
+
+               throw var7;
             }
 
-            throw var7;
+            if (regionChunkInputStream != null) {
+               regionChunkInputStream.close();
+            }
+
+            return var8;
          }
 
          if (regionChunkInputStream != null) {
@@ -84,43 +124,39 @@ public final class RegionFileStorage implements AutoCloseable {
 
          return var8;
       }
-
-      if (regionChunkInputStream != null) {
-         regionChunkInputStream.close();
-      }
-
-      return var8;
    }
 
    public void scanChunk(final ChunkPos pos, final StreamTagVisitor scanner) throws IOException {
-      RegionFile region = this.getRegionFile(pos);
-      DataInputStream regionChunkInputStream = region.getChunkDataInputStream(pos);
+      RegionFile region = this.getRegionFile(pos, false);
+      if (region != null) {
+         DataInputStream regionChunkInputStream = region.getChunkDataInputStream(pos);
 
-      try {
-         if (regionChunkInputStream != null) {
-            NbtIo.parse(regionChunkInputStream, scanner, NbtAccounter.unlimitedHeap());
-         }
-      } catch (Throwable var8) {
-         if (regionChunkInputStream != null) {
-            try {
-               regionChunkInputStream.close();
-            } catch (Throwable var7) {
-               var8.addSuppressed(var7);
+         try {
+            if (regionChunkInputStream != null) {
+               NbtIo.parse(regionChunkInputStream, scanner, NbtAccounter.unlimitedHeap());
             }
+         } catch (Throwable var8) {
+            if (regionChunkInputStream != null) {
+               try {
+                  regionChunkInputStream.close();
+               } catch (Throwable var7) {
+                  var8.addSuppressed(var7);
+               }
+            }
+
+            throw var8;
          }
 
-         throw var8;
-      }
+         if (regionChunkInputStream != null) {
+            regionChunkInputStream.close();
+         }
 
-      if (regionChunkInputStream != null) {
-         regionChunkInputStream.close();
       }
-
    }
 
    public void write(final ChunkPos pos, final @Nullable CompoundTag value) throws IOException {
       if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {
-         RegionFile region = this.getRegionFile(pos);
+         RegionFile region = this.getOrCreateRegionFile(pos);
          if (value == null) {
             region.clear(pos);
          } else {
@@ -153,12 +189,13 @@ public final class RegionFileStorage implements AutoCloseable {
       ObjectIterator var2 = this.regionCache.values().iterator();
 
       while(var2.hasNext()) {
-         RegionFile regionFile = (RegionFile)var2.next();
-
-         try {
-            regionFile.close();
-         } catch (IOException e) {
-            exception.add(e);
+         Optional<RegionFile> entry = (Optional)var2.next();
+         if (!entry.isEmpty()) {
+            try {
+               ((RegionFile)entry.get()).close();
+            } catch (IOException e) {
+               exception.add(e);
+            }
          }
       }
 
@@ -169,8 +206,10 @@ public final class RegionFileStorage implements AutoCloseable {
       ObjectIterator var1 = this.regionCache.values().iterator();
 
       while(var1.hasNext()) {
-         RegionFile regionFile = (RegionFile)var1.next();
-         regionFile.flush();
+         Optional<RegionFile> entry = (Optional)var1.next();
+         if (entry.isPresent()) {
+            ((RegionFile)entry.get()).flush();
+         }
       }
 
    }

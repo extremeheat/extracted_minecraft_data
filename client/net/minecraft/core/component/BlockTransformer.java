@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -46,8 +47,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import org.jspecify.annotations.Nullable;
 
 public record BlockTransformer(List<BlockTransformData> transforms) {
-   public static final Codec<BlockTransformer> CODEC;
-   public static final StreamCodec<RegistryFriendlyByteBuf, BlockTransformer> STREAM_CODEC;
+   public static final Codec<BlockTransformer> DIRECT_CODEC;
+   public static final Codec<Holder<BlockTransformer>> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<BlockTransformer>> STREAM_CODEC;
 
    public BlockTransformer {
       super();
@@ -110,8 +112,9 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
    }
 
    static {
-      CODEC = BlockTransformer.BlockTransformData.CODEC.listOf(1, 200).xmap(BlockTransformer::new, BlockTransformer::transforms);
-      STREAM_CODEC = StreamCodec.composite(BlockTransformer.BlockTransformData.STREAM_CODEC.apply(ByteBufCodecs.list()), BlockTransformer::transforms, BlockTransformer::new);
+      DIRECT_CODEC = BlockTransformer.BlockTransformData.CODEC.listOf(1, 200).xmap(BlockTransformer::new, BlockTransformer::transforms);
+      CODEC = RegistryCodecs.holder(Registries.BLOCK_TRANSFORMER);
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.BLOCK_TRANSFORMER);
    }
 
    public static record BlockTransformData(BlockStateProvider blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, boolean updateFromNeighbors, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {

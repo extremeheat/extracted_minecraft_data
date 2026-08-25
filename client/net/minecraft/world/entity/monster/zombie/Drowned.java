@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -14,8 +13,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.TimeUtil;
-import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -24,14 +21,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -68,18 +63,13 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
+public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
    private static final EntityDimensions BABY_DIMENSIONS;
-   private static final UniformInt PERSISTENT_ANGER_TIME;
-   private long persistentAngerEndTime;
-   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
    private boolean searchingForLand;
    private float rangedAttackUncertainty = -1.0F;
 
@@ -93,16 +83,6 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       return Zombie.createAttributes().add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   protected void addAdditionalSaveData(final ValueOutput output) {
-      super.addAdditionalSaveData(output);
-      this.addPersistentAngerSaveData(output);
-   }
-
-   protected void readAdditionalSaveData(final ValueInput input) {
-      super.readAdditionalSaveData(input);
-      this.readPersistentAngerSaveData(this.level(), input);
-   }
-
    protected PathNavigation createNavigation(final Level level) {
       return new AmphibiousPathNavigation(this, level);
    }
@@ -114,8 +94,8 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       this.goalSelector.addGoal(5, new DrownedGoToBeachGoal(this, 1.0));
       this.goalSelector.addGoal(6, new DrownedSwimUpGoal(this, 1.0, this.level().getSeaLevel()));
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
-      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class).setAlertCondition(() -> !this.shouldBehaveNeutrally()));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::okTarget));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> this.okTarget(target)));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Axolotl.class, true, false));
@@ -166,11 +146,6 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
 
    private static boolean isDeepEnoughToSpawn(final LevelAccessor level, final BlockPos pos) {
       return pos.getY() < level.getSeaLevel() - 5;
-   }
-
-   private boolean shouldBehaveNeutrally() {
-      LivingEntity target = this.getTarget();
-      return this.level().isBrightOutside() && (target == null || !target.isInWater());
    }
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
@@ -225,9 +200,9 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       return level.isUnobstructed(this);
    }
 
-   public boolean okTarget(final @Nullable LivingEntity target, final ServerLevel level) {
+   public boolean okTarget(final @Nullable LivingEntity target) {
       if (target != null) {
-         return this.shouldBehaveNeutrally() ? this.isAngryAt(target, level) : true;
+         return !this.level().isBrightOutside() || target.isInWater();
       } else {
          return false;
       }
@@ -283,26 +258,6 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       return false;
    }
 
-   private boolean shouldDoRangedAttack() {
-      if (!this.getMainHandItem().is(Items.TRIDENT)) {
-         return false;
-      } else if (this.hasTargetInRangedDistance()) {
-         return true;
-      } else {
-         LivingEntity target = this.getTarget();
-         if (target != null && target.isAlive()) {
-            if (this.isWithinMeleeAttackRange(target)) {
-               return false;
-            } else {
-               Path path = this.navigation.getPath() != null ? this.navigation.getPath() : this.navigation.createPath(target, 0);
-               return path != null && path.getTarget().equals(target.blockPosition()) && !path.canReach();
-            }
-         } else {
-            return false;
-         }
-      }
-   }
-
    public void performRangedAttack(final LivingEntity target, final float power) {
       ItemStack mainHandItem = this.getMainHandItem();
       ItemStack tridentItemStack = mainHandItem.is(Items.TRIDENT) ? mainHandItem : new ItemStack(Items.TRIDENT);
@@ -353,38 +308,8 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       return itemStack.is(ItemTags.SPEARS) ? false : super.wantsToPickUp(level, itemStack);
    }
 
-   public void setPersistentAngerEndTime(final long endTime) {
-      this.persistentAngerEndTime = endTime;
-   }
-
-   public long getPersistentAngerEndTime() {
-      return this.persistentAngerEndTime;
-   }
-
-   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
-      this.persistentAngerTarget = persistentAngerTarget;
-   }
-
-   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
-      return this.persistentAngerTarget;
-   }
-
-   public void startPersistentAngerTimer() {
-      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
-   }
-
-   protected void customServerAiStep(final ServerLevel level) {
-      this.updatePersistentAnger(level, true);
-      super.customServerAiStep(level);
-   }
-
-   public boolean isPreventingPlayerRest(final ServerLevel level, final Player player) {
-      return this.isAngryAt(player, level);
-   }
-
    static {
       BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.775F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
-      PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 
    private static class DrownedTridentAttackGoal extends RangedAttackGoal {
@@ -396,11 +321,7 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       }
 
       public boolean canUse() {
-         return super.canUse() && this.drowned.shouldDoRangedAttack();
-      }
-
-      public boolean canContinueToUse() {
-         return super.canContinueToUse() && this.drowned.shouldDoRangedAttack();
+         return super.canUse() && this.drowned.getMainHandItem().is(Items.TRIDENT);
       }
 
       public void start() {
@@ -557,27 +478,11 @@ public class Drowned extends Zombie implements RangedAttackMob, NeutralMob {
       }
 
       public boolean canUse() {
-         return super.canUse() && this.drowned.okTarget(this.drowned.getTarget(), getServerLevel(this.drowned)) && !this.drowned.shouldDoRangedAttack();
+         return super.canUse() && this.drowned.okTarget(this.drowned.getTarget());
       }
 
       public boolean canContinueToUse() {
-         return super.canContinueToUse() && this.drowned.okTarget(this.drowned.getTarget(), getServerLevel(this.drowned)) && !this.drowned.shouldDoRangedAttack();
-      }
-
-      public void start() {
-         super.start();
-         if (this.drowned.getMainHandItem().has(DataComponents.WEAPON)) {
-            this.drowned.startUsingItem(InteractionHand.MAIN_HAND);
-         }
-
-      }
-
-      public void stop() {
-         super.stop();
-         if (this.drowned.getMainHandItem().has(DataComponents.WEAPON)) {
-            this.drowned.stopUsingItem();
-         }
-
+         return super.canContinueToUse() && this.drowned.okTarget(this.drowned.getTarget());
       }
    }
 

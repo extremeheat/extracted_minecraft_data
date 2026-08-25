@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ExperienceOrb;
-import org.joml.Quaternionfc;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, ExperienceOrbRenderState> {
    private static final Identifier EXPERIENCE_ORB_LOCATION = Identifier.withDefaultNamespace("textures/entity/experience/experience_orb.png");
@@ -44,7 +43,7 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
       int gc = 255;
       int bc = (int)((Mth.sin((double)(rr + 4.1887903F)) + 1.0F) * 0.1F * 255.0F);
       poseStack.translate(0.0F, 0.1F, 0.0F);
-      poseStack.mulPose((Quaternionfc)camera.orientation);
+      poseStack.rotate(camera.orientation);
       float s = 0.3F;
       poseStack.scale(0.3F, 0.3F, 0.3F);
       submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> {

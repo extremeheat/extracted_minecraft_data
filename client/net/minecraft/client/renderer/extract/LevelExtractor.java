@@ -78,6 +78,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
 public class LevelExtractor implements ResourceManagerReloadListener {
@@ -197,7 +198,8 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       profiler.popPush("particles");
       this.minecraft.particleEngine.extract(this.levelRenderState.particlesRenderState, (new Frustum(cullFrustum)).offset(-3.0F), camera, worldPartialTicks);
       profiler.popPush("cloud");
-      this.levelRenderState.cloudColor = (Integer)camera.attributeProbe().getValue(EnvironmentAttributes.CLOUD_COLOR, worldPartialTicks);
+      Vector4fc cloudColor = (Vector4fc)camera.attributeProbe().getValue(EnvironmentAttributes.CLOUD_COLOR, worldPartialTicks);
+      this.levelRenderState.cloudColor = ARGB.colorFromVector4f(cloudColor);
       if (ARGB.alpha(this.levelRenderState.cloudColor) > 0) {
          this.levelRenderState.cloudHeight = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.CLOUD_HEIGHT, worldPartialTicks);
       }

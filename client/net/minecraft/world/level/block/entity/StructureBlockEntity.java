@@ -341,7 +341,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    }
 
    public static boolean saveStructure(final ServerLevel level, final Identifier structureName, final BlockPos pos, final Vec3i structureSize, final boolean ignoreEntities, final String author, final boolean saveToDisk, final List<Block> ignoreBlocks) {
-      StructureTemplateManager manager = level.getStructureManager();
+      StructureTemplateManager manager = level.getStructureTemplateManager();
 
       StructureTemplate structureTemplate;
       try {
@@ -369,7 +369,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
    public boolean placeStructureIfSameSize(final ServerLevel level) {
       if (this.mode == StructureMode.LOAD && this.structureName != null) {
-         StructureTemplate template = (StructureTemplate)level.getStructureManager().get(this.structureName).orElse((Object)null);
+         StructureTemplate template = (StructureTemplate)level.getStructureTemplateManager().get(this.structureName).orElse((Object)null);
          if (template == null) {
             return false;
          } else if (template.getSize().equals(this.structureSize)) {
@@ -409,7 +409,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    }
 
    private @Nullable StructureTemplate getStructureTemplate(final ServerLevel level) {
-      return this.structureName == null ? null : (StructureTemplate)level.getStructureManager().get(this.structureName).orElse((Object)null);
+      return this.structureName == null ? null : (StructureTemplate)level.getStructureTemplateManager().get(this.structureName).orElse((Object)null);
    }
 
    private void placeStructure(final ServerLevel level, final StructureTemplate template) {
@@ -430,7 +430,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    public void unloadStructure() {
       if (this.structureName != null) {
          ServerLevel serverLevel = (ServerLevel)this.level;
-         StructureTemplateManager manager = serverLevel.getStructureManager();
+         StructureTemplateManager manager = serverLevel.getStructureTemplateManager();
          manager.remove(this.structureName);
       }
    }
@@ -438,7 +438,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    public boolean isStructureLoadable() {
       if (this.mode == StructureMode.LOAD && !this.level.isClientSide() && this.structureName != null) {
          ServerLevel serverLevel = (ServerLevel)this.level;
-         StructureTemplateManager manager = serverLevel.getStructureManager();
+         StructureTemplateManager manager = serverLevel.getStructureTemplateManager();
 
          try {
             return manager.get(this.structureName).isPresent();

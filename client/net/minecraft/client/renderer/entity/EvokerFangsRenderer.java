@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.EvokerFangs;
-import org.joml.Quaternionfc;
 
 public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs, EvokerFangsRenderState> {
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/illager/evoker_fangs.png");
@@ -25,7 +24,7 @@ public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs, EvokerFangs
       float biteProgress = state.biteProgress;
       if (biteProgress != 0.0F) {
          poseStack.pushPose();
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F - state.yRot));
+         poseStack.rotateDegrees(Axis.YP, 90.0F - state.yRot);
          poseStack.scale(-1.0F, -1.0F, 1.0F);
          poseStack.translate(0.0F, -1.501F, 0.0F);
          submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);

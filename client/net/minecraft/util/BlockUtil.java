@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntStack;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockUtil {
+   public static final int MAX_POSITION_DIFFERENCE_PACKING_RADIUS = 127;
+
    public BlockUtil() {
       super();
    }
@@ -122,6 +125,51 @@ public class BlockUtil {
       } while(forwardState.is(bodyBlock));
 
       return forwardState.is(headBlock) ? Optional.of(forwardPos) : Optional.empty();
+   }
+
+   public static int clampedPackDifferenceInPosition(final BlockPos pos, final BlockPos testPos, final int xRadius, final int yRadius, final int zRadius) {
+      int clampedXRadius = Mth.clamp(xRadius, 0, 127);
+      int clampedYRadius = Mth.clamp(yRadius, 0, 127);
+      int clampedZRadius = Mth.clamp(zRadius, 0, 127);
+      int xDiff = Mth.clamp(testPos.getX() - pos.getX(), -127, 127);
+      int yDiff = Mth.clamp(testPos.getY() - pos.getY(), -127, 127);
+      int zDiff = Mth.clamp(testPos.getZ() - pos.getZ(), -127, 127);
+      return packDifferenceInPositionInternal(clampedXRadius, clampedYRadius, clampedZRadius, xDiff, yDiff, zDiff);
+   }
+
+   public static int packDifferenceInPosition(final BlockPos pos, final BlockPos testPos, final int xRadius, final int yRadius, final int zRadius) {
+      if (xRadius <= 127 && yRadius <= 127 && zRadius <= 127) {
+         int xDiff = checkDifferenceInBounds(testPos.getX(), pos.getX());
+         int yDiff = checkDifferenceInBounds(testPos.getY(), pos.getY());
+         int zDiff = checkDifferenceInBounds(testPos.getZ(), pos.getZ());
+         return packDifferenceInPositionInternal(xRadius, yRadius, zRadius, xDiff, yDiff, zDiff);
+      } else {
+         throw new IllegalArgumentException("The radius cannot be larger than 127 when packing the difference between two positions");
+      }
+   }
+
+   private static int packDifferenceInPositionInternal(final int xRadius, final int yRadius, final int zRadius, final int xDiff, final int yDiff, final int zDiff) {
+      return (xDiff + xRadius & 255) << 16 | (yDiff + yRadius & 255) << 8 | zDiff + zRadius & 255;
+   }
+
+   private static int checkDifferenceInBounds(final int from, final int to) {
+      int difference = from - to;
+      if (difference <= 127 && difference >= -127) {
+         return difference;
+      } else {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "The difference must be within [%s,%s]", 127, -127));
+      }
+   }
+
+   public static BlockPos unpackDifferenceInPosition(final BlockPos pos, final int packedDiff, final int xRadius, final int yRadius, final int zRadius) {
+      if (xRadius <= 127 && yRadius <= 127 && zRadius <= 127) {
+         int xDiff = (packedDiff >> 16 & 255) - xRadius;
+         int yDiff = (packedDiff >> 8 & 255) - yRadius;
+         int zDiff = (packedDiff & 255) - zRadius;
+         return pos.offset(xDiff, yDiff, zDiff);
+      } else {
+         throw new IllegalArgumentException("The radius cannot be larger than 127 when unpacking the difference between two positions.");
+      }
    }
 
    public static class IntBounds {

@@ -496,7 +496,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          MemoryStack stack = MemoryStack.stackPush();
 
          try {
-            this.createRenderPass(RenderPassDescriptor.builder(() -> "ClearColorDepthTextures").withColorAttachment(colorTextureView).withDepthAttachment(depthTextureView).withRenderArea(new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0))).build());
+            this.createRenderPass(RenderPassDescriptor.builder(() -> "ClearColorDepthTextures").withColorAttachment(colorTextureView).withDepthAttachment(depthTextureView).withRenderArea(new RenderPass.RenderArea(0, 0, colorTexture.getWidth(mipLevel), colorTexture.getHeight(mipLevel))).build());
 
             assert this.currentRenderPass != null;
 

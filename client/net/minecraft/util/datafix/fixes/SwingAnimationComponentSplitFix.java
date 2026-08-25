@@ -17,11 +17,6 @@ public class SwingAnimationComponentSplitFix extends DataFix {
             Optional<? extends Dynamic<?>> swingAnimationOpt = tag.get("minecraft:swing_animation").result();
             if (swingAnimationOpt.isPresent()) {
                Dynamic<?> swingAnimation = (Dynamic)swingAnimationOpt.get();
-               String oldType = (String)swingAnimation.get("type").asString().result().orElse("none");
-               if (oldType.equals("none")) {
-                  swingAnimation = swingAnimation.set("type", tag.createString("whack"));
-               }
-
                return tag.remove("minecraft:swing_animation").set("minecraft:attack_animation", swingAnimation).set("minecraft:interact_animation", swingAnimation);
             } else {
                return tag;

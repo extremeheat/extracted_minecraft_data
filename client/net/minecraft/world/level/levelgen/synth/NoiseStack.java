@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 
 public class NoiseStack implements Noise {
@@ -53,7 +54,7 @@ public class NoiseStack implements Noise {
       return value;
    }
 
-   public void addToVolume(final float[] buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
+   public void addToVolume(final DensityBuffer buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
       for(Layer layer : this.layers) {
          double frequency = layer.frequency;
          layer.noise.addToVolume(buffer, volume, xzScale * frequency, yScale * frequency, amplitude * layer.amplitude);
@@ -112,7 +113,7 @@ public class NoiseStack implements Noise {
          return value;
       }
 
-      public void addToVolume(final float[] buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
+      public void addToVolume(final DensityBuffer buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
          for(Layer layer : this.layers) {
             double frequency = layer.frequency;
             layer.noise.addToVolume(buffer, volume, xzScale * frequency, yScale * frequency, amplitude * layer.amplitude);
@@ -137,7 +138,7 @@ public class NoiseStack implements Noise {
          return value;
       }
 
-      public void addToVolume(final float[] buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
+      public void addToVolume(final DensityBuffer buffer, final DensityVolume volume, final double xzScale, final double yScale, final float amplitude) {
          for(Layer layer : this.layers) {
             double frequency = layer.frequency;
             layer.noise.addToVolume(buffer, volume, xzScale * frequency, yScale * frequency, amplitude * layer.amplitude);

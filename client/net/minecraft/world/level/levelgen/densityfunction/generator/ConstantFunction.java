@@ -2,10 +2,14 @@ package net.minecraft.world.level.levelgen.densityfunction.generator;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Arrays;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 
 public record ConstantFunction(float value) implements DensityFunction {
    public static final MapCodec<ConstantFunction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DensityFunctions.NOISE_VALUE_CODEC.fieldOf("value").forGetter(ConstantFunction::value)).apply(i, ConstantFunction::new));
@@ -14,12 +18,8 @@ public record ConstantFunction(float value) implements DensityFunction {
       super();
    }
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      return this.value;
-   }
-
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      Arrays.fill(output, this.value);
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      return new Sampler(this.value);
    }
 
    public Interval range() {
@@ -34,7 +34,21 @@ public record ConstantFunction(float value) implements DensityFunction {
       return CODEC;
    }
 
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
       return this;
+   }
+
+   public static record Sampler(float value) implements DensitySampler {
+      public Sampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         outputBuffer.fill(this.value);
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return this.value;
+      }
    }
 }

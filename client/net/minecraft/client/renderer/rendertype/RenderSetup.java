@@ -23,6 +23,7 @@ public final class RenderSetup {
    final Map<String, TextureBinding> textures;
    final TextureTransform textureTransform;
    final OutlineProperty outlineProperty;
+   final @Nullable String outlineTextureName;
    final boolean useLightmap;
    final boolean useOverlay;
    final boolean affectsCrumbling;
@@ -30,7 +31,7 @@ public final class RenderSetup {
    final LayeringTransform layeringTransform;
    final boolean forceSolidModelPhase;
 
-   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
+   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final @Nullable String outlineTextureName, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
       super();
       this.pipeline = pipeline;
       this.oitPipelineSet = oitPipelineSet;
@@ -39,6 +40,7 @@ public final class RenderSetup {
       this.useLightmap = useLightmap;
       this.useOverlay = useOverlay;
       this.outlineProperty = outlineProperty;
+      this.outlineTextureName = outlineTextureName;
       this.layeringTransform = layeringTransform;
       this.affectsCrumbling = affectsCrumbling;
       this.sortOnUpload = sortOnUpload;
@@ -108,6 +110,7 @@ public final class RenderSetup {
       private boolean affectsCrumbling;
       private boolean sortOnUpload;
       private OutlineProperty outlineProperty;
+      private @Nullable String outlineTextureName;
       private final Map<String, TextureBinding> textures;
       private boolean forceSolidModelPhase;
 
@@ -164,6 +167,13 @@ public final class RenderSetup {
 
       public RenderSetupBuilder setOutline(final OutlineProperty outlineProperty) {
          this.outlineProperty = outlineProperty;
+         this.outlineTextureName = null;
+         return this;
+      }
+
+      public RenderSetupBuilder setOutline(final OutlineProperty outlineProperty, final String outlineTextureName) {
+         this.outlineProperty = outlineProperty;
+         this.outlineTextureName = outlineTextureName;
          return this;
       }
 
@@ -178,7 +188,7 @@ public final class RenderSetup {
       }
 
       public RenderSetup createRenderSetup() {
-         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
+         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.outlineTextureName, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
       }
    }
 

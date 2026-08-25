@@ -16,14 +16,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.jspecify.annotations.Nullable;
 
 public interface Aquifer {
    static Aquifer createDisabled(final FluidPicker fluidRule) {
       return new Aquifer() {
-         public @Nullable BlockState computeSubstance(final DensityFunction.FunctionContext context, final double density) {
-            return density > 0.0 ? null : fluidRule.computeFluid(context.blockX(), context.blockY(), context.blockZ()).at(context.blockY());
+         public @Nullable BlockState computeSubstance(final int blockX, final int blockY, final int blockZ, final double density) {
+            return density > 0.0 ? null : fluidRule.computeFluid(blockX, blockY, blockZ).at(blockY);
          }
 
          public boolean shouldScheduleFluidUpdate() {
@@ -32,7 +36,7 @@ public interface Aquifer {
       };
    }
 
-   @Nullable BlockState computeSubstance(final DensityFunction.FunctionContext context, double density);
+   @Nullable BlockState computeSubstance(int blockX, int blockY, int blockZ, double density);
 
    boolean shouldScheduleFluidUpdate();
 
@@ -43,12 +47,8 @@ public interface Aquifer {
          super();
       }
 
-      public Aquifer create(final NoiseChunk noiseChunk, final ChunkPos pos, final PositionalRandomFactory positionalRandomFactory, final int minBlockY, final int yBlockSize, final FluidPicker fluidRule) {
-         return new NoiseBasedAquifer(noiseChunk, pos, this, positionalRandomFactory, minBlockY, yBlockSize, fluidRule);
-      }
-
-      public Config mapAll(final DensityFunction.Visitor visitor) {
-         return new Config(this.barrierNoise.mapAll(visitor), this.fluidLevelFloodednessNoise.mapAll(visitor), this.fluidLevelSpreadNoise.mapAll(visitor), this.lavaNoise.mapAll(visitor), this.exclusion.mapAll(visitor), this.surfaceLevel.mapAll(visitor));
+      public Aquifer create(final DensitySamplerSet cachingSamplers, final PositionalRandomFactory positionalRandomFactory, final DensityVolume volume, final FluidPicker fluidRule) {
+         return new NoiseBasedAquifer(cachingSamplers, this, positionalRandomFactory, volume, fluidRule);
       }
    }
 
@@ -75,16 +75,15 @@ public interface Aquifer {
       private static final int MAX_CELL_SAMPLE_X = 1;
       private static final int MAX_CELL_SAMPLE_Y = 1;
       private static final int MAX_CELL_SAMPLE_Z = 1;
-      private final NoiseChunk noiseChunk;
-      private final DensityFunction barrierNoise;
-      private final DensityFunction fluidLevelFloodednessNoise;
-      private final DensityFunction fluidLevelSpreadNoise;
-      private final DensityFunction lavaNoise;
+      private final DensitySampler.Bound barrierNoise;
+      private final DensitySampler.Bound fluidLevelFloodednessNoise;
+      private final DensitySampler.Bound fluidLevelSpreadNoise;
+      private final DensitySampler.Bound lavaNoise;
       private final PositionalRandomFactory positionalRandomFactory;
       private final @Nullable Aquifer.FluidStatus[] aquiferCache;
       private final long[] aquiferLocationCache;
       private final FluidPicker globalFluidPicker;
-      private final DensityFunction exclusion;
+      private final DensitySampler.Bound exclusion;
       private boolean shouldScheduleFluidUpdate;
       private final int skipSamplingAboveY;
       private final int minGridX;
@@ -92,29 +91,28 @@ public interface Aquifer {
       private final int minGridZ;
       private final int gridSizeX;
       private final int gridSizeZ;
-      private final DensityFunction surfaceLevel;
+      private final DensitySampler.Bound surfaceLevel;
       private final Long2IntMap surfaceLevelCache = new Long2IntOpenHashMap();
       private static final int[][] SURFACE_SAMPLING_OFFSETS_IN_CHUNKS = new int[][]{{0, 0}, {-2, -1}, {-1, -1}, {0, -1}, {1, -1}, {-3, 0}, {-2, 0}, {-1, 0}, {1, 0}, {-2, 1}, {-1, 1}, {0, 1}, {1, 1}};
 
-      private NoiseBasedAquifer(final NoiseChunk noiseChunk, final ChunkPos pos, final Config config, final PositionalRandomFactory positionalRandomFactory, final int minBlockY, final int yBlockSize, final FluidPicker globalFluidPicker) {
+      private NoiseBasedAquifer(final DensitySamplerSet cachingSamplers, final Config config, final PositionalRandomFactory positionalRandomFactory, final DensityVolume volume, final FluidPicker globalFluidPicker) {
          super();
-         this.noiseChunk = noiseChunk;
-         this.barrierNoise = config.barrierNoise();
-         this.fluidLevelFloodednessNoise = config.fluidLevelFloodednessNoise();
-         this.fluidLevelSpreadNoise = config.fluidLevelSpreadNoise();
-         this.lavaNoise = config.lavaNoise();
-         this.exclusion = config.exclusion();
-         this.surfaceLevel = config.surfaceLevel();
+         this.barrierNoise = cachingSamplers.get(config.barrierNoise());
+         this.fluidLevelFloodednessNoise = cachingSamplers.get(config.fluidLevelFloodednessNoise());
+         this.fluidLevelSpreadNoise = cachingSamplers.get(config.fluidLevelSpreadNoise());
+         this.lavaNoise = cachingSamplers.get(config.lavaNoise());
+         this.exclusion = cachingSamplers.get(config.exclusion());
+         this.surfaceLevel = cachingSamplers.get(config.surfaceLevel());
          this.positionalRandomFactory = positionalRandomFactory;
-         this.minGridX = gridX(pos.getMinBlockX() + -5) + 0;
+         this.minGridX = gridX(volume.minBlockX() + -5) + 0;
          this.globalFluidPicker = globalFluidPicker;
-         int maxGridX = gridX(pos.getMaxBlockX() + -5) + 1;
+         int maxGridX = gridX(volume.maxBlockX() + -5) + 1;
          this.gridSizeX = maxGridX - this.minGridX + 1;
-         this.minGridY = gridY(minBlockY + 1) + -1;
-         int maxGridY = gridY(minBlockY + yBlockSize - 1 + 1) + 1;
+         this.minGridY = gridY(volume.minBlockY() + 1) + -1;
+         int maxGridY = gridY(volume.maxBlockY() + 1) + 1;
          int gridSizeY = maxGridY - this.minGridY + 1;
-         this.minGridZ = gridZ(pos.getMinBlockZ() + -5) + 0;
-         int maxGridZ = gridZ(pos.getMaxBlockZ() + -5) + 1;
+         this.minGridZ = gridZ(volume.minBlockZ() + -5) + 0;
+         int maxGridZ = gridZ(volume.maxBlockZ() + -5) + 1;
          this.gridSizeZ = maxGridZ - this.minGridZ + 1;
          int totalGridSize = this.gridSizeX * gridSizeY * this.gridSizeZ;
          this.aquiferCache = new FluidStatus[totalGridSize];
@@ -128,22 +126,31 @@ public interface Aquifer {
       private int surfaceLevel(final int blockX, final int blockZ) {
          int quantizedX = QuartPos.toBlock(QuartPos.fromBlock(blockX));
          int quantizedZ = QuartPos.toBlock(QuartPos.fromBlock(blockZ));
-         return this.surfaceLevelCache.computeIfAbsent(ChunkPos.pack(quantizedX, quantizedZ), (k) -> Mth.floor(this.surfaceLevel.compute(new DensityFunction.SinglePointContext(quantizedX, 0, quantizedZ))));
+         return this.surfaceLevelCache.computeIfAbsent(ChunkPos.pack(quantizedX, quantizedZ), (k) -> Mth.floor(this.surfaceLevel.sampleValue(quantizedX, 0, quantizedZ)));
       }
 
       private int maxSurfaceLevel(final int minBlockX, final int minBlockZ, final int maxBlockX, final int maxBlockZ) {
-         int maxY = -2147483648;
+         int minQuartX = QuartPos.fromBlock(minBlockX);
+         int maxQuartX = QuartPos.fromBlock(maxBlockX);
+         int minQuartZ = QuartPos.fromBlock(minBlockZ);
+         int maxQuartZ = QuartPos.fromBlock(maxBlockZ);
+         DensityVolume volume = new DensityVolume(maxQuartX - minQuartX + 1, 1, maxQuartZ - minQuartZ + 1, QuartPos.toBlock(minQuartX), 0, QuartPos.toBlock(minQuartZ), 4, 1, 4);
 
-         for(int blockZ = minBlockZ; blockZ <= maxBlockZ; blockZ += 4) {
-            for(int blockX = minBlockX; blockX <= maxBlockX; blockX += 4) {
-               int surfaceLevel = this.surfaceLevel(blockX, blockZ);
-               if (surfaceLevel > maxY) {
-                  maxY = surfaceLevel;
+         try (ScopedDensityBuffer buffer = this.surfaceLevel.sampleVolume(volume)) {
+            int maxY = -2147483648;
+
+            for(int z = 0; z < volume.sizeZ(); ++z) {
+               for(int x = 0; x < volume.sizeX(); ++x) {
+                  int surfaceLevel = Mth.floor(buffer.get(volume.indexUnchecked(x, 0, z)));
+                  this.surfaceLevelCache.put(ChunkPos.pack(volume.blockX(x), volume.blockZ(z)), surfaceLevel);
+                  if (surfaceLevel > maxY) {
+                     maxY = surfaceLevel;
+                  }
                }
             }
-         }
 
-         return maxY;
+            return maxY;
+         }
       }
 
       private int getIndex(final int gridX, final int gridY, final int gridZ) {
@@ -153,25 +160,22 @@ public interface Aquifer {
          return (y * this.gridSizeZ + z) * this.gridSizeX + x;
       }
 
-      public @Nullable BlockState computeSubstance(final DensityFunction.FunctionContext context, final double density) {
+      public @Nullable BlockState computeSubstance(final int blockX, final int blockY, final int blockZ, final double density) {
          if (density > 0.0) {
             this.shouldScheduleFluidUpdate = false;
             return null;
          } else {
-            int posX = context.blockX();
-            int posY = context.blockY();
-            int posZ = context.blockZ();
-            FluidStatus globalFluid = this.globalFluidPicker.computeFluid(posX, posY, posZ);
-            if (posY > this.skipSamplingAboveY) {
+            FluidStatus globalFluid = this.globalFluidPicker.computeFluid(blockX, blockY, blockZ);
+            if (blockY > this.skipSamplingAboveY) {
                this.shouldScheduleFluidUpdate = false;
-               return globalFluid.at(posY);
-            } else if (globalFluid.at(posY).is(Blocks.LAVA)) {
+               return globalFluid.at(blockY);
+            } else if (globalFluid.at(blockY).is(Blocks.LAVA)) {
                this.shouldScheduleFluidUpdate = false;
                return SharedConstants.DEBUG_DISABLE_FLUID_GENERATION ? Blocks.AIR.defaultBlockState() : Blocks.LAVA.defaultBlockState();
             } else {
-               int xAnchor = gridX(posX + -5);
-               int yAnchor = gridY(posY + 1);
-               int zAnchor = gridZ(posZ + -5);
+               int xAnchor = gridX(blockX + -5);
+               int yAnchor = gridY(blockY + 1);
+               int zAnchor = gridZ(blockZ + -5);
                int distanceSqr1 = 2147483647;
                int distanceSqr2 = 2147483647;
                int distanceSqr3 = 2147483647;
@@ -198,9 +202,9 @@ public interface Aquifer {
                            this.aquiferLocationCache[index] = location;
                         }
 
-                        int dx = BlockPos.getX(location) - posX;
-                        int dy = BlockPos.getY(location) - posY;
-                        int dz = BlockPos.getZ(location) - posZ;
+                        int dx = BlockPos.getX(location) - blockX;
+                        int dy = BlockPos.getY(location) - blockY;
+                        int dz = BlockPos.getZ(location) - blockZ;
                         int newDistance = dx * dx + dy * dy + dz * dz;
                         if (distanceSqr1 >= newDistance) {
                            closestIndex4 = closestIndex3;
@@ -233,7 +237,7 @@ public interface Aquifer {
 
                FluidStatus closestStatus1 = this.getAquiferStatus(closestIndex1);
                double similarity12 = similarity(distanceSqr1, distanceSqr2);
-               BlockState fluidState = closestStatus1.at(posY);
+               BlockState fluidState = closestStatus1.at(blockY);
                BlockState actualFluidState = SharedConstants.DEBUG_DISABLE_FLUID_GENERATION ? Blocks.AIR.defaultBlockState() : fluidState;
                if (similarity12 <= 0.0) {
                   if (similarity12 >= FLOWING_UPDATE_SIMULARITY) {
@@ -244,13 +248,13 @@ public interface Aquifer {
                   }
 
                   return actualFluidState;
-               } else if (fluidState.is(Blocks.WATER) && this.globalFluidPicker.computeFluid(posX, posY - 1, posZ).at(posY - 1).is(Blocks.LAVA)) {
+               } else if (fluidState.is(Blocks.WATER) && this.globalFluidPicker.computeFluid(blockX, blockY - 1, blockZ).at(blockY - 1).is(Blocks.LAVA)) {
                   this.shouldScheduleFluidUpdate = true;
                   return actualFluidState;
                } else {
                   MutableDouble barrierNoiseValue = new MutableDouble(0.0 / 0.0);
                   FluidStatus closestStatus2 = this.getAquiferStatus(closestIndex2);
-                  double barrier12 = similarity12 * this.calculatePressure(context, barrierNoiseValue, closestStatus1, closestStatus2);
+                  double barrier12 = similarity12 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus1, closestStatus2);
                   if (density + barrier12 > 0.0) {
                      this.shouldScheduleFluidUpdate = false;
                      return null;
@@ -258,7 +262,7 @@ public interface Aquifer {
                      FluidStatus closestStatus3 = this.getAquiferStatus(closestIndex3);
                      double similarity13 = similarity(distanceSqr1, distanceSqr3);
                      if (similarity13 > 0.0) {
-                        double barrier13 = similarity12 * similarity13 * this.calculatePressure(context, barrierNoiseValue, closestStatus1, closestStatus3);
+                        double barrier13 = similarity12 * similarity13 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus1, closestStatus3);
                         if (density + barrier13 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
@@ -267,7 +271,7 @@ public interface Aquifer {
 
                      double similarity23 = similarity(distanceSqr2, distanceSqr3);
                      if (similarity23 > 0.0) {
-                        double barrier23 = similarity12 * similarity23 * this.calculatePressure(context, barrierNoiseValue, closestStatus2, closestStatus3);
+                        double barrier23 = similarity12 * similarity23 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus2, closestStatus3);
                         if (density + barrier23 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
@@ -299,17 +303,16 @@ public interface Aquifer {
          return 1.0 - (double)(distanceSqr2 - distanceSqr1) / 25.0;
       }
 
-      private double calculatePressure(final DensityFunction.FunctionContext context, final MutableDouble barrierNoiseValue, final FluidStatus statusClosest1, final FluidStatus statusClosest2) {
-         int posY = context.blockY();
-         BlockState type1 = statusClosest1.at(posY);
-         BlockState type2 = statusClosest2.at(posY);
+      private double calculatePressure(final int blockX, final int blockY, final int blockZ, final MutableDouble barrierNoiseValue, final FluidStatus statusClosest1, final FluidStatus statusClosest2) {
+         BlockState type1 = statusClosest1.at(blockY);
+         BlockState type2 = statusClosest2.at(blockY);
          if ((!type1.is(Blocks.LAVA) || !type2.is(Blocks.WATER)) && (!type1.is(Blocks.WATER) || !type2.is(Blocks.LAVA))) {
             int fluidYDiff = Math.abs(statusClosest1.fluidLevel - statusClosest2.fluidLevel);
             if (fluidYDiff == 0) {
                return 0.0;
             } else {
                double averageFluidY = 0.5 * (double)(statusClosest1.fluidLevel + statusClosest2.fluidLevel);
-               double howFarAboveAverageFluidPoint = (double)posY + 0.5 - averageFluidY;
+               double howFarAboveAverageFluidPoint = (double)blockY + 0.5 - averageFluidY;
                double baseValue = (double)fluidYDiff / 2.0;
                double topBias = 0.0;
                double furthestRocksFromTopBias = 2.5;
@@ -340,7 +343,7 @@ public interface Aquifer {
                if (!(gradient < -2.0) && !(gradient > 2.0)) {
                   double currentNoiseValue = barrierNoiseValue.doubleValue();
                   if (Double.isNaN(currentNoiseValue)) {
-                     double barrierNoise = (double)this.barrierNoise.compute(context);
+                     double barrierNoise = (double)this.barrierNoise.sampleValue(blockX, blockY, blockZ);
                      barrierNoiseValue.setValue(barrierNoise);
                      noiseValue = barrierNoise;
                   } else {
@@ -436,17 +439,16 @@ public interface Aquifer {
       }
 
       private int computeSurfaceLevel(final int x, final int y, final int z, final FluidStatus globalFluid, final int lowestSurfaceLevel, final boolean surfaceAtCenterIsUnderGlobalFluidLevel) {
-         DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(x, y, z);
          double partiallyFloodedness;
          double fullyFloodidness;
-         if ((double)this.exclusion.compute(context) > 0.0) {
+         if ((double)this.exclusion.sampleValue(x, y, z) > 0.0) {
             partiallyFloodedness = -1.0;
             fullyFloodidness = -1.0;
          } else {
             int distanceBelowSurface = this.adjustSurfaceLevel(lowestSurfaceLevel) - y;
             int floodednessMaxDepth = 64;
             double floodednessFactor = surfaceAtCenterIsUnderGlobalFluidLevel ? Mth.clampedMap((double)distanceBelowSurface, 0.0, 64.0, 1.0, 0.0) : 0.0;
-            double floodednessNoiseValue = Mth.clamp((double)this.fluidLevelFloodednessNoise.compute(context), -1.0, 1.0);
+            double floodednessNoiseValue = Mth.clamp((double)this.fluidLevelFloodednessNoise.sampleValue(x, y, z), -1.0, 1.0);
             double fullyFloodedThreshold = Mth.map(floodednessFactor, 1.0, 0.0, -0.3, 0.8);
             double partiallyFloodedThreshold = Mth.map(floodednessFactor, 1.0, 0.0, -0.8, 0.4);
             partiallyFloodedness = floodednessNoiseValue - partiallyFloodedThreshold;
@@ -473,7 +475,7 @@ public interface Aquifer {
          int fluidLevelCellZ = Math.floorDiv(z, 16);
          int fluidCellMiddleY = fluidLevelCellY * 40 + 20;
          int maxSpread = 10;
-         double fluidLevelSpread = (double)(this.fluidLevelSpreadNoise.compute(new DensityFunction.SinglePointContext(fluidLevelCellX, fluidLevelCellY, fluidLevelCellZ)) * 10.0F);
+         double fluidLevelSpread = (double)(this.fluidLevelSpreadNoise.sampleValue(fluidLevelCellX, fluidLevelCellY, fluidLevelCellZ) * 10.0F);
          int fluidLevelSpreadQuantized = Mth.quantize(fluidLevelSpread, 3);
          int targetFluidSurfaceLevel = fluidCellMiddleY + fluidLevelSpreadQuantized;
          return Math.min(lowestSurfaceLevel, targetFluidSurfaceLevel);
@@ -487,7 +489,7 @@ public interface Aquifer {
             int fluidTypeCellX = Math.floorDiv(x, 64);
             int fluidTypeCellY = Math.floorDiv(y, 40);
             int fluidTypeCellZ = Math.floorDiv(z, 64);
-            double lavaNoiseValue = (double)this.lavaNoise.compute(new DensityFunction.SinglePointContext(fluidTypeCellX, fluidTypeCellY, fluidTypeCellZ));
+            double lavaNoiseValue = (double)this.lavaNoise.sampleValue(fluidTypeCellX, fluidTypeCellY, fluidTypeCellZ);
             if (Math.abs(lavaNoiseValue) > 0.3) {
                fluidType = Blocks.LAVA.defaultBlockState();
             }

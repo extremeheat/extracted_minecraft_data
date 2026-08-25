@@ -20,7 +20,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.painting.Painting;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import net.minecraft.world.level.Level;
-import org.joml.Quaternionfc;
 
 public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderState> {
    private static final Identifier BACK_SPRITE_LOCATION = Identifier.withDefaultNamespace("back");
@@ -35,7 +34,7 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
       PaintingVariant variant = state.variant;
       if (variant != null) {
          poseStack.pushPose();
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - state.direction.get2DDataValue() * 90)));
+         poseStack.rotateDegrees(Axis.YP, (float)(180 - state.direction.get2DDataValue() * 90));
          TextureAtlasSprite frontSprite = this.paintingsAtlas.getSprite(variant.assetId());
          TextureAtlasSprite backSprite = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
          this.renderPainting(poseStack, submitNodeCollector, RenderTypes.entitySolidZOffsetForward(backSprite.atlasLocation()), state.lightCoordsPerBlock, variant.width(), variant.height(), frontSprite, backSprite);

@@ -7,6 +7,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -341,10 +342,18 @@ public class WorldOpenFlows {
          return null;
       } catch (AbortedFileFixException e) {
          this.minecraft.execute(() -> {
+            LOGGER.error("File fixing was aborted", e);
             if (e.getCause() instanceof CowFSSymlinkException) {
                this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.symlink.title"), Component.translatable("upgradeWorld.symlink.message")));
             } else {
-               this.minecraft.setScreenAndShow(new FileFixerAbortedScreen(cleanup, Component.translatable("upgradeWorld.aborted.message")));
+               Component message;
+               if (e.getCause() instanceof FileAlreadyExistsException) {
+                  message = Component.translatable("upgradeWorld.aborted.file_already_exists");
+               } else {
+                  message = Component.translatable("upgradeWorld.aborted.message");
+               }
+
+               this.minecraft.setScreenAndShow(new FileFixerAbortedScreen(cleanup, message));
             }
 
          });

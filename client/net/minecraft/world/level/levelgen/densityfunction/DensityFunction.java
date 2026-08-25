@@ -11,10 +11,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Interval;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.Noise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
-import org.jspecify.annotations.Nullable;
 
 public interface DensityFunction {
    Codec<Holder<DensityFunction>> REFERENCE_CODEC = RegistryCodecs.holder(Registries.DENSITY_FUNCTION);
@@ -83,30 +84,9 @@ public interface DensityFunction {
       return var10000;
    }
 
-   float compute(final FunctionContext context);
+   DensitySampler compileSampler(CompileContext context);
 
-   void fillArray(final float[] output, final ContextProvider contextProvider);
-
-   DensityFunction mapChildren(final Visitor visitor);
-
-   default DensityFunction mapAll(final Visitor visitor) {
-      class RecursiveVisitor implements Visitor {
-         RecursiveVisitor() {
-            Objects.requireNonNull(DensityFunction.this);
-            super();
-         }
-
-         public DensityFunction apply(final DensityFunction input) {
-            return visitor.apply(input.mapChildren(this));
-         }
-
-         public NoiseHolder visitNoise(final NoiseHolder noise) {
-            return visitor.visitNoise(noise);
-         }
-      }
-
-      return (new RecursiveVisitor()).apply(this);
-   }
+   DensityFunction rewriteChildren(DfRewriteRule rule);
 
    Interval range();
 
@@ -208,77 +188,18 @@ public interface DensityFunction {
       }
    }
 
-   public static record NoiseHolder(Holder<NormalNoise> noiseData, @Nullable Noise noise) {
-      public static final Codec<NoiseHolder> CODEC;
-
-      public NoiseHolder(final Holder<NormalNoise> noiseData) {
-         this(noiseData, (Noise)null);
-      }
-
-      public NoiseHolder {
-         super();
-      }
-
-      public float getValue(final double x, final double y, final double z) {
-         return this.noise == null ? 0.0F : this.noise.get(x, y, z);
-      }
-
-      public Interval range() {
-         return this.noiseData.isBound() ? ((NormalNoise)this.noiseData.value()).range() : Interval.INFINITE;
-      }
-
-      public boolean equals(final Object obj) {
-         boolean var10000;
-         if (obj instanceof NoiseHolder holder) {
-            if (this.noiseData.equals(holder.noiseData)) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      }
-
-      public int hashCode() {
-         return this.noiseData.hashCode();
-      }
-
-      static {
-         CODEC = NormalNoise.CODEC.xmap((data) -> new NoiseHolder(data, (Noise)null), NoiseHolder::noiseData);
-      }
-   }
-
-   public interface Visitor {
-      DensityFunction apply(DensityFunction input);
-
-      default NoiseHolder visitNoise(final NoiseHolder noise) {
-         return noise;
-      }
-   }
-
-   public static record SinglePointContext(int blockX, int blockY, int blockZ) implements FunctionContext {
-      public SinglePointContext {
-         super();
-      }
-   }
-
    @Retention(RetentionPolicy.CLASS)
    @Target({ElementType.TYPE_USE})
    public @interface Axes {
    }
 
-   public interface ContextProvider {
-      FunctionContext forIndex(int index);
+   public interface CompileContext {
+      Noise createNoiseSampler(Holder<NormalNoise> parameters);
 
-      void fillAllDirectly(float[] output, DensityFunction function);
-   }
+      RandomSource createRandom(Identifier seed);
 
-   public interface FunctionContext {
-      int blockX();
-
-      int blockY();
-
-      int blockZ();
+      /** @deprecated */
+      @Deprecated
+      RandomSource createEndIslandRandom();
    }
 }

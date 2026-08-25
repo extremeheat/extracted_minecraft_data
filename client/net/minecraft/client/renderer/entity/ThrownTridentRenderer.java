@@ -13,7 +13,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.phys.AABB;
-import org.joml.Quaternionfc;
 
 public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownTridentRenderState> {
    public static final Identifier TRIDENT_LOCATION = Identifier.withDefaultNamespace("textures/entity/trident/trident.png");
@@ -26,8 +25,8 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
 
    public void submit(final ThrownTridentRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot + 90.0F));
+      poseStack.rotateDegrees(Axis.YP, state.yRot - 90.0F);
+      poseStack.rotateDegrees(Axis.ZP, state.xRot + 90.0F);
       if (state.isFoil) {
          submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(TRIDENT_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       } else {

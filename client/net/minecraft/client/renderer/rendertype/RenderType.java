@@ -8,6 +8,7 @@ import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
@@ -27,7 +28,7 @@ public class RenderType {
       super();
       this.name = name;
       this.state = state;
-      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? state.textures.values().stream().findFirst().map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
+      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? Optional.ofNullable((RenderSetup.TextureBinding)state.textures.get(Objects.requireNonNullElse(state.outlineTextureName, "Sampler0"))).map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
       this.hasBlending = this.calculateHasBlending();
    }
 

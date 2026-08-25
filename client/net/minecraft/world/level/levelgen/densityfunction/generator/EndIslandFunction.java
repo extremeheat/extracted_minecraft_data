@@ -4,20 +4,20 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 
-public final class EndIslandFunction implements DensityFunction {
-   public static final MapCodec<EndIslandFunction> CODEC = MapCodec.unit(new EndIslandFunction(0L));
+public record EndIslandFunction() implements DensityFunction {
+   public static final MapCodec<EndIslandFunction> CODEC = MapCodec.unit(new EndIslandFunction());
    private static final float ISLAND_THRESHOLD = -0.9F;
-   private final SimplexNoise islandNoise;
 
-   public EndIslandFunction(final long seed) {
+   public EndIslandFunction() {
       super();
-      RandomSource islandRandom = new LegacyRandomSource(seed);
-      islandRandom.consumeCount(17292);
-      this.islandNoise = new SimplexNoise(islandRandom, true);
    }
 
    private static float getHeightValue(final SimplexNoise islandNoise, final int sectionX, final int sectionZ) {
@@ -45,12 +45,11 @@ public final class EndIslandFunction implements DensityFunction {
       return doffs;
    }
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      return (getHeightValue(this.islandNoise, context.blockX() / 8, context.blockZ() / 8) - 8.0F) / 128.0F;
-   }
-
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      contextProvider.fillAllDirectly(output, this);
+   public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
+      RandomSource islandRandom = context.createEndIslandRandom();
+      islandRandom.consumeCount(17292);
+      SimplexNoise islandNoise = new SimplexNoise(islandRandom, true);
+      return new Sampler(islandNoise);
    }
 
    public Interval range() {
@@ -65,15 +64,31 @@ public final class EndIslandFunction implements DensityFunction {
       return CODEC;
    }
 
-   public boolean equals(final Object obj) {
-      return obj instanceof EndIslandFunction;
-   }
-
-   public int hashCode() {
-      return 0;
-   }
-
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
+   public DensityFunction rewriteChildren(final DfRewriteRule rule) {
       return this;
+   }
+
+   private static record Sampler(SimplexNoise islandNoise) implements DensitySampler {
+      private Sampler {
+         super();
+      }
+
+      public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+         for(int z = 0; z < volume.sizeZ(); ++z) {
+            int blockZ = volume.blockZ(z);
+
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               int blockX = volume.blockX(x);
+               float value = this.sampleValue(context, blockX, 0, blockZ);
+               int index = volume.indexUnchecked(x, 0, z);
+               outputBuffer.setRange(index, volume.sizeY(), value);
+            }
+         }
+
+      }
+
+      public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+         return (EndIslandFunction.getHeightValue(this.islandNoise, blockX / 8, blockZ / 8) - 8.0F) / 128.0F;
+      }
    }
 }

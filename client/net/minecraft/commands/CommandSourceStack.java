@@ -26,6 +26,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.OutgoingChatMessage;
@@ -54,8 +55,7 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    private final Vec3 worldPosition;
    private final ServerLevel level;
    private final PermissionSet permissions;
-   private final String textName;
-   private final Component displayName;
+   private final NamesProvider namesProvider;
    private final MinecraftServer server;
    private final boolean silent;
    private final @Nullable Entity entity;
@@ -65,11 +65,19 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    private final CommandSigningContext signingContext;
    private final TaskChainer chatMessageChainer;
 
-   public CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final String textName, final Component displayName, final MinecraftServer server, final @Nullable Entity entity) {
-      this(source, position, rotation, level, permissions, textName, displayName, server, entity, false, CommandResultCallback.EMPTY, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(server));
+   public CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final MinecraftServer server, final Entity entity) {
+      this(source, position, rotation, level, permissions, CommandSourceStack.NamesProvider.FOR_ENTITY, server, entity);
    }
 
-   private CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final String textName, final Component displayName, final MinecraftServer server, final @Nullable Entity entity, final boolean silent, final CommandResultCallback resultCallback, final EntityAnchorArgument.Anchor anchor, final CommandSigningContext signingContext, final TaskChainer chatMessageChainer) {
+   public CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final Component name, final MinecraftServer server) {
+      this(source, position, rotation, level, permissions, CommandSourceStack.NamesProvider.constant(name), server, (Entity)null);
+   }
+
+   private CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final NamesProvider namesProvider, final MinecraftServer server, final @Nullable Entity entity) {
+      this(source, position, rotation, level, permissions, namesProvider, server, entity, false, CommandResultCallback.EMPTY, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(server));
+   }
+
+   private CommandSourceStack(final CommandSource source, final Vec3 position, final Vec2 rotation, final ServerLevel level, final PermissionSet permissions, final NamesProvider namesProvider, final MinecraftServer server, final @Nullable Entity entity, final boolean silent, final CommandResultCallback resultCallback, final EntityAnchorArgument.Anchor anchor, final CommandSigningContext signingContext, final TaskChainer chatMessageChainer) {
       super();
       this.source = source;
       this.worldPosition = position;
@@ -77,8 +85,7 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
       this.silent = silent;
       this.entity = entity;
       this.permissions = permissions;
-      this.textName = textName;
-      this.displayName = displayName;
+      this.namesProvider = namesProvider;
       this.server = server;
       this.resultCallback = resultCallback;
       this.anchor = anchor;
@@ -88,23 +95,23 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    }
 
    public CommandSourceStack withSource(final CommandSource source) {
-      return this.source == source ? this : new CommandSourceStack(source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.source == source ? this : new CommandSourceStack(source, this.worldPosition, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withEntity(final Entity entity) {
-      return this.entity == entity ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, entity.getPlainTextName(), entity.getDisplayName(), this.server, entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.entity == entity ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, CommandSourceStack.NamesProvider.FOR_ENTITY, this.server, entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withPosition(final Vec3 pos) {
-      return this.worldPosition.equals(pos) ? this : new CommandSourceStack(this.source, pos, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.worldPosition.equals(pos) ? this : new CommandSourceStack(this.source, pos, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withRotation(final Vec2 rotation) {
-      return this.rotation.equals(rotation) ? this : new CommandSourceStack(this.source, this.worldPosition, rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.rotation.equals(rotation) ? this : new CommandSourceStack(this.source, this.worldPosition, rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(final CommandResultCallback resultCallback) {
-      return Objects.equals(this.resultCallback, resultCallback) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return Objects.equals(this.resultCallback, resultCallback) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(final CommandResultCallback newCallback, final BinaryOperator<CommandResultCallback> combiner) {
@@ -113,11 +120,11 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    }
 
    public CommandSourceStack withSuppressedOutput() {
-      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, true, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer) : this;
+      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, true, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer) : this;
    }
 
    public CommandSourceStack withPermission(final PermissionSet permissions) {
-      return permissions == this.permissions ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return permissions == this.permissions ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withMaximumPermission(final PermissionSet newPermissions) {
@@ -125,7 +132,7 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    }
 
    public CommandSourceStack withAnchor(final EntityAnchorArgument.Anchor anchor) {
-      return anchor == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, anchor, this.signingContext, this.chatMessageChainer);
+      return anchor == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withLevel(final ServerLevel level) {
@@ -134,7 +141,7 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
       } else {
          double scale = DimensionType.getTeleportationScale(this.level.dimensionType(), level.dimensionType());
          Vec3 pos = new Vec3(this.worldPosition.x * scale, this.worldPosition.y, this.worldPosition.z * scale);
-         return new CommandSourceStack(this.source, pos, this.rotation, level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+         return new CommandSourceStack(this.source, pos, this.rotation, level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
       }
    }
 
@@ -154,15 +161,15 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    }
 
    public CommandSourceStack withSigningContext(final CommandSigningContext signingContext, final TaskChainer chatMessageChainer) {
-      return signingContext == this.signingContext && chatMessageChainer == this.chatMessageChainer ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, signingContext, chatMessageChainer);
+      return signingContext == this.signingContext && chatMessageChainer == this.chatMessageChainer ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissions, this.namesProvider, this.server, this.entity, this.silent, this.resultCallback, this.anchor, signingContext, chatMessageChainer);
    }
 
    public Component getDisplayName() {
-      return this.displayName;
+      return this.namesProvider.displayName(this.entity);
    }
 
    public String getTextName() {
-      return this.textName;
+      return this.namesProvider.textName(this.entity);
    }
 
    public PermissionSet permissions() {
@@ -372,5 +379,33 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
 
    public boolean isSilent() {
       return this.silent;
+   }
+
+   public interface NamesProvider {
+      NamesProvider FOR_ENTITY = new NamesProvider() {
+         public Component displayName(final @Nullable Entity entity) {
+            return entity != null ? entity.getDisplayName() : CommonComponents.EMPTY;
+         }
+
+         public String textName(final @Nullable Entity entity) {
+            return entity != null ? entity.getPlainTextName() : "";
+         }
+      };
+
+      Component displayName(@Nullable Entity entity);
+
+      String textName(@Nullable Entity entity);
+
+      static NamesProvider constant(final Component value) {
+         return new NamesProvider() {
+            public Component displayName(final @Nullable Entity entity) {
+               return value;
+            }
+
+            public String textName(final @Nullable Entity entity) {
+               return value.getString();
+            }
+         };
+      }
    }
 }

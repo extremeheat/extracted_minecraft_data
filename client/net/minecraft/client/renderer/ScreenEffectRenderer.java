@@ -17,7 +17,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Quaternionfc;
 
 public class ScreenEffectRenderer {
    private static final Identifier UNDERWATER_LOCATION = Identifier.withDefaultNamespace("textures/misc/underwater.png");
@@ -73,9 +72,9 @@ public class ScreenEffectRenderer {
          poseStack.translate(offX * Mth.abs(Mth.sin((double)(piScale * 2.0F))), offY * Mth.abs(Mth.sin((double)(piScale * 2.0F))), -10.0F + 9.0F * Mth.sin((double)piScale));
          float size = 0.8F;
          poseStack.scale(0.8F, 0.8F, 0.8F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin((double)piScale))));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos((double)(scale * 8.0F))));
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos((double)(scale * 8.0F))));
+         poseStack.rotateDegrees(Axis.YP, 900.0F * Mth.abs(Mth.sin((double)piScale)));
+         poseStack.rotateDegrees(Axis.XP, 6.0F * Mth.cos((double)(scale * 8.0F)));
+         poseStack.rotateDegrees(Axis.ZP, 6.0F * Mth.cos((double)(scale * 8.0F)));
          this.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
          itemActivation.itemState.submit(poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
          poseStack.popPose();

@@ -10,56 +10,58 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Noises;
-import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
+import net.minecraft.world.level.levelgen.material.condition.MaterialCondition;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
 
 public class NetherMaterialRules {
-   public static final ResourceKey<SurfaceRules.RuleSource> NETHER = createKey("nether");
-   private static final SurfaceRules.RuleSource LAVA;
-   private static final SurfaceRules.RuleSource NETHERRACK;
-   private static final SurfaceRules.RuleSource SOUL_SAND;
-   private static final SurfaceRules.RuleSource SOUL_SOIL;
-   private static final SurfaceRules.RuleSource BASALT;
-   private static final SurfaceRules.RuleSource BLACKSTONE;
-   private static final SurfaceRules.RuleSource WARPED_WART_BLOCK;
-   private static final SurfaceRules.RuleSource WARPED_NYLIUM;
-   private static final SurfaceRules.RuleSource NETHER_WART_BLOCK;
-   private static final SurfaceRules.RuleSource CRIMSON_NYLIUM;
-   private static final SurfaceRules.RuleSource GRAVEL;
+   public static final ResourceKey<MaterialRule> NETHER = createKey("nether");
+   private static final MaterialRule LAVA;
+   private static final MaterialRule NETHERRACK;
+   private static final MaterialRule SOUL_SAND;
+   private static final MaterialRule SOUL_SOIL;
+   private static final MaterialRule BASALT;
+   private static final MaterialRule BLACKSTONE;
+   private static final MaterialRule WARPED_WART_BLOCK;
+   private static final MaterialRule WARPED_NYLIUM;
+   private static final MaterialRule NETHER_WART_BLOCK;
+   private static final MaterialRule CRIMSON_NYLIUM;
+   private static final MaterialRule GRAVEL;
 
    public NetherMaterialRules() {
       super();
    }
 
-   private static ResourceKey<SurfaceRules.RuleSource> createKey(final String name) {
+   private static ResourceKey<MaterialRule> createKey(final String name) {
       return ResourceKey.create(Registries.MATERIAL_RULE, Identifier.withDefaultNamespace(name));
    }
 
-   private static SurfaceRules.RuleSource makeStateRule(final Block block) {
-      return SurfaceRules.state(block.defaultBlockState());
+   private static MaterialRule makeStateRule(final Block block) {
+      return MaterialRules.state(block.defaultBlockState());
    }
 
-   public static void bootstrap(final BootstrapContext<SurfaceRules.RuleSource> context) {
-      HolderGetter<SurfaceRules.RuleSource> rules = context.lookup(Registries.MATERIAL_RULE);
-      HolderGetter<SurfaceRules.ConditionSource> conditions = context.lookup(Registries.MATERIAL_CONDITION);
+   public static void bootstrap(final BootstrapContext<MaterialRule> context) {
+      HolderGetter<MaterialRule> rules = context.lookup(Registries.MATERIAL_RULE);
+      HolderGetter<MaterialCondition> conditions = context.lookup(Registries.MATERIAL_CONDITION);
       HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
-      SurfaceRules.ConditionSource onFloor = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.ON_FLOOR);
-      SurfaceRules.ConditionSource underCeiling = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.UNDER_CEILING);
-      SurfaceRules.ConditionSource underFloor = SurfaceRules.getCondition(conditions, VanillaMaterialConditions.UNDER_FLOOR);
-      SurfaceRules.ConditionSource aboveNetherLavaLevel = SurfaceRules.yBlockCheck(VerticalAnchor.absolute(31), 0);
-      SurfaceRules.ConditionSource aboveNetherLavaSurface = SurfaceRules.yBlockCheck(VerticalAnchor.absolute(32), 0);
-      SurfaceRules.ConditionSource netherBandAroundLavaLevelBottom = SurfaceRules.yStartCheck(VerticalAnchor.absolute(30), 0);
-      SurfaceRules.ConditionSource netherBandAroundLavaLevelTop = SurfaceRules.not(SurfaceRules.yStartCheck(VerticalAnchor.absolute(35), 0));
-      SurfaceRules.ConditionSource closeToCeiling = SurfaceRules.yBlockCheck(VerticalAnchor.belowTop(5), 0);
-      SurfaceRules.ConditionSource hole = SurfaceRules.hole();
-      SurfaceRules.ConditionSource soulSandLayer = SurfaceRules.noiseCondition2d(Noises.SOUL_SAND_LAYER, -0.012);
-      SurfaceRules.ConditionSource gravelLayer = SurfaceRules.noiseCondition2d(Noises.GRAVEL_LAYER, -0.012);
-      SurfaceRules.ConditionSource patch = SurfaceRules.noiseCondition2d(Noises.PATCH, -0.012);
-      SurfaceRules.ConditionSource netherrack = SurfaceRules.noiseCondition2d(Noises.NETHERRACK, 0.54);
-      SurfaceRules.ConditionSource netherWart = SurfaceRules.noiseCondition2d(Noises.NETHER_WART, 1.17);
-      SurfaceRules.ConditionSource netherStateSelector = SurfaceRules.noiseCondition2d(Noises.NETHER_STATE_SELECTOR, 0.0);
-      SurfaceRules.RuleSource gravelPatch = SurfaceRules.ifTrue(patch, SurfaceRules.ifTrue(netherBandAroundLavaLevelBottom, SurfaceRules.ifTrue(netherBandAroundLavaLevelTop, GRAVEL)));
-      context.register(NETHER, SurfaceRules.sequence(SurfaceRules.getRule(rules, VanillaMaterialRules.BEDROCK_FLOOR), SurfaceRules.getRule(rules, VanillaMaterialRules.BEDROCK_ROOF), SurfaceRules.ifTrue(closeToCeiling, NETHERRACK), SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.BASALT_DELTAS), SurfaceRules.sequence(SurfaceRules.ifTrue(underCeiling, BASALT), SurfaceRules.ifTrue(underFloor, SurfaceRules.sequence(gravelPatch, SurfaceRules.ifTrue(netherStateSelector, BASALT), BLACKSTONE)))), SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.SOUL_SAND_VALLEY), SurfaceRules.sequence(SurfaceRules.ifTrue(underCeiling, SurfaceRules.sequence(SurfaceRules.ifTrue(netherStateSelector, SOUL_SAND), SOUL_SOIL)), SurfaceRules.ifTrue(underFloor, SurfaceRules.sequence(gravelPatch, SurfaceRules.ifTrue(netherStateSelector, SOUL_SAND), SOUL_SOIL)))), SurfaceRules.ifTrue(onFloor, SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.not(aboveNetherLavaSurface), SurfaceRules.ifTrue(hole, LAVA)), SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.WARPED_FOREST), SurfaceRules.ifTrue(SurfaceRules.not(netherrack), SurfaceRules.ifTrue(aboveNetherLavaLevel, SurfaceRules.sequence(SurfaceRules.ifTrue(netherWart, WARPED_WART_BLOCK), WARPED_NYLIUM)))), SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.CRIMSON_FOREST), SurfaceRules.ifTrue(SurfaceRules.not(netherrack), SurfaceRules.ifTrue(aboveNetherLavaLevel, SurfaceRules.sequence(SurfaceRules.ifTrue(netherWart, NETHER_WART_BLOCK), CRIMSON_NYLIUM)))))), SurfaceRules.ifTrue(SurfaceRules.isBiome(biomes, Biomes.NETHER_WASTES), SurfaceRules.sequence(SurfaceRules.ifTrue(underFloor, SurfaceRules.ifTrue(soulSandLayer, SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.not(hole), SurfaceRules.ifTrue(netherBandAroundLavaLevelBottom, SurfaceRules.ifTrue(netherBandAroundLavaLevelTop, SOUL_SAND))), NETHERRACK))), SurfaceRules.ifTrue(onFloor, SurfaceRules.ifTrue(aboveNetherLavaLevel, SurfaceRules.ifTrue(netherBandAroundLavaLevelTop, SurfaceRules.ifTrue(gravelLayer, SurfaceRules.sequence(SurfaceRules.ifTrue(aboveNetherLavaSurface, GRAVEL), SurfaceRules.ifTrue(SurfaceRules.not(hole), GRAVEL)))))))), NETHERRACK));
+      MaterialCondition onFloor = MaterialRules.getCondition(conditions, VanillaMaterialConditions.ON_FLOOR);
+      MaterialCondition underCeiling = MaterialRules.getCondition(conditions, VanillaMaterialConditions.UNDER_CEILING);
+      MaterialCondition underFloor = MaterialRules.getCondition(conditions, VanillaMaterialConditions.UNDER_FLOOR);
+      MaterialCondition aboveNetherLavaLevel = MaterialRules.yBlockCheck(VerticalAnchor.absolute(31), 0);
+      MaterialCondition aboveNetherLavaSurface = MaterialRules.yBlockCheck(VerticalAnchor.absolute(32), 0);
+      MaterialCondition netherBandAroundLavaLevelBottom = MaterialRules.yStartCheck(VerticalAnchor.absolute(30), 0);
+      MaterialCondition netherBandAroundLavaLevelTop = MaterialRules.not(MaterialRules.yStartCheck(VerticalAnchor.absolute(35), 0));
+      MaterialCondition closeToCeiling = MaterialRules.yBlockCheck(VerticalAnchor.belowTop(5), 0);
+      MaterialCondition hole = MaterialRules.hole();
+      MaterialCondition soulSandLayer = MaterialRules.noiseCondition2d(Noises.SOUL_SAND_LAYER, -0.012);
+      MaterialCondition gravelLayer = MaterialRules.noiseCondition2d(Noises.GRAVEL_LAYER, -0.012);
+      MaterialCondition patch = MaterialRules.noiseCondition2d(Noises.PATCH, -0.012);
+      MaterialCondition netherrack = MaterialRules.noiseCondition2d(Noises.NETHERRACK, 0.54);
+      MaterialCondition netherWart = MaterialRules.noiseCondition2d(Noises.NETHER_WART, 1.17);
+      MaterialCondition netherStateSelector = MaterialRules.noiseCondition2d(Noises.NETHER_STATE_SELECTOR, 0.0);
+      MaterialRule gravelPatch = MaterialRules.ifTrue(patch, MaterialRules.ifTrue(netherBandAroundLavaLevelBottom, MaterialRules.ifTrue(netherBandAroundLavaLevelTop, GRAVEL)));
+      context.register(NETHER, MaterialRules.sequence(MaterialRules.getRule(rules, VanillaMaterialRules.BEDROCK_FLOOR), MaterialRules.getRule(rules, VanillaMaterialRules.BEDROCK_ROOF), MaterialRules.ifTrue(closeToCeiling, NETHERRACK), MaterialRules.ifTrue(MaterialRules.isBiome(biomes, Biomes.BASALT_DELTAS), MaterialRules.sequence(MaterialRules.ifTrue(underCeiling, BASALT), MaterialRules.ifTrue(underFloor, MaterialRules.sequence(gravelPatch, MaterialRules.ifTrue(netherStateSelector, BASALT), BLACKSTONE)))), MaterialRules.ifTrue(MaterialRules.isBiome(biomes, Biomes.SOUL_SAND_VALLEY), MaterialRules.sequence(MaterialRules.ifTrue(underCeiling, MaterialRules.sequence(MaterialRules.ifTrue(netherStateSelector, SOUL_SAND), SOUL_SOIL)), MaterialRules.ifTrue(underFloor, MaterialRules.sequence(gravelPatch, MaterialRules.ifTrue(netherStateSelector, SOUL_SAND), SOUL_SOIL)))), MaterialRules.ifTrue(onFloor, MaterialRules.sequence(MaterialRules.ifTrue(MaterialRules.not(aboveNetherLavaSurface), MaterialRules.ifTrue(hole, LAVA)), MaterialRules.ifTrue(MaterialRules.isBiome(biomes, Biomes.WARPED_FOREST), MaterialRules.ifTrue(MaterialRules.not(netherrack), MaterialRules.ifTrue(aboveNetherLavaLevel, MaterialRules.sequence(MaterialRules.ifTrue(netherWart, WARPED_WART_BLOCK), WARPED_NYLIUM)))), MaterialRules.ifTrue(MaterialRules.isBiome(biomes, Biomes.CRIMSON_FOREST), MaterialRules.ifTrue(MaterialRules.not(netherrack), MaterialRules.ifTrue(aboveNetherLavaLevel, MaterialRules.sequence(MaterialRules.ifTrue(netherWart, NETHER_WART_BLOCK), CRIMSON_NYLIUM)))))), MaterialRules.ifTrue(MaterialRules.isBiome(biomes, Biomes.NETHER_WASTES), MaterialRules.sequence(MaterialRules.ifTrue(underFloor, MaterialRules.ifTrue(soulSandLayer, MaterialRules.sequence(MaterialRules.ifTrue(MaterialRules.not(hole), MaterialRules.ifTrue(netherBandAroundLavaLevelBottom, MaterialRules.ifTrue(netherBandAroundLavaLevelTop, SOUL_SAND))), NETHERRACK))), MaterialRules.ifTrue(onFloor, MaterialRules.ifTrue(aboveNetherLavaLevel, MaterialRules.ifTrue(netherBandAroundLavaLevelTop, MaterialRules.ifTrue(gravelLayer, MaterialRules.sequence(MaterialRules.ifTrue(aboveNetherLavaSurface, GRAVEL), MaterialRules.ifTrue(MaterialRules.not(hole), GRAVEL)))))))), NETHERRACK));
    }
 
    static {

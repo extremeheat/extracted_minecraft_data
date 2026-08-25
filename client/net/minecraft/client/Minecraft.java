@@ -536,7 +536,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             LOGGER.error("Couldn't set icon", e);
          }
 
-         this.windowSurface = device.createSurface(this.window.handle());
+         long var10002 = this.window.handle();
+         Window var10003 = this.window;
+         Objects.requireNonNull(var10003);
+         this.windowSurface = device.createSurface(var10002, var10003::isIconified);
          this.sdlEventHandler = new SDLEventHandler(this, this.window);
          this.textInputManager = new TextInputManager(this.window);
          this.sdlEventHandler.pumpEvents();
@@ -622,7 +625,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Objects.requireNonNull(var10001);
          particleResources.onReload(var10001::clearParticles);
          this.gameRenderer = new GameRenderer(this, new FirstPersonHandsAndItemsRenderer(this), this.modelManager, this.itemModelResolver);
-         this.resourceManager.registerReloadListener(this.gameRenderer.createReloadListener());
+         this.resourceManager.registerReloadListener(this.gameRenderer);
          WindowRenderState windowRenderState = this.gameRenderer.gameRenderState().windowRenderState;
          windowRenderState.width = this.window.getWidth();
          windowRenderState.height = this.window.getHeight();
@@ -639,8 +642,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.realmsDataFetcher = new RealmsDataFetcher(realmsClient);
          RenderTarget mainRenderTarget = this.gameRenderer.mainRenderTarget();
          if (mainRenderTarget.width != this.window.getWidth() || mainRenderTarget.height != this.window.getHeight()) {
-            int var10002 = this.window.getWidth();
-            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
+            int var42 = this.window.getWidth();
+            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var42 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
 
             try {
                List<String> messages = device.getLastDebugMessages();
@@ -687,11 +690,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }), false));
          this.quickPlayLog = QuickPlayLog.of(gameConfig.quickPlay.logPath());
          this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
-         TimeSource.NanoTimeSource var10003 = Util.timeSource();
+         TimeSource.NanoTimeSource var43 = Util.timeSource();
          IntSupplier var10004 = () -> this.fpsPieRenderTicks;
          FramerateLimitTracker var10005 = this.framerateLimitTracker;
          Objects.requireNonNull(var10005);
-         this.fpsPieProfiler = new ContinuousProfiler(var10003, var10004, var10005::isHeavilyThrottled);
+         this.fpsPieProfiler = new ContinuousProfiler(var43, var10004, var10005::isHeavilyThrottled);
          if (TracyClient.isAvailable() && gameConfig.game.captureTracyImages) {
             this.tracyFrameCapture = new TracyFrameCapture();
          } else {
@@ -1226,7 +1229,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                }
             }
 
-            if (!this.surfaceIsInvalid && !this.window.isIconified()) {
+            if (!this.surfaceIsInvalid) {
                try {
                   this.windowSurface.acquireNextTexture();
                } catch (SurfaceException ex) {

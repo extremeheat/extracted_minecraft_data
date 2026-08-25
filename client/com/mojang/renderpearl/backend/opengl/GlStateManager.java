@@ -329,6 +329,11 @@ public class GlStateManager {
       GL33C.glFramebufferTexture2D(target, attachment, textarget, texture, level);
    }
 
+   public static void _glReadBuffer(final int mode) {
+      RenderSystem.assertOnRenderThread();
+      GL33C.glReadBuffer(mode);
+   }
+
    public static void glBlendFuncSeparate(final int srcColor, final int dstColor, final int srcAlpha, final int dstAlpha) {
       RenderSystem.assertOnRenderThread();
       GL33C.glBlendFuncSeparate(srcColor, dstColor, srcAlpha, dstAlpha);

@@ -1,5 +1,7 @@
 package com.mojang.renderpearl.backend.opengl;
 
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
@@ -7,10 +9,12 @@ import com.mojang.renderpearl.backend.api.SpvModule;
 import com.mojang.renderpearl.frontend.shaders.SpvUtil;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.SharedConstants;
 import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
@@ -247,33 +251,102 @@ public class GlPipelineRecompiler {
       }
    }
 
-   public @Nullable GlProgram compileProgram(final BackendRenderPipeline.CreateInfo createInfo) {
-      List<GlShaderModule> compiledShaders = new ReferenceArrayList();
-
+   public @Nullable Map<BackendRenderPipeline.CreateInfo.Shader, String> decompileShaders(final BackendRenderPipeline.CreateInfo createInfo) {
       try {
-         for(BackendRenderPipeline.CreateInfo.Shader shader : createInfo.shaders()) {
-            String decompiledSource = this.decompileShader(shader);
-            GlShaderModule compiledShader = this.compileShader(shader.name(), shader.module().type(), decompiledSource);
-            if (compiledShader == GlShaderModule.INVALID_SHADER) {
-               Object var7 = null;
-               return (GlProgram)var7;
+         Zone tracyZone = TracyClient.beginZone("Decompile shaders", false);
+
+         Object var9;
+         try {
+            tracyZone.addText(createInfo.name());
+            Map<BackendRenderPipeline.CreateInfo.Shader, String> decompiledShaders = new Reference2ReferenceArrayMap();
+
+            for(BackendRenderPipeline.CreateInfo.Shader shader : createInfo.shaders()) {
+               decompiledShaders.put(shader, this.decompileShader(shader));
             }
 
-            compiledShaders.add(compiledShader);
+            var9 = decompiledShaders;
+         } catch (Throwable var7) {
+            if (tracyZone != null) {
+               try {
+                  tracyZone.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
+               }
+            }
+
+            throw var7;
          }
 
-         GlProgram compiled = GlProgram.link(compiledShaders, createInfo.name());
-         compiled.setupBindGroupLayouts(createInfo.uniforms());
-         this.debugLabels.applyLabel(compiled);
-         GlProgram var15 = compiled;
-         return var15;
+         if (tracyZone != null) {
+            tracyZone.close();
+         }
+
+         return (Map<BackendRenderPipeline.CreateInfo.Shader, String>)var9;
+      } catch (ShaderCompileException e) {
+         LOGGER.error("Couldn't compile program for pipeline {}", createInfo.name(), e);
+         return null;
+      }
+   }
+
+   public @Nullable GlProgram compileProgram(final BackendRenderPipeline.CreateInfo createInfo, final Map<BackendRenderPipeline.CreateInfo.Shader, String> decompiledShaders) {
+      List<GlShaderModule> compiledShaders = new ReferenceArrayList();
+
+      Object var9;
+      try {
+         Zone tracyZone;
+         label144: {
+            tracyZone = TracyClient.beginZone("Build GlProgram", false);
+
+            GlProgram var21;
+            try {
+               tracyZone.addText(createInfo.name());
+
+               for(BackendRenderPipeline.CreateInfo.Shader shader : createInfo.shaders()) {
+                  String decompiledSource = (String)decompiledShaders.get(shader);
+                  GlShaderModule compiledShader = this.compileShader(shader.name(), shader.module().type(), decompiledSource);
+                  if (compiledShader == GlShaderModule.INVALID_SHADER) {
+                     var9 = null;
+                     break label144;
+                  }
+
+                  compiledShaders.add(compiledShader);
+               }
+
+               GlProgram compiled = GlProgram.link(compiledShaders, createInfo.name());
+               compiled.setupBindGroupLayouts(createInfo.uniforms());
+               this.debugLabels.applyLabel(compiled);
+               var21 = compiled;
+            } catch (Throwable var16) {
+               if (tracyZone != null) {
+                  try {
+                     tracyZone.close();
+                  } catch (Throwable var15) {
+                     var16.addSuppressed(var15);
+                  }
+               }
+
+               throw var16;
+            }
+
+            if (tracyZone != null) {
+               tracyZone.close();
+            }
+
+            return var21;
+         }
+
+         if (tracyZone != null) {
+            tracyZone.close();
+         }
       } catch (ShaderCompileException | IllegalArgumentException e) {
          LOGGER.error("Couldn't compile program for pipeline {}", createInfo.name(), e);
-         Object shader = null;
-         return (GlProgram)shader;
+         Object compiled = null;
+         return (GlProgram)compiled;
       } finally {
          compiledShaders.forEach(UncheckedAutoCloseable::close);
       }
+
+      return (GlProgram)var9;
    }
 
    static {

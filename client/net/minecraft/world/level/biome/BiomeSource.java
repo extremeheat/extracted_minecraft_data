@@ -21,6 +21,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import org.jspecify.annotations.Nullable;
 
 public abstract class BiomeSource {
@@ -39,16 +41,16 @@ public abstract class BiomeSource {
       return (Set)this.possibleBiomes.get();
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int x, final int y, final int z, final int searchRadius, final Predicate<Holder<Biome>> allowed, final RandomSource random, final Climate.Sampler sampler) {
-      return this.findBiomeHorizontal(x, y, z, searchRadius, 1, allowed, random, false, sampler);
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int x, final int y, final int z, final int searchRadius, final Predicate<Holder<Biome>> allowed, final RandomSource random, final RandomState randomState) {
+      return this.findBiomeHorizontal(x, y, z, searchRadius, 1, allowed, random, false, randomState);
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final Climate.Sampler sampler, final LevelReader level) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final RandomState randomState, final LevelReader level) {
       Set<Holder<Biome>> candidateBiomes = (Set)this.possibleBiomes().stream().filter(allowed).collect(Collectors.toUnmodifiableSet());
       if (candidateBiomes.isEmpty()) {
          return null;
       } else {
-         BiomeResolver resolver = this.createResolver(sampler);
+         BiomeResolver resolver = this.createCachingResolver(randomState);
          int sampleRadius = Math.floorDiv(searchRadius, sampleResolutionHorizontal);
          int[] sampleYs = Mth.outFromOrigin(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1, sampleResolutionVertical).toArray();
 
@@ -71,12 +73,12 @@ public abstract class BiomeSource {
       }
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int searchRadius, final int skipSteps, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final Climate.Sampler sampler) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int searchRadius, final int skipSteps, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final RandomState randomState) {
       int noiseCenterX = QuartPos.fromBlock(originX);
       int noiseCenterZ = QuartPos.fromBlock(originZ);
       int noiseRadius = QuartPos.fromBlock(searchRadius);
       int noiseY = QuartPos.fromBlock(originY);
-      BiomeResolver resolver = this.createResolver(sampler);
+      BiomeResolver resolver = this.createCachingResolver(randomState);
       Pair<BlockPos, Holder<Biome>> result = null;
       int found = 0;
       int startRadius = findClosest ? 0 : noiseRadius;
@@ -115,7 +117,20 @@ public abstract class BiomeSource {
       return result;
    }
 
+   public final BiomeResolver createUncachedResolver(final RandomState randomState) {
+      return this.createResolver(randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED));
+   }
+
+   public final BiomeResolver createCachingResolver(final RandomState randomState) {
+      SamplerContext context = SamplerContext.builder().enableCaches().build();
+      return this.createResolver(randomState.createClimateSampler(context));
+   }
+
    public abstract BiomeResolver createResolver(Climate.Sampler sampler);
+
+   public BiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
+      return this.createResolver(sampler);
+   }
 
    public void addDebugInfo(final List<String> result, final BlockPos feetPos, final Climate.Sampler sampler) {
    }

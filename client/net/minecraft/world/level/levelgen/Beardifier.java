@@ -1,18 +1,20 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -22,8 +24,9 @@ import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import org.jspecify.annotations.Nullable;
 
-public class Beardifier implements DensityFunction {
+public class Beardifier implements DensitySampler {
    public static final Interval RANGE;
+   public static final ContextKey<Beardifier> CONTEXT_KEY;
    public static final int BEARD_KERNEL_RADIUS = 12;
    private static final int BEARD_KERNEL_SIZE = 24;
    private static final float[] BEARD_KERNEL;
@@ -34,7 +37,7 @@ public class Beardifier implements DensityFunction {
    private final @Nullable BoundingBox affectedBox;
 
    public static Beardifier forStructuresInChunk(final StructureManager structureManager, final ChunkPos chunkPos) {
-      List<StructureStart> structureStarts = structureManager.startsForStructure((ChunkPos)chunkPos, (Predicate)((s) -> s.terrainAdaptation() != TerrainAdjustment.NONE));
+      List<StructureStart> structureStarts = structureManager.startsForStructure(chunkPos.x(), chunkPos.z(), (Predicate)((s) -> s.terrainAdaptation() != TerrainAdjustment.NONE));
       if (structureStarts.isEmpty()) {
          return EMPTY;
       } else {
@@ -95,102 +98,97 @@ public class Beardifier implements DensityFunction {
       this.affectedBox = affectedBox;
    }
 
-   public void fillArray(final float[] output, final DensityFunction.ContextProvider contextProvider) {
-      if (this.affectedBox == null) {
-         Arrays.fill(output, 0.0F);
-      } else {
-         contextProvider.fillAllDirectly(output, this);
-      }
+   public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
+      outputBuffer.fill(0.0F);
+      if (this.affectedBox != null && volume.intersects(this.affectedBox)) {
+         int minX = Math.floorDiv(Math.max(0, this.affectedBox.minX() - volume.minBlockX()), volume.stepBlockX());
+         int minY = Math.floorDiv(Math.max(0, this.affectedBox.minY() - volume.minBlockY()), volume.stepBlockY());
+         int minZ = Math.floorDiv(Math.max(0, this.affectedBox.minZ() - volume.minBlockZ()), volume.stepBlockZ());
+         int maxX = Math.min(volume.sizeX() - 1, Math.floorDiv(this.affectedBox.maxX() - volume.minBlockX(), volume.stepBlockX()));
+         int maxY = Math.min(volume.sizeY() - 1, Math.floorDiv(this.affectedBox.maxY() - volume.minBlockY(), volume.stepBlockY()));
+         int maxZ = Math.min(volume.sizeZ() - 1, Math.floorDiv(this.affectedBox.maxZ() - volume.minBlockZ(), volume.stepBlockZ()));
 
-   }
+         for(int z = minZ; z <= maxZ; ++z) {
+            int blockZ = volume.blockZ(z);
 
-   public float compute(final DensityFunction.FunctionContext context) {
-      if (this.affectedBox == null) {
-         return 0.0F;
-      } else {
-         int blockX = context.blockX();
-         int blockY = context.blockY();
-         int blockZ = context.blockZ();
-         if (!this.affectedBox.isInside(blockX, blockY, blockZ)) {
-            return 0.0F;
-         } else {
-            float noiseValue = 0.0F;
+            for(int x = minX; x <= maxX; ++x) {
+               int blockX = volume.blockX(x);
 
-            for(Rigid rigid : this.pieces) {
-               BoundingBox box = rigid.box();
-               int groundLevelDelta = rigid.groundLevelDelta();
-               int dx = Math.max(0, Math.max(box.minX() - blockX, blockX - box.maxX()));
-               int dz = Math.max(0, Math.max(box.minZ() - blockZ, blockZ - box.maxZ()));
-               int groundY = box.minY() + groundLevelDelta;
-               int dyToGround = blockY - groundY;
-               int var10000;
-               switch (rigid.terrainAdjustment()) {
-                  case NONE:
-                     var10000 = 0;
-                     break;
-                  case BURY:
-                  case BEARD_THIN:
-                     var10000 = dyToGround;
-                     break;
-                  case BEARD_BOX:
-                     var10000 = Math.max(0, Math.max(groundY - blockY, blockY - box.maxY()));
-                     break;
-                  case ENCAPSULATE:
-                     var10000 = Math.max(0, Math.max(box.minY() - blockY, blockY - box.maxY()));
-                     break;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
+               for(int y = minY; y <= maxY; ++y) {
+                  int index = volume.indexUnchecked(x, y, z);
+                  int blockY = volume.blockY(y);
+                  outputBuffer.set(index, this.sampleValueUnchecked(blockX, blockY, blockZ));
                }
-
-               int dy = var10000;
-               float var10001;
-               switch (rigid.terrainAdjustment()) {
-                  case NONE:
-                     var10001 = 0.0F;
-                     break;
-                  case BURY:
-                     var10001 = getBuryContribution((float)dx, (float)dy / 2.0F, (float)dz);
-                     break;
-                  case BEARD_THIN:
-                  case BEARD_BOX:
-                     var10001 = getBeardContribution(dx, dy, dz, dyToGround) * 0.8F;
-                     break;
-                  case ENCAPSULATE:
-                     var10001 = getBuryContribution((float)dx / 2.0F, (float)dy / 2.0F, (float)dz / 2.0F) * 0.8F;
-                     break;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
-               }
-
-               noiseValue += var10001;
             }
-
-            for(JigsawJunction junction : this.junctions) {
-               int dx = blockX - junction.getSourceX();
-               int dy = blockY - junction.getSourceGroundY();
-               int dz = blockZ - junction.getSourceZ();
-               noiseValue += getBeardContribution(dx, dy, dz, dy) * 0.4F;
-            }
-
-            return noiseValue;
          }
+
       }
    }
 
-   public DensityFunction mapChildren(final DensityFunction.Visitor visitor) {
-      return this;
+   public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
+      return this.affectedBox != null && this.affectedBox.isInside(blockX, blockY, blockZ) ? this.sampleValueUnchecked(blockX, blockY, blockZ) : 0.0F;
    }
 
-   public Interval range() {
-      return RANGE;
-   }
+   private float sampleValueUnchecked(final int blockX, final int blockY, final int blockZ) {
+      float noiseValue = 0.0F;
 
-   public @DensityFunction.Axes int domainAxes() {
-      return 7;
-   }
+      for(Rigid rigid : this.pieces) {
+         BoundingBox box = rigid.box();
+         int groundLevelDelta = rigid.groundLevelDelta();
+         int dx = Math.max(0, Math.max(box.minX() - blockX, blockX - box.maxX()));
+         int dz = Math.max(0, Math.max(box.minZ() - blockZ, blockZ - box.maxZ()));
+         int groundY = box.minY() + groundLevelDelta;
+         int dyToGround = blockY - groundY;
+         int var10000;
+         switch (rigid.terrainAdjustment()) {
+            case NONE:
+               var10000 = 0;
+               break;
+            case BURY:
+            case BEARD_THIN:
+               var10000 = dyToGround;
+               break;
+            case BEARD_BOX:
+               var10000 = Math.max(0, Math.max(groundY - blockY, blockY - box.maxY()));
+               break;
+            case ENCAPSULATE:
+               var10000 = Math.max(0, Math.max(box.minY() - blockY, blockY - box.maxY()));
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
 
-   public MapCodec<? extends DensityFunction> codec() {
-      throw new UnsupportedOperationException();
+         int dy = var10000;
+         float var10001;
+         switch (rigid.terrainAdjustment()) {
+            case NONE:
+               var10001 = 0.0F;
+               break;
+            case BURY:
+               var10001 = getBuryContribution((float)dx, (float)dy / 2.0F, (float)dz);
+               break;
+            case BEARD_THIN:
+            case BEARD_BOX:
+               var10001 = getBeardContribution(dx, dy, dz, dyToGround) * 0.8F;
+               break;
+            case ENCAPSULATE:
+               var10001 = getBuryContribution((float)dx / 2.0F, (float)dy / 2.0F, (float)dz / 2.0F) * 0.8F;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         noiseValue += var10001;
+      }
+
+      for(JigsawJunction junction : this.junctions) {
+         int dx = blockX - junction.getSourceX();
+         int dy = blockY - junction.getSourceGroundY();
+         int dz = blockZ - junction.getSourceZ();
+         noiseValue += getBeardContribution(dx, dy, dz, dy) * 0.4F;
+      }
+
+      return noiseValue;
    }
 
    private static float getBuryContribution(final float dx, final float dy, final float dz) {
@@ -228,6 +226,7 @@ public class Beardifier implements DensityFunction {
 
    static {
       RANGE = Interval.INFINITE;
+      CONTEXT_KEY = ContextKey.<Beardifier>vanilla("beardifier");
       BEARD_KERNEL = (float[])Util.make(new float[13824], (kernel) -> {
          for(int zi = 0; zi < 24; ++zi) {
             for(int xi = 0; xi < 24; ++xi) {
