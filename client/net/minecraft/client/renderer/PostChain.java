@@ -287,9 +287,13 @@ public class PostChain implements AutoCloseable {
       return target;
    }
 
-   public void close() {
+   public void closePersistentTargets() {
       this.persistentTargets.values().forEach(RenderTarget::destroyBuffers);
       this.persistentTargets.clear();
+   }
+
+   public void close() {
+      this.closePersistentTargets();
 
       for(PostPass pass : this.passes) {
          pass.close();

@@ -466,7 +466,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
          this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
          this.isSuffocating = (state, level, pos) -> state.is(BlockTags.CAUSES_SUFFOCATION) && state.isCollisionShapeFullBlock(level, pos);
-         this.isViewBlocking = (state, level, pos, nearPlaneBox) -> this.isSuffocating.test(state, level, pos);
+         this.isViewBlocking = (state, level, pos, var4) -> this.isSuffocating.test(state, level, pos);
          this.postProcess = (state, level, pos) -> null;
          this.emissiveRendering = (var0) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;

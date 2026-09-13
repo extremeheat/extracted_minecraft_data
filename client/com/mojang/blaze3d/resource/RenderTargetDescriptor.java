@@ -19,11 +19,11 @@ public record RenderTargetDescriptor(int width, int height, @Nullable TexturePro
    }
 
    public void prepare(final RenderTarget resource) {
-      if (this.color != null && this.depth != null) {
+      if (this.color != null && this.depth != null && this.color.clearColor != null && this.depth.clearColor != null) {
          RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(resource.getColorTexture(), this.color.clearColor, resource.getDepthTexture(), (double)this.depth.clearColor.x());
-      } else if (this.color != null) {
+      } else if (this.color != null && this.color.clearColor != null) {
          RenderSystem.getDevice().createCommandEncoder().clearColorTexture(resource.getColorTexture(), this.color.clearColor);
-      } else if (this.depth != null) {
+      } else if (this.depth != null && this.depth.clearColor != null) {
          RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(resource.getDepthTexture(), (double)this.depth.clearColor.x());
       }
 
@@ -41,7 +41,7 @@ public record RenderTargetDescriptor(int width, int height, @Nullable TexturePro
       }
    }
 
-   public static record TextureProperties(Vector4fc clearColor, GpuFormat format) {
+   public static record TextureProperties(@Nullable Vector4fc clearColor, GpuFormat format) {
       public static final TextureProperties DEFAULT_DEPTH;
 
       public TextureProperties {

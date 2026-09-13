@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.authlib.minecraft.BanDetails;
+import com.mojang.blaze3d.Blaze3D;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.URI;
 import java.time.Duration;
@@ -12,7 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
 
 public class BanNoticeScreens {
@@ -34,7 +34,7 @@ public class BanNoticeScreens {
       URI uri = CommonLinks.SUSPENSION_HELP;
       return new ConfirmLinkScreen((result) -> {
          if (result) {
-            Util.getPlatform().openUri(uri);
+            Blaze3D.openUri(uri);
          }
 
          onClose.run();
@@ -45,7 +45,7 @@ public class BanNoticeScreens {
       URI uri = CommonLinks.SUSPENSION_HELP;
       return new ConfirmLinkScreen((result) -> {
          if (result) {
-            Util.getPlatform().openUri(uri);
+            Blaze3D.openUri(uri);
          }
 
          onClose.run();

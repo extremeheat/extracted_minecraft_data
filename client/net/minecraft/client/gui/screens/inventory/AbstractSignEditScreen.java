@@ -158,8 +158,9 @@ public abstract class AbstractSignEditScreen extends Screen {
       this.extractSignText(graphics, this.cursorPosScratch);
       graphics.pose().popMatrix();
       this.cursorPosScratch.mul(textScale.x(), textScale.y()).add(offsetX, offsetY);
-      this.minecraft.textInputManager().setTextInputArea((int)this.cursorPosScratch.x, (int)this.cursorPosScratch.y, (int)this.cursorPosScratch.x + 1, (int)this.cursorPosScratch.y + this.sign.getTextLineHeight());
-      if (this.preeditOverlay != null) {
+      if (this.preeditOverlay == null) {
+         this.minecraft.textInputManager().setTextInputArea((int)this.cursorPosScratch.x, (int)this.cursorPosScratch.y, (int)this.cursorPosScratch.x + 1, (int)this.cursorPosScratch.y + this.sign.getTextLineHeight());
+      } else {
          this.preeditOverlay.updateInputPosition((int)this.cursorPosScratch.x, (int)this.cursorPosScratch.y);
          graphics.setPreeditOverlay(this.preeditOverlay);
       }

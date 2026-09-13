@@ -196,7 +196,10 @@ public class RenderPipelines {
    public static final RenderPipeline.Snippet ANIMATE_SPRITE_SNIPPET;
    public static final RenderPipeline ANIMATE_SPRITE_BLIT;
    public static final RenderPipeline ANIMATE_SPRITE_INTERPOLATE;
+   public static final RenderPipeline BLIT_DEPTH_BOUNDS;
    public static final RenderPipeline OIT_DEPTH_BOUNDS_CULL;
+   public static final RenderPipeline BLIT_DEPTH_DURING_DEPTH_BOUNDS;
+   public static final RenderPipeline BLIT_DEPTH;
    public static final RenderPipeline OIT_COMPOSITE;
    public static final RenderPipeline INTEGRATE_DEPTH;
 
@@ -404,7 +407,10 @@ public class RenderPipelines {
       ANIMATE_SPRITE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withVertexShader("core/animate_sprite").withBindGroupLayout(BindGroupLayouts.SPRITE_ANIMATION_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
       ANIMATE_SPRITE_BLIT = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withBindGroupLayout(BindGroupLayouts.SPRITE).build());
       ANIMATE_SPRITE_INTERPOLATE = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withBindGroupLayout(BindGroupLayouts.CURRENT_SPRITE_NEXT_SPRITE).build());
+      BLIT_DEPTH_BOUNDS = register(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth_bounds").withVertexShader("core/screenquad").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 15)).build());
       OIT_DEPTH_BOUNDS_CULL = register(RenderPipeline.builder(OIT_SNIPPET).withVertexShader("core/screenquad").withFragmentShader("core/oit_depth_bounds_cull").withLocation("pipeline/oit_depth_bounds_cull").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(DepthStencilState.DEFAULT).build());
+      BLIT_DEPTH_DURING_DEPTH_BOUNDS = register(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth_during_depth_bounds").withVertexShader("core/screenquad").withFragmentShader("core/blit_depth").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 0)).build());
+      BLIT_DEPTH = register(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth").withVertexShader("core/screenquad").withFragmentShader("core/blit_depth").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
       OIT_COMPOSITE = register(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screenquad").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), GpuFormat.RGBA8_UNORM, 15)).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
       INTEGRATE_DEPTH = register(RenderPipeline.builder().withVertexShader("core/screenquad").withFragmentShader("core/integrate_depth").withLocation("pipeline/integrate_depth").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
    }

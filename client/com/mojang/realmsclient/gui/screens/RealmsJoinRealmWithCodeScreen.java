@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsUtil;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -9,6 +8,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringUtil;
@@ -20,18 +20,19 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
    private static final Component TITLE = Component.translatable("mco.selectServer.joinCode.title");
    private static final Component JOIN_CODE_LABEL = Component.translatable("mco.selectServer.joinCode").withColor(-6250336);
    private static final Component JOIN_CODE_HINT = Component.translatable("mco.selectServer.joinCode.hint");
-   private static final Component JOIN_REALM_TEXT = Component.translatable("mco.selectServer.joinRealm");
+   private static final Component JOIN_REALM_TEXT = Component.translatable("mco.selectServer.joinCode.select");
    private static final Component VALIDATING_CODE_TEXT = Component.translatable("mco.selectServer.joinCode.validating").withColor(-1);
    private static final Component INVALID_CODE_TEXT = Component.translatable("mco.selectServer.joinCode.invalid").withColor(-65536);
-   private final RealmsMainScreen lastScreen;
+   private final Screen lastScreen;
+   private final Runnable onJoin;
    private @Nullable EditBox joinCode;
    private @Nullable Button joinButton;
-   private @Nullable Button backButton;
    private @Nullable Component message;
 
-   public RealmsJoinRealmWithCodeScreen(final RealmsMainScreen lastScreen) {
+   public RealmsJoinRealmWithCodeScreen(final Screen lastScreen, final Runnable onJoin) {
       super(TITLE);
       this.lastScreen = lastScreen;
+      this.onJoin = onJoin;
    }
 
    protected void init() {
@@ -46,7 +47,7 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
          this.joinButton.active = !StringUtil.isBlank(value);
          this.message = null;
       });
-      this.backButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
@@ -59,16 +60,17 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
    }
 
    private void joinRealm() {
-      if (this.joinCode != null && this.joinButton != null && this.backButton != null) {
+      if (this.joinCode != null && this.joinButton != null) {
          String code = this.joinCode.getValue().trim();
          if (!StringUtil.isBlank(code)) {
             this.joinCode.setEditable(false);
             this.joinButton.active = false;
-            this.backButton.active = false;
             this.showMessage(VALIDATING_CODE_TEXT);
             RealmsUtil.runAsync((client) -> client.redeemInviteCode(code), this::onJoinFailure).thenRunAsync(() -> {
-               this.minecraft.gui.setScreen(this.lastScreen);
-               this.lastScreen.resetScreen();
+               if (this.minecraft.gui.screen() == this) {
+                  this.onJoin.run();
+               }
+
             }, this.screenExecutor);
          }
       }
@@ -77,10 +79,9 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
    private void onJoinFailure(final RealmsServiceException exception) {
       LOGGER.error("Couldn't redeem invite code", exception);
       this.screenExecutor.execute(() -> {
-         if (this.joinCode != null && this.joinButton != null && this.backButton != null) {
+         if (this.minecraft.gui.screen() == this && this.joinCode != null && this.joinButton != null) {
             this.joinCode.setEditable(true);
             this.joinButton.active = !StringUtil.isBlank(this.joinCode.getValue());
-            this.backButton.active = true;
             this.showMessage(INVALID_CODE_TEXT);
          }
 
@@ -101,9 +102,6 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
    }
 
    public void onClose() {
-      if (this.backButton == null || this.backButton.active) {
-         this.minecraft.gui.setScreen(this.lastScreen);
-      }
-
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 }

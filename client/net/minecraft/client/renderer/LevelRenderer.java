@@ -27,8 +27,11 @@ import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
@@ -39,10 +42,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import net.minecraft.SharedConstants;
 import net.minecraft.TracingExecutor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CloudStatus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.PrioritizeChunkUpdates;
 import net.minecraft.client.TextureFilteringMethod;
@@ -66,7 +72,6 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.oit.OitRenderPassProvider;
 import net.minecraft.client.renderer.oit.OitStage;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.OptionsRenderState;
@@ -76,6 +81,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.client.renderer.state.level.SectionUpdateRenderState;
 import net.minecraft.client.renderer.state.level.SkyRenderState;
+import net.minecraft.client.renderer.state.level.TransientBlockRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.ModelManager;
@@ -131,6 +137,8 @@ public class LevelRenderer implements AutoCloseable {
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections = new ObjectArrayList(10000);
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> nearbyVisibleSections = new ObjectArrayList(50);
+   private final Long2ObjectLinkedOpenHashMap<TransientBlockRenderState> transientBlocks = new Long2ObjectLinkedOpenHashMap();
+   private final BlockingQueue<TransientBlockRenderState.Removal> transientBlockRemovalQueue = new LinkedBlockingQueue();
    private @Nullable ViewArea viewArea;
    private final RenderTarget entityOutlineTarget;
    private final LevelTargetBundle targets = new LevelTargetBundle();
@@ -185,11 +193,13 @@ public class LevelRenderer implements AutoCloseable {
       this.targets.main = frame.<RenderTarget>importExternal("main", this.gameRenderer.mainRenderTarget());
       int screenWidth = this.gameRenderer.mainRenderTarget().width;
       int screenHeight = this.gameRenderer.mainRenderTarget().height;
-      RenderTargetDescriptor extraDepthTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, (RenderTargetDescriptor.TextureProperties)null, RenderTargetDescriptor.TextureProperties.DEFAULT_DEPTH);
+      RenderTargetDescriptor extraDepthTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, (RenderTargetDescriptor.TextureProperties)null, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.D32_FLOAT));
+      RenderTargetDescriptor extraDepthTargetDescriptorCleared = new RenderTargetDescriptor(screenWidth, screenHeight, (RenderTargetDescriptor.TextureProperties)null, RenderTargetDescriptor.TextureProperties.DEFAULT_DEPTH);
       if (this.gameRenderer.useImprovedTransparency()) {
          RenderTargetDescriptor depthBoundsTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(DEPTH_BOUNDS_CLEAR_COLOR, GpuFormat.RGBA32_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
          this.targets.depthBounds = frame.<RenderTarget>createInternal("depth_bounds", depthBoundsTargetDescriptor);
-         this.targets.depthBoundsCopy = frame.<RenderTarget>createInternal("depth_bounds_copy", depthBoundsTargetDescriptor);
+         RenderTargetDescriptor depthBoundsCulledTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA32_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
+         this.targets.depthBoundsCulled = frame.<RenderTarget>createInternal("depth_bounds_culled", depthBoundsCulledTargetDescriptor);
          RenderTargetDescriptor transmittanceTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(ZERO_CLEAR_COLOR, GpuFormat.RGBA16_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
 
          for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
@@ -203,7 +213,7 @@ public class LevelRenderer implements AutoCloseable {
       }
 
       if (this.frameHasAlwaysOnTopGizmos() && consistentDepthRequired) {
-         this.targets.alwaysOnTopDepth = frame.<RenderTarget>createInternal("always_on_top_depth", extraDepthTargetDescriptor);
+         this.targets.alwaysOnTopDepth = frame.<RenderTarget>createInternal("always_on_top_depth", extraDepthTargetDescriptorCleared);
       }
 
       this.targets.entityOutline = frame.<RenderTarget>importExternal("entity_outline", this.entityOutlineTarget);
@@ -290,6 +300,7 @@ public class LevelRenderer implements AutoCloseable {
       levelRenderState.blockEntityRenderStates.clear();
       this.submitBlockDestroyAnimation(poseStack, submitNodeCollector, levelRenderState);
       levelRenderState.blockBreakingRenderStates.clear();
+      this.submitTransientBlocks(poseStack, submitNodeCollector, levelRenderState);
       levelRenderState.particlesRenderState.submit(submitNodeCollector, levelRenderState.cameraRenderState);
       if (renderOutline) {
          this.submitBlockOutline(poseStack, this.submitNodeStorage, levelRenderState);
@@ -346,7 +357,7 @@ public class LevelRenderer implements AutoCloseable {
       boolean useImprovedTransparency = this.gameRenderer.useImprovedTransparency();
       if (useImprovedTransparency) {
          this.targets.depthBounds = pass.<RenderTarget>readsAndWrites(this.targets.depthBounds);
-         this.targets.depthBoundsCopy = pass.<RenderTarget>readsAndWrites(this.targets.depthBoundsCopy);
+         this.targets.depthBoundsCulled = pass.<RenderTarget>readsAndWrites(this.targets.depthBoundsCulled);
 
          for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
             this.targets.transmittance.set(i, pass.readsAndWrites((ResourceHandle)this.targets.transmittance.get(i)));
@@ -475,21 +486,26 @@ public class LevelRenderer implements AutoCloseable {
       boolean shouldRenderClouds = cloudStatus != CloudStatus.OFF && ARGB.alpha(this.levelRenderState.cloudColor) > 0;
       int renderDistance = this.optionsRenderState.renderDistance * 16;
       CameraRenderState cameraState = this.levelRenderState.cameraRenderState;
-      RenderTarget depthBoundsTarget = OutputTarget.DEPTH_BOUNDS_TARGET.getRenderTarget();
-      RenderTarget accumulateTarget = OutputTarget.ACCUMULATE_TARGET.getRenderTarget();
-      GpuTextureView depthTextureView = this.gameRenderer.mainRenderTarget().getDepthTextureView();
+      GpuTextureView mainDepthTextureView = this.gameRenderer.mainRenderTarget().getDepthTextureView();
       RenderTarget mainTarget = this.targets.main.get();
       if (frameHasWaterMask) {
          this.executeOitWaterMask(featureFrame, mainTarget);
       }
 
-      GpuTextureView depthBoundsTargetView = depthBoundsTarget.getColorTextureView();
-      GpuTextureView accumulateTargetView = accumulateTarget.getColorTextureView();
-      OitRenderPassProvider.Parameters params = new OitRenderPassProvider.Parameters(depthBoundsTargetView, accumulateTargetView, depthTextureView);
+      GpuTextureView depthBoundsTargetView = ((RenderTarget)this.targets.depthBounds.get()).getColorTextureView();
+      GpuTextureView depthBoundsCulledTargetView = ((RenderTarget)this.targets.depthBoundsCulled.get()).getColorTextureView();
+      GpuTextureView accumulateTargetView = ((RenderTarget)this.targets.accumulate.get()).getColorTextureView();
+      GpuTextureView[] transmittanceTargetViews = new GpuTextureView[OIT_TRANSMITTANCE_TARGET_COUNT];
+
+      for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+         transmittanceTargetViews[i] = ((RenderTarget)((ResourceHandle)this.targets.transmittance.get(i)).get()).getColorTextureView();
+      }
+
+      OitRenderPassProvider.Parameters params = new OitRenderPassProvider.Parameters(depthBoundsTargetView, transmittanceTargetViews, accumulateTargetView, mainDepthTextureView);
       OitRenderPassProvider.Parameters cloudParams;
       if (shouldRenderClouds) {
          GpuTextureView cloudDepthTextureView = ((RenderTarget)this.targets.oitCloudDepth.get()).getDepthTextureView();
-         cloudParams = new OitRenderPassProvider.Parameters(depthBoundsTargetView, accumulateTargetView, cloudDepthTextureView);
+         cloudParams = new OitRenderPassProvider.Parameters(depthBoundsCulledTargetView, transmittanceTargetViews, accumulateTargetView, cloudDepthTextureView);
       } else {
          cloudParams = null;
       }
@@ -497,7 +513,7 @@ public class LevelRenderer implements AutoCloseable {
       OitRenderPassProvider.Parameters terrainParams;
       if (frameHasWaterMask) {
          GpuTextureView terrainDepthTextureView = ((RenderTarget)this.targets.oitTerrainWithWaterPatchDepth.get()).getDepthTextureView();
-         terrainParams = new OitRenderPassProvider.Parameters(depthBoundsTargetView, accumulateTargetView, terrainDepthTextureView);
+         terrainParams = new OitRenderPassProvider.Parameters(depthBoundsTargetView, transmittanceTargetViews, accumulateTargetView, terrainDepthTextureView);
       } else {
          terrainParams = params;
       }
@@ -515,14 +531,12 @@ public class LevelRenderer implements AutoCloseable {
 
          if (stage == OitStage.DEPTH_BOUNDS) {
             this.executeDepthBoundsCull();
+            params.setDepthBoundsTargetView(depthBoundsCulledTargetView);
+            terrainParams.setDepthBoundsTargetView(depthBoundsCulledTargetView);
          }
 
          if (shouldRenderClouds) {
-            if (stage == OitStage.DEPTH_BOUNDS) {
-               ((RenderTarget)this.targets.oitCloudDepth.get()).copyDepthFrom(mainTarget);
-            }
-
-            this.cloudRenderer.renderOit(cloudStatus, stage, cloudParams);
+            this.cloudRenderer.renderOit(cloudStatus, stage, mainDepthTextureView, cloudParams);
          }
 
          if (stage == OitStage.DEPTH_BOUNDS && frameHasWaterMask) {
@@ -538,7 +552,7 @@ public class LevelRenderer implements AutoCloseable {
          renderPass.setUniform("Sampler0", accumulateTargetView, nearestSampler);
 
          for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-            renderPass.setUniform("Coeff" + i, OutputTarget.TRANSMITTANCE_TARGETS[i].getRenderTarget().getColorTextureView(), nearestSampler);
+            renderPass.setUniform("Coeff" + i, ((RenderTarget)((ResourceHandle)this.targets.transmittance.get(i)).get()).getColorTextureView(), nearestSampler);
          }
 
          renderPass.setUniform("DepthBoundsSampler", depthBoundsTargetView, nearestSampler);
@@ -550,13 +564,15 @@ public class LevelRenderer implements AutoCloseable {
 
    private void executeDepthBoundsCull() {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
-      RenderTarget depthBoundsTarget = this.depthBoundsTarget();
-      RenderTarget depthBoundsCopyTarget = this.depthBoundsCopyTarget();
-      depthBoundsCopyTarget.copyColorFrom(depthBoundsTarget);
+      RenderTarget depthBoundsTarget = this.targets.depthBounds.get();
+      RenderTarget depthBoundsCulledTarget = this.targets.depthBoundsCulled.get();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT cull Depth Bounds", depthBoundsTarget.getColorTextureView(), Optional.empty(), this.gameRenderer.mainRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT cull Depth Bounds", depthBoundsCulledTarget.getColorTextureView(), Optional.empty(), this.gameRenderer.mainRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setUniform("DepthBoundsSampler", depthBoundsCopyTarget.getColorTextureView(), nearestSampler);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH_BOUNDS));
+         renderPass.setUniform("InSampler", depthBoundsTarget.getColorTextureView(), nearestSampler);
+         renderPass.draw(3, 1, 0, 0);
+         renderPass.setUniform("DepthBoundsSampler", depthBoundsTarget.getColorTextureView(), nearestSampler);
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.OIT_DEPTH_BOUNDS_CULL));
          renderPass.draw(3, 1, 0, 0);
       }
@@ -564,12 +580,15 @@ public class LevelRenderer implements AutoCloseable {
    }
 
    private void executeOitWaterMask(final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderTarget mainTarget) {
+      GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       RenderTarget terrainTarget = this.targets.oitTerrainWithWaterPatchDepth.get();
-      terrainTarget.copyDepthFrom(mainTarget);
       RenderPassDescriptor descriptor = RenderPassDescriptor.builder(() -> "Water mask").withDepthAttachment(terrainTarget.getDepthTextureView()).build();
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(descriptor)) {
          RenderSystem.bindDefaultUniforms(renderPass);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH));
+         renderPass.setUniform("InSampler", mainTarget.getDepthTextureView(), nearestSampler);
+         renderPass.draw(3, 1, 0, 0);
          featureFrame.executeWaterMask(renderPass);
       }
 
@@ -726,6 +745,37 @@ public class LevelRenderer implements AutoCloseable {
       return new ChunkSectionsToRender.DrawSeparate(terrainTransformUbo, flattenDraws, largestIndexCount, chunkSectionInfos);
    }
 
+   public void addTransientBlock(final long blockNode, final TransientBlockRenderState state) {
+      this.transientBlocks.put(blockNode, state);
+   }
+
+   public void removeTransientBlocksInSection(final long sectionNode, final long compileTaskStartTimeNs) {
+      this.transientBlockRemovalQueue.add(new TransientBlockRenderState.Removal(sectionNode, compileTaskStartTimeNs));
+   }
+
+   private void performTransientBlockRemovals() {
+      while(true) {
+         TransientBlockRenderState.Removal removal = (TransientBlockRenderState.Removal)this.transientBlockRemovalQueue.poll();
+         if (removal == null) {
+            return;
+         }
+
+         ObjectBidirectionalIterator<Long2ObjectMap.Entry<TransientBlockRenderState>> iterator = Minecraft.getInstance().levelRenderer.transientBlocks.long2ObjectEntrySet().fastIterator();
+
+         while(iterator.hasNext()) {
+            Long2ObjectMap.Entry<TransientBlockRenderState> entry = (Long2ObjectMap.Entry)iterator.next();
+            TransientBlockRenderState state = (TransientBlockRenderState)entry.getValue();
+            if (state.createTimeNs > removal.compileTaskStartTimeNs()) {
+               break;
+            }
+
+            if (SectionPos.blockToSection(entry.getLongKey()) == removal.sectionNode()) {
+               iterator.remove();
+            }
+         }
+      }
+   }
+
    public ChunkSectionsToRender prepareChunkRendersIndirect(final Matrix4fc modelViewMatrix, final boolean respectTranslucentOrder) {
       EnumMap<ChunkSectionLayer, List<ChunkDrawGroup>> drawGroups = new EnumMap(ChunkSectionLayer.class);
 
@@ -878,6 +928,31 @@ public class LevelRenderer implements AutoCloseable {
          }
 
       }
+   }
+
+   private void submitTransientBlocks(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState) {
+      this.performTransientBlockRemovals();
+      ObjectIterator<Long2ObjectMap.Entry<TransientBlockRenderState>> iterator = this.transientBlocks.long2ObjectEntrySet().fastIterator();
+      long currentTimeMs = Util.getMillis();
+      Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+      double camX = cameraPos.x();
+      double camY = cameraPos.y();
+      double camZ = cameraPos.z();
+
+      while(iterator.hasNext()) {
+         Long2ObjectMap.Entry<TransientBlockRenderState> entry = (Long2ObjectMap.Entry)iterator.next();
+         TransientBlockRenderState state = (TransientBlockRenderState)entry.getValue();
+         if (currentTimeMs >= state.liveUntilMs) {
+            iterator.remove();
+         } else {
+            poseStack.pushPose();
+            BlockPos blockPos = state.movingBlockRenderState.blockPos;
+            poseStack.translate((double)blockPos.getX() - camX, (double)blockPos.getY() - camY, (double)blockPos.getZ() - camZ);
+            submitNodeCollector.submitMovingBlock(poseStack, state.movingBlockRenderState, 0);
+            poseStack.popPose();
+         }
+      }
+
    }
 
    private void submitBlockOutline(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState) {
@@ -1065,30 +1140,6 @@ public class LevelRenderer implements AutoCloseable {
 
    public BlockEntityRenderDispatcher blockEntityRenderDispatcher() {
       return this.blockEntityRenderDispatcher;
-   }
-
-   public @Nullable RenderTarget entityOutlineTarget() {
-      return this.targets.entityOutline != null ? (RenderTarget)this.targets.entityOutline.get() : null;
-   }
-
-   public @Nullable RenderTarget terrainDepthTarget() {
-      return this.targets.oitTerrainWithWaterPatchDepth != null ? (RenderTarget)this.targets.oitTerrainWithWaterPatchDepth.get() : null;
-   }
-
-   public @Nullable RenderTarget depthBoundsTarget() {
-      return this.targets.depthBounds != null ? (RenderTarget)this.targets.depthBounds.get() : null;
-   }
-
-   public @Nullable RenderTarget depthBoundsCopyTarget() {
-      return this.targets.depthBoundsCopy != null ? (RenderTarget)this.targets.depthBoundsCopy.get() : null;
-   }
-
-   public @Nullable RenderTarget transmittanceTarget(final int index) {
-      return ((ResourceHandle)this.targets.transmittance.get(index)).get() != null ? (RenderTarget)((ResourceHandle)this.targets.transmittance.get(index)).get() : null;
-   }
-
-   public @Nullable RenderTarget accumulateTarget() {
-      return this.targets.accumulate != null ? (RenderTarget)this.targets.accumulate.get() : null;
    }
 
    public CloudRenderer cloudRenderer() {

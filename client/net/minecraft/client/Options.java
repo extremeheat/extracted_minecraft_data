@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -214,6 +215,8 @@ public class Options {
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_ON = Component.translatable("options.exclusiveFullscreen.on.tooltip");
    private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF = Component.translatable("options.exclusiveFullscreen.off.tooltip");
    private final OptionInstance<Boolean> exclusiveFullscreen;
+   private static final Component MAC_FULLSCREEN_MENU_VISIBILITY_TOOLTIP = Component.translatable("options.macFullscreenMenuVisibility.tooltip");
+   private final OptionInstance<Boolean> macFullscreenMenuVisibility;
    private final OptionInstance<Boolean> bobView;
    private static final Component KEY_TOGGLE = Component.translatable("options.key.toggle");
    private static final Component KEY_HOLD = Component.translatable("options.key.hold");
@@ -702,6 +705,10 @@ public class Options {
       return this.exclusiveFullscreen;
    }
 
+   public OptionInstance<Boolean> macFullscreenMenuVisibility() {
+      return this.macFullscreenMenuVisibility;
+   }
+
    public OptionInstance<Boolean> bobView() {
       return this.bobView;
    }
@@ -978,13 +985,7 @@ public class Options {
          }
 
       });
-      this.ctrlClickEmulatesRightClick = OptionInstance.createBoolean("options.ctrlClickEmulatesRightClick", OptionInstance.cachedConstantTooltip(CTRL_CLICK_EMULATES_RIGHT_CLICK_TOOLTIP), false, (value) -> {
-         Window window = Minecraft.getInstance().getWindow();
-         if (window != null) {
-            window.setMacCtrlClickEmulatesRightClick(value);
-         }
-
-      });
+      this.ctrlClickEmulatesRightClick = OptionInstance.createBoolean("options.ctrlClickEmulatesRightClick", OptionInstance.cachedConstantTooltip(CTRL_CLICK_EMULATES_RIGHT_CLICK_TOOLTIP), false, MacosUtil::setCtrlClickEmulatesRightClick);
       this.glDebugVerbosity = 1;
       this.autoJump = OptionInstance.createBoolean("options.autoJump", false);
       this.rotateWithMinecart = OptionInstance.createBoolean("options.rotateWithMinecart", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART), false);
@@ -1022,6 +1023,7 @@ public class Options {
 
       });
       this.exclusiveFullscreen = OptionInstance.createBoolean("options.exclusiveFullscreen", (value) -> Tooltip.create(value ? TOOLTIP_EXCLUSIVE_FULLSCREEN_ON : TOOLTIP_EXCLUSIVE_FULLSCREEN_OFF), false, (value) -> Minecraft.getInstance().getWindow().setExclusiveFullscreen(value));
+      this.macFullscreenMenuVisibility = OptionInstance.createBoolean("options.macFullscreenMenuVisibility", OptionInstance.cachedConstantTooltip(MAC_FULLSCREEN_MENU_VISIBILITY_TOOLTIP), false, MacosUtil::setFullscreenMenuVisibility);
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
       this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, OptionInstance.NO_ACTION);
       this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, OptionInstance.NO_ACTION);
@@ -1215,6 +1217,7 @@ public class Options {
       access.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       access.process("fullscreen", this.fullscreen);
       access.process("exclusiveFullscreen", this.exclusiveFullscreen);
+      access.process("macFullscreenMenuVisibility", this.macFullscreenMenuVisibility);
       access.process("gamma", this.gamma);
       access.process("guiScale", this.guiScale);
       access.process("debugGuiScale", this.debugGuiScale);
@@ -1325,7 +1328,12 @@ public class Options {
          String currentValue = keyMapping.saveString();
          String newValue = access.process("key_" + keyMapping.getName(), currentValue);
          if (!currentValue.equals(newValue)) {
-            keyMapping.setKey(InputConstants.getKey(newValue));
+            try {
+               keyMapping.setKey(InputConstants.getKey(newValue));
+            } catch (IllegalArgumentException e) {
+               LOGGER.warn("Invalid keyMapping {} = {}, unbinding", new Object[]{keyMapping.getName(), newValue, e});
+               keyMapping.setKey(InputConstants.UNKNOWN);
+            }
          }
       }
 

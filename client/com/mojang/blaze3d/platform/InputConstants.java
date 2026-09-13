@@ -223,7 +223,8 @@ public class InputConstants {
       return keyboardState != null && keyboardState.get(key) != 0;
    }
 
-   public static void grabMouse(final Window window) {
+   public static void grabMouse(final Window window, final double xpos, final double ypos) {
+      SDLMouse.SDL_WarpMouseInWindow(window.handle(), (float)xpos, (float)ypos);
       if (!SDLMouse.SDL_SetWindowRelativeMouseMode(window.handle(), true)) {
          LOGGER.warn("Failed to enable relative mouse mode: {}", SDLError.SDL_GetError());
       }
@@ -231,11 +232,11 @@ public class InputConstants {
    }
 
    public static void releaseMouse(final Window window, final double xpos, final double ypos) {
+      SDLMouse.SDL_WarpMouseInWindow(window.handle(), (float)xpos, (float)ypos);
       if (!SDLMouse.SDL_SetWindowRelativeMouseMode(window.handle(), false)) {
          LOGGER.warn("Failed to disable relative mouse mode: {}", SDLError.SDL_GetError());
       }
 
-      SDLMouse.SDL_WarpMouseInWindow(window.handle(), (float)xpos, (float)ypos);
    }
 
    static {

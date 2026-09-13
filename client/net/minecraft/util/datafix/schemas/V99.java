@@ -225,7 +225,7 @@ public class V99 extends Schema {
       schema.registerType(true, References.VILLAGER_TRADE, () -> DSL.optionalFields("buy", References.ITEM_STACK.in(schema), "buyB", References.ITEM_STACK.in(schema), "sell", References.ITEM_STACK.in(schema)));
       schema.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
       schema.registerType(true, References.TEXT_COMPONENT, () -> DSL.constType(DSL.string()));
-      schema.registerType(false, References.STRUCTURE, () -> DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(schema))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(schema))), "palette", DSL.list(References.BLOCK_STATE.in(schema))));
+      schema.registerType(false, References.STRUCTURE, () -> DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(schema))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(schema))), "palette", DSL.list(References.BLOCK_STATE.in(schema)), "palettes", DSL.list(DSL.list(References.BLOCK_STATE.in(schema)))));
       schema.registerType(false, References.BLOCK_STATE, DSL::remainder);
       schema.registerType(false, References.FLAT_BLOCK_STATE, DSL::remainder);
       schema.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.optional(DSL.field("Equipment", DSL.list(References.ITEM_STACK.in(schema)))));

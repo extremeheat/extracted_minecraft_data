@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -1228,60 +1227,14 @@ public class Util {
    public static enum OS {
       LINUX("linux"),
       SOLARIS("solaris"),
-      WINDOWS("windows") {
-         protected String[] getOpenUriArguments(final URI uri) {
-            return new String[]{"rundll32", "url.dll,FileProtocolHandler", uri.toString()};
-         }
-      },
-      OSX("mac") {
-         protected String[] getOpenUriArguments(final URI uri) {
-            return new String[]{"open", uri.toString()};
-         }
-      },
+      WINDOWS("windows"),
+      OSX("mac"),
       UNKNOWN("unknown");
 
       private final String telemetryName;
 
       private OS(final String telemetryName) {
          this.telemetryName = telemetryName;
-      }
-
-      public void openUri(final URI uri) {
-         try {
-            Process process = Runtime.getRuntime().exec(this.getOpenUriArguments(uri));
-            process.getInputStream().close();
-            process.getErrorStream().close();
-            process.getOutputStream().close();
-         } catch (IOException e) {
-            Util.LOGGER.error("Couldn't open location '{}'", uri, e);
-         }
-
-      }
-
-      public void openFile(final File file) {
-         this.openUri(file.toURI());
-      }
-
-      public void openPath(final Path path) {
-         this.openUri(path.toUri());
-      }
-
-      protected String[] getOpenUriArguments(final URI uri) {
-         String string = uri.toString();
-         if ("file".equals(uri.getScheme())) {
-            string = string.replace("file:", "file://");
-         }
-
-         return new String[]{"xdg-open", string};
-      }
-
-      public void openUri(final String uri) {
-         try {
-            this.openUri(new URI(uri));
-         } catch (IllegalArgumentException | URISyntaxException e) {
-            Util.LOGGER.error("Couldn't open uri '{}'", uri, e);
-         }
-
       }
 
       public String telemetryName() {

@@ -81,6 +81,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.food.VillagerFood;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -287,18 +289,13 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          offer.resetUses();
       }
 
-      this.resendOffersToTradingPlayer();
-      this.lastRestockGameTime = this.level().getGameTime();
-      ++this.numberOfRestocksToday;
-   }
-
-   private void resendOffersToTradingPlayer() {
-      MerchantOffers offers = this.getOffers();
       Player tradingPlayer = this.getTradingPlayer();
-      if (tradingPlayer != null && !offers.isEmpty()) {
-         tradingPlayer.sendMerchantOffers(tradingPlayer.containerMenu.containerId, offers, this.getVillagerData().level(), this.getVillagerXp(), this.showProgressBar(), this.canRestock());
+      if (tradingPlayer != null) {
+         this.updateSpecialPrices(tradingPlayer);
       }
 
+      this.lastRestockGameTime = this.level().getGameTime();
+      ++this.numberOfRestocksToday;
    }
 
    private boolean needsToRestock() {
@@ -342,7 +339,11 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          this.updateDemand();
       }
 
-      this.resendOffersToTradingPlayer();
+      Player tradingPlayer = this.getTradingPlayer();
+      if (tradingPlayer != null) {
+         this.updateSpecialPrices(tradingPlayer);
+      }
+
    }
 
    private void updateDemand() {
@@ -357,8 +358,9 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       int reputation = this.getPlayerReputation(player);
       MobEffectInstance heroOfTheVillage = player.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
       double heroModifier = heroOfTheVillage == null ? 0.0 : (double)(0.3F + 0.0625F * (float)heroOfTheVillage.getAmplifier());
+      MerchantOffers merchantOffers = this.getOffers();
 
-      for(MerchantOffer offer : this.getOffers()) {
+      for(MerchantOffer offer : merchantOffers) {
          if (reputation != 0) {
             offer.addToSpecialPriceDiff(-Mth.floor((float)reputation * offer.getPriceMultiplier()));
          }
@@ -367,6 +369,17 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
             int costReduction = (int)Math.floor(heroModifier * (double)offer.getBaseCostA().getCount());
             offer.addToSpecialPriceDiff(-Math.max(costReduction, 1));
          }
+      }
+
+      Player tradingPlayer = this.getTradingPlayer();
+      if (tradingPlayer != null && !merchantOffers.isEmpty()) {
+         AbstractContainerMenu var12 = tradingPlayer.containerMenu;
+         if (var12 instanceof MerchantMenu) {
+            MerchantMenu menu = (MerchantMenu)var12;
+            menu.updateSellItem();
+         }
+
+         tradingPlayer.sendMerchantOffers(tradingPlayer.containerMenu.containerId, merchantOffers, this.getVillagerData().level(), this.getVillagerXp(), this.showProgressBar(), this.canRestock());
       }
 
    }
@@ -420,8 +433,9 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    }
 
    public void postDataManipulated() {
-      if (this.isTrading()) {
-         this.resendOffersToTradingPlayer();
+      Player tradingPlayer = this.getTradingPlayer();
+      if (tradingPlayer != null) {
+         this.updateSpecialPrices(tradingPlayer);
       }
 
    }
@@ -493,10 +507,14 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
    }
 
    public void setLastHurtByMob(final @Nullable LivingEntity hurtBy) {
-      if (hurtBy != null && this.level() instanceof ServerLevel) {
-         ((ServerLevel)this.level()).onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
-         if (this.isAlive() && hurtBy instanceof Player) {
-            this.level().broadcastEntityEvent(this, (byte)13);
+      if (hurtBy != null) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var3;
+            serverLevel.onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
+            if (this.isAlive() && hurtBy instanceof Player) {
+               this.level().broadcastEntityEvent(this, (byte)13);
+            }
          }
       }
 
@@ -722,7 +740,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          Player tradingPlayer = this.getTradingPlayer();
          if (tradingPlayer != null) {
             this.updateSpecialPrices(tradingPlayer);
-            this.resendOffersToTradingPlayer();
          }
 
       }
@@ -737,7 +754,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          Player tradingPlayer = this.getTradingPlayer();
          if (tradingPlayer != null && newGossip > 0) {
             this.updateSpecialPrices(tradingPlayer);
-            this.resendOffersToTradingPlayer();
          }
 
       }
@@ -789,7 +805,6 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
       Player tradingPlayer = this.getTradingPlayer();
       if (tradingPlayer != null && tradingPlayer.getUUID().equals(source.getUUID())) {
          this.updateSpecialPrices(tradingPlayer);
-         this.resendOffersToTradingPlayer();
       }
 
    }

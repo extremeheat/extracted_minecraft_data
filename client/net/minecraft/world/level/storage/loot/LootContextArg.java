@@ -36,7 +36,7 @@ public interface LootContextArg<R> {
       ContextKey<? extends T> contextParam();
 
       default @Nullable R get(final LootContext context) {
-         T value = (T)context.getOptionalParameter(this.contextParam());
+         T value = (T)context.getOptional(this.contextParam());
          return (R)(value != null ? this.get(value) : null);
       }
    }
@@ -45,7 +45,7 @@ public interface LootContextArg<R> {
       ContextKey<? extends T> contextParam();
 
       default @Nullable T get(final LootContext context) {
-         return (T)context.getOptionalParameter(this.contextParam());
+         return (T)context.getOptional(this.contextParam());
       }
    }
 

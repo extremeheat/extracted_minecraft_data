@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record DiskFeature(BlockStateProvider stateProvider, BlockPredicate target, IntProvider radius, int halfHeight) implements Feature {
+public record DiskFeature(Holder<BlockStateProvider> stateProvider, BlockPredicate target, IntProvider radius, int halfHeight) implements Feature {
    public static final MapCodec<DiskFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("state_provider").forGetter(DiskFeature::stateProvider), BlockPredicate.CODEC.fieldOf("target").forGetter(DiskFeature::target), IntProviders.codec(0, 8).fieldOf("radius").forGetter(DiskFeature::radius), Codec.intRange(0, 4).fieldOf("half_height").forGetter(DiskFeature::halfHeight)).apply(i, DiskFeature::new));
 
    public DiskFeature {
@@ -50,7 +51,7 @@ public record DiskFeature(BlockStateProvider stateProvider, BlockPredicate targe
       for(int y = top; y > bottom; --y) {
          pos.setY(y);
          if (this.target.test(level, pos)) {
-            BlockState state = this.stateProvider.getOptionalState(level, random, pos);
+            BlockState state = ((BlockStateProvider)this.stateProvider.value()).getOptionalState(level, random, pos);
             if (state != null) {
                level.setBlock(pos, state, 2);
                if (!placedAbove) {

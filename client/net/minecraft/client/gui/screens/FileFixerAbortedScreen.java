@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import java.net.URI;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -48,7 +47,7 @@ public class FileFixerAbortedScreen extends Screen {
 
    protected void addButtons(final LinearLayout buttonLayout) {
       this.backButton = (Button)buttonLayout.addChild(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.callback.run()).build());
-      this.reportBugButton = (Button)buttonLayout.addChild(Button.builder(Component.translatable("upgradeWorld.aborted.reportBug"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK, true)).build());
+      this.reportBugButton = (Button)buttonLayout.addChild(Button.builder(Component.translatable("upgradeWorld.aborted.reportBug"), ConfirmLinkScreen.confirmLink(this, CommonLinks.SNAPSHOT_BUGS_FEEDBACK, true)).build());
    }
 
    public boolean shouldCloseOnEsc() {

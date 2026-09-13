@@ -46,7 +46,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
-      ItemInstance tool = (ItemInstance)context.getOptionalParameter(LootContextParams.TOOL);
+      ItemInstance tool = (ItemInstance)context.getOptional(LootContextParams.TOOL);
       if (tool != null) {
          int level = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment, tool);
          int newCount = this.formula.calculateNewCount(context.getRandom(), itemStack.getCount(), level);

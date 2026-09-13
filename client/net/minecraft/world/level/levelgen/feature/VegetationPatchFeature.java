@@ -28,7 +28,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 public class VegetationPatchFeature implements Feature {
    public static final MapCodec<VegetationPatchFeature> CODEC = makeCodec(VegetationPatchFeature::new);
    protected final HolderSet<Block> replaceable;
-   protected final BlockStateProvider groundState;
+   protected final Holder<BlockStateProvider> groundState;
    protected final Holder<PlacedFeature> vegetationFeature;
    protected final CaveSurface surface;
    protected final IntProvider depth;
@@ -38,11 +38,11 @@ public class VegetationPatchFeature implements Feature {
    protected final IntProvider xzRadius;
    protected final float extraEdgeColumnChance;
 
-   protected static <T extends VegetationPatchFeature> MapCodec<T> makeCodec(final Function10<HolderSet<Block>, BlockStateProvider, Holder<PlacedFeature>, CaveSurface, IntProvider, Float, Integer, Float, IntProvider, Float, T> constructor) {
+   protected static <T extends VegetationPatchFeature> MapCodec<T> makeCodec(final Function10<HolderSet<Block>, Holder<BlockStateProvider>, Holder<PlacedFeature>, CaveSurface, IntProvider, Float, Integer, Float, IntProvider, Float, T> constructor) {
       return RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("replaceable").forGetter((f) -> f.replaceable), BlockStateProvider.CODEC.fieldOf("ground_state").forGetter((f) -> f.groundState), PlacedFeature.CODEC.fieldOf("vegetation_feature").forGetter((f) -> f.vegetationFeature), CaveSurface.CODEC.fieldOf("surface").forGetter((f) -> f.surface), IntProviders.codec(1, 128).fieldOf("depth").forGetter((f) -> f.depth), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_bottom_block_chance").forGetter((f) -> f.extraBottomBlockChance), Codec.intRange(1, 256).fieldOf("vertical_range").forGetter((f) -> f.verticalRange), Codec.floatRange(0.0F, 1.0F).fieldOf("vegetation_chance").forGetter((f) -> f.vegetationChance), IntProviders.CODEC.fieldOf("xz_radius").forGetter((f) -> f.xzRadius), Codec.floatRange(0.0F, 1.0F).fieldOf("extra_edge_column_chance").forGetter((f) -> f.extraEdgeColumnChance)).apply(i, constructor));
    }
 
-   public VegetationPatchFeature(final HolderSet<Block> replaceable, final BlockStateProvider groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {
+   public VegetationPatchFeature(final HolderSet<Block> replaceable, final Holder<BlockStateProvider> groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {
       super();
       this.replaceable = replaceable;
       this.groundState = groundState;
@@ -126,7 +126,7 @@ public class VegetationPatchFeature implements Feature {
 
    private boolean placeGround(final WorldGenLevel level, final Predicate<BlockState> replaceable, final RandomSource random, final BlockPos.MutableBlockPos belowPos, final int depth) {
       for(int i = 0; i < depth; ++i) {
-         BlockState stateToPlace = this.groundState.getState(level, random, belowPos);
+         BlockState stateToPlace = ((BlockStateProvider)this.groundState.value()).getState(level, random, belowPos);
          BlockState belowState = level.getBlockState(belowPos);
          if (!stateToPlace.is(belowState.getBlock())) {
             if (!replaceable.test(belowState)) {

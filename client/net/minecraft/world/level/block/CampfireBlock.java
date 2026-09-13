@@ -15,6 +15,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -96,6 +97,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
          douse(player, level, pos, state);
          level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
+         itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.TRY_WITH_EMPTY_HAND;

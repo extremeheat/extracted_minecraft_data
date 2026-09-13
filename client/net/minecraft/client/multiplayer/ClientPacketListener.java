@@ -16,7 +16,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.lang.ref.WeakReference;
-import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -67,6 +66,7 @@ import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.extract.TransientBlock;
 import net.minecraft.client.resources.sounds.BeeAggressiveSoundInstance;
 import net.minecraft.client.resources.sounds.BeeFlyingSoundInstance;
 import net.minecraft.client.resources.sounds.BeeSoundInstance;
@@ -111,6 +111,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundAddTransientBlockPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
@@ -272,6 +273,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -761,6 +763,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       this.connection.send(new ServerboundAcceptTeleportationPacket(packet.id(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot()));
       this.minecraft.level.getBlockStatePredictionHandler().onTeleport();
+      if (this.minecraft.gameMode != null) {
+         this.minecraft.gameMode.stopDestroyBlock();
+      }
+
    }
 
    private static boolean setValuesFromPositionPacket(final PositionMoveRotation change, final Set<Relative> relatives, final Entity entity, final boolean interpolate) {
@@ -1079,6 +1085,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
 
       }
+   }
+
+   public void handleAddTransientBlockPacket(final ClientboundAddTransientBlockPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.minecraft.levelExtractor.queueTransientBlock(new TransientBlock(packet.getPos(), packet.getBlockState(), TransientBlock.DEFAULT_TIME_TO_LIVE, Util.getNanos()));
    }
 
    public void handleEntityLinkPacket(final ClientboundSetEntityLinkPacket packet) {
@@ -1472,7 +1483,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void openDemoIntroScreen(final Options options) {
-      this.minecraft.gui.setScreen((new PopupScreen.Builder((Screen)null, Component.translatable("demo.help.title"))).addMessage(CommonComponents.joinLines(Component.translatable("demo.help.movementShort", options.keyUp.getTranslatedKeyMessage(), options.keyLeft.getTranslatedKeyMessage(), options.keyDown.getTranslatedKeyMessage(), options.keyRight.getTranslatedKeyMessage()), Component.translatable("demo.help.movementMouse"), Component.translatable("demo.help.jump", options.keyJump.getTranslatedKeyMessage()), Component.translatable("demo.help.inventory", options.keyInventory.getTranslatedKeyMessage()))).addMessage(Component.translatable("demo.help.fullWrapped")).addButton(Component.translatable("demo.help.buy"), (popupScreen) -> ConfirmLinkScreen.confirmLinkNow((Screen)null, (URI)CommonLinks.BUY_MINECRAFT_JAVA)).addButton(Component.translatable("demo.help.later"), (popupScreen) -> {
+      this.minecraft.gui.setScreen((new PopupScreen.Builder((Screen)null, Component.translatable("demo.help.title"))).addMessage(CommonComponents.joinLines(Component.translatable("demo.help.movementShort", options.keyUp.getTranslatedKeyMessage(), options.keyLeft.getTranslatedKeyMessage(), options.keyDown.getTranslatedKeyMessage(), options.keyRight.getTranslatedKeyMessage()), Component.translatable("demo.help.movementMouse"), Component.translatable("demo.help.jump", options.keyJump.getTranslatedKeyMessage()), Component.translatable("demo.help.inventory", options.keyInventory.getTranslatedKeyMessage()))).addMessage(Component.translatable("demo.help.fullWrapped")).addButton(Component.translatable("demo.help.buy"), (popupScreen) -> ConfirmLinkScreen.confirmLinkNow((Screen)null, CommonLinks.BUY_MINECRAFT_JAVA)).addButton(Component.translatable("demo.help.later"), (popupScreen) -> {
          this.minecraft.mouseHandler.grabMouse();
          popupScreen.onClose();
       }).build());
@@ -2100,34 +2111,56 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleParticleEvent(final ClientboundLevelParticlesPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      if (packet.getCount() == 0) {
-         double xa = (double)(packet.getMaxSpeed() * packet.getXDist());
-         double ya = (double)(packet.getMaxSpeed() * packet.getYDist());
-         double za = (double)(packet.getMaxSpeed() * packet.getZDist());
-
-         try {
-            this.level.addParticle(packet.getParticle(), packet.isOverrideLimiter(), packet.alwaysShow(), packet.getX(), packet.getY(), packet.getZ(), xa, ya, za);
-         } catch (Throwable var17) {
-            LOGGER.warn("Could not spawn particle effect {}", packet.getParticle());
-         }
+      if (packet.count() == 0) {
+         double xa = (double)(packet.xMaxSpeed() * packet.xDist());
+         double ya = (double)(packet.yMaxSpeed() * packet.yDist());
+         double za = (double)(packet.zMaxSpeed() * packet.zDist());
+         this.tryAddParticle(packet, packet.x(), packet.y(), packet.z(), xa, ya, za);
       } else {
-         for(int i = 0; i < packet.getCount(); ++i) {
-            double xVarience = this.random.nextGaussian() * (double)packet.getXDist();
-            double yVarience = this.random.nextGaussian() * (double)packet.getYDist();
-            double zVarience = this.random.nextGaussian() * (double)packet.getZDist();
-            double xa = this.random.nextGaussian() * (double)packet.getMaxSpeed();
-            double ya = this.random.nextGaussian() * (double)packet.getMaxSpeed();
-            double za = this.random.nextGaussian() * (double)packet.getMaxSpeed();
+         ClientboundLevelParticlesPacket.RandomizationType randomizationType = packet.randomizationType();
+         if (randomizationType.isAlternative()) {
+            for(int i = 0; i < packet.count(); ++i) {
+               double xVariance = this.random.nextDouble() * (double)packet.xDist();
+               double yVariance = this.random.nextDouble() * (double)packet.yDist();
+               double zVariance = this.random.nextDouble() * (double)packet.zDist();
+               double xa = (double)packet.xMaxSpeed();
+               double ya = (double)packet.yMaxSpeed();
+               double za = (double)packet.zMaxSpeed();
+               if (randomizationType == ClientboundLevelParticlesPacket.RandomizationType.ALTERNATIVE_WITH_SPEED) {
+                  xa *= this.random.nextDouble();
+                  ya *= this.random.nextDouble();
+                  za *= this.random.nextDouble();
+               }
 
-            try {
-               this.level.addParticle(packet.getParticle(), packet.isOverrideLimiter(), packet.alwaysShow(), packet.getX() + xVarience, packet.getY() + yVarience, packet.getZ() + zVarience, xa, ya, za);
-            } catch (Throwable var16) {
-               LOGGER.warn("Could not spawn particle effect {}", packet.getParticle());
-               return;
+               if (!this.tryAddParticle(packet, packet.x() + xVariance, packet.y() + yVariance, packet.z() + zVariance, xa, ya, za)) {
+                  return;
+               }
+            }
+         } else {
+            for(int i = 0; i < packet.count(); ++i) {
+               double xVariance = this.random.nextGaussian() * (double)packet.xDist();
+               double yVariance = this.random.nextGaussian() * (double)packet.yDist();
+               double zVariance = this.random.nextGaussian() * (double)packet.zDist();
+               double xa = this.random.nextGaussian() * (double)packet.xMaxSpeed();
+               double ya = this.random.nextGaussian() * (double)packet.yMaxSpeed();
+               double za = this.random.nextGaussian() * (double)packet.zMaxSpeed();
+               if (!this.tryAddParticle(packet, packet.x() + xVariance, packet.y() + yVariance, packet.z() + zVariance, xa, ya, za)) {
+                  return;
+               }
             }
          }
       }
 
+   }
+
+   private boolean tryAddParticle(final ClientboundLevelParticlesPacket packet, final double x, final double y, final double z, final double xa, final double ya, final double za) {
+      try {
+         this.level.addParticle(packet.particle(), packet.overrideLimiter(), packet.alwaysShow(), x, y, z, xa, ya, za);
+         return true;
+      } catch (Throwable var15) {
+         LOGGER.warn("Could not spawn particle effect {}", packet.particle());
+         return false;
+      }
    }
 
    public void handleUpdateAttributes(final ClientboundUpdateAttributesPacket packet) {

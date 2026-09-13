@@ -11,14 +11,16 @@ import net.minecraft.world.item.slot.SlotSource;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 
 public record LootDataType<T extends Validatable>(ResourceKey<Registry<T>> registryKey, ContextGetter<T> contextGetter) {
    public static final LootDataType<LootItemCondition> PREDICATE;
    public static final LootDataType<LootItemFunction> MODIFIER;
    public static final LootDataType<SlotSource> SLOT_SOURCE;
    public static final LootDataType<LootTable> TABLE;
-   public static final LootDataType<NumberProvider> NUMBER_PROVIDER;
+   public static final LootDataType<ContextFloatProvider> FLOAT_PROVIDER;
+   public static final LootDataType<ContextIntProvider> INT_PROVIDER;
 
    public LootDataType {
       super();
@@ -44,7 +46,7 @@ public record LootDataType<T extends Validatable>(ResourceKey<Registry<T>> regis
    }
 
    public static Stream<LootDataType<?>> values() {
-      return Stream.of(PREDICATE, MODIFIER, SLOT_SOURCE, TABLE, NUMBER_PROVIDER);
+      return Stream.of(PREDICATE, MODIFIER, SLOT_SOURCE, TABLE, FLOAT_PROVIDER, INT_PROVIDER);
    }
 
    static {
@@ -52,7 +54,8 @@ public record LootDataType<T extends Validatable>(ResourceKey<Registry<T>> regis
       MODIFIER = new LootDataType<LootItemFunction>(Registries.ITEM_MODIFIER, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
       SLOT_SOURCE = new LootDataType<SlotSource>(Registries.SLOT_SOURCE, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
       TABLE = new LootDataType<LootTable>(Registries.LOOT_TABLE, LootTable::getParamSet);
-      NUMBER_PROVIDER = new LootDataType<NumberProvider>(Registries.NUMBER_PROVIDER, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
+      FLOAT_PROVIDER = new LootDataType<ContextFloatProvider>(Registries.CONTEXT_FLOAT_PROVIDER, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
+      INT_PROVIDER = new LootDataType<ContextIntProvider>(Registries.CONTEXT_INT_PROVIDER, LootDataType.ContextGetter.constant(LootContextParamSets.ALL_PARAMS));
    }
 
    @FunctionalInterface

@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -14,10 +15,10 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class AttachedToLogsDecorator extends TreeDecorator {
    public static final MapCodec<AttachedToLogsDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter((p) -> p.probability), BlockStateProvider.CODEC.fieldOf("block_provider").forGetter((p) -> p.blockProvider), ExtraCodecs.nonEmptyList(Direction.CODEC.listOf()).fieldOf("directions").forGetter((p) -> p.directions)).apply(i, AttachedToLogsDecorator::new));
    private final float probability;
-   private final BlockStateProvider blockProvider;
+   private final Holder<BlockStateProvider> blockProvider;
    private final List<Direction> directions;
 
-   public AttachedToLogsDecorator(final float probability, final BlockStateProvider blockProvider, final List<Direction> directions) {
+   public AttachedToLogsDecorator(final float probability, final Holder<BlockStateProvider> blockProvider, final List<Direction> directions) {
       super();
       this.probability = probability;
       this.blockProvider = blockProvider;
@@ -31,7 +32,7 @@ public class AttachedToLogsDecorator extends TreeDecorator {
          Direction direction = (Direction)Util.getRandom(this.directions, random);
          BlockPos placementPos = logsPos.relative(direction);
          if (random.nextFloat() <= this.probability && context.isAir(placementPos)) {
-            context.setBlock(placementPos, this.blockProvider.getState(context.level(), random, placementPos));
+            context.setBlock(placementPos, ((BlockStateProvider)this.blockProvider.value()).getState(context.level(), random, placementPos));
          }
       }
 

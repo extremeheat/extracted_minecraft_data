@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public record RootSystemFeature(Holder<PlacedFeature> treeFeature, int requiredVerticalSpaceForTree, int levelTestDistance, int maxLevelDeviation, int rootRadius, HolderSet<Block> rootReplaceable, BlockStateProvider rootStateProvider, int rootPlacementAttempts, int rootColumnMaxHeight, int hangingRootRadius, int hangingRootsVerticalSpan, BlockStateProvider hangingRootStateProvider, int hangingRootPlacementAttempts, int allowedVerticalWaterForTree, BlockPredicate allowedTreePosition) implements Feature {
+public record RootSystemFeature(Holder<PlacedFeature> treeFeature, int requiredVerticalSpaceForTree, int levelTestDistance, int maxLevelDeviation, int rootRadius, HolderSet<Block> rootReplaceable, Holder<BlockStateProvider> rootStateProvider, int rootPlacementAttempts, int rootColumnMaxHeight, int hangingRootRadius, int hangingRootsVerticalSpan, Holder<BlockStateProvider> hangingRootStateProvider, int hangingRootPlacementAttempts, int allowedVerticalWaterForTree, BlockPredicate allowedTreePosition) implements Feature {
    public static final MapCodec<RootSystemFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter(RootSystemFeature::treeFeature), Codec.intRange(1, 64).fieldOf("required_vertical_space_for_tree").forGetter(RootSystemFeature::requiredVerticalSpaceForTree), Codec.intRange(0, 16).fieldOf("level_test_distance").forGetter(RootSystemFeature::levelTestDistance), Codec.intRange(0, 64).fieldOf("max_level_deviation").forGetter(RootSystemFeature::maxLevelDeviation), Codec.intRange(1, 64).fieldOf("root_radius").forGetter(RootSystemFeature::rootRadius), RegistryCodecs.holderSet(Registries.BLOCK).fieldOf("root_replaceable").forGetter(RootSystemFeature::rootReplaceable), BlockStateProvider.CODEC.fieldOf("root_state_provider").forGetter(RootSystemFeature::rootStateProvider), Codec.intRange(1, 256).fieldOf("root_placement_attempts").forGetter(RootSystemFeature::rootPlacementAttempts), Codec.intRange(1, 4096).fieldOf("root_column_max_height").forGetter(RootSystemFeature::rootColumnMaxHeight), Codec.intRange(1, 64).fieldOf("hanging_root_radius").forGetter(RootSystemFeature::hangingRootRadius), Codec.intRange(1, 16).fieldOf("hanging_roots_vertical_span").forGetter(RootSystemFeature::hangingRootsVerticalSpan), BlockStateProvider.CODEC.fieldOf("hanging_root_state_provider").forGetter(RootSystemFeature::hangingRootStateProvider), Codec.intRange(1, 256).fieldOf("hanging_root_placement_attempts").forGetter(RootSystemFeature::hangingRootPlacementAttempts), Codec.intRange(1, 64).fieldOf("allowed_vertical_water_for_tree").forGetter(RootSystemFeature::allowedVerticalWaterForTree), BlockPredicate.CODEC.fieldOf("allowed_tree_position").forGetter(RootSystemFeature::allowedTreePosition)).apply(i, RootSystemFeature::new));
 
    public RootSystemFeature {
@@ -120,7 +120,7 @@ public record RootSystemFeature(Holder<PlacedFeature> treeFeature, int requiredV
       for(int i = 0; i < this.rootPlacementAttempts; ++i) {
          workingPos.setWithOffset(workingPos, random.nextInt(this.rootRadius) - random.nextInt(this.rootRadius), 0, random.nextInt(this.rootRadius) - random.nextInt(this.rootRadius));
          if (level.getBlockState(workingPos).is(this.rootReplaceable)) {
-            level.setBlock(workingPos, this.rootStateProvider.getState(level, random, workingPos), 2);
+            level.setBlock(workingPos, ((BlockStateProvider)this.rootStateProvider.value()).getState(level, random, workingPos), 2);
          }
 
          workingPos.setX(originX);
@@ -133,7 +133,7 @@ public record RootSystemFeature(Holder<PlacedFeature> treeFeature, int requiredV
       for(int i = 0; i < this.hangingRootPlacementAttempts; ++i) {
          workingPos.setWithOffset(pos, random.nextInt(this.hangingRootRadius) - random.nextInt(this.hangingRootRadius), random.nextInt(this.hangingRootsVerticalSpan) - random.nextInt(this.hangingRootsVerticalSpan), random.nextInt(this.hangingRootRadius) - random.nextInt(this.hangingRootRadius));
          if (level.isEmptyBlock(workingPos)) {
-            BlockState targetState = this.hangingRootStateProvider.getState(level, random, workingPos);
+            BlockState targetState = ((BlockStateProvider)this.hangingRootStateProvider.value()).getState(level, random, workingPos);
             if (targetState.canSurvive(level, workingPos) && level.getBlockState(workingPos.above()).isFaceSturdy(level, workingPos, Direction.DOWN)) {
                level.setBlock(workingPos, targetState, 2);
             }

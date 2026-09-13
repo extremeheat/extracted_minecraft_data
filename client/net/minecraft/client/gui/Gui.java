@@ -5,6 +5,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.BanDetails;
 import com.mojang.authlib.services.ProfileActionType;
 import com.mojang.authlib.services.ProfileResult;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.jtracy.Section;
 import com.mojang.jtracy.SectionCategory;
 import com.mojang.jtracy.TracyClient;
@@ -58,7 +59,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
@@ -122,13 +122,7 @@ public class Gui {
       }
 
       if (this.screen != null) {
-         try {
-            this.screen.tick();
-         } catch (Throwable t) {
-            CrashReport report = CrashReport.forThrowable(t, "Ticking screen");
-            this.screen.fillCrashDetails(report);
-            throw new ReportedException(report);
-         }
+         this.screen.tick();
       }
 
       profiler.pop();
@@ -291,6 +285,7 @@ public class Gui {
          this.minecraft.mouseHandler.grabMouse();
       }
 
+      this.minecraft.mouseHandler.resyncMousePosition();
       this.minecraft.updateTitle();
    }
 
@@ -382,7 +377,7 @@ public class Gui {
    }
 
    public void openChatAndAddText(final ChatComponent.ChatMethod chatMethod, final String text) {
-      this.openChatScreen(ChatComponent.ChatMethod.COMMAND);
+      this.openChatScreen(chatMethod);
       Screen var4 = this.screen;
       if (var4 instanceof ChatScreen chatScreen) {
          chatScreen.insertText(text, false);
@@ -421,7 +416,7 @@ public class Gui {
       if (multiplayerBan != null) {
          screens.add((Function)(next) -> BanNoticeScreens.create((result) -> {
                if (result) {
-                  Util.getPlatform().openUri(CommonLinks.SUSPENSION_HELP);
+                  Blaze3D.openUri(CommonLinks.SUSPENSION_HELP);
                }
 
                next.run();

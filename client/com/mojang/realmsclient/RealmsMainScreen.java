@@ -2,6 +2,7 @@ package com.mojang.realmsclient;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.Ping;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -25,6 +26,7 @@ import com.mojang.realmsclient.gui.task.DataFetcher;
 import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -170,14 +172,6 @@ public class RealmsMainScreen extends RealmsScreen {
       this.leaveButton = Button.builder(LEAVE_SERVER_TEXT, (button) -> this.leaveClicked(this.getSelectedServer())).width(100).build();
       this.addRealmButton = this.createAddRealmButton();
       this.backButton = Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(100).build();
-      if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
-         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(5, 5, 100, 20, Component.literal("Realm"), (button, value) -> {
-            snapshotToggle = value;
-            this.availableSnapshotServers = List.of();
-            this.debugRefreshDataFetchers();
-         }));
-      }
-
       this.updateLayout(RealmsMainScreen.LayoutState.LOADING);
       this.updateButtonStates();
       this.availability.thenAcceptAsync((result) -> {
@@ -261,6 +255,14 @@ public class RealmsMainScreen extends RealmsScreen {
    private Layout createFooter(final LayoutState state) {
       GridLayout footer = (new GridLayout()).spacing(4);
       GridLayout.RowHelper helper = footer.createRowHelper(3);
+      if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
+         helper.addChild(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(0, 0, 100, 20, Component.literal("Realm"), (button, value) -> {
+            snapshotToggle = value;
+            this.availableSnapshotServers = List.of();
+            this.debugRefreshDataFetchers();
+         }), 3, helper.newCellSettings().alignHorizontallyCenter());
+      }
+
       if (state == RealmsMainScreen.LayoutState.LIST) {
          helper.addChild(this.playButton);
          helper.addChild(this.configureButton);
@@ -474,10 +476,11 @@ public class RealmsMainScreen extends RealmsScreen {
 
    private void onRenew(final @Nullable RealmsServer server) {
       if (server != null) {
-         String extensionUrl = CommonLinks.extendRealms(server.remoteSubscriptionId, this.minecraft.getUser().getProfileId(), server.expiredTrial);
+         CommonLinks.ExtensionReference reference = server.expiredTrial ? CommonLinks.ExtensionReference.EXPIRED_TRIAL : CommonLinks.ExtensionReference.EXPIRED_REALM;
+         URI extensionUrl = CommonLinks.extendRealms(server.remoteSubscriptionId, this.minecraft.getUser().getProfileId(), reference);
          this.minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
             if (result) {
-               Util.getPlatform().openUri(extensionUrl);
+               Blaze3D.openUri(extensionUrl);
             } else {
                this.minecraft.gui.setScreen(this);
             }
@@ -577,7 +580,14 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void openJoinRealmScreen() {
-      this.minecraft.gui.setScreen(new RealmsJoinRealmWithCodeScreen(this));
+      Screen lastScreen = this.minecraft.gui.screen();
+      if (lastScreen != null) {
+         this.minecraft.gui.setScreen(new RealmsJoinRealmWithCodeScreen(lastScreen, () -> {
+            this.minecraft.gui.setScreen(this);
+            this.resetScreen();
+         }));
+      }
+
    }
 
    public static void play(final @Nullable RealmsServer server, final Screen cancelScreen) {

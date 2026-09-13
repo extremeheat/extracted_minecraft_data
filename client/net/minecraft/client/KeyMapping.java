@@ -177,15 +177,15 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public boolean matches(final KeyEvent event) {
-      return this.key.getType() == InputConstants.Type.KEYBOARD && this.key.getValue() == event.key();
+      return this.key.getType() == InputConstants.Type.KEYBOARD && this.key.getValue() == event.key() && !this.isUnbound();
    }
 
    public boolean matchesMouse(final MouseButtonEvent event) {
-      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == event.button();
+      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == event.button() && !this.isUnbound();
    }
 
    public boolean matches(final InputConstants.Key key) {
-      return this.key.equals(key);
+      return this.key.equals(key) && !this.isUnbound();
    }
 
    public Component getTranslatedKeyMessage() {

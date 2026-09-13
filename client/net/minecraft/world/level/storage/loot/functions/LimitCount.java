@@ -5,17 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.IntRange;
+import net.minecraft.world.level.storage.loot.IntLimit;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LimitCount extends LootItemConditionalFunction {
-   public static final MapCodec<LimitCount> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(IntRange.CODEC.fieldOf("limit").forGetter((f) -> f.limit)).apply(i, LimitCount::new));
-   private final IntRange limit;
+   public static final MapCodec<LimitCount> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(IntLimit.CODEC.fieldOf("limit").forGetter((f) -> f.limit)).apply(i, LimitCount::new));
+   private final IntLimit limit;
 
-   private LimitCount(final Optional<Holder<LootItemCondition>> condition, final IntRange limit) {
+   private LimitCount(final Optional<Holder<LootItemCondition>> condition, final IntLimit limit) {
       super(condition);
       this.limit = limit;
    }
@@ -35,7 +35,7 @@ public class LimitCount extends LootItemConditionalFunction {
       return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> limitCount(final IntRange limit) {
+   public static LootItemConditionalFunction.Builder<?> limitCount(final IntLimit limit) {
       return simpleBuilder((conditions) -> new LimitCount(conditions, limit));
    }
 }

@@ -2,6 +2,7 @@ package com.mojang.realmsclient.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -106,7 +107,7 @@ public class TextRenderingUtils {
    public static class LineSegment {
       private final String fullText;
       private final @Nullable String linkTitle;
-      private final @Nullable String linkUrl;
+      private final @Nullable URI linkUrl;
 
       private LineSegment(final String fullText) {
          super();
@@ -115,7 +116,7 @@ public class TextRenderingUtils {
          this.linkUrl = null;
       }
 
-      private LineSegment(final String fullText, final @Nullable String linkTitle, final @Nullable String linkUrl) {
+      private LineSegment(final String fullText, final @Nullable String linkTitle, final @Nullable URI linkUrl) {
          super();
          this.fullText = fullText;
          this.linkTitle = linkTitle;
@@ -138,7 +139,8 @@ public class TextRenderingUtils {
       }
 
       public String toString() {
-         return "Segment{fullText='" + this.fullText + "', linkTitle='" + this.linkTitle + "', linkUrl='" + this.linkUrl + "'}";
+         String var10000 = this.fullText;
+         return "Segment{fullText='" + var10000 + "', linkTitle='" + this.linkTitle + "', linkUrl='" + String.valueOf(this.linkUrl) + "'}";
       }
 
       public String renderedText() {
@@ -149,7 +151,7 @@ public class TextRenderingUtils {
          return this.linkTitle != null;
       }
 
-      public String getLinkUrl() {
+      public URI getLinkUrl() {
          if (!this.isLink()) {
             throw new IllegalStateException("Not a link: " + String.valueOf(this));
          } else {
@@ -157,7 +159,7 @@ public class TextRenderingUtils {
          }
       }
 
-      public static LineSegment link(final String linkTitle, final String linkUrl) {
+      public static LineSegment link(final String linkTitle, final URI linkUrl) {
          return new LineSegment((String)null, linkTitle, linkUrl);
       }
 

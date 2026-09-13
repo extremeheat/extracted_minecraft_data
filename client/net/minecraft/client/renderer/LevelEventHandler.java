@@ -358,6 +358,12 @@ public class LevelEventHandler {
                this.level.addParticle(ParticleTypes.PORTAL, x, y, z, (double)velocityX, (double)velocityY, (double)velocityZ);
             }
             break;
+         case 2019:
+         case 2020:
+            Direction[] directions = Direction.values();
+            int ordinal = Mth.clamp(data, 0, directions.length - 1);
+            this.level.addBreakingBlockEffects(pos, directions[ordinal], eventType == 2020);
+            break;
          case 3000:
             this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
             this.level.playLocalSound(pos, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (random.nextFloat() - random.nextFloat()) * 0.2F) * 0.7F, false);
@@ -461,8 +467,8 @@ public class LevelEventHandler {
             TrialSpawner.addEjectItemParticles(this.level, pos, random);
             break;
          case 3015:
-            BlockEntity bbHeight = this.level.getBlockEntity(pos);
-            if (bbHeight instanceof VaultBlockEntity entity) {
+            BlockEntity ordinal = this.level.getBlockEntity(pos);
+            if (ordinal instanceof VaultBlockEntity entity) {
                VaultBlockEntity.Client.emitActivationParticles(this.level, entity.getBlockPos(), entity.getBlockState(), entity.getSharedData(), data == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
                this.level.playLocalSound(pos, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             }

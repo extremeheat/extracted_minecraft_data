@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens;
 
+import com.mojang.blaze3d.Blaze3D;
 import java.net.URI;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
@@ -10,7 +11,6 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Util;
 
 public class NoticeWithLinkScreen extends Screen {
    private static final Component SYMLINK_WORLD_TITLE;
@@ -46,7 +46,7 @@ public class NoticeWithLinkScreen extends Screen {
       int buttonWidth = 120;
       GridLayout buttonGrid = (new GridLayout()).columnSpacing(5);
       GridLayout.RowHelper buttonRow = buttonGrid.createRowHelper(3);
-      buttonRow.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (button) -> Util.getPlatform().openUri(this.uri)).size(120, 20).build());
+      buttonRow.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (button) -> Blaze3D.openUri(this.uri)).size(120, 20).build());
       buttonRow.addChild(Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, (button) -> this.minecraft.keyboardHandler.setClipboard(this.uri.toString())).size(120, 20).build());
       buttonRow.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).size(120, 20).build());
       rowHelper.addChild(buttonGrid);

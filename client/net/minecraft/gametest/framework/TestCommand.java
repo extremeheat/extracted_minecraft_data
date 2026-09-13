@@ -466,12 +466,14 @@ public class TestCommand {
       Info playerInfo = playerAndTestInfo(source, source.getLevel().dimension());
       if (!isPlayerInCurrentTestDimension(playerInfo, testDimensions)) {
          ServerPlayer player = playerInfo.player;
-         float playerRotation = player.getYRot();
-         float playerPitch = player.getXRot();
-         ResourceKey<Level> playerDimensionKey = player.level().dimension();
-         String playerDimension = playerDimensionKey.identifier().toString();
-         Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", playerInfo.playerPos.getX(), playerInfo.playerPos.getY(), playerInfo.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + playerInfo.playerPos.getX() + " " + playerInfo.playerPos.getY() + " " + playerInfo.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
-         source.sendSuccess(() -> playerCoordinates, false);
+         if (player != null) {
+            float playerRotation = player.getYRot();
+            float playerPitch = player.getXRot();
+            ResourceKey<Level> playerDimensionKey = player.level().dimension();
+            String playerDimension = playerDimensionKey.identifier().toString();
+            Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", playerInfo.playerPos.getX(), playerInfo.playerPos.getY(), playerInfo.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + playerInfo.playerPos.getX() + " " + playerInfo.playerPos.getY() + " " + playerInfo.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            source.sendSuccess(() -> playerCoordinates, false);
+         }
       }
    }
 

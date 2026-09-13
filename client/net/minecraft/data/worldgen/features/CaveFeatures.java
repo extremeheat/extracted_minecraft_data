@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BlockStateProviders;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
@@ -23,8 +24,6 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.util.valueproviders.WeightedListInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CaveVines;
-import net.minecraft.world.level.block.CaveVinesBlock;
 import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
 import net.minecraft.world.level.block.SculkShriekerBlock;
 import net.minecraft.world.level.block.SmallDripleafBlock;
@@ -54,7 +53,6 @@ import net.minecraft.world.level.levelgen.feature.UnderwaterMagmaFeature;
 import net.minecraft.world.level.levelgen.feature.VegetationPatchFeature;
 import net.minecraft.world.level.levelgen.feature.WaterloggedVegetationPatchFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.RandomizedIntStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
@@ -99,7 +97,7 @@ public class CaveFeatures {
    }
 
    private static Holder<PlacedFeature> makeDripleaf(final Direction direction) {
-      return PlacementUtils.inlinePlaced(new BlockColumnFeature(List.of(BlockColumnFeature.layer(new WeightedListInt(WeightedList.builder().add(UniformInt.of(0, 4), 2).add(ConstantInt.of(0), 1).build()), BlockStateProvider.simple((BlockState)Blocks.BIG_DRIPLEAF_STEM.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, direction))), BlockColumnFeature.layer(ConstantInt.of(1), BlockStateProvider.simple((BlockState)Blocks.BIG_DRIPLEAF.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, direction)))), Direction.UP, BlockPredicate.ONLY_IN_AIR_OR_WATER_PREDICATE, true));
+      return PlacementUtils.inlinePlaced(new BlockColumnFeature(List.of(BlockColumnFeature.layer(new WeightedListInt(WeightedList.builder().add(UniformInt.of(0, 4), 2).add(ConstantInt.of(0), 1).build()), BlockStateProvider.of((BlockState)Blocks.BIG_DRIPLEAF_STEM.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, direction))), BlockColumnFeature.layer(ConstantInt.of(1), BlockStateProvider.of((BlockState)Blocks.BIG_DRIPLEAF.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, direction)))), Direction.UP, BlockPredicate.ONLY_IN_AIR_OR_WATER_PREDICATE, true));
    }
 
    private static Holder<PlacedFeature> makeSmallDripleaf() {
@@ -108,6 +106,7 @@ public class CaveFeatures {
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
       HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
+      HolderGetter<BlockStateProvider> blockStateProviders = context.lookup(Registries.BLOCK_STATE_PROVIDER);
       HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
       HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       context.register(MONSTER_ROOM, new MonsterRoomFeature());
@@ -124,25 +123,25 @@ public class CaveFeatures {
       context.register(UNDERWATER_MAGMA, new UnderwaterMagmaFeature(5, 1, 0.5F));
       MultifaceSpreadeableBlock glowLichenBlock = (MultifaceSpreadeableBlock)Blocks.GLOW_LICHEN;
       context.register(GLOW_LICHEN, new MultifaceGrowthFeature(glowLichenBlock, 20, false, true, true, 0.5F, HolderSet.direct(Block::builtInRegistryHolder, Blocks.STONE, Blocks.ANDESITE, Blocks.DIORITE, Blocks.GRANITE, Blocks.DRIPSTONE_BLOCK, Blocks.CALCITE, Blocks.TUFF, Blocks.DEEPSLATE, Blocks.SULFUR, Blocks.CINNABAR)));
-      context.register(ROOTED_AZALEA_TREE, new RootSystemFeature(PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(TreeFeatures.AZALEA_TREE)), 3, 0, 0, 3, blocks.getOrThrow(BlockTags.AZALEA_ROOT_REPLACEABLE), BlockStateProvider.simple(Blocks.ROOTED_DIRT), 20, 100, 3, 2, BlockStateProvider.simple(Blocks.HANGING_ROOTS), 20, 2, BlockPredicate.allOf(BlockPredicate.anyOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesTag(BlockTags.REPLACEABLE_BY_TREES)), BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.AZALEA_GROWS_ON))));
-      context.register(ROOTED_SULFUR_SPRING, new RootSystemFeature(PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MiscOverworldFeatures.SULFUR_SPRING)), 5, 8, 2, 3, blocks.getOrThrow(BlockTags.AZALEA_ROOT_REPLACEABLE), BlockStateProvider.simple(Blocks.SULFUR), 20, 184, 1, 1, BlockStateProvider.simple(Blocks.SULFUR), 1, 1, BlockPredicate.ONLY_IN_AIR_PREDICATE));
-      WeightedStateProvider caveVinesBodyProvider = new WeightedStateProvider(WeightedList.builder().add(Blocks.CAVE_VINES_PLANT.defaultBlockState(), 4).add((BlockState)Blocks.CAVE_VINES_PLANT.defaultBlockState().setValue(CaveVines.BERRIES, true), 1));
-      RandomizedIntStateProvider caveVinesHeadProvider = new RandomizedIntStateProvider(new WeightedStateProvider(WeightedList.builder().add(Blocks.CAVE_VINES.defaultBlockState(), 4).add((BlockState)Blocks.CAVE_VINES.defaultBlockState().setValue(CaveVines.BERRIES, true), 1)), CaveVinesBlock.AGE, UniformInt.of(23, 25));
+      context.register(ROOTED_AZALEA_TREE, new RootSystemFeature(PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(TreeFeatures.AZALEA_TREE)), 3, 0, 0, 3, blocks.getOrThrow(BlockTags.AZALEA_ROOT_REPLACEABLE), BlockStateProvider.holderOf(Blocks.ROOTED_DIRT), 20, 100, 3, 2, BlockStateProvider.holderOf(Blocks.HANGING_ROOTS), 20, 2, BlockPredicate.allOf(BlockPredicate.anyOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesTag(BlockTags.REPLACEABLE_BY_TREES)), BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.AZALEA_GROWS_ON))));
+      context.register(ROOTED_SULFUR_SPRING, new RootSystemFeature(PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MiscOverworldFeatures.SULFUR_SPRING)), 5, 8, 2, 3, blocks.getOrThrow(BlockTags.AZALEA_ROOT_REPLACEABLE), BlockStateProvider.holderOf(Blocks.SULFUR), 20, 184, 1, 1, BlockStateProvider.holderOf(Blocks.SULFUR), 1, 1, BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      Holder<BlockStateProvider> caveVinesBodyProvider = blockStateProviders.getOrThrow(BlockStateProviders.CAVE_VINES_BODY);
+      Holder<BlockStateProvider> caveVinesHeadProvider = blockStateProviders.getOrThrow(BlockStateProviders.CAVE_VINES_HEAD);
       context.register(CAVE_VINE, new BlockColumnFeature(List.of(BlockColumnFeature.layer(new WeightedListInt(WeightedList.builder().add(UniformInt.of(0, 19), 2).add(UniformInt.of(0, 2), 3).add(UniformInt.of(0, 6), 10).build()), caveVinesBodyProvider), BlockColumnFeature.layer(ConstantInt.of(1), caveVinesHeadProvider)), Direction.DOWN, BlockPredicate.ONLY_IN_AIR_PREDICATE, true));
       context.register(CAVE_VINE_IN_MOSS, new BlockColumnFeature(List.of(BlockColumnFeature.layer(new WeightedListInt(WeightedList.builder().add(UniformInt.of(0, 3), 5).add(UniformInt.of(1, 7), 1).build()), caveVinesBodyProvider), BlockColumnFeature.layer(ConstantInt.of(1), caveVinesHeadProvider)), Direction.DOWN, BlockPredicate.ONLY_IN_AIR_PREDICATE, true));
       context.register(MOSS_VEGETATION, new SimpleBlockFeature(new WeightedStateProvider(WeightedList.builder().add(Blocks.FLOWERING_AZALEA.defaultBlockState(), 4).add(Blocks.AZALEA.defaultBlockState(), 7).add(Blocks.MOSS_CARPET.defaultBlockState(), 25).add(Blocks.SHORT_GRASS.defaultBlockState(), 50).add(Blocks.TALL_GRASS.defaultBlockState(), 10))));
-      context.register(MOSS_PATCH, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.simple(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MOSS_VEGETATION)), CaveSurface.FLOOR, ConstantInt.of(1), 0.0F, 5, 0.8F, UniformInt.of(4, 7), 0.3F));
-      context.register(MOSS_PATCH_BONEMEAL, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.simple(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MOSS_VEGETATION)), CaveSurface.FLOOR, ConstantInt.of(1), 0.0F, 5, 0.6F, UniformInt.of(1, 2), 0.75F));
+      context.register(MOSS_PATCH, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.holderOf(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MOSS_VEGETATION)), CaveSurface.FLOOR, ConstantInt.of(1), 0.0F, 5, 0.8F, UniformInt.of(4, 7), 0.3F));
+      context.register(MOSS_PATCH_BONEMEAL, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.holderOf(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(MOSS_VEGETATION)), CaveSurface.FLOOR, ConstantInt.of(1), 0.0F, 5, 0.6F, UniformInt.of(1, 2), 0.75F));
       context.register(DRIPLEAF, new SimpleRandomSelectorFeature(HolderSet.direct(makeSmallDripleaf(), makeDripleaf(Direction.EAST), makeDripleaf(Direction.WEST), makeDripleaf(Direction.SOUTH), makeDripleaf(Direction.NORTH))));
-      context.register(CLAY_WITH_DRIPLEAVES, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.LUSH_GROUND_REPLACEABLE), BlockStateProvider.simple(Blocks.CLAY), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(DRIPLEAF)), CaveSurface.FLOOR, ConstantInt.of(3), 0.8F, 2, 0.05F, UniformInt.of(4, 7), 0.7F));
-      context.register(CLAY_POOL_WITH_DRIPLEAVES, new WaterloggedVegetationPatchFeature(blocks.getOrThrow(BlockTags.LUSH_GROUND_REPLACEABLE), BlockStateProvider.simple(Blocks.CLAY), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(DRIPLEAF)), CaveSurface.FLOOR, ConstantInt.of(3), 0.8F, 5, 0.1F, UniformInt.of(4, 7), 0.7F));
+      context.register(CLAY_WITH_DRIPLEAVES, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.LUSH_GROUND_REPLACEABLE), BlockStateProvider.holderOf(Blocks.CLAY), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(DRIPLEAF)), CaveSurface.FLOOR, ConstantInt.of(3), 0.8F, 2, 0.05F, UniformInt.of(4, 7), 0.7F));
+      context.register(CLAY_POOL_WITH_DRIPLEAVES, new WaterloggedVegetationPatchFeature(blocks.getOrThrow(BlockTags.LUSH_GROUND_REPLACEABLE), BlockStateProvider.holderOf(Blocks.CLAY), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(DRIPLEAF)), CaveSurface.FLOOR, ConstantInt.of(3), 0.8F, 5, 0.1F, UniformInt.of(4, 7), 0.7F));
       context.register(LUSH_CAVES_CLAY, new RandomBooleanSelectorFeature(PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(CLAY_WITH_DRIPLEAVES)), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(CLAY_POOL_WITH_DRIPLEAVES))));
-      context.register(MOSS_PATCH_CEILING, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.simple(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(CAVE_VINE_IN_MOSS)), CaveSurface.CEILING, UniformInt.of(1, 2), 0.0F, 5, 0.08F, UniformInt.of(4, 7), 0.3F));
-      context.register(SPORE_BLOSSOM, new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SPORE_BLOSSOM)));
-      context.register(AMETHYST_GEODE, new GeodeFeature(new GeodeBlockSettings(BlockStateProvider.simple(Blocks.AIR), BlockStateProvider.simple(Blocks.AMETHYST_BLOCK), BlockStateProvider.simple(Blocks.BUDDING_AMETHYST), BlockStateProvider.simple(Blocks.CALCITE), BlockStateProvider.simple(Blocks.SMOOTH_BASALT), List.of(Blocks.SMALL_AMETHYST_BUD.defaultBlockState(), Blocks.MEDIUM_AMETHYST_BUD.defaultBlockState(), Blocks.LARGE_AMETHYST_BUD.defaultBlockState(), Blocks.AMETHYST_CLUSTER.defaultBlockState()), blocks.getOrThrow(BlockTags.FEATURES_CANNOT_REPLACE), blocks.getOrThrow(BlockTags.GEODE_INVALID_BLOCKS)), new GeodeLayerSettings(1.7, 2.2, 3.2, 4.2), new GeodeCrackSettings(0.95, 2.0, 2), 0.35, 0.083, true, UniformInt.of(4, 6), UniformInt.of(3, 4), UniformInt.of(1, 2), -16, 16, 0.05, 1));
-      Holder<PlacedFeature> sculkPatchCatalyst = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SCULK_CATALYST)), new RandomChancePlacement(0.5F), BlockPredicateFilter.forPredicate(BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP)));
+      context.register(MOSS_PATCH_CEILING, new VegetationPatchFeature(blocks.getOrThrow(BlockTags.MOSS_REPLACEABLE), BlockStateProvider.holderOf(Blocks.MOSS_BLOCK), PlacementUtils.inlinePlaced(configuredFeatures.getOrThrow(CAVE_VINE_IN_MOSS)), CaveSurface.CEILING, UniformInt.of(1, 2), 0.0F, 5, 0.08F, UniformInt.of(4, 7), 0.3F));
+      context.register(SPORE_BLOSSOM, new SimpleBlockFeature(BlockStateProvider.of(Blocks.SPORE_BLOSSOM)));
+      context.register(AMETHYST_GEODE, new GeodeFeature(new GeodeBlockSettings(BlockStateProvider.holderOf(Blocks.AIR), BlockStateProvider.holderOf(Blocks.AMETHYST_BLOCK), BlockStateProvider.holderOf(Blocks.BUDDING_AMETHYST), BlockStateProvider.holderOf(Blocks.CALCITE), BlockStateProvider.holderOf(Blocks.SMOOTH_BASALT), List.of(Blocks.SMALL_AMETHYST_BUD.defaultBlockState(), Blocks.MEDIUM_AMETHYST_BUD.defaultBlockState(), Blocks.LARGE_AMETHYST_BUD.defaultBlockState(), Blocks.AMETHYST_CLUSTER.defaultBlockState()), blocks.getOrThrow(BlockTags.FEATURES_CANNOT_REPLACE), blocks.getOrThrow(BlockTags.GEODE_INVALID_BLOCKS)), new GeodeLayerSettings(1.7, 2.2, 3.2, 4.2), new GeodeCrackSettings(0.95, 2.0, 2), 0.35, 0.083, true, UniformInt.of(4, 6), UniformInt.of(3, 4), UniformInt.of(1, 2), -16, 16, 0.05, 1));
+      Holder<PlacedFeature> sculkPatchCatalyst = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.of(Blocks.SCULK_CATALYST)), new RandomChancePlacement(0.5F), BlockPredicateFilter.forPredicate(BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP)));
       context.register(SCULK_PATCH_DEEP_DARK, new SequenceFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SculkPatchFeature(10, 32, 64, 0, 1)), sculkPatchCatalyst)));
-      Holder<PlacedFeature> sculkPatchShriekers = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple((BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, true))), CountPlacement.of(UniformInt.of(1, 3)), OffsetPlacement.of(UniformInt.of(-2, 2), UniformInt.of(-2, 2)), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP))));
+      Holder<PlacedFeature> sculkPatchShriekers = PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.of((BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, true))), CountPlacement.of(UniformInt.of(1, 3)), OffsetPlacement.of(UniformInt.of(-2, 2), UniformInt.of(-2, 2)), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.hasSturdyFace(Direction.DOWN, Direction.UP))));
       context.register(SCULK_PATCH_ANCIENT_CITY, new SequenceFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SculkPatchFeature(10, 32, 64, 0, 1)), PlacementUtils.inlinePlaced(new OverlayFeature(HolderSet.direct(sculkPatchCatalyst, sculkPatchShriekers))))));
       MultifaceSpreadeableBlock sculkVeinBlock = (MultifaceSpreadeableBlock)Blocks.SCULK_VEIN;
       context.register(SCULK_VEIN, new MultifaceGrowthFeature(sculkVeinBlock, 20, true, true, true, 1.0F, HolderSet.direct(Block::builtInRegistryHolder, Blocks.STONE, Blocks.ANDESITE, Blocks.DIORITE, Blocks.GRANITE, Blocks.DRIPSTONE_BLOCK, Blocks.CALCITE, Blocks.TUFF, Blocks.DEEPSLATE)));

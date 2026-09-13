@@ -32,7 +32,7 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedC
    }
 
    public boolean test(final LootContext context) {
-      Entity killerEntity = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+      Entity killerEntity = (Entity)context.getOptional(LootContextParams.ATTACKING_ENTITY);
       int var10000;
       if (killerEntity instanceof LivingEntity livingKiller) {
          var10000 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingKiller);

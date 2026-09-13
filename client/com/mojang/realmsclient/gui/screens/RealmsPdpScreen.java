@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.RealmsHeader;
 import com.mojang.realmsclient.gui.task.DataFetcher;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,9 +82,9 @@ public class RealmsPdpScreen extends RealmsScreen {
       this.pdpList = (PdpList)this.layout.addToContents(new PdpList(this.minecraft));
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       if (this.trialAvailable) {
-         footer.addChild(new RealmsButton(0, 0, 150, 20, TRY_FOR_FREE, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.START_REALMS_TRIAL)));
+         footer.addChild(new RealmsButton(0, 0, 150, 20, TRY_FOR_FREE, ConfirmLinkScreen.confirmLink(this, CommonLinks.START_REALMS_TRIAL)));
       } else {
-         footer.addChild(Button.builder(TITLE, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BUY_REALMS)).build());
+         footer.addChild(Button.builder(TITLE, ConfirmLinkScreen.confirmLink(this, CommonLinks.BUY_REALMS)).build());
       }
 
       footer.addChild(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).build());

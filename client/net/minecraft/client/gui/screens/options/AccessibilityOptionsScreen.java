@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.options;
 
-import java.net.URI;
 import java.util.Arrays;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -52,7 +51,7 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
 
    protected void addFooter() {
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      footer.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
+      footer.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, CommonLinks.ACCESSIBILITY_HELP)).build());
       footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.gui.setScreen(this.lastScreen)).build());
    }
 

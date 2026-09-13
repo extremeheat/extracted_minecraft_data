@@ -14,6 +14,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public abstract class TrunkPlacer {
    public static final Codec<TrunkPlacer> CODEC;
@@ -48,7 +49,7 @@ public abstract class TrunkPlacer {
    }
 
    protected static void placeBelowTrunkBlock(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
-      BlockState blockBelowTrunk = tree.belowTrunkProvider().getOptionalState(level, random, pos);
+      BlockState blockBelowTrunk = ((BlockStateProvider)tree.belowTrunkProvider().value()).getOptionalState(level, random, pos);
       if (blockBelowTrunk != null) {
          trunkSetter.accept(pos, blockBelowTrunk);
       }
@@ -61,7 +62,7 @@ public abstract class TrunkPlacer {
 
    protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree, final Function<BlockState, BlockState> stateModifier) {
       if (this.validTreePos(level, pos)) {
-         trunkSetter.accept(pos, (BlockState)stateModifier.apply(tree.trunkProvider().getState(level, random, pos)));
+         trunkSetter.accept(pos, (BlockState)stateModifier.apply(((BlockStateProvider)tree.trunkProvider().value()).getState(level, random, pos)));
          return true;
       } else {
          return false;

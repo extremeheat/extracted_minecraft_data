@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class EditWorldScreen extends Screen {
          levelAccess.getIconFile().ifPresent((p) -> FileUtils.deleteQuietly(p.toFile()));
          button.active = false;
       }).width(200).build())).active = levelAccess.getIconFile().filter((x$0) -> Files.isRegularFile(x$0, new LinkOption[0])).isPresent();
-      this.layout.addChild(Button.builder(FOLDER_BUTTON, (button) -> Util.getPlatform().openPath(levelAccess.getLevelPath(LevelResource.ROOT))).width(200).build());
+      this.layout.addChild(Button.builder(FOLDER_BUTTON, (button) -> Blaze3D.openPath(levelAccess.getLevelPath(LevelResource.ROOT))).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, (button) -> makeBackupAndShowToast(levelAccess).thenAcceptAsync((success) -> this.callback.accept(!success), minecraft)).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_FOLDER_BUTTON, (button) -> {
          LevelStorageSource levelSource = minecraft.getLevelSource();
@@ -90,7 +91,7 @@ public class EditWorldScreen extends Screen {
             throw new RuntimeException(e);
          }
 
-         Util.getPlatform().openPath(path);
+         Blaze3D.openPath(path);
       }).width(200).build());
       this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.gui.setScreen(new BackupConfirmScreen(() -> minecraft.gui.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.gui.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));

@@ -152,7 +152,7 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
    }
 
    default int getEffectiveSkyBrightness(final BlockPos pos) {
-      return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
+      return Math.max(this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken(), 0);
    }
 
    default BlockMatcher findBlocksIn(final AABB box) {

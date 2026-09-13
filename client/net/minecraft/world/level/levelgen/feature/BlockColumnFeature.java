@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -21,12 +22,16 @@ public record BlockColumnFeature(List<Layer> layers, Direction direction, BlockP
       super();
    }
 
-   public static Layer layer(final IntProvider height, final BlockStateProvider state) {
+   public static Layer layer(final IntProvider height, final Holder<BlockStateProvider> state) {
       return new Layer(height, state);
    }
 
+   public static Layer layer(final IntProvider height, final BlockStateProvider state) {
+      return layer(height, Holder.direct(state));
+   }
+
    public static BlockColumnFeature simple(final IntProvider height, final BlockStateProvider state) {
-      return new BlockColumnFeature(List.of(layer(height, state)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
+      return new BlockColumnFeature(List.of(layer(height, Holder.direct(state))), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
    }
 
    public MapCodec<BlockColumnFeature> codec() {
@@ -64,7 +69,7 @@ public record BlockColumnFeature(List<Layer> layers, Direction direction, BlockP
                Layer layer = (Layer)this.layers.get(i);
 
                for(int y = 0; y < count; ++y) {
-                  level.setBlock(placePos, layer.state().getState(level, random, placePos), 2);
+                  level.setBlock(placePos, ((BlockStateProvider)layer.state().value()).getState(level, random, placePos), 2);
                   placePos.move(this.direction);
                }
             }
@@ -89,7 +94,7 @@ public record BlockColumnFeature(List<Layer> layers, Direction direction, BlockP
 
    }
 
-   public static record Layer(IntProvider height, BlockStateProvider state) {
+   public static record Layer(IntProvider height, Holder<BlockStateProvider> state) {
       public static final Codec<Layer> CODEC = RecordCodecBuilder.create((i) -> i.group(IntProviders.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(Layer::height), BlockStateProvider.CODEC.fieldOf("provider").forGetter(Layer::state)).apply(i, Layer::new));
 
       public Layer {

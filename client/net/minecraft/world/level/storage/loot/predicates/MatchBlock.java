@@ -24,12 +24,12 @@ public record MatchBlock(BlockPredicate predicate) implements LootItemCondition 
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(LootContextParams.BLOCK_STATE, LootContextParams.BLOCK_ENTITY);
+      return this.predicate.willMatchBlockEntity() ? Set.of(LootContextParams.BLOCK_STATE, LootContextParams.BLOCK_ENTITY) : Set.of(LootContextParams.BLOCK_STATE);
    }
 
    public boolean test(final LootContext context) {
-      BlockState blockState = (BlockState)context.getOptionalParameter(LootContextParams.BLOCK_STATE);
-      BlockEntity blockEntity = (BlockEntity)context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+      BlockState blockState = (BlockState)context.getOptional(LootContextParams.BLOCK_STATE);
+      BlockEntity blockEntity = (BlockEntity)context.getOptional(LootContextParams.BLOCK_ENTITY);
       return blockState != null && this.predicate.matchesState(blockState) && this.predicate.matchesBlockEntity(context.getLevel(), blockEntity);
    }
 

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import java.net.URI;
 import java.nio.file.Path;
@@ -10,9 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -328,7 +326,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
             break;
          case 1:
             ClickEvent.OpenFile openFile = (ClickEvent.OpenFile)event;
-            Util.getPlatform().openFile(openFile.file());
+            Blaze3D.openPath(openFile.file().toPath());
             var20 = true;
             break;
          case 2:
@@ -381,13 +379,13 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          if ((Boolean)minecraft.options.chatLinksPrompt().get()) {
             minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
                if (result) {
-                  Util.getPlatform().openUri(uri);
+                  Blaze3D.openUri(uri);
                }
 
                minecraft.gui.setScreen(screen);
-            }, uri.toString(), false));
+            }, uri, false));
          } else {
-            Util.getPlatform().openUri(uri);
+            Blaze3D.openUri(uri);
          }
 
          return true;
@@ -514,11 +512,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.width = width;
       this.height = height;
       this.repositionElements();
-   }
-
-   public void fillCrashDetails(final CrashReport report) {
-      CrashReportCategory category = report.addCategory("Affected screen", 1);
-      category.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
    }
 
    protected boolean isValidCharacterForName(final String currentName, final int newChar, final int cursorPos) {

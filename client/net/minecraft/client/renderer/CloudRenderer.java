@@ -10,6 +10,9 @@ import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -217,11 +220,18 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       }
    }
 
-   public void renderOit(final CloudStatus cloudStatus, final OitStage stage, final OitRenderPassProvider.Parameters params) {
+   public void renderOit(final CloudStatus cloudStatus, final OitStage stage, final GpuTextureView mainDepthTextureView, final OitRenderPassProvider.Parameters params) {
       if (this.texture != null && this.quadCount != 0) {
+         GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
          RenderPipeline renderPipeline = (cloudStatus == CloudStatus.FANCY ? RenderPipelines.OIT_CLOUDS : RenderPipelines.OIT_FLAT_CLOUDS).getPipeline(stage);
 
          try (RenderPass renderPass = OitRenderPassProvider.createRenderPass(stage, () -> "Clouds", params)) {
+            if (stage == OitStage.DEPTH_BOUNDS) {
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH_DURING_DEPTH_BOUNDS));
+               renderPass.setUniform("InSampler", mainDepthTextureView, nearestSampler);
+               renderPass.draw(3, 1, 0, 0);
+            }
+
             this.render(renderPass, renderPipeline);
          }
 

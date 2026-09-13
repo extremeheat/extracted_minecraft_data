@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 5015;
+   public static final int WORLD_VERSION = 5021;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,19 +26,19 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 777;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 332;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 337;
    public static final int SNBT_NAG_VERSION = 4997;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = true;
+   public static final boolean CRASH_EAGERLY = false;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MAJOR = 97;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 1;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 118;
+   public static final int DATA_PACK_FORMAT_MAJOR = 121;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -132,6 +132,7 @@ public class SharedConstants {
    public static final boolean DEBUG_CALCULATE_SOLID;
    public static final boolean DEBUG_FORCE_TELEMETRY;
    public static final boolean DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND;
+   public static final boolean DEBUG_ENABLE_FARLANDS;
    public static final long MAXIMUM_TICK_TIME_NANOS;
    public static final float MAXIMUM_BLOCK_EXPLOSION_RESISTANCE = 3600000.0F;
    public static final boolean USE_DEVONLY = false;
@@ -222,7 +223,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742156;
+      return 1073742161;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {
@@ -246,6 +247,7 @@ public class SharedConstants {
       DEBUG_CALCULATE_SOLID = debugFlag("CALCULATE_SOLID");
       DEBUG_FORCE_TELEMETRY = debugFlag("FORCE_TELEMETRY");
       DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND = debugFlag("DONT_SEND_TELEMETRY_TO_BACKEND");
+      DEBUG_ENABLE_FARLANDS = debugFlag("ENABLE_FARLANDS");
       MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
       CHECK_DATA_FIXER_SCHEMA = true;
       IS_RENDERDOC_ATTACHED = false;

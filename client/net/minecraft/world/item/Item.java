@@ -103,8 +103,8 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -554,12 +554,12 @@ public class Item implements ItemLike, FeatureElement {
          return this.component(DataComponents.SIGN_TEXT_BACK, SignText.EMPTY).component(DataComponents.SIGN_TEXT_FRONT, SignText.EMPTY);
       }
 
-      public Properties cookingFuel(final ResourceKey<NumberProvider> burnTime) {
-         return this.component(DataComponents.COOKING_FUEL, new CookingFuel(burnTime, NumberProviders.COOKING_DEFAULT_SPEED_MULTIPLIER));
+      public Properties cookingFuel(final ResourceKey<ContextIntProvider> burnTime) {
+         return this.component(DataComponents.COOKING_FUEL, new CookingFuel(burnTime, ContextFloatProviders.COOKING_DEFAULT_SPEED_MULTIPLIER));
       }
 
-      public Properties brewingFuel(final ResourceKey<NumberProvider> uses) {
-         return this.component(DataComponents.BREWING_FUEL, new BrewingFuel(uses, NumberProviders.BREWING_DEFAULT_SPEED_MULTIPLIER));
+      public Properties brewingFuel(final ResourceKey<ContextIntProvider> uses) {
+         return this.component(DataComponents.BREWING_FUEL, new BrewingFuel(uses, ContextFloatProviders.BREWING_DEFAULT_SPEED_MULTIPLIER));
       }
 
       public Properties requiredFeatures(final FeatureFlag... flags) {
@@ -627,7 +627,7 @@ public class Item implements ItemLike, FeatureElement {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, attributes);
       }
 
-      public Properties compostable(final ResourceKey<NumberProvider> layers) {
+      public Properties compostable(final ResourceKey<ContextIntProvider> layers) {
          return this.component(DataComponents.COMPOSTABLE, new Compostable(layers));
       }
 

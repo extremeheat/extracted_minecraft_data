@@ -3,13 +3,12 @@ package net.minecraft.server.packs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.server.packs.resources.FallbackResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class VanillaPackResources {
    private final FixedPathPackResources fullResources;
@@ -45,7 +44,9 @@ public class VanillaPackResources {
       };
    }
 
-   public ResourceProvider asProvider() {
-      return (location) -> Optional.ofNullable(this.fullResources.getResource(PackType.CLIENT_RESOURCES, location)).map((s) -> new Resource(this.fullResources, s));
+   public ResourceManager asResourceManager() {
+      FallbackResourceManager vanillaOnlyResourceManager = new FallbackResourceManager(PackType.CLIENT_RESOURCES, "minecraft");
+      vanillaOnlyResourceManager.push(this.fullResources);
+      return vanillaOnlyResourceManager;
    }
 }

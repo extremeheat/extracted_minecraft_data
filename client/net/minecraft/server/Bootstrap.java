@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.slf4j.Logger;
 
 @SuppressForbidden(
@@ -61,6 +62,7 @@ public class Bootstrap {
                CauldronInteractions.bootStrap();
                BuiltInRegistries.bootStrap();
                CreativeModeTabs.validate();
+               LootContextParamSets.validate();
                wrapStreams();
                bootstrapDuration.set(Duration.between(start, Instant.now()).toMillis());
             }

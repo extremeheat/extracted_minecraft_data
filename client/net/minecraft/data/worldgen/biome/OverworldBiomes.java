@@ -591,7 +591,7 @@ public class OverworldBiomes {
    public static Biome dappledForest(final HolderGetter<PlacedFeature> placedFeatures, final HolderGetter<WorldCarver> carvers) {
       BiomeGenerationSettings.Builder generation = new BiomeGenerationSettings.Builder(placedFeatures, carvers);
       globalOverworldGeneration(generation);
-      BackgroundMusic music = new BackgroundMusic(SoundEvents.MUSIC_BIOME_FLOWER_FOREST);
+      BackgroundMusic music = new BackgroundMusic(SoundEvents.MUSIC_BIOME_FOREST);
       BiomeDefaultFeatures.addDefaultOres(generation);
       BiomeDefaultFeatures.addDefaultSoftDisks(generation);
       generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_DAPPLED_FOREST);

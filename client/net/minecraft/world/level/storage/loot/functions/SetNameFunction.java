@@ -51,7 +51,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
 
    public static UnaryOperator<Component> createResolver(final LootContext context, final LootContext.@Nullable EntityTarget entityTarget) {
       if (entityTarget != null) {
-         Entity entity = (Entity)context.getOptionalParameter(entityTarget.contextParam());
+         Entity entity = (Entity)context.getOptional(entityTarget.contextParam());
          if (entity != null) {
             CommandSourceStack commandSourceStack = entity.createCommandSourceStackForNameResolution(context.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
             ResolutionContext resolutionContext = ResolutionContext.create(commandSourceStack);

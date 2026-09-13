@@ -14,6 +14,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class PoplarFoliagePlacer extends FoliagePlacer {
    public static final MapCodec<PoplarFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(i.group(IntProviders.codec(5, 16).fieldOf("height").forGetter((p) -> p.height), Codec.floatRange(0.0F, 1.0F).fieldOf("side_hole_chance").forGetter((p) -> p.sideHoleChance))).apply(i, PoplarFoliagePlacer::new));
@@ -67,8 +68,8 @@ public class PoplarFoliagePlacer extends FoliagePlacer {
    }
 
    private static void tryPlaceLog(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final BlockPos pos, final Function<BlockState, BlockState> stateModifier) {
-      if (level.isStateAtPosition(pos, (state) -> state.equals(tree.foliageProvider().getState(level, random, pos)))) {
-         foliageSetter.set(pos, (BlockState)stateModifier.apply(tree.trunkProvider().getState(level, random, pos)));
+      if (level.isStateAtPosition(pos, (state) -> state.equals(((BlockStateProvider)tree.foliageProvider().value()).getState(level, random, pos)))) {
+         foliageSetter.set(pos, (BlockState)stateModifier.apply(((BlockStateProvider)tree.trunkProvider().value()).getState(level, random, pos)));
       }
 
    }

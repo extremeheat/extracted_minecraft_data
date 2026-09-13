@@ -1,68 +1,25 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
+import java.util.function.IntFunction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.util.ByIdMap;
 
-public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket>codec(ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new);
-   private final double x;
-   private final double y;
-   private final double z;
-   private final float xDist;
-   private final float yDist;
-   private final float zDist;
-   private final float maxSpeed;
-   private final int count;
-   private final boolean overrideLimiter;
-   private final boolean alwaysShow;
-   private final ParticleOptions particle;
+public record ClientboundLevelParticlesPacket(ParticleOptions particle, boolean overrideLimiter, boolean alwaysShow, double x, double y, double z, float xDist, float yDist, float zDist, float xMaxSpeed, float yMaxSpeed, float zMaxSpeed, int count, RandomizationType randomizationType) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC;
 
-   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final float xDist, final float yDist, final float zDist, final float maxSpeed, final int count) {
-      super();
-      this.particle = particle;
-      this.overrideLimiter = overrideLimiter;
-      this.alwaysShow = alwaysShow;
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.xDist = xDist;
-      this.yDist = yDist;
-      this.zDist = zDist;
-      this.maxSpeed = maxSpeed;
-      this.count = count;
+   public ClientboundLevelParticlesPacket(final ParticleOptions particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final float xDist, final float yDist, final float zDist, final float maxSpeed, final int count) {
+      this(particle, overrideLimiter, alwaysShow, x, y, z, xDist, yDist, zDist, maxSpeed, maxSpeed, maxSpeed, count, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
    }
 
-   private ClientboundLevelParticlesPacket(final RegistryFriendlyByteBuf input) {
+   public ClientboundLevelParticlesPacket {
       super();
-      this.overrideLimiter = input.readBoolean();
-      this.alwaysShow = input.readBoolean();
-      this.x = input.readDouble();
-      this.y = input.readDouble();
-      this.z = input.readDouble();
-      this.xDist = input.readFloat();
-      this.yDist = input.readFloat();
-      this.zDist = input.readFloat();
-      this.maxSpeed = input.readFloat();
-      this.count = input.readInt();
-      this.particle = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(input);
-   }
-
-   private void write(final RegistryFriendlyByteBuf output) {
-      output.writeBoolean(this.overrideLimiter);
-      output.writeBoolean(this.alwaysShow);
-      output.writeDouble(this.x);
-      output.writeDouble(this.y);
-      output.writeDouble(this.z);
-      output.writeFloat(this.xDist);
-      output.writeFloat(this.yDist);
-      output.writeFloat(this.zDist);
-      output.writeFloat(this.maxSpeed);
-      output.writeInt(this.count);
-      ParticleTypes.STREAM_CODEC.encode(output, this.particle);
    }
 
    public PacketType<ClientboundLevelParticlesPacket> type() {
@@ -73,47 +30,30 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       listener.handleParticleEvent(this);
    }
 
-   public boolean isOverrideLimiter() {
-      return this.overrideLimiter;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ParticleTypes.STREAM_CODEC, ClientboundLevelParticlesPacket::particle, ByteBufCodecs.BOOL, ClientboundLevelParticlesPacket::overrideLimiter, ByteBufCodecs.BOOL, ClientboundLevelParticlesPacket::alwaysShow, ByteBufCodecs.DOUBLE, ClientboundLevelParticlesPacket::x, ByteBufCodecs.DOUBLE, ClientboundLevelParticlesPacket::y, ByteBufCodecs.DOUBLE, ClientboundLevelParticlesPacket::z, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::xDist, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::yDist, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::zDist, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::xMaxSpeed, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::yMaxSpeed, ByteBufCodecs.FLOAT, ClientboundLevelParticlesPacket::zMaxSpeed, ByteBufCodecs.VAR_INT, ClientboundLevelParticlesPacket::count, ClientboundLevelParticlesPacket.RandomizationType.STREAM_CODEC, ClientboundLevelParticlesPacket::randomizationType, ClientboundLevelParticlesPacket::new);
    }
 
-   public boolean alwaysShow() {
-      return this.alwaysShow;
-   }
+   public static enum RandomizationType {
+      DEFAULT(0),
+      ALTERNATIVE(1),
+      ALTERNATIVE_WITH_SPEED(2);
 
-   public double getX() {
-      return this.x;
-   }
+      private static final IntFunction<RandomizationType> BY_ID = ByIdMap.<RandomizationType>continuous((h) -> h.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, RandomizationType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (h) -> h.id);
+      private final int id;
 
-   public double getY() {
-      return this.y;
-   }
+      private RandomizationType(final int id) {
+         this.id = id;
+      }
 
-   public double getZ() {
-      return this.z;
-   }
+      public boolean isAlternative() {
+         return this != DEFAULT;
+      }
 
-   public float getXDist() {
-      return this.xDist;
-   }
-
-   public float getYDist() {
-      return this.yDist;
-   }
-
-   public float getZDist() {
-      return this.zDist;
-   }
-
-   public float getMaxSpeed() {
-      return this.maxSpeed;
-   }
-
-   public int getCount() {
-      return this.count;
-   }
-
-   public ParticleOptions getParticle() {
-      return this.particle;
+      // $FF: synthetic method
+      private static RandomizationType[] $values() {
+         return new RandomizationType[]{DEFAULT, ALTERNATIVE, ALTERNATIVE_WITH_SPEED};
+      }
    }
 }

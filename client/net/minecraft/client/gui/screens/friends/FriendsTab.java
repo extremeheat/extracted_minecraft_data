@@ -90,7 +90,7 @@ class FriendsTab extends AbstractFriendsTab {
             }
 
             URI patt2$temp = var7;
-            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)patt2$temp);
+            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, patt2$temp);
          }
 
       });
@@ -179,7 +179,7 @@ class FriendsTab extends AbstractFriendsTab {
 
             URI patt2$temp = var7;
             AbstractWidget.playButtonClickSound(Minecraft.getInstance().getSoundManager());
-            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, (URI)patt2$temp);
+            PrivacyConfirmLinkScreen.confirmLinkNow(this.screen, patt2$temp);
          }
 
       });

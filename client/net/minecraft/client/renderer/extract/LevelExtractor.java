@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +43,7 @@ import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import net.minecraft.client.renderer.state.level.SectionUpdateRenderState;
+import net.minecraft.client.renderer.state.level.TransientBlockRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -53,7 +56,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
@@ -67,7 +69,6 @@ import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -90,6 +91,7 @@ public class LevelExtractor implements ResourceManagerReloadListener {
    private final LevelRenderState levelRenderState;
    public final DebugRenderer debugRenderer = new DebugRenderer();
    public final GameTestBlockHighlightRenderer gameTestBlockHighlightRenderer = new GameTestBlockHighlightRenderer();
+   private final Deque<TransientBlock> transientBlockQueue = new ArrayDeque();
    private final SimpleGizmoCollector mainThreadGizmos = new SimpleGizmoCollector();
    private double prevCamRotX = 4.9E-324;
    private double prevCamRotY = 4.9E-324;
@@ -185,6 +187,8 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       this.extractBlockOutline(camera, this.levelRenderState);
       profiler.popPush("blockBreaking");
       this.extractBlockDestroyAnimation(camera, this.levelRenderState);
+      profiler.popPush("transientBlocks");
+      this.drainTransientBlockQueue();
       profiler.popPush("weather");
       this.levelRenderer.weatherEffectRenderer().extractRenderState(this.level, worldPartialTicks, cameraPos, this.levelRenderState.weatherRenderState);
       SkyRenderer skyRenderer = this.levelRenderer.skyRenderer();
@@ -219,6 +223,25 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       this.extractGizmos();
       profiler.pop();
       profiler.pop();
+   }
+
+   private void drainTransientBlockQueue() {
+      long currentTimeMs = Util.getMillis();
+
+      TransientBlock transientBlock;
+      while((transientBlock = (TransientBlock)this.transientBlockQueue.poll()) != null) {
+         TransientBlockRenderState state = new TransientBlockRenderState();
+         state.movingBlockRenderState.randomSeedPos = transientBlock.pos();
+         state.movingBlockRenderState.blockPos = transientBlock.pos();
+         state.movingBlockRenderState.blockState = transientBlock.state();
+         state.movingBlockRenderState.biome = this.level.getBiome(transientBlock.pos());
+         state.movingBlockRenderState.cardinalLighting = this.level.cardinalLighting();
+         state.movingBlockRenderState.lightEngine = this.level.getLightEngine();
+         state.createTimeNs = transientBlock.createTimeNs();
+         state.liveUntilMs = currentTimeMs + (long)(transientBlock.timeToLive() * 1000.0);
+         this.levelRenderer.addTransientBlock(transientBlock.pos().asLong(), state);
+      }
+
    }
 
    private void extractVisibleEntities(final Camera camera, final Frustum frustum, final DeltaTracker deltaTracker, final LevelRenderState output) {
@@ -424,22 +447,22 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       }
    }
 
-   private static BlockState getViewBlockingState(final LocalPlayer player, final Frustum frustum) {
+   private static @Nullable BlockState getViewBlockingState(final LocalPlayer player, final Frustum frustum) {
       if (player.noPhysics) {
          return null;
       } else {
-         Level level = player.level();
          AABB nearPlaneBB = frustum.getNearPlaneBounds().move(player.getEyePosition());
-         BlockState[] outState = new BlockState[]{null};
-         level.findBlocksIn(nearPlaneBB).filterState((state) -> state.getRenderShape() != RenderShape.INVISIBLE).forEachUntil((pos, state) -> {
-            if (state.isViewBlocking(level, pos, nearPlaneBB)) {
-               outState[0] = state;
-               return Continuation.ABORT;
-            } else {
-               return Continuation.CONTINUE;
+         BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
+
+         for(int i = 0; i < 8; ++i) {
+            testPos.set(player.getX() + (double)(((float)((i >> 0) % 2) - 0.5F) * player.getBbWidth() * 0.8F), player.getEyeY() + (double)(((float)((i >> 1) % 2) - 0.5F) * 0.1F * player.getScale()), player.getZ() + (double)(((float)((i >> 2) % 2) - 0.5F) * player.getBbWidth() * 0.8F));
+            BlockState blockState = player.level().getBlockState(testPos);
+            if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.isViewBlocking(player.level(), testPos, nearPlaneBB)) {
+               return blockState;
             }
-         });
-         return outState[0];
+         }
+
+         return null;
       }
    }
 
@@ -544,6 +567,10 @@ public class LevelExtractor implements ResourceManagerReloadListener {
 
    private void setSectionDirty(final int sectionX, final int sectionY, final int sectionZ, final boolean playerChanged) {
       this.sectionUpdateTracker.setDirty(sectionX, sectionY, sectionZ, playerChanged);
+   }
+
+   public void queueTransientBlock(final TransientBlock transientBlock) {
+      this.transientBlockQueue.add(transientBlock);
    }
 
    public Gizmos.TemporaryCollection collectPerFrameMainThreadGizmos() {

@@ -37,7 +37,7 @@ public interface StructureTags {
    TagKey<Structure> ON_ABANDONED_CAMP_FLOWER_FOREST_MAPS = create("on_abandoned_camp_flower_forest");
    TagKey<Structure> ON_ABANDONED_CAMP_PALE_GARDEN_MAPS = create("on_abandoned_camp_pale_garden");
    TagKey<Structure> ON_ABANDONED_CAMP_SWAMP_MAPS = create("on_abandoned_camp_swamp");
-   TagKey<Structure> ON_ABANDONED_CAMP_WINDSWEPT_FOREST_MAPS = create("on_abandoned_camp_windswept");
+   TagKey<Structure> ON_ABANDONED_CAMP_WINDSWEPT_FOREST_MAPS = create("on_abandoned_camp_windswept_forest");
 
    private static TagKey<Structure> create(final String name) {
       return TagKey.<Structure>create(Registries.STRUCTURE, Identifier.withDefaultNamespace(name));

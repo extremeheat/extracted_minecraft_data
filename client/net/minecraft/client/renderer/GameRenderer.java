@@ -21,19 +21,23 @@ import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.ShaderSource;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Set;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -67,7 +71,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
@@ -90,7 +93,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.TrackedWaypoint;
-import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
@@ -245,37 +247,27 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
 
    }
 
-   public void preloadUiShader(final ResourceProvider resourceProvider) {
+   public static void preloadUiShader(final ResourceManager resourceManager) {
       GpuDevice device = RenderSystem.getDevice();
-      ShaderSource shaderSource = (id, type) -> {
-         Identifier location = type != null ? type.idConverter().idToFile(id) : id;
+      final Map<Identifier, ShaderSource.CachedIncludeSource> includes = ShaderManager.listAllIncludes(resourceManager);
+      ShaderSource shaderSource = new ShaderSource() {
+         public @Nullable String getShader(final Identifier id, final ShaderType type) {
+            Identifier location = type.idConverter().idToFile(id);
 
-         try {
-            Reader reader = resourceProvider.getResourceOrThrow(location).openAsReader();
-
-            String var5;
             try {
-               var5 = IOUtils.toString(reader);
-            } catch (Throwable var8) {
-               if (reader != null) {
-                  try {
-                     reader.close();
-                  } catch (Throwable x2) {
-                     var8.addSuppressed(x2);
-                  }
-               }
-
-               throw var8;
+               return resourceManager.getResourceOrThrow(location).readAllAsString();
+            } catch (Exception exception) {
+               GameRenderer.LOGGER.error("Couldn't preload shader {}", location, exception);
+               return null;
             }
+         }
 
-            if (reader != null) {
-               reader.close();
-            }
+         public ShaderSource.@Nullable CachedIncludeSource getInclude(final Identifier id) {
+            return (ShaderSource.CachedIncludeSource)includes.get(id);
+         }
 
-            return var5;
-         } catch (IOException exception) {
-            LOGGER.error("Couldn't preload {} shader {}", new Object[]{type, id, exception});
-            return null;
+         public void close() {
+            includes.values().forEach(ShaderSource.CachedIncludeSource::close);
          }
       };
       RenderSystem.setFallbackPipelineCache(new PipelineCache(device, shaderSource));
@@ -461,7 +453,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.mainRenderTarget.getColorTexture(), this.gameRenderState.guiRenderState.clearColorOverride, this.mainRenderTarget.getDepthTexture(), 0.0);
       this.globalSettingsUniform.update(windowRenderState.width, windowRenderState.height, this.gameRenderState.optionsRenderState.glintStrength, this.gameRenderState.shouldRenderLevel ? this.gameRenderState.levelRenderState.gameTime : 0L, this.gameRenderState.shouldRenderLevel ? this.gameRenderState.levelRenderState.worldPartialTicks : 0.0F, this.gameRenderState.optionsRenderState.menuBackgroundBlurriness, this.gameRenderState.levelRenderState.cameraRenderState.pos, this.gameRenderState.optionsRenderState.textureFiltering == TextureFilteringMethod.RGSS);
       if (this.gameRenderState.shouldRenderLevel) {
-         this.preparePostEffects();
+         this.preparePostEffects(this.gameRenderState.requestedPostEffects);
          this.lightmap.render(this.gameRenderState.lightmapRenderState);
          profiler.push("world");
          this.renderLevel();
@@ -469,6 +461,8 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
          this.minecraft.levelRenderer.blitEntityOutline();
          this.applyPostEffects();
          profiler.pop();
+      } else {
+         this.preparePostEffects(Collections.emptyList());
       }
 
       this.fogRenderer.endFrame();
@@ -485,14 +479,15 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
       profiler.pop();
    }
 
-   private void preparePostEffects() {
+   private void preparePostEffects(final List<Identifier> requestedPostEffects) {
+      Set<PostChain> previousPostEffects = new HashSet(this.appliedPostEffects);
       this.appliedPostEffects.clear();
       if (this.shouldResetFailedPostEffects) {
          this.failedPostEffects.clear();
          this.shouldResetFailedPostEffects = false;
       }
 
-      for(Identifier postEffect : this.gameRenderState.requestedPostEffects) {
+      for(Identifier postEffect : requestedPostEffects) {
          try {
             ShaderManager shaderManager = this.minecraft.getShaderManager();
             if (!shaderManager.isPostEffectValid(postEffect, LevelTargetBundle.MAIN_TARGETS)) {
@@ -501,12 +496,17 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
                PostChain postChain = shaderManager.getPostChain(postEffect, LevelTargetBundle.MAIN_TARGETS);
                if (postChain != null) {
                   this.appliedPostEffects.add(postChain);
+                  previousPostEffects.remove(postChain);
                }
             }
          } catch (RuntimeException e) {
             LOGGER.warn("Failed to load post effect {}", postEffect, e);
             this.failedPostEffects.add(postEffect);
          }
+      }
+
+      for(PostChain postEffect : previousPostEffects) {
+         postEffect.closePersistentTargets();
       }
 
    }

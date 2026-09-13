@@ -20,20 +20,21 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class LootPool implements Validatable {
-   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((i) -> i.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((p) -> p.entries), LootItemCondition.CODEC.optionalFieldOf("condition").forGetter((p) -> p.condition), LootItemFunctions.CODEC.optionalFieldOf("modifier").forGetter((p) -> p.modifier), NumberProviders.CODEC.fieldOf("rolls").forGetter((p) -> p.rolls), NumberProviders.CODEC.optionalFieldOf("bonus_rolls", ConstantValue.exactly(0.0F)).forGetter((p) -> p.bonusRolls)).apply(i, LootPool::new));
+   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((i) -> i.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((p) -> p.entries), LootItemCondition.CODEC.optionalFieldOf("condition").forGetter((p) -> p.condition), LootItemFunctions.CODEC.optionalFieldOf("modifier").forGetter((p) -> p.modifier), ContextIntProviders.CODEC.fieldOf("rolls").forGetter((p) -> p.rolls), ContextFloatProviders.CODEC.optionalFieldOf("bonus_rolls", ContextFloatProviders.exactly(0.0F)).forGetter((p) -> p.bonusRolls)).apply(i, LootPool::new));
    private final List<LootPoolEntryContainer> entries;
    private final Optional<Holder<LootItemCondition>> condition;
    private final Optional<Holder<LootItemFunction>> modifier;
-   private final Holder<NumberProvider> rolls;
-   private final Holder<NumberProvider> bonusRolls;
+   private final Holder<ContextIntProvider> rolls;
+   private final Holder<ContextFloatProvider> bonusRolls;
 
-   private LootPool(final List<LootPoolEntryContainer> entries, final Optional<Holder<LootItemCondition>> condition, final Optional<Holder<LootItemFunction>> modifier, final Holder<NumberProvider> rolls, final Holder<NumberProvider> bonusRolls) {
+   private LootPool(final List<LootPoolEntryContainer> entries, final Optional<Holder<LootItemCondition>> condition, final Optional<Holder<LootItemFunction>> modifier, final Holder<ContextIntProvider> rolls, final Holder<ContextFloatProvider> bonusRolls) {
       super();
       this.entries = entries;
       this.condition = condition;
@@ -80,7 +81,7 @@ public class LootPool implements Validatable {
    public void addRandomItems(final Consumer<ItemStack> result, final LootContext context) {
       if (!this.condition.isPresent() || ((LootItemCondition)((Holder)this.condition.get()).value()).test(context)) {
          Consumer<ItemStack> decoratedConsumer = LootItemFunction.decorate(this.modifier, result, context);
-         int count = ((NumberProvider)this.rolls.value()).getInt(context) + Mth.floor(((NumberProvider)this.bonusRolls.value()).getFloat(context) * context.getLuck());
+         int count = ((ContextIntProvider)this.rolls.value()).getInt(context) + Mth.floor(((ContextFloatProvider)this.bonusRolls.value()).getFloat(context) * context.getLuck());
 
          for(int i = 0; i < count; ++i) {
             this.addRandomItem(decoratedConsumer, context);
@@ -105,14 +106,14 @@ public class LootPool implements Validatable {
       private final ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
       private final ImmutableList.Builder<Holder<LootItemCondition>> conditions = ImmutableList.builder();
       private final ImmutableList.Builder<Holder<LootItemFunction>> functions = ImmutableList.builder();
-      private Holder<NumberProvider> rolls = ConstantValue.exactly(1.0F);
-      private Holder<NumberProvider> bonusRolls = ConstantValue.exactly(0.0F);
+      private Holder<ContextIntProvider> rolls = ContextIntProviders.exactly(1);
+      private Holder<ContextFloatProvider> bonusRolls = ContextFloatProviders.exactly(0.0F);
 
       public Builder() {
          super();
       }
 
-      public Builder setRolls(final Holder<NumberProvider> rolls) {
+      public Builder setRolls(final Holder<ContextIntProvider> rolls) {
          this.rolls = rolls;
          return this;
       }
@@ -121,7 +122,7 @@ public class LootPool implements Validatable {
          return this;
       }
 
-      public Builder setBonusRolls(final Holder<NumberProvider> bonusRolls) {
+      public Builder setBonusRolls(final Holder<ContextFloatProvider> bonusRolls) {
          this.bonusRolls = bonusRolls;
          return this;
       }

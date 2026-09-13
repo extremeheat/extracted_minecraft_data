@@ -102,7 +102,7 @@ public class BitmapProvider implements GlyphProvider {
 
          BitmapProvider var23;
          try {
-            NativeImage image = NativeImage.read(NativeImage.Format.RGBA, resource);
+            NativeImage image = NativeImage.read(resource);
             int w = image.getWidth();
             int h = image.getHeight();
             int glyphWidth = w / this.codepointGrid[0].length;

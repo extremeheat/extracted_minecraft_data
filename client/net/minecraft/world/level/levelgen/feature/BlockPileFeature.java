@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record BlockPileFeature(BlockStateProvider stateProvider) implements Feature {
+public record BlockPileFeature(Holder<BlockStateProvider> stateProvider) implements Feature {
    public static final MapCodec<BlockPileFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("state_provider").forGetter(BlockPileFeature::stateProvider)).apply(i, BlockPileFeature::new));
 
    public BlockPileFeature {
@@ -52,7 +53,7 @@ public record BlockPileFeature(BlockStateProvider stateProvider) implements Feat
 
    private void tryPlaceBlock(final WorldGenLevel level, final BlockPos blockPos, final RandomSource random) {
       if (level.isEmptyBlock(blockPos) && this.mayPlaceOn(level, blockPos, random)) {
-         level.setBlock(blockPos, this.stateProvider.getState(level, random, blockPos), 260);
+         level.setBlock(blockPos, ((BlockStateProvider)this.stateProvider.value()).getState(level, random, blockPos), 260);
       }
 
    }

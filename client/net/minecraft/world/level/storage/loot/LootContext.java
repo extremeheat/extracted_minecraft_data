@@ -39,11 +39,7 @@ public class LootContext {
       return this.params.contextMap().has(key);
    }
 
-   public <T> T getParameter(final ContextKey<T> key) {
-      return (T)this.params.contextMap().getOrThrow(key);
-   }
-
-   public <T> @Nullable T getOptionalParameter(final ContextKey<T> key) {
+   public <T> @Nullable T getOptional(final ContextKey<T> key) {
       return (T)this.params.contextMap().get(key);
    }
 

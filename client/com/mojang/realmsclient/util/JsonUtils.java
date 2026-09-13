@@ -3,6 +3,7 @@ package com.mojang.realmsclient.util;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.util.UndashedUuid;
+import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
@@ -57,6 +58,20 @@ public class JsonUtils {
       } else {
          return defaultValue;
       }
+   }
+
+   public static URI getRequiredUri(final String key, final JsonObject node) {
+      URI uri = getUriNullable(key, node);
+      if (uri == null) {
+         throw new IllegalStateException("Missing required URI property: " + key);
+      } else {
+         return uri;
+      }
+   }
+
+   public static @Nullable URI getUriNullable(final String key, final JsonObject node) {
+      String string = getStringOr(key, node, (String)null);
+      return string != null && !string.isEmpty() ? URI.create(string) : null;
    }
 
    @Contract("_,_,!null->!null;_,_,null->_")

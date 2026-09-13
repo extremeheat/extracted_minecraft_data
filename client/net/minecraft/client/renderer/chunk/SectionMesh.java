@@ -34,6 +34,10 @@ public interface SectionMesh extends AutoCloseable {
       return null;
    }
 
+   default long getCompileTaskStartTime() {
+      return 0L;
+   }
+
    default void close() {
    }
 

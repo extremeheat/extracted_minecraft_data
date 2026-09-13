@@ -119,21 +119,33 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    protected int getUses(final ServerLevel level, final BrewingFuel brewingFuel) {
-      return brewingFuel.uses().getInt(this.getLootContext(level), 0);
+      return brewingFuel.uses().get(this.getLootContext(level), 0);
    }
 
    protected float getSpeedMultiplier(final ServerLevel level, final BrewingFuel brewingFuel) {
-      return brewingFuel.speedMultiplier().getFloat(this.getLootContext(level), 1.0F);
+      return brewingFuel.speedMultiplier().get(this.getLootContext(level), 1.0F);
    }
 
    public static void serverTick(final ServerLevel level, final BlockPos pos, final BlockState selfState, final BrewingStandBlockEntity entity) {
-      ItemStack fuel = entity.items.get(4);
+      NonNullList<ItemStack> items = entity.getItems();
+      ItemStack fuel = items.get(4);
       BrewingFuel brewingFuel = (BrewingFuel)fuel.get(DataComponents.BREWING_FUEL);
       if (entity.fuel <= 0 && brewingFuel != null) {
          entity.fuel = entity.getUses(level, brewingFuel);
          entity.totalFuel = entity.fuel;
          entity.speedMultiplier = entity.getSpeedMultiplier(level, brewingFuel);
+         ItemStackTemplate fuelRemainder = fuel.getItem().getCraftingRemainder();
+         ItemStack newFuel = fuel;
          fuel.shrink(1);
+         if (fuelRemainder != null) {
+            if (fuel.isEmpty()) {
+               newFuel = fuelRemainder.create();
+            } else {
+               Containers.dropItemStack(level, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), fuelRemainder.create());
+            }
+         }
+
+         items.set(4, newFuel);
          setChanged(level, pos, selfState);
       }
 

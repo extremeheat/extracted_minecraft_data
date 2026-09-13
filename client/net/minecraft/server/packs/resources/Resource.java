@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import net.minecraft.server.packs.PackResources;
@@ -49,6 +50,31 @@ public class Resource {
 
    public BufferedReader openAsReader() throws IOException {
       return new BufferedReader(new InputStreamReader(this.open(), StandardCharsets.UTF_8));
+   }
+
+   public String readAllAsString() throws IOException {
+      Reader reader = this.openAsReader();
+
+      String var2;
+      try {
+         var2 = reader.readAllAsString();
+      } catch (Throwable var5) {
+         if (reader != null) {
+            try {
+               reader.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (reader != null) {
+         reader.close();
+      }
+
+      return var2;
    }
 
    public ResourceMetadata metadata() throws IOException {

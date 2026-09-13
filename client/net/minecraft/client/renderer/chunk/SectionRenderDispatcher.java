@@ -414,11 +414,13 @@ public class SectionRenderDispatcher {
 
       private class CompileTask extends SectionTask {
          private final RenderSectionRegion region;
+         private final long startTimeNs;
 
          public CompileTask(final RenderSectionRegion region, final boolean isRecompile) {
             Objects.requireNonNull(RenderSection.this);
             super(isRecompile);
             this.region = region;
+            this.startTimeNs = Util.getNanos();
          }
 
          public SectionTask.SectionTaskResult doTask(final SectionBufferBuilderPack buffers) {
@@ -438,7 +440,7 @@ public class SectionRenderDispatcher {
                   }
 
                   TranslucencyPointOfView translucencyPointOfView = TranslucencyPointOfView.of(cameraPos, sectionNode);
-                  CompiledSectionMesh compiledSectionMesh = new CompiledSectionMesh(translucencyPointOfView, results);
+                  CompiledSectionMesh compiledSectionMesh = new CompiledSectionMesh(translucencyPointOfView, results, this.startTimeNs);
                   if (results.renderedLayers.isEmpty()) {
                      SectionMesh oldMesh = RenderSection.this.setSectionMesh((SectionMesh)(results.blockEntities.isEmpty() ? CompiledSectionMesh.EMPTY : compiledSectionMesh));
                      SectionRenderDispatcher.this.copyLock.lock();

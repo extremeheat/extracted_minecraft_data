@@ -1212,7 +1212,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                this.markHurt();
             }
 
-            if (!source.is(DamageTypeTags.NO_KNOCKBACK)) {
+            boolean fullyBlocked = blocked && damage <= 0.0F;
+            if (!source.is(DamageTypeTags.NO_KNOCKBACK) && !fullyBlocked) {
                this.dealDefaultKnockback(source, damage, blocked);
             }
          }
@@ -1249,9 +1250,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             }
          }
 
-         Entity var16 = source.getEntity();
-         if (var16 instanceof ServerPlayer) {
-            ServerPlayer sourcePlayer = (ServerPlayer)var16;
+         Entity var17 = source.getEntity();
+         if (var17 instanceof ServerPlayer) {
+            ServerPlayer sourcePlayer = (ServerPlayer)var17;
             CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(sourcePlayer, this, source, originalDamage, damage, blocked);
          }
 
@@ -1314,7 +1315,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                   Entity directEntity = source.getDirectEntity();
                   if (directEntity instanceof LivingEntity) {
                      LivingEntity livingEntity = (LivingEntity)directEntity;
-                     this.blockUsingItem(level, livingEntity, source, damage);
+                     this.blockUsingItem(level, livingEntity, source, damage, damageBlocked >= damage);
                   }
                }
 
@@ -1362,12 +1363,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return EntityReference.getPlayer(this.lastHurtByPlayer, this.level());
    }
 
-   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker, final DamageSource source, final float damage) {
-      attacker.blockedByItem(this, source, damage);
+   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker, final DamageSource source, final float damage, final boolean fullyBlocked) {
+      attacker.blockedByItem(this, source, damage, fullyBlocked);
    }
 
-   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage) {
-      defender.knockback(0.5, defender.getX() - this.getX(), defender.getZ() - this.getZ(), source, damage);
+   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage, final boolean fullyBlocked) {
+      if (!fullyBlocked) {
+         defender.knockback(0.5, defender.getX() - this.getX(), defender.getZ() - this.getZ(), source, damage);
+      }
+
    }
 
    private boolean checkTotemDeathProtection(final DamageSource killingDamage) {
@@ -2929,7 +2933,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          itemsToSend.add(Pair.of(slot, newItemToStore));
          this.lastEquipmentItems.put(slot, newItemToStore);
       });
-      ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), itemsToSend));
+      this.updatePlayersWithNewEquipment((ServerLevel)this.level(), itemsToSend);
+   }
+
+   private void updatePlayersWithNewEquipment(final ServerLevel level, final List<Pair<EquipmentSlot, ItemStack>> itemsToSend) {
+      level.getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), itemsToSend));
    }
 
    protected void tickHeadTurn(final float yBodyRotT) {
@@ -3436,6 +3444,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.useItem = itemStack;
          this.useItemRemaining = itemStack.getUseDuration(this);
          if (!this.level().isClientSide()) {
+            this.updatePlayersWithNewEquipment((ServerLevel)this.level(), List.of(Pair.of(hand.asEquipmentSlot(), this.useItem)));
             this.setLivingEntityFlag(1, true);
             this.setLivingEntityFlag(2, hand == InteractionHand.OFF_HAND);
             this.useItem.causeUseVibration(this, GameEvent.ITEM_INTERACT_START);

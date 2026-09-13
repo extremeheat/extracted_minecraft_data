@@ -1,0 +1,43 @@
+package net.minecraft.world.level.storage.loot.providers.number.ints;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+
+public record BinomialDistributionGenerator(Holder<ContextIntProvider> n, Holder<ContextFloatProvider> p) implements ContextIntProvider {
+   public static final MapCodec<BinomialDistributionGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ContextIntProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), ContextFloatProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(i, BinomialDistributionGenerator::new));
+
+   public BinomialDistributionGenerator {
+      super();
+   }
+
+   public MapCodec<BinomialDistributionGenerator> codec() {
+      return MAP_CODEC;
+   }
+
+   public int getIntUnsafe(final LootContext context) {
+      int n = ((ContextIntProvider)this.n().value()).getIntUnsafe(context);
+      float p = ((ContextFloatProvider)this.p().value()).getFloatOrThrow(context);
+      RandomSource random = context.getRandom();
+      int result = 0;
+
+      for(int i = 0; i < n; ++i) {
+         if (random.nextFloat() < p) {
+            ++result;
+         }
+      }
+
+      return result;
+   }
+
+   public void validate(final ValidationContext context) {
+      Validatable.validateHolder(context, "n", this.n);
+      Validatable.validateHolder(context, "p", this.p);
+   }
+}

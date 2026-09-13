@@ -28,7 +28,6 @@ import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.IMECandidatesEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
@@ -75,7 +74,6 @@ public class KeyboardHandler {
    private long debugCrashKeyReportedCount = -1L;
    private boolean usedDebugKeyAsModifier;
    private @Nullable PreeditEvent lastPreeditEvent;
-   private @Nullable IMECandidatesEvent lastIMECandidatesEvent;
 
    public KeyboardHandler(final Minecraft minecraft) {
       super();
@@ -525,7 +523,6 @@ public class KeyboardHandler {
                }
             } catch (Throwable t) {
                CrashReport report = CrashReport.forThrowable(t, "keyPressed event handler");
-               screen.fillCrashDetails(report);
                CrashReportCategory keyDetails = report.addCategory("Key");
                keyDetails.setDetail("Scancode", event.key());
                keyDetails.setDetail("Keycode", event.keycode());
@@ -620,7 +617,6 @@ public class KeyboardHandler {
                screen.charTyped(event);
             } catch (Throwable t) {
                CrashReport report = CrashReport.forThrowable(t, "charTyped event handler");
-               screen.fillCrashDetails(report);
                CrashReportCategory keyDetails = report.addCategory("Key");
                keyDetails.setDetail("Codepoint", event.codepoint());
                throw new ReportedException(report);
@@ -637,25 +633,11 @@ public class KeyboardHandler {
    public void textEditing(final long handle, final @Nullable PreeditEvent event) {
       if (handle != 0L && handle == this.minecraft.getWindow().handle()) {
          this.lastPreeditEvent = event;
-         if (event == null) {
-            this.lastIMECandidatesEvent = null;
-         }
-
          Screen screen = this.minecraft.gui.screen();
          if (screen != null && this.minecraft.gui.overlay() == null) {
             submitPreeditEvent(screen, event);
          }
       }
-   }
-
-   public void textEditingCandidates(final long handle, final @Nullable IMECandidatesEvent event) {
-      if (handle != 0L && handle == this.minecraft.getWindow().handle()) {
-         this.lastIMECandidatesEvent = event;
-      }
-   }
-
-   public @Nullable IMECandidatesEvent getIMECandidates() {
-      return this.lastIMECandidatesEvent;
    }
 
    public void resubmitLastPreeditEvent(final GuiEventListener screen) {
@@ -667,10 +649,6 @@ public class KeyboardHandler {
          element.preeditUpdated(event);
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "IME pre-edit event handler");
-         if (element instanceof Screen screen) {
-            screen.fillCrashDetails(report);
-         }
-
          CrashReportCategory keyDetails = report.addCategory("Event");
          keyDetails.setDetail("Contents", (CrashReportDetail)(() -> String.valueOf(event)));
          throw new ReportedException(report);

@@ -45,6 +45,7 @@ public class ServerPlayerGameMode {
    private boolean isDestroyingBlock;
    private int destroyProgressStart;
    private BlockPos destroyPos;
+   private Direction destroyDirection;
    private int gameTicks;
    private boolean hasDelayedDestroy;
    private BlockPos delayedDestroyPos;
@@ -55,6 +56,7 @@ public class ServerPlayerGameMode {
       super();
       this.gameModeForPlayer = GameType.DEFAULT_MODE;
       this.destroyPos = BlockPos.ZERO;
+      this.destroyDirection = Direction.DOWN;
       this.delayedDestroyPos = BlockPos.ZERO;
       this.lastSentState = -1;
       this.player = player;
@@ -130,14 +132,22 @@ public class ServerPlayerGameMode {
             this.lastSentState = -1;
             this.isDestroyingBlock = false;
          } else {
-            this.incrementDestroyProgress(blockState, this.destroyPos, this.destroyProgressStart);
+            int ticksSpentDestroying = this.gameTicks - this.destroyProgressStart;
+            int event;
+            if (ticksSpentDestroying % 4 == 0) {
+               event = 2020;
+            } else {
+               event = 2019;
+            }
+
+            this.incrementDestroyProgress(blockState, this.destroyPos, ticksSpentDestroying);
+            this.level.levelEvent((Entity)null, event, this.destroyPos, this.destroyDirection.ordinal());
          }
       }
 
    }
 
-   private float incrementDestroyProgress(final BlockState blockState, final BlockPos delayedDestroyPos, final int destroyStartTick) {
-      int ticksSpentDestroying = this.gameTicks - destroyStartTick;
+   private float incrementDestroyProgress(final BlockState blockState, final BlockPos delayedDestroyPos, final int ticksSpentDestroying) {
       float destroyProgress = blockState.getDestroyProgress(this.player, this.player.level(), delayedDestroyPos) * (float)(ticksSpentDestroying + 1);
       int state = (int)(destroyProgress * 10.0F);
       if (state != this.lastSentState) {
@@ -157,6 +167,10 @@ public class ServerPlayerGameMode {
 
    public void handleBlockBreakAction(final BlockPos pos, final ServerboundPlayerActionPacket.Action action, final Direction direction, final int maxY, final int sequence) {
       if (!this.player.isWithinBlockInteractionRange(pos, 1.0)) {
+         if (this.isDestroyingBlock && action == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
+            this.abortDestroyBlock(pos, sequence);
+         }
+
          this.debugLogging(pos, false, sequence, "too far");
       } else if (pos.getY() > maxY) {
          this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
@@ -205,11 +219,14 @@ public class ServerPlayerGameMode {
 
                this.isDestroyingBlock = true;
                this.destroyPos = pos.immutable();
+               this.destroyDirection = direction;
                int state = (int)(progress * 10.0F);
                this.level.destroyBlockProgress(this.player.getId(), pos, state);
                this.debugLogging(pos, true, sequence, "actual start of destroying");
                this.lastSentState = state;
             }
+         } else if (action == ServerboundPlayerActionPacket.Action.CHANGE_DESTROY_DIRECTION) {
+            this.destroyDirection = direction;
          } else if (action == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK) {
             if (pos.equals(this.destroyPos)) {
                int ticksSpentDestroying = this.gameTicks - this.destroyProgressStart;
@@ -234,18 +251,22 @@ public class ServerPlayerGameMode {
 
             this.debugLogging(pos, true, sequence, "stopped destroying");
          } else if (action == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
-            this.isDestroyingBlock = false;
-            if (!Objects.equals(this.destroyPos, pos)) {
-               LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, pos);
-               this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
-               this.debugLogging(pos, true, sequence, "aborted mismatched destroying");
-            }
-
-            this.level.destroyBlockProgress(this.player.getId(), pos, -1);
-            this.debugLogging(pos, true, sequence, "aborted destroying");
+            this.abortDestroyBlock(pos, sequence);
          }
 
       }
+   }
+
+   private void abortDestroyBlock(final BlockPos pos, final int sequence) {
+      this.isDestroyingBlock = false;
+      if (!Objects.equals(this.destroyPos, pos)) {
+         LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, pos);
+         this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
+         this.debugLogging(pos, true, sequence, "aborted mismatched destroying");
+      }
+
+      this.level.destroyBlockProgress(this.player.getId(), pos, -1);
+      this.debugLogging(pos, true, sequence, "aborted destroying");
    }
 
    public void destroyAndAck(final BlockPos pos, final int sequence, final String exitId) {
@@ -348,16 +369,16 @@ public class ServerPlayerGameMode {
             player.openMenu(menuProvider);
             return InteractionResult.CONSUME;
          } else {
-            Block var16 = state.getBlock();
-            if (var16 instanceof Portal) {
-               Portal portal = (Portal)var16;
-               if (player.getCamera() != player) {
-                  player.setCamera(player);
-               }
-
+            Block var17 = state.getBlock();
+            if (var17 instanceof Portal) {
+               Portal portal = (Portal)var17;
                ServerLevel serverLevel = player.level();
                TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
                if (teleportTransition != null) {
+                  if (player.getCamera() != player) {
+                     player.setCamera(player);
+                  }
+
                   player.teleportToPortalDestination(serverLevel, teleportTransition);
                } else {
                   player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
@@ -390,20 +411,27 @@ public class ServerPlayerGameMode {
 
          if (!itemStack.isEmpty() && !player.getCooldowns().isOnCooldown(itemStack)) {
             UseOnContext context = new UseOnContext(player, hand, hitResult);
-            InteractionResult success;
+            InteractionResult result;
             if (player.hasInfiniteMaterials()) {
                int count = itemStack.getCount();
-               success = itemStack.useOn(context);
+               result = itemStack.useOn(context);
                itemStack.setCount(count);
             } else {
-               success = itemStack.useOn(context);
+               result = itemStack.useOn(context);
+               if (result instanceof InteractionResult.Success) {
+                  InteractionResult.Success success = (InteractionResult.Success)result;
+                  ItemStack resultItemStack = (ItemStack)Objects.requireNonNullElseGet(success.heldItemTransformedTo(), () -> player.getItemInHand(hand));
+                  if (resultItemStack != itemStack) {
+                     player.setItemInHand(hand, resultItemStack);
+                  }
+               }
             }
 
-            if (success.consumesAction()) {
+            if (result.consumesAction()) {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, pos, usedItemStack);
             }
 
-            return success;
+            return result;
          } else {
             return InteractionResult.PASS;
          }

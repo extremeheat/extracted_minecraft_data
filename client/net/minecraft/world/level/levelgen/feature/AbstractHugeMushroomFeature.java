@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
@@ -15,9 +16,9 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public interface AbstractHugeMushroomFeature extends Feature {
    int MIN_MUSHROOM_HEIGHT = 4;
 
-   BlockStateProvider capProvider();
+   Holder<BlockStateProvider> capProvider();
 
-   BlockStateProvider stemProvider();
+   Holder<BlockStateProvider> stemProvider();
 
    int foliageRadius();
 
@@ -28,7 +29,7 @@ public interface AbstractHugeMushroomFeature extends Feature {
    default void placeTrunk(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos) {
       for(int dy = 0; dy < treeHeight; ++dy) {
          blockPos.set(origin).move(Direction.UP, dy);
-         this.placeMushroomBlock(level, blockPos, this.stemProvider().getState(level, random, origin));
+         this.placeMushroomBlock(level, blockPos, ((BlockStateProvider)this.stemProvider().value()).getState(level, random, origin));
       }
 
    }

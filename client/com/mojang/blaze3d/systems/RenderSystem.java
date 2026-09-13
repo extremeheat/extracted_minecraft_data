@@ -210,12 +210,11 @@ public class RenderSystem {
       SDLInit.SDL_SetAppMetadataProperty("SDL.app.metadata.url", "https://www.minecraft.net");
       SDLInit.SDL_SetAppMetadataProperty("SDL.app.metadata.type", "game");
       SDLHints.SDL_SetHint("SDL_NO_SIGNAL_HANDLERS", "1");
-      SDLHints.SDL_SetHint("SDL_VIDEO_MAC_FULLSCREEN_SPACES", "1");
-      SDLHints.SDL_SetHint("SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY", "0");
+      SDLHints.SDL_SetHint("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0");
       SDLHints.SDL_SetHint("SDL_QUIT_ON_LAST_WINDOW_CLOSE", "0");
       SDLHints.SDL_SetHint("SDL_MOUSE_FOCUS_CLICKTHROUGH", "1");
       SDLHints.SDL_SetHint("SDL_ENABLE_SCREEN_KEYBOARD", "0");
-      SDLHints.SDL_SetHint("SDL_IME_IMPLEMENTED_UI", "composition, candidates");
+      SDLHints.SDL_SetHint("SDL_IME_IMPLEMENTED_UI", "composition");
       if (!SDLInit.SDL_Init(32)) {
          throw new IllegalStateException("Unable to initialize SDL: " + SDLError.SDL_GetError());
       } else {

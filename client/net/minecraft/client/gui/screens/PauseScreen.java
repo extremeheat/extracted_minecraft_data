@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,10 +111,10 @@ public class PauseScreen extends Screen {
       helper.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
       helper.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
       LinearLayout iconButtonRow = LinearLayout.horizontal().spacing(4);
-      SpriteIconButton reportBugsButton = SpriteIconButton.builder(REPORT_BUGS, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/bug"), 15, 15).withTootip().build();
+      SpriteIconButton reportBugsButton = SpriteIconButton.builder(REPORT_BUGS, ConfirmLinkScreen.confirmLink(this, CommonLinks.SNAPSHOT_BUGS_FEEDBACK), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/bug"), 15, 15).withTootip().build();
       reportBugsButton.active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
       iconButtonRow.addChild(reportBugsButton);
-      SpriteIconButton feedbackButton = SpriteIconButton.builder(SEND_FEEDBACK, ConfirmLinkScreen.confirmLink(this, (URI)(SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/social_interactions"), 15, 15).withTootip().build();
+      SpriteIconButton feedbackButton = SpriteIconButton.builder(SEND_FEEDBACK, ConfirmLinkScreen.confirmLink(this, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/social_interactions"), 15, 15).withTootip().build();
       iconButtonRow.addChild(feedbackButton);
       this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode());
       iconButtonRow.addChild(this.friends);

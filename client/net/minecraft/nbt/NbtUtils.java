@@ -2,20 +2,16 @@ package net.minecraft.nbt;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,7 +31,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -52,8 +47,10 @@ public final class NbtUtils {
    private static final Splitter COMMA_SPLITTER;
    private static final Splitter COLON_SPLITTER;
    private static final Logger LOGGER;
-   private static final int INDENT = 2;
    private static final int NOT_FOUND = -1;
+   private static final int BLOCK_STATE_ID_PROPERTIES_RENAME_VERSION = 5006;
+   public static final String LEGACY_BLOCK_STATE_ID_TAG = "Name";
+   public static final String LEGACY_BLOCKSTATE_PROPERTY_TAG = "Properties";
 
    private NbtUtils() {
       super();
@@ -173,218 +170,6 @@ public final class NbtUtils {
       return tag;
    }
 
-   public static CompoundTag writeFluidState(final FluidState state) {
-      CompoundTag tag = new CompoundTag();
-      tag.putString("id", BuiltInRegistries.FLUID.getKey(state.getType()).toString());
-      writeStateProperties(state, tag);
-      return tag;
-   }
-
-   public static String prettyPrint(final Tag tag, final boolean withBinaryBlobs) {
-      return prettyPrint(new StringBuilder(), tag, 0, withBinaryBlobs).toString();
-   }
-
-   public static StringBuilder prettyPrint(final StringBuilder builder, final Tag input, final int indent, final boolean withBinaryBlobs) {
-      Objects.requireNonNull(input);
-      byte var5 = 0;
-      StringBuilder var10000;
-      //$FF: var5->value
-      //0->net/minecraft/nbt/PrimitiveTag
-      //1->net/minecraft/nbt/EndTag
-      //2->net/minecraft/nbt/ByteArrayTag
-      //3->net/minecraft/nbt/ListTag
-      //4->net/minecraft/nbt/IntArrayTag
-      //5->net/minecraft/nbt/CompoundTag
-      //6->net/minecraft/nbt/LongArrayTag
-      switch (input.typeSwitch<invokedynamic>(input, var5)) {
-         case 0:
-            PrimitiveTag primitive = (PrimitiveTag)input;
-            var10000 = builder.append(primitive);
-            break;
-         case 1:
-            EndTag ignored = (EndTag)input;
-            var10000 = builder;
-            break;
-         case 2:
-            ByteArrayTag tag = (ByteArrayTag)input;
-            byte[] array = tag.getAsByteArray();
-            int length = array.length;
-            indent(indent, builder).append("byte[").append(length).append("] {\n");
-            if (!withBinaryBlobs) {
-               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
-            } else {
-               indent(indent + 1, builder);
-
-               for(int i = 0; i < array.length; ++i) {
-                  if (i != 0) {
-                     builder.append(',');
-                  }
-
-                  if (i % 16 == 0 && i / 16 > 0) {
-                     builder.append('\n');
-                     if (i < array.length) {
-                        indent(indent + 1, builder);
-                     }
-                  } else if (i != 0) {
-                     builder.append(' ');
-                  }
-
-                  builder.append(String.format(Locale.ROOT, "0x%02X", array[i] & 255));
-               }
-            }
-
-            builder.append('\n');
-            indent(indent, builder).append('}');
-            var10000 = builder;
-            break;
-         case 3:
-            ListTag tag = (ListTag)input;
-            int size = tag.size();
-            indent(indent, builder).append("list").append("[").append(size).append("] [");
-            if (size != 0) {
-               builder.append('\n');
-            }
-
-            for(int i = 0; i < size; ++i) {
-               if (i != 0) {
-                  builder.append(",\n");
-               }
-
-               indent(indent + 1, builder);
-               prettyPrint(builder, tag.get(i), indent + 1, withBinaryBlobs);
-            }
-
-            if (size != 0) {
-               builder.append('\n');
-            }
-
-            indent(indent, builder).append(']');
-            var10000 = builder;
-            break;
-         case 4:
-            IntArrayTag tag = (IntArrayTag)input;
-            int[] array = tag.getAsIntArray();
-            int size = 0;
-
-            for(int i : array) {
-               size = Math.max(size, String.format(Locale.ROOT, "%X", i).length());
-            }
-
-            int length = array.length;
-            indent(indent, builder).append("int[").append(length).append("] {\n");
-            if (!withBinaryBlobs) {
-               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
-            } else {
-               indent(indent + 1, builder);
-
-               for(int i = 0; i < array.length; ++i) {
-                  if (i != 0) {
-                     builder.append(',');
-                  }
-
-                  if (i % 16 == 0 && i / 16 > 0) {
-                     builder.append('\n');
-                     if (i < array.length) {
-                        indent(indent + 1, builder);
-                     }
-                  } else if (i != 0) {
-                     builder.append(' ');
-                  }
-
-                  builder.append(String.format(Locale.ROOT, "0x%0" + size + "X", array[i]));
-               }
-            }
-
-            builder.append('\n');
-            indent(indent, builder).append('}');
-            var10000 = builder;
-            break;
-         case 5:
-            CompoundTag tag = (CompoundTag)input;
-            List<String> keys = Lists.newArrayList(tag.keySet());
-            Collections.sort(keys);
-            indent(indent, builder).append('{');
-            if (builder.length() - builder.lastIndexOf("\n") > 2 * (indent + 1)) {
-               builder.append('\n');
-               indent(indent + 1, builder);
-            }
-
-            int paddingLength = keys.stream().mapToInt(String::length).max().orElse(0);
-            String padding = Strings.repeat(" ", paddingLength);
-
-            for(int i = 0; i < keys.size(); ++i) {
-               if (i != 0) {
-                  builder.append(",\n");
-               }
-
-               String key = (String)keys.get(i);
-               indent(indent + 1, builder).append('"').append(key).append('"').append(padding, 0, padding.length() - key.length()).append(": ");
-               prettyPrint(builder, tag.get(key), indent + 1, withBinaryBlobs);
-            }
-
-            if (!keys.isEmpty()) {
-               builder.append('\n');
-            }
-
-            indent(indent, builder).append('}');
-            var10000 = builder;
-            break;
-         case 6:
-            LongArrayTag tag = (LongArrayTag)input;
-            long[] array = tag.getAsLongArray();
-            long size = 0L;
-
-            for(long i : array) {
-               size = Math.max(size, (long)String.format(Locale.ROOT, "%X", i).length());
-            }
-
-            long length = (long)array.length;
-            indent(indent, builder).append("long[").append(length).append("] {\n");
-            if (!withBinaryBlobs) {
-               indent(indent + 1, builder).append(" // Skipped, supply withBinaryBlobs true");
-            } else {
-               indent(indent + 1, builder);
-
-               for(int i = 0; i < array.length; ++i) {
-                  if (i != 0) {
-                     builder.append(',');
-                  }
-
-                  if (i % 16 == 0 && i / 16 > 0) {
-                     builder.append('\n');
-                     if (i < array.length) {
-                        indent(indent + 1, builder);
-                     }
-                  } else if (i != 0) {
-                     builder.append(' ');
-                  }
-
-                  builder.append(String.format(Locale.ROOT, "0x%0" + size + "X", array[i]));
-               }
-            }
-
-            builder.append('\n');
-            indent(indent, builder).append('}');
-            var10000 = builder;
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
-   private static StringBuilder indent(final int indent, final StringBuilder builder) {
-      int index = builder.lastIndexOf("\n") + 1;
-      int len = builder.length() - index;
-
-      for(int i = 0; i < 2 * indent - len; ++i) {
-         builder.append(' ');
-      }
-
-      return builder;
-   }
-
    public static Component toPrettyComponent(final Tag tag) {
       return (new TextComponentTagVisitor("")).visit(tag);
    }
@@ -399,6 +184,7 @@ public final class NbtUtils {
 
    @VisibleForTesting
    static CompoundTag packStructureTemplate(final CompoundTag snbt) {
+      int templateVersion = getDataVersion(snbt);
       Optional<ListTag> palettes = snbt.getList("palettes");
       ListTag palette;
       if (palettes.isPresent()) {
@@ -407,7 +193,7 @@ public final class NbtUtils {
          palette = snbt.getListOrEmpty("palette");
       }
 
-      ListTag deflatedPalette = (ListTag)palette.compoundStream().map(NbtUtils::packBlockState).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
+      ListTag deflatedPalette = (ListTag)palette.compoundStream().map((compound) -> packBlockState(compound, templateVersion)).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
       snbt.put("palette", deflatedPalette);
       if (palettes.isPresent()) {
          ListTag newPalettes = new ListTag();
@@ -415,7 +201,7 @@ public final class NbtUtils {
             CompoundTag newPalette = new CompoundTag();
 
             for(int i = 0; i < oldPalette.size(); ++i) {
-               newPalette.putString((String)deflatedPalette.getString(i).orElseThrow(), packBlockState((CompoundTag)oldPalette.getCompound(i).orElseThrow()));
+               newPalette.putString((String)deflatedPalette.getString(i).orElseThrow(), packBlockState((CompoundTag)oldPalette.getCompound(i).orElseThrow(), templateVersion));
             }
 
             newPalettes.add(newPalette);
@@ -437,11 +223,12 @@ public final class NbtUtils {
 
    @VisibleForTesting
    static CompoundTag unpackStructureTemplate(final CompoundTag template) {
+      int templateVersion = getDataVersion(template);
       ListTag packedPalette = template.getListOrEmpty("palette");
-      Map<String, Tag> palette = (Map)packedPalette.stream().flatMap((tag) -> tag.asString().stream()).collect(ImmutableMap.toImmutableMap(Function.identity(), NbtUtils::unpackBlockState));
+      Map<String, Tag> palette = (Map)packedPalette.stream().flatMap((tag) -> tag.asString().stream()).collect(ImmutableMap.toImmutableMap(Function.identity(), (compound) -> unpackBlockState(compound, templateVersion)));
       Optional<ListTag> oldPalettes = template.getList("palettes");
       if (oldPalettes.isPresent()) {
-         template.put("palettes", (Tag)((ListTag)oldPalettes.get()).compoundStream().map((oldPalette) -> (ListTag)palette.keySet().stream().map((key) -> (String)oldPalette.getString(key).orElseThrow()).map(NbtUtils::unpackBlockState).collect(Collectors.toCollection(ListTag::new))).collect(Collectors.toCollection(ListTag::new)));
+         template.put("palettes", (Tag)((ListTag)oldPalettes.get()).compoundStream().map((oldPalette) -> (ListTag)palette.keySet().stream().map((key) -> (String)oldPalette.getString(key).orElseThrow()).map((compound) -> unpackBlockState(compound, templateVersion)).collect(Collectors.toCollection(ListTag::new))).collect(Collectors.toCollection(ListTag::new)));
          template.remove("palette");
       } else {
          template.put("palette", (Tag)palette.values().stream().collect(Collectors.toCollection(ListTag::new)));
@@ -477,9 +264,19 @@ public final class NbtUtils {
    }
 
    @VisibleForTesting
-   static String packBlockState(final CompoundTag compound) {
-      StringBuilder builder = new StringBuilder((String)compound.getString("id").orElseThrow());
-      compound.getCompound("properties").ifPresent((properties) -> {
+   static String packBlockState(final CompoundTag compound, final int version) {
+      String idTag;
+      String propertiesTag;
+      if (version >= 5006) {
+         idTag = "id";
+         propertiesTag = "properties";
+      } else {
+         idTag = "Name";
+         propertiesTag = "Properties";
+      }
+
+      StringBuilder builder = new StringBuilder((String)compound.getString(idTag).orElseThrow());
+      compound.getCompound(propertiesTag).ifPresent((properties) -> {
          String keyValues = (String)properties.entrySet().stream().sorted(Entry.comparingByKey()).map((entry) -> {
             String var10000 = (String)entry.getKey();
             return var10000 + ":" + (String)((Tag)entry.getValue()).asString().orElseThrow();
@@ -490,13 +287,13 @@ public final class NbtUtils {
    }
 
    @VisibleForTesting
-   static CompoundTag unpackBlockState(final String compound) {
+   static CompoundTag unpackBlockState(final String compound, final int version) {
       CompoundTag tag = new CompoundTag();
       int openIndex = compound.indexOf(123);
+      CompoundTag properties = new CompoundTag();
       String name;
       if (openIndex >= 0) {
          name = compound.substring(0, openIndex);
-         CompoundTag properties = new CompoundTag();
          if (openIndex + 2 <= compound.length()) {
             String values = compound.substring(openIndex + 1, compound.indexOf(125, openIndex));
             COMMA_SPLITTER.split(values).forEach((keyValue) -> {
@@ -508,13 +305,23 @@ public final class NbtUtils {
                }
 
             });
-            tag.put("properties", properties);
          }
       } else {
          name = compound;
       }
 
-      tag.putString("id", name);
+      if (version >= 5006) {
+         tag.putString("id", name);
+         if (!properties.isEmpty()) {
+            tag.put("properties", properties);
+         }
+      } else {
+         tag.putString("Name", name);
+         if (!properties.isEmpty()) {
+            tag.put("Properties", properties);
+         }
+      }
+
       return tag;
    }
 

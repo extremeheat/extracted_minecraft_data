@@ -17,7 +17,7 @@ import org.lwjgl.sdl.SDL_Rect;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
-public record Monitor(String name, int id, List<VideoMode> videoModes, VideoMode currentMode, int x, int y) {
+public record Monitor(String name, int id, List<VideoMode> videoModes, VideoMode currentMode, int x, int y, int w, int h) {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
 
@@ -62,14 +62,14 @@ public record Monitor(String name, int id, List<VideoMode> videoModes, VideoMode
                      break label177;
                   }
 
-                  SDL_DisplayMode currentMode = SDLVideo.SDL_GetCurrentDisplayMode(id);
+                  SDL_DisplayMode currentMode = SDLVideo.SDL_GetDesktopDisplayMode(id);
                   if (currentMode == null) {
-                     LOGGER.warn("Failed to query current video mode of monitor {}: {}", name, SDLError.SDL_GetError());
+                     LOGGER.warn("Failed to query current desktop video mode of monitor {}: {}", name, SDLError.SDL_GetError());
                      var18 = null;
                      break label178;
                   }
 
-                  var7 = new Monitor(name, id, videoModes.build(), new VideoMode(currentMode), var14.x(), var14.y());
+                  var7 = new Monitor(name, id, videoModes.build(), new VideoMode(currentMode), var14.x(), var14.y(), var14.w(), var14.h());
                } catch (Throwable var13) {
                   if (stack != null) {
                      try {
@@ -113,10 +113,6 @@ public record Monitor(String name, int id, List<VideoMode> videoModes, VideoMode
    private static String queryMonitorName(final int id) {
       String monitorName = (String)Objects.requireNonNullElse(SDLVideo.SDL_GetDisplayName(id), "unknown");
       return monitorName + "[0x" + HEX_FORMAT.toHexDigits(id) + "]";
-   }
-
-   public VideoMode getPreferredVideoMode() {
-      return this.videoModes.isEmpty() ? this.currentMode : (VideoMode)this.videoModes.getFirst();
    }
 
    public VideoMode getPreferredVideoMode(final Optional<VideoMode> expectedMode) {

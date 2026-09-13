@@ -33,7 +33,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
       if (itemStack.is(Items.PLAYER_HEAD)) {
-         Object var4 = context.getOptionalParameter(this.entityTarget.contextParam());
+         Object var4 = context.getOptional(this.entityTarget.contextParam());
          if (var4 instanceof Player) {
             Player dataDonor = (Player)var4;
             itemStack.set(DataComponents.PROFILE, ResolvableProfile.createResolved(dataDonor.getGameProfile()));

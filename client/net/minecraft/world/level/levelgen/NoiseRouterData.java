@@ -75,7 +75,7 @@ public class NoiseRouterData {
       return ResourceKey.create(Registries.DENSITY_FUNCTION, Identifier.withDefaultNamespace(name));
    }
 
-   public static Holder<? extends DensityFunction> bootstrap(final BootstrapContext<DensityFunction> context) {
+   public static void bootstrap(final BootstrapContext<DensityFunction> context) {
       HolderGetter<NormalNoise> noises = context.lookup(Registries.NOISE);
       HolderGetter<DensityFunction> functions = context.lookup(Registries.DENSITY_FUNCTION);
       context.register(ZERO, DensityFunctions.zero());
@@ -109,7 +109,7 @@ public class NoiseRouterData {
       context.register(SPAGHETTI_2D, spaghetti2D(functions, noises));
       context.register(ENTRANCES, entrances(functions, noises));
       context.register(NOODLE, noodle(functions, noises));
-      return context.register(PILLARS, pillars(noises));
+      context.register(PILLARS, pillars(noises));
    }
 
    private static DensityFunction createEndIslands() {
@@ -279,7 +279,7 @@ public class NoiseRouterData {
       DensityFunction distanceFromEdge = DensityFunctions.min(DensityFunctions.constant((float)type.maxY).sub(y), y.sub((float)type.minY));
       DensityFunction edgeRoundoff = DensityFunctions.clampedMap(distanceFromEdge, 0.0F, 20.0F, -0.2F, 0.0F);
       DensityFunction veininess = whenTogglePositive ? toggle : toggle.negate();
-      return DensityFunctions.rangeChoice(baseVeinMask, 0.0F, 1000000.0F, DensityFunctions.rangeChoice(veininess.sub(0.4F).add(edgeRoundoff), 0.0F, 1000000.0F, DensityFunctions.constant(0.7F), noVein), noVein);
+      return DensityFunctions.rangeChoice(y, (float)type.minY, (float)type.maxY, DensityFunctions.rangeChoice(baseVeinMask, 0.0F, 1000000.0F, DensityFunctions.rangeChoice(veininess.sub(0.4F).add(edgeRoundoff), 0.0F, 1000000.0F, DensityFunctions.constant(0.7F), noVein), noVein), noVein);
    }
 
    private static DensityFunction slideOverworld(final boolean isAmplified, final DensityFunction caves) {

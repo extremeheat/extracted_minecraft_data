@@ -23,7 +23,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 public class WaterloggedVegetationPatchFeature extends VegetationPatchFeature {
    public static final MapCodec<WaterloggedVegetationPatchFeature> CODEC = makeCodec(WaterloggedVegetationPatchFeature::new);
 
-   public WaterloggedVegetationPatchFeature(final HolderSet<Block> replaceable, final BlockStateProvider groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {
+   public WaterloggedVegetationPatchFeature(final HolderSet<Block> replaceable, final Holder<BlockStateProvider> groundState, final Holder<PlacedFeature> vegetationFeature, final CaveSurface surface, final IntProvider depth, final float extraBottomBlockChance, final int verticalRange, final float vegetationChance, final IntProvider xzRadius, final float extraEdgeColumnChance) {
       super(replaceable, groundState, vegetationFeature, surface, depth, extraBottomBlockChance, verticalRange, vegetationChance, xzRadius, extraEdgeColumnChance);
    }
 

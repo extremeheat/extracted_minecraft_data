@@ -12,17 +12,17 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 import org.slf4j.Logger;
 
 public class SetItemDamageFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SetItemDamageFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("damage").forGetter((f) -> f.damage), Codec.BOOL.optionalFieldOf("add", false).forGetter((f) -> f.add))).apply(i, SetItemDamageFunction::new));
-   private final Holder<NumberProvider> damage;
+   public static final MapCodec<SetItemDamageFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ContextFloatProviders.CODEC.fieldOf("damage").forGetter((f) -> f.damage), Codec.BOOL.optionalFieldOf("add", false).forGetter((f) -> f.add))).apply(i, SetItemDamageFunction::new));
+   private final Holder<ContextFloatProvider> damage;
    private final boolean add;
 
-   private SetItemDamageFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<NumberProvider> damage, final boolean add) {
+   private SetItemDamageFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<ContextFloatProvider> damage, final boolean add) {
       super(condition);
       this.damage = damage;
       this.add = add;
@@ -41,7 +41,7 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
       if (itemStack.isDamageableItem()) {
          int maxDamage = itemStack.getMaxDamage();
          float base = this.add ? 1.0F - (float)itemStack.getDamageValue() / (float)maxDamage : 0.0F;
-         float pct = 1.0F - Mth.clamp(((NumberProvider)this.damage.value()).getFloat(context) + base, 0.0F, 1.0F);
+         float pct = 1.0F - Mth.clamp(((ContextFloatProvider)this.damage.value()).getFloat(context) + base, 0.0F, 1.0F);
          itemStack.setDamageValue(Mth.floor(pct * (float)maxDamage));
       } else {
          LOGGER.warn("Couldn't set damage of loot item {}", itemStack);
@@ -50,11 +50,11 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
       return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> setDamage(final Holder<NumberProvider> value) {
+   public static LootItemConditionalFunction.Builder<?> setDamage(final Holder<ContextFloatProvider> value) {
       return simpleBuilder((conditions) -> new SetItemDamageFunction(conditions, value, false));
    }
 
-   public static LootItemConditionalFunction.Builder<?> setDamage(final Holder<NumberProvider> value, final boolean add) {
+   public static LootItemConditionalFunction.Builder<?> setDamage(final Holder<ContextFloatProvider> value, final boolean add) {
       return simpleBuilder((conditions) -> new SetItemDamageFunction(conditions, value, add));
    }
 }

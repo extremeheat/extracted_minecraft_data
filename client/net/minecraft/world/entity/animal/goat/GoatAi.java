@@ -71,7 +71,7 @@ public class GoatAi {
    }
 
    private static ActivityData<Goat> initIdleActivity() {
-      return ActivityData.<Goat>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(0, new AnimalMakeLove(EntityTypes.GOAT)), Pair.of(1, new FollowTemptation((s) -> 1.25F)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.RAM_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT)));
+      return ActivityData.<Goat>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(0, new AnimalMakeLove(EntityTypes.GOAT)), Pair.of(1, new FollowTemptation((s) -> 1.25F)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of(Pair.of(MemoryModuleType.RAM_COOLDOWN_TICKS, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryStatus.VALUE_PRESENT)));
    }
 
    private static ActivityData<Goat> initLongJumpActivity() {

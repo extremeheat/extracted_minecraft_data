@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -18,11 +19,11 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
    protected final float probability;
    protected final int exclusionRadiusXZ;
    protected final int exclusionRadiusY;
-   protected final BlockStateProvider blockProvider;
+   protected final Holder<BlockStateProvider> blockProvider;
    protected final int requiredEmptyBlocks;
    protected final List<Direction> directions;
 
-   public AttachedToLeavesDecorator(final float probability, final int exclusionRadiusXZ, final int exclusionRadiusY, final BlockStateProvider blockProvider, final int requiredEmptyBlocks, final List<Direction> directions) {
+   public AttachedToLeavesDecorator(final float probability, final int exclusionRadiusXZ, final int exclusionRadiusY, final Holder<BlockStateProvider> blockProvider, final int requiredEmptyBlocks, final List<Direction> directions) {
       super();
       this.probability = probability;
       this.exclusionRadiusXZ = exclusionRadiusXZ;
@@ -47,7 +48,7 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
                propaguleBlacklist.add(inPos.immutable());
             }
 
-            context.setBlock(placementPos, this.blockProvider.getState(context.level(), random, placementPos));
+            context.setBlock(placementPos, ((BlockStateProvider)this.blockProvider.value()).getState(context.level(), random, placementPos));
          }
       }
 

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.dto.GuardedSerializer;
 import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -62,7 +63,7 @@ public class RealmsPersistence {
 
    public static class RealmsPersistenceData implements ReflectionBasedSerialization {
       @SerializedName("newsLink")
-      public @Nullable String newsLink;
+      public @Nullable URI newsLink;
       @SerializedName("hasUnreadNews")
       public boolean hasUnreadNews;
 

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.nio.IntBuffer;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.sdl.SDLStdinc;
 import org.lwjgl.sdl.SDLVideo;
 import org.slf4j.Logger;
 
@@ -17,8 +18,12 @@ public class MonitorManager {
       super();
       IntBuffer displays = SDLVideo.SDL_GetDisplays();
       if (displays != null) {
-         for(int i = 0; i < displays.limit(); ++i) {
-            this.addDisplay(displays.get(i));
+         try {
+            for(int i = 0; i < displays.limit(); ++i) {
+               this.addDisplay(displays.get(i));
+            }
+         } finally {
+            SDLStdinc.SDL_free(displays);
          }
       }
 
@@ -37,6 +42,15 @@ public class MonitorManager {
       RenderSystem.assertOnRenderThread();
       Monitor monitor = (Monitor)this.monitors.remove(id);
       LOGGER.debug("Monitor {} disconnected. Current monitors: {}", monitor, this.monitors);
+   }
+
+   public void onDisplayModeChanged(final int id) {
+      RenderSystem.assertOnRenderThread();
+      Monitor monitor = this.addDisplay(id);
+      if (monitor != null) {
+         LOGGER.debug("Monitor {} mode changed. Current monitors: {}", monitor, this.monitors);
+      }
+
    }
 
    private @Nullable Monitor addDisplay(final int id) {

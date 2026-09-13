@@ -139,8 +139,8 @@ public class WorldBorderRenderer implements AutoCloseable {
    }
 
    public void render(final WorldBorderRenderState state, final RenderPass renderPass, final Vec3 cameraPos, final double renderDistance) {
-      List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
-      if (!(((WorldBorderRenderState.DistancePerDirection)distancesPerDirection.getFirst()).distance() >= renderDistance)) {
+      if (!(state.alpha <= 0.0) && this.texture != null) {
+         List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
          RenderPipeline renderPipeline = RenderPipelines.WORLD_BORDER;
          GpuBuffer indexBuffer = this.indices.getBuffer();
          GpuBufferSlice dynamicTransforms = this.prepareDynamicTransforms(state, cameraPos);
@@ -151,8 +151,8 @@ public class WorldBorderRenderer implements AutoCloseable {
    }
 
    public void renderOit(final WorldBorderRenderState state, final Vec3 cameraPos, final double renderDistance, final OitStage stage, final RenderPass renderPass) {
-      List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
-      if (!(((WorldBorderRenderState.DistancePerDirection)distancesPerDirection.getFirst()).distance() >= renderDistance)) {
+      if (!(state.alpha <= 0.0) && this.texture != null) {
+         List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
          GpuBuffer indexBuffer = this.indices.getBuffer();
          GpuBufferSlice dynamicTransforms = this.prepareDynamicTransforms(state, cameraPos);
          RenderPipeline renderPipeline = RenderPipelines.OIT_WORLD_BORDER.getPipeline(stage);

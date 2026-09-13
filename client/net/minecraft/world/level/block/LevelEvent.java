@@ -75,6 +75,8 @@ public class LevelEvent {
    public static final int PARTICLES_SHULKER_TELEPORT = 2016;
    public static final int PARTICLES_CONSUME_EFFECT_TELEPORT = 2017;
    public static final int PARTICLES_ENDERMAN_TELEPORT = 2018;
+   public static final int PARTICLES_DESTROY_PROGRESS = 2019;
+   public static final int PARTICLES_AND_SOUND_DESTROY_PROGRESS = 2020;
    public static final int ANIMATION_END_GATEWAY_SPAWN = 3000;
    public static final int ANIMATION_DRAGON_SUMMON_ROAR = 3001;
    public static final int PARTICLES_ELECTRIC_SPARK = 3002;

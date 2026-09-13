@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens;
 
+import com.mojang.blaze3d.Blaze3D;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.URI;
 import java.util.function.UnaryOperator;
@@ -10,7 +11,6 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class PrivacyConfirmLinkScreen extends ConfirmLinkScreen {
@@ -18,9 +18,9 @@ public class PrivacyConfirmLinkScreen extends ConfirmLinkScreen {
    private static final Component MESSAGE = Component.translatable("gui.privacy_link.message");
    private final Component urlComponent;
 
-   public PrivacyConfirmLinkScreen(final BooleanConsumer callback, final String url) {
+   public PrivacyConfirmLinkScreen(final BooleanConsumer callback, final URI url) {
       super(callback, TITLE, MESSAGE, url, CommonComponents.GUI_CANCEL, true);
-      this.urlComponent = Component.literal(url).withStyle(ChatFormatting.WHITE);
+      this.urlComponent = Component.literal(url.toString()).withStyle(ChatFormatting.WHITE);
    }
 
    protected void init() {
@@ -40,14 +40,10 @@ public class PrivacyConfirmLinkScreen extends ConfirmLinkScreen {
    }
 
    public static void confirmLinkNow(final @Nullable Screen parentScreen, final URI uri) {
-      confirmLinkNow(parentScreen, uri.toString());
-   }
-
-   public static void confirmLinkNow(final @Nullable Screen parentScreen, final String uri) {
       Minecraft minecraft = Minecraft.getInstance();
       minecraft.gui.setScreen(new PrivacyConfirmLinkScreen((shouldOpen) -> {
          if (shouldOpen) {
-            Util.getPlatform().openUri(uri);
+            Blaze3D.openUri(uri);
          }
 
          minecraft.gui.setScreen(parentScreen);

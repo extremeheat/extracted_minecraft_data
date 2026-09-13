@@ -176,11 +176,13 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Executor
          if (ignored != null) {
             ignored.close();
          }
-
       } catch (Exception e) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), e);
-         throw e;
+         if (isNonRecoverable(e)) {
+            throw e;
+         }
       }
+
    }
 
    public List<MetricSampler> profiledMetrics() {

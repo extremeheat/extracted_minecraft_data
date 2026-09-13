@@ -88,6 +88,7 @@ import net.minecraft.util.datafix.fixes.CustomModelDataExpandFix;
 import net.minecraft.util.datafix.fixes.DayTimeToClockFix;
 import net.minecraft.util.datafix.fixes.DebugProfileLookingAtSplitFix;
 import net.minecraft.util.datafix.fixes.DebugProfileOverlayReferenceFix;
+import net.minecraft.util.datafix.fixes.DebugProfileRenameEntryFix;
 import net.minecraft.util.datafix.fixes.DecoratedPotFieldRenameFix;
 import net.minecraft.util.datafix.fixes.DropChancesFormatFix;
 import net.minecraft.util.datafix.fixes.DropInvalidSignDataFix;
@@ -274,6 +275,7 @@ import net.minecraft.util.datafix.fixes.TrappedChestBlockEntityFix;
 import net.minecraft.util.datafix.fixes.TrialSpawnerConfigFix;
 import net.minecraft.util.datafix.fixes.TrialSpawnerConfigInRegistryFix;
 import net.minecraft.util.datafix.fixes.TridentAnimationFix;
+import net.minecraft.util.datafix.fixes.UnfilledBuriedTreasureMapFix;
 import net.minecraft.util.datafix.fixes.UnflattenTextComponentFix;
 import net.minecraft.util.datafix.fixes.VariantRenameFix;
 import net.minecraft.util.datafix.fixes.VillagerDataFix;
@@ -915,9 +917,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var321 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var321);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var321::contains));
+      Set var323 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var323);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var323::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1226,6 +1228,8 @@ public class DataFixers {
       fixerUpper.addFixer(new AddNewChoices(v4997, "Added Poplar Boat and Poplar Chest Boat", References.ENTITY));
       Schema v5000 = fixerUpper.addSchema(5000, V5000::new);
       fixerUpper.addFixer(new AddNewChoices(v5000, "Added Cushion", References.ENTITY));
+      Schema v5001 = fixerUpper.addSchema(5001, SAME_NAMESPACED);
+      fixerUpper.addFixer(new DebugProfileRenameEntryFix(v5001, "minecraft:post_effect", "minecraft:post_effects"));
       Schema v5002 = fixerUpper.addSchema(5002, SAME_NAMESPACED);
       fixerUpper.addFixer(new SignsOpFlagFix(v5002));
       Schema v5006 = fixerUpper.addSchema(5006, SAME_NAMESPACED);
@@ -1243,6 +1247,8 @@ public class DataFixers {
       fixerUpper.addFixer(new MergeTerrainChunkStatusFix(v5013));
       Schema v5014 = fixerUpper.addSchema(5014, SAME_NAMESPACED);
       fixerUpper.addFixer(new RemoveBlockTransformerComponentFix(v5014));
+      Schema v5016 = fixerUpper.addSchema(5016, SAME_NAMESPACED);
+      fixerUpper.addFixer(new UnfilledBuriedTreasureMapFix(v5016));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

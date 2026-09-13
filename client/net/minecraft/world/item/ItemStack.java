@@ -323,12 +323,16 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       if (player != null && !player.getAbilities().mayBuild && !this.canPlaceOnBlockInAdventureMode(new BlockInWorld(context.getLevel(), pos, false))) {
          return InteractionResult.PASS;
       } else {
+         ItemStack stackBeforeUse = this.copy();
          Item usedItem = this.getItem();
          InteractionResult result = usedItem.useOn(context);
          if (player != null && result instanceof InteractionResult.Success) {
             InteractionResult.Success success = (InteractionResult.Success)result;
             if (success.wasItemInteraction()) {
                player.awardStat(Stats.ITEM_USED.get(usedItem));
+               ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
+               ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
+               return success.heldItemTransformedTo(resultItemStack);
             }
          }
 
@@ -345,7 +349,9 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
       InteractionResult result = this.getItem().use(level, player, hand);
       if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
-         return success.heldItemTransformedTo(success.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(player, stackBeforeUse) : success.heldItemTransformedTo().applyAfterUseComponentSideEffects(player, stackBeforeUse));
+         ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
+         ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
+         return success.heldItemTransformedTo(resultItemStack);
       } else {
          return result;
       }

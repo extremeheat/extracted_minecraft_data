@@ -55,6 +55,10 @@ public class MerchantMenu extends AbstractContainerMenu {
       super.slotsChanged(container);
    }
 
+   public void updateSellItem() {
+      this.tradeContainer.updateSellItem();
+   }
+
    public void setSelectionHint(final int hint) {
       this.tradeContainer.setSelectionHint(hint);
    }

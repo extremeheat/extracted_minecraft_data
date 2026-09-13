@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 
 public class OitRenderPassProvider {
    public OitRenderPassProvider() {
@@ -40,7 +39,7 @@ public class OitRenderPassProvider {
       RenderPassDescriptor.Builder descriptor = RenderPassDescriptor.builder(() -> "OIT Transmittance for " + (String)label.get()).withDepthAttachment(params.depthTextureView, OptionalDouble.empty());
 
       for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-         descriptor.withColorAttachment(OutputTarget.TRANSMITTANCE_TARGETS[i].getRenderTarget().getColorTextureView(), Optional.empty());
+         descriptor.withColorAttachment(params.transmittanceTargetViews[i], Optional.empty());
       }
 
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
@@ -57,16 +56,29 @@ public class OitRenderPassProvider {
       RenderSystem.bindDefaultUniforms(renderPass);
 
       for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-         renderPass.setUniform("Coeff" + i, OutputTarget.TRANSMITTANCE_TARGETS[i].getRenderTarget().getColorTextureView(), nearestSampler);
+         renderPass.setUniform("Coeff" + i, params.transmittanceTargetViews[i], nearestSampler);
       }
 
       renderPass.setUniform("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);
       return renderPass;
    }
 
-   public static record Parameters(GpuTextureView depthBoundsTargetView, GpuTextureView accumulateTargetView, GpuTextureView depthTextureView) {
-      public Parameters {
+   public static final class Parameters {
+      private GpuTextureView depthBoundsTargetView;
+      private final GpuTextureView[] transmittanceTargetViews;
+      private final GpuTextureView accumulateTargetView;
+      private final GpuTextureView depthTextureView;
+
+      public Parameters(final GpuTextureView depthBoundsTargetView, final GpuTextureView[] transmittanceTargetViews, final GpuTextureView accumulateTargetView, final GpuTextureView depthTextureView) {
          super();
+         this.depthBoundsTargetView = depthBoundsTargetView;
+         this.transmittanceTargetViews = transmittanceTargetViews;
+         this.accumulateTargetView = accumulateTargetView;
+         this.depthTextureView = depthTextureView;
+      }
+
+      public void setDepthBoundsTargetView(final GpuTextureView depthBoundsTargetView) {
+         this.depthBoundsTargetView = depthBoundsTargetView;
       }
    }
 }

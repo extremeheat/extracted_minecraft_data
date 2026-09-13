@@ -170,7 +170,7 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
 
    public void enableScissor(final int x, final int y, final int width, final int height) {
       if (width > 0 && height > 0) {
-         if (x >= this.renderArea.x() && y >= this.renderArea.y() && x + width <= this.renderArea.x() + this.renderArea.width() && y + height <= this.renderArea.height()) {
+         if (x >= this.renderArea.x() && y >= this.renderArea.y() && x + width <= this.renderArea.x() + this.renderArea.width() && y + height <= this.renderArea.y() + this.renderArea.height()) {
             this.backend.enableScissor(x, y, width, height);
          } else {
             throw new IllegalArgumentException("Scissor at " + x + ", " + y + " with size " + width + "x" + height + " is out of bounds for render area " + String.valueOf(this.renderArea));

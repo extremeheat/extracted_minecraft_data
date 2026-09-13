@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record ProjectedRandomPatchySquare(BlockStateProvider block, BlockPredicate projectThrough, IntProvider size, int maxProjectionHeight) implements Feature {
+public record ProjectedRandomPatchySquare(Holder<BlockStateProvider> block, BlockPredicate projectThrough, IntProvider size, int maxProjectionHeight) implements Feature {
    public static final MapCodec<ProjectedRandomPatchySquare> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block").forGetter(ProjectedRandomPatchySquare::block), BlockPredicate.CODEC.fieldOf("project_through").forGetter(ProjectedRandomPatchySquare::projectThrough), IntProviders.codec(1, 16).fieldOf("size").forGetter(ProjectedRandomPatchySquare::size), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("max_projection_height").forGetter(ProjectedRandomPatchySquare::maxProjectionHeight)).apply(i, ProjectedRandomPatchySquare::new));
 
    public ProjectedRandomPatchySquare {
@@ -47,7 +48,7 @@ public record ProjectedRandomPatchySquare(BlockStateProvider block, BlockPredica
                   }
                }
 
-               BlockState state = this.block.getOptionalState(level, random, basePos);
+               BlockState state = ((BlockStateProvider)this.block.value()).getOptionalState(level, random, basePos);
                if (state != null) {
                   level.setBlock(basePos, state, 2);
                }

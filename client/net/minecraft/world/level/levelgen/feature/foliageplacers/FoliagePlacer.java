@@ -13,6 +13,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.material.Fluids;
 
 public abstract class FoliagePlacer {
@@ -118,7 +119,7 @@ public abstract class FoliagePlacer {
    protected static boolean tryPlaceLeaf(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final BlockPos pos) {
       boolean isPersistent = level.isStateAtPosition(pos, (state) -> (Boolean)state.getValueOrElse(BlockStateProperties.PERSISTENT, false));
       if (!isPersistent && TreeFeature.validTreePos(level, pos)) {
-         BlockState foliageState = tree.foliageProvider().getState(level, random, pos);
+         BlockState foliageState = ((BlockStateProvider)tree.foliageProvider().value()).getState(level, random, pos);
          if (foliageState.hasProperty(BlockStateProperties.WATERLOGGED)) {
             foliageState = (BlockState)foliageState.setValue(BlockStateProperties.WATERLOGGED, level.isFluidAtPosition(pos, (fluidState) -> fluidState.isSourceOfType(Fluids.WATER)));
          }

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.reporting;
 
-import java.net.URI;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.Optionull;
@@ -54,7 +53,7 @@ public class ReportReasonSelectionScreen extends Screen {
       this.reasonSelectionList.setSelected(selectedEntry);
       content.addChild(SpacerElement.height(this.descriptionHeight()));
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      footer.addChild(Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.REPORTING_HELP)).build());
+      footer.addChild(Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, CommonLinks.REPORTING_HELP)).build());
       footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> {
          ReasonSelectionList.Entry selected = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
          if (selected != null) {

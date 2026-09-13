@@ -47,6 +47,7 @@ import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
@@ -110,6 +111,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -953,43 +955,59 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       }
    }
 
-   public void addBreakingBlockEffect(final BlockPos pos, final Direction direction) {
+   public void addBreakingBlockEffects(final BlockPos pos, final Direction direction, final boolean playSound) {
       BlockState blockState = this.getBlockState(pos);
-      if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.shouldSpawnTerrainParticles()) {
-         int x = pos.getX();
-         int y = pos.getY();
-         int z = pos.getZ();
-         float r = 0.1F;
-         AABB shape = blockState.getShape(this, pos).bounds();
-         double xp = (double)x + this.random.nextDouble() * (shape.maxX - shape.minX - 0.20000000298023224) + 0.10000000149011612 + shape.minX;
-         double yp = (double)y + this.random.nextDouble() * (shape.maxY - shape.minY - 0.20000000298023224) + 0.10000000149011612 + shape.minY;
-         double zp = (double)z + this.random.nextDouble() * (shape.maxZ - shape.minZ - 0.20000000298023224) + 0.10000000149011612 + shape.minZ;
-         if (direction == Direction.DOWN) {
-            yp = (double)y + shape.minY - 0.10000000149011612;
+      if (!blockState.isAir()) {
+         if (playSound) {
+            this.playBreakingSound(pos, blockState);
          }
 
-         if (direction == Direction.UP) {
-            yp = (double)y + shape.maxY + 0.10000000149011612;
+         if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.shouldSpawnTerrainParticles()) {
+            this.addBreakingParticles(pos, direction, blockState);
          }
 
-         if (direction == Direction.NORTH) {
-            zp = (double)z + shape.minZ - 0.10000000149011612;
-         }
-
-         if (direction == Direction.SOUTH) {
-            zp = (double)z + shape.maxZ + 0.10000000149011612;
-         }
-
-         if (direction == Direction.WEST) {
-            xp = (double)x + shape.minX - 0.10000000149011612;
-         }
-
-         if (direction == Direction.EAST) {
-            xp = (double)x + shape.maxX + 0.10000000149011612;
-         }
-
-         this.minecraft.particleEngine.add((new TerrainParticle(this, xp, yp, zp, 0.0, 0.0, 0.0, blockState, pos)).setPower(0.2F).scale(0.6F));
       }
+   }
+
+   private void addBreakingParticles(final BlockPos pos, final Direction direction, final BlockState blockState) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
+      float r = 0.1F;
+      AABB shape = blockState.getShape(this, pos).bounds();
+      double xp = (double)x + this.random.nextDouble() * (shape.maxX - shape.minX - 0.20000000298023224) + 0.10000000149011612 + shape.minX;
+      double yp = (double)y + this.random.nextDouble() * (shape.maxY - shape.minY - 0.20000000298023224) + 0.10000000149011612 + shape.minY;
+      double zp = (double)z + this.random.nextDouble() * (shape.maxZ - shape.minZ - 0.20000000298023224) + 0.10000000149011612 + shape.minZ;
+      if (direction == Direction.DOWN) {
+         yp = (double)y + shape.minY - 0.10000000149011612;
+      }
+
+      if (direction == Direction.UP) {
+         yp = (double)y + shape.maxY + 0.10000000149011612;
+      }
+
+      if (direction == Direction.NORTH) {
+         zp = (double)z + shape.minZ - 0.10000000149011612;
+      }
+
+      if (direction == Direction.SOUTH) {
+         zp = (double)z + shape.maxZ + 0.10000000149011612;
+      }
+
+      if (direction == Direction.WEST) {
+         xp = (double)x + shape.minX - 0.10000000149011612;
+      }
+
+      if (direction == Direction.EAST) {
+         xp = (double)x + shape.maxX + 0.10000000149011612;
+      }
+
+      this.minecraft.particleEngine.add((new TerrainParticle(this, xp, yp, zp, 0.0, 0.0, 0.0, blockState, pos)).setPower(0.2F).scale(0.6F));
+   }
+
+   private void playBreakingSound(final BlockPos pos, final BlockState blockState) {
+      SoundType soundType = blockState.getSoundType();
+      this.minecraft.getSoundManager().play(new SimpleSoundInstance(soundType.getHitSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 8.0F, soundType.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), pos));
    }
 
    public void setServerSimulationDistance(final int serverSimulationDistance) {

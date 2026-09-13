@@ -42,7 +42,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       } else if (!this.matchesState(level.getBlockState(pos))) {
          return false;
       } else {
-         if (this.nbt.isPresent() || !this.components.isEmpty()) {
+         if (this.willMatchBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (!this.matchesBlockEntity(level, blockEntity)) {
                return false;
@@ -51,6 +51,10 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
 
          return true;
       }
+   }
+
+   public boolean willMatchBlockEntity() {
+      return this.nbt.isPresent() || !this.components.isEmpty();
    }
 
    public boolean matches(final BlockInWorld blockInWorld) {

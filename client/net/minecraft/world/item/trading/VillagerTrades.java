@@ -51,10 +51,7 @@ import net.minecraft.world.level.storage.loot.functions.SetRandomPotionFunction;
 import net.minecraft.world.level.storage.loot.functions.SetStewEffectFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
-import net.minecraft.world.level.storage.loot.providers.number.BinomialDistributionGenerator;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.Sum;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> FARMER_1_WHEAT_EMERALD = resourceKey("farmer/1/wheat_emerald");
@@ -348,7 +345,7 @@ public class VillagerTrades {
       super();
    }
 
-   public static Holder<VillagerTrade> bootstrap(final BootstrapContext<VillagerTrade> context) {
+   public static void bootstrap(final BootstrapContext<VillagerTrade> context) {
       HolderGetter<Item> items = context.lookup(Registries.ITEM);
       HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
       HolderGetter<Structure> structures = context.lookup(Registries.STRUCTURE);
@@ -369,7 +366,7 @@ public class VillagerTrades {
       register(context, FARMER_3_EMERALD_COOKIE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.COOKIE, 18), 12, 10, 0.05F).build());
       register(context, FARMER_3_MELON_EMERALD, VillagerTrade.builder(new TradeCost(Items.MELON, 4), new ItemStackTemplate(Items.EMERALD), 12, 20, 0.05F).build());
       register(context, FARMER_4_EMERALD_CAKE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.CAKE), 12, 15, 0.05F).build());
-      register(context, FARMER_4_EMERALD_SUSPICIOUS_STEW, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SUSPICIOUS_STEW), 12, 15, 0.05F).addModifier((new SetStewEffectFunction.Builder()).withEffect(MobEffects.NIGHT_VISION, ConstantValue.exactly(5.0F)).withEffect(MobEffects.JUMP_BOOST, ConstantValue.exactly(8.0F)).withEffect(MobEffects.WEAKNESS, ConstantValue.exactly(7.0F)).withEffect(MobEffects.BLINDNESS, ConstantValue.exactly(6.0F)).withEffect(MobEffects.POISON, ConstantValue.exactly(14.0F)).withEffect(MobEffects.SATURATION, ConstantValue.exactly(7.0F))).build());
+      register(context, FARMER_4_EMERALD_SUSPICIOUS_STEW, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SUSPICIOUS_STEW), 12, 15, 0.05F).addModifier((new SetStewEffectFunction.Builder()).withEffect(MobEffects.NIGHT_VISION, 5).withEffect(MobEffects.JUMP_BOOST, 8).withEffect(MobEffects.WEAKNESS, 7).withEffect(MobEffects.BLINDNESS, 6).withEffect(MobEffects.POISON, 14).withEffect(MobEffects.SATURATION, 7)).build());
       register(context, FARMER_5_EMERALD_GOLDEN_CARROT, VillagerTrade.builder(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.GOLDEN_CARROT, 3), 12, 30, 0.05F).build());
       register(context, FARMER_5_EMERALD_GLISTENING_MELON_SLICE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 4), new ItemStackTemplate(Items.GLISTERING_MELON_SLICE, 3), 12, 30, 0.05F).build());
       register(context, FISHERMAN_1_STRING_EMERALD, VillagerTrade.builder(new TradeCost(Items.STRING, 20), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F).build());
@@ -513,7 +510,7 @@ public class VillagerTrades {
       registerMasonLevelFourTerracotta(context);
       register(context, MASON_5_EMERALD_QUARTZ_PILLAR, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.QUARTZ_PILLAR), 12, 30, 0.05F).build());
       register(context, MASON_5_EMERALD_QUARTZ_BLOCK, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.QUARTZ_BLOCK), 12, 30, 0.05F).build());
-      context.register(WANDERING_TRADER_WATER_BOTTLE_EMERALD, VillagerTrade.builder(new TradeCost(Items.POTION.builtInRegistryHolder(), ConstantValue.exactly(1.0F), DataComponentExactPredicate.expect(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER))), new ItemStackTemplate(Items.EMERALD), 2, 1, 0.05F).build());
+      context.register(WANDERING_TRADER_WATER_BOTTLE_EMERALD, VillagerTrade.builder(new TradeCost(Items.POTION.builtInRegistryHolder(), ContextIntProviders.exactly(1), DataComponentExactPredicate.expect(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER))), new ItemStackTemplate(Items.EMERALD), 2, 1, 0.05F).build());
       context.register(WANDERING_TRADER_WATER_BUCKET_EMERALD, VillagerTrade.builder(new TradeCost(Items.WATER_BUCKET, 1), new ItemStackTemplate(Items.EMERALD, 2), 2, 1, 0.05F).build());
       context.register(WANDERING_TRADER_MILK_BUCKET_EMERALD, VillagerTrade.builder(new TradeCost(Items.MILK_BUCKET, 1), new ItemStackTemplate(Items.EMERALD, 2), 2, 1, 0.05F).build());
       context.register(WANDERING_TRADER_FERMENTED_SPIDER_EYE_EMERALD, VillagerTrade.builder(new TradeCost(Items.FERMENTED_SPIDER_EYE, 1), new ItemStackTemplate(Items.EMERALD, 3), 2, 1, 0.05F).build());
@@ -570,7 +567,7 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_PALE_MOSS_BLOCK, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.PALE_MOSS_BLOCK, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_FIREFLY_BUSH, VillagerTrade.builder(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.FIREFLY_BUSH), 12, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_NAME_TAG, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.NAME_TAG), 5, 1, 0.05F).build());
-      return context.register(WANDERING_TRADER_EMERALD_SHELF_MUSHROOM, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SHELF_MUSHROOM, 3), 12, 1, 0.05F).build());
+      context.register(WANDERING_TRADER_EMERALD_SHELF_MUSHROOM, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SHELF_MUSHROOM, 3), 12, 1, 0.05F).build());
    }
 
    private static VillagerTrade createWanderingTraderCoralBlockSell(final Item item) {
@@ -802,7 +799,7 @@ public class VillagerTrades {
    }
 
    private static LootItemFunction.Builder addRandomDye() {
-      return SetRandomDyesFunction.withCount(Sum.sum(ConstantValue.exactly(1.0F), Holder.direct(new BinomialDistributionGenerator(ConstantValue.exactly(2.0F), ConstantValue.exactly(0.75F)))));
+      return SetRandomDyesFunction.withCount(ContextIntProviders.add(ContextIntProviders.exactly(1), ContextIntProviders.binomial(2, 0.75F)));
    }
 
    public static List<Holder<LootItemFunction>> enchantedBook(final HolderGetter<Item> items, final HolderSet<Enchantment> options) {
@@ -812,17 +809,17 @@ public class VillagerTrades {
 
    public static List<Holder<LootItemFunction>> enchantedBook(final HolderGetter<Item> items, final Holder<Enchantment> enchantment, final int level) {
       ItemPredicate.Builder bookWithExactLevelEnchants = (new ItemPredicate.Builder()).of(items, Items.ENCHANTED_BOOK).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.STORED_ENCHANTMENTS, EnchantmentsPredicate.storedEnchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.exactly(level))))).build());
-      return discardItemIfItsNot((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ConstantValue.exactly((float)level)), bookWithExactLevelEnchants);
+      return discardItemIfItsNot((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ContextIntProviders.exactly(level)), bookWithExactLevelEnchants);
    }
 
    public static List<Holder<LootItemFunction>> enchantedItem(final HolderGetter<Item> items, final HolderSet<Enchantment> options, final Item expectedItem) {
       ItemPredicate.Builder itemWithAnyEnchants = (new ItemPredicate.Builder()).of(items, expectedItem).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.ANY)))).build());
-      return discardItemIfItsNot((new EnchantWithLevelsFunction.Builder(UniformGenerator.between(5.0F, 19.0F))).withOptions(options).includeAdditionalCostComponent(), itemWithAnyEnchants);
+      return discardItemIfItsNot((new EnchantWithLevelsFunction.Builder(ContextIntProviders.between(5, 19))).withOptions(options).includeAdditionalCostComponent(), itemWithAnyEnchants);
    }
 
    public static List<Holder<LootItemFunction>> enchantedItem(final HolderGetter<Item> items, final Holder<Enchantment> enchantment, final int level, final Item expectedItem) {
       ItemPredicate.Builder itemWithExactLevelEnchants = (new ItemPredicate.Builder()).of(items, expectedItem).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.exactly(level))))).build());
-      return discardItemIfItsNot((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ConstantValue.exactly((float)level)), itemWithExactLevelEnchants);
+      return discardItemIfItsNot((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ContextIntProviders.exactly(level)), itemWithExactLevelEnchants);
    }
 
    public static ItemPredicate.Builder anyValidMap() {

@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
@@ -143,6 +144,7 @@ public class SectionOcclusionGraph {
          sectionsToPropagateFrom.add(section);
       }
 
+      Minecraft.getInstance().levelRenderer.removeTransientBlocksInSection(section.getSectionNode(), section.getSectionMesh().getCompileTaskStartTime());
    }
 
    public void update(final CameraRenderState camera, final int fov, final ChunkLoadingRenderState chunkLoadingRenderState) {

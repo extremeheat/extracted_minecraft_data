@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.telemetry;
 
-import java.net.URI;
+import com.mojang.blaze3d.Blaze3D;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -16,7 +16,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class TelemetryInfoScreen extends Screen {
@@ -106,15 +105,15 @@ public class TelemetryInfoScreen extends Screen {
    }
 
    private void openPrivacyStatementLink(final Button button) {
-      ConfirmLinkScreen.confirmLinkNow(this, (URI)CommonLinks.PRIVACY_STATEMENT);
+      ConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_STATEMENT);
    }
 
    private void openFeedbackLink(final Button button) {
-      ConfirmLinkScreen.confirmLinkNow(this, (URI)CommonLinks.RELEASE_FEEDBACK);
+      ConfirmLinkScreen.confirmLinkNow(this, CommonLinks.RELEASE_FEEDBACK);
    }
 
    private void openDataFolder(final Button button) {
-      Util.getPlatform().openPath(this.minecraft.getTelemetryManager().getLogDirectory());
+      Blaze3D.openPath(this.minecraft.getTelemetryManager().getLogDirectory());
    }
 
    public void onClose() {

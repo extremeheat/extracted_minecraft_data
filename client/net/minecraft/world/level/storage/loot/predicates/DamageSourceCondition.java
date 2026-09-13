@@ -27,8 +27,8 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
    }
 
    public boolean test(final LootContext context) {
-      DamageSource damageSource = (DamageSource)context.getOptionalParameter(LootContextParams.DAMAGE_SOURCE);
-      Vec3 pos = (Vec3)context.getOptionalParameter(LootContextParams.ORIGIN);
+      DamageSource damageSource = (DamageSource)context.getOptional(LootContextParams.DAMAGE_SOURCE);
+      Vec3 pos = (Vec3)context.getOptional(LootContextParams.ORIGIN);
       if (pos != null && damageSource != null) {
          return this.predicate.isEmpty() || ((DamageSourcePredicate)this.predicate.get()).matches(context.getLevel(), pos, damageSource);
       } else {

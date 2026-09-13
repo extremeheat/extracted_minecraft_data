@@ -2,6 +2,7 @@ package com.mojang.realmsclient.gui;
 
 import com.mojang.realmsclient.gui.screens.RealmsPendingInvitesScreen;
 import com.mojang.realmsclient.util.RealmsPersistence;
+import java.net.URI;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -37,33 +37,29 @@ public final class RealmsHeader {
    private final Button joinRealmButton;
    private final NotificationButton pendingInvitesButton;
    private final NotificationButton newsButton;
-   private volatile @Nullable String newsLink;
+   private volatile @Nullable URI newsLink;
 
    public RealmsHeader(final Screen screen, final Runnable openJoinRealmScreen) {
       super();
       this.screen = screen;
       this.pendingInvitesButton = new NotificationButton(INVITES_TITLE, INVITE_SPRITE, (var2) -> this.minecraft.gui.setScreen(new RealmsPendingInvitesScreen(screen, INVITES_TITLE)), (Component)null);
       this.newsButton = new NotificationButton(NEWS_TITLE, NEWS_SPRITE, (var1) -> this.openNews(), NEWS_TITLE);
-      this.joinRealmButton = Button.builder(JOIN_REALM_TEXT, (button) -> openJoinRealmScreen.run()).width(this.minecraft.font.width((FormattedText)JOIN_REALM_TEXT) + 16).build();
+      this.joinRealmButton = Button.builder(JOIN_REALM_TEXT, (button) -> openJoinRealmScreen.run()).build();
    }
 
    public Layout createLayout(final ImageWidget logo, final int headerHeight, final int buttonSpacing) {
       int sideCellWidth = (308 - logo.getWidth()) / 2;
+      this.joinRealmButton.setWidth(Math.min(this.minecraft.font.width((FormattedText)JOIN_REALM_TEXT) + 16, sideCellWidth));
       LinearLayout buttons = LinearLayout.horizontal().spacing(buttonSpacing);
       buttons.defaultCellSetting().alignVerticallyMiddle();
       buttons.addChild(this.pendingInvitesButton);
       buttons.addChild(this.newsButton);
       LinearLayout centeredContent = LinearLayout.horizontal();
       centeredContent.defaultCellSetting().alignVerticallyMiddle();
-      centeredContent.addChild(SpacerElement.width(sideCellWidth));
+      ((FrameLayout)centeredContent.addChild(new FrameLayout(sideCellWidth, headerHeight))).addChild(this.joinRealmButton, (Consumer)(LayoutSettings::alignHorizontallyLeft));
       centeredContent.addChild(logo, (Consumer)(LayoutSettings::alignHorizontallyCenter));
       ((FrameLayout)centeredContent.addChild(new FrameLayout(sideCellWidth, headerHeight))).addChild(buttons, (Consumer)(LayoutSettings::alignHorizontallyRight));
-      LinearLayout header = LinearLayout.horizontal().spacing(buttonSpacing);
-      header.defaultCellSetting().alignVerticallyMiddle();
-      header.addChild(SpacerElement.width(this.joinRealmButton.getWidth()));
-      header.addChild(centeredContent);
-      header.addChild(this.joinRealmButton);
-      return header;
+      return centeredContent;
    }
 
    public void setPendingInvites(final int numberOfPendingInvites) {
@@ -71,7 +67,7 @@ public final class RealmsHeader {
       this.pendingInvitesButton.setTooltip(numberOfPendingInvites == 0 ? NO_PENDING_INVITES_TOOLTIP : PENDING_INVITES_TOOLTIP);
    }
 
-   public void setNews(final @Nullable String newsLink, final boolean hasUnreadNews) {
+   public void setNews(final @Nullable URI newsLink, final boolean hasUnreadNews) {
       this.newsLink = newsLink;
       this.newsButton.setNotificationCount(hasUnreadNews ? 2147483647 : 0);
    }
@@ -81,7 +77,7 @@ public final class RealmsHeader {
    }
 
    private void openNews() {
-      String newsLink = this.newsLink;
+      URI newsLink = this.newsLink;
       if (newsLink != null) {
          ConfirmLinkScreen.confirmLinkNow(this.screen, newsLink);
          if (this.newsButton.notificationCount() != 0) {

@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -115,22 +117,22 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean mayReplace;
          boolean shiftKeyDown;
          boolean var10000;
-         label106: {
+         label101: {
             blockState = level.getBlockState(pos);
             block = blockState.getBlock();
             mayReplace = blockState.canBeReplaced(this.content);
             shiftKeyDown = user != null && user.isShiftKeyDown();
             if (!mayReplace) {
-               label103: {
+               label98: {
                   if (block instanceof LiquidBlockContainer) {
                      LiquidBlockContainer container = (LiquidBlockContainer)block;
                      if (container.canPlaceLiquid(user, level, pos, blockState, this.content)) {
-                        break label103;
+                        break label98;
                      }
                   }
 
                   var10000 = false;
-                  break label106;
+                  break label101;
                }
             }
 
@@ -139,40 +141,42 @@ public class BucketItem extends Item implements DispensibleContainerItem {
 
          boolean placeLiquid = var10000;
          boolean canPlaceFluidInsideBlock = blockState.isAir() || placeLiquid && (!shiftKeyDown || hitResult == null);
-         if (!canPlaceFluidInsideBlock) {
-            return hitResult != null && this.emptyContents(user, level, hitResult.getBlockPos().relative(hitResult.getDirection()), (BlockHitResult)null);
-         } else if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && this.content.is(FluidTags.WATER)) {
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
-            RandomSource random = level.getRandom();
-            level.playSound(user, (BlockPos)pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
+         if (canPlaceFluidInsideBlock) {
+            if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && this.content.is(FluidTags.WATER)) {
+               int x = pos.getX();
+               int y = pos.getY();
+               int z = pos.getZ();
+               RandomSource random = level.getRandom();
+               level.playSound(user, (BlockPos)pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
+               if (level instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)level;
+                  serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, (double)x, (double)y, (double)z, 8, 1.0, 1.0, 1.0, 0.0, ClientboundLevelParticlesPacket.RandomizationType.ALTERNATIVE);
+               }
 
-            for(int i = 0; i < 8; ++i) {
-               level.addParticle(ParticleTypes.LARGE_SMOKE, (double)((float)x + random.nextFloat()), (double)((float)y + random.nextFloat()), (double)((float)z + random.nextFloat()), 0.0, 0.0, 0.0);
-            }
+               return true;
+            } else {
+               if (block instanceof LiquidBlockContainer) {
+                  LiquidBlockContainer container = (LiquidBlockContainer)block;
+                  if (this.content == Fluids.WATER) {
+                     container.placeLiquid(level, pos, blockState, flowingFluid.getSource(false));
+                     this.playEmptySound(user, level, pos);
+                     return true;
+                  }
+               }
 
-            return true;
-         } else {
-            if (block instanceof LiquidBlockContainer) {
-               LiquidBlockContainer container = (LiquidBlockContainer)block;
-               if (this.content == Fluids.WATER) {
-                  container.placeLiquid(level, pos, blockState, flowingFluid.getSource(false));
+               if (!level.isClientSide() && mayReplace && !blockState.liquid()) {
+                  level.destroyBlock(pos, true);
+               }
+
+               if (!level.setBlock(pos, this.content.defaultFluidState().createLegacyBlock(), 11) && !blockState.getFluidState().isSource()) {
+                  return false;
+               } else {
                   this.playEmptySound(user, level, pos);
                   return true;
                }
             }
-
-            if (!level.isClientSide() && mayReplace && !blockState.liquid()) {
-               level.destroyBlock(pos, true);
-            }
-
-            if (!level.setBlock(pos, this.content.defaultFluidState().createLegacyBlock(), 11) && !blockState.getFluidState().isSource()) {
-               return false;
-            } else {
-               this.playEmptySound(user, level, pos);
-               return true;
-            }
+         } else {
+            return hitResult != null && this.emptyContents(user, level, hitResult.getBlockPos().relative(hitResult.getDirection()), (BlockHitResult)null);
          }
       }
    }

@@ -25,7 +25,8 @@ public class LootItemConditionTypes {
       Registry.register(registry, (String)"location_check", LocationCheck.MAP_CODEC);
       Registry.register(registry, (String)"weather_check", WeatherCheck.MAP_CODEC);
       Registry.register(registry, (String)"time_check", TimeCheck.MAP_CODEC);
-      Registry.register(registry, (String)"value_check", ValueCheckCondition.MAP_CODEC);
+      Registry.register(registry, (String)"int_value_check", IntValueCheck.MAP_CODEC);
+      Registry.register(registry, (String)"float_value_check", FloatValueCheck.MAP_CODEC);
       Registry.register(registry, (String)"enchantment_active_check", EnchantmentActiveCheck.MAP_CODEC);
       return (MapCodec)Registry.register(registry, (String)"environment_attribute_check", EnvironmentAttributeCheck.MAP_CODEC);
    }

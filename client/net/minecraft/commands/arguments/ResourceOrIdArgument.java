@@ -40,8 +40,10 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.jspecify.annotations.Nullable;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
@@ -108,11 +110,19 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return getResource(context, name);
    }
 
-   public static NumberProviderArgument numberProvider(final CommandBuildContext context) {
-      return new NumberProviderArgument(context);
+   public static ContextFloatProviderArgument floatProvider(final CommandBuildContext context) {
+      return new ContextFloatProviderArgument(context);
    }
 
-   public static Holder<NumberProvider> getNumberProvider(final CommandContext<CommandSourceStack> context, final String name) {
+   public static Holder<ContextFloatProvider> getFloatProvider(final CommandContext<CommandSourceStack> context, final String name) {
+      return getResource(context, name);
+   }
+
+   public static ContextIntProviderArgument intProvider(final CommandBuildContext context) {
+      return new ContextIntProviderArgument(context);
+   }
+
+   public static Holder<ContextIntProvider> getIntProvider(final CommandContext<CommandSourceStack> context, final String name) {
       return getResource(context, name);
    }
 
@@ -175,9 +185,15 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       }
    }
 
-   public static class NumberProviderArgument extends ResourceOrIdArgument<NumberProvider> {
-      protected NumberProviderArgument(final CommandBuildContext context) {
-         super(context, Registries.NUMBER_PROVIDER, NumberProviders.DIRECT_CODEC);
+   public static class ContextFloatProviderArgument extends ResourceOrIdArgument<ContextFloatProvider> {
+      protected ContextFloatProviderArgument(final CommandBuildContext context) {
+         super(context, Registries.CONTEXT_FLOAT_PROVIDER, ContextFloatProviders.DIRECT_CODEC);
+      }
+   }
+
+   public static class ContextIntProviderArgument extends ResourceOrIdArgument<ContextIntProvider> {
+      protected ContextIntProviderArgument(final CommandBuildContext context) {
+         super(context, Registries.CONTEXT_INT_PROVIDER, ContextIntProviders.DIRECT_CODEC);
       }
    }
 

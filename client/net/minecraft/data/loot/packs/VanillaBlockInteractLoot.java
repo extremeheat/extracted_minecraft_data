@@ -16,8 +16,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class VanillaBlockInteractLoot implements LootTableSubProvider {
    private final LootTableSubProvider.Context output;
@@ -30,10 +29,10 @@ public class VanillaBlockInteractLoot implements LootTableSubProvider {
    }
 
    public void run() {
-      this.output.accept(BuiltInLootTables.HARVEST_BEEHIVE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.HONEYCOMB).apply(SetItemCountFunction.setCount(ConstantValue.exactly(3.0F))))));
-      this.output.accept(BuiltInLootTables.HARVEST_CAVE_VINE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.GLOW_BERRIES))));
-      this.output.accept(BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)((UniformContainerBase.Builder)LootItem.lootTableItem(Items.SWEET_BERRIES).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F)))).when(MatchBlock.blockMatches(this.blocks, Blocks.SWEET_BERRY_BUSH, StatePropertiesPredicate.Builder.properties().hasProperty(SweetBerryBushBlock.AGE, 3))))).withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.SWEET_BERRIES).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))));
-      this.output.accept(BuiltInLootTables.CARVE_PUMPKIN, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.PUMPKIN_SEEDS).apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F))))));
-      this.output.accept(BuiltInLootTables.TILL_ROOTED_DIRT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.HANGING_ROOTS).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F))))));
+      this.output.accept(BuiltInLootTables.HARVEST_BEEHIVE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.HONEYCOMB).apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(3))))));
+      this.output.accept(BuiltInLootTables.HARVEST_CAVE_VINE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(Items.GLOW_BERRIES))));
+      this.output.accept(BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)((UniformContainerBase.Builder)LootItem.lootTableItem(Items.SWEET_BERRIES).apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))).when(MatchBlock.blockMatches(this.blocks, Blocks.SWEET_BERRY_BUSH, StatePropertiesPredicate.Builder.properties().hasProperty(SweetBerryBushBlock.AGE, 3))))).withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.SWEET_BERRIES).apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2))))));
+      this.output.accept(BuiltInLootTables.CARVE_PUMPKIN, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.PUMPKIN_SEEDS).apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(4))))));
+      this.output.accept(BuiltInLootTables.TILL_ROOTED_DIRT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.HANGING_ROOTS).apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1))))));
    }
 }

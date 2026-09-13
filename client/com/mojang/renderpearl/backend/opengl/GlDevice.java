@@ -18,6 +18,7 @@ import com.mojang.renderpearl.backend.api.CommandEncoderBackend;
 import com.mojang.renderpearl.backend.api.GpuDeviceBackend;
 import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.sdl.SDLError;
 import org.lwjgl.sdl.SDLVideo;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
 class GlDevice implements GpuDeviceBackend {
@@ -52,6 +54,7 @@ class GlDevice implements GpuDeviceBackend {
    protected static boolean USE_GL_ARB_shader_draw_parameters = true;
    private final long initialWindowHandle;
    private final long glContext;
+   private final GlHeuristics heuristics;
    private final GlCommandEncoder encoder;
    private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
@@ -79,6 +82,39 @@ class GlDevice implements GpuDeviceBackend {
             this.makeCurrent(this.initialWindowHandle);
 
             try {
+               MemoryStack stack = MemoryStack.stackPush();
+
+               try {
+                  IntBuffer majorVersion = stack.callocInt(1);
+                  IntBuffer minorVersion = stack.callocInt(1);
+                  SDLVideo.SDL_GL_GetAttribute(17, majorVersion);
+                  SDLVideo.SDL_GL_GetAttribute(18, minorVersion);
+                  if (majorVersion.get(0) < 3 || majorVersion.get(0) == 3 && minorVersion.get(0) < 3) {
+                     throw new BackendCreationException("Failed to create OpenGL 3.3 context, got OpenGL " + majorVersion.get(0) + "." + minorVersion.get(0), BackendCreationException.Reason.OPENGL_MISSING);
+                  }
+
+                  long secondWindow = backend.createWindow("Minecraft - RenderPearl OpenGL Hidden Test Window", 320, 480, 2147614728L);
+                  if (secondWindow == 0L) {
+                     throw new BackendCreationException("Failed to create window for OpenGL after creating context: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.OPENGL_MISSING);
+                  }
+
+                  SDLVideo.SDL_DestroyWindow(secondWindow);
+               } catch (Throwable var11) {
+                  if (stack != null) {
+                     try {
+                        stack.close();
+                     } catch (Throwable var10) {
+                        var11.addSuppressed(var10);
+                     }
+                  }
+
+                  throw var11;
+               }
+
+               if (stack != null) {
+                  stack.close();
+               }
+
                GLCapabilities capabilities = GL.createCapabilities();
                Set<String> enabledExtensions = new HashSet();
                int maxSupportedAnisotropy;
@@ -89,11 +125,11 @@ class GlDevice implements GpuDeviceBackend {
                   maxSupportedAnisotropy = 1;
                }
 
-               GlHeuristics heuristics = new GlHeuristics(GlStateManager._getString(7937), GlStateManager._getString(7936));
+               this.heuristics = new GlHeuristics(GlStateManager._getString(7937), GlStateManager._getString(7936));
                this.debugLog = GlDebug.enableDebugCallback(debugOptions.logLevel(), debugOptions.synchronousLogs(), enabledExtensions);
                this.debugLabels = GlDebugLabel.create(capabilities, debugOptions.useLabels(), enabledExtensions);
-               this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions, heuristics.couldBeIntelGen7() || heuristics.isNvidia());
-               this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, heuristics);
+               this.bufferStorage = BufferStorage.create(capabilities, enabledExtensions, this.heuristics.couldBeIntelGen7() || this.heuristics.isNvidia());
+               this.directStateAccess = DirectStateAccess.create(capabilities, enabledExtensions, this.heuristics);
                this.vertexArraySource = VertexArray.createSource(capabilities, enabledExtensions);
                GL33C.glEnable(34895);
                GL33C.glEnable(34370);
@@ -117,7 +153,7 @@ class GlDevice implements GpuDeviceBackend {
                   enabledExtensions.add("GL_ARB_base_instance");
                }
 
-               this.deviceInfo = heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
+               this.deviceInfo = this.heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
                this.encoder = new GlCommandEncoder(this);
                this.recompiler = new GlPipelineRecompiler(this.debugLabels, this.deviceInfo.features().shaderDrawParameters());
             } catch (Throwable throwable) {
@@ -127,6 +163,10 @@ class GlDevice implements GpuDeviceBackend {
             }
          }
       }
+   }
+
+   public GlHeuristics heuristics() {
+      return this.heuristics;
    }
 
    public GlDebugLabel debugLabels() {
@@ -206,7 +246,7 @@ class GlDevice implements GpuDeviceBackend {
 
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final long size) {
       GlStateManager.clearGlErrors();
-      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, usage, size);
+      GlBuffer buffer = this.bufferStorage.createBuffer(this.heuristics, this.directStateAccess, usage, size);
       int error = GlStateManager._getError();
       if (error == 1285) {
          throw new GpuOutOfMemoryException("Could not allocate buffer of " + size + " for " + String.valueOf(label));
@@ -221,7 +261,7 @@ class GlDevice implements GpuDeviceBackend {
    public GpuBuffer createBuffer(final @Nullable Supplier<String> label, final @GpuBuffer.Usage int usage, final ByteBuffer data) {
       GlStateManager.clearGlErrors();
       long size = (long)data.remaining();
-      GlBuffer buffer = this.bufferStorage.createBuffer(this.directStateAccess, usage, data);
+      GlBuffer buffer = this.bufferStorage.createBuffer(this.heuristics, this.directStateAccess, usage, data);
       int error = GlStateManager._getError();
       if (error == 1285) {
          throw new GpuOutOfMemoryException("Could not allocate buffer of " + size + " for " + String.valueOf(label));

@@ -71,6 +71,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    private static final Component PORT_INFO_TEXT;
    private static final Component PORT_UNAVAILABLE;
    private static final Component INVALID_PORT;
+   private static final Component DIFFICULTY_LOCK_TITLE;
    private static final Component APPLY_CHANGES;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private @Nullable ScrollableLayout scrollArea;
@@ -123,8 +124,17 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       }
 
       this.applyChanges = Button.builder(APPLY_CHANGES, (var2) -> {
-         this.applyChanges(singleplayerServer);
-         this.minecraft.gui.setScreen(this.lastScreen);
+         if (this.wantedDifficultyLocked != this.initialDifficultyLocked) {
+            Component difficultyDisplayName = this.wantedDifficulty != null ? this.wantedDifficulty.getDisplayName() : this.level.getDifficulty().getDisplayName();
+            this.minecraft.gui.setScreen((new PopupScreen.Builder(this, DIFFICULTY_LOCK_TITLE)).addMessage(Component.translatable("difficulty.lock.question", difficultyDisplayName)).addButton(CommonComponents.GUI_YES, (var2x) -> {
+               this.applyChanges(singleplayerServer);
+               this.minecraft.gui.setScreen(this.lastScreen);
+            }).addButton(CommonComponents.GUI_NO, (var1) -> this.minecraft.gui.setScreen(this)).build());
+         } else {
+            this.applyChanges(singleplayerServer);
+            this.minecraft.gui.setScreen(this.lastScreen);
+         }
+
       }).build();
       this.applyChanges.active = false;
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
@@ -188,7 +198,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).withTooltip((var0) -> ALLOW_COMMANDS_TOOLTIP).create(ALLOW_COMMANDS, (var2, allowCommands) -> {
          this.wantedAllowCommands = allowCommands;
          this.updateGuestCommandAccessButton(singleplayerServer);
-         this.updatePermissionDependentButtons(singleplayerServer, allowCommands);
+         this.updatePermissionDependentButtons(singleplayerServer, allowCommands, false);
          this.updateApplyChangesActiveState();
       });
       if (singleplayerServer.isDemo()) {
@@ -357,6 +367,10 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       }
 
       if (singleplayerServer != null) {
+         if (this.wantedAllowCommands != null && this.wantedAllowCommands != this.initialAllowCommands) {
+            singleplayerServer.setWorldAllowCommands(this.wantedAllowCommands);
+         }
+
          if (this.wantedForceGameMode != null && this.wantedForceGameMode != this.initialForceGameMode) {
             singleplayerServer.setForceGameMode(this.wantedForceGameMode);
          }
@@ -367,10 +381,6 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
          if (this.wantedPersonalGameMode != null && this.wantedPersonalGameMode != this.initialPersonalGameMode) {
             singleplayerServer.setPersonalGameType(this.wantedPersonalGameMode);
-         }
-
-         if (this.wantedAllowCommands != null && this.wantedAllowCommands != this.initialAllowCommands) {
-            singleplayerServer.setWorldAllowCommands(this.wantedAllowCommands);
          }
 
          if (this.wantedGuestCommandAccess != null && this.wantedGuestCommandAccess != this.initialGuestCommandAccess) {
@@ -396,6 +406,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       this.scrollArea.setMaxHeight(this.layout.getContentHeight());
       this.scrollArea.setMinHeight(this.layout.getContentHeight());
       this.layout.arrangeElements();
+      this.scrollArea.setPosition(this.width / 2 - this.scrollArea.getWidth() / 2, this.layout.getHeaderHeight());
    }
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
@@ -415,7 +426,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
-      this.updatePermissionDependentButtons(singleplayerServer, hasGamemasterPermission);
+      this.updatePermissionDependentButtons(singleplayerServer, hasGamemasterPermission, true);
       if (!hasGamemasterPermission && !this.minecraft.hasSingleplayerServer()) {
          this.minecraft.gui.setScreen(this.lastScreen);
          Screen var4 = this.minecraft.gui.screen();
@@ -427,18 +438,22 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
    }
 
-   private void updatePermissionDependentButtons(final @Nullable IntegratedServer singleplayerServer, final boolean allowCommands) {
+   private void updatePermissionDependentButtons(final @Nullable IntegratedServer singleplayerServer, final boolean allowCommands, final boolean affectGameRulesButton) {
       if (!allowCommands) {
          if (this.defaultGameModeButton != null && this.personalGameModeButton != null && this.initialDefaultGameMode != null) {
             this.wantedDefaultGameMode = this.initialDefaultGameMode;
             this.defaultGameModeButton.setValue(this.wantedDefaultGameMode);
+            this.wantedPersonalGameMode = this.wantedDefaultGameMode;
             this.personalGameModeButton.setValue(this.wantedDefaultGameMode);
          }
       } else if (this.personalGameModeButton != null && this.wantedPersonalGameMode != null) {
          this.personalGameModeButton.setValue(this.wantedPersonalGameMode);
       }
 
-      this.updateButton(this.gameRulesButton, singleplayerServer, (Tooltip)null, GAMERULES_DISABLED_TOOLTIP, GAMERULES_DISABLED_HARDCORE_TOOLTIP);
+      if (affectGameRulesButton) {
+         this.updateButton(this.gameRulesButton, singleplayerServer, (Tooltip)null, GAMERULES_DISABLED_TOOLTIP, GAMERULES_DISABLED_HARDCORE_TOOLTIP);
+      }
+
       this.updateButton(this.defaultGameModeButton, singleplayerServer, DEFAULT_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
       this.updateButton(this.personalGameModeButton, singleplayerServer, PERSONAL_GAME_MODE_TOOLTIP, GAME_MODE_DISABLED_OPERATOR_TOOLTIP, GAME_MODE_DISABLED_HARDCORE_TOOLTIP);
       this.difficultyButtons.refresh(this.minecraft, this);
@@ -594,6 +609,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       PORT_INFO_TEXT = Component.translatable("lanServer.port");
       PORT_UNAVAILABLE = Component.translatable("lanServer.port.unavailable", 1024, 65535);
       INVALID_PORT = Component.translatable("lanServer.port.invalid", 1024, 65535);
+      DIFFICULTY_LOCK_TITLE = Component.translatable("difficulty.lock.title");
       APPLY_CHANGES = Component.translatable("menu.multiplayerOptions.applyChanges");
    }
 
@@ -602,7 +618,6 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       private static final Tooltip DIFFICULTY_DISABLED_HARDCORE_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.difficulty.disabled.hardcore.tooltip"));
       private static final Tooltip DIFFICULTY_DISABLED_LOCKED_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.difficulty.disabled.locked.tooltip"));
       private static final Tooltip DIFFICULTY_DISABLED_OPERATOR_TOOLTIP = Tooltip.create(Component.translatable("options.worldOptions.difficulty.disabled.operator.tooltip"));
-      private static final Component DIFFICULTY_LOCK_TITLE = Component.translatable("difficulty.lock.title");
 
       private DifficultyButtons {
          super();
@@ -618,24 +633,12 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
          screen.wantedDifficultyLocked = isDifficultyLocked(level);
          screen.initialDifficultyLocked = screen.wantedDifficultyLocked;
          LockIconButton lockButton = new LockIconButton(0, 0, (button) -> {
-            Component difficultyDisplayName = screen.wantedDifficulty != null ? screen.wantedDifficulty.getDisplayName() : level.getDifficulty().getDisplayName();
-            minecraft.gui.setScreen((new PopupScreen.Builder(screen, DIFFICULTY_LOCK_TITLE)).addMessage(Component.translatable("difficulty.lock.question", difficultyDisplayName)).addButton(CommonComponents.GUI_YES, (var3) -> {
-               if (button instanceof LockIconButton lockIconButton) {
-                  lockIconButton.setLocked(true);
-               }
+            if (button instanceof LockIconButton lockIconButton) {
+               lockIconButton.setLocked(!screen.wantedDifficultyLocked);
+            }
 
-               screen.wantedDifficultyLocked = true;
-               screen.updateApplyChangesActiveState();
-               minecraft.gui.setScreen(screen);
-            }).addButton(CommonComponents.GUI_NO, (var3) -> {
-               if (button instanceof LockIconButton lockIconButton) {
-                  lockIconButton.setLocked(false);
-               }
-
-               screen.wantedDifficultyLocked = false;
-               screen.updateApplyChangesActiveState();
-               minecraft.gui.setScreen(screen);
-            }).build());
+            screen.wantedDifficultyLocked = !screen.wantedDifficultyLocked;
+            screen.updateApplyChangesActiveState();
          });
          difficultyButton.setWidth(difficultyButton.getWidth() - lockButton.getWidth());
          lockButton.setLocked(isDifficultyLocked(level));

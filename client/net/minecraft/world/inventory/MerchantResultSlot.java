@@ -41,6 +41,17 @@ public class MerchantResultSlot extends Slot {
       this.removeCount = 0;
    }
 
+   public boolean mayPickup(final Player player) {
+      MerchantOffer offer = this.slots.getActiveOffer();
+      if (offer == null) {
+         return false;
+      } else {
+         ItemStack buyA = this.slots.getItem(0);
+         ItemStack buyB = this.slots.getItem(1);
+         return (offer.satisfiedBy(buyA, buyB) || offer.satisfiedBy(buyB, buyA)) && super.mayPickup(player);
+      }
+   }
+
    public void onTake(final Player player, final ItemStack carried) {
       this.checkTakeAchievements(carried);
       MerchantOffer offer = this.slots.getActiveOffer();

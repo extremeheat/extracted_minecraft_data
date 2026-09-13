@@ -218,14 +218,14 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             graphics.requestCursor(CursorTypes.IBEAM);
          }
 
-         if (this.capturesInput()) {
-            TextInputManager var10000 = Minecraft.getInstance().textInputManager();
-            int var30 = cursorX + 1;
-            Objects.requireNonNull(this.font);
-            var10000.setTextInputArea(cursorX, cursorY, var30, cursorY + 9 + 1);
-         }
-
-         if (this.preeditOverlay != null) {
+         if (this.preeditOverlay == null) {
+            if (this.capturesInput()) {
+               TextInputManager var10000 = Minecraft.getInstance().textInputManager();
+               int var30 = cursorX + 1;
+               Objects.requireNonNull(this.font);
+               var10000.setTextInputArea(cursorX, cursorY, var30, cursorY + 9 + 1);
+            }
+         } else {
             this.preeditOverlay.updateInputPosition(cursorX, cursorY);
             graphics.setPreeditOverlay(this.preeditOverlay);
          }

@@ -41,7 +41,8 @@ import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.server.commands.LootContextSources;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 
 public class DataCommands {
    private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(Component.translatable("commands.data.merge.failed"));
@@ -155,17 +156,20 @@ public class DataCommands {
                nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> sourceProvider.wrap(Commands.literal("string"), (s) -> s.executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(getSingletonSource(c, sourceProvider), (str) -> str))).then(((RequiredArgumentBuilder)Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> str)))).then(((RequiredArgumentBuilder)Commands.argument("start", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start")))))).then(Commands.argument("end", IntegerArgumentType.integer()).executes((c) -> manipulateData(c, targetProvider, manipulator, stringifyTagList(resolveSourcePath(c, sourceProvider), (str) -> substring(str, IntegerArgumentType.getInteger(c, "start"), IntegerArgumentType.getInteger(c, "end"))))))))));
             }
 
-            nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> LootContextSources.addContextSources(Commands.literal("compute"), (contextDecorator) -> ((RequiredArgumentBuilder)Commands.argument("provider", ResourceOrIdArgument.numberProvider(buildContext)).executes((c) -> {
+            nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> LootContextSources.addContextSources(Commands.literal("compute"), (contextDecorator, output) -> {
+                  output.accept(Commands.literal("float").then(Commands.argument("provider", ResourceOrIdArgument.floatProvider(buildContext)).executes((c) -> {
                      LootContext lootContext = contextDecorator.createContext(c);
-                     Holder<NumberProvider> provider = ResourceOrIdArgument.getNumberProvider(c, "provider");
-                     float value = ((NumberProvider)provider.value()).getFloat(lootContext);
+                     Holder<ContextFloatProvider> provider = ResourceOrIdArgument.getFloatProvider(c, "provider");
+                     float value = ((ContextFloatProvider)provider.value()).getFloat(lootContext);
                      return manipulateData(c, targetProvider, manipulator, List.of(FloatTag.valueOf(value)));
-                  })).then(Commands.literal("integer").executes((c) -> {
+                  })));
+                  output.accept(Commands.literal("integer").then(Commands.argument("provider", ResourceOrIdArgument.intProvider(buildContext)).executes((c) -> {
                      LootContext lootContext = contextDecorator.createContext(c);
-                     Holder<NumberProvider> provider = ResourceOrIdArgument.getNumberProvider(c, "provider");
-                     int value = ((NumberProvider)provider.value()).getInt(lootContext);
+                     Holder<ContextIntProvider> provider = ResourceOrIdArgument.getIntProvider(c, "provider");
+                     int value = ((ContextIntProvider)provider.value()).getInt(lootContext);
                      return manipulateData(c, targetProvider, manipulator, List.of(IntTag.valueOf(value)));
-                  }))));
+                  })));
+               }));
             nodeSupplier.accept(targetPathNode, (DataManipulatorDecorator)(manipulator) -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes((c) -> {
                   List<Tag> source = Collections.singletonList(NbtTagArgument.getNbtTag(c, "value"));
                   return manipulateData(c, targetProvider, manipulator, source);

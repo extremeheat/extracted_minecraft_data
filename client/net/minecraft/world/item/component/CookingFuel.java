@@ -5,15 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.ResolvableNumber;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
-public record CookingFuel(ResolvableNumber burnTime, ResolvableNumber speedMultiplier) {
-   public static final Codec<CookingFuel> CODEC = RecordCodecBuilder.create((i) -> i.group(ResolvableNumber.CODEC.fieldOf("burn_time").forGetter(CookingFuel::burnTime), ResolvableNumber.CODEC.fieldOf("speed_multiplier").forGetter(CookingFuel::speedMultiplier)).apply(i, CookingFuel::new));
+public record CookingFuel(ResolvableInt burnTime, ResolvableFloat speedMultiplier) {
+   public static final Codec<CookingFuel> CODEC = RecordCodecBuilder.create((i) -> i.group(ResolvableInt.CODEC.fieldOf("burn_time").forGetter(CookingFuel::burnTime), ResolvableFloat.CODEC.fieldOf("speed_multiplier").forGetter(CookingFuel::speedMultiplier)).apply(i, CookingFuel::new));
    public static final StreamCodec<ByteBuf, CookingFuel> STREAM_CODEC;
 
-   public CookingFuel(final ResourceKey<NumberProvider> burnTime, final ResourceKey<NumberProvider> speedMultiplier) {
-      this(ResolvableNumber.fromKey(burnTime), ResolvableNumber.fromKey(speedMultiplier));
+   public CookingFuel(final ResourceKey<ContextIntProvider> burnTime, final ResourceKey<ContextFloatProvider> speedMultiplier) {
+      this(ResolvableInt.fromKey(burnTime), ResolvableFloat.fromKey(speedMultiplier));
    }
 
    public CookingFuel {
@@ -21,6 +23,6 @@ public record CookingFuel(ResolvableNumber burnTime, ResolvableNumber speedMulti
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ResolvableNumber.STREAM_CODEC, CookingFuel::burnTime, ResolvableNumber.STREAM_CODEC, CookingFuel::speedMultiplier, CookingFuel::new);
+      STREAM_CODEC = StreamCodec.composite(ResolvableInt.STREAM_CODEC, CookingFuel::burnTime, ResolvableFloat.STREAM_CODEC, CookingFuel::speedMultiplier, CookingFuel::new);
    }
 }

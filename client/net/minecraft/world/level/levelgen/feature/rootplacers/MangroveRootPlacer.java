@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
@@ -22,7 +23,7 @@ public class MangroveRootPlacer extends RootPlacer {
    public static final MapCodec<MangroveRootPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> rootPlacerParts(i).and(MangroveRootPlacement.CODEC.fieldOf("mangrove_root_placement").forGetter((c) -> c.mangroveRootPlacement)).apply(i, MangroveRootPlacer::new));
    private final MangroveRootPlacement mangroveRootPlacement;
 
-   public MangroveRootPlacer(final IntProvider trunkOffsetY, final BlockStateProvider rootProvider, final Optional<AboveRootPlacement> aboveRootPlacement, final MangroveRootPlacement mangroveRootPlacement) {
+   public MangroveRootPlacer(final IntProvider trunkOffsetY, final Holder<BlockStateProvider> rootProvider, final Optional<AboveRootPlacement> aboveRootPlacement, final MangroveRootPlacement mangroveRootPlacement) {
       super(trunkOffsetY, rootProvider, aboveRootPlacement);
       this.mangroveRootPlacement = mangroveRootPlacement;
    }
@@ -100,7 +101,7 @@ public class MangroveRootPlacer extends RootPlacer {
 
    protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
       if (level.isStateAtPosition(pos, (s) -> s.is(this.mangroveRootPlacement.muddyRootsIn()))) {
-         BlockState muddyRoots = this.mangroveRootPlacement.muddyRootsProvider().getState(level, random, pos);
+         BlockState muddyRoots = ((BlockStateProvider)this.mangroveRootPlacement.muddyRootsProvider().value()).getState(level, random, pos);
          rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, muddyRoots));
       } else {
          super.placeRoot(level, rootSetter, random, pos, tree);

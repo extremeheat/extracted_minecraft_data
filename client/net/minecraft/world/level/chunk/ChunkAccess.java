@@ -364,8 +364,8 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
       return this.inhabitedTime;
    }
 
-   public void incrementInhabitedTime(final long inhabitedTimeDelta) {
-      this.inhabitedTime += inhabitedTimeDelta;
+   public void incrementInhabitedTime() {
+      ++this.inhabitedTime;
    }
 
    public void setInhabitedTime(final long inhabitedTime) {

@@ -22,7 +22,7 @@ public interface Validatable {
       optional.ifPresent((v) -> v.validate(context.forField(name)));
    }
 
-   private static void validateHolder(final ValidationContext context, final Holder<? extends Validatable> holder) {
+   static void validateHolder(final ValidationContext context, final Holder<? extends Validatable> holder) {
       ValidationContext elementContext;
       if (holder instanceof Holder.Reference<?> reference) {
          ResourceKey<?> id = reference.key();

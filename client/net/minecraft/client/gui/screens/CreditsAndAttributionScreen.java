@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import java.net.URI;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -28,8 +27,8 @@ public class CreditsAndAttributionScreen extends Screen {
       LinearLayout content = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(8);
       content.defaultCellSetting().alignHorizontallyCenter();
       content.addChild(Button.builder(CREDITS_BUTTON, (button) -> this.openCreditsScreen()).width(210).build());
-      content.addChild(Button.builder(ATTRIBUTION_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ATTRIBUTION)).width(210).build());
-      content.addChild(Button.builder(LICENSES_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.LICENSES)).width(210).build());
+      content.addChild(Button.builder(ATTRIBUTION_BUTTON, ConfirmLinkScreen.confirmLink(this, CommonLinks.ATTRIBUTION)).width(210).build());
+      content.addChild(Button.builder(LICENSES_BUTTON, ConfirmLinkScreen.confirmLink(this, CommonLinks.LICENSES)).width(210).build());
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
       this.layout.arrangeElements();
       this.layout.visitWidgets(this::addRenderableWidget);

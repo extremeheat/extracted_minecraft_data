@@ -10,18 +10,17 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
-public record TradeCost(Holder<Item> item, Holder<NumberProvider> count, DataComponentExactPredicate components) implements Validatable {
-   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), NumberProviders.CODEC.optionalFieldOf("count", ConstantValue.exactly(1.0F)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
+public record TradeCost(Holder<Item> item, Holder<ContextIntProvider> count, DataComponentExactPredicate components) implements Validatable {
+   public static final Codec<TradeCost> CODEC = RecordCodecBuilder.create((i) -> i.group(Item.CODEC.fieldOf("id").forGetter(TradeCost::item), ContextIntProviders.CODEC.optionalFieldOf("count", ContextIntProviders.exactly(1)).forGetter(TradeCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(TradeCost::components)).apply(i, TradeCost::new));
 
    public TradeCost(final ItemLike item, final int count) {
-      this(item.asItem().builtInRegistryHolder(), ConstantValue.exactly((float)count), DataComponentExactPredicate.EMPTY);
+      this(item.asItem().builtInRegistryHolder(), ContextIntProviders.exactly(count), DataComponentExactPredicate.EMPTY);
    }
 
-   public TradeCost(final ItemLike item, final Holder<NumberProvider> count) {
+   public TradeCost(final ItemLike item, final Holder<ContextIntProvider> count) {
       this(item.asItem().builtInRegistryHolder(), count, DataComponentExactPredicate.EMPTY);
    }
 
@@ -30,7 +29,7 @@ public record TradeCost(Holder<Item> item, Holder<NumberProvider> count, DataCom
    }
 
    public ItemCost toItemCost(final LootContext lootContext, final int additionalCost) {
-      int count = Mth.clamp(((NumberProvider)this.count().value()).getInt(lootContext) + additionalCost, 0, ((Item)this.item().value()).getDefaultMaxStackSize());
+      int count = Mth.clamp(((ContextIntProvider)this.count().value()).getInt(lootContext) + additionalCost, 0, ((Item)this.item().value()).getDefaultMaxStackSize());
       return new ItemCost(this.item(), count, this.components());
    }
 

@@ -65,7 +65,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          for(BlockTransformData transformData : this.transforms) {
             Direction clickedFace = context.getClickedFace();
             if (!transformData.disallowedFaces().contains(clickedFace)) {
-               BlockState newBlockState = transformData.blockStateProvider.getOptionalState(level, level.getRandom(), pos);
+               BlockState newBlockState = ((BlockStateProvider)transformData.blockStateProvider.value()).getOptionalState(level, level.getRandom(), pos);
                if (newBlockState != null) {
                   BlockState updatedShape = transformData.updateFromNeighbors ? Block.updateFromNeighbourShapes(newBlockState, level, pos) : newBlockState;
                   Player player = context.getPlayer();
@@ -117,7 +117,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.BLOCK_TRANSFORMER);
    }
 
-   public static record BlockTransformData(BlockStateProvider blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, boolean updateFromNeighbors, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {
+   public static record BlockTransformData(Holder<BlockStateProvider> blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, boolean updateFromNeighbors, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {
       public static final Codec<BlockTransformData> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter(BlockTransformData::blockStateProvider), SoundEvent.CODEC.optionalFieldOf("sound", BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY)).forGetter(BlockTransformData::sound), BlockTransformer.TransformParticle.CODEC.optionalFieldOf("particle", BlockTransformer.TransformParticle.NONE).forGetter(BlockTransformData::particle), Direction.CODEC.listOf().optionalFieldOf("disallowed_faces", List.of()).forGetter(BlockTransformData::disallowedFaces), LootTable.KEY_CODEC.optionalFieldOf("loot").forGetter(BlockTransformData::loot), BlockTransformer.DropStrategy.CODEC.optionalFieldOf("drop_strategy", BlockTransformer.DropStrategy.FROM_MIDDLE).forGetter(BlockTransformData::dropStrategy), Codec.BOOL.optionalFieldOf("update_from_neighbors", true).forGetter(BlockTransformData::updateFromNeighbors), BlockTransformer.TransformType.CODEC.optionalFieldOf("transform_type", BlockTransformer.TransformType.SINGLE_BLOCK).forGetter(BlockTransformData::transformType), Codec.BOOL.optionalFieldOf("consume_on_use", true).forGetter(BlockTransformData::consumeOnUse), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("item_damage_per_use", 0).forGetter(BlockTransformData::itemDamagePerUse)).apply(i, BlockTransformData::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, BlockTransformData> STREAM_CODEC;
 
@@ -125,8 +125,12 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          super();
       }
 
-      public static Builder builder(final BlockStateProvider targetStateProvider) {
+      public static Builder builder(final Holder<BlockStateProvider> targetStateProvider) {
          return new Builder(targetStateProvider);
+      }
+
+      public static Builder builder(final BlockStateProvider targetStateProvider) {
+         return builder(Holder.direct(targetStateProvider));
       }
 
       public static Builder builder(final BlockPredicate predicate, final Block block) {
@@ -138,7 +142,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       }
 
       public static class Builder {
-         private final BlockStateProvider targetStateProvider;
+         private final Holder<BlockStateProvider> targetStateProvider;
          private Holder<SoundEvent> sound;
          private TransformParticle particle;
          private List<Direction> disallowedFaces;
@@ -149,7 +153,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
          private boolean consumeOnUse;
          private int itemDamagePerUse;
 
-         private Builder(final BlockStateProvider targetStateProvider) {
+         private Builder(final Holder<BlockStateProvider> targetStateProvider) {
             super();
             this.sound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY);
             this.particle = BlockTransformer.TransformParticle.NONE;

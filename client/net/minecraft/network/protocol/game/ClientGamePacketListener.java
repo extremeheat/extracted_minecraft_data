@@ -65,6 +65,8 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
 
    void handleSetEntityPassengersPacket(ClientboundSetPassengersPacket packet);
 
+   void handleAddTransientBlockPacket(ClientboundAddTransientBlockPacket packet);
+
    void handleExplosion(ClientboundExplodePacket packet);
 
    void handleGameEvent(ClientboundGameEventPacket packet);

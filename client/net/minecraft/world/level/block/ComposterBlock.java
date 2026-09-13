@@ -158,7 +158,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    private static BlockState addLayer(final @Nullable Entity sourceEntity, final BlockState state, final ServerLevel level, final BlockPos pos, final Compostable compostable) {
       int fillLevel = (Integer)state.getValue(LEVEL);
       LootContext lootContext = (new LootContext.Builder((new LootParams.Builder(level)).withParameter(LootContextParams.BLOCK_STATE, state).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, sourceEntity).create(LootContextParamSets.BLOCK_INTERACT))).create(Optional.empty());
-      int layersToAdd = compostable.layers().getInt(lootContext, 0);
+      int layersToAdd = compostable.layers().get(lootContext, 0);
       if (layersToAdd > 0) {
          int newLevel = Mth.clamp(fillLevel + layersToAdd, 0, 7);
          BlockState newState = (BlockState)state.setValue(LEVEL, newLevel);

@@ -19,17 +19,17 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 
 public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction {
    public static final int NO_LIMIT = 0;
-   public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
+   public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), ContextFloatProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
    private final Holder<Enchantment> enchantment;
-   private final Holder<NumberProvider> count;
+   private final Holder<ContextFloatProvider> count;
    private final int limit;
 
-   private EnchantedCountIncreaseFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<Enchantment> enchantment, final Holder<NumberProvider> count, final int limit) {
+   private EnchantedCountIncreaseFunction(final Optional<Holder<LootItemCondition>> condition, final Holder<Enchantment> enchantment, final Holder<ContextFloatProvider> count, final int limit) {
       super(condition);
       this.enchantment = enchantment;
       this.count = count;
@@ -54,14 +54,14 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
-      Entity killer = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+      Entity killer = (Entity)context.getOptional(LootContextParams.ATTACKING_ENTITY);
       if (killer instanceof LivingEntity entity) {
          int level = EnchantmentHelper.getEnchantmentLevel(this.enchantment, entity);
          if (level == 0) {
             return itemStack;
          }
 
-         float addition = (float)level * ((NumberProvider)this.count.value()).getFloat(context);
+         float addition = (float)level * ((ContextFloatProvider)this.count.value()).getFloat(context);
          itemStack.grow(Math.round(addition));
          if (this.hasLimit()) {
             itemStack.limitSize(this.limit);
@@ -71,16 +71,16 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
       return itemStack;
    }
 
-   public static Builder lootingMultiplier(final HolderGetter<Enchantment> enchantments, final Holder<NumberProvider> count) {
+   public static Builder lootingMultiplier(final HolderGetter<Enchantment> enchantments, final Holder<ContextFloatProvider> count) {
       return new Builder(enchantments.getOrThrow(Enchantments.LOOTING), count);
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final Holder<Enchantment> enchantment;
-      private final Holder<NumberProvider> count;
+      private final Holder<ContextFloatProvider> count;
       private int limit = 0;
 
-      public Builder(final Holder<Enchantment> enchantment, final Holder<NumberProvider> count) {
+      public Builder(final Holder<Enchantment> enchantment, final Holder<ContextFloatProvider> count) {
          super();
          this.enchantment = enchantment;
          this.count = count;

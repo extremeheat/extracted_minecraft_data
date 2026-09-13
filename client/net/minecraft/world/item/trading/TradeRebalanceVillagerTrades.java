@@ -14,9 +14,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.Sum;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class TradeRebalanceVillagerTrades extends VillagerTrades {
    public static final ResourceKey<VillagerTrade> LIBRARIAN_1_EMERALD_AND_BOOK_DESERT_ENCHANTED_BOOK = resourceKey("librarian/1/emerald_and_book_desert_enchanted_book");
@@ -104,7 +102,7 @@ public class TradeRebalanceVillagerTrades extends VillagerTrades {
       super();
    }
 
-   public static Holder<VillagerTrade> bootstrap(final BootstrapContext<VillagerTrade> context) {
+   public static void bootstrap(final BootstrapContext<VillagerTrade> context) {
       HolderGetter<Item> items = context.lookup(Registries.ITEM);
       HolderGetter<VillagerType> villagerVariants = context.lookup(Registries.VILLAGER_TYPE);
       HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
@@ -203,7 +201,7 @@ public class TradeRebalanceVillagerTrades extends VillagerTrades {
       register(context, ARMORER_5_EMERALD_AND_DIAMOND_DIAMOND_CHESTPLATE_TAIGA, VillagerTrade.builder(new TradeCost(Items.EMERALD, 18), new TradeCost(Items.DIAMOND, 4), new ItemStackTemplate(Items.DIAMOND_CHESTPLATE), 3, 30, 0.05F).merchantPredicate(villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, List.of(VillagerType.TAIGA)))).addModifiers(enchantedItem(items, enchantments.getOrThrow(Enchantments.BLAST_PROTECTION), 1, Items.DIAMOND_CHESTPLATE)).build());
       register(context, ARMORER_5_EMERALD_AND_DIAMOND_DIAMOND_LEGGINGS_TAIGA, VillagerTrade.builder(new TradeCost(Items.EMERALD, 18), new TradeCost(Items.DIAMOND, 3), new ItemStackTemplate(Items.DIAMOND_LEGGINGS), 3, 30, 0.05F).merchantPredicate(villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, List.of(VillagerType.TAIGA)))).addModifiers(enchantedItem(items, enchantments.getOrThrow(Enchantments.BLAST_PROTECTION), 1, Items.DIAMOND_LEGGINGS)).build());
       register(context, ARMORER_5_DIAMOND_BLOCK_EMERALD_TAIGA, VillagerTrade.builder(new TradeCost(Items.DIAMOND_BLOCK, 1), new ItemStackTemplate(Items.EMERALD, 42), 12, 30, 0.05F).merchantPredicate(villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, List.of(VillagerType.TAIGA)))).build());
-      return register(context, ARMORER_5_IRON_BLOCK_EMERALD_NON_TAIGA, VillagerTrade.builder(new TradeCost(Items.IRON_BLOCK, 1), new ItemStackTemplate(Items.EMERALD, 4), 12, 30, 0.05F).merchantPredicate(villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, List.of(VillagerType.DESERT, VillagerType.JUNGLE, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.SWAMP)))).build());
+      register(context, ARMORER_5_IRON_BLOCK_EMERALD_NON_TAIGA, VillagerTrade.builder(new TradeCost(Items.IRON_BLOCK, 1), new ItemStackTemplate(Items.EMERALD, 4), 12, 30, 0.05F).merchantPredicate(villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, List.of(VillagerType.DESERT, VillagerType.JUNGLE, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.SWAMP)))).build());
    }
 
    private static VillagerTrade createLibrarianLevel1EnchantmentTrade(final HolderGetter<Item> items, final HolderSet<Enchantment> doubleTradePrice, final HolderSet<VillagerType> villagerTypes, final HolderSet<Enchantment> enchantments) {
@@ -219,7 +217,7 @@ public class TradeRebalanceVillagerTrades extends VillagerTrades {
    }
 
    private static VillagerTrade createLibrarianLevel5EnchantmentTrade(final HolderGetter<Item> items, final HolderSet<Enchantment> doubleTradePrice, final HolderSet<VillagerType> villagerTypes, final Holder<Enchantment> enchantment, final int level) {
-      return VillagerTrade.builder(new TradeCost(Items.EMERALD, Sum.sum(ConstantValue.exactly((float)(3 * level + 2)), UniformGenerator.between(0.0F, (float)(5 + level * 10)))), new TradeCost(Items.BOOK, 1), new ItemStackTemplate(Items.ENCHANTED_BOOK), 12, 30, 0.2F).merchantPredicate(villagerTypeRestriction(villagerTypes)).addModifiers(enchantedBook(items, enchantment, level)).doubleTradePriceEnchantments(doubleTradePrice).build();
+      return VillagerTrade.builder(new TradeCost(Items.EMERALD, ContextIntProviders.add(ContextIntProviders.exactly(3 * level + 2), ContextIntProviders.between(0, 5 + level * 10))), new TradeCost(Items.BOOK, 1), new ItemStackTemplate(Items.ENCHANTED_BOOK), 12, 30, 0.2F).merchantPredicate(villagerTypeRestriction(villagerTypes)).addModifiers(enchantedBook(items, enchantment, level)).doubleTradePriceEnchantments(doubleTradePrice).build();
    }
 
    private static VillagerTrade createLibrarianLevel5SpecialEnchantmentTrade(final HolderGetter<Item> items, final HolderSet<Enchantment> doubleTradePrice, final HolderSet<VillagerType> villagerTypes, final Holder<Enchantment> enchantment) {

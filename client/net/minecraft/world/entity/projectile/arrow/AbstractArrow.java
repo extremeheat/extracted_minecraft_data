@@ -481,7 +481,7 @@ public abstract class AbstractArrow extends Projectile {
          if (this.getPierceLevel() <= 0) {
             this.discard();
          }
-      } else {
+      } else if (entity.projectileReceivesSideEffectsOnHit(false)) {
          entity.setRemainingFireTicks(remainingFireTicks);
          this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, 0.2);
          Level var20 = this.level();

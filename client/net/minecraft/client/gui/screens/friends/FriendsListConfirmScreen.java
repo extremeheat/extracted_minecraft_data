@@ -41,7 +41,7 @@ public class FriendsListConfirmScreen extends ConfirmScreen {
             }
 
             URI patt2$temp = var7;
-            PrivacyConfirmLinkScreen.confirmLinkNow(this, (URI)patt2$temp);
+            PrivacyConfirmLinkScreen.confirmLinkNow(this, patt2$temp);
          }
 
       });

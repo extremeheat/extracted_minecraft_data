@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
-import net.minecraft.client.input.IMECandidatesEvent;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -17,7 +16,6 @@ import org.lwjgl.sdl.SDL_KeyboardEvent;
 import org.lwjgl.sdl.SDL_MouseButtonEvent;
 import org.lwjgl.sdl.SDL_MouseMotionEvent;
 import org.lwjgl.sdl.SDL_MouseWheelEvent;
-import org.lwjgl.sdl.SDL_TextEditingCandidatesEvent;
 import org.lwjgl.sdl.SDL_TextEditingEvent;
 
 public class SDLEventHandler {
@@ -53,9 +51,6 @@ public class SDLEventHandler {
                   break;
                case 772:
                   this.handleKeymapChangedEvent();
-                  break;
-               case 775:
-                  this.handleTextEditingCandidatesEvent(event);
                   break;
                case 1024:
                   this.handleMouseMotionEvent(event);
@@ -99,6 +94,11 @@ public class SDLEventHandler {
    }
 
    public void pumpEvents() {
+      this.flushInputEvents();
+      this.pollEvents();
+   }
+
+   public void flushInputEvents() {
       SDLEvents.SDL_PumpEvents();
       SDLEvents.SDL_FlushEvents(768, 4871);
    }
@@ -134,13 +134,6 @@ public class SDLEventHandler {
       PreeditEvent preedit = PreeditEvent.fromSdlTextEditing(edit.textString(), edit.start(), edit.length());
       long handle = getWindowHandle(event);
       this.minecraft.execute(() -> this.minecraft.keyboardHandler.textEditing(handle, preedit));
-   }
-
-   private void handleTextEditingCandidatesEvent(final SDL_Event event) {
-      SDL_TextEditingCandidatesEvent candidatesEvent = event.edit_candidates();
-      IMECandidatesEvent candidates = IMECandidatesEvent.fromSdl(candidatesEvent.candidates(), candidatesEvent.num_candidates(), candidatesEvent.selected_candidate(), candidatesEvent.horizontal());
-      long handle = getWindowHandle(event);
-      this.minecraft.execute(() -> this.minecraft.keyboardHandler.textEditingCandidates(handle, candidates));
    }
 
    private void handleMouseMotionEvent(final SDL_Event event) {

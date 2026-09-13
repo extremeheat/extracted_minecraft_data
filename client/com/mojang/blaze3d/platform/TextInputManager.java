@@ -69,6 +69,7 @@ public class TextInputManager {
 
          this.textInputEnabled = true;
          SDLKeyboard.SDL_StartTextInput(this.window.handle());
+         SDLKeyboard.SDL_ClearComposition(this.window.handle());
       }
 
    }

@@ -184,26 +184,29 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public void aiStep() {
       super.aiStep();
-      if (this.level().isClientSide()) {
+      Level level = this.level();
+      if (level instanceof ServerLevel serverLevel) {
          if (this.forcedAgeTimer > 0) {
             if (this.forcedAgeTimer % 4 == 0) {
-               this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
+               serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 1, 0.0, 0.0, 0.0, 0.0);
             }
 
             --this.forcedAgeTimer;
          }
-      } else if (this.isAlive()) {
-         int age = this.getAge();
-         if (this.canAgeUp()) {
-            ++age;
-            this.setAge(age);
-         } else if (age > 0) {
-            --age;
-            this.setAge(age);
+
+         if (this.isAlive()) {
+            int age = this.getAge();
+            if (this.canAgeUp()) {
+               ++age;
+               this.setAge(age);
+            } else if (age > 0) {
+               --age;
+               this.setAge(age);
+            }
          }
       }
 
-      this.ageLockParticleTimer = makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer, this.isAgeLocked());
+      this.ageLockParticleTimer = makeAgeLockedParticle(level, this, this.ageLockParticleTimer, this.isAgeLocked());
    }
 
    public boolean canAgeUp() {
@@ -212,10 +215,11 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public static int makeAgeLockedParticle(final Level level, final Mob mob, int ageLockParticleTimer, final boolean isAgeLocked) {
       if (ageLockParticleTimer > 0) {
-         if (level.isClientSide() && ageLockParticleTimer % 2 == 0) {
+         if (ageLockParticleTimer % 2 == 0 && level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
             float yParticleOffset = isAgeLocked ? 0.2F : 0.0F;
             Vec3 spawnPosition = new Vec3(mob.getRandomX(1.0), mob.getRandomY(0.2) + (double)mob.getBbHeight() + (double)yParticleOffset, mob.getRandomZ(1.0));
-            level.addParticle(isAgeLocked ? ParticleTypes.PAUSE_MOB_GROWTH : ParticleTypes.RESET_MOB_GROWTH, spawnPosition.x, spawnPosition.y, spawnPosition.z, 0.0, 0.0, 0.0);
+            serverLevel.sendParticles(isAgeLocked ? ParticleTypes.PAUSE_MOB_GROWTH : ParticleTypes.RESET_MOB_GROWTH, spawnPosition.x, spawnPosition.y, spawnPosition.z, 1, 0.0, 0.0, 0.0, 0.0);
          }
 
          --ageLockParticleTimer;

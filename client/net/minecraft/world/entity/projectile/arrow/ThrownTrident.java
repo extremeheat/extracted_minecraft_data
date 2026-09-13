@@ -126,16 +126,17 @@ public class ThrownTrident extends AbstractArrow {
       float dmg = 8.0F;
       Entity currentOwner = this.getOwner();
       DamageSource damageSource = this.damageSources().trident(this, (Entity)(currentOwner == null ? this : currentOwner));
-      Level var7 = this.level();
-      if (var7 instanceof ServerLevel serverLevel) {
+      ServerLevel serverLevel = this.level();
+      if (serverLevel instanceof ServerLevel serverLevel) {
          dmg = EnchantmentHelper.modifyDamage(serverLevel, this.getWeaponItem(), entity, damageSource, dmg);
       }
 
       this.dealtDamage = true;
-      if (entity.hurtOrSimulate(damageSource, dmg)) {
-         var7 = this.level();
-         if (var7 instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel)var7;
+      boolean wasHurt = entity.hurtOrSimulate(damageSource, dmg);
+      if (wasHurt) {
+         Level var8 = this.level();
+         if (var8 instanceof ServerLevel) {
+            serverLevel = (ServerLevel)var8;
             EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(serverLevel, entity, damageSource, this.getWeaponItem(), (weapon) -> this.kill(serverLevel));
          }
 
@@ -144,11 +145,13 @@ public class ThrownTrident extends AbstractArrow {
             this.doKnockback(mob, damageSource);
             this.doPostHurtEffects(mob);
          }
-
-         this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
       }
 
-      this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, new Vec3(0.02, 0.2, 0.02));
+      if (entity.projectileReceivesSideEffectsOnHit(wasHurt)) {
+         this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
+         this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, new Vec3(0.02, 0.2, 0.02));
+      }
+
    }
 
    protected void hitBlockEnchantmentEffects(final ServerLevel level, final BlockHitResult hitResult, final ItemStack weapon) {

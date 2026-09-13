@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.phys.Vec3;
 
-public record ReplaceBlock(Vec3i offset, Optional<BlockPredicate> predicate, BlockStateProvider blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
+public record ReplaceBlock(Vec3i offset, Optional<BlockPredicate> predicate, Holder<BlockStateProvider> blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
    public static final MapCodec<ReplaceBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(ReplaceBlock::offset), BlockPredicate.CODEC.optionalFieldOf("predicate").forGetter(ReplaceBlock::predicate), BlockStateProvider.CODEC.fieldOf("block_state").forGetter(ReplaceBlock::blockState), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(ReplaceBlock::triggerGameEvent)).apply(i, ReplaceBlock::new));
 
    public ReplaceBlock {
@@ -23,7 +23,7 @@ public record ReplaceBlock(Vec3i offset, Optional<BlockPredicate> predicate, Blo
 
    public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
       BlockPos pos = BlockPos.containing(position).offset(this.offset);
-      if ((Boolean)this.predicate.map((p) -> p.test(serverLevel, pos)).orElse(true) && serverLevel.setBlockAndUpdate(pos, this.blockState.getState(serverLevel, entity.getRandom(), pos))) {
+      if ((Boolean)this.predicate.map((p) -> p.test(serverLevel, pos)).orElse(true) && serverLevel.setBlockAndUpdate(pos, ((BlockStateProvider)this.blockState.value()).getState(serverLevel, entity.getRandom(), pos))) {
          this.triggerGameEvent.ifPresent((event) -> serverLevel.gameEvent(entity, event, pos));
       }
 

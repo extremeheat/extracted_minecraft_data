@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.HugeMushroomBlock;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record HugeBrownMushroomFeature(BlockStateProvider capProvider, BlockStateProvider stemProvider, int foliageRadius, BlockPredicate canPlaceOn) implements AbstractHugeMushroomFeature {
+public record HugeBrownMushroomFeature(Holder<BlockStateProvider> capProvider, Holder<BlockStateProvider> stemProvider, int foliageRadius, BlockPredicate canPlaceOn) implements AbstractHugeMushroomFeature {
    public static final MapCodec<HugeBrownMushroomFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("cap_provider").forGetter(HugeBrownMushroomFeature::capProvider), BlockStateProvider.CODEC.fieldOf("stem_provider").forGetter(HugeBrownMushroomFeature::stemProvider), Codec.INT.optionalFieldOf("foliage_radius", 2).forGetter(HugeBrownMushroomFeature::foliageRadius), BlockPredicate.CODEC.fieldOf("can_place_on").forGetter(HugeBrownMushroomFeature::canPlaceOn)).apply(i, HugeBrownMushroomFeature::new));
 
    public HugeBrownMushroomFeature {
@@ -37,7 +38,7 @@ public record HugeBrownMushroomFeature(BlockStateProvider capProvider, BlockStat
                boolean east = maxX || zEdge && dx == this.foliageRadius - 1;
                boolean north = minZ || xEdge && dz == 1 - this.foliageRadius;
                boolean south = maxZ || xEdge && dz == this.foliageRadius - 1;
-               BlockState state = this.capProvider.getState(level, random, origin);
+               BlockState state = ((BlockStateProvider)this.capProvider.value()).getState(level, random, origin);
                if (state.hasProperty(HugeMushroomBlock.WEST) && state.hasProperty(HugeMushroomBlock.EAST) && state.hasProperty(HugeMushroomBlock.NORTH) && state.hasProperty(HugeMushroomBlock.SOUTH)) {
                   state = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(HugeMushroomBlock.WEST, west)).setValue(HugeMushroomBlock.EAST, east)).setValue(HugeMushroomBlock.NORTH, north)).setValue(HugeMushroomBlock.SOUTH, south);
                }

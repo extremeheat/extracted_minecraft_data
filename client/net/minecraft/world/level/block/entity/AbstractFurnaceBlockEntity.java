@@ -15,8 +15,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +42,8 @@ import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.storage.loot.providers.number.ResolvableNumber;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -183,7 +186,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
                      }
 
                      if (newLitTime > 0) {
-                        consumeFuel(entity.items, fuel);
+                        consumeFuel(level, pos, entity.items, fuel);
                         isLit = true;
                         changed = true;
                      }
@@ -224,14 +227,20 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    }
 
-   private static void consumeFuel(final NonNullList<ItemStack> items, final ItemStack fuel) {
+   private static void consumeFuel(final ServerLevel level, final BlockPos pos, final NonNullList<ItemStack> items, final ItemStack fuel) {
       Item fuelItem = fuel.getItem();
+      ItemStackTemplate remainder = fuelItem.getCraftingRemainder();
+      ItemStack newFuel = fuel;
       fuel.shrink(1);
-      if (fuel.isEmpty()) {
-         ItemStackTemplate remainder = fuelItem.getCraftingRemainder();
-         items.set(1, remainder != null ? remainder.create() : ItemStack.EMPTY);
+      if (remainder != null) {
+         if (fuel.isEmpty()) {
+            newFuel = remainder.create();
+         } else {
+            Containers.dropItemStack(level, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), remainder.create());
+         }
       }
 
+      items.set(1, newFuel);
    }
 
    private static boolean canBurn(final NonNullList<ItemStack> items, final int maxStackSize, final ItemStack burnResult) {
@@ -263,11 +272,11 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    protected int getBurnDuration(final ServerLevel level, final ItemStack fuelItem) {
-      return ResolvableNumber.getIntFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::burnTime, this.getLootContext(level), 0);
+      return ResolvableInt.getFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::burnTime, this.getLootContext(level), 0);
    }
 
    protected float getSpeedMultiplier(final ServerLevel level, final ItemStack fuelItem) {
-      return ResolvableNumber.getFloatFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::speedMultiplier, this.getLootContext(level), 1.0F);
+      return ResolvableFloat.getFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::speedMultiplier, this.getLootContext(level), 1.0F);
    }
 
    private static int getTotalCookTime(final RecipeHolder<? extends AbstractCookingRecipe> recipe, final AbstractFurnaceBlockEntity entity) {
@@ -293,11 +302,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
-      if (direction == Direction.DOWN && slot == 1) {
-         return itemStack.is(Items.WATER_BUCKET) || itemStack.is(Items.BUCKET);
-      } else {
-         return true;
-      }
+      return direction == Direction.DOWN && slot == 1 ? itemStack.is(ItemTags.FURNACE_FUEL_BOTTOM_TAKEABLE) : true;
    }
 
    public int getContainerSize() {

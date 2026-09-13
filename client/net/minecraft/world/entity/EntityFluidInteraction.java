@@ -81,8 +81,11 @@ public class EntityFluidInteraction {
                               }
                            }
 
-                           if (x == eyeBlockX && z == eyeBlockZ && eyeY >= fluidBottom && eyeY <= fluidTop) {
-                              tracker.eyesInside = true;
+                           if (x == eyeBlockX && z == eyeBlockZ && eyeY >= fluidBottom) {
+                              double fluidTopForCamera = fluidBottom + (double)fluidState.getHeightForCamera(level, mutablePos);
+                              if (eyeY <= fluidTopForCamera) {
+                                 tracker.eyesInside = true;
+                              }
                            }
 
                            tracker.height = Math.max(fluidTop - entityY, tracker.height);

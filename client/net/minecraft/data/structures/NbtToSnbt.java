@@ -17,11 +17,14 @@ import java.util.stream.Stream;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.FastBufferedInputStream;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -88,43 +91,44 @@ public class NbtToSnbt implements DataProvider {
       try {
          InputStream rawInput = Files.newInputStream(path);
 
-         Path var7;
+         Path var8;
          try {
             InputStream input = new FastBufferedInputStream(rawInput);
 
             try {
                Path resultPath = output.resolve(name + ".snbt");
-               writeSnbt(cache, resultPath, NbtUtils.structureToSnbt(NbtIo.readCompressed(input, NbtAccounter.unlimitedHeap())));
+               CompoundTag structure = NbtIo.readCompressed(input, NbtAccounter.unlimitedHeap());
+               writeSnbt(cache, resultPath, NbtUtils.structureToSnbt(NbtUtils.addCurrentDataVersion(DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), structure, NbtUtils.getDataVersion(structure)))));
                LOGGER.info("Converted {} from NBT to SNBT", name);
-               var7 = resultPath;
-            } catch (Throwable var10) {
+               var8 = resultPath;
+            } catch (Throwable var11) {
                try {
                   input.close();
-               } catch (Throwable var9) {
-                  var10.addSuppressed(var9);
+               } catch (Throwable var10) {
+                  var11.addSuppressed(var10);
                }
 
-               throw var10;
+               throw var11;
             }
 
             input.close();
-         } catch (Throwable var11) {
+         } catch (Throwable var12) {
             if (rawInput != null) {
                try {
                   rawInput.close();
-               } catch (Throwable var8) {
-                  var11.addSuppressed(var8);
+               } catch (Throwable var9) {
+                  var12.addSuppressed(var9);
                }
             }
 
-            throw var11;
+            throw var12;
          }
 
          if (rawInput != null) {
             rawInput.close();
          }
 
-         return var7;
+         return var8;
       } catch (IOException e) {
          LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{name, path, e});
          return null;

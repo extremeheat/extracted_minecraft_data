@@ -68,8 +68,8 @@ public class AquaticFeatures {
       context.register(SEAGRASS_SLIGHTLY_LESS_SHORT, seagrass(40));
       context.register(SEAGRASS_MID, seagrass(60));
       context.register(SEAGRASS_TALL, seagrass(80));
-      context.register(SEA_PICKLE, new SimpleBlockFeature(new RandomizedIntStateProvider(BlockStateProvider.simple(Blocks.SEA_PICKLE), BlockStateProperties.PICKLES, UniformInt.of(1, 4))));
-      context.register(KELP, new BlockColumnFeature(List.of(BlockColumnFeature.layer(UniformInt.of(0, 9), BlockStateProvider.simple(Blocks.KELP_PLANT)), BlockColumnFeature.layer(ConstantInt.of(1), new RandomizedIntStateProvider(BlockStateProvider.simple(Blocks.KELP), KelpBlock.AGE, UniformInt.of(20, 23)))), Direction.UP, BlockPredicate.allOf(BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER)), true));
+      context.register(SEA_PICKLE, new SimpleBlockFeature(new RandomizedIntStateProvider(BlockStateProvider.of(Blocks.SEA_PICKLE), BlockStateProperties.PICKLES, UniformInt.of(1, 4))));
+      context.register(KELP, new BlockColumnFeature(List.of(BlockColumnFeature.layer(UniformInt.of(0, 9), BlockStateProvider.of(Blocks.KELP_PLANT)), BlockColumnFeature.layer(ConstantInt.of(1), new RandomizedIntStateProvider(BlockStateProvider.of(Blocks.KELP), KelpBlock.AGE, UniformInt.of(20, 23)))), Direction.UP, BlockPredicate.allOf(BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER)), true));
       BlockPredicateFilter coralAllowed = BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.anyOf(BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesTag(BlockTags.CORALS)), BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER)));
       context.register(CORAL_BLOCK_DECORATION, new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(new RandomBlockProvider(blocks.getOrThrow(BlockTags.CORALS)))), 20), new Weighted(PlacementUtils.inlinePlaced(features.getOrThrow(SEA_PICKLE)), 3), new Weighted(PlacementUtils.inlinePlaced(new NoOpFeature()), 57))), OffsetPlacement.above()), wallCoral(blocks, Direction.NORTH), wallCoral(blocks, Direction.EAST), wallCoral(blocks, Direction.SOUTH), wallCoral(blocks, Direction.WEST))));
       Holder.Reference<Feature> tubeCoralBlock = context.register(TUBE_CORAL_BLOCK, coralBlock(features, blocks.getOrThrow(BlockItemIds.TUBE_CORAL_BLOCK.block())));
@@ -81,14 +81,14 @@ public class AquaticFeatures {
    }
 
    private static Feature coralBlock(final HolderGetter<Feature> features, final Holder<Block> block) {
-      return new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(block.value()))), PlacementUtils.inlinePlaced(features.getOrThrow(CORAL_BLOCK_DECORATION))));
+      return new OverlayFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.of(block.value()))), PlacementUtils.inlinePlaced(features.getOrThrow(CORAL_BLOCK_DECORATION))));
    }
 
    private static Holder<PlacedFeature> wallCoral(final HolderGetter<Block> blocks, final Direction direction) {
-      return PlacementUtils.inlinePlaced(new SimpleBlockFeature(new RotatedBlockProvider(new RandomBlockProvider(blocks.getOrThrow(BlockTags.WALL_CORALS)), Optional.of(direction))), new RandomChancePlacement(0.2F), OffsetPlacement.of(direction), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(Blocks.WATER)));
+      return PlacementUtils.inlinePlaced(new SimpleBlockFeature(new RotatedBlockProvider(Holder.direct(new RandomBlockProvider(blocks.getOrThrow(BlockTags.WALL_CORALS))), Optional.of(direction))), new RandomChancePlacement(0.2F), OffsetPlacement.of(direction), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(Blocks.WATER)));
    }
 
    private static Feature seagrass(final int tallPercentage) {
-      return new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.TALL_SEAGRASS)), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER))), tallPercentage), new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.simple(Blocks.SEAGRASS))), 100 - tallPercentage)));
+      return new WeightedRandomSelectorFeature(WeightedList.of(new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.of(Blocks.TALL_SEAGRASS)), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks((Directional)Direction.UP, Blocks.WATER))), tallPercentage), new Weighted(PlacementUtils.inlinePlaced(new SimpleBlockFeature(BlockStateProvider.of(Blocks.SEAGRASS))), 100 - tallPercentage)));
    }
 }

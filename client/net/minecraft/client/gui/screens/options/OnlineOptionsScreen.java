@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
 import com.mojang.authlib.services.FriendsService.ResultCode;
-import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -92,7 +91,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       this.presenceWidget = this.options.sharePresence().createButton(this.options);
       this.list.addSmall(this.inGameNotificationButton, this.presenceWidget);
       this.updateFriendListDependentButtons();
-      this.list.addBig(Button.builder(XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, (URI)CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build());
+      this.list.addBig(Button.builder(XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build());
       this.list.addHeader(SERVERS_HEADER);
       this.list.addBig(this.options.allowServerListing());
       this.list.addHeader(REALMS_HEADER);

@@ -1,5 +1,6 @@
 package net.minecraft.data.worldgen.features;
 
+import net.minecraft.core.Holder;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedList;
@@ -22,10 +23,10 @@ public class PileFeatures {
    }
 
    public static void bootstrap(final BootstrapContext<Feature> context) {
-      context.register(PILE_HAY, new BlockPileFeature(new RotatedBlockProvider(BlockStateProvider.simple(Blocks.HAY_BLOCK))));
-      context.register(PILE_MELON, new BlockPileFeature(BlockStateProvider.simple(Blocks.MELON)));
-      context.register(PILE_SNOW, new BlockPileFeature(BlockStateProvider.simple(Blocks.SNOW)));
-      context.register(PILE_ICE, new BlockPileFeature(new WeightedStateProvider(WeightedList.builder().add(Blocks.BLUE_ICE.defaultBlockState(), 1).add(Blocks.PACKED_ICE.defaultBlockState(), 5))));
-      context.register(PILE_PUMPKIN, new BlockPileFeature(new WeightedStateProvider(WeightedList.builder().add(Blocks.PUMPKIN.defaultBlockState(), 19).add(Blocks.JACK_O_LANTERN.defaultBlockState(), 1))));
+      context.register(PILE_HAY, new BlockPileFeature(Holder.direct(new RotatedBlockProvider(BlockStateProvider.of(Blocks.HAY_BLOCK)))));
+      context.register(PILE_MELON, new BlockPileFeature(BlockStateProvider.holderOf(Blocks.MELON)));
+      context.register(PILE_SNOW, new BlockPileFeature(BlockStateProvider.holderOf(Blocks.SNOW)));
+      context.register(PILE_ICE, new BlockPileFeature(Holder.direct(new WeightedStateProvider(WeightedList.builder().add(Blocks.BLUE_ICE.defaultBlockState(), 1).add(Blocks.PACKED_ICE.defaultBlockState(), 5)))));
+      context.register(PILE_PUMPKIN, new BlockPileFeature(Holder.direct(new WeightedStateProvider(WeightedList.builder().add(Blocks.PUMPKIN.defaultBlockState(), 19).add(Blocks.JACK_O_LANTERN.defaultBlockState(), 1)))));
    }
 }

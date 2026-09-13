@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 
 /** @deprecated */
 @Deprecated
-public record LakeFeature(BlockStateProvider fluid, BlockStateProvider barrier, BlockPredicate canPlaceFeature, BlockPredicate canReplaceWithAirOrFluid, BlockPredicate canReplaceWithBarrier) implements Feature {
+public record LakeFeature(Holder<BlockStateProvider> fluid, Holder<BlockStateProvider> barrier, BlockPredicate canPlaceFeature, BlockPredicate canReplaceWithAirOrFluid, BlockPredicate canReplaceWithBarrier) implements Feature {
    public static final MapCodec<LakeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(LakeFeature::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(LakeFeature::barrier), BlockPredicate.CODEC.fieldOf("can_place_feature").forGetter(LakeFeature::canPlaceFeature), BlockPredicate.CODEC.fieldOf("can_replace_with_air_or_fluid").forGetter(LakeFeature::canReplaceWithAirOrFluid), BlockPredicate.CODEC.fieldOf("can_replace_with_barrier").forGetter(LakeFeature::canReplaceWithBarrier)).apply(i, LakeFeature::new));
    private static final BlockState AIR;
 
@@ -58,7 +59,7 @@ public record LakeFeature(BlockStateProvider fluid, BlockStateProvider barrier, 
             }
          }
 
-         BlockState fluid = this.fluid.getState(level, random, origin);
+         BlockState fluid = ((BlockStateProvider)this.fluid.value()).getState(level, random, origin);
 
          for(int xx = 0; xx < 16; ++xx) {
             for(int zz = 0; zz < 16; ++zz) {
@@ -101,7 +102,7 @@ public record LakeFeature(BlockStateProvider fluid, BlockStateProvider barrier, 
             }
          }
 
-         BlockState barrier = this.barrier.getState(level, random, origin);
+         BlockState barrier = ((BlockStateProvider)this.barrier.value()).getState(level, random, origin);
          if (!barrier.isAir()) {
             for(int xx = 0; xx < 16; ++xx) {
                for(int zz = 0; zz < 16; ++zz) {

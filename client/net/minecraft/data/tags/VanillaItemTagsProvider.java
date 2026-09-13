@@ -186,6 +186,7 @@ public class VanillaItemTagsProvider extends TagsProvider<Item> {
       this.tag(ItemTags.WOLF_COLLAR_DYES).addTag(ItemTags.DYES);
       this.tag(ItemTags.DOUSES_CAMPFIRES).addTag(ItemTags.SHOVELS);
       this.tag(ItemTags.BREWING_POTION_INPUTS).add(ItemIds.POTION).add(ItemIds.SPLASH_POTION).add(ItemIds.LINGERING_POTION).add(ItemIds.GLASS_BOTTLE);
+      this.tag(ItemTags.FURNACE_FUEL_BOTTOM_TAKEABLE).add(ItemIds.WATER_BUCKET).add(ItemIds.BUCKET);
    }
 
    private static ColorCollection<ResourceKey<Item>> toIds(final ColorCollection<BlockItemId> ids) {

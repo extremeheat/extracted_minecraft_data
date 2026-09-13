@@ -1224,11 +1224,31 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed) {
-      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed);
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed, randomizationType);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, xSpeed, ySpeed, zSpeed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, xSpeed, ySpeed, zSpeed, randomizationType);
    }
 
    public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed) {
-      ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, overrideLimiter, alwaysShow, x, y, z, (float)xDist, (float)yDist, (float)zDist, (float)speed, count);
+      return this.sendParticles(particle, overrideLimiter, alwaysShow, x, y, z, count, xDist, yDist, zDist, speed, speed, speed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, overrideLimiter, alwaysShow, x, y, z, count, xDist, yDist, zDist, speed, speed, speed, randomizationType);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, overrideLimiter, alwaysShow, x, y, z, (float)xDist, (float)yDist, (float)zDist, (float)xSpeed, (float)ySpeed, (float)zSpeed, count, randomizationType);
       int result = 0;
 
       for(int i = 0; i < this.players.size(); ++i) {

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.debug;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.floats.FloatComparators;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.debug.DebugEntryCategory;
@@ -30,8 +30,6 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -185,36 +183,25 @@ public class DebugOptionsScreen extends Screen {
    }
 
    private class CategoryEntry extends AbstractOptionEntry {
-      private final Component category;
+      private final FocusableTextWidget widget;
 
       public CategoryEntry(final Component category) {
          Objects.requireNonNull(DebugOptionsScreen.this);
          super();
-         this.category = category;
+         this.widget = FocusableTextWidget.builder(category, DebugOptionsScreen.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         graphics.centeredText(DebugOptionsScreen.this.minecraft.font, (Component)this.category, this.getContentX() + this.getContentWidth() / 2, this.getContentY() + 5, -1);
+         this.widget.setPosition(this.getContentX() + this.getContentWidth() / 2 - this.widget.getWidth() / 2, this.getContentYMiddle() - this.widget.getHeight() / 2);
+         this.widget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       public List<? extends GuiEventListener> children() {
-         return ImmutableList.of();
+         return List.of(this.widget);
       }
 
       public List<? extends NarratableEntry> narratables() {
-         return ImmutableList.of(new NarratableEntry() {
-            {
-               Objects.requireNonNull(CategoryEntry.this);
-            }
-
-            public NarratableEntry.NarrationPriority narrationPriority() {
-               return NarratableEntry.NarrationPriority.HOVERED;
-            }
-
-            public void updateNarration(final NarrationElementOutput output) {
-               output.add(NarratedElementType.TITLE, CategoryEntry.this.category);
-            }
-         });
+         return List.of(this.widget);
       }
 
       public void refreshEntry() {

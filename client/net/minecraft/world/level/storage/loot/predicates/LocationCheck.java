@@ -26,7 +26,7 @@ public record LocationCheck(Optional<LocationPredicate> predicate, Vec3i offset)
    }
 
    public boolean test(final LootContext context) {
-      Vec3 pos = (Vec3)context.getOptionalParameter(LootContextParams.ORIGIN);
+      Vec3 pos = (Vec3)context.getOptional(LootContextParams.ORIGIN);
       return pos != null && (this.predicate.isEmpty() || ((LocationPredicate)this.predicate.get()).matches(context.getLevel(), pos.x() + (double)this.offset.getX(), pos.y() + (double)this.offset.getY(), pos.z() + (double)this.offset.getZ()));
    }
 
