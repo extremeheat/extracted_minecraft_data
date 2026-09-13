@@ -1,0 +1,18 @@
+package net.minecraft.enchantment;
+
+import net.minecraft.util.WeightedRandom$Item;
+
+public class EnchantmentData extends WeightedRandom$Item {
+   public final Enchantment field_76302_b;
+   public final int field_76303_c;
+
+   public EnchantmentData(Enchantment var1, int var2) {
+      super(var1.func_77324_c());
+      this.field_76302_b = var1;
+      this.field_76303_c = var2;
+   }
+
+   public EnchantmentData(int var1, int var2) {
+      this(Enchantment.field_77331_b[var1], var2);
+   }
+}
