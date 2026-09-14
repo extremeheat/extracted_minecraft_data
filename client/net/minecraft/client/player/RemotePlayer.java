@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
 public class RemotePlayer extends AbstractClientPlayer {
@@ -25,6 +26,10 @@ public class RemotePlayer extends AbstractClientPlayer {
 
       size *= 64.0 * getViewScale();
       return distance < size * size;
+   }
+
+   public boolean hurtClient(final DamageSource source) {
+      return true;
    }
 
    public void tick() {

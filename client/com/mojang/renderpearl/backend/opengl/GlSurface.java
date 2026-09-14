@@ -13,18 +13,21 @@ import org.lwjgl.sdl.SDLVideo;
 
 public class GlSurface implements GpuSurfaceBackend {
    private static final Set<GpuSurface.PresentMode> SUPPORTED_PRESENT_MODES;
+   private final GlDevice device;
    private final long windowHandle;
    private final BooleanSupplier isIconified;
    private int swapchainWidth;
    private int swapchainHeight;
 
-   public GlSurface(final long windowHandle, final BooleanSupplier isIconified) {
+   GlSurface(final GlDevice device, final long windowHandle, final BooleanSupplier isIconified) {
       super();
+      this.device = device;
       this.windowHandle = windowHandle;
       this.isIconified = isIconified;
    }
 
    public void configure(final GpuSurface.Configuration config) throws SurfaceException {
+      this.device.makeCurrent(this.windowHandle);
       SDLVideo.SDL_GL_SetSwapInterval(config.presentMode() == GpuSurface.PresentMode.FIFO ? 1 : 0);
       this.swapchainWidth = config.width();
       this.swapchainHeight = config.height();

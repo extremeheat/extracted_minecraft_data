@@ -165,6 +165,7 @@ public class JoinMultiplayerScreen extends Screen {
          current.name = this.editingServer.name;
          current.ip = this.editingServer.ip;
          current.setState(ServerData.State.INITIAL);
+         current.setResourcePackStatus(this.editingServer.getResourcePackStatus());
          this.servers.save();
          this.serverSelectionList.updateOnlineServers(this.servers);
       }

@@ -174,7 +174,7 @@ class GlDevice implements GpuDeviceBackend {
    }
 
    public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified) {
-      return new GlSurface(windowHandle, isIconified);
+      return new GlSurface(this, windowHandle, isIconified);
    }
 
    public CommandEncoderBackend createCommandEncoder() {
