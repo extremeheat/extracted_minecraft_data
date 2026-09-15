@@ -25,11 +25,11 @@ public class DetectedVersion {
    }
 
    public static WorldVersion createBuiltIn(final String id, final String name) {
-      return createBuiltIn(id, name, false);
+      return createBuiltIn(id, name, true);
    }
 
    public static WorldVersion createBuiltIn(final String id, final String name, final boolean stable) {
-      return new WorldVersion.Simple(id, name, new DataVersion(5022, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(97, 1), PackFormat.of(121, 0), new Date(), stable);
+      return new WorldVersion.Simple(id, name, new DataVersion(5023, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(97, 1), PackFormat.of(121, 0), new Date(), stable);
    }
 
    private static WorldVersion createFromJson(final JsonObject root) {

@@ -1,18 +1,18 @@
 {
-    "id": "26.3-rc-3",
-    "name": "26.3 Release Candidate 3",
-    "world_version": 5022,
+    "id": "26.3",
+    "name": "26.3",
+    "world_version": 5023,
     "series_id": "main",
-    "protocol_version": 1073742162,
+    "protocol_version": 777,
     "pack_version": {
         "resource_major": 97,
         "resource_minor": 1,
         "data_major": 121,
         "data_minor": 0
     },
-    "build_time": "2026-09-14T12:56:20+00:00",
+    "build_time": "2026-09-15T11:20:48+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
-    "stable": false,
+    "stable": true,
     "use_editor": false
 }
