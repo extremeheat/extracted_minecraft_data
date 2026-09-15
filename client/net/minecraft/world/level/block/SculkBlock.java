@@ -1,8 +1,8 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -14,11 +14,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
 
 public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
-   public static final MapCodec<SculkBlock> CODEC = simpleCodec(SculkBlock::new);
-
-   public MapCodec<SculkBlock> codec() {
-      return CODEC;
-   }
+   public static final int GROWTH_INHIBITOR_RANGE = 4;
 
    public SculkBlock(final BlockBehaviour.Properties properties) {
       super(ConstantInt.of(1), properties);
@@ -34,7 +30,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
             if (random.nextInt(xpPerGrowthSpawn) < charge) {
                BlockPos growthPlacement = chargePos.above();
                BlockState growthState = this.getRandomGrowthState(level, growthPlacement, random, spreader.isWorldGeneration());
-               level.setBlock(growthPlacement, growthState, 3);
+               level.setBlockAndUpdate(growthPlacement, growthState);
                level.playSound((Entity)null, chargePos, growthState.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
@@ -68,24 +64,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
 
    private static boolean canPlaceGrowth(final LevelAccessor level, final BlockPos pos) {
       BlockState stateAbove = level.getBlockState(pos.above());
-      if (stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().is(Fluids.WATER)) {
-         int growthCount = 0;
-
-         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 2, 4))) {
-            BlockState state = level.getBlockState(blockPos);
-            if (state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER)) {
-               ++growthCount;
-            }
-
-            if (growthCount > 2) {
-               return false;
-            }
-         }
-
-         return true;
-      } else {
-         return false;
-      }
+      return stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().is(Fluids.WATER) ? level.findBlocksIn(pos.offset(-4, 0, -4), pos.offset(4, 2, 4)).filterState((state) -> state.is(BlockTags.SCULK_GROWTH_INHIBITORS)).atMostMatched(2) : false;
    }
 
    public boolean canChangeBlockStateOnSpread() {

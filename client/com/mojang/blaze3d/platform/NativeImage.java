@@ -96,26 +96,18 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public static NativeImage read(final InputStream inputStream) throws IOException {
-      return read(NativeImage.Format.RGBA, inputStream);
-   }
-
-   public static NativeImage read(final @Nullable Format format, final InputStream inputStream) throws IOException {
       ByteBuffer file = null;
 
-      NativeImage var3;
+      NativeImage var2;
       try {
          file = TextureUtil.readResource(inputStream);
-         var3 = read(format, file);
+         var2 = read(file);
       } finally {
          MemoryUtil.memFree(file);
          IOUtils.closeQuietly(inputStream);
       }
 
-      return var3;
-   }
-
-   public static NativeImage read(final ByteBuffer bytes) throws IOException {
-      return read(NativeImage.Format.RGBA, bytes);
+      return var2;
    }
 
    public static NativeImage read(final byte[] bytes) throws IOException {
@@ -165,45 +157,43 @@ public final class NativeImage implements AutoCloseable {
       return read(nativeBuffer);
    }
 
-   public static NativeImage read(final @Nullable Format format, final ByteBuffer bytes) throws IOException {
-      if (format != null && !format.supportedByStb()) {
-         throw new UnsupportedOperationException("Don't know how to read format " + String.valueOf(format));
-      } else if (MemoryUtil.memAddress(bytes) == 0L) {
+   public static NativeImage read(final ByteBuffer bytes) throws IOException {
+      if (MemoryUtil.memAddress(bytes) == 0L) {
          throw new IllegalArgumentException("Invalid buffer");
       } else {
          PngInfo.validateHeader(bytes);
          MemoryStack stack = MemoryStack.stackPush();
 
-         NativeImage var9;
+         NativeImage var8;
          try {
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
-            ByteBuffer pixels = STBImage.stbi_load_from_memory(bytes, w, h, comp, format == null ? 0 : format.components);
+            ByteBuffer pixels = STBImage.stbi_load_from_memory(bytes, w, h, comp, NativeImage.Format.RGBA.components);
             if (pixels == null) {
                throw new IOException("Could not load image: " + STBImage.stbi_failure_reason());
             }
 
             long address = MemoryUtil.memAddress(pixels);
             MEMORY_POOL.malloc(address, pixels.limit());
-            var9 = new NativeImage(format == null ? NativeImage.Format.getStbFormat(comp.get(0)) : format, w.get(0), h.get(0), true, address);
-         } catch (Throwable var11) {
+            var8 = new NativeImage(NativeImage.Format.RGBA, w.get(0), h.get(0), true, address);
+         } catch (Throwable var10) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var10) {
-                  var11.addSuppressed(var10);
+               } catch (Throwable var9) {
+                  var10.addSuppressed(var9);
                }
             }
 
-            throw var11;
+            throw var10;
          }
 
          if (stack != null) {
             stack.close();
          }
 
-         return var9;
+         return var8;
       }
    }
 
@@ -372,34 +362,30 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void writeToFile(final Path file) throws IOException {
-      if (!this.format.supportedByStb()) {
-         throw new UnsupportedOperationException("Don't know how to write format " + String.valueOf(this.format));
-      } else {
-         this.checkAllocated();
-         WritableByteChannel out = Files.newByteChannel(file, OPEN_OPTIONS);
+      this.checkAllocated();
+      WritableByteChannel out = Files.newByteChannel(file, OPEN_OPTIONS);
 
-         try {
-            if (!this.writeToChannel(out)) {
-               String var10002 = String.valueOf(file.toAbsolutePath());
-               throw new IOException("Could not write image to the PNG file \"" + var10002 + "\": " + STBImage.stbi_failure_reason());
-            }
-         } catch (Throwable var6) {
-            if (out != null) {
-               try {
-                  out.close();
-               } catch (Throwable var5) {
-                  var6.addSuppressed(var5);
-               }
-            }
-
-            throw var6;
+      try {
+         if (!this.writeToChannel(out)) {
+            String var10002 = String.valueOf(file.toAbsolutePath());
+            throw new IOException("Could not write image to the PNG file \"" + var10002 + "\": " + STBImage.stbi_failure_reason());
          }
-
+      } catch (Throwable var6) {
          if (out != null) {
-            out.close();
+            try {
+               out.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
          }
 
+         throw var6;
       }
+
+      if (out != null) {
+         out.close();
+      }
+
    }
 
    private boolean writeToChannel(final WritableByteChannel output) throws IOException {
@@ -562,10 +548,10 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public static enum Format {
-      RGBA(4, true, true, true, false, true, 0, 8, 16, 255, 24, true),
-      RGB(3, true, true, true, false, false, 0, 8, 16, 255, 255, true),
-      LUMINANCE_ALPHA(2, false, false, false, true, true, 255, 255, 255, 0, 8, true),
-      LUMINANCE(1, false, false, false, true, false, 0, 0, 0, 0, 255, true);
+      RGBA(4, true, true, true, false, true, 0, 8, 16, 255, 24),
+      RGB(3, true, true, true, false, false, 0, 8, 16, 255, 255),
+      LUMINANCE_ALPHA(2, false, false, false, true, true, 255, 255, 255, 0, 8),
+      LUMINANCE(1, false, false, false, true, false, 0, 0, 0, 0, 255);
 
       private final int components;
       private final boolean hasRed;
@@ -578,9 +564,8 @@ public final class NativeImage implements AutoCloseable {
       private final int blueOffset;
       private final int luminanceOffset;
       private final int alphaOffset;
-      private final boolean supportedByStb;
 
-      private Format(final int components, final boolean hasRed, final boolean hasGreen, final boolean hasBlue, final boolean hasLuminance, final boolean hasAlpha, final int redOffset, final int greenOffset, final int blueOffset, final int luminanceOffset, final int alphaOffset, final boolean supportedByStb) {
+      private Format(final int components, final boolean hasRed, final boolean hasGreen, final boolean hasBlue, final boolean hasLuminance, final boolean hasAlpha, final int redOffset, final int greenOffset, final int blueOffset, final int luminanceOffset, final int alphaOffset) {
          this.components = components;
          this.hasRed = hasRed;
          this.hasGreen = hasGreen;
@@ -592,7 +577,6 @@ public final class NativeImage implements AutoCloseable {
          this.blueOffset = blueOffset;
          this.luminanceOffset = luminanceOffset;
          this.alphaOffset = alphaOffset;
-         this.supportedByStb = supportedByStb;
       }
 
       public int components() {
@@ -669,10 +653,6 @@ public final class NativeImage implements AutoCloseable {
 
       public int luminanceOrAlphaOffset() {
          return this.hasLuminance ? this.luminanceOffset : this.alphaOffset;
-      }
-
-      public boolean supportedByStb() {
-         return this.supportedByStb;
       }
 
       private static Format getStbFormat(final int i) {

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import java.net.URI;
 import java.nio.file.Path;
@@ -10,9 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -29,6 +27,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
@@ -79,6 +78,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private long nextNarrationTime;
    protected @Nullable CycleButton<NarratorStatus> narratorButton;
    private @Nullable NarratableEntry lastNarratable;
+   private NarrationTrigger nextNarrationTriggeredBy;
    protected final Executor screenExecutor;
 
    protected Screen(final Component title) {
@@ -93,6 +93,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationState = new ScreenNarrationCollector();
       this.narrationSuppressTime = -9223372036854775808L;
       this.nextNarrationTime = 9223372036854775807L;
+      this.nextNarrationTriggeredBy = NarrationTrigger.SYSTEM;
       this.minecraft = minecraft;
       this.font = font;
       this.title = title;
@@ -135,27 +136,13 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          return true;
       } else {
          Object var10000;
-         switch (event.key()) {
-            case 258:
-               var10000 = this.createTabEvent(!event.hasShiftDown());
-               break;
-            case 259:
-            case 260:
-            case 261:
-            default:
-               var10000 = null;
-               break;
-            case 262:
-               var10000 = this.createArrowEvent(ScreenDirection.RIGHT);
-               break;
-            case 263:
-               var10000 = this.createArrowEvent(ScreenDirection.LEFT);
-               break;
-            case 264:
-               var10000 = this.createArrowEvent(ScreenDirection.DOWN);
-               break;
-            case 265:
-               var10000 = this.createArrowEvent(ScreenDirection.UP);
+         switch (event.shortcutKey()) {
+            case 9 -> var10000 = this.createTabEvent(!event.hasShiftDown());
+            case 1073741903 -> var10000 = this.createArrowEvent(ScreenDirection.RIGHT);
+            case 1073741904 -> var10000 = this.createArrowEvent(ScreenDirection.LEFT);
+            case 1073741905 -> var10000 = this.createArrowEvent(ScreenDirection.DOWN);
+            case 1073741906 -> var10000 = this.createArrowEvent(ScreenDirection.UP);
+            default -> var10000 = null;
          }
 
          FocusNavigationEvent navigationEvent = (FocusNavigationEvent)var10000;
@@ -208,6 +195,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          componentPath.applyFocus(false);
       }
 
+   }
+
+   public boolean isInputCaptured() {
+      ComponentPath focusPath = this.getCurrentFocusPath();
+      return focusPath != null && focusPath.leafComponent().capturesInput();
    }
 
    @VisibleForTesting
@@ -334,7 +326,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
             break;
          case 1:
             ClickEvent.OpenFile openFile = (ClickEvent.OpenFile)event;
-            Util.getPlatform().openFile(openFile.file());
+            Blaze3D.openPath(openFile.file().toPath());
             var20 = true;
             break;
          case 2:
@@ -387,13 +379,13 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          if ((Boolean)minecraft.options.chatLinksPrompt().get()) {
             minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
                if (result) {
-                  Util.getPlatform().openUri(uri);
+                  Blaze3D.openUri(uri);
                }
 
                minecraft.gui.setScreen(screen);
-            }, uri.toString(), false));
+            }, uri, false));
          } else {
-            Util.getPlatform().openUri(uri);
+            Blaze3D.openUri(uri);
          }
 
          return true;
@@ -522,11 +514,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.repositionElements();
    }
 
-   public void fillCrashDetails(final CrashReport report) {
-      CrashReportCategory category = report.addCategory("Affected screen", 1);
-      category.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
-   }
-
    protected boolean isValidCharacterForName(final String currentName, final int newChar, final int cursorPos) {
       int colonPos = currentName.indexOf(58);
       int slashPos = currentName.indexOf(47);
@@ -546,8 +533,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void onFilesDrop(final List<Path> files) {
    }
 
-   private void scheduleNarration(final long delay, final boolean ignoreSuppression) {
+   private void scheduleNarration(final long delay, final boolean ignoreSuppression, final NarrationTrigger narrationTrigger) {
       this.nextNarrationTime = Util.getMillis() + delay;
+      this.nextNarrationTriggeredBy = narrationTrigger;
       if (ignoreSuppression) {
          this.narrationSuppressTime = -9223372036854775808L;
       }
@@ -562,16 +550,20 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationSuppressTime = narrationSuppressTime;
    }
 
+   public void scheduleNarration() {
+      this.scheduleNarration(0L, true, NarrationTrigger.SYSTEM);
+   }
+
    public void afterMouseMove() {
-      this.scheduleNarration(750L, false);
+      this.scheduleNarration(750L, false, NarrationTrigger.MOUSE);
    }
 
    public void afterMouseAction() {
-      this.scheduleNarration(200L, true);
+      this.scheduleNarration(200L, true, NarrationTrigger.MOUSE);
    }
 
    public void afterKeyboardAction() {
-      this.scheduleNarration(200L, true);
+      this.scheduleNarration(200L, true, NarrationTrigger.KEYBOARD);
    }
 
    private boolean shouldRunNarration() {
@@ -582,7 +574,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       if (this.shouldRunNarration()) {
          long currentTime = Util.getMillis();
          if (currentTime > this.nextNarrationTime && currentTime > this.narrationSuppressTime) {
-            this.runNarration(true);
+            this.runNarration(true, this.nextNarrationTriggeredBy);
             this.nextNarrationTime = 9223372036854775807L;
          }
       }
@@ -591,13 +583,13 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void triggerImmediateNarration(final boolean onlyChanged) {
       if (this.shouldRunNarration()) {
-         this.runNarration(onlyChanged);
+         this.runNarration(onlyChanged, NarrationTrigger.SYSTEM);
       }
 
    }
 
-   private void runNarration(final boolean onlyChanged) {
-      this.narrationState.update(this::updateNarrationState);
+   private void runNarration(final boolean onlyChanged, final NarrationTrigger narrationTrigger) {
+      this.narrationState.update(this::updateNarrationState, narrationTrigger);
       String narration = this.narrationState.collectNarrationText(!onlyChanged);
       if (!narration.isEmpty()) {
          this.minecraft.getNarrator().saySystemNow(narration);
@@ -662,9 +654,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return result != null ? result : lowPrioNarratable;
    }
 
-   public void updateNarratorStatus(final boolean wasDisabled) {
+   public void updateNarratorStatus(final boolean wasDisabled, final NarrationTrigger narrationTrigger) {
       if (wasDisabled) {
-         this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
+         this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false, narrationTrigger);
       }
 
       if (this.narratorButton != null) {

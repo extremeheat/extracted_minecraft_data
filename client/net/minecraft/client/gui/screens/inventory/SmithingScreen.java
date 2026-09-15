@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.equipment.Equippable;
-import net.minecraft.world.level.Level;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
@@ -137,13 +136,13 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
             case -1:
             default:
                this.armorStandPreview.leftHandItemStack = itemStack.copy();
-               itemModelResolver.updateForTopItem(this.armorStandPreview.leftHandItemState, itemStack, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, (Level)null, (ItemOwner)null, 0);
+               itemModelResolver.updateForTopItem(this.armorStandPreview.leftHandItemState, itemStack, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, this.minecraft.level, (ItemOwner)null, 0);
                break;
             case 0:
                if (HumanoidArmorLayer.shouldRender(itemStack, EquipmentSlot.HEAD)) {
                   this.armorStandPreview.headEquipment = itemStack.copy();
                } else {
-                  itemModelResolver.updateForTopItem(this.armorStandPreview.headItem, itemStack, ItemDisplayContext.HEAD, (Level)null, (ItemOwner)null, 0);
+                  itemModelResolver.updateForTopItem(this.armorStandPreview.headItem, itemStack, ItemDisplayContext.HEAD, this.minecraft.level, (ItemOwner)null, 0);
                }
                break;
             case 1:

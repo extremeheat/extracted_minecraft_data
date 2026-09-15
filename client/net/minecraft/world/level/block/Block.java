@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -32,6 +31,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -77,7 +77,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Block extends BlockBehaviour implements ItemLike {
-   public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<Block> builtInRegistryHolder;
    public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<BlockState>();
@@ -115,10 +114,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       map.defaultReturnValue((byte)127);
       return map;
    });
-
-   protected MapCodec<? extends Block> codec() {
-      return CODEC;
-   }
 
    public static int getId(final @Nullable BlockState blockState) {
       if (blockState == null) {
@@ -246,8 +241,8 @@ public class Block extends BlockBehaviour implements ItemLike {
       return state.getBlock() instanceof LeavesBlock || state.is(Blocks.BARRIER) || state.is(Blocks.CARVED_PUMPKIN) || state.is(Blocks.JACK_O_LANTERN) || state.is(Blocks.MELON) || state.is(Blocks.PUMPKIN) || state.is(BlockTags.SHULKER_BOXES);
    }
 
-   protected static boolean dropFromBlockInteractLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final BlockState interactedBlockState, final @Nullable BlockEntity interactedBlockEntity, final @Nullable ItemInstance tool, final @Nullable Entity interactingEntity, final BiConsumer<ServerLevel, ItemStack> consumer) {
-      return dropFromLootTable(level, key, (params) -> params.withParameter(LootContextParams.BLOCK_STATE, interactedBlockState).withOptionalParameter(LootContextParams.BLOCK_ENTITY, interactedBlockEntity).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, interactingEntity).withOptionalParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.BLOCK_INTERACT), consumer);
+   public static boolean dropFromBlockInteractLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final BlockPos interactedBlockPos, final BlockState interactedBlockState, final @Nullable BlockEntity interactedBlockEntity, final @Nullable ItemInstance tool, final @Nullable Entity interactingEntity, final BiConsumer<ServerLevel, ItemStack> consumer) {
+      return dropFromLootTable(level, key, (params) -> params.withParameter(LootContextParams.BLOCK_STATE, interactedBlockState).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(interactedBlockPos)).withOptionalParameter(LootContextParams.BLOCK_ENTITY, interactedBlockEntity).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, interactingEntity).withOptionalParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.BLOCK_INTERACT), consumer);
    }
 
    protected static boolean dropFromLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final Function<LootParams.Builder, LootParams> paramsBuilder, final BiConsumer<ServerLevel, ItemStack> consumer) {
@@ -409,7 +404,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.defaultBlockState();
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       player.awardStat(Stats.BLOCK_MINED.get(this));
       player.causeFoodExhaustion(0.005F);
       dropResources(state, level, pos, blockEntity, player, destroyedWith);
@@ -427,11 +422,19 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
-      entity.causeFallDamage(fallDistance, 1.0F, entity.damageSources().fall());
+      double reducedFallDistance = fallDistance * (double)(1.0F - this.getFallDistanceReduction());
+      entity.causeFallDamage(reducedFallDistance, 1.0F, entity.damageSources().fall());
+   }
+
+   public void bounceOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
    }
 
    public float getBounceRestitution() {
       return this.bounceRestitution;
+   }
+
+   public float getFallDistanceReduction() {
+      return this.fallDistanceReduction;
    }
 
    public float getFriction() {
@@ -446,12 +449,16 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.jumpFactor;
    }
 
-   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
-      level.levelEvent(player, 2001, pos, getId(state));
+   public void spawnDestroyByEntityParticles(final Level level, final @Nullable Entity entity, final BlockPos pos, final BlockState state) {
+      level.levelEvent(entity, 2001, pos, getId(state));
+   }
+
+   public void spawnDestroyParticles(final Level level, final BlockPos pos, final BlockState state) {
+      this.spawnDestroyByEntityParticles(level, (Entity)null, pos, state);
    }
 
    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
-      this.spawnDestroyParticles(level, player, pos, state);
+      this.spawnDestroyByEntityParticles(level, player, pos, state);
       if (state.is(BlockTags.GUARDED_BY_PIGLINS) && level instanceof ServerLevel serverLevel) {
          PiglinAi.angerNearbyPiglins(serverLevel, player, false);
       }
@@ -486,16 +493,10 @@ public class Block extends BlockBehaviour implements ItemLike {
       BlockState result = this.defaultBlockState();
 
       for(Property<?> property : source.getBlock().getStateDefinition().getProperties()) {
-         if (result.hasProperty(property)) {
-            result = copyProperty(source, result, property);
-         }
+         result = BlockBehaviour.BlockStateBase.copyProperty(source, result, property);
       }
 
       return result;
-   }
-
-   private static <T extends Comparable<T>> BlockState copyProperty(final BlockState from, final BlockState to, final Property<T> property) {
-      return (BlockState)to.setValue(property, from.getValue(property));
    }
 
    public Item asItem() {

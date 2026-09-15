@@ -83,8 +83,8 @@ public final class BelowZeroRetrogen {
          Set var10000 = RETAINED_RETROGEN_BIOMES;
          Objects.requireNonNull(var10000);
          Predicate<ResourceKey<Biome>> retainedBiomes = var10000::contains;
-         return (quartX, quartY, quartZ, sampler) -> {
-            Holder<Biome> noiseBiome = biomeResolver.getNoiseBiome(quartX, quartY, quartZ, sampler);
+         return (quartX, quartY, quartZ) -> {
+            Holder<Biome> noiseBiome = biomeResolver.getNoiseBiome(quartX, quartY, quartZ);
             return noiseBiome.is(retainedBiomes) ? noiseBiome : protoChunk.getNoiseBiome(quartX, 0, quartZ);
          };
       }

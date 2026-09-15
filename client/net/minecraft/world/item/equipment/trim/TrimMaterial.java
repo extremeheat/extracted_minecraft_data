@@ -4,15 +4,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.Identifier;
 
-public record TrimMaterial(MaterialAssetGroup assets, Component description) {
-   public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(MaterialAssetGroup.MAP_CODEC.forGetter(TrimMaterial::assets), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(i, TrimMaterial::new));
+public record TrimMaterial(Identifier paletteId, Component description) {
+   public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("palette_id").forGetter(TrimMaterial::paletteId), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(i, TrimMaterial::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, TrimMaterial> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<TrimMaterial>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<TrimMaterial>> STREAM_CODEC;
@@ -22,8 +23,8 @@ public record TrimMaterial(MaterialAssetGroup assets, Component description) {
    }
 
    static {
-      DIRECT_STREAM_CODEC = StreamCodec.composite(MaterialAssetGroup.STREAM_CODEC, TrimMaterial::assets, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
-      CODEC = RegistryFileCodec.<Holder<TrimMaterial>>create(Registries.TRIM_MATERIAL, DIRECT_CODEC);
+      DIRECT_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, TrimMaterial::paletteId, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
+      CODEC = RegistryCodecs.holder(Registries.TRIM_MATERIAL, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.TRIM_MATERIAL, DIRECT_STREAM_CODEC);
    }
 }

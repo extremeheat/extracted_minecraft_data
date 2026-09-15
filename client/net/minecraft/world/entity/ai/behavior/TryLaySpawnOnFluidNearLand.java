@@ -31,7 +31,7 @@ public class TryLaySpawnOnFluidNearLand {
                         BlockPos spawnPos = relativePos.above();
                         if (level.getBlockState(spawnPos).isAir()) {
                            BlockState newState = spawnBlock.defaultBlockState();
-                           level.setBlock(spawnPos, newState, 3);
+                           level.setBlockAndUpdate(spawnPos, newState);
                            level.gameEvent(GameEvent.BLOCK_PLACE, spawnPos, GameEvent.Context.of(body, newState));
                            level.playSound((Entity)null, body, SoundEvents.FROG_LAY_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                            pregnant.erase();

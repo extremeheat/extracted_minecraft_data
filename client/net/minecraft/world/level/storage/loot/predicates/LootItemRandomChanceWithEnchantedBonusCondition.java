@@ -5,8 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,7 +32,7 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedC
    }
 
    public boolean test(final LootContext context) {
-      Entity killerEntity = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+      Entity killerEntity = (Entity)context.getOptional(LootContextParams.ATTACKING_ENTITY);
       int var10000;
       if (killerEntity instanceof LivingEntity livingKiller) {
          var10000 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingKiller);
@@ -46,8 +45,7 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedC
       return context.getRandom().nextFloat() < chance;
    }
 
-   public static LootItemCondition.Builder randomChanceAndLootingBoost(final HolderLookup.Provider registries, final float chance, final float perEnchantmentLevel) {
-      HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
+   public static LootItemCondition.Builder randomChanceAndLootingBoost(final HolderGetter<Enchantment> enchantments, final float chance, final float perEnchantmentLevel) {
       return () -> new LootItemRandomChanceWithEnchantedBonusCondition(chance, new LevelBasedValue.Linear(chance + perEnchantmentLevel, perEnchantmentLevel), enchantments.getOrThrow(Enchantments.LOOTING));
    }
 }

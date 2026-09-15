@@ -3,14 +3,15 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
 public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -29,8 +30,8 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       this.trigger(player, (t) -> t.matches(parentContext, partnerContext, childContext));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> parent, Optional<ContextAwarePredicate> partner, Optional<ContextAwarePredicate> child) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("parent").forGetter(TriggerInstance::parent), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("partner").forGetter(TriggerInstance::partner), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("child").forGetter(TriggerInstance::child)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Holder<LootItemCondition>> parent, Optional<Holder<LootItemCondition>> partner, Optional<Holder<LootItemCondition>> child) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootItemCondition.CODEC.optionalFieldOf("parent").forGetter(TriggerInstance::parent), LootItemCondition.CODEC.optionalFieldOf("partner").forGetter(TriggerInstance::partner), LootItemCondition.CODEC.optionalFieldOf("child").forGetter(TriggerInstance::child)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -49,22 +50,22 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       }
 
       public boolean matches(final LootContext parent, final LootContext partner, final @Nullable LootContext child) {
-         if (!this.child.isPresent() || child != null && ((ContextAwarePredicate)this.child.get()).matches(child)) {
+         if (!this.child.isPresent() || child != null && ((LootItemCondition)((Holder)this.child.get()).value()).test(child)) {
             return matches(this.parent, parent) && matches(this.partner, partner) || matches(this.parent, partner) && matches(this.partner, parent);
          } else {
             return false;
          }
       }
 
-      private static boolean matches(final Optional<ContextAwarePredicate> predicate, final LootContext context) {
-         return predicate.isEmpty() || ((ContextAwarePredicate)predicate.get()).matches(context);
+      private static boolean matches(final Optional<Holder<LootItemCondition>> predicate, final LootContext context) {
+         return predicate.isEmpty() || ((LootItemCondition)((Holder)predicate.get()).value()).test(context);
       }
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "parent", this.parent);
-         Validatable.validate(validator.entityContext(), "partner", this.partner);
-         Validatable.validate(validator.entityContext(), "child", this.child);
+         Validatable.validateHolder(validator.entityContext(), "parent", this.parent);
+         Validatable.validateHolder(validator.entityContext(), "partner", this.partner);
+         Validatable.validateHolder(validator.entityContext(), "child", this.child);
       }
    }
 }

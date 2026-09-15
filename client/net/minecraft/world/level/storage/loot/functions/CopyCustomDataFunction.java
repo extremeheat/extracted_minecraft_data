@@ -7,8 +7,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -30,8 +32,8 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
    private final NbtProvider source;
    private final List<CopyOperation> operations;
 
-   private CopyCustomDataFunction(final List<LootItemCondition> predicates, final NbtProvider source, final List<CopyOperation> operations) {
-      super(predicates);
+   private CopyCustomDataFunction(final Optional<Holder<LootItemCondition>> condition, final NbtProvider source, final List<CopyOperation> operations) {
+      super(condition);
       this.source = source;
       this.operations = List.copyOf(operations);
    }
@@ -124,7 +126,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new CopyCustomDataFunction(this.getConditions(), this.source, this.ops);
+         return new CopyCustomDataFunction(this.getCondition(), this.source, this.ops);
       }
    }
 

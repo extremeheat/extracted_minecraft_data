@@ -1,51 +1,25 @@
 package net.minecraft.network.protocol.game;
 
 import com.google.common.collect.Sets;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.Identifier;
 
-public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket>codec(ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new);
-   private final boolean reset;
-   private final List<AdvancementHolder> added;
-   private final Set<Identifier> removed;
-   private final Map<Identifier, AdvancementProgress> progress;
-   private final boolean showAdvancements;
+public record ClientboundUpdateAdvancementsPacket(boolean shouldReset, List<PositionedAdvancement> added, Set<Identifier> removed, Map<Identifier, AdvancementProgress> progress, boolean showAdvancements) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC;
 
-   public ClientboundUpdateAdvancementsPacket(final boolean reset, final Collection<AdvancementHolder> newAdvancements, final Set<Identifier> removedAdvancements, final Map<Identifier, AdvancementProgress> progress, final boolean showAdvancements) {
+   public ClientboundUpdateAdvancementsPacket {
       super();
-      this.reset = reset;
-      this.added = List.copyOf(newAdvancements);
-      this.removed = Set.copyOf(removedAdvancements);
-      this.progress = Map.copyOf(progress);
-      this.showAdvancements = showAdvancements;
-   }
-
-   private ClientboundUpdateAdvancementsPacket(final RegistryFriendlyByteBuf input) {
-      super();
-      this.reset = input.readBoolean();
-      this.added = (List)AdvancementHolder.LIST_STREAM_CODEC.decode(input);
-      this.removed = (Set)input.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readIdentifier);
-      this.progress = input.readMap(FriendlyByteBuf::readIdentifier, AdvancementProgress::fromNetwork);
-      this.showAdvancements = input.readBoolean();
-   }
-
-   private void write(final RegistryFriendlyByteBuf output) {
-      output.writeBoolean(this.reset);
-      AdvancementHolder.LIST_STREAM_CODEC.encode(output, this.added);
-      output.writeCollection(this.removed, FriendlyByteBuf::writeIdentifier);
-      output.writeMap(this.progress, FriendlyByteBuf::writeIdentifier, (buffer, value) -> value.serializeToNetwork(buffer));
-      output.writeBoolean(this.showAdvancements);
    }
 
    public PacketType<ClientboundUpdateAdvancementsPacket> type() {
@@ -56,23 +30,23 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       listener.handleUpdateAdvancementsPacket(this);
    }
 
-   public List<AdvancementHolder> getAdded() {
-      return this.added;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, ClientboundUpdateAdvancementsPacket::shouldReset, ClientboundUpdateAdvancementsPacket.PositionedAdvancement.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundUpdateAdvancementsPacket::added, Identifier.STREAM_CODEC.apply(ByteBufCodecs.collection(Sets::newLinkedHashSetWithExpectedSize)), ClientboundUpdateAdvancementsPacket::removed, ByteBufCodecs.map(HashMap::new, Identifier.STREAM_CODEC, AdvancementProgress.STREAM_CODEC), ClientboundUpdateAdvancementsPacket::progress, ByteBufCodecs.BOOL, ClientboundUpdateAdvancementsPacket::showAdvancements, ClientboundUpdateAdvancementsPacket::new);
    }
 
-   public Set<Identifier> getRemoved() {
-      return this.removed;
-   }
+   public static record PositionedAdvancement(AdvancementHolder advancement, float x, float y) {
+      public static final StreamCodec<RegistryFriendlyByteBuf, PositionedAdvancement> STREAM_CODEC;
 
-   public Map<Identifier, AdvancementProgress> getProgress() {
-      return this.progress;
-   }
+      public PositionedAdvancement {
+         super();
+      }
 
-   public boolean shouldReset() {
-      return this.reset;
-   }
+      public static PositionedAdvancement fromNode(final AdvancementNode node) {
+         return new PositionedAdvancement(node.holder(), node.x(), node.y());
+      }
 
-   public boolean shouldShowAdvancements() {
-      return this.showAdvancements;
+      static {
+         STREAM_CODEC = StreamCodec.composite(AdvancementHolder.STREAM_CODEC, PositionedAdvancement::advancement, ByteBufCodecs.FLOAT, PositionedAdvancement::x, ByteBufCodecs.FLOAT, PositionedAdvancement::y, PositionedAdvancement::new);
+      }
    }
 }

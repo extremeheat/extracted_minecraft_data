@@ -67,7 +67,7 @@ public class NbtOps implements DynamicOps<Tag> {
          switch (var3.typeSwitch<invokedynamic>(var3, var4)) {
             case 0:
                EndTag ignored = (EndTag)var3;
-               var10000 = (StringTag)outOps.empty();
+               var10000 = outOps.empty();
                break;
             case 1:
                ByteTag var6 = (ByteTag)var3;
@@ -85,7 +85,7 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createByte(value);
+               var10000 = outOps.createByte(value);
                break;
             case 2:
                ShortTag value = (ShortTag)var3;
@@ -103,7 +103,7 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createShort(value);
+               var10000 = outOps.createShort(value);
                break;
             case 3:
                IntTag value = (IntTag)var3;
@@ -121,7 +121,7 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createInt(value);
+               var10000 = outOps.createInt(value);
                break;
             case 4:
                LongTag value = (LongTag)var3;
@@ -139,7 +139,7 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createLong(value);
+               var10000 = outOps.createLong(value);
                break;
             case 5:
                FloatTag value = (FloatTag)var3;
@@ -157,7 +157,7 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createFloat(value);
+               var10000 = outOps.createFloat(value);
                break;
             case 6:
                DoubleTag value = (DoubleTag)var3;
@@ -175,40 +175,40 @@ public class NbtOps implements DynamicOps<Tag> {
                   continue;
                }
 
-               var10000 = (StringTag)outOps.createDouble(value);
+               var10000 = outOps.createDouble(value);
                break;
             case 7:
                ByteArrayTag byteArrayTag = (ByteArrayTag)var3;
-               var10000 = (StringTag)outOps.createByteList(ByteBuffer.wrap(byteArrayTag.getAsByteArray()));
+               var10000 = outOps.createByteList(ByteBuffer.wrap(byteArrayTag.getAsByteArray()));
                break;
             case 8:
                StringTag var21 = (StringTag)var3;
-               var10000 = var21;
+               StringTag var41 = var21;
 
                try {
-                  var42 = var10000.value();
+                  var42 = var41.value();
                } catch (Throwable var27) {
                   throw new MatchException(var27.toString(), var27);
                }
 
                String value = var42;
-               var10000 = (StringTag)outOps.createString(value);
+               var10000 = outOps.createString(value);
                break;
             case 9:
                ListTag listTag = (ListTag)var3;
-               var10000 = (StringTag)this.convertList(outOps, listTag);
+               var10000 = this.convertList(outOps, listTag);
                break;
             case 10:
                CompoundTag compoundTag = (CompoundTag)var3;
-               var10000 = (StringTag)this.convertMap(outOps, compoundTag);
+               var10000 = this.convertMap(outOps, compoundTag);
                break;
             case 11:
                IntArrayTag intArrayTag = (IntArrayTag)var3;
-               var10000 = (StringTag)outOps.createIntList(Arrays.stream(intArrayTag.getAsIntArray()));
+               var10000 = outOps.createIntList(Arrays.stream(intArrayTag.getAsIntArray()));
                break;
             case 12:
                LongArrayTag longArrayTag = (LongArrayTag)var3;
-               var10000 = (StringTag)outOps.createLongList(Arrays.stream(longArrayTag.getAsLongArray()));
+               var10000 = outOps.createLongList(Arrays.stream(longArrayTag.getAsLongArray()));
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);

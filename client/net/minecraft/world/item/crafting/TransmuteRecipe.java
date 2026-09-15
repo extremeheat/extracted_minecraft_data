@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
@@ -30,10 +32,10 @@ public class TransmuteRecipe extends NormalCraftingRecipe {
    private final Ingredient input;
    private final Ingredient material;
    private final MinMaxBounds.Ints materialCount;
-   private final ItemStackTemplate result;
+   private final TransmuteResult result;
    private final boolean addMaterialCountToResult;
 
-   public TransmuteRecipe(final Recipe.CommonInfo commonInfo, final CraftingRecipe.CraftingBookInfo bookInfo, final Ingredient input, final Ingredient material, final MinMaxBounds.Ints materialCount, final ItemStackTemplate result, final boolean addMaterialCountToResult) {
+   public TransmuteRecipe(final Recipe.CommonInfo commonInfo, final CraftingRecipe.CraftingBookInfo bookInfo, final Ingredient input, final Ingredient material, final MinMaxBounds.Ints materialCount, final TransmuteResult result, final boolean addMaterialCountToResult) {
       super(commonInfo, bookInfo);
       this.input = input;
       this.material = material;
@@ -55,7 +57,7 @@ public class TransmuteRecipe extends NormalCraftingRecipe {
    }
 
    private ItemStack computeResult(final ItemStack inputIngredient, final int materialCount) {
-      return createWithOriginalComponents(this.result, inputIngredient, materialCount);
+      return createWithOriginalComponents(this.result.resolve(inputIngredient.typeHolder()), inputIngredient, materialCount);
    }
 
    public boolean matches(final CraftingInput input, final Level level) {
@@ -146,11 +148,18 @@ public class TransmuteRecipe extends NormalCraftingRecipe {
 
       for(int materialCount = minMaterialCount; materialCount <= maxMaterialCount; ++materialCount) {
          ingredientSlots.add(materialDisplay);
-         int resultCount = this.computeResultSize(materialCount);
-         displays.add(new ShapelessCraftingRecipeDisplay(List.copyOf(ingredientSlots), new SlotDisplay.ItemStackSlotDisplay(this.result.withCount(resultCount)), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+         displays.add(new ShapelessCraftingRecipeDisplay(List.copyOf(ingredientSlots), this.resultDisplay(this.computeResultSize(materialCount)), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
       }
 
       return displays;
+   }
+
+   private SlotDisplay resultDisplay(final int resultCount) {
+      return (SlotDisplay)this.result.item().map((item) -> this.stackDisplay(item, resultCount)).orElseGet(() -> new SlotDisplay.Composite(this.input.items().map((item) -> this.stackDisplay(item, resultCount)).toList()));
+   }
+
+   private SlotDisplay stackDisplay(final Holder<Item> item, final int resultCount) {
+      return new SlotDisplay.ItemStackSlotDisplay(this.result.resolve(item, resultCount));
    }
 
    private int minMaterialCount() {
@@ -175,8 +184,8 @@ public class TransmuteRecipe extends NormalCraftingRecipe {
 
    static {
       MATERIAL_COUNT_BOUNDS = MinMaxBounds.Ints.CODEC.validate(MinMaxBounds.validateContainedInRange(FULL_RANGE_MATERIAL_COUNT));
-      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), Ingredient.CODEC.fieldOf("input").forGetter((o) -> o.input), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), MATERIAL_COUNT_BOUNDS.optionalFieldOf("material_count", DEFAULT_MATERIAL_COUNT).forGetter((o) -> o.materialCount), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result), Codec.BOOL.optionalFieldOf("add_material_count_to_result", false).forGetter((o) -> o.addMaterialCountToResult)).apply(i, TransmuteRecipe::new));
-      STREAM_CODEC = StreamCodec.composite(Recipe.CommonInfo.STREAM_CODEC, (o) -> o.commonInfo, CraftingRecipe.CraftingBookInfo.STREAM_CODEC, (o) -> o.bookInfo, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.input, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, MinMaxBounds.Ints.STREAM_CODEC, (o) -> o.materialCount, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, ByteBufCodecs.BOOL, (o) -> o.addMaterialCountToResult, TransmuteRecipe::new);
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), Ingredient.CODEC.fieldOf("input").forGetter((o) -> o.input), Ingredient.CODEC.fieldOf("material").forGetter((o) -> o.material), MATERIAL_COUNT_BOUNDS.optionalFieldOf("material_count", DEFAULT_MATERIAL_COUNT).forGetter((o) -> o.materialCount), TransmuteResult.CODEC.fieldOf("result").forGetter((o) -> o.result), Codec.BOOL.optionalFieldOf("add_material_count_to_result", false).forGetter((o) -> o.addMaterialCountToResult)).apply(i, TransmuteRecipe::new));
+      STREAM_CODEC = StreamCodec.composite(Recipe.CommonInfo.STREAM_CODEC, (o) -> o.commonInfo, CraftingRecipe.CraftingBookInfo.STREAM_CODEC, (o) -> o.bookInfo, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.input, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.material, MinMaxBounds.Ints.STREAM_CODEC, (o) -> o.materialCount, TransmuteResult.STREAM_CODEC, (o) -> o.result, ByteBufCodecs.BOOL, (o) -> o.addMaterialCountToResult, TransmuteRecipe::new);
       SERIALIZER = new RecipeSerializer<TransmuteRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

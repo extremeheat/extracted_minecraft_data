@@ -6,8 +6,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.TridentModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -15,7 +13,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.phys.AABB;
-import org.joml.Quaternionfc;
 
 public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownTridentRenderState> {
    public static final Identifier TRIDENT_LOCATION = Identifier.withDefaultNamespace("textures/entity/trident/trident.png");
@@ -28,19 +25,20 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
 
    public void submit(final ThrownTridentRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot + 90.0F));
-      submitNodeCollector.order(0).submitModel(this.model, Unit.INSTANCE, poseStack, (Identifier)TRIDENT_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.rotateDegrees(Axis.YP, state.yRot - 90.0F);
+      poseStack.rotateDegrees(Axis.ZP, state.xRot + 90.0F);
       if (state.isFoil) {
-         submitNodeCollector.order(1).submitModel(this.model, Unit.INSTANCE, poseStack, (RenderType)RenderTypes.entityGlint(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(TRIDENT_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+      } else {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, TRIDENT_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
 
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected AABB getBoundingBoxForCulling(final ThrownTrident entity) {
-      return super.getBoundingBoxForCulling(entity).inflate(1.5);
+   protected AABB getBoundingBoxForCulling(final ThrownTrident entity, final float partialTicks) {
+      return super.getBoundingBoxForCulling(entity, partialTicks).inflate(1.5);
    }
 
    public ThrownTridentRenderState createRenderState() {

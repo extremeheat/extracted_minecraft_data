@@ -11,8 +11,8 @@ public interface GameTestInstances {
    ResourceKey<GameTestInstance> ALWAYS_PASS = create("always_pass");
 
    static void bootstrap(final BootstrapContext<GameTestInstance> context) {
-      HolderGetter<Consumer<GameTestHelper>> functions = context.<Consumer<GameTestHelper>>lookup(Registries.TEST_FUNCTION);
-      HolderGetter<TestEnvironmentDefinition<?>> batches = context.<TestEnvironmentDefinition<?>>lookup(Registries.TEST_ENVIRONMENT);
+      HolderGetter<Consumer<GameTestHelper>> functions = context.lookup(Registries.TEST_FUNCTION);
+      HolderGetter<TestEnvironmentDefinition<?>> batches = context.lookup(Registries.TEST_ENVIRONMENT);
       context.register(ALWAYS_PASS, new FunctionGameTestInstance(BuiltinTestFunctions.ALWAYS_PASS, new TestData(batches.getOrThrow(GameTestEnvironments.DEFAULT_KEY), Identifier.withDefaultNamespace("empty"), 1, 1, false)));
    }
 

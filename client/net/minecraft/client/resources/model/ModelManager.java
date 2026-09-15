@@ -35,7 +35,6 @@ import net.minecraft.client.resources.model.cuboid.CuboidModel;
 import net.minecraft.client.resources.model.cuboid.ItemModelGenerator;
 import net.minecraft.client.resources.model.cuboid.MissingCuboidModel;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
-import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.MaterialBaker;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
@@ -183,17 +182,15 @@ public class ModelManager implements PreparableReloadListener {
    }
 
    private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas, final ModelBakery bakery, final LoadedBlockModels blockModels, final Object2IntMap<BlockState> modelGroups, final EntityModelSet entityModelSet, final Executor taskExecutor) {
-      MaterialBaker blockItemMaterialBaker = new CombinedBlockItemMaterialBaker(blockAtlas, itemAtlas);
-      MaterialBaker blockOnlyMaterialBaker = new BlockOnlyMaterialBaker(blockAtlas);
-      CompletableFuture<ModelBakery.BakingResult> bakedStateResults = bakery.bakeModels(blockItemMaterialBaker, taskExecutor);
+      MaterialBaker materialBaker = new MaterialBaker(blockAtlas, itemAtlas);
+      CompletableFuture<ModelBakery.BakingResult> bakedStateResults = bakery.bakeModels(materialBaker, taskExecutor);
       CompletableFuture<Map<BlockState, BlockModel>> bakedModelsFuture = bakedStateResults.thenCompose((bakingResult) -> {
          Objects.requireNonNull(bakingResult);
          return blockModels.bake(bakingResult::getBlockStateModel, bakingResult.missingModels().block(), taskExecutor);
       });
       return bakedStateResults.thenCombine(bakedModelsFuture, (bakingResult, bakedModels) -> {
-         blockItemMaterialBaker.logMissingTextures();
-         Map<Fluid, FluidModel> fluidModels = FluidStateModelSet.bake(blockOnlyMaterialBaker);
-         blockOnlyMaterialBaker.logMissingTextures();
+         Map<Fluid, FluidModel> fluidModels = FluidStateModelSet.bake(materialBaker);
+         materialBaker.logMissingTextures();
          Map<BlockState, BlockStateModel> modelByStateCache = createBlockStateToModelDispatch(bakingResult.blockStateModels(), bakingResult.missingModels().block());
          return new ReloadState(bakingResult, modelGroups, modelByStateCache, bakedModels, fluidModels, entityModelSet);
       });
@@ -265,35 +262,6 @@ public class ModelManager implements PreparableReloadListener {
    private static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BlockStateModel> blockStateModels, Map<BlockState, BlockModel> blockModels, Map<Fluid, FluidModel> fluidModels, EntityModelSet entityModelSet) {
       private ReloadState {
          super();
-      }
-   }
-
-   private static class BlockOnlyMaterialBaker extends MaterialBaker {
-      private final SpriteLoader.Preparations blockAtlas;
-
-      public BlockOnlyMaterialBaker(final SpriteLoader.Preparations blockAtlas) {
-         super(blockAtlas.missing());
-         this.blockAtlas = blockAtlas;
-      }
-
-      protected Material.@Nullable Baked bake(final Material material) {
-         return bakeForAtlas(material, this.blockAtlas);
-      }
-   }
-
-   private static class CombinedBlockItemMaterialBaker extends MaterialBaker {
-      private final SpriteLoader.Preparations blockAtlas;
-      private final SpriteLoader.Preparations itemAtlas;
-
-      public CombinedBlockItemMaterialBaker(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas) {
-         super(blockAtlas.missing());
-         this.blockAtlas = blockAtlas;
-         this.itemAtlas = itemAtlas;
-      }
-
-      protected Material.@Nullable Baked bake(final Material material) {
-         Material.Baked itemMaterial = bakeForAtlas(material, this.itemAtlas);
-         return itemMaterial != null ? itemMaterial : bakeForAtlas(material, this.blockAtlas);
       }
    }
 }

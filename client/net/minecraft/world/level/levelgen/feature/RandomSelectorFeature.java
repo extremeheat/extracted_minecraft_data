@@ -1,31 +1,40 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class RandomSelectorFeature extends Feature<RandomFeatureConfiguration> {
-   public RandomSelectorFeature(final Codec<RandomFeatureConfiguration> codec) {
-      super(codec);
+/** @deprecated */
+@Deprecated
+public record RandomSelectorFeature(List<WeightedPlacedFeature> features, Holder<PlacedFeature> defaultFeature) implements Feature {
+   public static final MapCodec<RandomSelectorFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedPlacedFeature.CODEC.listOf().fieldOf("features").forGetter(RandomSelectorFeature::features), PlacedFeature.CODEC.fieldOf("default").forGetter(RandomSelectorFeature::defaultFeature)).apply(i, RandomSelectorFeature::new));
+
+   public RandomSelectorFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<RandomFeatureConfiguration> context) {
-      RandomFeatureConfiguration config = context.config();
-      RandomSource random = context.random();
-      WorldGenLevel level = context.level();
-      ChunkGenerator chunkGenerator = context.chunkGenerator();
-      BlockPos origin = context.origin();
+   public MapCodec<RandomSelectorFeature> codec() {
+      return CODEC;
+   }
 
-      for(WeightedPlacedFeature feature : config.features()) {
+   public Stream<Holder<Feature>> getSubFeatures() {
+      return Stream.concat(this.features.stream().flatMap((weighted) -> ((PlacedFeature)weighted.feature().value()).getFeatures()), (this.defaultFeature.value()).getFeatures());
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      for(WeightedPlacedFeature feature : this.features) {
          if (random.nextFloat() < feature.chance()) {
             return feature.place(level, chunkGenerator, random, origin);
          }
       }
 
-      return ((PlacedFeature)config.defaultFeature().value()).place(level, chunkGenerator, random, origin);
+      return ((PlacedFeature)this.defaultFeature.value()).place(level, chunkGenerator, random, origin);
    }
 }

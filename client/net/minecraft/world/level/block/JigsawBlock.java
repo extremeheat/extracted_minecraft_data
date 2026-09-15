@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
@@ -19,12 +18,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.phys.BlockHitResult;
 
 public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
-   public static final MapCodec<JigsawBlock> CODEC = simpleCodec(JigsawBlock::new);
    public static final EnumProperty<FrontAndTop> ORIENTATION;
-
-   public MapCodec<JigsawBlock> codec() {
-      return CODEC;
-   }
 
    protected JigsawBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -72,13 +66,13 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
    }
 
    public static boolean canAttach(final StructureTemplate.JigsawBlockInfo source, final StructureTemplate.JigsawBlockInfo target) {
-      Direction sourceFront = getFrontFacing(source.info().state());
-      Direction targetFront = getFrontFacing(target.info().state());
-      Direction sourceTop = getTopFacing(source.info().state());
-      Direction targetTop = getTopFacing(target.info().state());
+      Direction sourceFront = getFrontFacing(source.state());
+      Direction targetFront = getFrontFacing(target.state());
+      Direction sourceTop = getTopFacing(source.state());
+      Direction targetTop = getTopFacing(target.state());
       JigsawBlockEntity.JointType jointType = source.jointType();
       boolean rollable = jointType == JigsawBlockEntity.JointType.ROLLABLE;
-      return sourceFront == targetFront.getOpposite() && (rollable || sourceTop == targetTop) && source.target().equals(target.name());
+      return sourceFront == targetFront.getOpposite() && (rollable || sourceTop == targetTop) && (target.name() == null || source.target().equals(target.name()));
    }
 
    public static Direction getFrontFacing(final BlockState state) {

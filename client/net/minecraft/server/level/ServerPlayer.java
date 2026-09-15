@@ -55,6 +55,7 @@ import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundPostEffectsPacket;
 import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -94,10 +95,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.permissions.PermissionSet;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.stats.ServerRecipeBook;
@@ -107,6 +110,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
@@ -118,7 +122,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.attribute.BedRule;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -165,11 +168,11 @@ import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.inventory.RemoteSlot;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ServerItemCooldowns;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -179,13 +182,14 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.AbstractBedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -271,6 +275,7 @@ public class ServerPlayer extends Player {
    private Vec3 lastKnownClientMovement;
    private Input lastClientInput;
    private final Set<ThrownEnderpearl> enderPearls;
+   private boolean postEffectsDirty;
    private long timeEntitySatOnShoulder;
    private CompoundTag shoulderEntityLeft;
    private CompoundTag shoulderEntityRight;
@@ -299,6 +304,7 @@ public class ServerPlayer extends Player {
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
+      this.postEffectsDirty = true;
       this.shoulderEntityLeft = new CompoundTag();
       this.shoulderEntityRight = new CompoundTag();
       this.containerSynchronizer = new ContainerSynchronizer() {
@@ -428,6 +434,10 @@ public class ServerPlayer extends Player {
       this.spawnExtraParticlesOnFall = input.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)input.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(input, "playerGameType")), readPlayerMode(input, "previousPlayerGameType"));
+      Optional var10000 = input.read("post_effects", Codec.list(Identifier.CODEC));
+      List var10001 = this.postEffects;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::addAll);
       this.setShoulderEntityLeft((CompoundTag)input.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
       this.setShoulderEntityRight((CompoundTag)input.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
    }
@@ -446,6 +456,7 @@ public class ServerPlayer extends Player {
       output.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       output.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
       this.saveEnderPearls(output);
+      output.store("post_effects", Codec.list(Identifier.CODEC), this.postEffects);
       if (!this.getShoulderEntityLeft().isEmpty()) {
          output.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
       }
@@ -597,8 +608,8 @@ public class ServerPlayer extends Player {
       this.connection.tickClientLoadTimeout();
       this.gameMode.tick();
       this.wardenSpawnTracker.tick();
-      if (this.invulnerableTime > 0) {
-         --this.invulnerableTime;
+      if (this.damageCooldownTime > 0) {
+         --this.damageCooldownTime;
       }
 
       this.containerMenu.broadcastChanges();
@@ -629,6 +640,10 @@ public class ServerPlayer extends Player {
       this.trackEnteredOrExitedLavaOnVehicle();
       this.updatePlayerAttributes();
       this.advancements.flushDirty(this, true);
+      if (this.postEffectsDirty) {
+         this.sendPostEffects();
+      }
+
    }
 
    private void updatePlayerAttributes() {
@@ -1044,6 +1059,44 @@ public class ServerPlayer extends Player {
       super.onAttributeUpdated(attribute);
    }
 
+   public void sendPostEffects() {
+      this.postEffectsDirty = false;
+      this.connection.send(new ClientboundPostEffectsPacket(this.postEffects));
+   }
+
+   public boolean addPostEffect(final Identifier postEffect) {
+      if (this.postEffects.contains(postEffect)) {
+         return false;
+      } else {
+         this.postEffects.add(postEffect);
+         this.postEffectsDirty = true;
+         return true;
+      }
+   }
+
+   public boolean clearPostEffects() {
+      if (this.postEffects.isEmpty()) {
+         return false;
+      } else {
+         this.postEffects.clear();
+         this.postEffectsDirty = true;
+         return true;
+      }
+   }
+
+   public List<Identifier> getPostEffects() {
+      return this.postEffects;
+   }
+
+   public boolean removePostEffect(final Identifier postEffect) {
+      if (this.postEffects.remove(postEffect)) {
+         this.postEffectsDirty = true;
+         return true;
+      } else {
+         return false;
+      }
+   }
+
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(final ServerLevel level, final RespawnConfig respawnConfig, final boolean consumeSpawnBlock) {
       LevelData.RespawnData respawnData = respawnConfig.respawnData;
       BlockPos pos = respawnData.pos();
@@ -1055,19 +1108,26 @@ public class ServerPlayer extends Player {
       if (block instanceof RespawnAnchorBlock && (forced || (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(level, pos)) {
          Optional<Vec3> standUpPosition = RespawnAnchorBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos);
          if (!forced && consumeSpawnBlock && standUpPosition.isPresent()) {
-            level.setBlock(pos, (BlockState)blockState.setValue(RespawnAnchorBlock.CHARGE, (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
+            level.setBlockAndUpdate(pos, (BlockState)blockState.setValue(RespawnAnchorBlock.CHARGE, (Integer)blockState.getValue(RespawnAnchorBlock.CHARGE) - 1));
          }
 
          return standUpPosition.map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
-      } else if (block instanceof BedBlock && ((BedRule)level.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos)).canSetSpawn(level)) {
-         return BedBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos, (Direction)blockState.getValue(BedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
-      } else if (!forced) {
-         return Optional.empty();
       } else {
-         boolean freeBottom = block.isPossibleToRespawnInThis(blockState);
-         BlockState topState = level.getBlockState(pos.above());
-         boolean freeTop = topState.getBlock().isPossibleToRespawnInThis(topState);
-         return freeBottom && freeTop ? Optional.of(new RespawnPosAngle(new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5), yaw, pitch)) : Optional.empty();
+         if (block instanceof AbstractBedBlock) {
+            AbstractBedBlock abstractBedBlock = (AbstractBedBlock)block;
+            if (abstractBedBlock.getBedRule(level, pos).canSetSpawn(level)) {
+               return AbstractBedBlock.findStandUpPosition(EntityTypes.PLAYER, level, pos, (Direction)blockState.getValue(AbstractBedBlock.FACING), yaw).map((p) -> ServerPlayer.RespawnPosAngle.of(p, pos, 0.0F));
+            }
+         }
+
+         if (!forced) {
+            return Optional.empty();
+         } else {
+            boolean freeBottom = block.isPossibleToRespawnInThis(blockState);
+            BlockState topState = level.getBlockState(pos.above());
+            boolean freeTop = topState.getBlock().isPossibleToRespawnInThis(topState);
+            return freeBottom && freeTop ? Optional.of(new RespawnPosAngle(new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5), yaw, pitch)) : Optional.empty();
+         }
       }
    }
 
@@ -1130,6 +1190,7 @@ public class ServerPlayer extends Player {
             playerList.sendLevelInfo(this, newLevel);
             playerList.sendAllPlayerInfo(this);
             playerList.sendActivePlayerEffects(this);
+            this.sendPostEffects();
             transition.postTeleportTransition().onTransition(this);
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
@@ -1172,15 +1233,12 @@ public class ServerPlayer extends Player {
       this.containerMenu.broadcastChanges();
    }
 
-   public Either<Player.BedSleepingProblem, Unit> startSleepInBed(final BlockPos pos) {
-      Direction direction = (Direction)this.level().getBlockState(pos).getValue(HorizontalDirectionalBlock.FACING);
+   public Either<Player.BedSleepingProblem, Unit> startSleepInBed(final AbstractBedBlock bedBlock, final BlockState bedBlockState, final BedRule rule, final BlockPos pos) {
+      Direction direction = (Direction)bedBlockState.getValue(HorizontalDirectionalBlock.FACING);
       if (!this.isSleeping() && this.isAlive()) {
-         BedRule rule = (BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos);
          boolean canSleep = rule.canSleep(this.level());
          boolean canSetSpawn = rule.canSetSpawn(this.level());
-         if (!canSetSpawn && !canSleep) {
-            return Either.left(rule.asProblem());
-         } else if (!this.bedInRange(pos, direction)) {
+         if (!this.bedInRange(pos, direction)) {
             return Either.left(Player.BedSleepingProblem.TOO_FAR_AWAY);
          } else if (this.bedBlocked(pos, direction)) {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
@@ -1202,9 +1260,12 @@ public class ServerPlayer extends Player {
                   }
                }
 
-               Either<Player.BedSleepingProblem, Unit> result = super.startSleepInBed(pos).ifRight((unit) -> {
-                  this.awardStat(Stats.SLEEP_IN_BED);
-                  CriteriaTriggers.SLEPT_IN_BED.trigger(this);
+               Either<Player.BedSleepingProblem, Unit> result = super.startSleepInBed(bedBlock, bedBlockState, rule, pos).ifRight((unit) -> {
+                  this.awardStat(bedBlock.getSleptInBedStatType());
+                  if (canSetSpawn) {
+                     CriteriaTriggers.SLEPT_IN_BED.trigger(this);
+                  }
+
                });
                if (!this.level().canSleepThroughNights()) {
                   this.sendOverlayMessage(Component.translatable("sleep.not_possible"));
@@ -1219,9 +1280,17 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void startSleeping(final BlockPos bedPosition) {
-      this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
-      super.startSleeping(bedPosition);
+   public boolean startSleeping(final BlockPos bedPosition) {
+      if (!super.startSleeping(bedPosition)) {
+         return false;
+      } else {
+         this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+         if (this.connection != null) {
+            this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+         }
+
+         return true;
+      }
    }
 
    private boolean bedInRange(final BlockPos pos, final Direction direction) {
@@ -1240,7 +1309,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(final boolean forcefulWakeUp, final boolean updateLevelList) {
       if (this.isSleeping()) {
-         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 0));
       }
 
       super.stopSleepInBed(forcefulWakeUp, updateLevelList);
@@ -1286,9 +1355,9 @@ public class ServerPlayer extends Player {
 
    }
 
-   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final SignBlockEntity sign, final SignTextSlot slot) {
       this.connection.send(new ClientboundBlockUpdatePacket(this.level(), sign.getBlockPos()));
-      this.connection.send(new ClientboundOpenSignEditorPacket(sign.getBlockPos(), isFrontText));
+      this.connection.send(new ClientboundOpenSignEditorPacket(sign.getBlockPos(), slot));
    }
 
    public void openDialog(final Holder<Dialog> dialog) {
@@ -1658,11 +1727,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(final Entity entity) {
-      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 4));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 1));
    }
 
    public void magicCrit(final Entity entity) {
-      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 5));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, 2));
    }
 
    public void onUpdateAbilities() {
@@ -1709,7 +1778,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.permissions(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.permissions(), this.server, this);
    }
 
    public void sendSystemMessage(final Component message) {
@@ -1869,11 +1938,6 @@ public class ServerPlayer extends Player {
       return 0;
    }
 
-   public void swing(final InteractionHand hand) {
-      super.swing(hand);
-      this.resetAttackStrengthTicker();
-   }
-
    public boolean isChangingDimension() {
       return this.isChangingDimension;
    }
@@ -1918,8 +1982,8 @@ public class ServerPlayer extends Player {
       this.chunkTrackingView = chunkTrackingView;
    }
 
-   public ItemEntity drop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
-      ItemEntity entity = super.drop(itemStack, randomly, thrownFromHand);
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction) {
+      ItemEntity entity = super.drop(itemStack, thrownFromHand, prediction);
       if (thrownFromHand) {
          ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY;
          if (!droppedItemStack.isEmpty()) {
@@ -1946,10 +2010,10 @@ public class ServerPlayer extends Player {
 
    private GameType calculateGameModeForNewPlayer(final @Nullable GameType loadedGameType) {
       GameType forcedGameType = this.server.getForcedGameType();
-      if (forcedGameType != null) {
-         return forcedGameType;
-      } else {
+      if (forcedGameType == null || !(this.server instanceof DedicatedServer) && this.server.getProfilePermissions(this.nameAndId()).hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          return loadedGameType != null ? loadedGameType : this.server.getDefaultGameType();
+      } else {
+         return forcedGameType;
       }
    }
 
@@ -1988,12 +2052,13 @@ public class ServerPlayer extends Player {
          this.stopUsingItem();
       }
 
-      this.drop(removed, false, true);
+      this.drop(removed, true, Prediction.PREDICTED);
+      this.resetAttackStrengthTicker();
    }
 
    public void handleExtraItemsCreatedOnUse(final ItemStack extraItems) {
       if (!this.getInventory().add(extraItems)) {
-         this.drop(extraItems, false);
+         this.drop(extraItems, false, Prediction.PREDICTED);
       }
 
    }
@@ -2002,8 +2067,8 @@ public class ServerPlayer extends Player {
       return this.allowsListing;
    }
 
-   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
-      return Optional.of(this.wardenSpawnTracker);
+   public WardenSpawnTracker getWardenSpawnTracker() {
+      return this.wardenSpawnTracker;
    }
 
    public void setSpawnExtraParticlesOnFall(final boolean toggle) {
@@ -2064,7 +2129,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommonPlayerSpawnInfo createCommonSpawnInfo(final ServerLevel level) {
-      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), this.gameMode.getGameModeForPlayer(), this.gameMode.getPreviousGameModeForPlayer(), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
+      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
    }
 
    public void setRaidOmenPosition(final BlockPos raidOmenPosition) {
@@ -2097,9 +2162,9 @@ public class ServerPlayer extends Player {
       return EnchantmentHelper.modifyDamage(this.level(), this.getWeaponItem(), entity, damageSource, dmg);
    }
 
-   public void onEquippedItemBroken(final Item brokenItem, final EquipmentSlot inSlot) {
+   public void onEquippedItemBroken(final ItemStack brokenItem, final EquipmentSlot inSlot) {
       super.onEquippedItemBroken(brokenItem, inSlot);
-      this.awardStat(Stats.ITEM_BROKEN.get(brokenItem));
+      this.awardStat(Stats.ITEM_BROKEN.get(brokenItem.getItem()));
    }
 
    public Input getLastClientInput() {
@@ -2169,6 +2234,13 @@ public class ServerPlayer extends Player {
 
    public Set<DebugSubscription<?>> debugSubscriptions() {
       return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
+   }
+
+   public void swingAndResetAttackStrength(final InteractionHand hand, final SwingAnimation animation, final boolean sendToSwingingEntity) {
+      if (this.swing(hand, animation, sendToSwingingEntity)) {
+         this.resetAttackStrengthTicker();
+      }
+
    }
 
    static {

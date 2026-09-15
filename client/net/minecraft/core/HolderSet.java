@@ -214,7 +214,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       public boolean canSerializeIn(final HolderOwner<T> context) {
-         return this.owner.canSerializeIn(context);
+         return context.canSerialize(this.owner);
       }
    }
 }

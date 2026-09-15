@@ -88,7 +88,7 @@ public final class ProjectileUtil {
       }
 
       AABB searchArea = AABB.ofSize(from, (double)entityMargin, (double)entityMargin, (double)entityMargin).expandTowards(to.subtract(from)).inflate(1.0);
-      Collection<EntityHitResult> entityHit = getManyEntityHitResult(level, source, from, to, searchArea, matching, entityMargin, clipType, true);
+      Collection<EntityHitResult> entityHit = getManyEntityHitResult(level, source, from, to, searchArea, matching, entityMargin, clipType, true, true);
       return !entityHit.isEmpty() ? Either.right(entityHit) : Either.left(hitResult);
    }
 
@@ -165,11 +165,11 @@ public final class ProjectileUtil {
       }
    }
 
-   public static Collection<EntityHitResult> getManyEntityHitResult(final Level level, final Entity source, final Vec3 from, final Vec3 to, final AABB targetSearchArea, final Predicate<Entity> matching, final boolean includeFromEntity) {
-      return getManyEntityHitResult(level, source, from, to, targetSearchArea, matching, computeMargin(source), ClipContext.Block.COLLIDER, includeFromEntity);
+   public static Collection<EntityHitResult> getManyEntityHitResult(final Level level, final Entity source, final Vec3 from, final Vec3 to, final AABB targetSearchArea, final Predicate<Entity> matching, final boolean includeFromEntity, final boolean projectSurfaceHitLocation) {
+      return getManyEntityHitResult(level, source, from, to, targetSearchArea, matching, computeMargin(source), ClipContext.Block.COLLIDER, includeFromEntity, projectSurfaceHitLocation);
    }
 
-   public static Collection<EntityHitResult> getManyEntityHitResult(final Level level, final Entity source, final Vec3 from, final Vec3 to, final AABB targetSearchArea, final Predicate<Entity> matching, final float entityMargin, final ClipContext.Block clipType, final boolean includeFromEntity) {
+   public static Collection<EntityHitResult> getManyEntityHitResult(final Level level, final Entity source, final Vec3 from, final Vec3 to, final AABB targetSearchArea, final Predicate<Entity> matching, final float entityMargin, final ClipContext.Block clipType, final boolean includeFromEntity, final boolean projectSurfaceHitLocation) {
       List<EntityHitResult> collector = new ArrayList();
 
       for(Entity entity : level.getEntities(source, targetSearchArea, matching)) {
@@ -192,7 +192,7 @@ public final class ProjectileUtil {
 
                   Optional<Vec3> surfaceHit = entity.getBoundingBox().clip(outsideHitPosition, towardsTarget);
                   if (surfaceHit.isPresent()) {
-                     collector.add(new EntityHitResult(entity, (Vec3)surfaceHit.get()));
+                     collector.add(new EntityHitResult(entity, projectSurfaceHitLocation ? (Vec3)surfaceHit.get() : outsideHitPosition));
                   }
                }
             }

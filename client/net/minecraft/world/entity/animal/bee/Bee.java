@@ -76,6 +76,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
@@ -1099,25 +1100,24 @@ public class Bee extends Animal implements NeutralMob {
       }
 
       private Optional<BlockPos> findNearbyFlower() {
-         Iterable<BlockPos> closestNearbyFlowers = BlockPos.withinManhattan(Bee.this.blockPosition(), 5, 5, 5);
          Long2LongOpenHashMap tempCache = new Long2LongOpenHashMap();
-
-         for(BlockPos pos : closestNearbyFlowers) {
+         Optional<BlockPos> result = Bee.this.level().findBlocksInBoxByManhattanDistance(Bee.this.blockPosition(), 5).filterState(Bee::attractsBees).findFirst((pos, var3) -> {
             long unreachableUntilTime = this.unreachableFlowerCache.getOrDefault(pos.asLong(), -9223372036854775808L);
             if (Bee.this.level().getGameTime() < unreachableUntilTime) {
                tempCache.put(pos.asLong(), unreachableUntilTime);
-            } else if (Bee.attractsBees(Bee.this.level().getBlockState(pos))) {
+               return false;
+            } else {
                Path path = Bee.this.navigation.createPath(pos, 1);
                if (path != null && path.canReach()) {
-                  return Optional.of(pos);
+                  return true;
+               } else {
+                  tempCache.put(pos.asLong(), Bee.this.level().getGameTime() + 600L);
+                  return false;
                }
-
-               tempCache.put(pos.asLong(), Bee.this.level().getGameTime() + 600L);
             }
-         }
-
+         });
          this.unreachableFlowerCache = tempCache;
-         return Optional.empty();
+         return result;
       }
    }
 
@@ -1209,8 +1209,8 @@ public class Bee extends Animal implements NeutralMob {
                      }
                   } else if (belowState.is(Blocks.CAVE_VINES) || belowState.is(Blocks.CAVE_VINES_PLANT)) {
                      BonemealableBlock bonemealableBlock = (BonemealableBlock)belowState.getBlock();
-                     if (bonemealableBlock.isValidBonemealTarget(Bee.this.level(), belowPos, belowState)) {
-                        bonemealableBlock.performBonemeal((ServerLevel)Bee.this.level(), Bee.this.random, belowPos, belowState);
+                     if (bonemealableBlock.isValidBonemealTarget(Bee.this.level(), belowPos, belowState, BonemealSource.MOB)) {
+                        bonemealableBlock.performBonemeal((ServerLevel)Bee.this.level(), Bee.this.random, belowPos, belowState, BonemealSource.MOB);
                         growState = Bee.this.level().getBlockState(belowPos);
                      }
                   }

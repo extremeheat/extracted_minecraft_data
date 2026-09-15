@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -21,7 +20,6 @@ import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
    private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart/minecart.png");
@@ -53,7 +51,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
       float hurt = state.hurtTime;
       if (hurt > 0.0F) {
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir));
+         poseStack.rotateDegrees(Axis.XP, Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir);
       }
 
       BlockModelRenderState displayBlockModel = state.displayBlockModel;
@@ -61,19 +59,19 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
          poseStack.pushPose();
          poseStack.scale(0.75F, 0.75F, 0.75F);
          poseStack.translate(-0.5F, (float)(state.displayOffset - 8) / 16.0F, 0.5F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.YP, 90.0F);
          this.submitMinecartContents(state, displayBlockModel, poseStack, submitNodeCollector, state.lightCoords);
          poseStack.popPose();
       }
 
       poseStack.scale(-1.0F, -1.0F, 1.0F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();
    }
 
    private static <S extends MinecartRenderState> void newRender(final S state, final PoseStack poseStack) {
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-state.xRot));
+      poseStack.rotateDegrees(Axis.YP, state.yRot);
+      poseStack.rotateDegrees(Axis.ZP, -state.xRot);
       poseStack.translate(0.0F, 0.375F, 0.0F);
    }
 
@@ -96,8 +94,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       poseStack.translate(0.0F, 0.375F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - rotation));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-xRot));
+      poseStack.rotateDegrees(Axis.YP, 180.0F - rotation);
+      poseStack.rotateDegrees(Axis.ZP, -xRot);
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {
@@ -162,8 +160,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       blockModel.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
    }
 
-   protected AABB getBoundingBoxForCulling(final T entity) {
-      AABB aabb = super.getBoundingBoxForCulling(entity);
+   protected AABB getBoundingBoxForCulling(final T entity, final float partialTicks) {
+      AABB aabb = super.getBoundingBoxForCulling(entity, partialTicks);
       return !entity.getDisplayBlockState().isAir() ? aabb.expandTowards(0.0, (double)((float)entity.getDisplayOffset() * 0.75F / 16.0F), 0.0) : aabb;
    }
 

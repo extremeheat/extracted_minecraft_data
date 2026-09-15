@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
-import org.joml.Quaternionfc;
 
 public class DragonFireballRenderer extends EntityRenderer<DragonFireball, EntityRenderState> {
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_fireball.png");
@@ -28,7 +27,7 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
    public void submit(final EntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.scale(2.0F, 2.0F, 2.0F);
-      poseStack.mulPose((Quaternionfc)camera.orientation);
+      poseStack.rotate(camera.orientation);
       submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> buildQuad(state, pose, buffer, -1));
       if (state.outlineColor != 0 && RENDER_TYPE.outline().isPresent()) {
          submitNodeCollector.submitCustomGeometry(poseStack, (RenderType)RENDER_TYPE.outline().get(), (pose, buffer) -> buildQuad(state, pose, buffer, state.outlineColor));

@@ -1,92 +1,57 @@
 package com.mojang.blaze3d.platform;
 
 import ca.weblite.objc.Client;
-import ca.weblite.objc.NSObject;
-import com.sun.jna.Pointer;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.Locale;
-import java.util.Optional;
-import net.minecraft.server.packs.resources.IoSupplier;
-import org.lwjgl.glfw.GLFWNativeCocoa;
+import ca.weblite.objc.Proxy;
+import java.util.Set;
+import net.minecraft.util.Util;
+import org.lwjgl.sdl.SDLHints;
+import org.lwjgl.system.macosx.ObjCRuntime;
 
-public class MacosUtil {
+public final class MacosUtil {
    public static final boolean IS_MACOS;
-   private static final int NS_RESIZABLE_WINDOW_MASK = 8;
-   private static final int NS_FULL_SCREEN_WINDOW_MASK = 16384;
 
-   public MacosUtil() {
+   private MacosUtil() {
       super();
    }
 
-   public static void exitNativeFullscreen(final Window window) {
-      getNsWindow(window).filter(MacosUtil::isInNativeFullscreen).ifPresent(MacosUtil::toggleNativeFullscreen);
-   }
+   public static void disableCloseWindowMenuItem() {
+      if (IS_MACOS) {
+         Proxy windowsMenu = Client.getInstance().sendProxy("NSApplication", "sharedApplication", new Object[0]).sendProxy("windowsMenu", new Object[0]);
+         int itemCount = windowsMenu.sendInt("numberOfItems", new Object[0]);
 
-   public static void clearResizableBit(final Window window) {
-      getNsWindow(window).ifPresent((nsWindow) -> {
-         long styleMask = getStyleMask(nsWindow);
-         nsWindow.send("setStyleMask:", new Object[]{styleMask & -9L});
-      });
-   }
-
-   private static Optional<NSObject> getNsWindow(final Window window) {
-      return getNsWindow(window.handle());
-   }
-
-   private static Optional<NSObject> getNsWindow(final long windowHandle) {
-      long nsWindow = GLFWNativeCocoa.glfwGetCocoaWindow(windowHandle);
-      return nsWindow != 0L ? Optional.of(new NSObject(new Pointer(nsWindow))) : Optional.empty();
-   }
-
-   private static boolean isInNativeFullscreen(final NSObject nsWindow) {
-      return (getStyleMask(nsWindow) & 16384L) != 0L;
-   }
-
-   private static long getStyleMask(final NSObject nsWindow) {
-      return (Long)nsWindow.sendRaw("styleMask", new Object[0]);
-   }
-
-   private static void toggleNativeFullscreen(final NSObject nsWindow) {
-      nsWindow.send("toggleFullScreen:", new Object[]{Pointer.NULL});
-   }
-
-   public static void loadIcon(final IoSupplier<InputStream> icon) throws IOException {
-      InputStream iconStream = icon.get();
-
-      try {
-         String base64Icon = Base64.getEncoder().encodeToString(iconStream.readAllBytes());
-         Client objc = Client.getInstance();
-         Object data = objc.sendProxy("NSData", "alloc", new Object[0]).send("initWithBase64Encoding:", new Object[]{base64Icon});
-         Object image = objc.sendProxy("NSImage", "alloc", new Object[0]).send("initWithData:", new Object[]{data});
-         objc.sendProxy("NSApplication", "sharedApplication", new Object[0]).send("setApplicationIconImage:", new Object[]{image});
-      } catch (Throwable var7) {
-         if (iconStream != null) {
-            try {
-               iconStream.close();
-            } catch (Throwable var6) {
-               var7.addSuppressed(var6);
+         for(int i = 0; i < itemCount; ++i) {
+            Proxy item = windowsMenu.sendProxy("itemAtIndex:", new Object[]{i});
+            if (MacosUtil.DisabledActions.SELECTORS.contains((Long)item.sendRaw("action", new Object[0]))) {
+               item.send("setEnabled:", new Object[]{false});
+               item.send("setHidden:", new Object[]{true});
+               item.send("setKeyEquivalent:", new Object[]{""});
             }
          }
 
-         throw var7;
       }
-
-      if (iconStream != null) {
-         iconStream.close();
-      }
-
    }
 
-   public static void setWindowColorSpaceForOpenGLBecauseGLFWDoesnt(final long glfwWindowHandle) {
-      getNsWindow(glfwWindowHandle).ifPresent((nsWindow) -> {
-         Object sRGBColorSpace = nsWindow.getClient().send("NSColorSpace", "sRGBColorSpace", new Object[0]);
-         nsWindow.send("setColorSpace:", new Object[]{sRGBColorSpace});
-      });
+   public static void setFullscreenMenuVisibility(final boolean value) {
+      if (IS_MACOS) {
+         SDLHints.SDL_SetHint("SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY", value ? "1" : "0");
+      }
+   }
+
+   public static void setCtrlClickEmulatesRightClick(final boolean value) {
+      if (IS_MACOS) {
+         SDLHints.SDL_SetHint("SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK", value ? "1" : "0");
+      }
    }
 
    static {
-      IS_MACOS = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("mac");
+      IS_MACOS = Util.getPlatform() == Util.OS.OSX;
+   }
+
+   private static final class DisabledActions {
+      private static final Set<Long> SELECTORS = Set.of(ObjCRuntime.sel_getUid("performClose:"), ObjCRuntime.sel_getUid("closeAll:"));
+
+      private DisabledActions() {
+         super();
+      }
    }
 }

@@ -54,6 +54,10 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
       }
    }
 
+   public boolean isEmpty() {
+      return this.isEmpty;
+   }
+
    public static record Line(Vec3 start, Vec3 end, int color, float width) {
       public Line {
          super();

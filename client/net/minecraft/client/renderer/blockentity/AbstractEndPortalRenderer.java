@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,11 +48,16 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
    }
 
    protected static void submitCube(final Collection<Direction> facesToShow, final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+      submitCube(facesToShow, renderType, poseStack, submitNodeCollector, (vertex) -> {
+      });
+   }
+
+   private static void submitCube(final Collection<Direction> facesToShow, final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final Consumer<VertexConsumer> vertexDecorator) {
       if (!facesToShow.isEmpty()) {
          submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
             for(Direction direction : facesToShow) {
                for(Vector3fc faceVertex : (List)FACES.get(direction)) {
-                  buffer.addVertex(pose, faceVertex);
+                  vertexDecorator.accept(buffer.addVertex(pose, faceVertex));
                }
             }
 
@@ -59,8 +65,12 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
       }
    }
 
-   public static void submitSpecial(final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+   public static void submitSpecial(final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int outlineColor) {
       submitCube(ALL_FACES, renderType, poseStack, submitNodeCollector);
+      if (outlineColor != 0) {
+         submitCube(ALL_FACES, (RenderType)renderType.outline().orElseThrow(), poseStack, submitNodeCollector, (vertex) -> vertex.setUv(0.0F, 0.0F).setColor(outlineColor));
+      }
+
    }
 
    public static void getExtents(final Consumer<Vector3fc> output) {

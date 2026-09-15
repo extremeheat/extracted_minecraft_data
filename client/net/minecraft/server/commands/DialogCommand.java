@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -15,6 +16,9 @@ import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerPlayer;
 
 public class DialogCommand {
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_SHOW = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.dialog.show.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.dialog.show.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_CLEAR = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.dialog.clear.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.dialog.clear.multiple", playerCount)));
+
    public DialogCommand() {
       super();
    }
@@ -23,31 +27,25 @@ public class DialogCommand {
       dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("dialog").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("show").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(context)).executes((c) -> showDialog((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ResourceOrIdArgument.getDialog(c, "dialog"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((c) -> clearDialog((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))));
    }
 
-   private static int showDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets, final Holder<Dialog> dialog) {
+   private static int showDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets, final Holder<Dialog> dialog) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+
       for(ServerPlayer target : targets) {
          target.openDialog(dialog);
+         tracker.track(target);
       }
 
-      if (targets.size() == 1) {
-         sender.sendSuccess(() -> Component.translatable("commands.dialog.show.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         sender.sendSuccess(() -> Component.translatable("commands.dialog.show.multiple", targets.size()), true);
-      }
-
-      return targets.size();
+      return tracker.sendFeedback(sender, true, RESPONSE_SHOW);
    }
 
-   private static int clearDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets) {
+   private static int clearDialog(final CommandSourceStack sender, final Collection<ServerPlayer> targets) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+
       for(ServerPlayer target : targets) {
          target.connection.send(ClientboundClearDialogPacket.INSTANCE);
+         tracker.track(target);
       }
 
-      if (targets.size() == 1) {
-         sender.sendSuccess(() -> Component.translatable("commands.dialog.clear.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         sender.sendSuccess(() -> Component.translatable("commands.dialog.clear.multiple", targets.size()), true);
-      }
-
-      return targets.size();
+      return tracker.sendFeedback(sender, true, RESPONSE_CLEAR);
    }
 }

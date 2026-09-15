@@ -16,8 +16,7 @@ public abstract class MinecartBehavior {
       this.minecart = minecart;
    }
 
-   public InterpolationHandler getInterpolation() {
-      return null;
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
    }
 
    public void lerpMotion(final Vec3 movement) {

@@ -11,7 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class ForkingTrunkPlacer extends TrunkPlacer {
@@ -25,8 +25,8 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.FORKING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
-      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), tree);
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
       Direction leanDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int leanHeight = treeHeight - random.nextInt(4) - 1;
@@ -44,7 +44,7 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
             --leanSteps;
          }
 
-         if (this.placeLog(level, trunkSetter, random, logPos.set(tx, yy, tz), config)) {
+         if (this.placeLog(level, trunkSetter, random, logPos.set(tx, yy, tz), tree)) {
             ey = OptionalInt.of(yy + 1);
          }
       }
@@ -66,7 +66,7 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
                int yy = origin.getY() + yo;
                tx += branchDirection.getStepX();
                tz += branchDirection.getStepZ();
-               if (this.placeLog(level, trunkSetter, random, logPos.set(tx, yy, tz), config)) {
+               if (this.placeLog(level, trunkSetter, random, logPos.set(tx, yy, tz), tree)) {
                   ey = OptionalInt.of(yy + 1);
                }
             }

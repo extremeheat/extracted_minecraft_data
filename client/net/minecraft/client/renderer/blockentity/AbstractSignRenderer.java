@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -67,7 +68,7 @@ public abstract class AbstractSignRenderer<S extends SignRenderState> implements
          lightVal = state.lightCoords;
       }
 
-      for(int i = 0; i < 4; ++i) {
+      for(int i = 0; i < formattedLines.length; ++i) {
          FormattedCharSequence actualLine = formattedLines[i];
          float x1 = (float)(-this.font.width(actualLine) / 2);
          submitNodeCollector.submitText(poseStack, x1, (float)(i * state.textLineHeight - signMidpoint), actualLine, false, Font.DisplayMode.POLYGON_OFFSET, lightVal, textColor, 0, drawOutline ? darkColor : 0);
@@ -95,8 +96,8 @@ public abstract class AbstractSignRenderer<S extends SignRenderState> implements
       BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
       state.maxTextLineWidth = blockEntity.getMaxTextLineWidth();
       state.textLineHeight = blockEntity.getTextLineHeight();
-      state.frontText = blockEntity.getFrontText();
-      state.backText = blockEntity.getBackText();
+      state.frontText = blockEntity.getText(SignTextSlot.FRONT);
+      state.backText = blockEntity.getText(SignTextSlot.BACK);
       state.isTextFilteringEnabled = Minecraft.getInstance().isTextFilteringEnabled();
       state.drawOutline = isOutlineVisible(blockEntity.getBlockPos());
    }

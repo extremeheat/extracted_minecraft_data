@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -52,8 +54,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -191,7 +191,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 16) {
          if (!this.isSilent()) {
             this.level().playLocalSound(this.getX(), this.getEyeY(), this.getZ(), SoundEvents.ZOMBIE_VILLAGER_CURE, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
@@ -256,7 +256,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
             for(int yy = (int)this.getY() - 4; yy < (int)this.getY() + 4 && specialBlocksCount < 14; ++yy) {
                for(int zz = (int)this.getZ() - 4; zz < (int)this.getZ() + 4 && specialBlocksCount < 14; ++zz) {
                   BlockState state = this.level().getBlockState(blockPos.set(xx, yy, zz));
-                  if (state.is(Blocks.IRON_BARS) || state.getBlock() instanceof BedBlock) {
+                  if (state.is(BlockTags.SPEEDS_UP_ZOMBIE_VILLAGER_CURING)) {
                      if (this.random.nextFloat() < 0.3F) {
                         ++amount;
                      }

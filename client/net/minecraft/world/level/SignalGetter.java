@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DiodeBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface SignalGetter extends BlockGetter {
@@ -52,7 +52,7 @@ public interface SignalGetter extends BlockGetter {
       } else if (blockState.is(Blocks.REDSTONE_BLOCK)) {
          return 15;
       } else if (blockState.is(Blocks.REDSTONE_WIRE)) {
-         return (Integer)blockState.getValue(RedStoneWireBlock.POWER);
+         return (Integer)blockState.getValue(RedstoneWireBlock.POWER);
       } else {
          return blockState.isSignalSource() ? this.getDirectSignal(pos, direction) : 0;
       }

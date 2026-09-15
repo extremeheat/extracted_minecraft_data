@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -29,12 +28,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class JukeboxBlock extends BaseEntityBlock {
-   public static final MapCodec<JukeboxBlock> CODEC = simpleCodec(JukeboxBlock::new);
    public static final BooleanProperty HAS_RECORD;
-
-   public MapCodec<JukeboxBlock> codec() {
-      return CODEC;
-   }
 
    protected JukeboxBlock(final BlockBehaviour.Properties properties) {
       super(properties);

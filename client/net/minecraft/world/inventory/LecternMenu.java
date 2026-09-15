@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.Objects;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -62,7 +63,7 @@ public class LecternMenu extends AbstractContainerMenu {
                ItemStack book = this.lectern.removeItemNoUpdate(0);
                this.lectern.setChanged();
                if (!player.getInventory().add(book)) {
-                  player.drop(book, false);
+                  player.drop(book, false, Prediction.PREDICTED);
                }
 
                return true;

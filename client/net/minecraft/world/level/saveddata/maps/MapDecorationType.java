@@ -9,17 +9,12 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
-public record MapDecorationType(Identifier assetId, boolean showOnItemFrame, int mapColor, boolean explorationMapElement, boolean trackCount) {
-   public static final int NO_MAP_COLOR = -1;
+public record MapDecorationType(Identifier assetId, boolean showOnItemFrame, boolean trackCount) {
    public static final Codec<Holder<MapDecorationType>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<MapDecorationType>> STREAM_CODEC;
 
    public MapDecorationType {
       super();
-   }
-
-   public boolean hasMapColor() {
-      return this.mapColor != -1;
    }
 
    static {

@@ -8,12 +8,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -196,22 +194,6 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getBlendingData();
    }
 
-   public CarvingMask getCarvingMask() {
-      if (this.allowWrites) {
-         return super.getCarvingMask();
-      } else {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
-      }
-   }
-
-   public CarvingMask getOrCreateCarvingMask() {
-      if (this.allowWrites) {
-         return super.getOrCreateCarvingMask();
-      } else {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
-      }
-   }
-
    public LevelChunk getWrapped() {
       return this.wrapped;
    }
@@ -224,9 +206,9 @@ public class ImposterProtoChunk extends ProtoChunk {
       this.wrapped.setLightCorrect(isLightCorrect);
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler) {
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver) {
       if (this.allowWrites) {
-         this.wrapped.fillBiomesFromNoise(biomeResolver, sampler);
+         this.wrapped.fillBiomesFromNoise(biomeResolver);
       }
 
    }

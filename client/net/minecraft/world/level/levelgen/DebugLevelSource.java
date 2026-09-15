@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -27,6 +28,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import org.jspecify.annotations.Nullable;
 
 public class DebugLevelSource extends ChunkGenerator {
    public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(i, i.stable(DebugLevelSource::new)));
@@ -47,9 +50,6 @@ public class DebugLevelSource extends ChunkGenerator {
       return CODEC;
    }
 
-   public void buildSurface(final WorldGenRegion level, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
-   }
-
    public void applyBiomeDecoration(final WorldGenLevel level, final ChunkAccess chunk, final StructureManager structureManager) {
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
       ChunkPos centerPos = chunk.getPos();
@@ -68,8 +68,8 @@ public class DebugLevelSource extends ChunkGenerator {
 
    }
 
-   public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {
-      return CompletableFuture.completedFuture(centerChunk);
+   public CompletableFuture<ChunkAccess> buildTerrain(final ChunkAccess chunk, final Blender blender, final RandomState randomState, final StructureManager structureManager, final BiomeManager biomeManager, final @Nullable WorldGenRegion carverBiomeRegion, final Set<Holder<Biome>> possibleBiomes) {
+      return CompletableFuture.completedFuture(chunk);
    }
 
    public int getBaseHeight(final int x, final int z, final Heightmap.Types type, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
@@ -80,7 +80,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return new NoiseColumn(0, new BlockState[0]);
    }
 
-   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
+   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
    }
 
    public static BlockState getBlockStateFor(int worldX, int worldZ) {
@@ -97,9 +97,6 @@ public class DebugLevelSource extends ChunkGenerator {
       }
 
       return state;
-   }
-
-   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

@@ -1,22 +1,21 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 
-public record ClientboundMoveVehiclePacket(Vec3 position, float yRot, float xRot) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundMoveVehiclePacket> STREAM_CODEC;
+public record ClientboundMoveVehiclePacket(PositionAndRotation movingTo) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<ByteBuf, ClientboundMoveVehiclePacket> STREAM_CODEC;
 
    public ClientboundMoveVehiclePacket {
       super();
    }
 
    public static ClientboundMoveVehiclePacket fromEntity(final Entity entity) {
-      return new ClientboundMoveVehiclePacket(entity.position(), entity.getYRot(), entity.getXRot());
+      return new ClientboundMoveVehiclePacket(entity.storePositionAndRotation());
    }
 
    public PacketType<ClientboundMoveVehiclePacket> type() {
@@ -28,6 +27,6 @@ public record ClientboundMoveVehiclePacket(Vec3 position, float yRot, float xRot
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, ClientboundMoveVehiclePacket::position, ByteBufCodecs.FLOAT, ClientboundMoveVehiclePacket::yRot, ByteBufCodecs.FLOAT, ClientboundMoveVehiclePacket::xRot, ClientboundMoveVehiclePacket::new);
+      STREAM_CODEC = PositionAndRotation.STREAM_CODEC.map(ClientboundMoveVehiclePacket::new, ClientboundMoveVehiclePacket::movingTo);
    }
 }

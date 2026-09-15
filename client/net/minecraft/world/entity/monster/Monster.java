@@ -38,7 +38,6 @@ public abstract class Monster extends PathfinderMob implements Enemy {
    }
 
    public void aiStep() {
-      this.updateSwingTime();
       this.updateNoActionTime();
       super.aiStep();
    }

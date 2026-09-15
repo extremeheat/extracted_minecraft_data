@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen.blockpredicates;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 
 public class NotPredicate implements BlockPredicate {
    public static final MapCodec<NotPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPredicate.CODEC.fieldOf("predicate").forGetter((p) -> p.predicate)).apply(i, NotPredicate::new));
@@ -14,7 +14,7 @@ public class NotPredicate implements BlockPredicate {
       this.predicate = predicate;
    }
 
-   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public boolean test(final LevelAccessor level, final BlockPos origin) {
       return !this.predicate.test(level, origin);
    }
 

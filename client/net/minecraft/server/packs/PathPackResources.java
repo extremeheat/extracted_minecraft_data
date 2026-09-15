@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class PathPackResources extends AbstractPackResources {
+public class PathPackResources extends AbstractPackMetadataResources implements PackResources {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Joiner PATH_JOINER = Joiner.on("/");
    private final Path root;
@@ -201,15 +201,19 @@ public class PathPackResources extends AbstractPackResources {
          this.content = content;
       }
 
-      public PackResources openPrimary(final PackLocationInfo location) {
+      private PathPackResources openPrimaryResources(final PackLocationInfo location) {
          return new PathPackResources(location, this.content);
       }
 
-      public PackResources openFull(final PackLocationInfo location, final Pack.Metadata metadata) {
-         PackResources primary = this.openPrimary(location);
+      public PackMetadataResources openMetadata(final PackLocationInfo location) {
+         return this.openPrimaryResources(location);
+      }
+
+      public Stream<PackResources> openResources(final PackLocationInfo location, final Pack.Metadata metadata) {
+         PackResources primary = this.openPrimaryResources(location);
          List<String> overlays = metadata.overlays();
          if (overlays.isEmpty()) {
-            return primary;
+            return Stream.of(primary);
          } else {
             List<PackResources> overlayResources = new ArrayList(overlays.size());
 
@@ -218,7 +222,7 @@ public class PathPackResources extends AbstractPackResources {
                overlayResources.add(new PathPackResources(location, overlayRoot));
             }
 
-            return new CompositePackResources(primary, overlayResources);
+            return Stream.of(new OverlayedPackResources(primary, overlayResources));
          }
       }
    }

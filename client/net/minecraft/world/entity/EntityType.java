@@ -57,6 +57,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    private final Holder.Reference<EntityType<?>> builtInRegistryHolder;
    public static final Codec<EntityType<?>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, EntityType<?>> STREAM_CODEC;
+   public static final int NO_UPDATE_INTERVAL = 2147483647;
    private final EntityFactory<T> factory;
    private final MobCategory category;
    private final TagKey<Block> immuneTo;
@@ -73,12 +74,13 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    private final float spawnDimensionsScale;
    private final FeatureFlagSet requiredFeatures;
    private final boolean allowedInPeaceful;
+   private final boolean trackDeltas;
 
    public static Identifier getKey(final EntityType<?> type) {
       return BuiltInRegistries.ENTITY_TYPE.getKey(type);
    }
 
-   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final TagKey<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
+   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final TagKey<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful, final boolean trackDeltas) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ENTITY_TYPE.createIntrusiveHolder(this);
       this.factory = factory;
@@ -96,6 +98,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       this.lootTable = lootTable;
       this.requiredFeatures = requiredFeatures;
       this.allowedInPeaceful = allowedInPeaceful;
+      this.trackDeltas = trackDeltas;
    }
 
    public @Nullable T spawn(final ServerLevel level, final @Nullable ItemStack itemStack, final @Nullable LivingEntity user, final BlockPos spawnPos, final EntitySpawnReason spawnReason, final boolean tryMoveDown, final boolean movedUp) {
@@ -285,6 +288,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return entity;
    }
 
+   public AABB getSpawnAABB(final Vec3 at) {
+      return this.getSpawnAABB(at.x, at.y, at.z);
+   }
+
    public AABB getSpawnAABB(final double x, final double y, final double z) {
       float halfWidth = this.spawnDimensionsScale * this.getWidth() / 2.0F;
       float height = this.spawnDimensionsScale * this.getHeight();
@@ -381,8 +388,12 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return this.updateInterval;
    }
 
+   public boolean hasUpdateInterval() {
+      return this.updateInterval != 2147483647;
+   }
+
    public boolean trackDeltas() {
-      return this != EntityTypes.PLAYER && this != EntityTypes.LLAMA_SPIT && this != EntityTypes.WITHER && this != EntityTypes.BAT && this != EntityTypes.ITEM_FRAME && this != EntityTypes.GLOW_ITEM_FRAME && this != EntityTypes.LEASH_KNOT && this != EntityTypes.PAINTING && this != EntityTypes.END_CRYSTAL && this != EntityTypes.EVOKER_FANGS;
+      return this.trackDeltas;
    }
 
    public @Nullable T tryCast(final Entity entity) {
@@ -429,6 +440,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       private DependantName<EntityType<?>, Optional<ResourceKey<LootTable>>> lootTable;
       private final DependantName<EntityType<?>, String> descriptionId;
       private boolean allowedInPeaceful;
+      private boolean trackDeltas;
 
       private Builder(final EntityFactory<T> factory, final MobCategory category) {
          super();
@@ -444,6 +456,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
          this.lootTable = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("entities/")));
          this.descriptionId = (id) -> Util.makeDescriptionId("entity", id.identifier());
          this.allowedInPeaceful = true;
+         this.trackDeltas = true;
          this.factory = factory;
          this.category = category;
          this.canSpawnFarFromPlayer = category == MobCategory.CREATURE || category == MobCategory.MISC;
@@ -545,6 +558,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
          return this;
       }
 
+      public Builder<T> noUpdateInterval() {
+         return this.updateInterval(2147483647);
+      }
+
       public Builder<T> requiredFeatures(final FeatureFlag... flags) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(flags);
          return this;
@@ -560,12 +577,17 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
          return this;
       }
 
+      public Builder<T> dontTrackDeltas() {
+         this.trackDeltas = false;
+         return this;
+      }
+
       public EntityType<T> build(final ResourceKey<EntityType<?>> name) {
          if (this.serialize) {
             Util.fetchChoiceType(References.ENTITY_TREE, name.identifier().toString());
          }
 
-         return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(name), this.lootTable.get(name), this.requiredFeatures, this.allowedInPeaceful);
+         return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(name), this.lootTable.get(name), this.requiredFeatures, this.allowedInPeaceful, this.trackDeltas);
       }
    }
 

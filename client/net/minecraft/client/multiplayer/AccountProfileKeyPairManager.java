@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.mojang.authlib.exceptions.MinecraftClientException;
 import com.mojang.authlib.minecraft.InsecurePublicKeyException;
 import com.mojang.authlib.minecraft.UserApiService;
-import com.mojang.authlib.yggdrasil.response.KeyPairResponse;
+import com.mojang.authlib.services.response.KeyPairResponse;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.io.BufferedReader;

@@ -104,6 +104,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> HARVEST_SWEET_BERRY_BUSH;
    public static final ResourceKey<LootTable> HARVEST_BEEHIVE;
    public static final ResourceKey<LootTable> CARVE_PUMPKIN;
+   public static final ResourceKey<LootTable> TILL_ROOTED_DIRT;
    public static final ResourceKey<LootTable> PIGLIN_BARTERING;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_KEY;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_CONSUMABLES;
@@ -130,6 +131,9 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> TRAIL_RUINS_ARCHAEOLOGY_RARE;
    public static final ResourceKey<LootTable> OCEAN_RUIN_WARM_ARCHAEOLOGY;
    public static final ResourceKey<LootTable> OCEAN_RUIN_COLD_ARCHAEOLOGY;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_BARREL;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_COMMON_CHEST;
+   public static final ResourceKey<LootTable> ABANDONED_CAMP_SECRET_CHEST;
 
    public BuiltInLootTables() {
       super();
@@ -246,6 +250,7 @@ public class BuiltInLootTables {
       HARVEST_SWEET_BERRY_BUSH = register("harvest/sweet_berry_bush");
       HARVEST_BEEHIVE = register("harvest/beehive");
       CARVE_PUMPKIN = register("carve/pumpkin");
+      TILL_ROOTED_DIRT = register("till/rooted_dirt");
       PIGLIN_BARTERING = register("gameplay/piglin_bartering");
       SPAWNER_TRIAL_CHAMBER_KEY = register("spawners/trial_chamber/key");
       SPAWNER_TRIAL_CHAMBER_CONSUMABLES = register("spawners/trial_chamber/consumables");
@@ -272,5 +277,8 @@ public class BuiltInLootTables {
       TRAIL_RUINS_ARCHAEOLOGY_RARE = register("archaeology/trail_ruins_rare");
       OCEAN_RUIN_WARM_ARCHAEOLOGY = register("archaeology/ocean_ruin_warm");
       OCEAN_RUIN_COLD_ARCHAEOLOGY = register("archaeology/ocean_ruin_cold");
+      ABANDONED_CAMP_BARREL = register("barrels/abandoned_camp_barrel");
+      ABANDONED_CAMP_COMMON_CHEST = register("chests/abandoned_camp_common_chest");
+      ABANDONED_CAMP_SECRET_CHEST = register("chests/abandoned_camp_secret_chest");
    }
 }

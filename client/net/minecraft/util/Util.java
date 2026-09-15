@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -46,6 +45,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HexFormat;
@@ -110,6 +110,7 @@ public class Util {
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
    private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS;
    public static final long NANOS_PER_MILLI = 1000000L;
+   public static final long MILLIS_PER_SECOND = 1000L;
    private static TimeSource.NanoTimeSource timeSource;
    private static final TimeSource.NanoTimeSource INDIRECT_TIME_SOURCE;
    public static final Ticker TICKER;
@@ -161,6 +162,10 @@ public class Util {
 
    public static long getEpochMillis() {
       return Instant.now().toEpochMilli();
+   }
+
+   public static long toMillis(final double seconds) {
+      return (long)Mth.floor(seconds * 1000.0);
    }
 
    public static String getFilenameFormattedDateTime() {
@@ -549,6 +554,10 @@ public class Util {
       return arch.equals("aarch64");
    }
 
+   public static boolean isAppleSiliconMac(final String renderer) {
+      return renderer.startsWith("Apple");
+   }
+
    public static URI parseAndValidateUntrustedUri(final String uri) throws URISyntaxException {
       URI parsedUri = new URI(uri);
       String scheme = parsedUri.getScheme();
@@ -726,7 +735,7 @@ public class Util {
    }
 
    public static void logAndPauseIfInIde(final String message) {
-      LOGGER.error(message);
+      LOGGER.error("{}", message);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          doPause(message);
       }
@@ -734,7 +743,7 @@ public class Util {
    }
 
    public static void logAndPauseIfInIde(final String message, final Throwable throwable) {
-      LOGGER.error(message, throwable);
+      LOGGER.error("{}", message, throwable);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          doPause(message);
       }
@@ -1148,24 +1157,24 @@ public class Util {
       return ImmutableList.builderWithExpectedSize(list.size() + 1).add(element).addAll(list).build();
    }
 
-   public static <T> List<T> join(final List<T> first, final List<T> second) {
+   public static <T> List<T> join(final Collection<T> first, final Collection<T> second) {
       ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(first.size() + second.size());
       builder.addAll(first);
       builder.addAll(second);
       return builder.build();
    }
 
-   public static <T> List<T> join(final List<T>... lists) {
+   public static <T> List<T> join(final Collection<T>... collections) {
       int size = 0;
 
-      for(List<T> list : lists) {
-         size += list.size();
+      for(Collection<T> collection : collections) {
+         size += collection.size();
       }
 
       ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(size);
 
-      for(List<T> list : lists) {
-         builder.addAll(list);
+      for(Collection<T> collection : collections) {
+         builder.addAll(collection);
       }
 
       return builder.build();
@@ -1218,60 +1227,14 @@ public class Util {
    public static enum OS {
       LINUX("linux"),
       SOLARIS("solaris"),
-      WINDOWS("windows") {
-         protected String[] getOpenUriArguments(final URI uri) {
-            return new String[]{"rundll32", "url.dll,FileProtocolHandler", uri.toString()};
-         }
-      },
-      OSX("mac") {
-         protected String[] getOpenUriArguments(final URI uri) {
-            return new String[]{"open", uri.toString()};
-         }
-      },
+      WINDOWS("windows"),
+      OSX("mac"),
       UNKNOWN("unknown");
 
       private final String telemetryName;
 
       private OS(final String telemetryName) {
          this.telemetryName = telemetryName;
-      }
-
-      public void openUri(final URI uri) {
-         try {
-            Process process = Runtime.getRuntime().exec(this.getOpenUriArguments(uri));
-            process.getInputStream().close();
-            process.getErrorStream().close();
-            process.getOutputStream().close();
-         } catch (IOException e) {
-            Util.LOGGER.error("Couldn't open location '{}'", uri, e);
-         }
-
-      }
-
-      public void openFile(final File file) {
-         this.openUri(file.toURI());
-      }
-
-      public void openPath(final Path path) {
-         this.openUri(path.toUri());
-      }
-
-      protected String[] getOpenUriArguments(final URI uri) {
-         String string = uri.toString();
-         if ("file".equals(uri.getScheme())) {
-            string = string.replace("file:", "file://");
-         }
-
-         return new String[]{"xdg-open", string};
-      }
-
-      public void openUri(final String uri) {
-         try {
-            this.openUri(new URI(uri));
-         } catch (IllegalArgumentException | URISyntaxException e) {
-            Util.LOGGER.error("Couldn't open uri '{}'", uri, e);
-         }
-
       }
 
       public String telemetryName() {

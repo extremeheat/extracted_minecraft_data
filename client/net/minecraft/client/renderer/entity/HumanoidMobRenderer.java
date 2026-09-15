@@ -8,9 +8,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +16,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
-import net.minecraft.world.item.component.SwingAnimation;
 
 public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRenderState, M extends HumanoidModel<S>> extends AgeableMobRenderer<T, S, M> {
    public HumanoidMobRenderer(final EntityRendererProvider.Context context, final M model, final float shadow) {
@@ -38,12 +35,12 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
 
    protected HumanoidModel.ArmPose getArmPose(final T mob, final HumanoidArm arm) {
       ItemStack itemHeldByArm = mob.getItemHeldByArm(arm);
-      SwingAnimation anim = (SwingAnimation)itemHeldByArm.get(DataComponents.SWING_ANIMATION);
-      if (anim != null && anim.type() == SwingAnimationType.STAB && mob.swinging) {
-         return HumanoidModel.ArmPose.SPEAR;
-      } else {
-         return itemHeldByArm.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.EMPTY;
-      }
+      return usesSpearPose(itemHeldByArm, arm, mob) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.EMPTY;
+   }
+
+   public static boolean usesSpearPose(final ItemStack item, final HumanoidArm arm, final LivingEntity entity) {
+      LivingEntity.SwingDescription currentSwing = entity.getCurrentSwing();
+      return currentSwing != null && currentSwing.hand().asArm(entity.getMainArm()) == arm && currentSwing.animation().type() == SwingAnimationType.STAB || item.is(ItemTags.SPEARS);
    }
 
    public void extractRenderState(final T entity, final S state, final float partialTicks) {
@@ -71,7 +68,6 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
       }
 
       state.swimAmount = entity.getSwimAmount(partialTicks);
-      state.attackArm = getAttackArm(entity);
       state.useItemHand = entity.getUsedItemHand();
       state.maxCrossbowChargeDuration = (float)CrossbowItem.getChargeDuration(entity.getUseItem(), entity);
       state.ticksUsingItem = entity.getTicksUsingItem(partialTicks);
@@ -88,10 +84,5 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
    private static ItemStack getEquipmentIfRenderable(final LivingEntity entity, final EquipmentSlot slot) {
       ItemStack itemStack = entity.getItemBySlot(slot);
       return HumanoidArmorLayer.shouldRender(itemStack, slot) ? itemStack.copy() : ItemStack.EMPTY;
-   }
-
-   private static HumanoidArm getAttackArm(final LivingEntity entity) {
-      HumanoidArm mainArm = entity.getMainArm();
-      return entity.swingingArm != InteractionHand.OFF_HAND ? mainArm : mainArm.getOpposite();
    }
 }

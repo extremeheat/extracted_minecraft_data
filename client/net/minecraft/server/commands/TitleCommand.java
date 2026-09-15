@@ -25,73 +25,52 @@ import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 
 public class TitleCommand {
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_CLEAR_TITLE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.cleared.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.cleared.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_RESET_TITLE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.reset.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.reset.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_SHOW_TITLE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.show.title.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.show.title.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_SHOW_ACTIONBAR = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.show.actionbar.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.show.actionbar.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_SHOW_SUBTITLE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.show.subtitle.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.show.subtitle.multiple", playerCount)));
+   private static final CommandResponseTracker.Messages<ServerPlayer> RESPONSE_SET_TIMES = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((player, var1) -> Component.translatable("commands.title.times.single", player.getDisplayName())), (CommandResponseTracker.MultipleHandler)((playerCount, var1) -> Component.translatable("commands.title.times.multiple", playerCount)));
+
    public TitleCommand() {
       super();
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("title").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("clear").executes((c) -> clearTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("reset").executes((c) -> resetTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("title").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "title", ClientboundSetTitleTextPacket::new))))).then(Commands.literal("subtitle").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "subtitle", ClientboundSetSubtitleTextPacket::new))))).then(Commands.literal("actionbar").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), "actionbar", ClientboundSetActionBarTextPacket::new))))).then(Commands.literal("times").then(Commands.argument("fadeIn", TimeArgument.time()).then(Commands.argument("stay", TimeArgument.time()).then(Commands.argument("fadeOut", TimeArgument.time()).executes((c) -> setTimes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IntegerArgumentType.getInteger(c, "fadeIn"), IntegerArgumentType.getInteger(c, "stay"), IntegerArgumentType.getInteger(c, "fadeOut")))))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("title").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("clear").executes((c) -> clearTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("reset").executes((c) -> resetTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"))))).then(Commands.literal("title").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), RESPONSE_SHOW_TITLE, ClientboundSetTitleTextPacket::new))))).then(Commands.literal("subtitle").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), RESPONSE_SHOW_SUBTITLE, ClientboundSetSubtitleTextPacket::new))))).then(Commands.literal("actionbar").then(Commands.argument("title", ComponentArgument.textComponent(context)).executes((c) -> showTitle((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ComponentArgument.getRawComponent(c, "title"), RESPONSE_SHOW_ACTIONBAR, ClientboundSetActionBarTextPacket::new))))).then(Commands.literal("times").then(Commands.argument("fadeIn", TimeArgument.time()).then(Commands.argument("stay", TimeArgument.time()).then(Commands.argument("fadeOut", TimeArgument.time()).executes((c) -> setTimes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IntegerArgumentType.getInteger(c, "fadeIn"), IntegerArgumentType.getInteger(c, "stay"), IntegerArgumentType.getInteger(c, "fadeOut")))))))));
    }
 
-   private static int clearTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) {
-      ClientboundClearTitlesPacket packet = new ClientboundClearTitlesPacket(false);
+   private static int sendPacketToPlayers(final CommandSourceStack source, final Collection<ServerPlayer> targets, final Packet<?> packet, final CommandResponseTracker.Messages<ServerPlayer> messages) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
 
       for(ServerPlayer player : targets) {
          player.connection.send(packet);
+         tracker.track(player);
       }
 
-      if (targets.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.title.cleared.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.title.cleared.multiple", targets.size()), true);
-      }
-
-      return targets.size();
+      return tracker.sendFeedback(source, true, messages);
    }
 
-   private static int resetTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) {
-      ClientboundClearTitlesPacket packet = new ClientboundClearTitlesPacket(true);
-
-      for(ServerPlayer player : targets) {
-         player.connection.send(packet);
-      }
-
-      if (targets.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.title.reset.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.title.reset.multiple", targets.size()), true);
-      }
-
-      return targets.size();
+   private static int clearTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) throws CommandSyntaxException {
+      return sendPacketToPlayers(source, targets, new ClientboundClearTitlesPacket(false), RESPONSE_CLEAR_TITLE);
    }
 
-   private static int showTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets, final Component title, final String type, final Function<Component, Packet<?>> factory) throws CommandSyntaxException {
+   private static int resetTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets) throws CommandSyntaxException {
+      return sendPacketToPlayers(source, targets, new ClientboundClearTitlesPacket(true), RESPONSE_RESET_TITLE);
+   }
+
+   private static int showTitle(final CommandSourceStack source, final Collection<ServerPlayer> targets, final Component title, final CommandResponseTracker.Messages<ServerPlayer> messages, final Function<Component, Packet<?>> factory) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+
       for(ServerPlayer player : targets) {
          player.connection.send((Packet)factory.apply(ComponentUtils.resolve(ResolutionContext.builder().withSource(source).withEntityOverride(player).build(), title)));
+         tracker.track(player);
       }
 
-      if (targets.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.title.show." + type + ".single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.title.show." + type + ".multiple", targets.size()), true);
-      }
-
-      return targets.size();
+      return tracker.sendFeedback(source, true, messages);
    }
 
-   private static int setTimes(final CommandSourceStack source, final Collection<ServerPlayer> targets, final int fadeIn, final int stay, final int fadeOut) {
-      ClientboundSetTitlesAnimationPacket packet = new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut);
-
-      for(ServerPlayer player : targets) {
-         player.connection.send(packet);
-      }
-
-      if (targets.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.title.times.single", ((ServerPlayer)targets.iterator().next()).getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.title.times.multiple", targets.size()), true);
-      }
-
-      return targets.size();
+   private static int setTimes(final CommandSourceStack source, final Collection<ServerPlayer> targets, final int fadeIn, final int stay, final int fadeOut) throws CommandSyntaxException {
+      return sendPacketToPlayers(source, targets, new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut), RESPONSE_SET_TIMES);
    }
 }

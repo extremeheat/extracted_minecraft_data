@@ -358,6 +358,10 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          public HolderSet.Named<T> getOrThrow(final TagKey<T> id) {
             return MappedRegistry.this.getOrCreateTagForRegistration(id);
          }
+
+         public boolean canSerialize(final HolderOwner<T> owner) {
+            return MappedRegistry.this.canSerialize(owner);
+         }
       };
    }
 

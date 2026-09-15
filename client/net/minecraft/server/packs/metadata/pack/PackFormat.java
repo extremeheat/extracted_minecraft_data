@@ -149,7 +149,7 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
                }
             } else {
                if (!this.supported.isPresent()) {
-                  return DataResult.error(() -> context + " declares support for format " + majorMin + ", but game versions supporting formats 17 to " + lastPreMinorVersion + " require a " + oldFieldName + " field. Add \"" + oldFieldName + "\": [" + majorMin + ", " + lastPreMinorVersion + "] or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
+                  return DataResult.error(() -> context + " declares support for format " + majorMin + ", but game versions supporting formats 15 to " + lastPreMinorVersion + " require a " + oldFieldName + " field. Add \"" + oldFieldName + "\": [" + majorMin + ", " + lastPreMinorVersion + "] or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
                }
 
                InclusiveRange<Integer> oldSupportedVersions = (InclusiveRange)this.supported.get();
@@ -163,7 +163,7 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
 
                if (hasPackFormatField) {
                   if (!this.format.isPresent()) {
-                     return DataResult.error(() -> context + " declares support for formats up to " + lastPreMinorVersion + ", but game versions supporting formats 17 to " + lastPreMinorVersion + " require a pack_format field. Add \"pack_format\": " + majorMin + " or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
+                     return DataResult.error(() -> context + " declares support for formats up to " + lastPreMinorVersion + ", but game versions supporting formats 15 to " + lastPreMinorVersion + " require a pack_format field. Add \"pack_format\": " + majorMin + " or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
                   }
 
                   String packFormatError = this.validatePackFormatForRange(majorMin, majorMax);
@@ -186,7 +186,7 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
          } else {
             if (hasPackFormatField) {
                if (!this.format.isPresent()) {
-                  return DataResult.error(() -> context + " declares support for formats up to " + lastPreMinorVersion + ", but game versions supporting formats 17 to " + lastPreMinorVersion + " require a pack_format field. Add \"pack_format\": " + min + " or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
+                  return DataResult.error(() -> context + " declares support for formats up to " + lastPreMinorVersion + ", but game versions supporting formats 15 to " + lastPreMinorVersion + " require a pack_format field. Add \"pack_format\": " + min + " or require a version greater or equal to " + (lastPreMinorVersion + 1) + ".0.");
                }
 
                String packFormatError = this.validatePackFormatForRange(min, max);

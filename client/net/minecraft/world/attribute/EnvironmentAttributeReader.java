@@ -30,6 +30,11 @@ public interface EnvironmentAttributeReader {
    <Value> Value getValue(EnvironmentAttribute<Value> attribute, Vec3 pos, @Nullable SpatialAttributeInterpolator biomeInterpolator);
 
    default <Value> Value getValue(final LootContext context, final EnvironmentAttribute<Value> attribute) {
-      return (Value)(attribute.isPositional() ? this.getValue(attribute, (Vec3)context.getParameter(LootContextParams.ORIGIN)) : this.getDimensionValue(attribute));
+      if (attribute.isPositional()) {
+         Vec3 position = (Vec3)context.getOptional(LootContextParams.ORIGIN);
+         return (Value)(position != null ? this.getValue(attribute, position) : attribute.defaultValue());
+      } else {
+         return (Value)this.getDimensionValue(attribute);
+      }
    }
 }

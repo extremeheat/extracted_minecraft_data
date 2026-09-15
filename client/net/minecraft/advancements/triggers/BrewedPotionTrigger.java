@@ -3,11 +3,11 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.predicates.PotionsPredicate;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public BrewedPotionTrigger() {
@@ -18,12 +18,12 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
       return BrewedPotionTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(final ServerPlayer player, final Holder<Potion> potion) {
+   public void trigger(final ServerPlayer player, final PotionContents potion) {
       this.trigger(player, (t) -> t.matches(potion));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Potion.CODEC.optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<PotionsPredicate> potion) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), PotionsPredicate.CODEC.optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -33,8 +33,8 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
          return CriteriaTriggers.BREWED_POTION.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
       }
 
-      public boolean matches(final Holder<Potion> potion) {
-         return !this.potion.isPresent() || ((Holder)this.potion.get()).equals(potion);
+      public boolean matches(final PotionContents potion) {
+         return !this.potion.isPresent() || ((PotionsPredicate)this.potion.get()).matches(potion);
       }
    }
 }

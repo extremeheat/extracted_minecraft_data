@@ -5,16 +5,20 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.BlockTransformer;
 import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
@@ -59,15 +63,21 @@ import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.food.VillagerFood;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.AttackRange;
+import net.minecraft.world.item.component.BlockTransformers;
+import net.minecraft.world.item.component.BrewingFuel;
+import net.minecraft.world.item.component.Compostable;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.KineticWeapon;
+import net.minecraft.world.item.component.MobVisibility;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
@@ -88,9 +98,13 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -188,7 +202,9 @@ public class Item implements ItemLike, FeatureElement {
    }
 
    public InteractionResult useOn(final UseOnContext context) {
-      return InteractionResult.PASS;
+      ItemStack stack = context.getItemInHand();
+      Holder<BlockTransformer> blockTransformer = (Holder)stack.get(DataComponents.BLOCK_TRANSFORMER);
+      return (InteractionResult)(blockTransformer != null ? ((BlockTransformer)blockTransformer.value()).transformBlock(context) : InteractionResult.PASS);
    }
 
    public float getDestroySpeed(final ItemStack itemStack, final BlockState state) {
@@ -352,7 +368,7 @@ public class Item implements ItemLike, FeatureElement {
 
    protected static BlockHitResult getPlayerPOVHitResult(final Level level, final Player player, final ClipContext.Fluid fluid) {
       Vec3 from = player.getEyePosition();
-      Vec3 to = from.add(player.calculateViewVector(player.getXRot(), player.getYRot()).scale(player.blockInteractionRange()));
+      Vec3 to = from.add(Player.calculateViewVector(player.getXRot(), player.getYRot()).scale(player.blockInteractionRange()));
       return level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, fluid, player));
    }
 
@@ -389,7 +405,7 @@ public class Item implements ItemLike, FeatureElement {
    public static class Properties {
       private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("block", id.identifier());
       private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("item", id.identifier());
-      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, context, id) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, var1, var2) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
       private @Nullable ItemStackTemplate craftingRemainingItem;
       private FeatureFlagSet requiredFeatures;
       private @Nullable ResourceKey<Item> id;
@@ -409,6 +425,10 @@ public class Item implements ItemLike, FeatureElement {
 
       public Properties food(final FoodProperties foodProperties, final Consumable consumable) {
          return this.component(DataComponents.FOOD, foodProperties).component(DataComponents.CONSUMABLE, consumable);
+      }
+
+      public Properties villagerFood(final int nutrition) {
+         return this.component(DataComponents.VILLAGER_FOOD, new VillagerFood(nutrition));
       }
 
       public Properties usingConvertsTo(final Item item) {
@@ -455,6 +475,10 @@ public class Item implements ItemLike, FeatureElement {
          return this.component(DataComponents.ENCHANTABLE, new Enchantable(value));
       }
 
+      public Properties potPattern(final ResourceKey<DecoratedPotPattern> pattern) {
+         return this.delayedComponent(DataComponents.PROVIDES_POTTERY_PATTERN, (context) -> context.getOrThrow(pattern));
+      }
+
       public Properties repairable(final Item repairItem) {
          return this.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(repairItem.builtInRegistryHolder())));
       }
@@ -481,15 +505,15 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties axe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_AXE, attackDamageBaseline, attackSpeedBaseline, 5.0F);
+         return this.tool(material, BlockTags.MINEABLE_WITH_AXE, attackDamageBaseline, attackSpeedBaseline, 5.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.AXE));
       }
 
       public Properties hoe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_HOE, attackDamageBaseline, attackSpeedBaseline, 0.0F);
+         return this.tool(material, BlockTags.MINEABLE_WITH_HOE, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.HOE));
       }
 
       public Properties shovel(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
-         return this.tool(material, BlockTags.MINEABLE_WITH_SHOVEL, attackDamageBaseline, attackSpeedBaseline, 0.0F);
+         return this.tool(material, BlockTags.MINEABLE_WITH_SHOVEL, attackDamageBaseline, attackSpeedBaseline, 0.0F).delayedComponent(DataComponents.BLOCK_TRANSFORMER, (context) -> context.getOrThrow(BlockTransformers.SHOVEL));
       }
 
       public Properties sword(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
@@ -497,7 +521,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties spear(final ToolMaterial material, final float attackDuration, final float damageMultiplier, final float delay, final float dismountTime, final float dismountThreshold, final float knockbackTime, final float knockbackThreshold, final float damageTime, final float damageThreshold) {
-         return this.durability(material.durability()).repairable(material.repairItems()).enchantable(material.enchantmentValue()).delayedHolderComponent(DataComponents.DAMAGE_TYPE, DamageTypes.SPEAR).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(delay * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(dismountTime * 20.0F), dismountThreshold), KineticWeapon.Condition.ofAttackerSpeed((int)(knockbackTime * 20.0F), knockbackThreshold), KineticWeapon.Condition.ofRelativeSpeed((int)(damageTime * 20.0F), damageThreshold), 0.38F, damageMultiplier, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(attackDuration * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + material.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / attackDuration) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
+         return this.durability(material.durability()).repairable(material.repairItems()).enchantable(material.enchantmentValue()).delayedHolderComponent(DataComponents.DAMAGE_TYPE, DamageTypes.SPEAR).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(delay * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(dismountTime * 20.0F), dismountThreshold), KineticWeapon.Condition.ofAttackerSpeed((int)(knockbackTime * 20.0F), knockbackThreshold), KineticWeapon.Condition.ofRelativeSpeed((int)(damageTime * 20.0F), damageThreshold), 0.38F, damageMultiplier, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.ATTACK_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(attackDuration * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + material.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / attackDuration) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
       }
 
       public Properties spawnEgg(final EntityType<?> type) {
@@ -524,6 +548,18 @@ public class Item implements ItemLike, FeatureElement {
 
       public Properties trimMaterial(final ResourceKey<TrimMaterial> material) {
          return this.delayedHolderComponent(DataComponents.PROVIDES_TRIM_MATERIAL, material);
+      }
+
+      public Properties signText() {
+         return this.component(DataComponents.SIGN_TEXT_BACK, SignText.EMPTY).component(DataComponents.SIGN_TEXT_FRONT, SignText.EMPTY);
+      }
+
+      public Properties cookingFuel(final ResourceKey<ContextIntProvider> burnTime) {
+         return this.component(DataComponents.COOKING_FUEL, new CookingFuel(burnTime, ContextFloatProviders.COOKING_DEFAULT_SPEED_MULTIPLIER));
+      }
+
+      public Properties brewingFuel(final ResourceKey<ContextIntProvider> uses) {
+         return this.component(DataComponents.BREWING_FUEL, new BrewingFuel(uses, ContextFloatProviders.BREWING_DEFAULT_SPEED_MULTIPLIER));
       }
 
       public Properties requiredFeatures(final FeatureFlag... flags) {
@@ -583,7 +619,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public <T> Properties delayedHolderComponent(final DataComponentType<Holder<T>> type, final ResourceKey<T> valueKey) {
-         this.componentInitializer = this.componentInitializer.andThen((components, context, key) -> components.set(type, context.getOrThrow(valueKey)));
+         this.componentInitializer = this.componentInitializer.andThen((components, context, var4) -> components.set(type, context.getOrThrow(valueKey)));
          return this;
       }
 
@@ -591,8 +627,23 @@ public class Item implements ItemLike, FeatureElement {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, attributes);
       }
 
+      public Properties compostable(final ResourceKey<ContextIntProvider> layers) {
+         return this.component(DataComponents.COMPOSTABLE, new Compostable(layers));
+      }
+
+      @SafeVarargs
+      public final Properties loweredMobVisibility(final ResourceKey<EntityType<?>>... entityTypeIds) {
+         return this.delayedComponent(DataComponents.MOB_VISIBILITY, (context) -> {
+            HolderGetter<EntityType<?>> registry = context.lookupOrThrow(Registries.ENTITY_TYPE);
+            Stream var10000 = Arrays.stream(entityTypeIds);
+            Objects.requireNonNull(registry);
+            List<Holder.Reference<EntityType<?>>> entityTypes = var10000.map(registry::getOrThrow).toList();
+            return new MobVisibility(HolderSet.direct(entityTypes), 0.5F);
+         });
+      }
+
       private DataComponentInitializers.Initializer<Item> finalizeInitializer(final Component name, final Identifier model) {
-         return this.componentInitializer.andThen((components, context, key) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
+         return this.componentInitializer.andThen((components, var3, var4) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
                if (c.has(DataComponents.DAMAGE) && (Integer)c.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
                   throw new IllegalStateException("Item cannot have both durability and be stackable");
                }
@@ -637,7 +688,7 @@ public class Item implements ItemLike, FeatureElement {
                return level.tickRateManager().tickrate();
             }
 
-            public MapItemSavedData mapData(final MapId id) {
+            public @Nullable MapItemSavedData mapData(final MapId id) {
                return level.getMapData(id);
             }
 

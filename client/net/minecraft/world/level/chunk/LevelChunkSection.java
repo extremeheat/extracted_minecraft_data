@@ -6,7 +6,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
@@ -204,14 +203,14 @@ public class LevelChunkSection {
       return this.biomes.get(quartX, quartY, quartZ);
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler, final int quartMinX, final int quartMinY, final int quartMinZ) {
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final int quartMinX, final int quartMinY, final int quartMinZ) {
       PalettedContainer<Holder<Biome>> newBiomes = this.biomes.recreate();
       int size = 4;
 
       for(int x = 0; x < 4; ++x) {
          for(int y = 0; y < 4; ++y) {
             for(int z = 0; z < 4; ++z) {
-               newBiomes.getAndSetUnchecked(x, y, z, biomeResolver.getNoiseBiome(quartMinX + x, quartMinY + y, quartMinZ + z, sampler));
+               newBiomes.getAndSetUnchecked(x, y, z, biomeResolver.getNoiseBiome(quartMinX + x, quartMinY + y, quartMinZ + z));
             }
          }
       }

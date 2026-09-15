@@ -3,6 +3,7 @@ package net.minecraft.world.entity.vehicle.minecart;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -64,7 +65,7 @@ public class MinecartSpawner extends AbstractMinecart {
       this.spawner.save(output);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       this.spawner.onEventTriggered(this.level(), id);
    }
 

@@ -22,10 +22,12 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -63,18 +65,17 @@ public class FishingHook extends Projectile {
    private int timeUntilHooked;
    private float fishAngle;
    private boolean openWater;
+   private static final float GRAVITY = 0.03F;
    private @Nullable Entity hookedIn;
    private FishHookState currentState;
    private final int luck;
    private final int lureSpeed;
-   private final InterpolationHandler interpolationHandler;
 
    private FishingHook(final EntityType<? extends FishingHook> type, final Level level, final int luck, final int lureSpeed) {
       super(type, level);
       this.syncronizedRandom = RandomSource.create();
       this.openWater = true;
       this.currentState = FishingHook.FishHookState.FLYING;
-      this.interpolationHandler = new InterpolationHandler(this);
       this.luck = Math.max(0, luck);
       this.lureSpeed = Math.max(0, lureSpeed);
    }
@@ -106,8 +107,8 @@ public class FishingHook extends Projectile {
       this.xRotO = this.getXRot();
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolationHandler;
+   protected InterpolationHandler createInterpolationHandler() {
+      return LinearInterpolationHandler.create(this);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -142,7 +143,6 @@ public class FishingHook extends Projectile {
 
    public void tick() {
       this.syncronizedRandom.setSeed(this.getUUID().getLeastSignificantBits() ^ this.level().getGameTime());
-      this.getInterpolation().interpolate();
       super.tick();
       Player owner = this.getPlayerOwner();
       if (owner == null) {
@@ -224,7 +224,7 @@ public class FishingHook extends Projectile {
          }
 
          if (!fluidState.is(FluidTags.WATER) && !this.onGround() && this.hookedIn == null) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03, 0.0));
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -this.getDefaultGravity(), 0.0));
          }
 
          this.move(MoverType.SELF, this.getDeltaMovement());
@@ -457,23 +457,21 @@ public class FishingHook extends Projectile {
       }
    }
 
-   public void handleEntityEvent(final byte id) {
-      if (id == 31 && this.level().isClientSide()) {
-         Entity var3 = this.hookedIn;
-         if (var3 instanceof Player) {
-            Player player = (Player)var3;
-            if (player.isLocalPlayer()) {
-               this.pullEntity(this.hookedIn);
-            }
-         }
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
+      if (id == 31 && this.hookedIn != null) {
+         this.pullEntity(this.hookedIn);
       }
 
       super.handleEntityEvent(id);
    }
 
+   protected double getDefaultGravity() {
+      return 0.029999999329447746;
+   }
+
    protected void pullEntity(final Entity entity) {
       Entity owner = this.getOwner();
-      if (owner != null) {
+      if (owner != null && entity.canSimulateMovement()) {
          Vec3 delta = (new Vec3(owner.getX() - this.getX(), owner.getY() - this.getY(), owner.getZ() - this.getZ())).scale(0.1);
          entity.setDeltaMovement(entity.getDeltaMovement().add(delta));
       }

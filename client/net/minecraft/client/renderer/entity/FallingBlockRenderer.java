@@ -18,8 +18,8 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
       this.shadowRadius = 0.5F;
    }
 
-   public boolean shouldRender(final FallingBlockEntity entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      if (!super.shouldRender(entity, culler, camX, camY, camZ)) {
+   public boolean shouldRender(final FallingBlockEntity entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      if (!super.shouldRender(entity, culler, camX, camY, camZ, partialTicks)) {
          return false;
       } else {
          return entity.getBlockState() != entity.level().getBlockState(entity.blockPosition());

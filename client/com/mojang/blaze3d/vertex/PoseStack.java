@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.vertex;
 
+import com.mojang.math.Axis;
 import com.mojang.math.MatrixUtil;
 import com.mojang.math.Transformation;
 import java.util.ArrayList;
@@ -38,8 +39,16 @@ public class PoseStack {
       this.last().scale(xScale, yScale, zScale);
    }
 
-   public void mulPose(final Quaternionfc by) {
+   public void rotate(final Quaternionfc by) {
       this.last().rotate(by);
+   }
+
+   public void rotate(final Axis axis, final float angle) {
+      this.last().rotate(axis, angle);
+   }
+
+   public void rotateDegrees(final Axis axis, final float angle) {
+      this.last().rotateDegrees(axis, angle);
    }
 
    public void rotateAround(final Quaternionfc rotation, final float pivotX, final float pivotY, final float pivotZ) {
@@ -142,6 +151,16 @@ public class PoseStack {
       public void rotate(final Quaternionfc by) {
          this.pose.rotate(by);
          this.normal.rotate(by);
+      }
+
+      public void rotate(final Axis axis, final float angle) {
+         axis.rotate(this.pose, angle);
+         axis.rotate(this.normal, angle);
+      }
+
+      public void rotateDegrees(final Axis axis, final float angle) {
+         axis.rotateDegrees(this.pose, angle);
+         axis.rotateDegrees(this.normal, angle);
       }
 
       public void rotateAround(final Quaternionfc rotation, final float pivotX, final float pivotY, final float pivotZ) {

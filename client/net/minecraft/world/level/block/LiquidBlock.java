@@ -3,16 +3,11 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
@@ -43,17 +38,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class LiquidBlock extends Block implements BucketPickup {
-   private static final Codec<FlowingFluid> FLOWING_FLUID;
-   public static final MapCodec<LiquidBlock> CODEC;
    public static final IntegerProperty LEVEL;
    protected final FlowingFluid fluid;
    private final List<FluidState> stateCache;
    public static final ImmutableList<Direction> POSSIBLE_FLOW_DIRECTIONS;
    private static final int BUBBLE_COLUMN_CHECK_DELAY = 20;
-
-   public MapCodec<LiquidBlock> codec() {
-      return CODEC;
-   }
 
    protected LiquidBlock(final FlowingFluid fluid, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -228,17 +217,6 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    static {
-      FLOWING_FLUID = BuiltInRegistries.FLUID.byNameCodec().comapFlatMap((fluid) -> {
-         DataResult var10000;
-         if (fluid instanceof FlowingFluid flowing) {
-            var10000 = DataResult.success(flowing);
-         } else {
-            var10000 = DataResult.error(() -> "Not a flowing fluid: " + String.valueOf(fluid));
-         }
-
-         return var10000;
-      }, (fluid) -> fluid);
-      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FLOWING_FLUID.fieldOf("fluid").forGetter((b) -> b.fluid), propertiesCodec()).apply(i, LiquidBlock::new));
       LEVEL = BlockStateProperties.LEVEL;
       POSSIBLE_FLOW_DIRECTIONS = ImmutableList.of(Direction.DOWN, Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST);
    }

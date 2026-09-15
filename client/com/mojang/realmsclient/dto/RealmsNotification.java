@@ -2,8 +2,10 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +19,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LenientJsonParser;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -93,11 +94,11 @@ public class RealmsNotification {
       private static final String URL = "url";
       private static final String BUTTON_TEXT = "buttonText";
       private static final String MESSAGE = "message";
-      private final String url;
+      private final URI url;
       private final RealmsText buttonText;
       private final RealmsText message;
 
-      private VisitUrl(final RealmsNotification base, final String url, final RealmsText buttonText, final RealmsText message) {
+      private VisitUrl(final RealmsNotification base, final URI url, final RealmsText buttonText, final RealmsText message) {
          super(base.uuid, base.dismissable, base.seen, base.type);
          this.url = url;
          this.buttonText = buttonText;
@@ -105,7 +106,7 @@ public class RealmsNotification {
       }
 
       public static VisitUrl parse(final RealmsNotification base, final JsonObject jsonObject) {
-         String url = JsonUtils.getRequiredString("url", jsonObject);
+         URI url = JsonUtils.getRequiredUri("url", jsonObject);
          RealmsText buttonText = (RealmsText)JsonUtils.getRequired("buttonText", jsonObject, RealmsText::parse);
          RealmsText message = (RealmsText)JsonUtils.getRequired("message", jsonObject, RealmsText::parse);
          return new VisitUrl(base, url, buttonText, message);
@@ -159,7 +160,7 @@ public class RealmsNotification {
                   Minecraft minecraft = Minecraft.getInstance();
                   minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
                      if (result) {
-                        Util.getPlatform().openUri(this.urlButton.url);
+                        Blaze3D.openUri(this.urlButton.url);
                         minecraft.gui.setScreen(parentScreen);
                      } else {
                         minecraft.gui.setScreen(popup);
@@ -180,7 +181,7 @@ public class RealmsNotification {
       }
    }
 
-   private static record UrlButton(String url, RealmsText urlText) {
+   private static record UrlButton(URI url, RealmsText urlText) {
       private static final String URL = "url";
       private static final String URL_TEXT = "urlText";
 
@@ -189,7 +190,7 @@ public class RealmsNotification {
       }
 
       public static UrlButton parse(final JsonObject jsonObject) {
-         String url = JsonUtils.getRequiredString("url", jsonObject);
+         URI url = URI.create(JsonUtils.getRequiredString("url", jsonObject));
          RealmsText urlText = (RealmsText)JsonUtils.getRequired("urlText", jsonObject, RealmsText::parse);
          return new UrlButton(url, urlText);
       }

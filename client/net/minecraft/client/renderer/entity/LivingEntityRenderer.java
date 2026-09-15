@@ -11,13 +11,12 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -39,7 +38,6 @@ import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.Team;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
@@ -63,8 +61,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return this.model;
    }
 
-   protected AABB getBoundingBoxForCulling(final T entity) {
-      AABB aabb = super.getBoundingBoxForCulling(entity);
+   protected AABB getBoundingBoxForCulling(final T entity, final float partialTicks) {
+      AABB aabb = super.getBoundingBoxForCulling(entity, partialTicks);
       if (entity.getItemBySlot(EquipmentSlot.HEAD).is(Items.DRAGON_HEAD)) {
          float extraSize = 0.5F;
          return aabb.inflate(0.5, 0.5, 0.5);
@@ -96,7 +94,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          int overlayCoords = getOverlayCoords(state, this.getWhiteOverlayProgress(state));
          int baseColor = forceTransparent ? 654311423 : -1;
          int tintedColor = ARGB.multiply(baseColor, this.getModelTint(state));
-         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, renderType, state.lightCoords, overlayCoords, tintedColor, (UvMapping)null, state.outlineColor);
       }
 
       if (this.shouldRenderLayers(state) && !this.layers.isEmpty()) {
@@ -124,7 +122,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    protected @Nullable RenderType getRenderType(final S state, final boolean isBodyVisible, final boolean forceTransparent, final boolean appearGlowing) {
       Identifier texture = this.getTextureLocation(state);
       if (forceTransparent) {
-         return RenderTypes.entityTranslucentCullItemTarget(texture);
+         return RenderTypes.entityTranslucentCull(texture);
       } else if (isBodyVisible) {
          return this.model.renderType(texture);
       } else {
@@ -163,7 +161,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
 
       if (!state.hasPose(Pose.SLEEPING)) {
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - bodyRot));
+         poseStack.rotateDegrees(Axis.YP, 180.0F - bodyRot);
       }
 
       if (state.deathTime > 0.0F) {
@@ -173,19 +171,19 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
             fall = 1.0F;
          }
 
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(fall * this.getFlipDegrees()));
+         poseStack.rotateDegrees(Axis.ZP, fall * this.getFlipDegrees());
       } else if (state.isAutoSpinAttack) {
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - state.xRot));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.ageInTicks * -75.0F));
+         poseStack.rotateDegrees(Axis.XP, -90.0F - state.xRot);
+         poseStack.rotateDegrees(Axis.YP, state.ageInTicks * -75.0F);
       } else if (state.hasPose(Pose.SLEEPING)) {
          Direction bedOrientation = state.bedOrientation;
          float angle = bedOrientation != null ? sleepDirectionToRotation(bedOrientation) : bodyRot;
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(angle));
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(this.getFlipDegrees()));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(270.0F));
+         poseStack.rotateDegrees(Axis.YP, angle);
+         poseStack.rotateDegrees(Axis.ZP, this.getFlipDegrees());
+         poseStack.rotateDegrees(Axis.YP, 270.0F);
       } else if (state.isUpsideDown) {
          poseStack.translate(0.0F, (state.boundingBoxHeight + 0.1F) / entityScale, 0.0F);
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+         poseStack.rotateDegrees(Axis.ZP, 180.0F);
       }
 
    }

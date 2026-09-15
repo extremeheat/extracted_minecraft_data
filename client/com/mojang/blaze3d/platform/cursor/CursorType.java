@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.platform.cursor;
 
-import com.mojang.blaze3d.platform.Window;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLMouse;
 
 public class CursorType {
    public static final CursorType DEFAULT = new CursorType("default", 0L);
@@ -14,8 +13,9 @@ public class CursorType {
       this.handle = handle;
    }
 
-   public void select(final Window window) {
-      GLFW.glfwSetCursor(window.handle(), this.handle);
+   public void select() {
+      long cursor = this.handle == 0L ? SDLMouse.SDL_GetDefaultCursor() : this.handle;
+      SDLMouse.SDL_SetCursor(cursor);
    }
 
    public String toString() {
@@ -23,7 +23,7 @@ public class CursorType {
    }
 
    public static CursorType createStandardCursor(final int shape, final String name, final CursorType fallback) {
-      long handle = GLFW.glfwCreateStandardCursor(shape);
+      long handle = SDLMouse.SDL_CreateSystemCursor(shape);
       return handle == 0L ? fallback : new CursorType(name, handle);
    }
 }

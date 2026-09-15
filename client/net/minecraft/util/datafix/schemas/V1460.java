@@ -152,7 +152,7 @@ public class V1460 extends NamespacedSchema {
       schema.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(schema), "tag", V99.itemStackTag(schema)), V705.ADD_NAMES, HookFunction.IDENTITY));
       schema.registerType(false, References.HOTBAR, () -> DSL.compoundList(DSL.list(References.ITEM_STACK.in(schema))));
       schema.registerType(false, References.OPTIONS, DSL::remainder);
-      schema.registerType(false, References.STRUCTURE, () -> DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(schema))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(schema))), "palette", DSL.list(References.BLOCK_STATE.in(schema))));
+      schema.registerType(false, References.STRUCTURE, () -> DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(schema))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(schema))), "palette", DSL.list(References.BLOCK_STATE.in(schema)), "palettes", DSL.list(DSL.list(References.BLOCK_STATE.in(schema)))));
       schema.registerType(false, References.BLOCK_NAME, () -> DSL.constType(namespacedString()));
       schema.registerType(false, References.ITEM_NAME, () -> DSL.constType(namespacedString()));
       schema.registerType(false, References.BLOCK_STATE, DSL::remainder);

@@ -26,6 +26,7 @@ public class DebugScreenEntries {
    public static final Identifier CHUNK_SOURCE_STATS = register((String)"chunk_source_stats", new DebugEntryChunkSourceStats());
    public static final Identifier PLAYER_POSITION = register((String)"player_position", new DebugEntryPosition());
    public static final Identifier PLAYER_SECTION_POSITION = register((String)"player_section_position", new DebugEntrySectionPosition());
+   public static final Identifier PLAYER_SPEED = register((String)"player_speed", new DebugEntryPlayerSpeed());
    public static final Identifier LIGHT_LEVELS = register((String)"light_levels", new DebugEntryLight());
    public static final Identifier HEIGHTMAP = register((String)"heightmap", new DebugEntryHeightmap());
    public static final Identifier BIOME = register((String)"biome", new DebugEntryBiome());
@@ -34,7 +35,7 @@ public class DebugScreenEntries {
    public static final Identifier ENTITY_SPAWN_COUNTS = register((String)"entity_spawn_counts", new DebugEntrySpawnCounts());
    public static final Identifier SOUND_MOOD = register((String)"sound_mood", new DebugEntrySoundMood());
    public static final Identifier SOUND_CACHE = register((String)"sound_cache", new DebugEntrySoundCache());
-   public static final Identifier POST_EFFECT = register((String)"post_effect", new DebugEntryPostEffect());
+   public static final Identifier POST_EFFECTS = register((String)"post_effects", new DebugEntryPostEffects());
    public static final Identifier ENTITY_HITBOXES = register((String)"entity_hitboxes", new DebugEntryNoop());
    public static final Identifier CHUNK_BORDERS = register((String)"chunk_borders", new DebugEntryNoop());
    public static final Identifier THREE_DIMENSIONAL_CROSSHAIR = register((String)"3d_crosshair", new DebugEntryNoop());

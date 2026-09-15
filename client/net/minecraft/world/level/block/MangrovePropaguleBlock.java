@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,17 +25,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, MangrovePropaguleBlock::new));
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
    private static final int[] SHAPE_MIN_Y;
    private static final VoxelShape[] SHAPE_PER_AGE;
    private static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty HANGING;
-
-   public MapCodec<MangrovePropaguleBlock> codec() {
-      return CODEC;
-   }
 
    public MangrovePropaguleBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
       super(treeGrower, properties);
@@ -93,19 +86,19 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return !isHanging(state) || !isFullyGrown(state);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(level, random, pos, state);
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
+      return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(level, random, pos, state, source);
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (isHanging(state) && !isFullyGrown(state)) {
          level.setBlock(pos, (BlockState)state.cycle(AGE), 2);
       } else {
-         super.performBonemeal(level, random, pos, state);
+         super.performBonemeal(level, random, pos, state, source);
       }
 
    }

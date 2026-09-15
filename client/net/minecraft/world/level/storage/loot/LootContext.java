@@ -15,6 +15,7 @@ import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.slot.SlotSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -38,12 +39,8 @@ public class LootContext {
       return this.params.contextMap().has(key);
    }
 
-   public <T> T getParameter(final ContextKey<T> key) {
-      return (T)this.params.contextMap().getOrThrow(key);
-   }
-
-   public <T> @Nullable T getOptionalParameter(final ContextKey<T> key) {
-      return (T)this.params.contextMap().getOptional(key);
+   public <T> @Nullable T getOptional(final ContextKey<T> key) {
+      return (T)this.params.contextMap().get(key);
    }
 
    public void addDynamicDrops(final Identifier location, final Consumer<ItemStack> output) {
@@ -82,12 +79,16 @@ public class LootContext {
       return new VisitedEntry<LootTable>(LootDataType.TABLE, table);
    }
 
-   public static VisitedEntry<LootItemCondition> createVisitedEntry(final LootItemCondition table) {
-      return new VisitedEntry<LootItemCondition>(LootDataType.PREDICATE, table);
+   public static VisitedEntry<LootItemCondition> createVisitedEntry(final LootItemCondition predicate) {
+      return new VisitedEntry<LootItemCondition>(LootDataType.PREDICATE, predicate);
    }
 
-   public static VisitedEntry<LootItemFunction> createVisitedEntry(final LootItemFunction table) {
-      return new VisitedEntry<LootItemFunction>(LootDataType.MODIFIER, table);
+   public static VisitedEntry<LootItemFunction> createVisitedEntry(final LootItemFunction modifier) {
+      return new VisitedEntry<LootItemFunction>(LootDataType.MODIFIER, modifier);
+   }
+
+   public static VisitedEntry<SlotSource> createVisitedEntry(final SlotSource slotSource) {
+      return new VisitedEntry<SlotSource>(LootDataType.SLOT_SOURCE, slotSource);
    }
 
    public static class Builder {

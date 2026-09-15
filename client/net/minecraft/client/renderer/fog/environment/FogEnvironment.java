@@ -4,12 +4,16 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public abstract class FogEnvironment {
+   private static final Vector3fc WHITE = ARGB.vector3fFromRGB24(-1);
+
    public FogEnvironment() {
       super();
    }
@@ -20,8 +24,8 @@ public abstract class FogEnvironment {
       return true;
    }
 
-   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
-      return -1;
+   public Vector3fc getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
+      return WHITE;
    }
 
    public boolean modifiesDarkness() {

@@ -1,8 +1,10 @@
 package net.minecraft.world.level.pathfinder;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 public class Target extends Node {
+   public static final StreamCodec<ByteBuf, Target> DEBUG_STREAM_CODEC = createDebugStreamCodec(Target::new);
    private float bestHeuristic = 3.4028235E38F;
    private Node bestNode;
    private boolean reached;
@@ -33,11 +35,5 @@ public class Target extends Node {
 
    public boolean isReached() {
       return this.reached;
-   }
-
-   public static Target createFromStream(final FriendlyByteBuf buffer) {
-      Target node = new Target(buffer.readInt(), buffer.readInt(), buffer.readInt());
-      readContents(buffer, node);
-      return node;
    }
 }

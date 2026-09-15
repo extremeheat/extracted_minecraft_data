@@ -1,20 +1,21 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.buffers.GpuFence;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.CompactVectorArray;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.GpuFence;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -177,13 +178,21 @@ public class StagedVertexBuffer implements AutoCloseable {
          if (this.currentIndexBuffer != null && draw.quadSorting != null) {
             IndexType indexType = draw.indexType();
             int firstIndex = draw.indexOffset / indexType.bytes;
-            return new ExecuteInfo(this.currentVertexBuffer, this.currentIndexBuffer, indexType, baseVertex, firstIndex, draw.indexCount);
+            return new ExecuteInfo(this.currentVertexBuffer, this.currentIndexBuffer, indexType, baseVertex, firstIndex, draw.indexCount, draw.primitiveTopology);
          } else {
             RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
-            GpuBuffer indexBuffer = autoIndices.getBuffer(draw.indexCount);
-            return new ExecuteInfo(this.currentVertexBuffer, indexBuffer, autoIndices.type(), baseVertex, 0, draw.indexCount);
+            autoIndices.requestIndexCount(draw.indexCount);
+            return new ExecuteInfo(this.currentVertexBuffer, (GpuBuffer)null, autoIndices.type(), baseVertex, 0, draw.indexCount, draw.primitiveTopology);
          }
       }
+   }
+
+   public void requestIndexCount(final Draw draw) {
+      if (this.currentIndexBuffer == null || draw.quadSorting == null) {
+         RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(draw.primitiveTopology);
+         autoIndices.requestIndexCount(draw.indexCount);
+      }
+
    }
 
    public void endDraw() {
@@ -235,7 +244,6 @@ public class StagedVertexBuffer implements AutoCloseable {
       }
 
       public GpuBuffer acquire(final GpuDevice device, final int minSize) {
-         this.tryRecycleBuffers();
          int roundedMinSize = Mth.roundToward(minSize, 262144);
          GpuBuffer buffer = this.takeBestAvailable(roundedMinSize, roundedMinSize * 4);
          if (buffer == null) {
@@ -277,15 +285,16 @@ public class StagedVertexBuffer implements AutoCloseable {
          }
 
          if (!this.available.isEmpty()) {
-            this.available.forEach(GpuBuffer::close);
+            this.available.forEach(UncheckedAutoCloseable::close);
             this.available.clear();
          }
 
+         this.tryRecycleBuffers();
       }
 
       public void close() {
-         this.available.forEach(GpuBuffer::close);
-         this.usedThisFrame.forEach(GpuBuffer::close);
+         this.available.forEach(UncheckedAutoCloseable::close);
+         this.usedThisFrame.forEach(UncheckedAutoCloseable::close);
          this.pendingRecycle.forEach(PendingRecycle::close);
          this.available.clear();
          this.usedThisFrame.clear();
@@ -307,7 +316,7 @@ public class StagedVertexBuffer implements AutoCloseable {
          }
 
          public void close() {
-            this.buffers.forEach(GpuBuffer::close);
+            this.buffers.forEach(UncheckedAutoCloseable::close);
             this.fence.close();
          }
       }
@@ -354,9 +363,18 @@ public class StagedVertexBuffer implements AutoCloseable {
       }
    }
 
-   public static record ExecuteInfo(GpuBuffer vertexBuffer, GpuBuffer indexBuffer, IndexType indexType, int baseVertex, int firstIndex, int indexCount) {
+   public static record ExecuteInfo(GpuBuffer vertexBuffer, @Nullable GpuBuffer customIndexBuffer, IndexType indexType, int baseVertex, int firstIndex, int indexCount, PrimitiveTopology topology) {
       public ExecuteInfo {
          super();
+      }
+
+      public GpuBuffer indexBuffer() {
+         if (this.customIndexBuffer == null) {
+            RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(this.topology);
+            return autoIndices.getBuffer();
+         } else {
+            return this.customIndexBuffer;
+         }
       }
    }
 }

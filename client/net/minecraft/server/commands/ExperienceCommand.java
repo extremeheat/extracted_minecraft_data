@@ -33,44 +33,29 @@ public class ExperienceCommand {
 
    private static int queryExperience(final CommandSourceStack source, final ServerPlayer target, final Type type) {
       int result = type.query.applyAsInt(target);
-      source.sendSuccess(() -> Component.translatable("commands.experience.query." + type.name, target.getDisplayName(), result), false);
+      source.sendSuccess(() -> type.queryResponse(target, result), false);
       return result;
    }
 
-   private static int addExperience(final CommandSourceStack source, final Collection<? extends ServerPlayer> players, final int amount, final Type type) {
+   private static int addExperience(final CommandSourceStack source, final Collection<? extends ServerPlayer> players, final int amount, final Type type) throws CommandSyntaxException {
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
+
       for(ServerPlayer player : players) {
          type.add.accept(player, amount);
+         tracker.track(player);
       }
 
-      if (players.size() == 1) {
-         source.sendSuccess(() -> Component.translatable("commands.experience.add." + type.name + ".success.single", amount, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.experience.add." + type.name + ".success.multiple", amount, players.size()), true);
-      }
-
-      return players.size();
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)type.addResponse, amount);
    }
 
    private static int setExperience(final CommandSourceStack source, final Collection<? extends ServerPlayer> players, final int amount, final Type type) throws CommandSyntaxException {
-      int success = 0;
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
 
       for(ServerPlayer player : players) {
-         if (type.set.test(player, amount)) {
-            ++success;
-         }
+         tracker.track(player, type.set.test(player, amount));
       }
 
-      if (success == 0) {
-         throw ERROR_SET_POINTS_INVALID.create();
-      } else {
-         if (players.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.experience.set." + type.name + ".success.single", amount, ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.experience.set." + type.name + ".success.multiple", amount, players.size()), true);
-         }
-
-         return players.size();
-      }
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)type.setResponse, amount);
    }
 
    private static enum Type {
@@ -89,14 +74,22 @@ public class ExperienceCommand {
 
       public final BiConsumer<ServerPlayer, Integer> add;
       public final BiPredicate<ServerPlayer, Integer> set;
-      public final String name;
-      private final ToIntFunction<ServerPlayer> query;
+      public final ToIntFunction<ServerPlayer> query;
+      public final String queryTranslationKey;
+      public final CommandResponseTracker.MessagesWithArg<ServerPlayer, Integer> addResponse;
+      public final CommandResponseTracker.MessagesWithArg<ServerPlayer, Integer> setResponse;
 
       private Type(final String name, final BiConsumer<ServerPlayer, Integer> add, final BiPredicate<ServerPlayer, Integer> set, final ToIntFunction<ServerPlayer> query) {
          this.add = add;
-         this.name = name;
+         this.addResponse = CommandResponseTracker.messages((CommandResponseTracker.SingleHandlerWithArg)((player, var2x, amount) -> Component.translatable("commands.experience.add." + name + ".success.single", amount, player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((playerCount, var2x, amount) -> Component.translatable("commands.experience.add." + name + ".success.multiple", amount, playerCount)));
          this.set = set;
+         this.setResponse = CommandResponseTracker.messages((SimpleCommandExceptionType)ExperienceCommand.ERROR_SET_POINTS_INVALID, (CommandResponseTracker.SingleHandlerWithArg)((player, var2x, amount) -> Component.translatable("commands.experience.set." + name + ".success.single", amount, player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((playerCount, var2x, amount) -> Component.translatable("commands.experience.set." + name + ".success.multiple", amount, playerCount)));
          this.query = query;
+         this.queryTranslationKey = "commands.experience.query." + name;
+      }
+
+      public Component queryResponse(final ServerPlayer target, final int result) {
+         return Component.translatable(this.queryTranslationKey, target.getDisplayName(), result);
       }
 
       // $FF: synthetic method

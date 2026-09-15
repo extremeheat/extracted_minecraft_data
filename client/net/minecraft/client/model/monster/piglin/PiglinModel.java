@@ -15,7 +15,7 @@ public abstract class PiglinModel extends AbstractPiglinModel<PiglinRenderState>
    public void setupAnim(final PiglinRenderState state) {
       super.setupAnim(state);
       float defaultAngle = 0.5235988F;
-      float attackTime = state.attackTime;
+      float swingAnimation = state.swingAnimation;
       PiglinArmPose pose = state.armPose;
       if (pose == PiglinArmPose.DANCING) {
          float dancePos = state.ageInTicks / 60.0F;
@@ -33,7 +33,7 @@ public abstract class PiglinModel extends AbstractPiglinModel<PiglinRenderState>
          var10000.y += Mth.sin((double)(dancePos * 40.0F)) * 0.5F + 0.5F;
          var10000 = this.body;
          var10000.y += Mth.sin((double)(dancePos * 40.0F)) * 0.35F;
-      } else if (pose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON && attackTime == 0.0F) {
+      } else if (pose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON && swingAnimation == 0.0F) {
          this.holdWeaponHigh(state);
       } else if (pose == PiglinArmPose.CROSSBOW_HOLD) {
          AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, state.mainArm == HumanoidArm.RIGHT);
@@ -54,9 +54,9 @@ public abstract class PiglinModel extends AbstractPiglinModel<PiglinRenderState>
    }
 
    protected void setupAttackAnimation(final PiglinRenderState state) {
-      float attackTime = state.attackTime;
-      if (attackTime > 0.0F && state.armPose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
-         AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, state.mainArm, attackTime, state.ageInTicks);
+      float swingAnimation = state.swingAnimation;
+      if (swingAnimation > 0.0F && state.armPose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
+         AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, state.mainArm, swingAnimation, state.ageInTicks);
       } else {
          super.setupAttackAnimation(state);
       }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
@@ -20,12 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class SmokerBlock extends AbstractFurnaceBlock {
-   public static final MapCodec<SmokerBlock> CODEC = simpleCodec(SmokerBlock::new);
-
-   public MapCodec<SmokerBlock> codec() {
-      return CODEC;
-   }
-
    protected SmokerBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }

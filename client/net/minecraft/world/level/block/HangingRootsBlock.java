@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -21,13 +20,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class HangingRootsBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<HangingRootsBlock> CODEC = simpleCodec(HangingRootsBlock::new);
    private static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<HangingRootsBlock> codec() {
-      return CODEC;
-   }
 
    protected HangingRootsBlock(final BlockBehaviour.Properties properties) {
       super(properties);

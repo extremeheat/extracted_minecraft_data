@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
@@ -17,20 +18,19 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public abstract class RootPlacer {
    public static final Codec<RootPlacer> CODEC;
    protected final IntProvider trunkOffsetY;
-   protected final BlockStateProvider rootProvider;
+   protected final Holder<BlockStateProvider> rootProvider;
    protected final Optional<AboveRootPlacement> aboveRootPlacement;
 
-   protected static <P extends RootPlacer> Products.P3<RecordCodecBuilder.Mu<P>, IntProvider, BlockStateProvider, Optional<AboveRootPlacement>> rootPlacerParts(final RecordCodecBuilder.Instance<P> instance) {
+   protected static <P extends RootPlacer> Products.P3<RecordCodecBuilder.Mu<P>, IntProvider, Holder<BlockStateProvider>, Optional<AboveRootPlacement>> rootPlacerParts(final RecordCodecBuilder.Instance<P> instance) {
       return instance.group(IntProviders.CODEC.fieldOf("trunk_offset_y").forGetter((c) -> c.trunkOffsetY), BlockStateProvider.CODEC.fieldOf("root_provider").forGetter((c) -> c.rootProvider), AboveRootPlacement.CODEC.optionalFieldOf("above_root_placement").forGetter((c) -> c.aboveRootPlacement));
    }
 
-   public RootPlacer(final IntProvider trunkOffsetY, final BlockStateProvider rootProvider, final Optional<AboveRootPlacement> aboveRootPlacement) {
+   public RootPlacer(final IntProvider trunkOffsetY, final Holder<BlockStateProvider> rootProvider, final Optional<AboveRootPlacement> aboveRootPlacement) {
       super();
       this.trunkOffsetY = trunkOffsetY;
       this.rootProvider = rootProvider;
@@ -39,20 +39,20 @@ public abstract class RootPlacer {
 
    protected abstract RootPlacerType<?> type();
 
-   public abstract boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeConfiguration config);
+   public abstract boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeFeature tree);
 
    protected boolean canPlaceRoot(final LevelSimulatedReader level, final BlockPos pos) {
       return TreeFeature.validTreePos(level, pos);
    }
 
-   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+   protected void placeRoot(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos pos, final TreeFeature tree) {
       if (this.canPlaceRoot(level, pos)) {
-         rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, this.rootProvider.getState(level, random, pos)));
+         rootSetter.accept(pos, this.getPotentiallyWaterloggedState(level, pos, ((BlockStateProvider)this.rootProvider.value()).getState(level, random, pos)));
          if (this.aboveRootPlacement.isPresent()) {
             AboveRootPlacement abovePlacement = (AboveRootPlacement)this.aboveRootPlacement.get();
             BlockPos above = pos.above();
             if (random.nextFloat() < abovePlacement.aboveRootPlacementChance() && level.isStateAtPosition(above, BlockBehaviour.BlockStateBase::isAir)) {
-               rootSetter.accept(above, this.getPotentiallyWaterloggedState(level, above, abovePlacement.aboveRootProvider().getState(level, random, above)));
+               rootSetter.accept(above, this.getPotentiallyWaterloggedState(level, above, ((BlockStateProvider)abovePlacement.aboveRootProvider().value()).getState(level, random, above)));
             }
          }
 

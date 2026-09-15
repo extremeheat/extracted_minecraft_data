@@ -69,6 +69,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -361,7 +362,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 20) {
          this.spawnAnim();
       } else {
@@ -510,12 +511,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          ItemStack sunBlocker = this.getItemBySlot(slot);
          if (!sunBlocker.isEmpty()) {
             if (sunBlocker.isDamageableItem()) {
-               Item sunBlockerItem = sunBlocker.getItem();
-               sunBlocker.setDamageValue(sunBlocker.getDamageValue() + this.random.nextInt(2));
-               if (sunBlocker.getDamageValue() >= sunBlocker.getMaxDamage()) {
-                  this.onEquippedItemBroken(sunBlockerItem, slot);
-                  this.setItemSlot(slot, ItemStack.EMPTY);
-               }
+               sunBlocker.hurtAndBreak(this.random.nextInt(2), this, (EquipmentSlot)slot);
             }
 
          } else {
@@ -718,27 +714,26 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    public void checkDespawn() {
       if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
          this.discard();
-      } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
+      } else {
+         boolean isPersistent = this.isPersistenceRequired() || this.requiresCustomPersistence();
          Entity player = this.level().getNearestPlayer(this, -1.0);
          if (player != null) {
             double distSqr = player.distanceToSqr((Entity)this);
             int instantDespawnDistance = this.getType().getCategory().getDespawnDistance();
             int despawnDistanceSqr = instantDespawnDistance * instantDespawnDistance;
-            if (distSqr > (double)despawnDistanceSqr && this.removeWhenFarAway(distSqr)) {
+            if (!isPersistent && distSqr > (double)despawnDistanceSqr && this.removeWhenFarAway(distSqr)) {
                this.discard();
             }
 
             int noDespawnDistance = this.getType().getCategory().getNoDespawnDistance();
             int noDespawnDistanceSqr = noDespawnDistance * noDespawnDistance;
-            if (this.noActionTime > 600 && this.random.nextInt(800) == 0 && distSqr > (double)noDespawnDistanceSqr && this.removeWhenFarAway(distSqr)) {
+            if (!isPersistent && this.noActionTime > 600 && this.random.nextInt(800) == 0 && distSqr > (double)noDespawnDistanceSqr && this.removeWhenFarAway(distSqr)) {
                this.discard();
             } else if (distSqr < (double)noDespawnDistanceSqr) {
                this.noActionTime = 0;
             }
          }
 
-      } else {
-         this.noActionTime = 0;
       }
    }
 
@@ -793,7 +788,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return 75;
    }
 
-   protected void clampHeadRotationToBody() {
+   public void clampHeadRotationToBody() {
       float limit = (float)this.getMaxHeadYRot();
       float headYRot = this.getYHeadRot();
       float delta = Mth.wrapDegrees(this.yBodyRot - headYRot);
@@ -1486,6 +1481,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
    public float chargeSpeedModifier() {
       return 1.0F;
+   }
+
+   public void swingForAttack(final InteractionHand hand) {
+      SwingAnimation swingAnimation = this.getItemInHand(hand).getAttackAnimation();
+      this.swing(hand, swingAnimation, false);
+   }
+
+   public void swing(final InteractionHand hand, final SwingAnimation animation) {
+      this.swing(hand, animation, false);
    }
 
    static {

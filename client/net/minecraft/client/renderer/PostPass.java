@@ -1,22 +1,22 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.SamplerCache;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,8 +114,8 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.useDepth ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
-               renderPass.setPipeline(this.pipeline);
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.hasDepth() ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline));
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 
@@ -124,7 +124,7 @@ public class PostPass implements AutoCloseable {
                }
 
                for(InputTexture input : inputTextures) {
-                  renderPass.bindTexture(input.samplerName() + "Sampler", input.view(), input.sampler());
+                  renderPass.setUniform(input.samplerName() + "Sampler", input.view(), input.sampler());
                }
 
                renderPass.draw(3, 1, 0, 0);

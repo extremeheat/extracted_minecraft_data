@@ -1,23 +1,31 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class CoralClawFeature extends CoralFeature {
-   public CoralClawFeature(final Codec<NoneFeatureConfiguration> codec) {
-      super(codec);
+public record CoralClawFeature(Holder<PlacedFeature> feature) implements Feature {
+   public static final MapCodec<CoralClawFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter(CoralClawFeature::feature)).apply(i, CoralClawFeature::new));
+
+   public CoralClawFeature {
+      super();
    }
 
-   protected boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state) {
-      if (!this.placeCoralBlock(level, random, origin, state)) {
+   public MapCodec<CoralClawFeature> codec() {
+      return CODEC;
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      if (!((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, origin)) {
          return false;
       } else {
          Direction clawDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
@@ -40,7 +48,7 @@ public class CoralClawFeature extends CoralFeature {
                inwayLenth = random.nextInt(3) + 3;
             }
 
-            for(int i = 0; i < sidewayLength && this.placeCoralBlock(level, random, mutPos, state); ++i) {
+            for(int i = 0; i < sidewayLength && ((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, mutPos); ++i) {
                mutPos.move(segmentDirection);
             }
 
@@ -49,7 +57,7 @@ public class CoralClawFeature extends CoralFeature {
 
             for(int i = 0; i < inwayLenth; ++i) {
                mutPos.move(clawDirection);
-               if (!this.placeCoralBlock(level, random, mutPos, state)) {
+               if (!((PlacedFeature)this.feature.value()).place(level, chunkGenerator, random, mutPos)) {
                   break;
                }
 

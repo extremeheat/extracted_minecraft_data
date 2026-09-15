@@ -95,7 +95,7 @@ public class GossipContainer {
       return (EntityGossips)this.gossips.computeIfAbsent(target, (uuid) -> new EntityGossips());
    }
 
-   public void transferFrom(final GossipContainer source, final RandomSource random, final int maxCount) {
+   public int transferFrom(final GossipContainer source, final RandomSource random, final int maxCount) {
       Collection<GossipEntry> newGossips = source.selectGossipsForTransfer(random, maxCount);
       newGossips.forEach((newGossip) -> {
          int decayedValue = newGossip.value - newGossip.type.decayPerTransfer;
@@ -104,6 +104,7 @@ public class GossipContainer {
          }
 
       });
+      return newGossips.size();
    }
 
    public int getReputation(final UUID entity, final Predicate<GossipType> types) {

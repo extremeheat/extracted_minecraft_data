@@ -18,6 +18,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.BaseCoralWallFanBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -65,11 +66,11 @@ public class BoneMealItem extends Item {
       BlockState state = level.getBlockState(pos);
       Block var5 = state.getBlock();
       if (var5 instanceof BonemealableBlock block) {
-         if (block.isValidBonemealTarget(level, pos, state)) {
+         if (block.isValidBonemealTarget(level, pos, state, BonemealSource.INTERACTION)) {
             if (level instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)level;
-               if (block.isBonemealSuccess(level, level.getRandom(), pos, state)) {
-                  block.performBonemeal(serverLevel, level.getRandom(), pos, state);
+               if (block.isBonemealSuccess(level, level.getRandom(), pos, state, BonemealSource.INTERACTION)) {
+                  block.performBonemeal(serverLevel, level.getRandom(), pos, state, BonemealSource.INTERACTION);
                }
 
                itemStack.shrink(1);
@@ -123,9 +124,9 @@ public class BoneMealItem extends Item {
                if (stateToGrow.canSurvive(level, testPos)) {
                   BlockState testState = level.getBlockState(testPos);
                   if (testState.is(Blocks.WATER) && level.getFluidState(testPos).isFull()) {
-                     level.setBlock(testPos, stateToGrow, 3);
-                  } else if (testState.is(Blocks.SEAGRASS) && ((BonemealableBlock)Blocks.SEAGRASS).isValidBonemealTarget(level, testPos, testState) && random.nextInt(10) == 0) {
-                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal(serverLevel, random, testPos, testState);
+                     level.setBlockAndUpdate(testPos, stateToGrow);
+                  } else if (testState.is(Blocks.SEAGRASS) && ((BonemealableBlock)Blocks.SEAGRASS).isValidBonemealTarget(level, testPos, testState, BonemealSource.INTERACTION) && random.nextInt(10) == 0) {
+                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal(serverLevel, random, testPos, testState, BonemealSource.INTERACTION);
                   }
                }
             }

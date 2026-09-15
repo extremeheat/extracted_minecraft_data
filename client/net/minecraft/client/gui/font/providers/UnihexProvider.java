@@ -6,9 +6,9 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.UnbakedGlyph;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -504,7 +504,7 @@ public class UnihexProvider implements GlyphProvider {
             }
 
             public float getAdvance() {
-               return (float)Glyph.this.width() / 2.0F + 1.0F;
+               return (float)(Glyph.this.width() / 2 + 1);
             }
 
             public float getShadowOffset() {

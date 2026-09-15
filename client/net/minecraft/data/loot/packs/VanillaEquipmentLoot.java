@@ -1,11 +1,10 @@
 package net.minecraft.data.loot.packs;
 
-import java.util.function.BiConsumer;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -19,29 +18,37 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
+import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetEnchantmentsFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
-public record VanillaEquipmentLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public VanillaEquipmentLoot {
+public class VanillaEquipmentLoot implements LootTableSubProvider {
+   private final LootTableSubProvider.Context output;
+   private final HolderGetter<TrimPattern> trimPatterns;
+   private final HolderGetter<TrimMaterial> trimMaterials;
+   private final HolderGetter<Enchantment> enchantments;
+
+   public VanillaEquipmentLoot(final LootTableSubProvider.Context output) {
       super();
+      this.output = output;
+      this.trimPatterns = output.lookup(Registries.TRIM_PATTERN);
+      this.trimMaterials = output.lookup(Registries.TRIM_MATERIAL);
+      this.enchantments = output.lookup(Registries.ENCHANTMENT);
    }
 
-   public void generate(final BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output) {
-      HolderLookup.RegistryLookup<TrimPattern> trimPatterns = this.registries.lookupOrThrow(Registries.TRIM_PATTERN);
-      HolderLookup.RegistryLookup<TrimMaterial> trimMaterials = this.registries.lookupOrThrow(Registries.TRIM_MATERIAL);
-      HolderLookup.RegistryLookup<Enchantment> enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      ArmorTrim flowTrim = new ArmorTrim(trimMaterials.getOrThrow(TrimMaterials.COPPER), trimPatterns.getOrThrow(TrimPatterns.FLOW));
-      ArmorTrim boltTrim = new ArmorTrim(trimMaterials.getOrThrow(TrimMaterials.COPPER), trimPatterns.getOrThrow(TrimPatterns.BOLT));
-      output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, boltTrim, enchantments).build()).setWeight(4)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.IRON_HELMET, Items.IRON_CHESTPLATE, flowTrim, enchantments).build()).setWeight(2)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, flowTrim, enchantments).build()).setWeight(1))));
-      output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_MELEE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.lootTableReference(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.IRON_SWORD).setWeight(4)).add(LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.SHARPNESS), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.KNOCKBACK), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.DIAMOND_SWORD))));
-      output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.lootTableReference(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.BOW).setWeight(2)).add(LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.POWER), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.PUNCH), ConstantValue.exactly(1.0F))))));
+   public void run() {
+      ArmorTrim flowTrim = new ArmorTrim(this.trimMaterials.getOrThrow(TrimMaterials.COPPER), this.trimPatterns.getOrThrow(TrimPatterns.FLOW));
+      ArmorTrim boltTrim = new ArmorTrim(this.trimMaterials.getOrThrow(TrimMaterials.COPPER), this.trimPatterns.getOrThrow(TrimPatterns.BOLT));
+      Holder.Reference<LootTable> equipmentTrialChamblerTable = this.output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(NestedLootTable.inlineLootTable(this.trialChamberEquipment(Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, boltTrim).build()).setWeight(4)).add(NestedLootTable.inlineLootTable(this.trialChamberEquipment(Items.IRON_HELMET, Items.IRON_CHESTPLATE, flowTrim).build()).setWeight(2)).add(NestedLootTable.inlineLootTable(this.trialChamberEquipment(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, flowTrim).build()).setWeight(1))));
+      this.output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_MELEE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(NestedLootTable.lootTableReference(equipmentTrialChamblerTable))).withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(Items.IRON_SWORD).setWeight(4)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.SHARPNESS), ContextIntProviders.exactly(1)))).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.KNOCKBACK), ContextIntProviders.exactly(1)))).add(LootItem.lootTableItem(Items.DIAMOND_SWORD))));
+      this.output.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(NestedLootTable.lootTableReference(equipmentTrialChamblerTable))).withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(Items.BOW).setWeight(2)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.POWER), ContextIntProviders.exactly(1)))).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.PUNCH), ContextIntProviders.exactly(1))))));
    }
 
-   public static LootTable.Builder trialChamberEquipment(final Item helmet, final Item chestplate, final ArmorTrim trim, final HolderLookup.RegistryLookup<Enchantment> enchantments) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(LootItemRandomChanceCondition.randomChance(0.5F)).add(LootItem.lootTableItem(helmet).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, trim)).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(enchantments.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(enchantments.getOrThrow(Enchantments.FIRE_PROTECTION), ConstantValue.exactly(4.0F))))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(LootItemRandomChanceCondition.randomChance(0.5F)).add(LootItem.lootTableItem(chestplate).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, trim)).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantments.getOrThrow(Enchantments.PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(enchantments.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(enchantments.getOrThrow(Enchantments.FIRE_PROTECTION), ConstantValue.exactly(4.0F)))));
+   public LootTable.Builder trialChamberEquipment(final Item helmet, final Item chestplate, final ArmorTrim trim) {
+      return LootTable.lootTable().withPool(((LootPool.Builder)LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).when(LootItemRandomChanceCondition.randomChance(0.5F))).add((LootPoolEntryContainer.Builder)((UniformContainerBase.Builder)LootItem.lootTableItem(helmet).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, trim))).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.PROTECTION), ContextIntProviders.exactly(4)).withEnchantment(this.enchantments.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ContextIntProviders.exactly(4)).withEnchantment(this.enchantments.getOrThrow(Enchantments.FIRE_PROTECTION), ContextIntProviders.exactly(4))))).withPool(((LootPool.Builder)LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).when(LootItemRandomChanceCondition.randomChance(0.5F))).add((LootPoolEntryContainer.Builder)((UniformContainerBase.Builder)LootItem.lootTableItem(chestplate).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, trim))).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(this.enchantments.getOrThrow(Enchantments.PROTECTION), ContextIntProviders.exactly(4)).withEnchantment(this.enchantments.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ContextIntProviders.exactly(4)).withEnchantment(this.enchantments.getOrThrow(Enchantments.FIRE_PROTECTION), ContextIntProviders.exactly(4)))));
    }
 }

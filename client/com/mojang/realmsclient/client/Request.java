@@ -20,6 +20,7 @@ public abstract class Request<T extends Request<T>> {
    private static final int DEFAULT_READ_TIMEOUT = 60000;
    private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
    private static final String NETWORK_PROTOCOL_KEY = "X-NetworkProtocolVersion";
+   private static final String CLIENT_REF_KEY = "Client-Ref";
    private static final String IS_SNAPSHOT_KEY = "Is-Prerelease";
    private static final String COOKIE_KEY = "Cookie";
 
@@ -58,7 +59,8 @@ public abstract class Request<T extends Request<T>> {
 
    }
 
-   public void addVersionHeaders(final int networkProtocol, final boolean isSnapshot) {
+   public void addVersionHeaders(final String id, final int networkProtocol, final boolean isSnapshot) {
+      this.connection.addRequestProperty("Client-Ref", id);
       this.connection.addRequestProperty("X-NetworkProtocolVersion", String.valueOf(networkProtocol));
       this.connection.addRequestProperty("Is-Prerelease", String.valueOf(isSnapshot));
    }

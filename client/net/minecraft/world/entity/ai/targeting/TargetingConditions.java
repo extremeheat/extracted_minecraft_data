@@ -75,7 +75,7 @@ public class TargetingConditions {
             }
 
             if (this.range > 0.0) {
-               double modifier = this.testInvisible ? target.getVisibilityPercent(targeter) : 1.0;
+               double modifier = this.testInvisible ? target.getVisibilityPercent(level, targeter) : 1.0;
                double visibilityDistance = Math.max(this.range * modifier, 2.0);
                double distanceToSqr = targeter.distanceToSqr(target.getX(), target.getY(), target.getZ());
                if (distanceToSqr > visibilityDistance * visibilityDistance) {

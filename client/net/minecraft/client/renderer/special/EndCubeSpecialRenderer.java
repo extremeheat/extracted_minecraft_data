@@ -21,7 +21,7 @@ public class EndCubeSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      AbstractEndPortalRenderer.submitSpecial(this.renderType, poseStack, submitNodeCollector);
+      AbstractEndPortalRenderer.submitSpecial(this.renderType, poseStack, submitNodeCollector, outlineColor);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {

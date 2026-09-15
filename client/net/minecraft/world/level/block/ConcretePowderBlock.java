@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
@@ -17,12 +14,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ConcretePowderBlock extends FallingBlock {
-   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter((b) -> b.concrete), propertiesCodec()).apply(i, ConcretePowderBlock::new));
    private final Block concrete;
-
-   public MapCodec<ConcretePowderBlock> codec() {
-      return CODEC;
-   }
 
    public ConcretePowderBlock(final Block concrete, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -31,7 +23,7 @@ public class ConcretePowderBlock extends FallingBlock {
 
    public void onLand(final Level level, final BlockPos pos, final BlockState state, final BlockState replacedBlock, final FallingBlockEntity entity) {
       if (shouldSolidify(level, pos, replacedBlock)) {
-         level.setBlock(pos, this.concrete.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, this.concrete.defaultBlockState());
       }
 
    }

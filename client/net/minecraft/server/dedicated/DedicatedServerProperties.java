@@ -166,7 +166,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.textFilteringVersion = this.get("text-filtering-version", 0);
       this.playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
       this.statusHeartbeatInterval = this.getMutable("status-heartbeat-interval", 0);
-      this.whiteList = this.getMutable("white-list", false);
+      this.whiteList = this.getMutable("white-list", true);
       this.enforceSecureProfile = this.get("enforce-secure-profile", true);
       this.logIPs = this.get("log-ips", true);
       this.pauseWhenEmptySeconds = this.getMutable("pause-when-empty-seconds", 60);

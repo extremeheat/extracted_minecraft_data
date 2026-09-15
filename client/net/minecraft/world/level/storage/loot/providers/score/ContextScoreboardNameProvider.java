@@ -26,7 +26,7 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget target) imp
    }
 
    public @Nullable ScoreHolder getScoreHolder(final LootContext context) {
-      return (ScoreHolder)context.getOptionalParameter(this.target.contextParam());
+      return (ScoreHolder)context.getOptional(this.target.contextParam());
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {

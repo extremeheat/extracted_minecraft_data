@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -100,8 +101,13 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
       if (!state.isActive) {
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationY(state.activeRotation * 0.017453292F));
-         submitNodeCollector.submitModelPart(this.shell, poseStack, SHELL_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(SHELL_TEXTURE), -1, state.breakProgress);
+         poseStack.rotateDegrees(Axis.YP, state.activeRotation);
+         RenderType shellRenderType = SHELL_TEXTURE.renderType(RenderTypes::entitySolid);
+         submitNodeCollector.submitModelPart(this.shell, poseStack, shellRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(SHELL_TEXTURE), -1);
+         if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(this.shell, poseStack, shellRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+         }
+
          poseStack.popPose();
       } else {
          float rotation = state.activeRotation * 57.295776F;
@@ -110,15 +116,20 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.3F + hh * 0.2F, 0.5F);
          Vector3f axis = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(rotation * 0.017453292F, axis));
-         submitNodeCollector.submitModelPart(this.cage, poseStack, ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutout), state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(ACTIVE_SHELL_TEXTURE), -1, state.breakProgress);
+         poseStack.rotate((new Quaternionf()).rotationAxis(rotation * 0.017453292F, axis));
+         RenderType cageRenderType = ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutout);
+         submitNodeCollector.submitModelPart(this.cage, poseStack, cageRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, this.sprites.get(ACTIVE_SHELL_TEXTURE), -1);
+         if (state.breakProgress != null) {
+            submitNodeCollector.order(1).submitCrumblingOverlay(this.cage, poseStack, cageRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+         }
+
          poseStack.popPose();
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);
          if (state.animationPhase == 1) {
-            poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationX(1.5707964F));
+            poseStack.rotate(Axis.XP, 1.5707964F);
          } else if (state.animationPhase == 2) {
-            poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationZ(1.5707964F));
+            poseStack.rotate(Axis.ZP, 1.5707964F);
          }
 
          SpriteId windSpriteId = state.animationPhase == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE;
@@ -129,14 +140,14 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);
          poseStack.scale(0.875F, 0.875F, 0.875F);
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
+         poseStack.rotate((new Quaternionf()).rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
          submitNodeCollector.submitModelPart(this.wind, poseStack, windRenderType, state.lightCoords, OverlayTexture.NO_OVERLAY, windSprite);
          poseStack.popPose();
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.3F + hh * 0.2F, 0.5F);
          poseStack.scale(0.5F, 0.5F, 0.5F);
-         poseStack.mulPose((Quaternionfc)camera.orientation);
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).rotationZ(3.1415927F).rotateY(3.1415927F));
+         poseStack.rotate(camera.orientation);
+         poseStack.rotate((new Quaternionf()).rotationZ(3.1415927F).rotateY(3.1415927F));
          float scale = 1.3333334F;
          poseStack.scale(1.3333334F, 1.3333334F, 1.3333334F);
          SpriteId eyeSprite = state.isHunting ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE;

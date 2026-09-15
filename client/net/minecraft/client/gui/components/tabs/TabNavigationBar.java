@@ -2,16 +2,17 @@ package net.minecraft.client.gui.components.tabs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -29,7 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
-public class TabNavigationBar extends AbstractContainerWidget implements NarratableEntry, Renderable {
+public class TabNavigationBar extends AbstractContainerWidget {
    private static final int NO_TAB = -1;
    private static final Component USAGE_NARRATION = Component.translatable("narration.tab_navigation.usage");
    protected final FrameLayout layout;
@@ -196,9 +197,9 @@ public class TabNavigationBar extends AbstractContainerWidget implements Narrata
    }
 
    private int getNextTabIndex(final int currentTab, final KeyEvent event) {
-      int digit = event.getDigit();
-      if (digit != -1) {
-         return Math.floorMod(digit - 1, 10);
+      OptionalInt numericKeyValue = InputConstants.getKey(event).getNumericKeyValue();
+      if (numericKeyValue.isPresent()) {
+         return Math.floorMod(numericKeyValue.getAsInt() - 1, 10);
       } else if (event.isCycleFocus() && currentTab != -1) {
          int nextTabIndex = event.hasShiftDown() ? currentTab - 1 : currentTab + 1;
          int index = Math.floorMod(nextTabIndex, this.tabs.size());

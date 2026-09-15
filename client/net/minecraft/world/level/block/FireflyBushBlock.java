@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -20,14 +19,9 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
    private static final double FIREFLY_VERTICAL_RANGE = 5.0;
    private static final int FIREFLY_SPAWN_MAX_BRIGHTNESS_LEVEL = 13;
    private static final int FIREFLY_AMBIENT_SOUND_CHANCE_ONE_IN = 30;
-   public static final MapCodec<FireflyBushBlock> CODEC = simpleCodec(FireflyBushBlock::new);
 
    public FireflyBushBlock(final BlockBehaviour.Properties properties) {
       super(properties);
-   }
-
-   protected MapCodec<? extends FireflyBushBlock> codec() {
-      return CODEC;
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
@@ -44,15 +38,15 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
 
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, state);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BonemealableBlock.findSpreadableNeighbourPos(level, pos, state).ifPresent((blockPos) -> level.setBlockAndUpdate(blockPos, this.defaultBlockState()));
    }
 }

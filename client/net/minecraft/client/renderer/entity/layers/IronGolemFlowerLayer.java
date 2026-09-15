@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.joml.Quaternionfc;
 
 public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
    public IronGolemFlowerLayer(final RenderLayerParent<IronGolemRenderState, IronGolemModel> renderer) {
@@ -24,7 +23,7 @@ public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, Iron
          poseStack.translate(0.5F, 0.5F, 0.5F);
          float s = 0.5F;
          poseStack.scale(0.5F, 0.5F, 0.5F);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
+         poseStack.rotateDegrees(Axis.XP, -90.0F);
          poseStack.translate(-0.5F, -0.5F, -0.5F);
          state.flowerBlock.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();

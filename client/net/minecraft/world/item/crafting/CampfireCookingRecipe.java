@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 
 public class CampfireCookingRecipe extends AbstractCookingRecipe {
-   public static final MapCodec<CampfireCookingRecipe> MAP_CODEC = cookingMapCodec(CampfireCookingRecipe::new, 100);
+   public static final MapCodec<CampfireCookingRecipe> MAP_CODEC = cookingMapCodec(CampfireCookingRecipe::new);
    public static final StreamCodec<RegistryFriendlyByteBuf, CampfireCookingRecipe> STREAM_CODEC = cookingStreamCodec(CampfireCookingRecipe::new);
    public static final RecipeSerializer<CampfireCookingRecipe> SERIALIZER;
 

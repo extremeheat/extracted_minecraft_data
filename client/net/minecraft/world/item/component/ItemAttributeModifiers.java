@@ -115,7 +115,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
    }
 
    public interface Display {
-      Codec<Display> CODEC = ItemAttributeModifiers.Display.Type.CODEC.dispatch("type", Display::type, (type) -> type.codec);
+      Codec<Display> CODEC = ItemAttributeModifiers.Display.Type.CODEC.dispatch(Display::type, (type) -> type.codec);
       StreamCodec<RegistryFriendlyByteBuf, Display> STREAM_CODEC = ItemAttributeModifiers.Display.Type.STREAM_CODEC.cast().dispatch(Display::type, Type::streamCodec);
 
       static Display attributeModifiers() {

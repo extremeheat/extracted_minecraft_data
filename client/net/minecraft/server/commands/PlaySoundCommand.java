@@ -6,7 +6,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
@@ -29,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PlaySoundCommand {
    private static final SimpleCommandExceptionType ERROR_TOO_FAR = new SimpleCommandExceptionType(Component.translatable("commands.playsound.failed"));
+   private static final CommandResponseTracker.MessagesWithArg<ServerPlayer, Identifier> RESPONSE_PLAY;
 
    public PlaySoundCommand() {
       super();
@@ -57,7 +57,7 @@ public class PlaySoundCommand {
       double maxDistSqr = (double)Mth.square(((SoundEvent)soundHolder.value()).getRange(volume));
       ServerLevel level = source.getLevel();
       long seed = level.getRandom().nextLong();
-      List<ServerPlayer> playedFor = new ArrayList();
+      CommandResponseTracker<ServerPlayer> tracker = CommandResponseTracker.<ServerPlayer>create();
 
       for(ServerPlayer player : players) {
          if (player.level() == level) {
@@ -78,21 +78,14 @@ public class PlaySoundCommand {
             }
 
             player.connection.send(new ClientboundSoundPacket(soundHolder, soundSource, localPosition.x(), localPosition.y(), localPosition.z(), localVolume, pitch, seed));
-            playedFor.add(player);
+            tracker.track(player);
          }
       }
 
-      int count = playedFor.size();
-      if (count == 0) {
-         throw ERROR_TOO_FAR.create();
-      } else {
-         if (count == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.playsound.success.single", Component.translationArg(sound), ((ServerPlayer)playedFor.getFirst()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(sound), count), true);
-         }
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_PLAY, sound);
+   }
 
-         return count;
-      }
+   static {
+      RESPONSE_PLAY = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_TOO_FAR, (CommandResponseTracker.SingleHandlerWithArg)((player, var1, sound) -> Component.translatable("commands.playsound.success.single", Component.translationArg(sound), player.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((playerCount, var1, sound) -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(sound), playerCount)));
    }
 }

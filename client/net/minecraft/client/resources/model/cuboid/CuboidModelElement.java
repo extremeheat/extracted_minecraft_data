@@ -16,13 +16,13 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
-public record CuboidModelElement(Vector3fc from, Vector3fc to, Map<Direction, CuboidFace> faces, @Nullable CuboidRotation rotation, boolean shade, int lightEmission) {
+public record CuboidModelElement(Vector3fc from, Vector3fc to, Map<Direction, CuboidFace> faces, @Nullable CuboidRotation rotation, @Nullable Direction shadeDirectionOverride, int lightEmission) {
    private static final boolean DEFAULT_RESCALE = false;
    private static final float MIN_EXTENT = -16.0F;
    private static final float MAX_EXTENT = 32.0F;
 
    public CuboidModelElement(final Vector3fc from, final Vector3fc to, final Map<Direction, CuboidFace> faces) {
-      this(from, to, faces, (CuboidRotation)null, true, 0);
+      this(from, to, faces, (CuboidRotation)null, (Direction)null, 0);
    }
 
    public CuboidModelElement {
@@ -30,9 +30,8 @@ public record CuboidModelElement(Vector3fc from, Vector3fc to, Map<Direction, Cu
    }
 
    protected static class Deserializer implements JsonDeserializer<CuboidModelElement> {
-      private static final boolean DEFAULT_SHADE = true;
       private static final int DEFAULT_LIGHT_EMISSION = 0;
-      private static final String FIELD_SHADE = "shade";
+      private static final String FIELD_SHADE_DIRECTION_OVERRIDE = "shade_direction_override";
       private static final String FIELD_LIGHT_EMISSION = "light_emission";
       private static final String FIELD_ROTATION = "rotation";
       private static final String FIELD_ORIGIN = "origin";
@@ -56,23 +55,33 @@ public record CuboidModelElement(Vector3fc from, Vector3fc to, Map<Direction, Cu
          Vector3f to = getPosition(object, "to");
          CuboidRotation rotation = this.getRotation(object);
          Map<Direction, CuboidFace> faces = this.getFaces(context, object);
-         if (object.has("shade") && !GsonHelper.isBooleanValue(object, "shade")) {
-            throw new JsonParseException("Expected 'shade' to be a Boolean");
-         } else {
-            boolean shade = GsonHelper.getAsBoolean(object, "shade", true);
-            int lightEmission = 0;
-            if (object.has("light_emission")) {
-               boolean isNumber = GsonHelper.isNumberValue(object, "light_emission");
-               if (isNumber) {
-                  lightEmission = GsonHelper.getAsInt(object, "light_emission");
-               }
-
-               if (!isNumber || lightEmission < 0 || lightEmission > 15) {
-                  throw new JsonParseException("Expected 'light_emission' to be an Integer between (inclusive) 0 and 15");
-               }
+         Direction shadeDirectionOverride = this.getShadeDirectionOverride(object);
+         int lightEmission = 0;
+         if (object.has("light_emission")) {
+            boolean isNumber = GsonHelper.isNumberValue(object, "light_emission");
+            if (isNumber) {
+               lightEmission = GsonHelper.getAsInt(object, "light_emission");
             }
 
-            return new CuboidModelElement(from, to, faces, rotation, shade, lightEmission);
+            if (!isNumber || lightEmission < 0 || lightEmission > 15) {
+               throw new JsonParseException("Expected 'light_emission' to be an Integer between (inclusive) 0 and 15");
+            }
+         }
+
+         return new CuboidModelElement(from, to, faces, rotation, shadeDirectionOverride, lightEmission);
+      }
+
+      private @Nullable Direction getShadeDirectionOverride(final JsonObject object) {
+         if (!object.has("shade_direction_override")) {
+            return null;
+         } else {
+            String shadeDirectionName = GsonHelper.getAsString(object, "shade_direction_override");
+            Direction shadeDirectionOverride = Direction.byName(shadeDirectionName);
+            if (shadeDirectionOverride == null) {
+               throw new JsonParseException("Unknown shade direction override: " + shadeDirectionName);
+            } else {
+               return shadeDirectionOverride;
+            }
          }
       }
 

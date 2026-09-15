@@ -22,6 +22,14 @@ public interface NotificationService {
 
    void serverActivityOccured();
 
+   void worldUpgradeStarted();
+
+   void worldUpgradeProgress(float progressPercentage);
+
+   void worldUpgradeFinished();
+
+   void worldUpgradeFailed(String reason);
+
    void playerOped(ServerOpListEntry operator);
 
    void playerDeoped(ServerOpListEntry operator);

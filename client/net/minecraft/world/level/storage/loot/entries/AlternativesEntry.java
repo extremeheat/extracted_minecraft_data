@@ -1,14 +1,16 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class AlternativesEntry extends CompositeEntryBase {
@@ -19,8 +21,8 @@ public class AlternativesEntry extends CompositeEntryBase {
       }
    };
 
-   public AlternativesEntry(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
-      super(children, conditions);
+   public AlternativesEntry(final List<LootPoolEntryContainer> children, final Optional<Holder<LootItemCondition>> condition, final Optional<Holder<LootItemFunction>> modifier) {
+      super(children, condition, modifier);
    }
 
    public MapCodec<AlternativesEntry> codec() {
@@ -51,7 +53,7 @@ public class AlternativesEntry extends CompositeEntryBase {
       super.validate(context);
 
       for(int i = 0; i < this.children.size() - 1; ++i) {
-         if (((LootPoolEntryContainer)this.children.get(i)).conditions.isEmpty()) {
+         if (((LootPoolEntryContainer)this.children.get(i)).condition.isEmpty()) {
             context.reportProblem(UNREACHABLE_PROBLEM);
          }
       }
@@ -68,16 +70,9 @@ public class AlternativesEntry extends CompositeEntryBase {
       return new Builder((LootPoolEntryContainer.Builder[])var10002.map(provider::apply).toArray((x$0) -> new LootPoolEntryContainer.Builder[x$0]));
    }
 
-   public static class Builder extends LootPoolEntryContainer.Builder<Builder> {
-      private final ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
-
+   public static class Builder extends CompositeEntryBase.Builder<AlternativesEntry, Builder> {
       public Builder(final LootPoolEntryContainer.Builder<?>... entries) {
-         super();
-
-         for(LootPoolEntryContainer.Builder<?> entry : entries) {
-            this.entries.add(entry.build());
-         }
-
+         super(entries);
       }
 
       protected Builder getThis() {
@@ -85,12 +80,12 @@ public class AlternativesEntry extends CompositeEntryBase {
       }
 
       public Builder otherwise(final LootPoolEntryContainer.Builder<?> other) {
-         this.entries.add(other.build());
+         this.addEntry(other);
          return this;
       }
 
       public LootPoolEntryContainer build() {
-         return new AlternativesEntry(this.entries.build(), this.getConditions());
+         return this.build(AlternativesEntry::new);
       }
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -58,8 +57,6 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    private static final int MAX_GROWTH_LENGTH = 7;
    private static final int MAX_STALAGMITE_SEARCH_RANGE_WHEN_GROWING = 10;
    protected final BlockState blockToGrowOn;
-
-   public abstract MapCodec<? extends SpeleothemBlock> codec();
 
    public SpeleothemBlock(final BlockState blockToGrowOn, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -164,7 +161,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
          BlockPos blockPos = blockHit.getBlockPos();
          if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
-            if (projectile.mayInteract(serverLevel, blockPos) && projectile.mayBreak(serverLevel) && projectile instanceof ThrownTrident && projectile.getDeltaMovement().length() > 0.6) {
+            if (projectile.mayInteract(serverLevel, blockPos) && projectile.mayBreak(serverLevel, blockPos) && projectile instanceof ThrownTrident && projectile.getDeltaMovement().length() > 0.6) {
                level.destroyBlock(blockPos, true);
             }
          }
@@ -222,7 +219,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
 
    }
 
-   protected abstract int getStalactiteLandingSound();
+   protected abstract @LevelEvent.Value int getStalactiteLandingSound();
 
    public DamageSource getFallDamageSource(final Entity entity) {
       return entity.damageSources().fallingStalactite(entity);
@@ -349,7 +346,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
 
    private void createSpeleothem(final LevelAccessor level, final BlockPos pos, final Direction direction, final SpeleothemThickness thickness) {
       BlockState state = (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, direction)).setValue(THICKNESS, thickness)).setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER));
-      level.setBlock(pos, state, 3);
+      level.setBlockAndUpdate(pos, state);
    }
 
    private void createMergedTips(final BlockState tipState, final LevelAccessor level, final BlockPos tipPos) {

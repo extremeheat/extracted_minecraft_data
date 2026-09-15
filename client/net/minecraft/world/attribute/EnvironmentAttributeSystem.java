@@ -13,8 +13,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.Mth;
 import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -53,12 +55,15 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
       return new Builder();
    }
 
-   private static void addDefaultLayers(final Builder builder, final Level level) {
+   private static void addStaticLayers(final Builder builder, final LevelAccessor level) {
       RegistryAccess registries = level.registryAccess();
       BiomeManager biomeManager = level.getBiomeManager();
-      ClockManager clockManager = level.clockManager();
       addDimensionLayer(builder, level.dimensionType());
       addBiomeLayer(builder, registries.lookupOrThrow(Registries.BIOME), biomeManager);
+   }
+
+   private static void addDynamicLayers(final Builder builder, final Level level) {
+      ClockManager clockManager = level.clockManager();
       level.dimensionType().timelines().forEach((timeline) -> builder.addTimelineLayer(timeline, clockManager));
       if (level.canHaveWeather()) {
          WeatherAttributes.addBuiltinLayers(builder, WeatherAttributes.WeatherAccess.from(level));
@@ -80,7 +85,7 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
          if (biomeWeights != null && attribute.isSpatiallyInterpolated()) {
             return biomeWeights.applyAttributeLayer(attribute, baseValue);
          } else {
-            Holder<Biome> biome = biomeManager.getNoiseBiomeAtPosition(pos.x, pos.y, pos.z);
+            Holder<Biome> biome = attribute.isFullResolutionBiomes() ? biomeManager.getBiome(Mth.floor(pos.x), Mth.floor(pos.y), Mth.floor(pos.z)) : biomeManager.getNoiseBiomeAtPosition(pos.x, pos.y, pos.z);
             return ((Biome)biome.value()).getAttributes().applyModifier(attribute, baseValue);
          }
       });
@@ -128,7 +133,18 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
       }
 
       public Builder addDefaultLayers(final Level level) {
-         EnvironmentAttributeSystem.addDefaultLayers(this, level);
+         this.addStaticLayers(level);
+         this.addDynamicLayers(level);
+         return this;
+      }
+
+      public Builder addStaticLayers(final LevelAccessor level) {
+         EnvironmentAttributeSystem.addStaticLayers(this, level);
+         return this;
+      }
+
+      public Builder addDynamicLayers(final Level level) {
+         EnvironmentAttributeSystem.addDynamicLayers(this, level);
          return this;
       }
 

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,12 +11,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class GlowLichenBlock extends MultifaceSpreadeableBlock implements BonemealableBlock {
-   public static final MapCodec<GlowLichenBlock> CODEC = simpleCodec(GlowLichenBlock::new);
    private final MultifaceSpreader spreader = new MultifaceSpreader(this);
-
-   public MapCodec<GlowLichenBlock> codec() {
-      return CODEC;
-   }
 
    public GlowLichenBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -27,15 +21,15 @@ public class GlowLichenBlock extends MultifaceSpreadeableBlock implements Boneme
       return (state) -> MultifaceBlock.hasAnyFace(state) ? lightEmission : 0;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return Direction.stream().anyMatch((face) -> this.spreader.canSpreadInAnyDirection(state, level, pos, face.getOpposite()));
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.spreader.spreadFromRandomFaceTowardRandomDirection(state, level, pos, random);
    }
 

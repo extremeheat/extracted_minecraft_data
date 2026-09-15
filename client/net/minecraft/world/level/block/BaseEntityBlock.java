@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
@@ -15,8 +14,6 @@ public abstract class BaseEntityBlock extends Block implements EntityBlock {
    protected BaseEntityBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends BaseEntityBlock> codec();
 
    protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
       super.triggerEvent(state, level, pos, b0, b1);

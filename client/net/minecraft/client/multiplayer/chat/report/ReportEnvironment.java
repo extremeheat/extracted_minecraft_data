@@ -1,6 +1,6 @@
 package net.minecraft.client.multiplayer.chat.report;
 
-import com.mojang.authlib.yggdrasil.request.AbuseReportRequest;
+import com.mojang.authlib.services.request.AbuseReportRequest;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
 import net.minecraft.SharedConstants;

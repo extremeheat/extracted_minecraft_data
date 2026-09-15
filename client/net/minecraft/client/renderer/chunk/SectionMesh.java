@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.IndexType;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.Direction;
@@ -32,6 +32,10 @@ public interface SectionMesh extends AutoCloseable {
 
    default @Nullable SectionDraw getSectionDraw(final ChunkSectionLayer layer) {
       return null;
+   }
+
+   default long getCompileTaskStartTime() {
+      return 0L;
    }
 
    default void close() {

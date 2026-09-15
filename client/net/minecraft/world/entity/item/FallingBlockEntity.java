@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundAddTransientBlockPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
@@ -97,7 +99,7 @@ public class FallingBlockEntity extends Entity {
 
    public static FallingBlockEntity fall(final Level level, final BlockPos pos, final BlockState state) {
       FallingBlockEntity entity = new FallingBlockEntity(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, state.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, false) : state);
-      level.setBlock(pos, state.getFluidState().createLegacyBlock(), 3);
+      level.setBlockAndUpdate(pos, state.getFluidState().createLegacyBlock());
       level.addFreshEntity(entity);
       return entity;
    }
@@ -185,8 +187,9 @@ public class FallingBlockEntity extends Entity {
                               this.blockState = (BlockState)this.blockState.setValue(BlockStateProperties.WATERLOGGED, true);
                            }
 
-                           if (this.level().setBlock(pos, this.blockState, 3)) {
+                           if (this.level().setBlockAndUpdate(pos, this.blockState)) {
                               serverLevel.getChunkSource().chunkMap.sendToTrackingPlayers(this, new ClientboundBlockUpdatePacket(pos, this.level().getBlockState(pos)));
+                              serverLevel.getChunkSource().chunkMap.sendToTrackingPlayers(this, new ClientboundAddTransientBlockPacket(pos, this.level().getBlockState(pos)));
                               this.discard();
                               if (block instanceof Fallable) {
                                  Fallable fallable = (Fallable)block;
@@ -232,6 +235,7 @@ public class FallingBlockEntity extends Entity {
          }
 
          this.setDeltaMovement(this.getDeltaMovement().scale((double)this.getAirDrag()));
+         this.setRequiresPrecisePosition(this.horizontalCollision || this.verticalCollision);
       }
    }
 
@@ -353,6 +357,10 @@ public class FallingBlockEntity extends Entity {
       Entity newEntity = super.teleport(transition);
       this.forceTickAfterTeleportToDuplicate = newEntity != null && fromOrToEnd;
       return newEntity;
+   }
+
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    static {

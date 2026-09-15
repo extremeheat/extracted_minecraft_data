@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -12,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,7 +35,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class ChiseledBookShelfBlock extends BaseEntityBlock implements SelectableSlotContainer {
-   public static final MapCodec<ChiseledBookShelfBlock> CODEC = simpleCodec(ChiseledBookShelfBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty SLOT_0_OCCUPIED;
    public static final BooleanProperty SLOT_1_OCCUPIED;
@@ -46,10 +45,6 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    private static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final int BOOKS_PER_ROW = 3;
    public static final List<BooleanProperty> SLOT_OCCUPIED_PROPERTIES;
-
-   public MapCodec<ChiseledBookShelfBlock> codec() {
-      return CODEC;
-   }
 
    public int getRows() {
       return 2;
@@ -123,7 +118,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
          SoundEvent soundEvent = retrievedBook.is(Items.ENCHANTED_BOOK) ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED : SoundEvents.CHISELED_BOOKSHELF_PICKUP;
          level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
          if (!player.getInventory().add(retrievedBook)) {
-            player.drop(retrievedBook, false);
+            player.drop(retrievedBook, false, Prediction.SERVER_ONLY);
          }
 
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);

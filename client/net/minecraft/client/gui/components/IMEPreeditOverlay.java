@@ -20,7 +20,6 @@ public class IMEPreeditOverlay implements Renderable {
    private static final int BORDER_WIDTH = 1;
    private static final int BORDER_OFFSET = 5;
    private static final int TEXT_COLOR = -16777216;
-   private static final int HOT_AREA_MARGIN = 2;
    private final Font font;
    private int inputLeft;
    private int inputTop;
@@ -66,7 +65,7 @@ public class IMEPreeditOverlay implements Renderable {
 
       Objects.requireNonNull(this.font);
       int preeditTop = preeditBottom - 9;
-      Minecraft.getInstance().textInputManager().setTextInputArea(Math.min(preeditLeft, this.inputLeft) - 2, Math.min(preeditTop, this.inputTop) - 2, preeditRight + 2, Math.max(preeditBottom, inputBottom) + 2);
+      Minecraft.getInstance().textInputManager().setTextInputArea(preeditLeft, preeditTop, preeditRight, preeditBottom);
       int backgroundWidth = preeditRight - preeditLeft + 10;
       int backgroundHeight = preeditBottom - preeditTop + 10;
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND, preeditLeft - 5, preeditTop - 5, backgroundWidth, backgroundHeight);

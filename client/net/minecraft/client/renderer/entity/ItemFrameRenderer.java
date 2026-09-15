@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 
 public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, ItemFrameRenderState> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
@@ -60,8 +59,8 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          yRot = 180.0F;
       }
 
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xRot));
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot));
+      poseStack.rotateDegrees(Axis.XP, xRot);
+      poseStack.rotateDegrees(Axis.YP, yRot);
       if (!state.frameModel.isEmpty()) {
          poseStack.pushPose();
          poseStack.translate(-0.5F, -0.5F, -0.5F);
@@ -77,8 +76,8 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
 
       if (state.mapId != null) {
          int rotation = state.rotation % 4 * 2;
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)rotation * 360.0F / 8.0F));
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+         poseStack.rotateDegrees(Axis.ZP, (float)rotation * 360.0F / 8.0F);
+         poseStack.rotateDegrees(Axis.ZP, 180.0F);
          float s = 0.0078125F;
          poseStack.scale(0.0078125F, 0.0078125F, 0.0078125F);
          poseStack.translate(-64.0F, -64.0F, 0.0F);
@@ -86,7 +85,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          int lightCoords = this.getLightCoords(state.isGlowFrame, 15728850, state.lightCoords);
          this.mapRenderer.render(state.mapRenderState, poseStack, submitNodeCollector, true, lightCoords);
       } else if (!state.item.isEmpty()) {
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)state.rotation * 360.0F / 8.0F));
+         poseStack.rotateDegrees(Axis.ZP, (float)state.rotation * 360.0F / 8.0F);
          int lightVal = this.getLightCoords(state.isGlowFrame, 15728880, state.lightCoords);
          poseStack.scale(0.5F, 0.5F, 0.5F);
          state.item.submit(poseStack, submitNodeCollector, lightVal, OverlayTexture.NO_OVERLAY, state.outlineColor);

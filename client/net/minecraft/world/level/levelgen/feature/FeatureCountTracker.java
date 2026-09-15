@@ -36,7 +36,7 @@ public class FeatureCountTracker {
 
    }
 
-   public static void featurePlaced(final ServerLevel level, final ConfiguredFeature<?, ?> feature, final Optional<PlacedFeature> topFeature) {
+   public static void featurePlaced(final ServerLevel level, final Feature feature, final Optional<PlacedFeature> topFeature) {
       try {
          ((LevelData)data.get(level)).featureData().computeInt(new FeatureData(feature, topFeature), (f, old) -> old == null ? 1 : old + 1);
       } catch (Exception e) {
@@ -61,13 +61,12 @@ public class FeatureCountTracker {
          LOGGER.debug("{} total_chunks: {}", prefix, chunks);
          featureCounts.featureData().forEach((data, count) -> {
             Logger var10000 = LOGGER;
-            Object[] var10002 = new Object[]{prefix, String.format(Locale.ROOT, "%10d", count), String.format(Locale.ROOT, "%10f", (double)count / (double)chunks), null, null, null};
+            Object[] var10002 = new Object[]{prefix, String.format(Locale.ROOT, "%10d", count), String.format(Locale.ROOT, "%10f", (double)count / (double)chunks), null, null};
             Optional var10005 = data.topFeature();
             Objects.requireNonNull(featureRegistry);
             var10002[3] = var10005.flatMap(featureRegistry::getResourceKey).map(ResourceKey::identifier);
-            var10002[4] = data.feature().feature();
-            var10002[5] = data.feature();
-            var10000.debug("{} {} {} {} {} {}", var10002);
+            var10002[4] = data.feature();
+            var10000.debug("{} {} {} {} {}", var10002);
          });
       });
    }
@@ -80,7 +79,7 @@ public class FeatureCountTracker {
       });
    }
 
-   private static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
+   private static record FeatureData(Feature feature, Optional<PlacedFeature> topFeature) {
       private FeatureData {
          super();
       }

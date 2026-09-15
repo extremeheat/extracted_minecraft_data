@@ -1,0 +1,67 @@
+package net.minecraft.world.level.levelgen.feature;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Registry;
+
+public interface FeatureTypes {
+   static MapCodec<? extends Feature> bootstrap(final Registry<MapCodec<? extends Feature>> registry) {
+      Registry.register(registry, (String)"bamboo", BambooFeature.CODEC);
+      Registry.register(registry, (String)"block_blob", BlockBlobFeature.CODEC);
+      Registry.register(registry, (String)"block_column", BlockColumnFeature.CODEC);
+      Registry.register(registry, (String)"block_pile", BlockPileFeature.CODEC);
+      Registry.register(registry, (String)"blue_ice", BlueIceFeature.CODEC);
+      Registry.register(registry, (String)"bonus_chest", BonusChestFeature.CODEC);
+      Registry.register(registry, (String)"chorus_plant", ChorusPlantFeature.CODEC);
+      Registry.register(registry, (String)"coral_claw", CoralClawFeature.CODEC);
+      Registry.register(registry, (String)"coral_tree", CoralTreeFeature.CODEC);
+      Registry.register(registry, (String)"delta_feature", DeltaFeature.CODEC);
+      Registry.register(registry, (String)"disk", DiskFeature.CODEC);
+      Registry.register(registry, (String)"end_gateway", EndGatewayFeature.CODEC);
+      Registry.register(registry, (String)"end_island", EndIslandFeature.CODEC);
+      Registry.register(registry, (String)"end_platform", EndPlatformFeature.CODEC);
+      Registry.register(registry, (String)"end_podium", EndPodiumFeature.CODEC);
+      Registry.register(registry, (String)"end_spike", EndSpikeFeature.CODEC);
+      Registry.register(registry, (String)"fallen_tree", FallenTreeFeature.CODEC);
+      Registry.register(registry, (String)"fill_layer", FillLayerFeature.CODEC);
+      Registry.register(registry, (String)"fossil", FossilFeature.CODEC);
+      Registry.register(registry, (String)"freeze_top_layer", SnowAndFreezeFeature.CODEC);
+      Registry.register(registry, (String)"geode", GeodeFeature.CODEC);
+      Registry.register(registry, (String)"huge_brown_mushroom", HugeBrownMushroomFeature.CODEC);
+      Registry.register(registry, (String)"huge_fungus", HugeFungusFeature.CODEC);
+      Registry.register(registry, (String)"huge_red_mushroom", HugeRedMushroomFeature.CODEC);
+      Registry.register(registry, (String)"iceberg", IcebergFeature.CODEC);
+      Registry.register(registry, (String)"lake", LakeFeature.CODEC);
+      Registry.register(registry, (String)"large_dripstone", LargeDripstoneFeature.CODEC);
+      Registry.register(registry, (String)"monster_room", MonsterRoomFeature.CODEC);
+      Registry.register(registry, (String)"multiface_growth", MultifaceGrowthFeature.CODEC);
+      Registry.register(registry, (String)"netherrack_replace_blobs", ReplaceBlobsFeature.CODEC);
+      Registry.register(registry, (String)"no_op", NoOpFeature.CODEC);
+      Registry.register(registry, (String)"ore", OreFeature.CODEC);
+      Registry.register(registry, (String)"overlay", OverlayFeature.CODEC);
+      Registry.register(registry, (String)"projected_random_patchy_square", ProjectedRandomPatchySquare.CODEC);
+      Registry.register(registry, (String)"random_boolean_selector", RandomBooleanSelectorFeature.CODEC);
+      Registry.register(registry, (String)"random_neighbor_spread", RandomNeighborSpreadFeature.CODEC);
+      Registry.register(registry, (String)"random_selector", RandomSelectorFeature.CODEC);
+      Registry.register(registry, (String)"replace_single_block", ReplaceBlockFeature.CODEC);
+      Registry.register(registry, (String)"root_system", RootSystemFeature.CODEC);
+      Registry.register(registry, (String)"scattered_ore", ScatteredOreFeature.CODEC);
+      Registry.register(registry, (String)"sculk_patch", SculkPatchFeature.CODEC);
+      Registry.register(registry, (String)"sequence", SequenceFeature.CODEC);
+      Registry.register(registry, (String)"simple_block", SimpleBlockFeature.CODEC);
+      Registry.register(registry, (String)"simple_random_selector", SimpleRandomSelectorFeature.CODEC);
+      Registry.register(registry, (String)"single_block_pillar", SingleBlockPillarFeature.CODEC);
+      Registry.register(registry, (String)"speleothem", SpeleothemFeature.CODEC);
+      Registry.register(registry, (String)"speleothem_cluster", SpeleothemClusterFeature.CODEC);
+      Registry.register(registry, (String)"spike", SpikeFeature.CODEC);
+      Registry.register(registry, (String)"spring_feature", SpringFeature.CODEC);
+      Registry.register(registry, (String)"stepped_column_cluster", SteppedColumnClusterFeature.CODEC);
+      Registry.register(registry, (String)"template", TemplateFeature.CODEC);
+      Registry.register(registry, (String)"tree", TreeFeature.CODEC);
+      Registry.register(registry, (String)"underwater_magma", UnderwaterMagmaFeature.CODEC);
+      Registry.register(registry, (String)"vegetation_patch", VegetationPatchFeature.CODEC);
+      Registry.register(registry, (String)"vines", VinesFeature.CODEC);
+      Registry.register(registry, (String)"void_start_platform", VoidStartPlatformFeature.CODEC);
+      Registry.register(registry, (String)"waterlogged_vegetation_patch", WaterloggedVegetationPatchFeature.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"weighted_random_selector", WeightedRandomSelectorFeature.CODEC);
+   }
+}

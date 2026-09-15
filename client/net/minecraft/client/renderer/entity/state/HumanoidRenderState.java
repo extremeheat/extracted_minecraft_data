@@ -33,6 +33,6 @@ public class HumanoidRenderState extends ArmedEntityRenderState {
    }
 
    public float ticksUsingItem(final HumanoidArm arm) {
-      return this.isUsingItem && this.useItemHand == InteractionHand.MAIN_HAND == (arm == this.mainArm) ? this.ticksUsingItem : 0.0F;
+      return this.isUsingItem && this.useItemHand.asArm(this.mainArm) == arm ? this.ticksUsingItem : 0.0F;
    }
 }

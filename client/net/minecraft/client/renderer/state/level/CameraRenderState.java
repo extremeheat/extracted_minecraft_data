@@ -16,8 +16,10 @@ public class CameraRenderState {
    public boolean initialized;
    public boolean isPanoramicMode;
    public boolean isFrustumCaptured;
+   public boolean isFirstPerson;
    public boolean smartCull;
    public Quaternionf orientation;
+   public float cameraEntityPartialTicks;
    public Frustum cullFrustum;
    public FogType fogType;
    public FogData fogData;

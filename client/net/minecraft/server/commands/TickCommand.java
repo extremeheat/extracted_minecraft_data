@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Arrays;
 import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,6 +19,9 @@ import net.minecraft.util.TimeUtil;
 public class TickCommand {
    private static final float MAX_TICKRATE = 10000.0F;
    private static final String DEFAULT_TICKRATE = String.valueOf(20);
+   private static final SimpleCommandExceptionType ERROR_TICK_STEP_NOT_FROZEN = new SimpleCommandExceptionType(Component.translatable("commands.tick.step.fail"));
+   private static final SimpleCommandExceptionType ERROR_STEP_STOP_NOT_STEPPING = new SimpleCommandExceptionType(Component.translatable("commands.tick.step.stop.fail"));
+   private static final SimpleCommandExceptionType ERROR_SPRINT_STOP_NOT_SPRINTING = new SimpleCommandExceptionType(Component.translatable("commands.tick.sprint.stop.fail"));
 
    public TickCommand() {
       super();
@@ -100,39 +105,30 @@ public class TickCommand {
       return freeze ? 1 : 0;
    }
 
-   private static int step(final CommandSourceStack source, final int advance) {
-      ServerTickRateManager manager = source.getServer().tickRateManager();
-      boolean success = manager.stepGameIfPaused(advance);
-      if (success) {
-         source.sendSuccess(() -> Component.translatable("commands.tick.step.success", advance), true);
+   private static int step(final CommandSourceStack source, final int advance) throws CommandSyntaxException {
+      if (!source.getServer().tickRateManager().stepGameIfPaused(advance)) {
+         throw ERROR_TICK_STEP_NOT_FROZEN.create();
       } else {
-         source.sendFailure(Component.translatable("commands.tick.step.fail"));
+         source.sendSuccess(() -> Component.translatable("commands.tick.step.success", advance), true);
+         return 1;
       }
-
-      return 1;
    }
 
-   private static int stopStepping(final CommandSourceStack source) {
-      ServerTickRateManager manager = source.getServer().tickRateManager();
-      boolean success = manager.stopStepping();
-      if (success) {
+   private static int stopStepping(final CommandSourceStack source) throws CommandSyntaxException {
+      if (!source.getServer().tickRateManager().stopStepping()) {
+         throw ERROR_STEP_STOP_NOT_STEPPING.create();
+      } else {
          source.sendSuccess(() -> Component.translatable("commands.tick.step.stop.success"), true);
          return 1;
-      } else {
-         source.sendFailure(Component.translatable("commands.tick.step.stop.fail"));
-         return 0;
       }
    }
 
-   private static int stopSprinting(final CommandSourceStack source) {
-      ServerTickRateManager manager = source.getServer().tickRateManager();
-      boolean success = manager.stopSprinting();
-      if (success) {
+   private static int stopSprinting(final CommandSourceStack source) throws CommandSyntaxException {
+      if (!source.getServer().tickRateManager().stopSprinting()) {
+         throw ERROR_SPRINT_STOP_NOT_SPRINTING.create();
+      } else {
          source.sendSuccess(() -> Component.translatable("commands.tick.sprint.stop.success"), true);
          return 1;
-      } else {
-         source.sendFailure(Component.translatable("commands.tick.sprint.stop.fail"));
-         return 0;
       }
    }
 }

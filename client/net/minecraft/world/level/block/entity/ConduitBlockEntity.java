@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -23,8 +24,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -39,7 +38,6 @@ public class ConduitBlockEntity extends BlockEntity {
    private static final int MIN_ACTIVE_SIZE = 16;
    private static final int MIN_KILL_SIZE = 42;
    private static final int KILL_RANGE = 8;
-   private static final Block[] VALID_BLOCKS;
    public int tickCount;
    private float activeRotation;
    private boolean isActive;
@@ -146,11 +144,8 @@ public class ConduitBlockEntity extends BlockEntity {
                if ((ax > 1 || ay > 1 || az > 1) && (ox == 0 && (ay == 2 || az == 2) || oy == 0 && (ax == 2 || az == 2) || oz == 0 && (ax == 2 || ay == 2))) {
                   BlockPos testPos = worldPosition.offset(ox, oy, oz);
                   BlockState testBlock = level.getBlockState(testPos);
-
-                  for(Block type : VALID_BLOCKS) {
-                     if (testBlock.is(type)) {
-                        effectBlocks.add(testPos);
-                     }
+                  if (testBlock.is(BlockTags.CONDUIT_EFFECT_BLOCK)) {
+                     effectBlocks.add(testPos);
                   }
                }
             }
@@ -254,9 +249,5 @@ public class ConduitBlockEntity extends BlockEntity {
 
    public float getActiveRotation(final float a) {
       return (this.activeRotation + a) * -0.0375F;
-   }
-
-   static {
-      VALID_BLOCKS = new Block[]{Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.DARK_PRISMARINE};
    }
 }

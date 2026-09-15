@@ -10,20 +10,22 @@ import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public sealed interface CubicSpline<I> {
-   CubicSpline<I> mapCoordinates(UnaryOperator<I> mapper);
+   void forEachCoordinate(Consumer<I> consumer);
 
-   float minValue();
+   <R extends BoundedFloatFunction<?>> CubicSpline<R> mapCoordinates(Function<I, R> mapper);
 
-   float maxValue();
+   Interval range();
 
    @VisibleForDebug
    String parityString();
@@ -66,12 +68,8 @@ public sealed interface CubicSpline<I> {
                   return CubicSpline.Multipoint.sample(multipoint, c);
                }
 
-               public float minValue() {
-                  return multipoint.minValue();
-               }
-
-               public float maxValue() {
-                  return multipoint.maxValue();
+               public Interval range() {
+                  return multipoint.range();
                }
             };
             break;
@@ -142,66 +140,73 @@ public sealed interface CubicSpline<I> {
    }
 
    @VisibleForDebug
-   public static record Multipoint<I extends BoundedFloatFunction<?>>(I coordinate, float[] locations, List<CubicSpline<I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<I> {
+   public static record Multipoint<I extends BoundedFloatFunction<?>>(I coordinate, float[] locations, List<CubicSpline<I>> values, float[] derivatives) implements CubicSpline<I> {
       public Multipoint {
          super();
          validateSizes(locations, values, derivatives);
       }
 
-      public Multipoint(final I coordinate, final float[] locations, final List<CubicSpline<I>> values, final float[] derivatives) {
-         int lastIndex = locations.length - 1;
+      public Interval range() {
+         int lastIndex = this.locations.length - 1;
          float minValue = 1.0F / 0.0F;
          float maxValue = -1.0F / 0.0F;
-         float minInput = coordinate.minValue();
-         float maxInput = coordinate.maxValue();
-         if (minInput < locations[0]) {
-            float edge1 = linearExtend(minInput, locations, ((CubicSpline)values.get(0)).minValue(), derivatives, 0);
-            float edge2 = linearExtend(minInput, locations, ((CubicSpline)values.get(0)).maxValue(), derivatives, 0);
-            minValue = Math.min(minValue, Math.min(edge1, edge2));
-            maxValue = Math.max(maxValue, Math.max(edge1, edge2));
-         }
-
-         if (maxInput > locations[lastIndex]) {
-            float edge1 = linearExtend(maxInput, locations, ((CubicSpline)values.get(lastIndex)).minValue(), derivatives, lastIndex);
-            float edge2 = linearExtend(maxInput, locations, ((CubicSpline)values.get(lastIndex)).maxValue(), derivatives, lastIndex);
-            minValue = Math.min(minValue, Math.min(edge1, edge2));
-            maxValue = Math.max(maxValue, Math.max(edge1, edge2));
-         }
-
-         for(CubicSpline<I> value : values) {
-            minValue = Math.min(minValue, value.minValue());
-            maxValue = Math.max(maxValue, value.maxValue());
-         }
-
-         for(int i = 0; i < lastIndex; ++i) {
-            float x1 = locations[i];
-            float x2 = locations[i + 1];
-            float xDiff = x2 - x1;
-            CubicSpline<I> v1 = (CubicSpline)values.get(i);
-            CubicSpline<I> v2 = (CubicSpline)values.get(i + 1);
-            float min1 = v1.minValue();
-            float max1 = v1.maxValue();
-            float min2 = v2.minValue();
-            float max2 = v2.maxValue();
-            float d1 = derivatives[i];
-            float d2 = derivatives[i + 1];
-            if (d1 != 0.0F || d2 != 0.0F) {
-               float p1 = d1 * xDiff;
-               float p2 = d2 * xDiff;
-               float minLerp1 = Math.min(min1, min2);
-               float maxLerp1 = Math.max(max1, max2);
-               float minA = p1 - max2 + min1;
-               float maxA = p1 - min2 + max1;
-               float minB = -p2 + min2 - max1;
-               float maxB = -p2 + max2 - min1;
-               float minLerp2 = Math.min(minA, minB);
-               float maxLerp2 = Math.max(maxA, maxB);
-               minValue = Math.min(minValue, minLerp1 + 0.25F * minLerp2);
-               maxValue = Math.max(maxValue, maxLerp1 + 0.25F * maxLerp2);
+         Interval inputRange = this.coordinate.range();
+         if (inputRange.isNaI()) {
+            return inputRange;
+         } else {
+            if (inputRange.min() < this.locations[0]) {
+               Interval firstRange = ((CubicSpline)this.values.getFirst()).range();
+               float edge1 = linearExtend(inputRange.min(), this.locations, firstRange.min(), this.derivatives, 0);
+               float edge2 = linearExtend(inputRange.min(), this.locations, firstRange.max(), this.derivatives, 0);
+               minValue = Math.min(minValue, Math.min(edge1, edge2));
+               maxValue = Math.max(maxValue, Math.max(edge1, edge2));
             }
-         }
 
-         this(coordinate, locations, values, derivatives, minValue, maxValue);
+            if (inputRange.max() > this.locations[lastIndex]) {
+               Interval lastRange = ((CubicSpline)this.values.get(lastIndex)).range();
+               float edge1 = linearExtend(inputRange.max(), this.locations, lastRange.min(), this.derivatives, lastIndex);
+               float edge2 = linearExtend(inputRange.max(), this.locations, lastRange.max(), this.derivatives, lastIndex);
+               minValue = Math.min(minValue, Math.min(edge1, edge2));
+               maxValue = Math.max(maxValue, Math.max(edge1, edge2));
+            }
+
+            List<Interval> valueRanges = List.copyOf(Lists.transform(this.values, CubicSpline::range));
+
+            for(Interval range : valueRanges) {
+               minValue = Math.min(minValue, range.min());
+               maxValue = Math.max(maxValue, range.max());
+            }
+
+            for(int i = 0; i < lastIndex; ++i) {
+               float x1 = this.locations[i];
+               float x2 = this.locations[i + 1];
+               float xDiff = x2 - x1;
+               Interval range1 = (Interval)valueRanges.get(i);
+               Interval range2 = (Interval)valueRanges.get(i + 1);
+               float min1 = range1.min();
+               float max1 = range1.max();
+               float min2 = range2.min();
+               float max2 = range2.max();
+               float d1 = this.derivatives[i];
+               float d2 = this.derivatives[i + 1];
+               if (d1 != 0.0F || d2 != 0.0F) {
+                  float p1 = d1 * xDiff;
+                  float p2 = d2 * xDiff;
+                  float minLerp1 = Math.min(min1, min2);
+                  float maxLerp1 = Math.max(max1, max2);
+                  float minA = p1 - max2 + min1;
+                  float maxA = p1 - min2 + max1;
+                  float minB = -p2 + min2 - max1;
+                  float maxB = -p2 + max2 - min1;
+                  float minLerp2 = Math.min(minA, minB);
+                  float maxLerp2 = Math.max(maxA, maxB);
+                  minValue = Math.min(minValue, minLerp1 + 0.25F * minLerp2);
+                  maxValue = Math.max(maxValue, maxLerp1 + 0.25F * maxLerp2);
+               }
+            }
+
+            return Interval.of(minValue, maxValue);
+         }
       }
 
       private static float linearExtend(final float input, final float[] locations, final float value, final float[] derivatives, final int index) {
@@ -263,8 +268,29 @@ public sealed interface CubicSpline<I> {
          return "[" + (String)var10000.collect(Collectors.joining(", ")) + "]";
       }
 
-      public CubicSpline<I> mapCoordinates(final UnaryOperator<I> mapper) {
-         return new Multipoint<I>((BoundedFloatFunction)mapper.apply(this.coordinate), this.locations, this.values.stream().map((v) -> v.mapCoordinates(mapper)).toList(), this.derivatives);
+      public void forEachCoordinate(final Consumer<I> consumer) {
+         consumer.accept(this.coordinate);
+
+         for(CubicSpline<I> spline : this.values) {
+            spline.forEachCoordinate(consumer);
+         }
+
+      }
+
+      public <R extends BoundedFloatFunction<?>> CubicSpline<R> mapCoordinates(final Function<I, R> mapper) {
+         return new Multipoint<R>((BoundedFloatFunction)mapper.apply(this.coordinate), this.locations, this.values.stream().map((v) -> v.mapCoordinates(mapper)).toList(), this.derivatives);
+      }
+
+      public boolean equals(final Object obj) {
+         if (!(obj instanceof Multipoint<?> multipoint)) {
+            return false;
+         } else {
+            return Objects.equals(this.coordinate, multipoint.coordinate) && Arrays.equals(this.locations, multipoint.locations) && Arrays.equals(this.derivatives, multipoint.derivatives) && Objects.equals(this.values, multipoint.values);
+         }
+      }
+
+      public int hashCode() {
+         return Objects.hash(new Object[]{this.coordinate, Arrays.hashCode(this.locations), this.values, Arrays.hashCode(this.derivatives)});
       }
 
       public static <I extends BoundedFloatFunction<?>> Codec<Multipoint<I>> codec(final Codec<I> coordinateCodec, final Codec<CubicSpline<I>> subSplineCodec) {
@@ -319,15 +345,14 @@ public sealed interface CubicSpline<I> {
          return String.format(Locale.ROOT, "k=%.3f", this.value);
       }
 
-      public float minValue() {
-         return this.value;
+      public Interval range() {
+         return Interval.ofExact(this.value);
       }
 
-      public float maxValue() {
-         return this.value;
+      public void forEachCoordinate(final Consumer<I> consumer) {
       }
 
-      public CubicSpline<I> mapCoordinates(final UnaryOperator<I> mapper) {
+      public <R extends BoundedFloatFunction<?>> CubicSpline<R> mapCoordinates(final Function<I, R> mapper) {
          return this;
       }
    }

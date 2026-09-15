@@ -3,6 +3,8 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.ItemStack;
@@ -15,8 +17,8 @@ public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
    private final List<Filterable<String>> pages;
    private final ListOperation pageOperation;
 
-   protected SetWritableBookPagesFunction(final List<LootItemCondition> predicates, final List<Filterable<String>> pages, final ListOperation pageOperation) {
-      super(predicates);
+   protected SetWritableBookPagesFunction(Optional<Holder<LootItemCondition>> condition, final List<Filterable<String>> pages, final ListOperation pageOperation) {
+      super(condition);
       this.pages = pages;
       this.pageOperation = pageOperation;
    }

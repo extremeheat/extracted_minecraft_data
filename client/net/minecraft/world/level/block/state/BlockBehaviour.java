@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block.state;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +19,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -54,6 +52,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
@@ -92,6 +91,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final float speedFactor;
    protected final float jumpFactor;
    protected final float bounceRestitution;
+   protected final float fallDistanceReduction;
    protected final boolean dynamicShape;
    protected final FeatureFlagSet requiredFeatures;
    protected final Properties properties;
@@ -110,6 +110,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.speedFactor = properties.speedFactor;
       this.jumpFactor = properties.jumpFactor;
       this.bounceRestitution = properties.bounceRestitution;
+      this.fallDistanceReduction = properties.fallDistanceReduction;
       this.dynamicShape = properties.dynamicShape;
       this.requiredFeatures = properties.requiredFeatures;
       this.properties = properties;
@@ -117,16 +118,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
    public Properties properties() {
       return this.properties;
-   }
-
-   protected abstract MapCodec<? extends Block> codec();
-
-   protected static <B extends Block> RecordCodecBuilder<B, Properties> propertiesCodec() {
-      return BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter(BlockBehaviour::properties);
-   }
-
-   public static <B extends Block> MapCodec<B> simpleCodec(final Function<Properties, B> constructor) {
-      return RecordCodecBuilder.mapCodec((i) -> i.group(propertiesCodec()).apply(i, constructor));
    }
 
    protected void updateIndirectNeighbourShapes(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
@@ -176,7 +167,7 @@ public abstract class BlockBehaviour implements FeatureElement {
             state.getDrops(params).forEach((stack) -> onHit.accept(stack, pos));
          }
 
-         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
          block.wasExploded(level, pos, explosion);
       }
    }
@@ -187,6 +178,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
       return InteractionResult.TRY_WITH_EMPTY_HAND;
+   }
+
+   protected boolean showAsInteractableInSpectatorMode(final BlockState state, final Level level, final BlockPos pos, final BlockHitResult hitResult) {
+      return state.getMenuProvider(level, pos) != null || state.getBlock() instanceof Portal;
    }
 
    protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
@@ -338,6 +333,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return false;
    }
 
+   protected boolean shouldRedstoneWireConnectTo(final BlockState state, final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+      return state.isSignalSource() && direction != null;
+   }
+
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return this.ownSignal(state, level, pos);
    }
@@ -411,7 +410,6 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
-      public static final Codec<Properties> CODEC = MapCodec.unitCodec(() -> of());
       private Function<BlockState, MapColor> mapColor = (state) -> MapColor.NONE;
       private boolean hasCollision = true;
       private SoundType soundType;
@@ -444,12 +442,13 @@ public abstract class BlockBehaviour implements FeatureElement {
       private StateArgumentPredicate<EntityType<?>> isValidSpawn;
       private StatePredicate isRedstoneConductor;
       private StatePredicate isSuffocating;
-      private StatePredicate isViewBlocking;
+      private StateArgumentPredicate<AABB> isViewBlocking;
       private PostProcess postProcess;
       private Predicate<BlockState> emissiveRendering;
       private boolean dynamicShape;
       private FeatureFlagSet requiredFeatures;
       private @Nullable OffsetFunction offsetFunction;
+      private float fallDistanceReduction;
 
       private Properties() {
          super();
@@ -461,13 +460,13 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.drops = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("blocks/")));
          this.descriptionId = (id) -> Util.makeDescriptionId("block", id.identifier());
          this.canOcclude = true;
-         this.pushReaction = PushReaction.NORMAL;
+         this.pushReaction = PushReaction.PUSH_PULL;
          this.spawnTerrainParticles = true;
          this.instrument = NoteBlockInstrument.HARP;
          this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
          this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
-         this.isSuffocating = (state, level, pos) -> state.blocksMotion() && state.isCollisionShapeFullBlock(level, pos);
-         this.isViewBlocking = this.isSuffocating;
+         this.isSuffocating = (state, level, pos) -> state.is(BlockTags.CAUSES_SUFFOCATION) && state.isCollisionShapeFullBlock(level, pos);
+         this.isViewBlocking = (state, level, pos, var4) -> this.isSuffocating.test(state, level, pos);
          this.postProcess = (state, level, pos) -> null;
          this.emissiveRendering = (var0) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
@@ -570,6 +569,11 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
+      public Properties fallDistanceReduction(final float fallDistanceReduction) {
+         this.fallDistanceReduction = fallDistanceReduction;
+         return this;
+      }
+
       public Properties sound(final SoundType soundType) {
          this.soundType = soundType;
          return this;
@@ -664,7 +668,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties isViewBlocking(final StatePredicate isViewBlocking) {
+      public Properties isViewBlocking(final StateArgumentPredicate<AABB> isViewBlocking) {
          this.isViewBlocking = isViewBlocking;
          return this;
       }
@@ -778,7 +782,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final boolean canOcclude;
       private final StatePredicate isRedstoneConductor;
       private final StatePredicate isSuffocating;
-      private final StatePredicate isViewBlocking;
+      private final StateArgumentPredicate<AABB> isViewBlocking;
       private final PostProcess postProcess;
       private final Predicate<BlockState> emissiveRendering;
       private final @Nullable OffsetFunction offsetFunction;
@@ -821,21 +825,21 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       private boolean calculateSolid() {
          if ((this.owner).properties.forceSolidOn) {
-            return true;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FORCE_SOLID_ON);
          } else if ((this.owner).properties.forceSolidOff) {
-            return false;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FORCE_SOLID_OFF);
          } else if (this.cache == null) {
-            return false;
+            return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.NULL_CACHE);
          } else {
             VoxelShape shape = this.cache.collisionShape;
             if (shape.isEmpty()) {
-               return false;
+               return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.EMPTY_COLLISION_SHAPE);
             } else {
                AABB bounds = shape.bounds();
                if (bounds.getSize() >= 0.7291666666666666) {
-                  return true;
+                  return SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.LARGE_ENOUGH_COLLISION_SHAPE);
                } else {
-                  return bounds.getYsize() >= 1.0;
+                  return bounds.getYsize() >= 1.0 ? SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.HIGH_ENOUGH_COLLISION_SHAPE) : SolidDebugger.logAndGet(this.typeHolder(), SolidDebugger.Reason.FALLTHROUGH);
                }
             }
          }
@@ -873,13 +877,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public Holder<Block> typeHolder() {
          return this.getBlock().builtInRegistryHolder();
-      }
-
-      /** @deprecated */
-      @Deprecated
-      public boolean blocksMotion() {
-         Block block = this.getBlock();
-         return block != Blocks.COBWEB && block != Blocks.BAMBOO_SAPLING && this.isSolid();
       }
 
       /** @deprecated */
@@ -964,6 +961,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean isSignalSource() {
          return this.getBlock().isSignalSource(this.asState());
+      }
+
+      public boolean shouldRedstoneWireConnectTo(final BlockGetter level, final BlockPos pos, final @Nullable Direction direction) {
+         return this.getBlock().shouldRedstoneWireConnectTo(this.asState(), level, pos, direction);
       }
 
       public int getOwnSignal(final BlockGetter level, final BlockPos pos) {
@@ -1129,6 +1130,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().useWithoutItem(this.asState(), level, hitResult.getBlockPos(), player, hitResult);
       }
 
+      public boolean showAsInteractableInSpectatorMode(final Level level, final BlockPos pos, final BlockHitResult hitResult) {
+         return this.getBlock().showAsInteractableInSpectatorMode(this.asState(), level, pos, hitResult);
+      }
+
       public void attack(final Level level, final BlockPos pos, final Player player) {
          this.getBlock().attack(this.asState(), level, pos, player);
       }
@@ -1137,8 +1142,12 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.isSuffocating.test(this.asState(), level, pos);
       }
 
-      public boolean isViewBlocking(final BlockGetter level, final BlockPos pos) {
-         return this.isViewBlocking.test(this.asState(), level, pos);
+      public boolean isLightPermeable() {
+         return !this.solidRender || this.getLightDampening() == 0;
+      }
+
+      public boolean isViewBlocking(final BlockGetter level, final BlockPos blockPos, final AABB nearPlaneBox) {
+         return this.isViewBlocking.test(this.asState(), level, blockPos, nearPlaneBox);
       }
 
       public BlockState updateShape(final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
@@ -1233,6 +1242,20 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean shouldSpawnTerrainParticles() {
          return this.spawnTerrainParticles;
+      }
+
+      public BlockState withPropertiesOf(final BlockState source) {
+         BlockState result = this.asState();
+
+         for(Property<?> property : source.getBlock().getStateDefinition().getProperties()) {
+            result = copyProperty(source, result, property);
+         }
+
+         return result;
+      }
+
+      public static <T extends Comparable<T>> BlockState copyProperty(final BlockState from, final BlockState to, final Property<T> property) {
+         return (BlockState)to.trySetValue(property, from.getValue(property));
       }
 
       public NoteBlockInstrument instrument() {

@@ -1,6 +1,6 @@
 package com.mojang.blaze3d.font;
 
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 
 public interface GlyphBitmap {
    int getPixelWidth();

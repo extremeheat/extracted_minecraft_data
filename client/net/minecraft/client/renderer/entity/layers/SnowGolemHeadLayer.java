@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.SnowGolemRenderState;
-import org.joml.Quaternionfc;
 
 public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGolemModel> {
    public SnowGolemHeadLayer(final RenderLayerParent<SnowGolemRenderState, SnowGolemModel> renderer) {
@@ -21,7 +20,7 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
             ((SnowGolemModel)this.getParentModel()).getHead().translateAndRotate(poseStack);
             float s = 0.625F;
             poseStack.translate(0.0F, -0.34375F, 0.0F);
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+            poseStack.rotateDegrees(Axis.YP, 180.0F);
             poseStack.scale(0.625F, -0.625F, -0.625F);
             int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
             poseStack.translate(-0.5F, -0.5F, -0.5F);

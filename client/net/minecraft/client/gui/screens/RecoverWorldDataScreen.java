@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -63,7 +62,7 @@ public class RecoverWorldDataScreen extends Screen {
       this.layout.addChild(this.messageWidget.setCentered(true));
       this.layout.addChild(this.issuesWidget);
       LinearLayout buttonGrid = LinearLayout.horizontal().spacing(5);
-      buttonGrid.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).size(120, 20).build());
+      buttonGrid.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).size(120, 20).build());
       ((Button)buttonGrid.addChild(Button.builder(RESTORE_BUTTON, (button) -> this.attemptRestore(minecraft)).size(120, 20).tooltip(canRecover ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = canRecover;
       this.layout.addChild(buttonGrid);
       this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).size(120, 20).build());

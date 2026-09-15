@@ -61,13 +61,13 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return entity.isOnFire() ? 15 : entity.level().getBrightness(LightLayer.BLOCK, blockPos);
    }
 
-   public boolean shouldRender(final T entity, final Frustum culler, final double camX, final double camY, final double camZ) {
+   public boolean shouldRender(final T entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
       if (!entity.shouldRender(camX, camY, camZ)) {
          return false;
       } else if (!this.affectedByCulling(entity)) {
          return true;
       } else {
-         AABB boundingBox = this.getBoundingBoxForCulling(entity).inflate(0.5);
+         AABB boundingBox = this.getBoundingBoxForCulling(entity, partialTicks).inflate(0.5);
          if (boundingBox.hasNaN() || boundingBox.getSize() == 0.0) {
             boundingBox = new AABB(entity.getX() - 2.0, entity.getY() - 2.0, entity.getZ() - 2.0, entity.getX() + 2.0, entity.getY() + 2.0, entity.getZ() + 2.0);
          }
@@ -79,7 +79,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
                Leashable leashable = (Leashable)entity;
                Entity leashHolder = leashable.getLeashHolder();
                if (leashHolder != null) {
-                  AABB leasherBox = this.entityRenderDispatcher.getRenderer(leashHolder).getBoundingBoxForCulling(leashHolder);
+                  AABB leasherBox = this.entityRenderDispatcher.getRenderer(leashHolder).getBoundingBoxForCulling(leashHolder, partialTicks);
                   return culler.isVisible(leasherBox) || culler.isVisible(boundingBox.minmax(leasherBox));
                }
             }
@@ -89,8 +89,8 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
    }
 
-   protected AABB getBoundingBoxForCulling(final T entity) {
-      return entity.getBoundingBox();
+   protected AABB getBoundingBoxForCulling(final T entity, final float partialTicks) {
+      return entity.getInterpolatedBoundingBox(partialTicks);
    }
 
    protected boolean affectedByCulling(final T entity) {

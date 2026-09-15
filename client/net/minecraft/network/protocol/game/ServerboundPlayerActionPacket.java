@@ -67,6 +67,7 @@ public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketLis
 
    public static enum Action {
       START_DESTROY_BLOCK,
+      CHANGE_DESTROY_DIRECTION,
       ABORT_DESTROY_BLOCK,
       STOP_DESTROY_BLOCK,
       DROP_ALL_ITEMS,
@@ -80,7 +81,7 @@ public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketLis
 
       // $FF: synthetic method
       private static Action[] $values() {
-         return new Action[]{START_DESTROY_BLOCK, ABORT_DESTROY_BLOCK, STOP_DESTROY_BLOCK, DROP_ALL_ITEMS, DROP_ITEM, RELEASE_USE_ITEM, SWAP_ITEM_WITH_OFFHAND, STAB};
+         return new Action[]{START_DESTROY_BLOCK, CHANGE_DESTROY_DIRECTION, ABORT_DESTROY_BLOCK, STOP_DESTROY_BLOCK, DROP_ALL_ITEMS, DROP_ITEM, RELEASE_USE_ITEM, SWAP_ITEM_WITH_OFFHAND, STAB};
       }
    }
 }

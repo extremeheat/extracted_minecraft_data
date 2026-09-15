@@ -63,6 +63,10 @@ public interface GuiEventListener extends TabOrderedElement {
       return true;
    }
 
+   default boolean capturesInput() {
+      return false;
+   }
+
    default @Nullable ComponentPath getCurrentFocusPath() {
       return this.isFocused() ? ComponentPath.leaf(this) : null;
    }

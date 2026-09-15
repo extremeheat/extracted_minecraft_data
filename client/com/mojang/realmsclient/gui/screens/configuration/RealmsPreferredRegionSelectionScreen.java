@@ -26,13 +26,13 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    private static final int SPACING = 8;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Screen parent;
-   private final BiConsumer<RegionSelectionPreference, RealmsRegion> applySettings;
+   private final BiConsumer<RegionSelectionPreference, @Nullable RealmsRegion> applySettings;
    private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    private @Nullable RegionSelectionList list;
    private RealmsSettingsTab.RegionSelection selection;
    private @Nullable Button doneButton;
 
-   public RealmsPreferredRegionSelectionScreen(final Screen parent, final BiConsumer<RegionSelectionPreference, RealmsRegion> applySettings, final Map<RealmsRegion, ServiceQuality> regionServiceQuality, final RealmsSettingsTab.RegionSelection currentSelection) {
+   public RealmsPreferredRegionSelectionScreen(final Screen parent, final BiConsumer<RegionSelectionPreference, @Nullable RealmsRegion> applySettings, final Map<RealmsRegion, ServiceQuality> regionServiceQuality, final RealmsSettingsTab.RegionSelection currentSelection) {
       super(REGION_SELECTION_LABEL);
       this.parent = parent;
       this.applySettings = applySettings;
@@ -66,10 +66,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    }
 
    private void onDone() {
-      if (this.selection.region() != null) {
-         this.applySettings.accept(this.selection.preference(), this.selection.region());
-      }
-
+      this.applySettings.accept(this.selection.preference(), this.selection.region());
       this.onClose();
    }
 

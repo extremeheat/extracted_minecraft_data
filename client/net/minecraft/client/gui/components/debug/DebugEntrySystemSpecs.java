@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.components.debug;
 
-import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.systems.DeviceInfo;
-import com.mojang.blaze3d.systems.DeviceType;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.device.DeviceInfo;
+import com.mojang.renderpearl.api.device.DeviceType;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
@@ -11,17 +11,35 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
 
 public class DebugEntrySystemSpecs implements DebugScreenEntry {
    private static final Identifier GROUP = Identifier.withDefaultNamespace("system");
+   private static @Nullable String cpuInfo;
 
    public DebugEntrySystemSpecs() {
       super();
    }
 
+   public static String getCpuInfo() {
+      if (cpuInfo == null) {
+         cpuInfo = "<unknown>";
+
+         try {
+            CentralProcessor processor = (new SystemInfo()).getHardware().getProcessor();
+            cpuInfo = String.format(Locale.ROOT, "%dx %s", processor.getLogicalProcessorCount(), processor.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
+         } catch (Throwable var1) {
+         }
+      }
+
+      return cpuInfo;
+   }
+
    public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
       DeviceInfo deviceInfo = RenderSystem.getDevice().getDeviceInfo();
-      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "CPU: %s", GLX._getCpuInfo()), String.format(Locale.ROOT, "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), deviceInfo.vendorName()), String.format(Locale.ROOT, "%s%s", deviceInfo.name(), this.typeName(deviceInfo.type())), String.format(Locale.ROOT, "%s %s", deviceInfo.backendName(), this.firstLine(deviceInfo.driverInfo()))));
+      Window window = Minecraft.getInstance().getWindow();
+      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "CPU: %s", getCpuInfo()), String.format(Locale.ROOT, "Display: %dx%d (%s)", window.getWidth(), window.getHeight(), deviceInfo.vendorName()), String.format(Locale.ROOT, "Window: %dx%d (%.2fx pixel density)", window.getScreenWidth(), window.getScreenHeight(), window.getPixelDensity()), String.format(Locale.ROOT, "%s%s", deviceInfo.name(), this.typeName(deviceInfo.type())), String.format(Locale.ROOT, "%s %s", deviceInfo.backendName(), this.firstLine(deviceInfo.driverInfo()))));
    }
 
    private String firstLine(final String value) {

@@ -27,6 +27,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
@@ -192,6 +193,7 @@ public class SculkSpreader {
          var10000.forEach(list::add);
       });
       public static final int MAX_CURSOR_DECAY_DELAY = 1;
+      private static final int MAX_WORLDGEN_SPREAD = 12;
       private BlockPos pos;
       private int charge;
       private int updateDelay;
@@ -266,16 +268,15 @@ public class SculkSpreader {
                if (this.charge <= 0) {
                   sculkBehaviour.onDischarged(level, currentState, this.pos, random);
                } else {
-                  BlockPos transferPos = getValidMovementPos(level, this.pos, random);
+                  BlockPos transferPos = getValidMovementPos(level, this.pos, random, originPos, spreader);
                   if (transferPos != null) {
                      sculkBehaviour.onDischarged(level, currentState, this.pos, random);
                      this.pos = transferPos.immutable();
-                     if (spreader.isWorldGeneration() && !this.pos.closerThan(new Vec3i(originPos.getX(), this.pos.getY(), originPos.getZ()), 15.0)) {
-                        this.charge = 0;
-                        return;
-                     }
-
                      currentState = level.getBlockState(transferPos);
+                  } else if (spreader.isWorldGeneration()) {
+                     sculkBehaviour.onDischarged(level, currentState, this.pos, random);
+                     this.charge = 0;
+                     return;
                   }
 
                   if (currentState.getBlock() instanceof SculkBehaviour) {
@@ -311,22 +312,33 @@ public class SculkSpreader {
          return Util.shuffledCopy(NON_CORNER_NEIGHBOURS, random);
       }
 
-      private static @Nullable BlockPos getValidMovementPos(final LevelAccessor level, final BlockPos pos, final RandomSource random) {
+      private static @Nullable BlockPos getValidMovementPos(final LevelAccessor level, final BlockPos pos, final RandomSource random, final BlockPos originPos, final SculkSpreader spreader) {
          BlockPos.MutableBlockPos sculkPosition = pos.mutable();
          BlockPos.MutableBlockPos neighbour = pos.mutable();
 
          for(Vec3i offset : getRandomizedNonCornerNeighbourOffsets(random)) {
             neighbour.setWithOffset(pos, (Vec3i)offset);
-            BlockState transferee = level.getBlockState(neighbour);
-            if (transferee.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(level, pos, neighbour)) {
-               sculkPosition.set(neighbour);
-               if (SculkVeinBlock.hasSubstrateAccess(level, transferee, neighbour)) {
-                  break;
+            if (canMoveToPos(originPos, neighbour, spreader)) {
+               BlockState transferee = level.getBlockState(neighbour);
+               if (transferee.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(level, pos, neighbour)) {
+                  sculkPosition.set(neighbour);
+                  if (SculkVeinBlock.hasSubstrateAccess(level, transferee, neighbour)) {
+                     break;
+                  }
                }
             }
          }
 
          return sculkPosition.equals(pos) ? null : sculkPosition;
+      }
+
+      private static boolean canMoveToPos(final BlockPos origin, final BlockPos target, final SculkSpreader spreader) {
+         if (!spreader.isWorldGeneration()) {
+            return true;
+         } else {
+            int distanceSq = Mth.square(origin.getX() - target.getX()) + Mth.square(origin.getZ() - target.getZ());
+            return distanceSq <= 144;
+         }
       }
 
       private static boolean isMovementUnobstructed(final LevelAccessor level, final BlockPos from, final BlockPos to) {

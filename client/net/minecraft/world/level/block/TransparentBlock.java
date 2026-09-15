@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -10,14 +9,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TransparentBlock extends HalfTransparentBlock {
-   public static final MapCodec<TransparentBlock> CODEC = simpleCodec(TransparentBlock::new);
-
    protected TransparentBlock(final BlockBehaviour.Properties properties) {
       super(properties);
-   }
-
-   protected MapCodec<? extends TransparentBlock> codec() {
-      return CODEC;
    }
 
    protected VoxelShape getVisualShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {

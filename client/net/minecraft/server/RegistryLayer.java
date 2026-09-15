@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 
 public enum RegistryLayer {
    STATIC,
-   WORLDGEN,
+   WORLD,
    DIMENSIONS,
    RELOADABLE;
 
@@ -23,6 +23,6 @@ public enum RegistryLayer {
 
    // $FF: synthetic method
    private static RegistryLayer[] $values() {
-      return new RegistryLayer[]{STATIC, WORLDGEN, DIMENSIONS, RELOADABLE};
+      return new RegistryLayer[]{STATIC, WORLD, DIMENSIONS, RELOADABLE};
    }
 }

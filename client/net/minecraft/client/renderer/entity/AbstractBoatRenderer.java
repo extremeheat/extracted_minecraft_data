@@ -5,14 +5,12 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 
 public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, BoatRenderState> {
    protected final Identifier texture;
@@ -26,19 +24,19 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
    public void submit(final BoatRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.translate(0.0F, 0.375F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - state.yRot));
+      poseStack.rotateDegrees(Axis.YP, 180.0F - state.yRot);
       float hurt = state.hurtTime;
       if (hurt > 0.0F) {
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir));
+         poseStack.rotateDegrees(Axis.XP, Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir);
       }
 
       if (!state.isUnderWater && !Mth.equal(state.bubbleAngle, 0.0F)) {
-         poseStack.mulPose((Quaternionfc)(new Quaternionf()).setAngleAxis(state.bubbleAngle * 0.017453292F, 1.0F, 0.0F, 1.0F));
+         poseStack.rotate((new Quaternionf()).setAngleAxis(state.bubbleAngle * 0.017453292F, 1.0F, 0.0F, 1.0F));
       }
 
       poseStack.scale(-1.0F, -1.0F, 1.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-      submitNodeCollector.submitModel(this.model(), state, poseStack, this.texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.rotateDegrees(Axis.YP, 90.0F);
+      submitNodeCollector.submitModel(this.model(), state, poseStack, this.texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       this.submitTypeAdditions(state, poseStack, submitNodeCollector, state.lightCoords);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);

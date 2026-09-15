@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.ClassInstanceMultiMap;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
@@ -28,29 +29,29 @@ public class EntitySection<T extends EntityAccess> {
       return this.storage.remove(entity);
    }
 
-   public AbortableIterationConsumer.Continuation getEntities(final AABB bb, final AbortableIterationConsumer<T> entities) {
+   public Continuation getEntities(final AABB bb, final AbortableIterationConsumer<T> entities) {
       for(T entity : this.storage) {
          if (entity.getBoundingBox().intersects(bb) && entities.accept(entity).shouldAbort()) {
-            return AbortableIterationConsumer.Continuation.ABORT;
+            return Continuation.ABORT;
          }
       }
 
-      return AbortableIterationConsumer.Continuation.CONTINUE;
+      return Continuation.CONTINUE;
    }
 
-   public <U extends T> AbortableIterationConsumer.Continuation getEntities(final EntityTypeTest<T, U> type, final AABB bb, final AbortableIterationConsumer<? super U> consumer) {
+   public <U extends T> Continuation getEntities(final EntityTypeTest<T, U> type, final AABB bb, final AbortableIterationConsumer<? super U> consumer) {
       Collection<? extends T> foundEntities = this.storage.<T>find(type.getBaseClass());
       if (foundEntities.isEmpty()) {
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       } else {
          for(T entity : foundEntities) {
             U maybeEntity = (U)((EntityAccess)type.tryCast(entity));
             if (maybeEntity != null && entity.getBoundingBox().intersects(bb) && consumer.accept(maybeEntity).shouldAbort()) {
-               return AbortableIterationConsumer.Continuation.ABORT;
+               return Continuation.ABORT;
             }
          }
 
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       }
    }
 

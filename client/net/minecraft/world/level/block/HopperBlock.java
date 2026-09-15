@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -40,15 +39,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class HopperBlock extends BaseEntityBlock {
-   public static final MapCodec<HopperBlock> CODEC = simpleCodec(HopperBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty ENABLED;
    private final Function<BlockState, VoxelShape> shapes;
    private final Map<Direction, VoxelShape> interactionShapes;
-
-   public MapCodec<HopperBlock> codec() {
-      return CODEC;
-   }
 
    public HopperBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.FoxRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.joml.Quaternionfc;
 
 public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
    public FoxHeldItemLayer(final RenderLayerParent<FoxRenderState, FoxModel> renderer) {
@@ -27,9 +26,9 @@ public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
             poseStack.scale(0.75F, 0.75F, 0.75F);
          }
 
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotation(state.headRollAngle));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xRot));
+         poseStack.rotate(Axis.ZP, state.headRollAngle);
+         poseStack.rotateDegrees(Axis.YP, yRot);
+         poseStack.rotateDegrees(Axis.XP, xRot);
          if (state.isBaby) {
             if (sleeping) {
                poseStack.translate(0.4F, 0.26F, 0.15F);
@@ -42,9 +41,9 @@ public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
             poseStack.translate(0.06F, 0.27F, -0.5F);
          }
 
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.XP, 90.0F);
          if (sleeping) {
-            poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
+            poseStack.rotateDegrees(Axis.ZP, 90.0F);
          }
 
          item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);

@@ -50,6 +50,17 @@ public final class FluidState extends StateHolder<Fluid, FluidState> implements 
       return this.getType().getHeight(this, level, pos);
    }
 
+   public float getHeightForCamera(final BlockGetter level, final BlockPos pos) {
+      if (this.isSource()) {
+         BlockPos posAbove = pos.above();
+         if (level.getBlockState(posAbove).isFaceSturdy(level, posAbove, Direction.DOWN)) {
+            return 1.0F;
+         }
+      }
+
+      return this.getHeight(level, pos);
+   }
+
    public float getOwnHeight() {
       return this.getType().getOwnHeight(this);
    }

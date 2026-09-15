@@ -29,7 +29,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
@@ -42,6 +41,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -259,7 +259,7 @@ public class Fox extends Animal {
 
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 45) {
          ItemStack mouthItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (!mouthItem.isEmpty()) {
@@ -1307,7 +1307,7 @@ public class Fox extends Animal {
       }
 
       public boolean canUse() {
-         return Fox.this.isInWater() && Fox.this.getFluidHeight(FluidTags.WATER) > 0.25 || Fox.this.isInLava();
+         return Fox.this.isInFluidDeeperThan(0.25, this.fluid) || Fox.this.isInLava();
       }
    }
 

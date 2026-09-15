@@ -2,7 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulators;
@@ -12,12 +13,12 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ModifyContainerContents extends LootItemConditionalFunction {
-   public static final MapCodec<ModifyContainerContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((f) -> f.component), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((f) -> f.modifier))).apply(i, ModifyContainerContents::new));
+   public static final MapCodec<ModifyContainerContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((f) -> f.component), LootItemFunctions.CODEC.fieldOf("modifier").forGetter((f) -> f.modifier))).apply(i, ModifyContainerContents::new));
    private final ContainerComponentManipulator<?> component;
-   private final LootItemFunction modifier;
+   private final Holder<LootItemFunction> modifier;
 
-   private ModifyContainerContents(final List<LootItemCondition> predicates, final ContainerComponentManipulator<?> component, final LootItemFunction modifier) {
-      super(predicates);
+   private ModifyContainerContents(final Optional<Holder<LootItemCondition>> condition, final ContainerComponentManipulator<?> component, final Holder<LootItemFunction> modifier) {
+      super(condition);
       this.component = component;
       this.modifier = modifier;
    }
@@ -30,13 +31,13 @@ public class ModifyContainerContents extends LootItemConditionalFunction {
       if (itemStack.isEmpty()) {
          return itemStack;
       } else {
-         this.component.modifyItems(itemStack, (c) -> (ItemStack)this.modifier.apply(c, context));
+         this.component.modifyItems(itemStack, (c) -> (ItemStack)((LootItemFunction)this.modifier.value()).apply(c, context));
          return itemStack;
       }
    }
 
    public void validate(final ValidationContext context) {
       super.validate(context);
-      Validatable.validate(context, "modifier", this.modifier);
+      Validatable.validateHolder(context, "modifier", this.modifier);
    }
 }

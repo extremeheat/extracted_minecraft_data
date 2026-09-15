@@ -278,7 +278,7 @@ public class LevelStorageSource {
             } catch (OutOfMemoryError e) {
                MemoryReserve.release();
                String detailedMessage = "Ran out of memory trying to read summary of world folder \"" + level.directoryName() + "\"";
-               LOGGER.error(LogUtils.FATAL_MARKER, detailedMessage);
+               LOGGER.error(LogUtils.FATAL_MARKER, "{}", detailedMessage);
                OutOfMemoryError detailedException = new OutOfMemoryError("Ran out of memory reading level data");
                detailedException.initCause(e);
                CrashReport crashReport = CrashReport.forThrowable(detailedException, detailedMessage);

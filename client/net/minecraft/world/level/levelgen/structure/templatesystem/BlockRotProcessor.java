@@ -6,15 +6,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
 public class BlockRotProcessor implements StructureProcessor {
-   public static final MapCodec<BlockRotProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((t) -> t.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((t) -> t.integrity)).apply(i, BlockRotProcessor::new));
+   public static final MapCodec<BlockRotProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((t) -> t.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((t) -> t.integrity)).apply(i, BlockRotProcessor::new));
    private final Optional<HolderSet<Block>> rottableBlocks;
    private final float integrity;
 

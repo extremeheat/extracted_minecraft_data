@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -18,8 +19,8 @@ public class SignEditScreen extends AbstractSignEditScreen {
    private final int displayedHeight;
    private final Identifier texture;
 
-   public SignEditScreen(final SignBlockEntity sign, final boolean isFrontText, final boolean shouldFilter) {
-      super(sign, isFrontText, shouldFilter);
+   public SignEditScreen(final SignBlockEntity sign, final SignTextSlot slot, final boolean shouldFilter) {
+      super(sign, slot, shouldFilter);
       String var10001 = this.woodType.name();
       this.texture = Identifier.withDefaultNamespace("textures/gui/signs/" + var10001 + ".png");
       boolean isWallSign = PlainSignBlock.getAttachmentPoint(sign.getBlockState()) == PlainSignBlock.Attachment.WALL;

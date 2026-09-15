@@ -4,6 +4,8 @@ import com.google.common.base.Suppliers;
 import com.mojang.datafixers.util.Function10;
 import com.mojang.datafixers.util.Function11;
 import com.mojang.datafixers.util.Function12;
+import com.mojang.datafixers.util.Function13;
+import com.mojang.datafixers.util.Function14;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Function5;
@@ -401,6 +403,82 @@ public interface StreamCodec<B, V> extends StreamEncoder<B, V>, StreamDecoder<B,
             codec10.encode(output, getter10.apply(value));
             codec11.encode(output, getter11.apply(value));
             codec12.encode(output, getter12.apply(value));
+         }
+      };
+   }
+
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> codec10, final Function<C, T10> getter10, final StreamCodec<? super B, T11> codec11, final Function<C, T11> getter11, final StreamCodec<? super B, T12> codec12, final Function<C, T12> getter12, final StreamCodec<? super B, T13> codec13, final Function<C, T13> getter13, final Function13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, C> constructor) {
+      return new StreamCodec<B, C>() {
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            T10 v10 = (T10)codec10.decode(input);
+            T11 v11 = (T11)codec11.decode(input);
+            T12 v12 = (T12)codec12.decode(input);
+            T13 v13 = (T13)codec13.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13);
+         }
+
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
+            codec10.encode(output, getter10.apply(value));
+            codec11.encode(output, getter11.apply(value));
+            codec12.encode(output, getter12.apply(value));
+            codec13.encode(output, getter13.apply(value));
+         }
+      };
+   }
+
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> codec1, final Function<C, T1> getter1, final StreamCodec<? super B, T2> codec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> codec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> codec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> codec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> codec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> codec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> codec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> codec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> codec10, final Function<C, T10> getter10, final StreamCodec<? super B, T11> codec11, final Function<C, T11> getter11, final StreamCodec<? super B, T12> codec12, final Function<C, T12> getter12, final StreamCodec<? super B, T13> codec13, final Function<C, T13> getter13, final StreamCodec<? super B, T14> codec14, final Function<C, T14> getter14, final Function14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, C> constructor) {
+      return new StreamCodec<B, C>() {
+         public C decode(final B input) {
+            T1 v1 = (T1)codec1.decode(input);
+            T2 v2 = (T2)codec2.decode(input);
+            T3 v3 = (T3)codec3.decode(input);
+            T4 v4 = (T4)codec4.decode(input);
+            T5 v5 = (T5)codec5.decode(input);
+            T6 v6 = (T6)codec6.decode(input);
+            T7 v7 = (T7)codec7.decode(input);
+            T8 v8 = (T8)codec8.decode(input);
+            T9 v9 = (T9)codec9.decode(input);
+            T10 v10 = (T10)codec10.decode(input);
+            T11 v11 = (T11)codec11.decode(input);
+            T12 v12 = (T12)codec12.decode(input);
+            T13 v13 = (T13)codec13.decode(input);
+            T14 v14 = (T14)codec14.decode(input);
+            return (C)constructor.apply(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14);
+         }
+
+         public void encode(final B output, final C value) {
+            codec1.encode(output, getter1.apply(value));
+            codec2.encode(output, getter2.apply(value));
+            codec3.encode(output, getter3.apply(value));
+            codec4.encode(output, getter4.apply(value));
+            codec5.encode(output, getter5.apply(value));
+            codec6.encode(output, getter6.apply(value));
+            codec7.encode(output, getter7.apply(value));
+            codec8.encode(output, getter8.apply(value));
+            codec9.encode(output, getter9.apply(value));
+            codec10.encode(output, getter10.apply(value));
+            codec11.encode(output, getter11.apply(value));
+            codec12.encode(output, getter12.apply(value));
+            codec13.encode(output, getter13.apply(value));
+            codec14.encode(output, getter14.apply(value));
          }
       };
    }

@@ -6,11 +6,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.random.WeightedList;
@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public record ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>> damageType, Optional<LevelBasedValue> knockbackMultiplier, Optional<HolderSet<Block>> immuneBlocks, Vec3 offset, LevelBasedValue radius, boolean createFire, Level.ExplosionInteraction blockInteraction, ParticleOptions smallParticle, ParticleOptions largeParticle, WeightedList<ExplosionParticleInfo> blockParticles, Holder<SoundEvent> sound) implements EnchantmentEntityEffect {
-   public static final MapCodec<ExplodeEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("attribute_to_user", false).forGetter(ExplodeEffect::attributeToUser), DamageType.CODEC.optionalFieldOf("damage_type").forGetter(ExplodeEffect::damageType), LevelBasedValue.CODEC.optionalFieldOf("knockback_multiplier").forGetter(ExplodeEffect::knockbackMultiplier), RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("immune_blocks").forGetter(ExplodeEffect::immuneBlocks), Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(ExplodeEffect::offset), LevelBasedValue.CODEC.fieldOf("radius").forGetter(ExplodeEffect::radius), Codec.BOOL.optionalFieldOf("create_fire", false).forGetter(ExplodeEffect::createFire), Level.ExplosionInteraction.CODEC.fieldOf("block_interaction").forGetter(ExplodeEffect::blockInteraction), ParticleTypes.CODEC.fieldOf("small_particle").forGetter(ExplodeEffect::smallParticle), ParticleTypes.CODEC.fieldOf("large_particle").forGetter(ExplodeEffect::largeParticle), WeightedList.codec(ExplosionParticleInfo.CODEC).optionalFieldOf("block_particles", WeightedList.of()).forGetter(ExplodeEffect::blockParticles), SoundEvent.CODEC.fieldOf("sound").forGetter(ExplodeEffect::sound)).apply(i, ExplodeEffect::new));
+   public static final MapCodec<ExplodeEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.optionalFieldOf("attribute_to_user", false).forGetter(ExplodeEffect::attributeToUser), DamageType.CODEC.optionalFieldOf("damage_type").forGetter(ExplodeEffect::damageType), LevelBasedValue.CODEC.optionalFieldOf("knockback_multiplier").forGetter(ExplodeEffect::knockbackMultiplier), RegistryCodecs.holderSet(Registries.BLOCK).optionalFieldOf("immune_blocks").forGetter(ExplodeEffect::immuneBlocks), Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(ExplodeEffect::offset), LevelBasedValue.CODEC.fieldOf("radius").forGetter(ExplodeEffect::radius), Codec.BOOL.optionalFieldOf("create_fire", false).forGetter(ExplodeEffect::createFire), Level.ExplosionInteraction.CODEC.fieldOf("block_interaction").forGetter(ExplodeEffect::blockInteraction), ParticleTypes.CODEC.fieldOf("small_particle").forGetter(ExplodeEffect::smallParticle), ParticleTypes.CODEC.fieldOf("large_particle").forGetter(ExplodeEffect::largeParticle), WeightedList.codec(ExplosionParticleInfo.CODEC).optionalFieldOf("block_particles", WeightedList.of()).forGetter(ExplodeEffect::blockParticles), SoundEvent.CODEC.fieldOf("sound").forGetter(ExplodeEffect::sound)).apply(i, ExplodeEffect::new));
 
    public ExplodeEffect {
       super();

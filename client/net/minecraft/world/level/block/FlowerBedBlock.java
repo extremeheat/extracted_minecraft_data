@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,17 +20,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock, SegmentableBlock {
-   public static final MapCodec<FlowerBedBlock> CODEC = simpleCodec(FlowerBedBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty AMOUNT;
+   private final int shapeHeight;
    private final Function<BlockState, VoxelShape> shapes;
 
-   public MapCodec<FlowerBedBlock> codec() {
-      return CODEC;
-   }
-
-   protected FlowerBedBlock(final BlockBehaviour.Properties properties) {
+   protected FlowerBedBlock(final BlockBehaviour.Properties properties, final int shapeHeight) {
       super(properties);
+      this.shapeHeight = shapeHeight;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(AMOUNT, 1));
       this.shapes = this.makeShapes();
    }
@@ -57,7 +53,7 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
    }
 
    public double getShapeHeight() {
-      return 3.0;
+      return (double)this.shapeHeight;
    }
 
    public IntegerProperty getSegmentAmountProperty() {
@@ -72,15 +68,15 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       builder.add(FACING, AMOUNT);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int currentAmount = (Integer)state.getValue(AMOUNT);
       if (currentAmount < 4) {
          level.setBlock(pos, (BlockState)state.setValue(AMOUNT, currentAmount + 1), 2);

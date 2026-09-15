@@ -1,8 +1,8 @@
 package net.minecraft.client;
 
-import com.mojang.blaze3d.opengl.GlBackend;
-import com.mojang.blaze3d.systems.GpuBackend;
-import com.mojang.blaze3d.vulkan.VulkanBackend;
+import com.mojang.renderpearl.api.device.GpuBackend;
+import com.mojang.renderpearl.backend.opengl.GlBackend;
+import com.mojang.renderpearl.backend.vulkan.VulkanBackend;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;

@@ -27,7 +27,7 @@ public class CommonLinks {
    public static final URI BUY_REALMS = URI.create("https://aka.ms/BuyJavaRealms");
    public static final URI REALMS_TERMS = URI.create("https://aka.ms/MinecraftRealmsTerms");
    public static final URI REALMS_CONTENT_CREATION = URI.create("https://aka.ms/MinecraftRealmsContentCreator");
-   public static final String EXTEND_REALMS_LINK = "https://aka.ms/ExtendJavaRealms";
+   public static final URI EXTEND_REALMS_LINK = URI.create("https://aka.ms/ExtendJavaRealms");
    public static final String INTENTIONAL_GAME_DESIGN_BUG_ID = "MCPE-28723";
    public static final URI INTENTIONAL_GAME_DESIGN_BUG = URI.create("https://bugs.mojang.com/browse/MCPE-28723");
 
@@ -35,16 +35,37 @@ public class CommonLinks {
       super();
    }
 
-   public static String extendRealms(final @Nullable String subscriptionId, final UUID profileId, final boolean trial) {
+   public static URI extendRealms(final @Nullable String subscriptionId, final UUID profileId, final ExtensionReference reference) {
       if (subscriptionId == null) {
-         return "https://aka.ms/ExtendJavaRealms";
+         return EXTEND_REALMS_LINK;
       } else {
-         String var10000 = extendRealms(subscriptionId, profileId);
-         return var10000 + "&ref=" + (trial ? "expiredTrial" : "expiredRealm");
+         String uri = String.valueOf(EXTEND_REALMS_LINK) + "?subscriptionId=" + subscriptionId + "&profileId=" + UndashedUuid.toString(profileId);
+         switch (reference.ordinal()) {
+            case 0:
+            default:
+               break;
+            case 1:
+               uri = uri + "&ref=expiredTrial";
+               break;
+            case 2:
+               uri = uri + "&ref=expiredRealm";
+         }
+
+         return URI.create(uri);
       }
    }
 
-   public static String extendRealms(final @Nullable String subscriptionId, final UUID profileId) {
-      return subscriptionId == null ? "https://aka.ms/ExtendJavaRealms" : "https://aka.ms/ExtendJavaRealms?subscriptionId=" + subscriptionId + "&profileId=" + UndashedUuid.toString(profileId);
+   public static enum ExtensionReference {
+      NONE,
+      EXPIRED_TRIAL,
+      EXPIRED_REALM;
+
+      private ExtensionReference() {
+      }
+
+      // $FF: synthetic method
+      private static ExtensionReference[] $values() {
+         return new ExtensionReference[]{NONE, EXPIRED_TRIAL, EXPIRED_REALM};
+      }
    }
 }

@@ -172,7 +172,9 @@ public class Painting extends HangingEntity {
             }
          }
 
-         this.spawnAtLocation(level, Items.PAINTING);
+         ItemStack itemStack = new ItemStack(Items.PAINTING);
+         itemStack.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+         this.spawnAtLocation(level, itemStack);
       }
    }
 

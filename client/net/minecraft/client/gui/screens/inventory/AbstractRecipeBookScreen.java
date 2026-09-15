@@ -81,6 +81,10 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       return this.recipeBookComponent.keyPressed(event) ? true : super.keyPressed(event);
    }
 
+   public boolean isInputCaptured() {
+      return super.isInputCaptured() || this.recipeBookComponent.capturesInput();
+   }
+
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.recipeBookComponent.mouseClicked(event, doubleClick)) {
          this.setFocused(this.recipeBookComponent);

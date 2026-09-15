@@ -26,7 +26,7 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
    }
 
    public boolean test(final LootContext context) {
-      ItemInstance tool = (ItemInstance)context.getOptionalParameter(LootContextParams.TOOL);
+      ItemInstance tool = (ItemInstance)context.getOptional(LootContextParams.TOOL);
       return tool != null && (this.predicate.isEmpty() || ((ItemPredicate)this.predicate.get()).test(tool));
    }
 

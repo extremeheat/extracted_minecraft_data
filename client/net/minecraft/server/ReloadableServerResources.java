@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentInitializers;
@@ -31,14 +30,14 @@ public class ReloadableServerResources {
    private final List<Registry.PendingTags<?>> postponedTags;
    private final List<DataComponentInitializers.PendingComponents<?>> newComponents;
 
-   private ReloadableServerResources(final LayeredRegistryAccess<RegistryLayer> fullLayers, final HolderLookup.Provider loadingContext, final FeatureFlagSet enabledFeatures, final Commands.CommandSelection commandSelection, final List<Registry.PendingTags<?>> postponedTags, final PermissionSet functionCompilationPermissions, final List<DataComponentInitializers.PendingComponents<?>> newComponents) {
+   private ReloadableServerResources(final ReloadableServerRegistries.LoadResult loadingContext, final FeatureFlagSet enabledFeatures, final Commands.CommandSelection commandSelection, final List<Registry.PendingTags<?>> postponedTags, final PermissionSet functionCompilationPermissions, final List<DataComponentInitializers.PendingComponents<?>> newComponents) {
       super();
-      this.fullRegistryHolder = new ReloadableServerRegistries.Holder(fullLayers.compositeAccess());
+      this.fullRegistryHolder = new ReloadableServerRegistries.Holder(loadingContext.layers().compositeAccess());
       this.postponedTags = postponedTags;
       this.newComponents = newComponents;
-      this.recipes = new RecipeManager(loadingContext);
-      this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures));
-      this.advancements = new ServerAdvancementManager(loadingContext);
+      this.recipes = new RecipeManager(loadingContext.lookupWithUpdatedTags());
+      this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext.lookupWithUpdatedTags(), enabledFeatures));
+      this.advancements = new ServerAdvancementManager(loadingContext.lookupWithUpdatedTags());
       this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
    }
 
@@ -63,12 +62,12 @@ public class ReloadableServerResources {
    }
 
    public List<PreparableReloadListener> listeners() {
-      return List.of(this.recipes, this.functionLibrary, this.advancements);
+      return List.of(this.functionLibrary);
    }
 
    public static CompletableFuture<ReloadableServerResources> loadResources(final ResourceManager resourceManager, final LayeredRegistryAccess<RegistryLayer> contextLayers, final List<Registry.PendingTags<?>> updatedContextTags, final FeatureFlagSet enabledFeatures, final Commands.CommandSelection commandSelection, final PermissionSet functionCompilationPermissions, final Executor backgroundExecutor, final Executor mainThreadExecutor) {
       return ReloadableServerRegistries.reload(contextLayers, updatedContextTags, resourceManager, backgroundExecutor).thenCompose((fullRegistries) -> CompletableFuture.supplyAsync(() -> BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(fullRegistries.lookupWithUpdatedTags()), backgroundExecutor).thenCompose((pendingComponents) -> {
-            ReloadableServerResources result = new ReloadableServerResources(fullRegistries.layers(), fullRegistries.lookupWithUpdatedTags(), enabledFeatures, commandSelection, updatedContextTags, functionCompilationPermissions, pendingComponents);
+            ReloadableServerResources result = new ReloadableServerResources(fullRegistries, enabledFeatures, commandSelection, updatedContextTags, functionCompilationPermissions, pendingComponents);
             return SimpleReloadInstance.create(resourceManager, result.listeners(), backgroundExecutor, mainThreadExecutor, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled()).done().thenApply((ignore) -> result);
          }));
    }

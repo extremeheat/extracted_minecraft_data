@@ -2,7 +2,9 @@ package net.minecraft.util;
 
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 public class ARGB {
    private static final int LINEAR_CHANNEL_DEPTH = 1024;
@@ -86,12 +88,44 @@ public class ARGB {
       }
    }
 
+   public static Vector3fc multiply(final Vector3fc lhs, final Vector3fc rhs) {
+      if (lhs.x() == 1.0F && lhs.y() == 1.0F && lhs.z() == 1.0F) {
+         return rhs;
+      } else {
+         return (Vector3fc)(rhs.x() == 1.0F && rhs.y() == 1.0F && rhs.z() == 1.0F ? lhs : lhs.mul(rhs, new Vector3f()));
+      }
+   }
+
+   public static Vector4fc multiply(final Vector4fc lhs, final Vector4fc rhs) {
+      if (lhs.x() == 1.0F && lhs.y() == 1.0F && lhs.z() == 1.0F && lhs.w() == 1.0F) {
+         return rhs;
+      } else {
+         return (Vector4fc)(rhs.x() == 1.0F && rhs.y() == 1.0F && rhs.z() == 1.0F && rhs.w() == 1.0F ? lhs : lhs.mul(rhs, new Vector4f()));
+      }
+   }
+
    public static int addRgb(final int lhs, final int rhs) {
       return color(alpha(lhs), Math.min(red(lhs) + red(rhs), 255), Math.min(green(lhs) + green(rhs), 255), Math.min(blue(lhs) + blue(rhs), 255));
    }
 
-   public static int subtractRgb(final int lhs, final int rhs) {
+   public static Vector3fc addRgb(final Vector3fc lhs, final Vector3fc rhs) {
+      return new Vector3f(Math.min(lhs.x() + rhs.x(), 1.0F), Math.min(lhs.y() + rhs.y(), 1.0F), Math.min(lhs.z() + rhs.z(), 1.0F));
+   }
+
+   public static Vector4fc addRgb(final Vector4fc lhs, final Vector3fc rhs) {
+      return new Vector4f(Math.min(lhs.x() + rhs.x(), 1.0F), Math.min(lhs.y() + rhs.y(), 1.0F), Math.min(lhs.z() + rhs.z(), 1.0F), lhs.w());
+   }
+
+   public static Integer subtractRgb(final Integer lhs, final Integer rhs) {
       return color(alpha(lhs), Math.max(red(lhs) - red(rhs), 0), Math.max(green(lhs) - green(rhs), 0), Math.max(blue(lhs) - blue(rhs), 0));
+   }
+
+   public static Vector3fc subtractRgb(final Vector3fc lhs, final Vector3fc rhs) {
+      return new Vector3f(Math.max(lhs.x() - rhs.x(), 0.0F), Math.max(lhs.y() - rhs.y(), 0.0F), Math.max(lhs.z() - rhs.z(), 0.0F));
+   }
+
+   public static Vector4fc subtractRgb(final Vector4fc lhs, final Vector3fc rhs) {
+      return new Vector4f(Math.max(lhs.x() - rhs.x(), 0.0F), Math.max(lhs.y() - rhs.y(), 0.0F), Math.max(lhs.z() - rhs.z(), 0.0F), lhs.w());
    }
 
    public static int multiplyAlpha(final int color, final float alphaMultiplier) {
@@ -110,6 +144,22 @@ public class ARGB {
       return color(alpha(color), Math.clamp((long)((int)((float)red(color) * scaleR)), 0, 255), Math.clamp((long)((int)((float)green(color) * scaleG)), 0, 255), Math.clamp((long)((int)((float)blue(color) * scaleB)), 0, 255));
    }
 
+   public static Vector3fc scaleRGB(final Vector3fc color, final float scale) {
+      return scaleRGB(color, scale, scale, scale);
+   }
+
+   public static Vector4fc scaleRGB(final Vector4fc color, final float scale) {
+      return scaleRGB(color, scale, scale, scale);
+   }
+
+   public static Vector3fc scaleRGB(final Vector3fc color, final float scaleR, final float scaleG, final float scaleB) {
+      return new Vector3f(Math.clamp(color.x() * scaleR, 0.0F, 1.0F), Math.clamp(color.y() * scaleG, 0.0F, 1.0F), Math.clamp(color.z() * scaleB, 0.0F, 1.0F));
+   }
+
+   public static Vector4fc scaleRGB(final Vector4fc color, final float scaleR, final float scaleG, final float scaleB) {
+      return new Vector4f(Math.clamp(color.x() * scaleR, 0.0F, 1.0F), Math.clamp(color.y() * scaleG, 0.0F, 1.0F), Math.clamp(color.z() * scaleB, 0.0F, 1.0F), color.w());
+   }
+
    public static int scaleRGB(final int color, final int scale) {
       return color(alpha(color), Math.clamp((long)red(color) * (long)scale / 255L, 0, 255), Math.clamp((long)green(color) * (long)scale / 255L, 0, 255), Math.clamp((long)blue(color) * (long)scale / 255L, 0, 255));
    }
@@ -117,6 +167,16 @@ public class ARGB {
    public static int greyscale(final int color) {
       int greyscale = (int)((float)red(color) * 0.3F + (float)green(color) * 0.59F + (float)blue(color) * 0.11F);
       return color(alpha(color), greyscale, greyscale, greyscale);
+   }
+
+   public static Vector3fc greyscale(final Vector3fc color) {
+      float greyscale = color.x() * 0.3F + color.y() * 0.59F + color.z() * 0.11F;
+      return new Vector3f(greyscale, greyscale, greyscale);
+   }
+
+   public static Vector4fc greyscale(final Vector4fc color) {
+      float greyscale = color.x() * 0.3F + color.y() * 0.59F + color.z() * 0.11F;
+      return new Vector4f(greyscale, greyscale, greyscale, color.w());
    }
 
    public static int alphaBlend(final int destination, final int source) {
@@ -132,7 +192,34 @@ public class ARGB {
       }
    }
 
+   public static Vector3fc alphaBlend(final Vector3fc destination, final Vector4fc source) {
+      float sourceAlpha = source.w();
+      if (sourceAlpha == 0.0F) {
+         return destination;
+      } else {
+         Vector3f sourceRgb = (new Vector3f()).set(source);
+         return destination.lerp(sourceRgb, sourceAlpha, sourceRgb);
+      }
+   }
+
+   public static Vector4fc alphaBlend(final Vector4fc destination, final Vector4fc source) {
+      float destinationAlpha = destination.w();
+      float sourceAlpha = source.w();
+      if (sourceAlpha == 1.0F) {
+         return source;
+      } else if (sourceAlpha == 0.0F) {
+         return destination;
+      } else {
+         float alpha = sourceAlpha + destinationAlpha * (1.0F - sourceAlpha);
+         return new Vector4f(alphaBlendChannel(alpha, sourceAlpha, destination.x(), source.x()), alphaBlendChannel(alpha, sourceAlpha, destination.y(), source.y()), alphaBlendChannel(alpha, sourceAlpha, destination.z(), source.z()), alpha);
+      }
+   }
+
    private static int alphaBlendChannel(final int resultAlpha, final int sourceAlpha, final int destination, final int source) {
+      return (source * sourceAlpha + destination * (resultAlpha - sourceAlpha)) / resultAlpha;
+   }
+
+   private static float alphaBlendChannel(final float resultAlpha, final float sourceAlpha, final float destination, final float source) {
       return (source * sourceAlpha + destination * (resultAlpha - sourceAlpha)) / resultAlpha;
    }
 
@@ -142,6 +229,14 @@ public class ARGB {
       int green = Mth.lerpInt(alpha, green(p0), green(p1));
       int blue = Mth.lerpInt(alpha, blue(p0), blue(p1));
       return color(a, red, green, blue);
+   }
+
+   public static Vector3fc srgbLerp(final float alpha, final Vector3fc p0, final Vector3fc p1) {
+      return p0.lerp(p1, alpha, new Vector3f());
+   }
+
+   public static Vector4fc srgbLerp(final float alpha, final Vector4fc p0, final Vector4fc p1) {
+      return p0.lerp(p1, alpha, new Vector4f());
    }
 
    public static int linearLerp(final float alpha, final int p0, final int p1) {
@@ -187,6 +282,14 @@ public class ARGB {
 
    public static int colorFromFloat(final float alpha, final float red, final float green, final float blue) {
       return color(as8BitChannel(alpha), as8BitChannel(red), as8BitChannel(green), as8BitChannel(blue));
+   }
+
+   public static int colorFromVector3f(final Vector3fc color) {
+      return color(255, as8BitChannel(color.x()), as8BitChannel(color.y()), as8BitChannel(color.z()));
+   }
+
+   public static int colorFromVector4f(final Vector4fc color) {
+      return color(as8BitChannel(color.w()), as8BitChannel(color.x()), as8BitChannel(color.y()), as8BitChannel(color.z()));
    }
 
    public static Vector3f vector3fFromRGB24(final int color) {

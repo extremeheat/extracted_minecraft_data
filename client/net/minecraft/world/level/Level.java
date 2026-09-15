@@ -35,7 +35,7 @@ import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -50,21 +50,20 @@ import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -203,10 +202,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags) {
-      return this.setBlock(pos, blockState, updateFlags, 512);
-   }
-
    public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
       if (!this.isInValidBounds(pos)) {
          return false;
@@ -264,16 +259,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       if (blockState.isAir()) {
          return false;
       } else {
-         FluidState fluidState = this.getFluidState(pos);
-         if (!(blockState.getBlock() instanceof BaseFireBlock)) {
-            this.levelEvent(2001, pos, Block.getId(blockState));
-         }
-
+         blockState.getBlock().spawnDestroyParticles(this, pos, blockState);
          if (dropResources) {
             BlockEntity blockEntity = blockState.hasBlockEntity() ? this.getBlockEntity(pos) : null;
             Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY);
          }
 
+         FluidState fluidState = this.getFluidState(pos);
          boolean destroyed = this.setBlock(pos, fluidState.createLegacyBlock(), 3, updateLimit);
          if (destroyed) {
             this.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(breaker, blockState));
@@ -284,10 +276,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void addDestroyBlockEffect(final BlockPos pos, final BlockState blockState) {
-   }
-
-   public boolean setBlockAndUpdate(final BlockPos pos, final BlockState blockState) {
-      return this.setBlock(pos, blockState, 3);
    }
 
    public abstract void sendBlockUpdated(BlockPos pos, BlockState old, BlockState current, @Block.UpdateFlags int updateFlags);
@@ -382,6 +370,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public void playSound(final @Nullable Entity except, final Entity sourceEntity, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
       this.playSeededSound(except, sourceEntity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, this.soundSeedGenerator.nextLong());
+   }
+
+   public void playSound(final @Nullable Entity except, final Entity sourceEntity, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch) {
+      this.playSeededSound(except, sourceEntity, sound, source, volume, pitch, this.soundSeedGenerator.nextLong());
    }
 
    public void playLocalSound(final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {
@@ -581,7 +573,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (selector.test(e)) {
             output.add(e);
             if (output.size() >= maxResults) {
-               return AbortableIterationConsumer.Continuation.ABORT;
+               return Continuation.ABORT;
             }
          }
 
@@ -591,13 +583,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                if (castSubPart != null && selector.test(castSubPart)) {
                   output.add(castSubPart);
                   if (output.size() >= maxResults) {
-                     return AbortableIterationConsumer.Continuation.ABORT;
+                     return Continuation.ABORT;
                   }
                }
             }
          }
 
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       });
    }
 
@@ -607,7 +599,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.getEntities().get(type, bb, (e) -> {
          if (selector.test(e)) {
             hasEntities.setTrue();
-            return AbortableIterationConsumer.Continuation.ABORT;
+            return Continuation.ABORT;
          } else {
             if (e instanceof EnderDragon) {
                EnderDragon enderDragon = (EnderDragon)e;
@@ -616,12 +608,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                   T castSubPart = type.tryCast(subEntity);
                   if (castSubPart != null && selector.test(castSubPart)) {
                      hasEntities.setTrue();
-                     return AbortableIterationConsumer.Continuation.ABORT;
+                     return Continuation.ABORT;
                   }
                }
             }
 
-            return AbortableIterationConsumer.Continuation.CONTINUE;
+            return Continuation.CONTINUE;
          }
       });
       return hasEntities.isTrue();
@@ -666,14 +658,14 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    private long getClockTimeTicks(final Optional<? extends Holder<WorldClock>> clock) {
-      return (Long)clock.map((holder) -> this.clockManager().getTotalTicks(holder)).orElse(0L);
+      return (Long)clock.map((holder) -> this.clockManager().getInstance(holder).totalTicks()).orElse(0L);
    }
 
    public boolean mayInteract(final Entity entity, final BlockPos pos) {
       return true;
    }
 
-   public void broadcastEntityEvent(final Entity entity, final byte event) {
+   public void broadcastEntityEvent(final Entity entity, final @EntityEvent.Value byte event) {
    }
 
    public void broadcastDamageEvent(final Entity entity, final DamageSource source) {
@@ -688,6 +680,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public abstract TickRateManager tickRateManager();
+
+   public float getRelativeTickSpeed() {
+      return 1.0F;
+   }
 
    public float getThunderLevel(final float a) {
       return Mth.lerp(a, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(a);
@@ -740,7 +736,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract @Nullable MapItemSavedData getMapData(MapId id);
 
-   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+   public void globalLevelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
    }
 
    public CrashReportCategory fillReportDetails(final CrashReport report) {
@@ -767,7 +763,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract void destroyBlockProgress(final int id, final BlockPos blockPos, final int progress);
 
-   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions) {
+   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions, final boolean playSound) {
    }
 
    public abstract Scoreboard getScoreboard();
@@ -863,10 +859,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public abstract ClockManager clockManager();
 
    public abstract EnvironmentAttributeSystem environmentAttributes();
-
-   public abstract PotionBrewing potionBrewing();
-
-   public abstract FuelValues fuelValues();
 
    public int getClientLeafTintColor(final BlockPos pos) {
       return 0;

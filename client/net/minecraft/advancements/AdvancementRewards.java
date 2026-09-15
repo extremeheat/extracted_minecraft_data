@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -15,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -24,9 +27,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
-   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), LootTable.KEY_CODEC.listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), Recipe.KEY_CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(i, AdvancementRewards::new));
-   public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
+public record AdvancementRewards(int experience, HolderSet<LootTable> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
+   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), LootTable.LIST_CODEC.optionalFieldOf("loot", HolderSet.empty()).forGetter(AdvancementRewards::loot), Recipe.KEY_CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(i, AdvancementRewards::new));
+   public static final AdvancementRewards EMPTY = new AdvancementRewards(0, HolderSet.empty(), List.of(), Optional.empty());
 
    public AdvancementRewards {
       super();
@@ -39,8 +42,8 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       LootParams params = (new LootParams.Builder(level)).withParameter(LootContextParams.THIS_ENTITY, player).withParameter(LootContextParams.ORIGIN, player.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean changes = false;
 
-      for(ResourceKey<LootTable> lootTable : this.loot) {
-         ObjectListIterator var8 = server.reloadableRegistries().getLootTable(lootTable).getRandomItems(params).iterator();
+      for(Holder<LootTable> lootTable : this.loot) {
+         ObjectListIterator var8 = ((LootTable)lootTable.value()).getRandomItems(params).iterator();
 
          while(var8.hasNext()) {
             ItemStack itemStack = (ItemStack)var8.next();
@@ -48,7 +51,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
                level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                changes = true;
             } else {
-               ItemEntity drop = player.drop(itemStack, false);
+               ItemEntity drop = player.drop(itemStack, false, Prediction.SERVER_ONLY);
                if (drop != null) {
                   drop.setNoPickUpDelay();
                   drop.setTarget(player.getUUID());
@@ -70,7 +73,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
 
    public static class Builder {
       private int experience;
-      private final ImmutableList.Builder<ResourceKey<LootTable>> loot = ImmutableList.builder();
+      private final ImmutableList.Builder<Holder<LootTable>> loot = ImmutableList.builder();
       private final ImmutableList.Builder<ResourceKey<Recipe<?>>> recipes = ImmutableList.builder();
       private Optional<Identifier> function = Optional.empty();
 
@@ -87,11 +90,11 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          return this;
       }
 
-      public static Builder loot(final ResourceKey<LootTable> id) {
+      public static Builder loot(final Holder<LootTable> id) {
          return (new Builder()).addLootTable(id);
       }
 
-      public Builder addLootTable(final ResourceKey<LootTable> id) {
+      public Builder addLootTable(final Holder<LootTable> id) {
          this.loot.add(id);
          return this;
       }
@@ -115,7 +118,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       }
 
       public AdvancementRewards build() {
-         return new AdvancementRewards(this.experience, this.loot.build(), this.recipes.build(), this.function.map(CacheableFunction::new));
+         return new AdvancementRewards(this.experience, HolderSet.direct(this.loot.build()), this.recipes.build(), this.function.map(CacheableFunction::new));
       }
    }
 }

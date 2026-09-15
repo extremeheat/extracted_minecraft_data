@@ -70,6 +70,7 @@ import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -343,7 +344,7 @@ public class PiglinAi {
 
    private static void throwItemsTowardPos(final Piglin body, final List<ItemStack> itemStacks, final Vec3 targetPos) {
       if (!itemStacks.isEmpty()) {
-         body.swing(InteractionHand.OFF_HAND);
+         body.swing(InteractionHand.OFF_HAND, SwingAnimation.DEFAULT);
 
          for(ItemStack itemStack : itemStacks) {
             BehaviorUtils.throwItem(body, itemStack, targetPos.add(0.0, 1.0, 0.0));

@@ -319,7 +319,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       double yo = Math.sqrt(xd * xd + zd * zd) * 0.20000000298023224;
       Level var12 = this.level();
       if (var12 instanceof ServerLevel serverLevel) {
-         Projectile.spawnProjectileUsingShoot(spit, serverLevel, ItemStack.EMPTY, xd, yd + yo, zd, 1.5F, 10.0F);
+         Projectile.spawnProjectileUsingShoot(spit, serverLevel, ItemStack.EMPTY, xd, yd + yo, zd, 1.5F, this.rangedAttackUncertainty(serverLevel));
       }
 
       if (!this.isSilent()) {
@@ -394,6 +394,10 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
 
    public void performRangedAttack(final LivingEntity target, final float power) {
       this.spit(target);
+   }
+
+   public float rangedAttackUncertainty(final Level level) {
+      return 10.0F;
    }
 
    public Vec3 getLeashOffset() {

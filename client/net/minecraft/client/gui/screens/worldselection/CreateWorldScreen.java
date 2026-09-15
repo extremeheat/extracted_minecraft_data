@@ -117,13 +117,13 @@ public class CreateWorldScreen extends Screen {
 
    public static void openFresh(final Minecraft minecraft, final Runnable onClose, final CreateWorldCallback createWorld) {
       WorldCreationContextMapper worldCreationContext = (managers, registries, cookie) -> new WorldCreationContext(cookie.worldGenSettings(), registries, managers, cookie.dataConfiguration());
-      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(context.datapackWorldgen()));
+      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(context.datapackWorldRegistries()));
       openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.NORMAL, createWorld);
    }
 
    public static void testWorld(final Minecraft minecraft, final Runnable onClose) {
       WorldCreationContextMapper worldCreationContext = (managers, registries, cookie) -> new WorldCreationContext(cookie.worldGenSettings().options(), cookie.worldGenSettings().dimensions(), registries, managers, cookie.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, (new GameRuleMap.Builder()).set(GameRules.ADVANCE_TIME, false).set(GameRules.ADVANCE_WEATHER, false).set(GameRules.SPAWN_MOBS, false).build(), (ResourceKey)null));
-      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createTestWorldDimensions(context.datapackWorldgen()));
+      Function<WorldLoader.DataLoadContext, WorldGenSettings> worldGenSettings = (context) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createTestWorldDimensions(context.datapackWorldRegistries()));
       openCreateWorldScreen(minecraft, onClose, worldGenSettings, worldCreationContext, WorldPresets.FLAT_ALL_DIMENSIONS, (createWorldScreen, finalLayers, worldDataAndGenSettings, gameRules, tempDataPackDir) -> createWorldScreen.createNewWorld(finalLayers, worldDataAndGenSettings, gameRules));
    }
 
@@ -353,15 +353,15 @@ public class CreateWorldScreen extends Screen {
       this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
       WorldLoader.InitConfig config = createDefaultLoadConfig(packRepository, newConfig);
       CompletableFuture var10000 = WorldLoader.load(config, (context) -> {
-         if (context.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).listElements().findAny().isEmpty()) {
+         if (context.datapackWorldRegistries().lookupOrThrow(Registries.WORLD_PRESET).listElements().findAny().isEmpty()) {
             throw new IllegalStateException("Needs at least one world preset to continue");
-         } else if (context.datapackWorldgen().lookupOrThrow(Registries.BIOME).listElements().findAny().isEmpty()) {
+         } else if (context.datapackWorldRegistries().lookupOrThrow(Registries.BIOME).listElements().findAny().isEmpty()) {
             throw new IllegalStateException("Needs at least one biome continue");
          } else {
             WorldCreationContext existingContext = this.uiState.getSettings();
             DynamicOps<JsonElement> writeOps = existingContext.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
             DataResult<JsonElement> encoded = WorldGenSettings.CODEC.encodeStart(writeOps, new WorldGenSettings(existingContext.options(), existingContext.selectedDimensions())).setLifecycle(Lifecycle.stable());
-            DynamicOps<JsonElement> readOps = context.datapackWorldgen().<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+            DynamicOps<JsonElement> readOps = context.datapackWorldRegistries().<JsonElement>createSerializationContext(JsonOps.INSTANCE);
             WorldGenSettings settings = (WorldGenSettings)encoded.flatMap((r) -> WorldGenSettings.CODEC.parse(readOps, r)).getOrThrow((error) -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + error));
             return new WorldLoader.DataLoadOutput(new DataPackReloadCookie(settings, context.dataConfiguration()), context.datapackDimensions());
          }

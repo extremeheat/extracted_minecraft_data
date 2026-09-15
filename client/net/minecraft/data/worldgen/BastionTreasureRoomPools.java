@@ -15,13 +15,13 @@ public class BastionTreasureRoomPools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> treasureRooms = processorLists.getOrThrow(ProcessorLists.TREASURE_ROOMS);
       Holder<StructureProcessorList> highWall = processorLists.getOrThrow(ProcessorLists.HIGH_WALL);
       Holder<StructureProcessorList> bottomRampart = processorLists.getOrThrow(ProcessorLists.BOTTOM_RAMPART);
       Holder<StructureProcessorList> highRampart = processorLists.getOrThrow(ProcessorLists.HIGH_RAMPART);
       Holder<StructureProcessorList> roof = processorLists.getOrThrow(ProcessorLists.ROOF);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Pools.register(context, "bastion/treasure/bases", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/treasure/bases/lava_basin", treasureRooms), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "bastion/treasure/stairs", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/treasure/stairs/lower_stairs", treasureRooms), 1)), StructureTemplatePool.Projection.RIGID));

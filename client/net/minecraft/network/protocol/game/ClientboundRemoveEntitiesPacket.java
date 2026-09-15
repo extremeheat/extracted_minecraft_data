@@ -1,33 +1,23 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public class ClientboundRemoveEntitiesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundRemoveEntitiesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundRemoveEntitiesPacket>codec(ClientboundRemoveEntitiesPacket::write, ClientboundRemoveEntitiesPacket::new);
-   private final IntList entityIds;
-
-   public ClientboundRemoveEntitiesPacket(final IntList ids) {
-      super();
-      this.entityIds = new IntArrayList(ids);
-   }
+public record ClientboundRemoveEntitiesPacket(IntList entityIds) implements Packet<ClientGamePacketListener> {
+   private static final StreamCodec<ByteBuf, IntList> ID_LIST_STREAM_CODEC;
+   public static final StreamCodec<ByteBuf, ClientboundRemoveEntitiesPacket> STREAM_CODEC;
 
    public ClientboundRemoveEntitiesPacket(final int... ids) {
-      super();
-      this.entityIds = new IntArrayList(ids);
+      this(IntList.of(ids));
    }
 
-   private ClientboundRemoveEntitiesPacket(final FriendlyByteBuf input) {
+   public ClientboundRemoveEntitiesPacket {
       super();
-      this.entityIds = input.readIntIdList();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeIntIdList(this.entityIds);
    }
 
    public PacketType<ClientboundRemoveEntitiesPacket> type() {
@@ -38,7 +28,8 @@ public class ClientboundRemoveEntitiesPacket implements Packet<ClientGamePacketL
       listener.handleRemoveEntities(this);
    }
 
-   public IntList getEntityIds() {
-      return this.entityIds;
+   static {
+      ID_LIST_STREAM_CODEC = ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.collection(IntArrayList::new));
+      STREAM_CODEC = StreamCodec.composite(ID_LIST_STREAM_CODEC, ClientboundRemoveEntitiesPacket::entityIds, ClientboundRemoveEntitiesPacket::new);
    }
 }

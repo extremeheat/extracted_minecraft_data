@@ -131,6 +131,6 @@ public class PackRepository {
    }
 
    public List<PackResources> openAllSelected() {
-      return (List)this.selected.stream().map(Pack::open).collect(ImmutableList.toImmutableList());
+      return (List)this.selected.stream().flatMap(Pack::open).collect(ImmutableList.toImmutableList());
    }
 }

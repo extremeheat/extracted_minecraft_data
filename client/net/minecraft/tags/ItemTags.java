@@ -10,6 +10,8 @@ public final class ItemTags {
    public static final TagKey<Item> STONE_BRICKS;
    public static final TagKey<Item> WOODEN_BUTTONS;
    public static final TagKey<Item> WOOL_CARPETS;
+   public static final TagKey<Item> WOOL_STAIRS;
+   public static final TagKey<Item> WOOL_SLABS;
    public static final TagKey<Item> WOODEN_DOORS;
    public static final TagKey<Item> WOODEN_STAIRS;
    public static final TagKey<Item> WOODEN_SLABS;
@@ -26,6 +28,7 @@ public final class ItemTags {
    public static final TagKey<Item> ACACIA_LOGS;
    public static final TagKey<Item> SPRUCE_LOGS;
    public static final TagKey<Item> MANGROVE_LOGS;
+   public static final TagKey<Item> POPLAR_LOGS;
    public static final TagKey<Item> JUNGLE_LOGS;
    public static final TagKey<Item> CHERRY_LOGS;
    public static final TagKey<Item> CRIMSON_STEMS;
@@ -58,10 +61,13 @@ public final class ItemTags {
    public static final TagKey<Item> TERRACOTTA;
    public static final TagKey<Item> GLAZED_TERRACOTTA;
    public static final TagKey<Item> CONCRETE;
+   public static final TagKey<Item> CONCRETE_STAIRS;
+   public static final TagKey<Item> CONCRETE_SLABS;
    public static final TagKey<Item> CONCRETE_POWDERS;
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Item> SHULKER_BOXES;
    public static final TagKey<Item> COPPER;
+   public static final TagKey<Item> SKULLS;
    public static final TagKey<Item> SIGNS;
    public static final TagKey<Item> HANGING_SIGNS;
    public static final TagKey<Item> BEE_FOOD;
@@ -84,7 +90,6 @@ public final class ItemTags {
    public static final TagKey<Item> IGNORED_BY_PIGLIN_BABIES;
    public static final TagKey<Item> PIGLIN_SAFE_ARMOR;
    public static final TagKey<Item> DUPLICATES_ALLAYS;
-   public static final TagKey<Item> BREWING_FUEL;
    public static final TagKey<Item> EGGS;
    public static final TagKey<Item> MEAT;
    public static final TagKey<Item> SNIFFER_FOOD;
@@ -124,6 +129,7 @@ public final class ItemTags {
    public static final TagKey<Item> NAUTILUS_FOOD;
    public static final TagKey<Item> NAUTILUS_TAMING_ITEMS;
    public static final TagKey<Item> SULFUR_CUBE_FOOD;
+   public static final TagKey<Item> MUSHROOMS;
    public static final TagKey<Item> NON_FLAMMABLE_WOOD;
    public static final TagKey<Item> BOATS;
    public static final TagKey<Item> CHEST_BOATS;
@@ -154,13 +160,14 @@ public final class ItemTags {
    public static final TagKey<Item> FREEZE_IMMUNE_WEARABLES;
    public static final TagKey<Item> CLUSTER_MAX_HARVESTABLES;
    public static final TagKey<Item> COMPASSES;
+   public static final TagKey<Item> CLONABLE_MAPS;
+   public static final TagKey<Item> EXTENDABLE_MAPS;
    public static final TagKey<Item> CREEPER_IGNITERS;
    public static final TagKey<Item> NOTE_BLOCK_TOP_INSTRUMENTS;
    public static final TagKey<Item> FOOT_ARMOR;
    public static final TagKey<Item> LEG_ARMOR;
    public static final TagKey<Item> CHEST_ARMOR;
    public static final TagKey<Item> HEAD_ARMOR;
-   public static final TagKey<Item> SKULLS;
    public static final TagKey<Item> TRIMMABLE_ARMOR;
    public static final TagKey<Item> TRIM_MATERIALS;
    public static final TagKey<Item> DECORATED_POT_SHERDS;
@@ -183,6 +190,7 @@ public final class ItemTags {
    public static final TagKey<Item> CAULDRON_CAN_REMOVE_DYE;
    public static final TagKey<Item> CAT_COLLAR_DYES;
    public static final TagKey<Item> WOLF_COLLAR_DYES;
+   public static final TagKey<Item> CUSHIONS;
    public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS;
    public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS;
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS;
@@ -190,6 +198,9 @@ public final class ItemTags {
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS;
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM;
    public static final TagKey<Item> METAL_NUGGETS;
+   public static final TagKey<Item> DOUSES_CAMPFIRES;
+   public static final TagKey<Item> BREWING_POTION_INPUTS;
+   public static final TagKey<Item> FURNACE_FUEL_BOTTOM_TAKEABLE;
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE;
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE;
@@ -228,6 +239,8 @@ public final class ItemTags {
       STONE_BRICKS = BlockItemTags.STONE_BRICKS.item();
       WOODEN_BUTTONS = BlockItemTags.WOODEN_BUTTONS.item();
       WOOL_CARPETS = BlockItemTags.WOOL_CARPETS.item();
+      WOOL_STAIRS = BlockItemTags.WOOL_STAIRS.item();
+      WOOL_SLABS = BlockItemTags.WOOL_SLABS.item();
       WOODEN_DOORS = BlockItemTags.WOODEN_DOORS.item();
       WOODEN_STAIRS = BlockItemTags.WOODEN_STAIRS.item();
       WOODEN_SLABS = BlockItemTags.WOODEN_SLABS.item();
@@ -244,6 +257,7 @@ public final class ItemTags {
       ACACIA_LOGS = BlockItemTags.ACACIA_LOGS.item();
       SPRUCE_LOGS = BlockItemTags.SPRUCE_LOGS.item();
       MANGROVE_LOGS = BlockItemTags.MANGROVE_LOGS.item();
+      POPLAR_LOGS = BlockItemTags.POPLAR_LOGS.item();
       JUNGLE_LOGS = BlockItemTags.JUNGLE_LOGS.item();
       CHERRY_LOGS = BlockItemTags.CHERRY_LOGS.item();
       CRIMSON_STEMS = BlockItemTags.CRIMSON_STEMS.item();
@@ -276,10 +290,13 @@ public final class ItemTags {
       TERRACOTTA = BlockItemTags.TERRACOTTA.item();
       GLAZED_TERRACOTTA = BlockItemTags.GLAZED_TERRACOTTA.item();
       CONCRETE = BlockItemTags.CONCRETE.item();
+      CONCRETE_STAIRS = BlockItemTags.CONCRETE_STAIRS.item();
+      CONCRETE_SLABS = BlockItemTags.CONCRETE_SLABS.item();
       CONCRETE_POWDERS = BlockItemTags.CONCRETE_POWDERS.item();
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.item();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.item();
       COPPER = BlockItemTags.COPPER.item();
+      SKULLS = BlockItemTags.SKULLS.item();
       SIGNS = BlockItemTags.SIGNS.item();
       HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.item();
       BEE_FOOD = BlockItemTags.BEE_FOOD.item();
@@ -302,7 +319,6 @@ public final class ItemTags {
       IGNORED_BY_PIGLIN_BABIES = bind("ignored_by_piglin_babies");
       PIGLIN_SAFE_ARMOR = bind("piglin_safe_armor");
       DUPLICATES_ALLAYS = bind("duplicates_allays");
-      BREWING_FUEL = bind("brewing_fuel");
       EGGS = bind("eggs");
       MEAT = bind("meat");
       SNIFFER_FOOD = bind("sniffer_food");
@@ -342,6 +358,7 @@ public final class ItemTags {
       NAUTILUS_FOOD = bind("nautilus_food");
       NAUTILUS_TAMING_ITEMS = bind("nautilus_taming_items");
       SULFUR_CUBE_FOOD = bind("sulfur_cube_food");
+      MUSHROOMS = bind("mushrooms");
       NON_FLAMMABLE_WOOD = bind("non_flammable_wood");
       BOATS = bind("boats");
       CHEST_BOATS = bind("chest_boats");
@@ -372,13 +389,14 @@ public final class ItemTags {
       FREEZE_IMMUNE_WEARABLES = bind("freeze_immune_wearables");
       CLUSTER_MAX_HARVESTABLES = bind("cluster_max_harvestables");
       COMPASSES = bind("compasses");
+      CLONABLE_MAPS = bind("clonable_maps");
+      EXTENDABLE_MAPS = bind("extendable_maps");
       CREEPER_IGNITERS = bind("creeper_igniters");
       NOTE_BLOCK_TOP_INSTRUMENTS = bind("noteblock_top_instruments");
       FOOT_ARMOR = bind("foot_armor");
       LEG_ARMOR = bind("leg_armor");
       CHEST_ARMOR = bind("chest_armor");
       HEAD_ARMOR = bind("head_armor");
-      SKULLS = bind("skulls");
       TRIMMABLE_ARMOR = bind("trimmable_armor");
       TRIM_MATERIALS = bind("trim_materials");
       DECORATED_POT_SHERDS = bind("decorated_pot_sherds");
@@ -401,6 +419,7 @@ public final class ItemTags {
       CAULDRON_CAN_REMOVE_DYE = bind("cauldron_can_remove_dye");
       CAT_COLLAR_DYES = bind("cat_collar_dyes");
       WOLF_COLLAR_DYES = bind("wolf_collar_dyes");
+      CUSHIONS = bind("cushions");
       SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
       DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
       PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");
@@ -408,6 +427,9 @@ public final class ItemTags {
       WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
       SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
       METAL_NUGGETS = bind("metal_nuggets");
+      DOUSES_CAMPFIRES = bind("douses_campfires");
+      BREWING_POTION_INPUTS = bind("brewing_potion_inputs");
+      FURNACE_FUEL_BOTTOM_TAKEABLE = bind("furnace_fuel_bottom_takeable");
       FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
       LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
       CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

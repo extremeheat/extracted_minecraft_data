@@ -175,7 +175,7 @@ public class ServerExplosion implements Explosion {
                   boolean shouldDamageEntity = this.damageCalculator.shouldDamageEntity(this, entity);
                   float knockbackMultiplier = this.damageCalculator.getKnockbackMultiplier(entity);
                   float exposure = !shouldDamageEntity && knockbackMultiplier == 0.0F ? 0.0F : getSeenPercent(this.center, entity);
-                  if (shouldDamageEntity) {
+                  if (shouldDamageEntity && (this.source == null || this.source.doTeamsAllowDamage(entity))) {
                      entity.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, entity, exposure));
                   }
 
@@ -190,7 +190,7 @@ public class ServerExplosion implements Explosion {
                   double knockbackResistance = var10000;
                   double knockbackPower = (1.0 - dist) * (double)exposure * (double)knockbackMultiplier * (1.0 - knockbackResistance);
                   Vec3 knockback = direction.scale(knockbackPower);
-                  entity.push(knockback);
+                  entity.pushFromExplosion(knockback);
                   if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile) {
                      Projectile projectile = (Projectile)entity;
                      projectile.setOwner(this.damageSource.getEntity());

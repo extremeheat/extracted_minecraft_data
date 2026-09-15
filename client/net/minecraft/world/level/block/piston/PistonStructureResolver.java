@@ -41,7 +41,7 @@ public class PistonStructureResolver {
       this.toDestroy.clear();
       BlockState nextState = this.level.getBlockState(this.startPos);
       if (!PistonBaseBlock.isPushable(nextState, this.level, this.startPos, this.pushDirection, false, this.pistonDirection)) {
-         if (this.extending && nextState.getPistonPushReaction() == PushReaction.DESTROY) {
+         if (this.extending && nextState.getPistonPushReaction() == PushReaction.POPPED) {
             this.toDestroy.add(this.startPos);
             return true;
          } else {
@@ -138,7 +138,7 @@ public class PistonStructureResolver {
                   return false;
                }
 
-               if (nextState.getPistonPushReaction() == PushReaction.DESTROY) {
+               if (nextState.getPistonPushReaction() == PushReaction.POPPED) {
                   this.toDestroy.add(pos);
                   return true;
                }

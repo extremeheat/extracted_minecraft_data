@@ -1,12 +1,10 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -86,12 +84,7 @@ public abstract class ThrowableProjectile extends Projectile {
 
    private void handleFirstTickBubbleColumn() {
       if (this.firstTick) {
-         for(BlockPos pos : BlockPos.betweenClosed(this.getBoundingBox())) {
-            BlockState state = this.level().getBlockState(pos);
-            if (state.is(Blocks.BUBBLE_COLUMN)) {
-               state.entityInside(this.level(), pos, this, InsideBlockEffectApplier.NOOP, true);
-            }
-         }
+         this.level().findBlocksIn(this.getBoundingBox()).filterState((state) -> state.is(Blocks.BUBBLE_COLUMN)).forEach((pos, state) -> state.entityInside(this.level(), pos, this, InsideBlockEffectApplier.NOOP, true));
       }
 
    }

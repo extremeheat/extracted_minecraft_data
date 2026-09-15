@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -13,13 +12,8 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
 
 public class PoweredRailBlock extends BaseRailBlock {
-   public static final MapCodec<PoweredRailBlock> CODEC = simpleCodec(PoweredRailBlock::new);
    public static final EnumProperty<RailShape> SHAPE;
    public static final BooleanProperty POWERED;
-
-   public MapCodec<PoweredRailBlock> codec() {
-      return CODEC;
-   }
 
    protected PoweredRailBlock(final BlockBehaviour.Properties properties) {
       super(true, properties);
@@ -129,7 +123,7 @@ public class PoweredRailBlock extends BaseRailBlock {
       boolean isPowered = (Boolean)state.getValue(POWERED);
       boolean shouldPower = level.hasNeighborSignal(pos) || this.findPoweredRailSignal(level, pos, state, true, 0) || this.findPoweredRailSignal(level, pos, state, false, 0);
       if (shouldPower != isPowered) {
-         level.setBlock(pos, (BlockState)state.setValue(POWERED, shouldPower), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, shouldPower));
          level.updateNeighborsAt(pos.below(), this);
          if (((RailShape)state.getValue(SHAPE)).isSlope()) {
             level.updateNeighborsAt(pos.above(), this);

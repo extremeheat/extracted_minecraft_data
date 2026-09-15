@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -20,12 +19,7 @@ import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import org.jspecify.annotations.Nullable;
 
 public class CalibratedSculkSensorBlock extends SculkSensorBlock {
-   public static final MapCodec<CalibratedSculkSensorBlock> CODEC = simpleCodec(CalibratedSculkSensorBlock::new);
    public static final EnumProperty<Direction> FACING;
-
-   public MapCodec<CalibratedSculkSensorBlock> codec() {
-      return CODEC;
-   }
 
    public CalibratedSculkSensorBlock(final BlockBehaviour.Properties properties) {
       super(properties);

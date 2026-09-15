@@ -257,7 +257,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       if ((double)this.random.nextFloat() < bubbleProbability) {
          float yRot = this.getYRot();
          float xRot = Mth.clamp(this.getXRot(), -10.0F, 10.0F);
-         Vec3 mouthDirectionVector = this.calculateViewVector(xRot, yRot);
+         Vec3 mouthDirectionVector = calculateViewVector(xRot, yRot);
          double spread = this.random.nextDouble() * 0.8 * (1.0 + speed);
          double dx = ((double)this.random.nextFloat() - 0.5) * spread;
          double dy = ((double)this.random.nextFloat() - 0.5) * spread;

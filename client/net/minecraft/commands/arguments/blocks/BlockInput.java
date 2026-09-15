@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -107,14 +108,10 @@ public class BlockInput implements Predicate<BlockInWorld> {
          return state;
       } else {
          for(Property<?> property : this.properties) {
-            state = copyProperty(state, this.state, property);
+            state = BlockBehaviour.BlockStateBase.copyProperty(this.state, state, property);
          }
 
          return state;
       }
-   }
-
-   private static <T extends Comparable<T>> BlockState copyProperty(final BlockState target, final BlockState source, final Property<T> property) {
-      return (BlockState)target.trySetValue(property, source.getValue(property));
    }
 }

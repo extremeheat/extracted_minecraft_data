@@ -102,7 +102,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
             this.openTradingScreen(player, this.getDisplayName(), 1);
          }
 
-         return InteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          return super.mobInteract(player, hand);
       }

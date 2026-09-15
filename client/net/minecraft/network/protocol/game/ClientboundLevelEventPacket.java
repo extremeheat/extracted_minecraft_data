@@ -5,15 +5,16 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.level.block.LevelEvent;
 
 public class ClientboundLevelEventPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundLevelEventPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLevelEventPacket>codec(ClientboundLevelEventPacket::write, ClientboundLevelEventPacket::new);
-   private final int type;
+   private final @LevelEvent.Value int type;
    private final BlockPos pos;
    private final int data;
    private final boolean globalEvent;
 
-   public ClientboundLevelEventPacket(final int type, final BlockPos pos, final int data, final boolean globalEvent) {
+   public ClientboundLevelEventPacket(final @LevelEvent.Value int type, final BlockPos pos, final int data, final boolean globalEvent) {
       super();
       this.type = type;
       this.pos = pos.immutable();
@@ -48,7 +49,7 @@ public class ClientboundLevelEventPacket implements Packet<ClientGamePacketListe
       return this.globalEvent;
    }
 
-   public int getType() {
+   public @LevelEvent.Value int getType() {
       return this.type;
    }
 

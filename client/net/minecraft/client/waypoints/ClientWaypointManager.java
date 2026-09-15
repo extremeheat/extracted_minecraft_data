@@ -22,7 +22,11 @@ public class ClientWaypointManager implements TrackedWaypointManager {
    }
 
    public void updateWaypoint(final TrackedWaypoint waypoint) {
-      ((TrackedWaypoint)this.waypoints.get(waypoint.id())).update(waypoint);
+      TrackedWaypoint trackedWaypoint = (TrackedWaypoint)this.waypoints.get(waypoint.id());
+      if (trackedWaypoint != null) {
+         trackedWaypoint.update(waypoint);
+      }
+
    }
 
    public void untrackWaypoint(final TrackedWaypoint waypoint) {

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -19,7 +18,9 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.blockscan.OrderedBlockMatcher;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -33,11 +34,11 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private final Function<E, Vec3> positionGetter;
 
    public AnimalPanic(final float speedMultiplier) {
-      this(speedMultiplier, (mob) -> DamageTypeTags.PANIC_CAUSES, (mob) -> LandRandomPos.getPos(mob, 5, 4));
+      this(speedMultiplier, (var0) -> DamageTypeTags.PANIC_CAUSES, (mob) -> LandRandomPos.getPos(mob, 5, 4));
    }
 
    public AnimalPanic(final float speedMultiplier, final int flyHeight) {
-      this(speedMultiplier, (mob) -> DamageTypeTags.PANIC_CAUSES, (mob) -> AirAndWaterRandomPos.getPos(mob, 5, 4, flyHeight, mob.getViewVector(0.0F).x, mob.getViewVector(0.0F).z, 1.5707963705062866));
+      this(speedMultiplier, (var0) -> DamageTypeTags.PANIC_CAUSES, (mob) -> AirAndWaterRandomPos.getPos(mob, 5, 4, flyHeight, mob.getViewVector(0.0F).x, mob.getViewVector(0.0F).z, 1.5707963705062866));
    }
 
    public AnimalPanic(final float speedMultiplier, final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes) {
@@ -91,19 +92,17 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
       return (Vec3)this.positionGetter.apply(body);
    }
 
-   private Optional<BlockPos> lookForWater(final BlockGetter level, final Entity mob) {
+   private Optional<BlockPos> lookForWater(final LevelReader level, final Entity mob) {
       BlockPos mobPosition = mob.blockPosition();
       if (!level.getBlockState(mobPosition).getCollisionShape(level, mobPosition).isEmpty()) {
          return Optional.empty();
       } else {
-         Predicate<BlockPos> posPredicate;
-         if (Mth.ceil(mob.getBbWidth()) == 2) {
-            posPredicate = (from) -> BlockPos.squareOutSouthEast(from).allMatch((pos) -> level.getFluidState(pos).is(FluidTags.WATER));
-         } else {
-            posPredicate = (pos) -> level.getFluidState(pos).is(FluidTags.WATER);
-         }
-
-         return BlockPos.findClosestMatch(mobPosition, 5, 1, posPredicate);
+         OrderedBlockMatcher blockMatcher = level.findBlocksInBoxByManhattanDistance(mobPosition, 5, 1).filterState(AnimalPanic::isWater);
+         return Mth.ceil(mob.getBbWidth()) == 2 ? blockMatcher.findFirst((pos, var2) -> isWater(level.getBlockState(pos.south())) && isWater(level.getBlockState(pos.east())) && isWater(level.getBlockState(pos.south().east()))) : blockMatcher.findFirst();
       }
+   }
+
+   private static boolean isWater(final BlockState state) {
+      return state.getFluidState().is(FluidTags.WATER);
    }
 }

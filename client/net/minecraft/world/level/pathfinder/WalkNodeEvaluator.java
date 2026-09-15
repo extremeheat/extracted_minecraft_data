@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -57,16 +56,13 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       int startY = this.mob.getBlockY();
       BlockState blockState = this.currentContext.getBlockState(reusablePos.set(this.mob.getX(), (double)startY, this.mob.getZ()));
       if (!this.mob.canStandOnFluid(blockState.getFluidState())) {
-         if (this.canFloat() && this.mob.isInWater()) {
-            while(true) {
-               if (!blockState.is(Blocks.WATER) && blockState.getFluidState() != Fluids.WATER.getSource(false)) {
-                  --startY;
-                  break;
-               }
-
+         if (this.canFloat() && this.mob.isInFloatableFluid()) {
+            while(blockState.getFluidState().is(FluidTags.ENTITY_FLOATABLE)) {
                ++startY;
                blockState = this.currentContext.getBlockState(reusablePos.set(this.mob.getX(), (double)startY, this.mob.getZ()));
             }
+
+            --startY;
          } else if (this.mob.onGround()) {
             startY = Mth.floor(this.mob.getY() + 0.5);
          } else {
@@ -204,7 +200,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
    protected double getFloorLevel(final BlockPos pos) {
       BlockGetter level = this.currentContext.level();
-      return (this.canFloat() || this.isAmphibious()) && level.getFluidState(pos).is(FluidTags.WATER) ? (double)pos.getY() + 0.5 : getFloorLevel(level, pos);
+      return (this.canFloat() || this.isAmphibious()) && level.getFluidState(pos).is(FluidTags.ENTITY_FLOATABLE) ? (double)pos.getY() + 0.5 : getFloorLevel(level, pos);
    }
 
    public static double getFloorLevel(final BlockGetter level, final BlockPos pos) {

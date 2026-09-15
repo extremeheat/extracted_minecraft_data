@@ -1,10 +1,10 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -35,7 +35,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PowderSnowBlock extends Block implements BucketPickup {
-   public static final MapCodec<PowderSnowBlock> CODEC = simpleCodec(PowderSnowBlock::new);
    private static final float HORIZONTAL_PARTICLE_MOMENTUM_FACTOR = 0.083333336F;
    private static final float IN_BLOCK_HORIZONTAL_SPEED_MULTIPLIER = 0.9F;
    private static final float IN_BLOCK_VERTICAL_SPEED_MULTIPLIER = 1.5F;
@@ -43,10 +42,6 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    private static final VoxelShape FALLING_COLLISION_SHAPE = Shapes.box(0.0, 0.0, 0.0, 1.0, 0.8999999761581421, 1.0);
    private static final double MINIMUM_FALL_DISTANCE_FOR_SOUND = 4.0;
    private static final double MINIMUM_FALL_DISTANCE_FOR_BIG_SOUND = 7.0;
-
-   public MapCodec<PowderSnowBlock> codec() {
-      return CODEC;
-   }
 
    public PowderSnowBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -59,11 +54,13 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
       if (!(entity instanceof LivingEntity) || entity.getInBlockState().is(this)) {
          entity.makeStuckInBlock(state, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
-         if (level.isClientSide()) {
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
             RandomSource random = level.getRandom();
-            boolean isMoving = entity.xOld != entity.getX() || entity.zOld != entity.getZ();
+            Vec3 knownMovement = entity.getKnownMovement();
+            boolean isMoving = knownMovement.x() != 0.0 || knownMovement.z() != 0.0;
             if (isMoving && random.nextBoolean()) {
-               level.addParticle(ParticleTypes.SNOWFLAKE, entity.getX(), (double)(pos.getY() + 1), entity.getZ(), (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F));
+               serverLevel.sendParticles(ParticleTypes.SNOWFLAKE, entity.getX(), (double)(pos.getY() + 1), entity.getZ(), 1, 0.0, 0.0, 0.0, (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F), ClientboundLevelParticlesPacket.RandomizationType.ALTERNATIVE);
             }
          }
       }

@@ -1,9 +1,7 @@
 package net.minecraft.data.info;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
@@ -12,10 +10,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -34,7 +30,6 @@ public class BlockListReport implements DataProvider {
       Path path = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("blocks.json");
       return this.registries.thenCompose((registries) -> {
          JsonObject root = new JsonObject();
-         RegistryOps<JsonElement> registryOps = registries.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
          registries.lookupOrThrow(Registries.BLOCK).listElements().forEach((block) -> {
             JsonObject entry = new JsonObject();
             StateDefinition<Block, BlockState> definition = ((Block)block.value()).getStateDefinition();
@@ -78,8 +73,6 @@ public class BlockListReport implements DataProvider {
 
             entry.add("states", protocol);
             String id = block.getRegisteredName();
-            JsonElement data = (JsonElement)BlockTypes.CODEC.codec().encodeStart(registryOps, (Block)block.value()).getOrThrow((msg) -> new AssertionError("Failed to serialize block " + id + " (is type registered in BlockTypes?): " + msg));
-            entry.add("definition", data);
             root.add(id, entry);
          });
          return DataProvider.saveStable(cache, root, path);

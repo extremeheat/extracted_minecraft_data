@@ -6,12 +6,12 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderOwner;
 import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
 
@@ -39,12 +39,8 @@ public class RegistryOps<T> extends DelegatingOps<T> {
       return parent == this.delegate ? this : new RegistryOps(parent, this.lookupProvider);
    }
 
-   public <E> Optional<HolderOwner<E>> owner(final ResourceKey<? extends Registry<? extends E>> registryKey) {
-      return this.lookupProvider.lookup(registryKey).map(RegistryInfo::owner);
-   }
-
    public <E> Optional<HolderGetter<E>> getter(final ResourceKey<? extends Registry<? extends E>> registryKey) {
-      return this.lookupProvider.lookup(registryKey).map(RegistryInfo::getter);
+      return this.lookupProvider.lookup(registryKey);
    }
 
    public boolean equals(final Object obj) {
@@ -65,49 +61,38 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    public static <E, O> RecordCodecBuilder<O, HolderGetter<E>> retrieveGetter(final ResourceKey<? extends Registry<? extends E>> registryKey) {
       return ExtraCodecs.retrieveContext((ops) -> {
          if (ops instanceof RegistryOps<?> registryOps) {
-            return (DataResult)registryOps.lookupProvider.lookup(registryKey).map((r) -> DataResult.success(r.getter(), r.elementsLifecycle())).orElseGet(() -> DataResult.error(() -> "Unknown registry: " + String.valueOf(registryKey)));
+            return (DataResult)registryOps.lookupProvider.lookup(registryKey).map((r) -> DataResult.success(r, Lifecycle.stable())).orElseGet(() -> DataResult.error(() -> "Unknown registry: " + String.valueOf(registryKey)));
          } else {
             return DataResult.error(() -> "Not a registry ops");
          }
-      }).forGetter((e) -> null);
+      }).forGetter((var0) -> null);
    }
 
    public static <E, O> RecordCodecBuilder<O, Holder.Reference<E>> retrieveElement(final ResourceKey<E> key) {
       ResourceKey<? extends Registry<E>> registryKey = ResourceKey.createRegistryKey(key.registry());
       return ExtraCodecs.retrieveContext((ops) -> {
          if (ops instanceof RegistryOps<?> registryOps) {
-            return (DataResult)registryOps.lookupProvider.lookup(registryKey).flatMap((r) -> r.getter().get(key)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Can't find value: " + String.valueOf(key)));
+            return (DataResult)registryOps.lookupProvider.lookup(registryKey).flatMap((r) -> r.get(key)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Can't find value: " + String.valueOf(key)));
          } else {
             return DataResult.error(() -> "Not a registry ops");
          }
-      }).forGetter((e) -> null);
-   }
-
-   public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
-      public RegistryInfo {
-         super();
-      }
-
-      public static <T> RegistryInfo<T> fromRegistryLookup(final HolderLookup.RegistryLookup<T> registry) {
-         return new RegistryInfo<T>(registry, registry, registry.registryLifecycle());
-      }
+      }).forGetter((var0) -> null);
    }
 
    private static final class HolderLookupAdapter implements RegistryInfoLookup {
       private final HolderLookup.Provider lookupProvider;
-      private final Map<ResourceKey<? extends Registry<?>>, Optional<? extends RegistryInfo<?>>> lookups = new ConcurrentHashMap();
+      private final Map<ResourceKey<? extends Registry<?>>, Optional<? extends HolderGetter<?>>> lookups = new ConcurrentHashMap();
 
       public HolderLookupAdapter(final HolderLookup.Provider lookupProvider) {
          super();
          this.lookupProvider = lookupProvider;
       }
 
-      public <E> Optional<RegistryInfo<E>> lookup(final ResourceKey<? extends Registry<? extends E>> registryKey) {
-         return (Optional)this.lookups.computeIfAbsent(registryKey, this::createLookup);
-      }
-
-      private Optional<RegistryInfo<Object>> createLookup(final ResourceKey<? extends Registry<?>> key) {
-         return this.lookupProvider.lookup(key).map(RegistryInfo::fromRegistryLookup);
+      public <E> Optional<HolderGetter<E>> lookup(final ResourceKey<? extends Registry<? extends E>> registryKey) {
+         Map var10000 = this.lookups;
+         HolderLookup.Provider var10002 = this.lookupProvider;
+         Objects.requireNonNull(var10002);
+         return (Optional)var10000.computeIfAbsent(registryKey, var10002::lookup);
       }
 
       public boolean equals(final Object obj) {
@@ -134,6 +119,6 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    }
 
    public interface RegistryInfoLookup {
-      <T> Optional<RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> registryKey);
+      <T> Optional<HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> registryKey);
    }
 }

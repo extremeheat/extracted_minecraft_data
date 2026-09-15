@@ -84,14 +84,13 @@ public class Std140Builder {
       this.buffer.putFloat(x);
       this.buffer.putFloat(y);
       this.buffer.putFloat(z);
-      this.buffer.position(this.buffer.position() + 4);
       return this;
    }
 
    public Std140Builder putVec3(final Vector3fc vec) {
       this.align(16);
       vec.get(this.buffer);
-      this.buffer.position(this.buffer.position() + 16);
+      this.buffer.position(this.buffer.position() + 12);
       return this;
    }
 
@@ -100,14 +99,13 @@ public class Std140Builder {
       this.buffer.putInt(x);
       this.buffer.putInt(y);
       this.buffer.putInt(z);
-      this.buffer.position(this.buffer.position() + 4);
       return this;
    }
 
    public Std140Builder putIVec3(final Vector3ic vec) {
       this.align(16);
       vec.get(this.buffer);
-      this.buffer.position(this.buffer.position() + 16);
+      this.buffer.position(this.buffer.position() + 12);
       return this;
    }
 

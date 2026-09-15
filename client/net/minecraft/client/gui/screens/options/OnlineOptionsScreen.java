@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
-import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
-import java.net.URI;
+import com.mojang.authlib.services.FriendsService.ResultCode;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -23,10 +22,10 @@ import org.jspecify.annotations.Nullable;
 
 public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.online.title");
-   private static final Component SERVERS_HEADER = Component.translatable("options.online.servers.header");
-   private static final Component REALMS_HEADER = Component.translatable("options.online.realms.header");
-   private static final Component FRIENDS_HEADER = Component.translatable("options.online.friends.header");
-   private static final Component XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
+   private static final Component SERVERS_HEADER;
+   private static final Component REALMS_HEADER;
+   private static final Component FRIENDS_HEADER;
+   private static final Component XBOX_SETTINGS;
    private static final Component FRIENDS_CONFIRM_TITLE;
    private static final Component MICROSOFT_ACCOUNT_LINK;
    private static final Component FRIENDS_CONFIRM_MESSAGE;
@@ -85,14 +84,14 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       PlayerSocialManager playerSocialManager = this.minecraft.getPlayerSocialManager();
       OptionInstance<Boolean> inGameNotificationOpt = this.options.inGameNotification();
       this.friendsListButton = CycleButton.onOffBuilder(playerSocialManager.isFriendListEnabled()).create(0, 0, 150, 20, FRIENDS_LIST_LABEL, (var3, newValue) -> this.onFriendsListToggled(newValue, playerSocialManager, inGameNotificationOpt));
-      this.friendsListButton.active = !this.minecraft.isDemo();
+      this.friendsListButton.active = !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode();
       this.allowFriendRequestsButton = CycleButton.onOffBuilder(playerSocialManager.isAllowFriendRequests()).withTooltip((var0) -> ALLOW_FRIEND_REQUESTS_TOOLTIP).create(0, 0, 150, 20, ALLOW_FRIEND_REQUESTS_LABEL, (var2, enabled) -> applyFriendSettings(this.minecraft, playerSocialManager.isFriendListEnabled(), enabled, (var1) -> this.updateFriendListDependentButtons()));
       this.list.addSmall(this.friendsListButton, this.allowFriendRequestsButton);
       this.inGameNotificationButton = CycleButton.onOffBuilder((Boolean)inGameNotificationOpt.get()).withTooltip((var0) -> IN_GAME_NOTIFICATIONS_TOOLTIP).create(0, 0, 150, 20, IN_GAME_NOTIFICATIONS_LABEL, (var1, enabled) -> inGameNotificationOpt.set(enabled));
       this.presenceWidget = this.options.sharePresence().createButton(this.options);
       this.list.addSmall(this.inGameNotificationButton, this.presenceWidget);
       this.updateFriendListDependentButtons();
-      this.list.addBig(Button.builder(XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, (URI)CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build());
+      this.list.addBig(Button.builder(XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build());
       this.list.addHeader(SERVERS_HEADER);
       this.list.addBig(this.options.allowServerListing());
       this.list.addHeader(REALMS_HEADER);
@@ -103,7 +102,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       if (newValue) {
          this.minecraft.gui.setScreen(new FriendsListConfirmScreen((accepted) -> {
             this.minecraft.gui.setScreen(this);
-            if (accepted) {
+            if (accepted && !this.minecraft.isOfflineDeveloperMode()) {
                playerSocialManager.setFriendListEnabled(true);
                playerSocialManager.setAllowFriendRequests(true);
                applyFriendSettings(this.minecraft, true, true, (var1) -> this.updateFriendListDependentButtons());
@@ -154,6 +153,10 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
    }
 
    static {
+      SERVERS_HEADER = Component.translatable("options.online.servers.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      REALMS_HEADER = Component.translatable("options.online.realms.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      FRIENDS_HEADER = Component.translatable("options.online.friends.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
       FRIENDS_CONFIRM_TITLE = Component.translatable("options.friendsList.confirm.title").withStyle(ChatFormatting.UNDERLINE);
       MICROSOFT_ACCOUNT_LINK = Component.translatable("options.friendsList.confirm.message.link").withStyle((UnaryOperator)((style) -> style.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent.OpenUrl(CommonLinks.PRIVACY_AND_ONLINE_SETTINGS))));
       FRIENDS_CONFIRM_MESSAGE = Component.translatable("options.friendsList.confirm.message", MICROSOFT_ACCOUNT_LINK);

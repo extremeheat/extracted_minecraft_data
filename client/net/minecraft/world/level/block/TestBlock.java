@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +25,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<TestBlock> CODEC = simpleCodec(TestBlock::new);
    public static final EnumProperty<TestBlockMode> MODE;
 
    public TestBlock(final BlockBehaviour.Properties properties) {
@@ -128,10 +126,6 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
    public static ItemStack setModeOnStack(final ItemStack itemStack, final TestBlockMode mode) {
       itemStack.set(DataComponents.BLOCK_STATE, ((BlockItemStateProperties)itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY)).with(MODE, mode));
       return itemStack;
-   }
-
-   protected MapCodec<TestBlock> codec() {
-      return CODEC;
    }
 
    static {

@@ -12,10 +12,10 @@ public class BiomeManager {
    private static final int ZOOM_BITS = 2;
    private static final int ZOOM = 4;
    private static final int ZOOM_MASK = 3;
-   private final NoiseBiomeSource noiseBiomeSource;
+   private final BiomeResolver noiseBiomeSource;
    private final long biomeZoomSeed;
 
-   public BiomeManager(final NoiseBiomeSource noiseBiomeSource, final long seed) {
+   public BiomeManager(final BiomeResolver noiseBiomeSource, final long seed) {
       super();
       this.noiseBiomeSource = noiseBiomeSource;
       this.biomeZoomSeed = seed;
@@ -25,14 +25,18 @@ public class BiomeManager {
       return Hashing.sha256().hashLong(seed).asLong();
    }
 
-   public BiomeManager withDifferentSource(final NoiseBiomeSource biomeSource) {
+   public BiomeManager withDifferentSource(final BiomeResolver biomeSource) {
       return new BiomeManager(biomeSource, this.biomeZoomSeed);
    }
 
    public Holder<Biome> getBiome(final BlockPos pos) {
-      int absX = pos.getX() - 2;
-      int absY = pos.getY() - 2;
-      int absZ = pos.getZ() - 2;
+      return this.getBiome(pos.getX(), pos.getY(), pos.getZ());
+   }
+
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
+      int absX = x - 2;
+      int absY = y - 2;
+      int absZ = z - 2;
       int parentX = absX >> 2;
       int parentY = absY >> 2;
       int parentZ = absZ >> 2;
@@ -101,9 +105,5 @@ public class BiomeManager {
    private static double getFiddle(final long rval) {
       double uniform = (double)Math.floorMod(rval >> 24, 1024) / 1024.0;
       return (uniform - 0.5) * 0.9;
-   }
-
-   public interface NoiseBiomeSource {
-      Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ);
    }
 }

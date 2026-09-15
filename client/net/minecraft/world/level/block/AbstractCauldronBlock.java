@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.server.level.ServerLevel;
@@ -33,8 +32,6 @@ public abstract class AbstractCauldronBlock extends Block {
       return Shapes.join(Shapes.block(), Shapes.or(Block.column(16.0, 8.0, 0.0, 3.0), Block.column(8.0, 16.0, 0.0, 3.0), Block.column(12.0, 0.0, 3.0), SHAPE_INSIDE), BooleanOp.ONLY_FIRST);
    });
    protected final CauldronInteraction.Dispatcher interactions;
-
-   protected abstract MapCodec<? extends AbstractCauldronBlock> codec();
 
    public AbstractCauldronBlock(final BlockBehaviour.Properties properties, final CauldronInteraction.Dispatcher interactions) {
       super(properties);

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.social;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
@@ -119,7 +118,7 @@ public class SocialInteractionsScreen extends Screen {
       this.searchBox.setValue(oldEdit);
       this.searchBox.setHint(SEARCH_HINT);
       this.searchBox.setResponder(this::checkSearchStringUpdate);
-      this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
+      this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
       this.addWidget(this.socialInteractionsPlayerList);
       this.showPage(this.page);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
@@ -224,7 +223,7 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    public boolean keyPressed(final KeyEvent event) {
-      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(event)) {
+      if (!this.isInputCaptured() && this.minecraft.options.keySocialInteractions.matches(event)) {
          this.onClose();
          return true;
       } else {

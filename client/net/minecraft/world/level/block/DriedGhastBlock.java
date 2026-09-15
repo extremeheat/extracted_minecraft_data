@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -38,16 +37,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DriedGhastBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<DriedGhastBlock> CODEC = simpleCodec(DriedGhastBlock::new);
    public static final int MAX_HYDRATION_LEVEL = 3;
    public static final IntegerProperty HYDRATION_LEVEL;
    public static final BooleanProperty WATERLOGGED;
    public static final int HYDRATION_TICK_DELAY = 5000;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<DriedGhastBlock> codec() {
-      return CODEC;
-   }
 
    public DriedGhastBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -161,7 +155,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
    public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
          if (!level.isClientSide()) {
-            level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true));
             level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
             level.playSound((Entity)null, pos, SoundEvents.DRIED_GHAST_PLACE_IN_WATER, SoundSource.BLOCKS, 1.0F, 1.0F);
          }

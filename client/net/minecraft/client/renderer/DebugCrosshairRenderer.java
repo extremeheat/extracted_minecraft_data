@@ -1,20 +1,18 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -55,7 +53,7 @@ public class DebugCrosshairRenderer implements AutoCloseable {
       this.crosshairBuffer.close();
    }
 
-   public void render(final CameraRenderState cameraState, final int guiScale) {
+   public void render(final CameraRenderState cameraState, final int guiScale, final GpuTextureView colorTexture, final GpuTextureView depthTexture) {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
       modelViewStack.translate(0.0F, 0.0F, -1.0F);
@@ -65,20 +63,17 @@ public class DebugCrosshairRenderer implements AutoCloseable {
       modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
       RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
       RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;
-      RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-      GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
-      GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
       GpuBuffer indexBuffer = this.crosshairIndicies.getBuffer(36);
       GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
-         renderPass.setPipeline(renderPipelineOutline);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineOutline));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setVertexBuffer(0, this.crosshairBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, this.crosshairIndicies.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransform);
          renderPass.drawIndexed(18, 1, 0, 0, 0);
-         renderPass.setPipeline(renderPipelineFill);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineFill));
          renderPass.drawIndexed(18, 1, 18, 0, 0);
       }
 

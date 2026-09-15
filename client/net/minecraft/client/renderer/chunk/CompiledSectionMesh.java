@@ -28,14 +28,16 @@ public class CompiledSectionMesh implements SectionMesh {
    private final Map<ChunkSectionLayer, SectionMesh.SectionDraw> draws = new EnumMap(ChunkSectionLayer.class);
    private final Map<ChunkSectionLayer, AtomicBoolean> vertexBufferUploaded = Util.<ChunkSectionLayer, AtomicBoolean>makeEnumMap(ChunkSectionLayer.class, (layer) -> new AtomicBoolean());
    private final Map<ChunkSectionLayer, AtomicBoolean> indexBufferUploaded = Util.<ChunkSectionLayer, AtomicBoolean>makeEnumMap(ChunkSectionLayer.class, (layer) -> new AtomicBoolean());
+   private final long compileTaskStartTimeNs;
 
-   public CompiledSectionMesh(final TranslucencyPointOfView translucencyPointOfView, final SectionCompiler.Results results) {
+   public CompiledSectionMesh(final TranslucencyPointOfView translucencyPointOfView, final SectionCompiler.Results results, final long compileTaskStartTimeNs) {
       super();
       this.translucencyPointOfView = translucencyPointOfView;
       this.visibilitySet = results.visibilitySet;
       this.renderableBlockEntities = results.blockEntities;
       this.transparencyState = results.transparencyState;
       results.renderedLayers.forEach((layer, mesh) -> this.draws.put(layer, new SectionMesh.SectionDraw(mesh.drawState().indexCount(), mesh.drawState().indexType(), mesh.indexBuffer() != null)));
+      this.compileTaskStartTimeNs = compileTaskStartTimeNs;
    }
 
    public void setTranslucencyPointOfView(final TranslucencyPointOfView translucencyPointOfView) {
@@ -64,6 +66,10 @@ public class CompiledSectionMesh implements SectionMesh {
 
    public SectionMesh.@Nullable SectionDraw getSectionDraw(final ChunkSectionLayer layer) {
       return (SectionMesh.SectionDraw)this.draws.get(layer);
+   }
+
+   public long getCompileTaskStartTime() {
+      return this.compileTaskStartTimeNs;
    }
 
    public boolean isVertexBufferUploaded(final ChunkSectionLayer layer) {

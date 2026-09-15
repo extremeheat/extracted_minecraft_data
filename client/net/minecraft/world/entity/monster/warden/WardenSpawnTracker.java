@@ -65,14 +65,14 @@ public class WardenSpawnTracker {
             players.add(triggerPlayer);
          }
 
-         if (players.stream().anyMatch((player) -> (Boolean)player.getWardenSpawnTracker().map(WardenSpawnTracker::onCooldown).orElse(false))) {
+         if (players.stream().anyMatch((player) -> player.getWardenSpawnTracker().onCooldown())) {
             return OptionalInt.empty();
          } else {
-            Optional<WardenSpawnTracker> highestWarningSpawnTracker = players.stream().flatMap((player) -> player.getWardenSpawnTracker().stream()).max(Comparator.comparingInt(WardenSpawnTracker::getWarningLevel));
+            Optional<WardenSpawnTracker> highestWarningSpawnTracker = players.stream().map(ServerPlayer::getWardenSpawnTracker).max(Comparator.comparingInt(WardenSpawnTracker::getWarningLevel));
             if (highestWarningSpawnTracker.isPresent()) {
                WardenSpawnTracker spawnTracker = (WardenSpawnTracker)highestWarningSpawnTracker.get();
                spawnTracker.increaseWarningLevel();
-               players.forEach((player) -> player.getWardenSpawnTracker().ifPresent((otherSpawnTracker) -> otherSpawnTracker.copyData(spawnTracker)));
+               players.forEach((player) -> player.getWardenSpawnTracker().copyData(spawnTracker));
                return OptionalInt.of(spawnTracker.warningLevel);
             } else {
                return OptionalInt.empty();

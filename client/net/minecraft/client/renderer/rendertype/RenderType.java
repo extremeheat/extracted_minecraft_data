@@ -1,12 +1,14 @@
 package net.minecraft.client.renderer.rendertype;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
@@ -18,6 +20,7 @@ public class RenderType {
    public static final int SMALL_BUFFER_SIZE = 786432;
    public static final int TRANSIENT_BUFFER_SIZE = 1536;
    private final RenderSetup state;
+   private final boolean hasBlending;
    private final Optional<RenderType> outline;
    protected final String name;
 
@@ -25,7 +28,8 @@ public class RenderType {
       super();
       this.name = name;
       this.state = state;
-      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? state.textures.values().stream().findFirst().map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
+      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? Optional.ofNullable((RenderSetup.TextureBinding)state.textures.get(Objects.requireNonNullElse(state.outlineTextureName, "Sampler0"))).map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
+      this.hasBlending = this.calculateHasBlending();
    }
 
    static RenderType create(final String name, final RenderSetup state) {
@@ -38,17 +42,23 @@ public class RenderType {
    }
 
    public boolean hasBlending() {
-      return this.state.pipeline.getColorTargetState().blendFunction().isPresent();
+      return this.hasBlending;
    }
 
-   public OutputTarget outputTarget() {
-      return this.state.outputTarget;
+   private boolean calculateHasBlending() {
+      for(ColorTargetState colorTargetState : this.state.pipeline.getColorTargetStates()) {
+         if (colorTargetState != null && colorTargetState.blendFunction().isPresent()) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public PreparedRenderType prepare() {
       Minecraft minecraft = Minecraft.getInstance();
       List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
-      return new PreparedRenderType(this.state.pipeline, this.state.outputTarget, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
+      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
    }
 
    private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {
@@ -90,5 +100,9 @@ public class RenderType {
 
    public boolean sortOnUpload() {
       return this.state.sortOnUpload;
+   }
+
+   public boolean forceSolidModelPhase() {
+      return this.state.forceSolidModelPhase;
    }
 }

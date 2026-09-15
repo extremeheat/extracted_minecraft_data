@@ -17,7 +17,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.phys.Vec3;
 
-public record ReplaceDisk(LevelBasedValue radius, LevelBasedValue height, Vec3i offset, Optional<BlockPredicate> predicate, BlockStateProvider blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
+public record ReplaceDisk(LevelBasedValue radius, LevelBasedValue height, Vec3i offset, Optional<BlockPredicate> predicate, Holder<BlockStateProvider> blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
    public static final MapCodec<ReplaceDisk> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("radius").forGetter(ReplaceDisk::radius), LevelBasedValue.CODEC.fieldOf("height").forGetter(ReplaceDisk::height), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(ReplaceDisk::offset), BlockPredicate.CODEC.optionalFieldOf("predicate").forGetter(ReplaceDisk::predicate), BlockStateProvider.CODEC.fieldOf("block_state").forGetter(ReplaceDisk::blockState), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(ReplaceDisk::triggerGameEvent)).apply(i, ReplaceDisk::new));
 
    public ReplaceDisk {
@@ -31,7 +31,7 @@ public record ReplaceDisk(LevelBasedValue radius, LevelBasedValue height, Vec3i 
       int height = (int)this.height.calculate(enchantmentLevel);
 
       for(BlockPos pos : BlockPos.betweenClosed(centerBlock.offset(-dist, 0, -dist), centerBlock.offset(dist, Math.min(height - 1, 0), dist))) {
-         if (pos.distToCenterSqr(position.x(), (double)pos.getY() + 0.5, position.z()) < (double)Mth.square(dist) && (Boolean)this.predicate.map((p) -> p.test(serverLevel, pos)).orElse(true) && serverLevel.setBlockAndUpdate(pos, this.blockState.getState(serverLevel, random, pos))) {
+         if (pos.distToCenterSqr(position.x(), (double)pos.getY() + 0.5, position.z()) < (double)Mth.square(dist) && (Boolean)this.predicate.map((p) -> p.test(serverLevel, pos)).orElse(true) && serverLevel.setBlockAndUpdate(pos, ((BlockStateProvider)this.blockState.value()).getState(serverLevel, random, pos))) {
             this.triggerGameEvent.ifPresent((event) -> serverLevel.gameEvent(entity, event, pos));
          }
       }

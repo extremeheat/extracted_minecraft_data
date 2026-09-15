@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,14 +35,9 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
 public class CreakingHeartBlock extends BaseEntityBlock {
-   public static final MapCodec<CreakingHeartBlock> CODEC = simpleCodec(CreakingHeartBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
    public static final EnumProperty<CreakingHeartState> STATE;
    public static final BooleanProperty NATURAL;
-
-   public MapCodec<CreakingHeartBlock> codec() {
-      return CODEC;
-   }
 
    protected CreakingHeartBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -81,7 +75,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       BlockState newState = updateState(state, level, pos);
       if (newState != state) {
-         level.setBlock(pos, newState, 3);
+         level.setBlockAndUpdate(pos, newState);
       }
 
    }

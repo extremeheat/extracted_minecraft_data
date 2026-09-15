@@ -142,7 +142,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          if (neighourState.isAir()) {
             if (Block.isFaceFull(state.getCollisionShape(level, pos), direction)) {
                BooleanProperty vineDir = VineBlock.getPropertyForFace(direction.getOpposite());
-               level.setBlock(neighbourPos, (BlockState)Blocks.VINE.defaultBlockState().setValue(vineDir, true), 3);
+               level.setBlockAndUpdate(neighbourPos, (BlockState)Blocks.VINE.defaultBlockState().setValue(vineDir, true));
             }
          }
       }
@@ -150,7 +150,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
    private void maybeAddLeavesAbove(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
       if (random.nextFloat() < 0.5F && level.getBlockState(pos).is(Blocks.NETHERRACK) && level.getBlockState(pos.above()).isAir()) {
-         level.setBlock(pos.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true), 3);
+         level.setBlockAndUpdate(pos.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
       }
 
    }
@@ -218,15 +218,20 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    private boolean canBlockBeReplacedByNetherrackOrMagma(final LevelAccessor level, final BlockPos pos) {
-      BlockState state = level.getBlockState(pos);
+      return this.canBlockBeReplacedByNetherrackOrMagma(level.getBlockState(pos));
+   }
+
+   private boolean canBlockBeReplacedByNetherrackOrMagma(final BlockState state) {
       return !state.is(Blocks.AIR) && !state.is(Blocks.OBSIDIAN) && !state.is(BlockTags.FEATURES_CANNOT_REPLACE) && (this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_NETHER || !state.is(Blocks.LAVA));
    }
 
    private void placeNetherrackOrMagma(final RandomSource random, final LevelAccessor level, final BlockPos pos) {
-      if (!this.properties.cold && random.nextFloat() < 0.07F) {
-         level.setBlock(pos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-      } else {
-         level.setBlock(pos, Blocks.NETHERRACK.defaultBlockState(), 3);
+      if (this.canBlockBeReplacedByNetherrackOrMagma(level, pos)) {
+         if (!this.properties.cold && random.nextFloat() < 0.07F) {
+            level.setBlockAndUpdate(pos, Blocks.MAGMA_BLOCK.defaultBlockState());
+         } else {
+            level.setBlockAndUpdate(pos, Blocks.NETHERRACK.defaultBlockState());
+         }
       }
 
    }

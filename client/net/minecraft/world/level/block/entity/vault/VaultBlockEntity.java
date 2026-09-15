@@ -161,7 +161,7 @@ public class VaultBlockEntity extends BlockEntity {
       private static void setVaultState(final ServerLevel serverLevel, final BlockPos pos, final BlockState currentBlockState, final BlockState newBlockState, final VaultConfig config, final VaultSharedData sharedData) {
          VaultState currentVaultState = (VaultState)currentBlockState.getValue(VaultBlock.STATE);
          VaultState newVaultState = (VaultState)newBlockState.getValue(VaultBlock.STATE);
-         serverLevel.setBlock(pos, newBlockState, 3);
+         serverLevel.setBlockAndUpdate(pos, newBlockState);
          currentVaultState.onTransition(serverLevel, pos, newVaultState, config, sharedData, (Boolean)newBlockState.getValue(VaultBlock.OMINOUS));
       }
 

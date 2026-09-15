@@ -1,9 +1,9 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.ImmutableList;
+import io.netty.buffer.ByteBuf;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -17,7 +17,8 @@ import net.minecraft.world.scores.TeamColor;
 import org.jspecify.annotations.Nullable;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket>codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
+   private static final StreamCodec<ByteBuf, List<String>> PLAYER_LIST_STREAM_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC;
    private static final int METHOD_ADD = 0;
    private static final int METHOD_REMOVE = 1;
    private static final int METHOD_CHANGE = 2;
@@ -25,7 +26,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
    private static final int METHOD_LEAVE = 4;
    private final int method;
    private final String name;
-   private final Collection<String> players;
+   private final List<String> players;
    private final Optional<Parameters> parameters;
 
    private ClientboundSetPlayerTeamPacket(final String name, final int method, final Optional<Parameters> parameters, final Collection<String> players) {
@@ -33,19 +34,19 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       this.name = name;
       this.method = method;
       this.parameters = parameters;
-      this.players = ImmutableList.copyOf(players);
+      this.players = List.copyOf(players);
    }
 
    public static ClientboundSetPlayerTeamPacket createAddOrModifyPacket(final PlayerTeam team, final boolean createNew) {
-      return new ClientboundSetPlayerTeamPacket(team.getName(), createNew ? 0 : 2, Optional.of(new Parameters(team)), (Collection)(createNew ? team.getPlayers() : ImmutableList.of()));
+      return new ClientboundSetPlayerTeamPacket(team.getName(), createNew ? 0 : 2, Optional.of(new Parameters(team)), (Collection)(createNew ? team.getPlayers() : List.of()));
    }
 
    public static ClientboundSetPlayerTeamPacket createRemovePacket(final PlayerTeam team) {
-      return new ClientboundSetPlayerTeamPacket(team.getName(), 1, Optional.empty(), ImmutableList.of());
+      return new ClientboundSetPlayerTeamPacket(team.getName(), 1, Optional.empty(), List.of());
    }
 
    public static ClientboundSetPlayerTeamPacket createPlayerPacket(final PlayerTeam team, final String player, final Action action) {
-      return new ClientboundSetPlayerTeamPacket(team.getName(), action == ClientboundSetPlayerTeamPacket.Action.ADD ? 3 : 4, Optional.empty(), ImmutableList.of(player));
+      return new ClientboundSetPlayerTeamPacket(team.getName(), action == ClientboundSetPlayerTeamPacket.Action.ADD ? 3 : 4, Optional.empty(), List.of(player));
    }
 
    private ClientboundSetPlayerTeamPacket(final RegistryFriendlyByteBuf input) {
@@ -59,9 +60,9 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       }
 
       if (shouldHavePlayerList(this.method)) {
-         this.players = input.readList(FriendlyByteBuf::readUtf);
+         this.players = (List)PLAYER_LIST_STREAM_CODEC.decode(input);
       } else {
-         this.players = ImmutableList.of();
+         this.players = List.of();
       }
 
    }
@@ -74,7 +75,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       }
 
       if (shouldHavePlayerList(this.method)) {
-         output.writeCollection(this.players, FriendlyByteBuf::writeUtf);
+         PLAYER_LIST_STREAM_CODEC.encode(output, this.players);
       }
 
    }
@@ -135,6 +136,11 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    public Optional<Parameters> getParameters() {
       return this.parameters;
+   }
+
+   static {
+      PLAYER_LIST_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list());
+      STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket>codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
    }
 
    public static enum Action {

@@ -1,10 +1,10 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.GpuOutOfMemoryException;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -16,7 +16,7 @@ public class MainTarget extends RenderTarget {
    private static final Dimension DEFAULT_DIMENSIONS = new Dimension(854, 480);
 
    public MainTarget(final int desiredWidth, final int desiredHeight) {
-      super("Main", true, GpuFormat.RGBA8_UNORM);
+      super("Main", GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
       this.createFrameBuffer(desiredWidth, desiredHeight);
    }
 
@@ -69,7 +69,7 @@ public class MainTarget extends RenderTarget {
 
    private @Nullable GpuTexture allocateColorAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, this.format, dimension.width, dimension.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, this.colorFormat, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
@@ -77,7 +77,7 @@ public class MainTarget extends RenderTarget {
 
    private @Nullable GpuTexture allocateDepthAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, GpuFormat.D32_FLOAT, dimension.width, dimension.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, this.depthFormat, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }

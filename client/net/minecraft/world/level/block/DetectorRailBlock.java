@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -28,14 +27,9 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 
 public class DetectorRailBlock extends BaseRailBlock {
-   public static final MapCodec<DetectorRailBlock> CODEC = simpleCodec(DetectorRailBlock::new);
    public static final EnumProperty<RailShape> SHAPE;
    public static final BooleanProperty POWERED;
    private static final int PRESSED_CHECK_PERIOD = 20;
-
-   public MapCodec<DetectorRailBlock> codec() {
-      return CODEC;
-   }
 
    public DetectorRailBlock(final BlockBehaviour.Properties properties) {
       super(true, properties);
@@ -73,7 +67,7 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    private void checkPressed(final Level level, final BlockPos pos, final BlockState state) {
-      if (this.canSurvive(state, level, pos)) {
+      if (this.canSurvive(state, level, pos) && level.getBlockState(pos).is(this)) {
          boolean wasPressed = (Boolean)state.getValue(POWERED);
          boolean shouldBePressed = false;
          List<AbstractMinecart> entities = this.<AbstractMinecart>getInteractingMinecartOfType(level, pos, AbstractMinecart.class, (e) -> true);
@@ -83,7 +77,7 @@ public class DetectorRailBlock extends BaseRailBlock {
 
          if (shouldBePressed && !wasPressed) {
             BlockState newState = (BlockState)state.setValue(POWERED, true);
-            level.setBlock(pos, newState, 3);
+            level.setBlockAndUpdate(pos, newState);
             this.updatePowerToConnected(level, pos, newState, true);
             level.updateNeighborsAt(pos, this);
             level.updateNeighborsAt(pos.below(), this);
@@ -92,7 +86,7 @@ public class DetectorRailBlock extends BaseRailBlock {
 
          if (!shouldBePressed && wasPressed) {
             BlockState newState = (BlockState)state.setValue(POWERED, false);
-            level.setBlock(pos, newState, 3);
+            level.setBlockAndUpdate(pos, newState);
             this.updatePowerToConnected(level, pos, newState, false);
             level.updateNeighborsAt(pos, this);
             level.updateNeighborsAt(pos.below(), this);

@@ -4,9 +4,12 @@ import java.util.function.Predicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.contents.objects.ObjectInfo;
 import net.minecraft.world.entity.Entity;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jspecify.annotations.Nullable;
 
-public record ResolutionContext(@Nullable CommandSourceStack source, @Nullable Entity defaultScoreboardEntity, Predicate<ObjectInfo> objectInfoValidator, int depthLimit, LimitBehavior depthLimitBehavior) {
+public record ResolutionContext(@Nullable CommandSourceStack source, @Nullable Entity defaultScoreboardEntity, Predicate<ObjectInfo> objectInfoValidator, int depthLimit, LimitBehavior depthLimitBehavior, int resolvedComponentLimit, MutableInt resolvedComponentCount) {
+   private static final int DEFAULT_RESOLVED_COMPONENT_LIMIT = 65536;
+
    public ResolutionContext {
       super();
    }
@@ -75,7 +78,7 @@ public record ResolutionContext(@Nullable CommandSourceStack source, @Nullable E
       }
 
       public ResolutionContext build() {
-         return new ResolutionContext(this.source, this.defaultScoreboardEntity, this.objectInfoValidator, this.depthLimit, this.depthLimitBehavior);
+         return new ResolutionContext(this.source, this.defaultScoreboardEntity, this.objectInfoValidator, this.depthLimit, this.depthLimitBehavior, 65536, new MutableInt());
       }
    }
 }

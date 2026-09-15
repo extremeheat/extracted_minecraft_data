@@ -2,7 +2,6 @@ package net.minecraft.server.packs.resources;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.FilterInputStream;
@@ -18,8 +17,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
@@ -30,7 +29,7 @@ import org.slf4j.Logger;
 
 public class FallbackResourceManager implements ResourceManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   protected final List<PackEntry> fallbacks = Lists.newArrayList();
+   private final List<PackEntry> fallbacks = new ArrayList();
    private final PackType type;
    private final String namespace;
 
@@ -41,18 +40,18 @@ public class FallbackResourceManager implements ResourceManager {
    }
 
    public void push(final PackResources pack) {
-      this.pushInternal(pack.packId(), pack, (Predicate)null);
+      this.pushInternal(pack.packId(), pack, (PackResources.Filter)null);
    }
 
-   public void push(final PackResources pack, final Predicate<Identifier> filter) {
+   public void push(final PackResources pack, final PackResources.Filter filter) {
       this.pushInternal(pack.packId(), pack, filter);
    }
 
-   public void pushFilterOnly(final String name, final Predicate<Identifier> filter) {
+   public void pushFilterOnly(final String name, final PackResources.Filter filter) {
       this.pushInternal(name, (PackResources)null, filter);
    }
 
-   private void pushInternal(final String name, final @Nullable PackResources pack, final @Nullable Predicate<Identifier> contentFilter) {
+   private void pushInternal(final String name, final @Nullable PackResources pack, final PackResources.@Nullable Filter contentFilter) {
       this.fallbacks.add(new PackEntry(name, pack, contentFilter));
    }
 
@@ -145,7 +144,7 @@ public class FallbackResourceManager implements ResourceManager {
       return identifier.withPath(identifier.getPath() + ".mcmeta");
    }
 
-   public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filter) {
+   public Map<Identifier, Resource> listResources(final String directory, final ResourceManager.Selector selector) {
       Map<Identifier, ResourceWithSourceAndIndex> topResourceForFileLocation = new HashMap();
       Map<Identifier, ResourceWithSourceAndIndex> topResourceForMetaLocation = new HashMap();
       int packCount = this.fallbacks.size();
@@ -164,10 +163,10 @@ public class FallbackResourceManager implements ResourceManager {
                }
 
                if (isMetadata(resource)) {
-                  if (filter.test(getIdentifierFromMetadata(resource))) {
+                  if (selector.isIncluded(getIdentifierFromMetadata(resource))) {
                      topResourceForMetaLocation.put(resource, new ResourceWithSourceAndIndex(packResources, streamSupplier, i));
                   }
-               } else if (filter.test(resource)) {
+               } else if (selector.isIncluded(resource)) {
                   topResourceForFileLocation.put(resource, new ResourceWithSourceAndIndex(packResources, streamSupplier, i));
                }
 
@@ -175,7 +174,7 @@ public class FallbackResourceManager implements ResourceManager {
          }
       }
 
-      Map<Identifier, Resource> result = Maps.newTreeMap();
+      Map<Identifier, Resource> result = new TreeMap();
       topResourceForFileLocation.forEach((location, resource) -> {
          Identifier metadataLocation = getMetadataLocation(location);
          ResourceWithSourceAndIndex metaResource = (ResourceWithSourceAndIndex)topResourceForMetaLocation.get(metadataLocation);
@@ -254,19 +253,19 @@ public class FallbackResourceManager implements ResourceManager {
 
    }
 
-   private void listPackResources(final PackEntry entry, final String directory, final Predicate<Identifier> filter, final Map<Identifier, EntryStack> foundResources) {
+   private void listPackResources(final PackEntry entry, final String directory, final ResourceManager.Selector selector, final Map<Identifier, EntryStack> foundResources) {
       PackResources pack = entry.resources;
       if (pack != null) {
          pack.listResources(this.type, this.namespace, directory, (id, resource) -> {
             if (isMetadata(id)) {
                Identifier actualId = getIdentifierFromMetadata(id);
-               if (!filter.test(actualId)) {
+               if (!selector.isIncluded(actualId)) {
                   return;
                }
 
                ((EntryStack)foundResources.computeIfAbsent(actualId, EntryStack::new)).metaSources.put(pack, resource);
             } else {
-               if (!filter.test(id)) {
+               if (!selector.isIncluded(id)) {
                   return;
                }
 
@@ -277,15 +276,15 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
-      Map<Identifier, EntryStack> foundResources = Maps.newHashMap();
+   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final ResourceManager.Selector selector) {
+      Map<Identifier, EntryStack> foundResources = new HashMap();
 
       for(PackEntry entry : this.fallbacks) {
          applyPackFiltersToExistingResources(entry, foundResources);
-         this.listPackResources(entry, directory, filter, foundResources);
+         this.listPackResources(entry, directory, selector, foundResources);
       }
 
-      TreeMap<Identifier, List<Resource>> result = Maps.newTreeMap();
+      SortedMap<Identifier, List<Resource>> result = new TreeMap();
 
       for(EntryStack entry : foundResources.values()) {
          if (!entry.fileSources.isEmpty()) {
@@ -347,20 +346,22 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   private static record PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<Identifier> filter) {
+   private static record PackEntry(String name, @Nullable PackResources resources, PackResources.@Nullable Filter filter) {
       private PackEntry {
          super();
       }
 
       public void filterAll(final Collection<Identifier> collection) {
          if (this.filter != null) {
-            collection.removeIf(this.filter);
+            PackResources.Filter var10001 = this.filter;
+            Objects.requireNonNull(var10001);
+            collection.removeIf(var10001::isFiltered);
          }
 
       }
 
       public boolean isFiltered(final Identifier location) {
-         return this.filter != null && this.filter.test(location);
+         return this.filter != null && this.filter.isFiltered(location);
       }
    }
 

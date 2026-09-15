@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -21,9 +22,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -36,6 +39,7 @@ import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
@@ -48,10 +52,13 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.InCommandFunction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -60,6 +67,7 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 
 public class TestCommand {
    public static final int TEST_NEARBY_SEARCH_RADIUS = 15;
@@ -98,10 +106,11 @@ public class TestCommand {
    private static int clear(final TestFinder finder) throws CommandSyntaxException {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((pos) -> level.getBlockEntity(pos, BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).toList();
+      MinecraftServer server = source.getServer();
+      List<TestInstanceBlockEntity> tests = finder.findTestPos().flatMap((globalPos) -> server.getLevel(globalPos.dimension()).getBlockEntity(globalPos.pos(), BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).toList();
 
       for(TestInstanceBlockEntity testInstanceBlockEntity : tests) {
+         ServerLevel level = (ServerLevel)testInstanceBlockEntity.getLevel();
          StructureUtils.clearSpaceForStructure(testInstanceBlockEntity.getTestBoundingBox(), level);
          testInstanceBlockEntity.removeBarriers();
          level.destroyBlock(testInstanceBlockEntity.getBlockPos(), false);
@@ -117,13 +126,13 @@ public class TestCommand {
 
    private static int export(final TestFinder finder) throws CommandSyntaxException {
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
       int count = 0;
       boolean allGood = true;
 
-      for(Iterator<BlockPos> iterator = finder.findTestPos().iterator(); iterator.hasNext(); ++count) {
-         BlockPos pos = (BlockPos)iterator.next();
-         BlockEntity var8 = level.getBlockEntity(pos);
+      for(Iterator<GlobalPos> iterator = finder.findTestPos().iterator(); iterator.hasNext(); ++count) {
+         GlobalPos pos = (GlobalPos)iterator.next();
+         ServerLevel level = source.getServer().getLevel(pos.dimension());
+         BlockEntity var8 = level.getBlockEntity(pos.pos());
          if (!(var8 instanceof TestInstanceBlockEntity)) {
             throw TEST_INSTANCE_COULD_NOT_BE_FOUND.create();
          }
@@ -147,8 +156,7 @@ public class TestCommand {
    private static int verify(final TestFinder finder) {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      BlockPos testPos = createTestPositionAround(source);
+      Function<ResourceKey<Level>, BlockPos> testPos = (dimension) -> createTestPositionAround(source, dimension);
       Collection<GameTestInfo> infos = Stream.concat(toGameTestInfos(source, RetryOptions.noRetries(), finder), toGameTestInfo(source, RetryOptions.noRetries(), finder, 0)).toList();
       FailedTestTracker.forgetFailedTests();
       Collection<GameTestBatch> batches = new ArrayList();
@@ -158,26 +166,24 @@ public class TestCommand {
             Collection<GameTestInfo> transformedInfos = new ArrayList();
 
             for(int i = 0; i < 100; ++i) {
-               GameTestInfo copyInfo = new GameTestInfo(info.getTestHolder(), rotation, level, new RetryOptions(1, true));
+               GameTestInfo copyInfo = new GameTestInfo(info.getTestHolder(), rotation, info.getLevel(), new RetryOptions(1, true));
                copyInfo.setTestBlockPos(info.getTestBlockPos());
                transformedInfos.add(copyInfo);
             }
 
-            GameTestBatch batch = GameTestBatchFactory.toGameTestBatch(transformedInfos, info.getTest().batch(), rotation.ordinal());
+            GameTestBatch batch = GameTestBatchFactory.toGameTestBatch(transformedInfos, info.getTest().batch(), rotation.ordinal(), info.getLevel().dimension());
             batches.add(batch);
          }
       }
 
       StructureGridSpawner spawner = new StructureGridSpawner(testPos, 10, true);
-      GameTestRunner runner = GameTestRunner.Builder.fromBatches(batches, level).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(spawner).existingStructureSpawner(spawner).haltOnError().clearBetweenBatches().build();
+      GameTestRunner runner = GameTestRunner.Builder.fromBatches(batches, source.getServer()).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(spawner).existingStructureSpawner(spawner).haltOnError().clearBetweenBatches().build();
       return trackAndStartRunner(source, runner);
    }
 
    private static int run(final TestFinder finder, final RetryOptions retryOptions, final int extraRotationSteps, final int testsPerRow) {
       stopTests();
       CommandSourceStack source = finder.source();
-      ServerLevel level = source.getLevel();
-      BlockPos testPos = createTestPositionAround(source);
       Collection<GameTestInfo> infos = Stream.concat(toGameTestInfos(source, retryOptions, finder), toGameTestInfo(source, retryOptions, finder, extraRotationSteps)).toList();
       if (infos.isEmpty()) {
          source.sendSuccess(() -> Component.translatable("commands.test.no_tests"), false);
@@ -185,27 +191,58 @@ public class TestCommand {
       } else {
          FailedTestTracker.forgetFailedTests();
          source.sendSuccess(() -> Component.translatable("commands.test.run.running", infos.size()), false);
-         GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, level).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
+         Function<ResourceKey<Level>, BlockPos> testPos = (dimension) -> createTestPositionAround(source, dimension);
+         GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, source.getServer()).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
          return trackAndStartRunner(source, runner);
       }
    }
 
+   private static Stream<GlobalPos> findSelectedTestPositionsAcrossDimensions(final TestFinder finder) {
+      Set<ResourceKey<GameTestInstance>> selectedTests = (Set)finder.findTests().map(Holder.Reference::key).collect(Collectors.toSet());
+      if (selectedTests.isEmpty()) {
+         return Stream.empty();
+      } else {
+         CommandSourceStack source = finder.source();
+         MinecraftServer server = source.getServer();
+         BlockPos sourcePos = BlockPos.containing(source.getPosition());
+         List<GlobalPos> matches = new ArrayList();
+
+         for(ServerLevel level : server.getAllLevels()) {
+            Stream var10000 = StructureUtils.findTestBlocks(sourcePos, 250, level).flatMap((pos) -> level.getBlockEntity(pos, BlockEntityTypes.TEST_INSTANCE_BLOCK).stream()).filter((blockEntity) -> {
+               Optional var10000 = blockEntity.test();
+               Objects.requireNonNull(selectedTests);
+               return var10000.filter(selectedTests::contains).isPresent();
+            }).map((blockEntity) -> new GlobalPos(level.dimension(), blockEntity.getBlockPos()));
+            Objects.requireNonNull(matches);
+            var10000.forEach(matches::add);
+         }
+
+         return matches.stream();
+      }
+   }
+
    private static int locate(final TestFinder finder) throws CommandSyntaxException {
-      finder.source().sendSystemMessage(Component.translatable("commands.test.locate.started"));
+      CommandSourceStack source = finder.source();
+      source.sendSystemMessage(Component.translatable("commands.test.locate.started"));
       MutableInt structuresFound = new MutableInt(0);
-      BlockPos sourcePos = BlockPos.containing(finder.source().getPosition());
-      finder.findTestPos().forEach((structurePos) -> {
-         BlockEntity patt0$temp = finder.source().getLevel().getBlockEntity(structurePos);
+      MinecraftServer server = source.getServer();
+      BlockPos sourcePos = BlockPos.containing(source.getPosition());
+      ResourceKey<Level> sourceDimension = source.getLevel().dimension();
+      Set<ResourceKey<Level>> foundTestDimensions = new ReferenceArraySet();
+      Stream.concat(finder.findTestPos(), findSelectedTestPositionsAcrossDimensions(finder)).distinct().forEach((structurePos) -> {
+         BlockEntity patt0$temp = server.getLevel(structurePos.dimension()).getBlockEntity(structurePos.pos());
          if (patt0$temp instanceof TestInstanceBlockEntity testBlock) {
+            foundTestDimensions.add(structurePos.dimension());
             Direction facingDirection = testBlock.getRotation().rotate(Direction.NORTH);
-            BlockPos telportPosition = testBlock.getBlockPos().relative((Direction)facingDirection, 2);
+            BlockPos teleportPosition = testBlock.getBlockPos().relative((Direction)facingDirection, 3);
             int teleportYRot = (int)facingDirection.getOpposite().toYRot();
-            String tpCommand = String.format(Locale.ROOT, "/tp @s %d %d %d %d 0", telportPosition.getX(), telportPosition.getY(), telportPosition.getZ(), teleportYRot);
-            int dx = sourcePos.getX() - structurePos.getX();
-            int dz = sourcePos.getZ() - structurePos.getZ();
-            int distance = Mth.floor(Mth.sqrt((float)(dx * dx + dz * dz)));
-            MutableComponent coordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", structurePos.getX(), structurePos.getY(), structurePos.getZ())).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand(tpCommand)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
-            finder.source().sendSuccess(() -> Component.translatable("commands.test.locate.found", coordinates, distance), false);
+            String dimensionId = structurePos.dimension().identifier().toString();
+            String tpCommand = String.format(Locale.ROOT, "/execute in %s run tp @s %d %d %d %d 0", dimensionId, teleportPosition.getX(), teleportPosition.getY(), teleportPosition.getZ(), teleportYRot);
+            int dx = sourcePos.getX() - structurePos.pos().getX();
+            int dz = sourcePos.getZ() - structurePos.pos().getZ();
+            String distance = structurePos.dimension().equals(sourceDimension) ? Integer.toString(Mth.floor(Mth.sqrt((float)(dx * dx + dz * dz)))) : "N/A";
+            Component coordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", structurePos.pos().getX(), structurePos.pos().getY(), structurePos.pos().getZ()).append((Component)Component.literal(" ->[" + structurePos.dimension().identifier().getPath() + "]"))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand(tpCommand)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            source.sendSuccess(() -> Component.translatable("commands.test.locate.found", coordinates, distance), false);
             structuresFound.increment();
          }
       });
@@ -213,7 +250,8 @@ public class TestCommand {
       if (structures == 0) {
          throw NO_TEST_INSTANCES.create();
       } else {
-         finder.source().sendSuccess(() -> Component.translatable("commands.test.locate.done", structures), true);
+         outputPlayerCoordinates(source, foundTestDimensions);
+         source.sendSuccess(() -> Component.translatable("commands.test.locate.done", structures), true);
          return structures;
       }
    }
@@ -232,7 +270,7 @@ public class TestCommand {
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
       ArgumentBuilder<CommandSourceStack, ?> runFailedWithRequiredTestsFlag = runWithRetryOptionsAndBuildInfo(Commands.argument("onlyRequiredTests", BoolArgumentType.bool()), (c) -> TestFinder.builder().failedTests(c, BoolArgumentType.getBool(c, "onlyRequiredTests")));
-      LiteralArgumentBuilder var10000 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").then(runWithRetryOptionsAndBuildInfo(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)), (c) -> TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")))))).then(Commands.literal("runmultiple").then(((RequiredArgumentBuilder)Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).executes((c) -> run(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8))).then(Commands.argument("amount", IntegerArgumentType.integer()).executes((c) -> run(TestFinder.builder().createMultipleCopies(IntegerArgumentType.getInteger(c, "amount")).byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8)))));
+      LiteralArgumentBuilder var10000 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").then(runWithRetryOptionsAndBuildInfo(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds), (c) -> TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")))))).then(Commands.literal("runmultiple").then(((RequiredArgumentBuilder)Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> run(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8))).then(Commands.argument("amount", IntegerArgumentType.integer()).executes((c) -> run(TestFinder.builder().createMultipleCopies(IntegerArgumentType.getInteger(c, "amount")).byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8)))));
       LiteralArgumentBuilder var10001 = Commands.literal("runthese");
       TestFinder.Builder var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
@@ -248,9 +286,9 @@ public class TestCommand {
       ArgumentBuilder var9 = Commands.literal("runfailed").then(runFailedWithRequiredTestsFlag);
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
-      LiteralArgumentBuilder<CommandSourceStack> testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).executes((c) -> verify(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).executes((c) -> locate(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("resetclosest").executes((c) -> reset(TestFinder.builder().nearest(c))))).then(Commands.literal("resetthese").executes((c) -> reset(TestFinder.builder().allNearby(c))))).then(Commands.literal("resetthat").executes((c) -> reset(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthat").executes((c) -> clear(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthese").executes((c) -> clear(TestFinder.builder().allNearby(c))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((c) -> clear(TestFinder.builder().radius(c, 250)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((c) -> clear(TestFinder.builder().radius(c, Mth.clamp(IntegerArgumentType.getInteger(c, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((c) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((c) -> showPos((CommandSourceStack)c.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((c) -> showPos((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests(TestCommand::suggestTestFunction).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "height"), IntegerArgumentType.getInteger(c, "depth"))))))));
+      LiteralArgumentBuilder<CommandSourceStack> testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> verify(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> locate(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("resetclosest").executes((c) -> reset(TestFinder.builder().nearest(c))))).then(Commands.literal("resetthese").executes((c) -> reset(TestFinder.builder().allNearby(c))))).then(Commands.literal("resetthat").executes((c) -> reset(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthat").executes((c) -> clear(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthese").executes((c) -> clear(TestFinder.builder().allNearby(c))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((c) -> clear(TestFinder.builder().radius(c, 250)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((c) -> clear(TestFinder.builder().radius(c, Mth.clamp(IntegerArgumentType.getInteger(c, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((c) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((c) -> showPos((CommandSourceStack)c.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((c) -> showPos((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "height"), IntegerArgumentType.getInteger(c, "depth"))))))));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)testCommand.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(context, Registries.TEST_INSTANCE)).executes((c) -> exportTestStructure((CommandSourceStack)c.getSource(), ResourceArgument.getResource(c, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((c) -> export(TestFinder.builder().nearest(c))))).then(Commands.literal("exportthese").executes((c) -> export(TestFinder.builder().allNearby(c))))).then(Commands.literal("exportthat").executes((c) -> export(TestFinder.builder().lookedAt(c))));
+         testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)testCommand.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> exportTestStructure((CommandSourceStack)c.getSource(), ResourceArgument.getResource(c, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((c) -> export(TestFinder.builder().nearest(c))))).then(Commands.literal("exportthese").executes((c) -> export(TestFinder.builder().allNearby(c))))).then(Commands.literal("exportthat").executes((c) -> export(TestFinder.builder().lookedAt(c))));
       }
 
       dispatcher.register(testCommand);
@@ -259,6 +297,16 @@ public class TestCommand {
    public static CompletableFuture<Suggestions> suggestTestFunction(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
       Stream<String> testNamesStream = ((CommandSourceStack)context.getSource()).registryAccess().lookupOrThrow(Registries.TEST_FUNCTION).listElements().map(Holder::getRegisteredName);
       return SharedSuggestionProvider.suggest(testNamesStream, builder);
+   }
+
+   private static String displayTestId(final Identifier id) {
+      return "minecraft".equals(id.getNamespace()) ? id.getPath() : id.toString();
+   }
+
+   private static CompletableFuture<Suggestions> suggestTestInstanceIds(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
+      List<Identifier> testIds = ((CommandSourceStack)context.getSource()).registryAccess().lookupOrThrow(Registries.TEST_INSTANCE).listElementIds().map(ResourceKey::identifier).toList();
+      SharedSuggestionProvider.filterResources(testIds, builder.getRemaining().toLowerCase(Locale.ROOT), (id) -> id, (id) -> builder.suggest(displayTestId(id)));
+      return builder.buildFuture();
    }
 
    private static int resetGameTestInfo(final CommandSourceStack source, final GameTestInfo testInfo) {
@@ -273,12 +321,21 @@ public class TestCommand {
    }
 
    private static Stream<GameTestInfo> toGameTestInfo(final CommandSourceStack source, final RetryOptions retryOptions, final TestInstanceFinder finder, final int rotationSteps) {
-      return finder.findTests().filter((test) -> verifyStructureExists(source, ((GameTestInstance)test.value()).structure())).map((test) -> new GameTestInfo(test, StructureUtils.getRotationForRotationSteps(rotationSteps), source.getLevel(), retryOptions));
+      return finder.findTests().filter((test) -> verifyStructureExists(source, ((GameTestInstance)test.value()).structure())).flatMap((test) -> {
+         ResourceKey<Level> dimension = ((GameTestInstance)test.value()).info().dimension();
+         ServerLevel level = source.getServer().getLevel(dimension);
+         if (level == null) {
+            source.sendFailure(Component.literal("Could not resolve level for dimension: " + String.valueOf(dimension.identifier())));
+            return Stream.empty();
+         } else {
+            return Stream.of(new GameTestInfo(test, StructureUtils.getRotationForRotationSteps(rotationSteps), level, retryOptions));
+         }
+      });
    }
 
-   private static Optional<GameTestInfo> createGameTestInfo(final BlockPos testBlockPos, final CommandSourceStack source, final RetryOptions retryOptions) {
-      ServerLevel level = source.getLevel();
-      BlockEntity var5 = level.getBlockEntity(testBlockPos);
+   private static Optional<GameTestInfo> createGameTestInfo(final GlobalPos testBlockPos, final CommandSourceStack source, final RetryOptions retryOptions) {
+      ServerLevel level = source.getServer().getLevel(testBlockPos.dimension());
+      BlockEntity var5 = level.getBlockEntity(testBlockPos.pos());
       if (var5 instanceof TestInstanceBlockEntity blockEntity) {
          Optional var10000 = blockEntity.test();
          Registry var10001 = source.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
@@ -290,11 +347,11 @@ public class TestCommand {
          } else {
             Holder.Reference<GameTestInstance> test = (Holder.Reference)maybeTest.get();
             GameTestInfo testInfo = new GameTestInfo(test, blockEntity.getRotation(), level, retryOptions);
-            testInfo.setTestBlockPos(testBlockPos);
+            testInfo.setTestBlockPos(testBlockPos.pos());
             return !verifyStructureExists(source, testInfo.getStructure()) ? Optional.empty() : Optional.of(testInfo);
          }
       } else {
-         source.sendFailure(Component.translatable("commands.test.error.test_instance_not_found.position", testBlockPos.getX(), testBlockPos.getY(), testBlockPos.getZ()));
+         source.sendFailure(Component.translatable("commands.test.error.test_instance_not_found.position", testBlockPos.pos().getX(), testBlockPos.pos().getY(), testBlockPos.pos().getZ()));
          return Optional.empty();
       }
    }
@@ -302,7 +359,7 @@ public class TestCommand {
    private static int createNewStructure(final CommandSourceStack source, final Identifier id, final int xSize, final int ySize, final int zSize) throws CommandSyntaxException {
       if (xSize <= 48 && ySize <= 48 && zSize <= 48) {
          ServerLevel level = source.getLevel();
-         BlockPos testPos = createTestPositionAround(source);
+         BlockPos testPos = createTestPositionAround(source, level.dimension());
          TestInstanceBlockEntity test = StructureUtils.createNewEmptyTest(id, testPos, new Vec3i(xSize, ySize, zSize), Rotation.NONE, level);
          BlockPos low = test.getStructurePos();
          BlockPos high = low.offset(xSize - 1, 0, zSize - 1);
@@ -367,7 +424,7 @@ public class TestCommand {
    }
 
    private static boolean verifyStructureExists(final CommandSourceStack source, final Identifier structure) {
-      if (source.getLevel().getStructureManager().get(structure).isEmpty()) {
+      if (source.getLevel().getStructureTemplateManager().get(structure).isEmpty()) {
          source.sendFailure(Component.translatable("commands.test.error.structure_not_found", Component.translationArg(structure)));
          return false;
       } else {
@@ -375,25 +432,88 @@ public class TestCommand {
       }
    }
 
-   private static BlockPos createTestPositionAround(final CommandSourceStack source) {
-      BlockPos playerPos = BlockPos.containing(source.getPosition());
-      int surfaceY = source.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, playerPos).getY();
-      return new BlockPos(playerPos.getX(), surfaceY, playerPos.getZ() + 3);
+   private static BlockPos createTestPositionAround(final CommandSourceStack source, final ResourceKey<Level> dimension) {
+      Info info = playerAndTestInfo(source, dimension);
+      return new BlockPos(info.playerPos.getX(), info.surfaceY, info.playerPos.getZ() + 3);
    }
 
-   public static record TestSummaryDisplayer(CommandSourceStack source, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer {
+   private static Info playerAndTestInfo(final CommandSourceStack source, final ResourceKey<Level> dimension) {
+      ServerPlayer serverPlayer = source.getPlayer();
+      BlockPos playerPos = BlockPos.containing(serverPlayer == null ? source.getPosition() : serverPlayer.position());
+      BlockPos testPos = new BlockPos(playerPos.getX(), 384, playerPos.getZ());
+      ServerLevel level = source.getServer().getLevel(dimension);
+      level.getChunk(testPos);
+      int surfaceY = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, testPos).getY();
+      return new Info(source.getPlayer(), playerPos, testPos, surfaceY);
+   }
+
+   private static void outputTestCoordinates(final CommandSourceStack source, final Set<ResourceKey<Level>> testDimensions) {
+      for(ResourceKey<Level> testDimensionKey : testDimensions) {
+         Info testInfo = playerAndTestInfo(source, testDimensionKey);
+         Info playerInfo = playerAndTestInfo(source, source.getLevel().dimension());
+         if (isPlayerInCurrentTestDimension(playerInfo, testDimensions)) {
+            return;
+         }
+
+         String testDimension = testDimensionKey.identifier().toString();
+         Component testCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.run.coordinates", testInfo.playerPos.getX(), testInfo.surfaceY, testInfo.playerPos.getZ(), testDimension.substring(testDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.YELLOW).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + testDimension + " run tp @s " + testInfo.playerPos.getX() + " " + testInfo.surfaceY + " " + testInfo.playerPos.getZ() + " 0 0")).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+         source.sendSuccess(() -> testCoordinates, false);
+      }
+
+   }
+
+   private static void outputPlayerCoordinates(final CommandSourceStack source, final Set<ResourceKey<Level>> testDimensions) {
+      Info playerInfo = playerAndTestInfo(source, source.getLevel().dimension());
+      if (!isPlayerInCurrentTestDimension(playerInfo, testDimensions)) {
+         ServerPlayer player = playerInfo.player;
+         if (player != null) {
+            float playerRotation = player.getYRot();
+            float playerPitch = player.getXRot();
+            ResourceKey<Level> playerDimensionKey = player.level().dimension();
+            String playerDimension = playerDimensionKey.identifier().toString();
+            Component playerCoordinates = ComponentUtils.wrapInSquareBrackets(Component.translatable("test.player.coordinates", playerInfo.playerPos.getX(), playerInfo.playerPos.getY(), playerInfo.playerPos.getZ(), playerDimension.substring(playerDimension.indexOf(58) + 1))).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GOLD).withClickEvent(new ClickEvent.SuggestCommand("/execute in " + playerDimension + " run tp @s " + playerInfo.playerPos.getX() + " " + playerInfo.playerPos.getY() + " " + playerInfo.playerPos.getZ() + " " + Mth.floor(playerRotation) + " " + Mth.floor(playerPitch))).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
+            source.sendSuccess(() -> playerCoordinates, false);
+         }
+      }
+   }
+
+   private static boolean isPlayerInCurrentTestDimension(final Info playerInfo, final Set<ResourceKey<Level>> testDimensions) {
+      ServerPlayer player = playerInfo.player;
+      if (player == null) {
+         return false;
+      } else {
+         ResourceKey<Level> playerDimensionKey = player.level().dimension();
+         return testDimensions.size() <= 1 && testDimensions.contains(playerDimensionKey) && testDimensions.contains(Level.OVERWORLD);
+      }
+   }
+
+   private static record Info(@Nullable ServerPlayer player, BlockPos playerPos, BlockPos testPos, int surfaceY) {
+      private Info {
          super();
+      }
+   }
+
+   public static final class TestSummaryDisplayer implements GameTestListener {
+      private final CommandSourceStack source;
+      private final MultipleTestTracker tracker;
+      private final Set<ResourceKey<Level>> dimensions = new ReferenceArraySet();
+
+      public TestSummaryDisplayer(final CommandSourceStack source, final MultipleTestTracker tracker) {
+         super();
+         this.source = source;
+         this.tracker = tracker;
       }
 
       public void testStructureLoaded(final GameTestInfo testInfo) {
       }
 
       public void testPassed(final GameTestInfo testInfo, final GameTestRunner runner) {
+         this.dimensions.add(testInfo.getTest().dimension());
          this.showTestSummaryIfAllDone();
       }
 
       public void testFailed(final GameTestInfo testInfo, final GameTestRunner runner) {
+         this.dimensions.add(testInfo.getTest().dimension());
          this.showTestSummaryIfAllDone();
       }
 
@@ -413,6 +533,9 @@ public class TestCommand {
             if (this.tracker.hasFailedOptional()) {
                this.source.sendSystemMessage(Component.translatable("commands.test.summary.optional_failed", this.tracker.getFailedOptionalCount()));
             }
+
+            TestCommand.outputPlayerCoordinates(this.source, this.dimensions);
+            TestCommand.outputTestCoordinates(this.source, this.dimensions);
          }
 
       }

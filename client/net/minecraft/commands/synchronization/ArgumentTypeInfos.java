@@ -38,8 +38,10 @@ import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.commands.arguments.ScoreHolderArgument;
 import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.commands.arguments.SlotArgument;
+import net.minecraft.commands.arguments.SlotSourceArgument;
 import net.minecraft.commands.arguments.SlotsArgument;
 import net.minecraft.commands.arguments.StyleArgument;
+import net.minecraft.commands.arguments.SwingAnimationArgument;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.commands.arguments.TeamColorArgument;
 import net.minecraft.commands.arguments.TemplateMirrorArgument;
@@ -132,7 +134,12 @@ public class ArgumentTypeInfos {
       register(registry, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
       register(registry, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
       register(registry, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
+      register(registry, "context_float_provider", ResourceOrIdArgument.ContextFloatProviderArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::floatProvider));
+      register(registry, "context_int_provider", ResourceOrIdArgument.ContextIntProviderArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::intProvider));
+      register(registry, "slot_source", SlotSourceArgument.class, SingletonArgumentInfo.contextAware(SlotSourceArgument::slotSource));
       register(registry, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
+      register(registry, "feature", ResourceOrIdArgument.FeatureArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::feature));
+      register(registry, "swing_animation", SwingAnimationArgument.class, SingletonArgumentInfo.contextFree(SwingAnimationArgument::swingAnimationType));
       return register(registry, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 

@@ -1,12 +1,9 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -20,15 +17,10 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class InfestedBlock extends Block {
-   public static final MapCodec<InfestedBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(i, InfestedBlock::new));
    private final Block hostBlock;
    private static final Map<Block, Block> BLOCK_BY_HOST_BLOCK = Maps.newIdentityHashMap();
    private static final Map<BlockState, BlockState> HOST_TO_INFESTED_STATES = Maps.newIdentityHashMap();
    private static final Map<BlockState, BlockState> INFESTED_TO_HOST_STATES = Maps.newIdentityHashMap();
-
-   public MapCodec<? extends InfestedBlock> codec() {
-      return CODEC;
-   }
 
    public InfestedBlock(final Block hostBlock, final BlockBehaviour.Properties properties) {
       super(properties.destroyTime(hostBlock.defaultDestroyTime() / 2.0F).explosionResistance(0.75F));
@@ -75,14 +67,10 @@ public class InfestedBlock extends Block {
          BlockState newState = (BlockState)newStateSupplier.get();
 
          for(Property<?> property : k.getProperties()) {
-            newState = copyProperty(property, k, newState);
+            newState = BlockBehaviour.BlockStateBase.copyProperty(k, newState, property);
          }
 
          return newState;
       });
-   }
-
-   private static <T extends Comparable<T>> BlockState copyProperty(final Property<T> property, final BlockState source, final BlockState target) {
-      return target.hasProperty(property) ? (BlockState)target.setValue(property, source.getValue(property)) : target;
    }
 }

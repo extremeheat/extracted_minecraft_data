@@ -127,23 +127,28 @@ public class Pufferfish extends AbstractFish {
    }
 
    private void touch(final ServerLevel level, final Mob mob) {
-      int puffState = this.getPuffState();
-      if (mob.hurtServer(level, this.damageSources().mobAttack(this), (float)(1 + puffState))) {
-         mob.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * puffState, 0), this);
-         this.playSound(SoundEvents.PUFFER_FISH_STING, 1.0F, 1.0F);
+      if (this.doTeamsAllowDamage(mob)) {
+         int puffState = this.getPuffState();
+         if (mob.hurtServer(level, this.damageSources().mobAttack(this), (float)(1 + puffState))) {
+            mob.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * puffState, 0), this);
+            this.playSound(SoundEvents.PUFFER_FISH_STING, 1.0F, 1.0F);
+         }
       }
 
    }
 
    public void playerTouch(final Player player) {
-      int puffState = this.getPuffState();
-      if (player instanceof ServerPlayer serverPlayer) {
-         if (puffState > 0 && player.hurtServer(serverPlayer.level(), this.damageSources().mobAttack(this), (float)(1 + puffState))) {
-            if (!this.isSilent()) {
-               serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
-            }
+      if (this.doTeamsAllowDamage(player)) {
+         int puffState = this.getPuffState();
+         if (player instanceof ServerPlayer) {
+            ServerPlayer serverPlayer = (ServerPlayer)player;
+            if (puffState > 0 && player.hurtServer(serverPlayer.level(), this.damageSources().mobAttack(this), (float)(1 + puffState))) {
+               if (!this.isSilent()) {
+                  serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
+               }
 
-            player.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * puffState, 0), this);
+               player.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * puffState, 0), this);
+            }
          }
       }
 

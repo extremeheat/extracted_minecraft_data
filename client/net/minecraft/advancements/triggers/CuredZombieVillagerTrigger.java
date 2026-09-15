@@ -3,14 +3,15 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public CuredZombieVillagerTrigger() {
@@ -27,8 +28,8 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
       this.trigger(player, (t) -> t.matches(zombieContext, villagerContext));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> zombie, Optional<ContextAwarePredicate> villager) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("zombie").forGetter(TriggerInstance::zombie), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Holder<LootItemCondition>> zombie, Optional<Holder<LootItemCondition>> villager) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LootItemCondition.CODEC.optionalFieldOf("zombie").forGetter(TriggerInstance::zombie), LootItemCondition.CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
@@ -39,17 +40,17 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
       }
 
       public boolean matches(final LootContext zombie, final LootContext villager) {
-         if (this.zombie.isPresent() && !((ContextAwarePredicate)this.zombie.get()).matches(zombie)) {
+         if (this.zombie.isPresent() && !((LootItemCondition)((Holder)this.zombie.get()).value()).test(zombie)) {
             return false;
          } else {
-            return !this.villager.isPresent() || ((ContextAwarePredicate)this.villager.get()).matches(villager);
+            return !this.villager.isPresent() || ((LootItemCondition)((Holder)this.villager.get()).value()).test(villager);
          }
       }
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "zombie", this.zombie);
-         Validatable.validate(validator.entityContext(), "villager", this.villager);
+         Validatable.validateHolder(validator.entityContext(), "zombie", this.zombie);
+         Validatable.validateHolder(validator.entityContext(), "villager", this.villager);
       }
    }
 }

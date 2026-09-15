@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -16,22 +14,17 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.AbstractHugeMushroomFeature;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((b) -> b.feature), propertiesCodec()).apply(i, MushroomBlock::new));
+   private static final int SEARCH_RADIUS = 4;
+   private static final int MAX_NEIGHBORS_TO_GROW = 4;
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
-   private final ResourceKey<ConfiguredFeature<?, ?>> feature;
+   private final ResourceKey<Feature> feature;
 
-   public MapCodec<MushroomBlock> codec() {
-      return CODEC;
-   }
-
-   public MushroomBlock(final ResourceKey<ConfiguredFeature<?, ?>> feature, final BlockBehaviour.Properties properties) {
+   public MushroomBlock(final ResourceKey<Feature> feature, final BlockBehaviour.Properties properties) {
       super(properties);
       this.feature = feature;
    }
@@ -42,16 +35,8 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    protected void randomTick(final BlockState state, final ServerLevel level, BlockPos pos, final RandomSource random) {
       if (random.nextInt(25) == 0) {
-         int max = 5;
-         int r = 4;
-
-         for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 1, 4))) {
-            if (level.getBlockState(blockPos).is(this)) {
-               --max;
-               if (max <= 0) {
-                  return;
-               }
-            }
+         if (!this.canSpread(level, pos)) {
+            return;
          }
 
          BlockPos offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
@@ -71,6 +56,12 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    }
 
+   private boolean canSpread(final ServerLevel level, final BlockPos pos) {
+      BlockPos minPos = pos.offset(-4, -1, -4);
+      BlockPos maxPos = pos.offset(4, 1, 4);
+      return level.findBlocksIn(minPos, maxPos).filterState((state) -> state.is(this)).atMostMatched(4);
+   }
+
    protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return state.isSolidRender();
    }
@@ -86,35 +77,32 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
    }
 
    public boolean growMushroom(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
-      Optional<? extends Holder<ConfiguredFeature<?, ?>>> feature = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+      Optional<? extends Holder<Feature>> feature = level.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
       if (feature.isEmpty()) {
          return false;
       } else {
          level.removeBlock(pos, false);
-         if (((ConfiguredFeature)((Holder)feature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, pos)) {
+         if (((Feature)((Holder)feature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, pos)) {
             return true;
          } else {
-            level.setBlock(pos, state, 3);
+            level.setBlockAndUpdate(pos, state);
             return false;
          }
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (level instanceof ServerLevel serverLevel) {
-         Optional<? extends Holder<ConfiguredFeature<?, ?>>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
+         Optional<? extends Holder<Feature>> featureHolder = serverLevel.registryAccess().lookupOrThrow(Registries.FEATURE).get(this.feature);
          if (featureHolder.isPresent()) {
-            ConfiguredFeature<?, ?> configuredFeature = (ConfiguredFeature)((Holder)featureHolder.get()).value();
-            if (configuredFeature.feature() instanceof AbstractHugeMushroomFeature) {
-               FeatureConfiguration var8 = configuredFeature.config();
-               if (var8 instanceof HugeMushroomFeatureConfiguration) {
-                  HugeMushroomFeatureConfiguration config = (HugeMushroomFeatureConfiguration)var8;
-                  int minHeight = 4 + config.foliageRadius();
-                  return level.isInsideBuildHeight(pos.above(minHeight));
-               }
+            Feature feature = (Feature)((Holder)featureHolder.get()).value();
+            if (feature instanceof AbstractHugeMushroomFeature) {
+               AbstractHugeMushroomFeature mushroomFeature = (AbstractHugeMushroomFeature)feature;
+               int minHeight = 4 + mushroomFeature.foliageRadius();
+               return level.isInsideBuildHeight(pos.above(minHeight));
+            } else {
+               return false;
             }
-
-            return false;
          } else {
             return false;
          }
@@ -123,11 +111,11 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
       }
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (double)random.nextFloat() < 0.4;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.growMushroom(level, pos, state, random);
    }
 }

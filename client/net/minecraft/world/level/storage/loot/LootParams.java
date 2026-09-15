@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -47,7 +48,7 @@ public class LootParams {
 
    public static class Builder {
       private final ServerLevel level;
-      private final ContextMap.Builder params = new ContextMap.Builder();
+      private final ContextMap.Builder params = ContextMap.builder();
       private final Map<Identifier, DynamicDrop> dynamicDrops = Maps.newHashMap();
       private float luck;
 
@@ -61,21 +62,26 @@ public class LootParams {
       }
 
       public <T> Builder withParameter(final ContextKey<T> param, final T value) {
-         this.params.withParameter(param, value);
+         this.params.set(param, value);
          return this;
       }
 
       public <T> Builder withOptionalParameter(final ContextKey<T> param, final @Nullable T value) {
-         this.params.withOptionalParameter(param, value);
+         this.params.set(param, value);
          return this;
       }
 
       public <T> T getParameter(final ContextKey<T> param) {
-         return (T)this.params.getParameter(param);
+         T value = (T)this.params.get(param);
+         if (value == null) {
+            throw new NoSuchElementException(param.name().toString());
+         } else {
+            return value;
+         }
       }
 
       public <T> @Nullable T getOptionalParameter(final ContextKey<T> param) {
-         return (T)this.params.getOptionalParameter(param);
+         return (T)this.params.get(param);
       }
 
       public Builder withDynamicDrop(final Identifier location, final DynamicDrop dynamicDrop) {
@@ -93,7 +99,7 @@ public class LootParams {
       }
 
       public LootParams create(final ContextKeySet contextKeySet) {
-         ContextMap keySet = this.params.create(contextKeySet);
+         ContextMap keySet = this.params.buildAndValidate(contextKeySet);
          return new LootParams(this.level, keySet, this.dynamicDrops, this.luck);
       }
    }

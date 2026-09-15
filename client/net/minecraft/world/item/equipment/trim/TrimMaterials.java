@@ -26,25 +26,65 @@ public class TrimMaterials {
    }
 
    public static void bootstrap(final BootstrapContext<TrimMaterial> context) {
-      register(context, QUARTZ, Style.EMPTY.withColor(14931140), MaterialAssetGroup.QUARTZ);
-      register(context, IRON, Style.EMPTY.withColor(15527148), MaterialAssetGroup.IRON);
-      register(context, NETHERITE, Style.EMPTY.withColor(6445145), MaterialAssetGroup.NETHERITE);
-      register(context, REDSTONE, Style.EMPTY.withColor(9901575), MaterialAssetGroup.REDSTONE);
-      register(context, COPPER, Style.EMPTY.withColor(11823181), MaterialAssetGroup.COPPER);
-      register(context, GOLD, Style.EMPTY.withColor(14594349), MaterialAssetGroup.GOLD);
-      register(context, EMERALD, Style.EMPTY.withColor(1155126), MaterialAssetGroup.EMERALD);
-      register(context, DIAMOND, Style.EMPTY.withColor(7269586), MaterialAssetGroup.DIAMOND);
-      register(context, LAPIS, Style.EMPTY.withColor(4288151), MaterialAssetGroup.LAPIS);
-      register(context, AMETHYST, Style.EMPTY.withColor(10116294), MaterialAssetGroup.AMETHYST);
-      register(context, RESIN, Style.EMPTY.withColor(16545810), MaterialAssetGroup.RESIN);
+      register(context, QUARTZ, Style.EMPTY.withColor(14931140), TrimMaterials.Palette.QUARTZ);
+      register(context, IRON, Style.EMPTY.withColor(15527148), TrimMaterials.Palette.IRON);
+      register(context, NETHERITE, Style.EMPTY.withColor(6445145), TrimMaterials.Palette.NETHERITE);
+      register(context, REDSTONE, Style.EMPTY.withColor(9901575), TrimMaterials.Palette.REDSTONE);
+      register(context, COPPER, Style.EMPTY.withColor(11823181), TrimMaterials.Palette.COPPER);
+      register(context, GOLD, Style.EMPTY.withColor(14594349), TrimMaterials.Palette.GOLD);
+      register(context, EMERALD, Style.EMPTY.withColor(1155126), TrimMaterials.Palette.EMERALD);
+      register(context, DIAMOND, Style.EMPTY.withColor(7269586), TrimMaterials.Palette.DIAMOND);
+      register(context, LAPIS, Style.EMPTY.withColor(4288151), TrimMaterials.Palette.LAPIS);
+      register(context, AMETHYST, Style.EMPTY.withColor(10116294), TrimMaterials.Palette.AMETHYST);
+      register(context, RESIN, Style.EMPTY.withColor(16545810), TrimMaterials.Palette.RESIN);
    }
 
-   private static void register(final BootstrapContext<TrimMaterial> context, final ResourceKey<TrimMaterial> registryKey, final Style hoverTextStyle, final MaterialAssetGroup assets) {
+   private static void register(final BootstrapContext<TrimMaterial> context, final ResourceKey<TrimMaterial> registryKey, final Style hoverTextStyle, final Palette palette) {
       Component description = Component.translatable(Util.makeDescriptionId("trim_material", registryKey.identifier())).withStyle(hoverTextStyle);
-      context.register(registryKey, new TrimMaterial(assets, description));
+      context.register(registryKey, new TrimMaterial(palette.id(), description));
    }
 
    private static ResourceKey<TrimMaterial> registryKey(final String id) {
       return ResourceKey.create(Registries.TRIM_MATERIAL, Identifier.withDefaultNamespace(id));
+   }
+
+   public static enum Palette {
+      QUARTZ("quartz"),
+      IRON("iron"),
+      IRON_DARKER("iron_darker"),
+      NETHERITE("netherite"),
+      NETHERITE_DARKER("netherite_darker"),
+      REDSTONE("redstone"),
+      COPPER("copper"),
+      COPPER_DARKER("copper_darker"),
+      GOLD("gold"),
+      GOLD_DARKER("gold_darker"),
+      EMERALD("emerald"),
+      DIAMOND("diamond"),
+      DIAMOND_DARKER("diamond_darker"),
+      LAPIS("lapis"),
+      AMETHYST("amethyst"),
+      RESIN("resin");
+
+      private final String suffix;
+      private final Identifier id;
+
+      private Palette(final String name) {
+         this.suffix = name;
+         this.id = Identifier.withDefaultNamespace("trim/" + name);
+      }
+
+      public String suffix() {
+         return this.suffix;
+      }
+
+      public Identifier id() {
+         return this.id;
+      }
+
+      // $FF: synthetic method
+      private static Palette[] $values() {
+         return new Palette[]{QUARTZ, IRON, IRON_DARKER, NETHERITE, NETHERITE_DARKER, REDSTONE, COPPER, COPPER_DARKER, GOLD, GOLD_DARKER, EMERALD, DIAMOND, DIAMOND_DARKER, LAPIS, AMETHYST, RESIN};
+      }
    }
 }

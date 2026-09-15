@@ -44,8 +44,12 @@ public sealed interface Holder<T> {
 
    boolean canSerializeIn(HolderOwner<T> registry);
 
+   default Optional<String> getRegisteredNameIfPresent() {
+      return this.unwrapKey().map((key) -> key.identifier().toString());
+   }
+
    default String getRegisteredName() {
-      return (String)this.unwrapKey().map((key) -> key.identifier().toString()).orElse("[unregistered]");
+      return (String)this.getRegisteredNameIfPresent().orElse("[unregistered]");
    }
 
    static <T> Holder<T> direct(final T value) {
@@ -200,7 +204,7 @@ public sealed interface Holder<T> {
       }
 
       public boolean canSerializeIn(final HolderOwner<T> context) {
-         return this.owner.canSerializeIn(context);
+         return context.canSerialize(this.owner);
       }
 
       public Either<ResourceKey<T>, T> unwrap() {

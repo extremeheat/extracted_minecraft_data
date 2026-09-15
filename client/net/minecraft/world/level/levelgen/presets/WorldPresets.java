@@ -115,12 +115,12 @@ public class WorldPresets {
       private Bootstrap(final BootstrapContext<WorldPreset> context) {
          super();
          this.context = context;
-         HolderGetter<DimensionType> dimensionTypes = context.<DimensionType>lookup(Registries.DIMENSION_TYPE);
-         this.noiseSettings = context.<NoiseGeneratorSettings>lookup(Registries.NOISE_SETTINGS);
-         this.biomes = context.<Biome>lookup(Registries.BIOME);
-         this.placedFeatures = context.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
-         this.structureSets = context.<StructureSet>lookup(Registries.STRUCTURE_SET);
-         this.multiNoiseBiomeSourceParameterLists = context.<MultiNoiseBiomeSourceParameterList>lookup(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
+         HolderGetter<DimensionType> dimensionTypes = context.lookup(Registries.DIMENSION_TYPE);
+         this.noiseSettings = context.lookup(Registries.NOISE_SETTINGS);
+         this.biomes = context.lookup(Registries.BIOME);
+         this.placedFeatures = context.lookup(Registries.PLACED_FEATURE);
+         this.structureSets = context.lookup(Registries.STRUCTURE_SET);
+         this.multiNoiseBiomeSourceParameterLists = context.lookup(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
          this.overworldDimensionType = dimensionTypes.getOrThrow(BuiltinDimensionTypes.OVERWORLD);
          this.netherDimensionType = dimensionTypes.getOrThrow(BuiltinDimensionTypes.NETHER);
          this.endDimensionType = dimensionTypes.getOrThrow(BuiltinDimensionTypes.END);

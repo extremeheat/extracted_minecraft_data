@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -17,15 +16,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TorchflowerCropBlock extends CropBlock {
-   public static final MapCodec<TorchflowerCropBlock> CODEC = simpleCodec(TorchflowerCropBlock::new);
    public static final int MAX_AGE = 1;
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPES;
    private static final int BONEMEAL_INCREASE = 1;
-
-   public MapCodec<TorchflowerCropBlock> codec() {
-      return CODEC;
-   }
 
    public TorchflowerCropBlock(final BlockBehaviour.Properties properties) {
       super(properties);

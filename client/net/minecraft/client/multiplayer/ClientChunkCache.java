@@ -5,11 +5,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -24,7 +22,6 @@ import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -98,7 +95,7 @@ public class ClientChunkCache extends ChunkSource {
       }
    }
 
-   public @Nullable LevelChunk replaceWithPacketData(final int chunkX, final int chunkZ, final FriendlyByteBuf readBuffer, final Map<Heightmap.Types, long[]> heightmaps, final Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities) {
+   public @Nullable LevelChunk replaceWithPacketData(final int chunkX, final int chunkZ, final ClientboundLevelChunkPacketData chunkData) {
       if (!this.storage.inRange(chunkX, chunkZ)) {
          LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", chunkX, chunkZ);
          return null;
@@ -108,10 +105,10 @@ public class ClientChunkCache extends ChunkSource {
          ChunkPos pos = new ChunkPos(chunkX, chunkZ);
          if (!isValidChunk(chunk, chunkX, chunkZ)) {
             chunk = new LevelChunk(this.level, pos);
-            chunk.replaceWithPacketData(readBuffer, heightmaps, blockEntities);
+            chunk.replaceWithPacketData(chunkX, chunkZ, chunkData);
             this.storage.replace(index, chunk);
          } else {
-            chunk.replaceWithPacketData(readBuffer, heightmaps, blockEntities);
+            chunk.replaceWithPacketData(chunkX, chunkZ, chunkData);
             this.storage.refreshEmptySections(chunk);
          }
 
@@ -262,9 +259,9 @@ public class ClientChunkCache extends ChunkSource {
          if (this.inRange(sectionX, sectionZ)) {
             long sectionNode = SectionPos.asLong(sectionX, sectionY, sectionZ);
             if (empty) {
-               this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionEmpty(sectionNode);
             } else {
-               this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionNotEmpty(sectionNode);
             }
 
          }
@@ -272,24 +269,31 @@ public class ClientChunkCache extends ChunkSource {
 
       private void onChunkRemoved(final LevelChunk chunk) {
          ChunkPos chunkPos = chunk.getPos();
-         this.removedLoadedChunks[this.updatingSetsIndex].add(chunkPos.pack());
+         long chunkNode = chunkPos.pack();
+         this.addedLoadedChunks[this.updatingSetsIndex].remove(chunkNode);
+         this.removedLoadedChunks[this.updatingSetsIndex].add(chunkNode);
          LevelChunkSection[] sections = chunk.getSections();
 
          for(int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
-            this.removedEmptySections[this.updatingSetsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+            this.markSectionEmpty(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
          }
 
       }
 
       private void onChunkAdded(final LevelChunk chunk) {
          ChunkPos chunkPos = chunk.getPos();
-         this.addedLoadedChunks[this.updatingSetsIndex].add(chunkPos.pack());
+         long chunkNode = chunkPos.pack();
+         this.removedLoadedChunks[this.updatingSetsIndex].remove(chunkNode);
+         this.addedLoadedChunks[this.updatingSetsIndex].add(chunkNode);
          LevelChunkSection[] sections = chunk.getSections();
 
          for(int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
             LevelChunkSection section = sections[sectionIndex];
+            long sectionNode = SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z());
             if (section.hasOnlyAir()) {
-               this.addedEmptySections[this.updatingSetsIndex].add(SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z()));
+               this.markSectionEmpty(sectionNode);
+            } else {
+               this.markSectionNotEmpty(sectionNode);
             }
          }
 
@@ -303,12 +307,22 @@ public class ClientChunkCache extends ChunkSource {
             LevelChunkSection section = sections[sectionIndex];
             long sectionNode = SectionPos.asLong(chunkPos.x(), chunk.getSectionYFromSectionIndex(sectionIndex), chunkPos.z());
             if (section.hasOnlyAir()) {
-               this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionEmpty(sectionNode);
             } else {
-               this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
+               this.markSectionNotEmpty(sectionNode);
             }
          }
 
+      }
+
+      private void markSectionEmpty(final long sectionNode) {
+         this.removedEmptySections[this.updatingSetsIndex].remove(sectionNode);
+         this.addedEmptySections[this.updatingSetsIndex].add(sectionNode);
+      }
+
+      private void markSectionNotEmpty(final long sectionNode) {
+         this.addedEmptySections[this.updatingSetsIndex].remove(sectionNode);
+         this.removedEmptySections[this.updatingSetsIndex].add(sectionNode);
       }
 
       private boolean inRange(final int chunkX, final int chunkZ) {

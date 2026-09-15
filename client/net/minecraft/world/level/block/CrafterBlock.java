@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -41,7 +40,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class CrafterBlock extends BaseEntityBlock {
-   public static final MapCodec<CrafterBlock> CODEC = simpleCodec(CrafterBlock::new);
    public static final BooleanProperty CRAFTING;
    public static final BooleanProperty TRIGGERED;
    private static final EnumProperty<FrontAndTop> ORIENTATION;
@@ -53,10 +51,6 @@ public class CrafterBlock extends BaseEntityBlock {
    public CrafterBlock(final BlockBehaviour.Properties properties) {
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ORIENTATION, FrontAndTop.NORTH_UP)).setValue(TRIGGERED, false)).setValue(CRAFTING, false));
-   }
-
-   protected MapCodec<CrafterBlock> codec() {
-      return CODEC;
    }
 
    protected boolean hasAnalogOutputSignal(final BlockState state) {

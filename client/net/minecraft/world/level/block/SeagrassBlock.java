@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,12 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SeagrassBlock extends VegetationBlock implements BonemealableBlock, LiquidBlockContainer {
-   public static final MapCodec<SeagrassBlock> CODEC = simpleCodec(SeagrassBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 12.0);
-
-   public MapCodec<SeagrassBlock> codec() {
-      return CODEC;
-   }
 
    protected SeagrassBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -58,11 +52,11 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
       return result;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return level.getBlockState(pos.above()).is(Blocks.WATER);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
@@ -70,7 +64,7 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
       return Fluids.WATER.getSource(false);
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockState lowerState = Blocks.TALL_SEAGRASS.defaultBlockState();
       BlockState upperState = (BlockState)lowerState.setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER);
       BlockPos above = pos.above();

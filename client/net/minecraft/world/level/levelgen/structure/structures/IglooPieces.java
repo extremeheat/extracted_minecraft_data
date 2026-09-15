@@ -20,10 +20,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -43,17 +43,17 @@ public class IglooPieces {
       super();
    }
 
-   public static void addPieces(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+   public static void addPieces(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final StructurePiecesBuilder builder, final RandomSource random) {
       if (random.nextDouble() < 0.5) {
          int depth = random.nextInt(8) + 4;
-         structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LABORATORY, position, rotation, depth * 3));
+         builder.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LABORATORY, position, rotation, depth * 3));
 
          for(int i = 0; i < depth - 1; ++i) {
-            structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LADDER, position, rotation, i * 3));
+            builder.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LADDER, position, rotation, i * 3));
          }
       }
 
-      structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_IGLOO, position, rotation, 0));
+      builder.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_IGLOO, position, rotation, 0));
    }
 
    static {
@@ -85,7 +85,7 @@ public class IglooPieces {
 
       protected void handleDataMarker(final String markerId, final BlockPos position, final ServerLevelAccessor level, final RandomSource random, final BoundingBox chunkBB) {
          if ("chest".equals(markerId)) {
-            level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
+            level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
             BlockEntity chest = level.getBlockEntity(position.below());
             if (chest instanceof ChestBlockEntity) {
                ChestBlockEntity chestBlockEntity = (ChestBlockEntity)chest;
@@ -108,7 +108,7 @@ public class IglooPieces {
             BlockPos trapDoorPos = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(settings, new BlockPos(3, 0, 5)));
             BlockState belowState = level.getBlockState(trapDoorPos.below());
             if (!belowState.isAir() && !belowState.is(Blocks.LADDER)) {
-               level.setBlock(trapDoorPos, Blocks.SNOW_BLOCK.defaultBlockState(), 3);
+               level.setBlockAndUpdate(trapDoorPos, Blocks.SNOW_BLOCK.defaultBlockState());
             }
          }
 

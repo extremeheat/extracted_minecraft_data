@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,14 +27,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterloggedBlock, BonemealableBlock {
-   public static final MapCodec<SmallDripleafBlock> CODEC = simpleCodec(SmallDripleafBlock::new);
    private static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<SmallDripleafBlock> codec() {
-      return CODEC;
-   }
 
    public SmallDripleafBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -59,7 +53,7 @@ public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterl
       if (!level.isClientSide()) {
          BlockPos abovePos = pos.above();
          BlockState blockState = DoublePlantBlock.copyWaterloggedFrom(level, abovePos, (BlockState)((BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)).setValue(FACING, (Direction)state.getValue(FACING)));
-         level.setBlock(abovePos, blockState, 3);
+         level.setBlockAndUpdate(abovePos, blockState);
       }
 
    }
@@ -90,22 +84,22 @@ public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterl
       builder.add(HALF, WATERLOGGED, FACING);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
          BlockPos above = pos.above();
          level.setBlock(above, level.getFluidState(above).createLegacyBlock(), 18);
          BigDripleafBlock.placeWithRandomHeight(level, random, pos, (Direction)state.getValue(FACING));
       } else {
          BlockPos belowPos = pos.below();
-         this.performBonemeal(level, random, belowPos, level.getBlockState(belowPos));
+         this.performBonemeal(level, random, belowPos, level.getBlockState(belowPos), source);
       }
 
    }

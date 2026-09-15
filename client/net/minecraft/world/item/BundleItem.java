@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -79,7 +80,7 @@ public class BundleItem extends Item {
          return false;
       } else {
          ItemStack other = slot.getItem();
-         BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+         BundleContents.Mutable contents = initialContents.asMutable();
          if (clickAction == ClickAction.PRIMARY && !other.isEmpty()) {
             if (contents.tryTransfer(slot, player) > 0) {
                playInsertSound(player);
@@ -119,7 +120,7 @@ public class BundleItem extends Item {
          if (initialContents == null) {
             return false;
          } else {
-            BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+            BundleContents.Mutable contents = initialContents.asMutable();
             if (clickAction == ClickAction.PRIMARY && !other.isEmpty()) {
                if (slot.allowModification(player) && contents.tryInsert(other) > 0) {
                   playInsertSound(player);
@@ -181,7 +182,7 @@ public class BundleItem extends Item {
    public static void toggleSelectedItem(final ItemStack stack, final int selectedItem) {
       BundleContents initialContents = (BundleContents)stack.get(DataComponents.BUNDLE_CONTENTS);
       if (initialContents != null) {
-         BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+         BundleContents.Mutable contents = initialContents.asMutable();
          contents.toggleSelectedItem(selectedItem);
          stack.set(DataComponents.BUNDLE_CONTENTS, contents.toImmutable());
       }
@@ -205,7 +206,7 @@ public class BundleItem extends Item {
       if (contents != null && !contents.isEmpty()) {
          Optional<ItemStack> itemStack = removeOneItemFromBundle(bundle, player, contents);
          if (itemStack.isPresent()) {
-            player.drop((ItemStack)itemStack.get(), true);
+            player.drop((ItemStack)itemStack.get(), true, Prediction.PREDICTED);
             return true;
          } else {
             return false;
@@ -216,7 +217,7 @@ public class BundleItem extends Item {
    }
 
    private static Optional<ItemStack> removeOneItemFromBundle(final ItemStack self, final Player player, final BundleContents initialContents) {
-      BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+      BundleContents.Mutable contents = initialContents.asMutable();
       ItemStack removed = contents.removeOne();
       if (removed != null) {
          playRemoveOneSound(player);
@@ -255,7 +256,7 @@ public class BundleItem extends Item {
       BundleContents contents = (BundleContents)entity.getItem().get(DataComponents.BUNDLE_CONTENTS);
       if (contents != null) {
          entity.getItem().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-         ItemUtils.onContainerDestroyed(entity, contents.itemCopyStream());
+         ItemUtils.onContainerDestroyed(entity, contents.itemCopies());
       }
    }
 

@@ -18,7 +18,7 @@ public class AssignProfessionFromJobSite {
    public static BehaviorControl<Villager> create() {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.POTENTIAL_JOB_SITE), i.registered(MemoryModuleType.JOB_SITE)).apply(i, (potentialJobSite, jobSite) -> (level, body, timestamp) -> {
                GlobalPos pos = (GlobalPos)i.get(potentialJobSite);
-               if (!pos.pos().closerToCenterThan(body.position(), 2.0) && !body.assignProfessionWhenSpawned()) {
+               if (!pos.pos().closerToCenterThan(body.position(), 2.0)) {
                   return false;
                } else {
                   potentialJobSite.erase();

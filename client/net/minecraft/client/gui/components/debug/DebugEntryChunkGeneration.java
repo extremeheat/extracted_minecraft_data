@@ -14,6 +14,7 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryChunkGeneration implements DebugScreenEntry {
@@ -50,10 +51,11 @@ public class DebugEntryChunkGeneration implements DebugScreenEntry {
       this.result.clear();
       this.lastPos = feetPos;
       ServerChunkCache chunkSource = serverLevel.getChunkSource();
+      SamplerContext samplerContext = SamplerContext.builder().enableCaches().build();
       ChunkGenerator generator = chunkSource.getGenerator();
       RandomState randomState = chunkSource.randomState();
-      generator.addDebugScreenInfo(this.result, randomState, feetPos);
-      Climate.Sampler sampler = randomState.sampler();
+      generator.addDebugScreenInfo(this.result, randomState, feetPos, samplerContext);
+      Climate.Sampler sampler = randomState.createClimateSampler(samplerContext);
       BiomeSource biomeSource = generator.getBiomeSource();
       biomeSource.addDebugInfo(this.result, feetPos, sampler);
       if (serverChunk != null && serverChunk.isOldNoiseGeneration()) {

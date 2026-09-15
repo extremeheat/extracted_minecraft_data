@@ -6,12 +6,10 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.ArrowModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ArrowRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
-import org.joml.Quaternionfc;
 
 public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRenderState> extends EntityRenderer<T, S> {
    private final ArrowModel model;
@@ -23,9 +21,9 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
 
    public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot - 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(state.xRot));
-      submitNodeCollector.submitModel(this.model, state, poseStack, this.getTextureLocation(state), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.rotateDegrees(Axis.YP, state.yRot - 90.0F);
+      poseStack.rotateDegrees(Axis.ZP, state.xRot);
+      submitNodeCollector.submitModel(this.model, state, poseStack, this.getTextureLocation(state), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }

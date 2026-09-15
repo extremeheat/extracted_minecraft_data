@@ -78,7 +78,7 @@ public class BrushableBlockEntity extends BlockEntity {
             if (previousCompletionState != completionState) {
                BlockState previousState = this.getBlockState();
                BlockState state = (BlockState)previousState.setValue(BlockStateProperties.DUSTED, completionState);
-               level.setBlock(this.getBlockPos(), state, 3);
+               level.setBlockAndUpdate(this.getBlockPos(), state);
             }
 
             return false;
@@ -127,7 +127,7 @@ public class BrushableBlockEntity extends BlockEntity {
          turnsInto = Blocks.AIR;
       }
 
-      level.setBlock(this.worldPosition, turnsInto.defaultBlockState(), 3);
+      level.setBlockAndUpdate(this.worldPosition, turnsInto.defaultBlockState());
    }
 
    private void dropContent(final ServerLevel level, final LivingEntity user, final ItemStack brush) {
@@ -155,7 +155,7 @@ public class BrushableBlockEntity extends BlockEntity {
          this.brushCount = Math.max(0, this.brushCount - 2);
          int completionState = this.getCompletionState();
          if (previousCompletionState != completionState) {
-            level.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(BlockStateProperties.DUSTED, completionState), 3);
+            level.setBlockAndUpdate(this.getBlockPos(), (BlockState)this.getBlockState().setValue(BlockStateProperties.DUSTED, completionState));
          }
 
          int retractionSpeed = 4;

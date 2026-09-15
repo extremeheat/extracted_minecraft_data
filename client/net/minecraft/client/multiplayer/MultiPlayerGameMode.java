@@ -12,13 +12,14 @@ import java.util.OptionalInt;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.WorldOptionsScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.multiplayer.prediction.PredictiveAction;
+import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -39,7 +40,6 @@ import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundSpectatorActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -53,13 +53,13 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.PiercingWeapon;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.GameMasterBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -71,6 +71,7 @@ import org.slf4j.Logger;
 
 public class MultiPlayerGameMode {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int DEFAULT_DESTROY_COOLDOWN_TICKS = 5;
    private final Minecraft minecraft;
    private final ClientPacketListener connection;
    private BlockPos destroyBlockPos = new BlockPos(-1, -1, -1);
@@ -78,6 +79,7 @@ public class MultiPlayerGameMode {
    private float destroyProgress;
    private float destroyTicks;
    private int destroyDelay;
+   private @Nullable Direction destroyDirection;
    private boolean isDestroying;
    private GameType localPlayerMode;
    private @Nullable GameType previousLocalPlayerMode;
@@ -107,6 +109,11 @@ public class MultiPlayerGameMode {
       }
 
       this.localPlayerMode = mode;
+      Screen var3 = this.minecraft.gui.screen();
+      if (var3 instanceof WorldOptionsScreen worldOptionsScreen) {
+         worldOptionsScreen.updatePersonalGameModeButton(mode);
+      }
+
       this.localPlayerMode.updatePlayerAbilities(this.minecraft.player.getAbilities());
    }
 
@@ -190,10 +197,12 @@ public class MultiPlayerGameMode {
                } else {
                   this.isDestroying = true;
                   this.destroyBlockPos = pos;
+                  this.destroyDirection = direction;
                   this.destroyingItem = this.minecraft.player.getMainHandItem();
                   this.destroyProgress = 0.0F;
                   this.destroyTicks = 0.0F;
                   this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
+                  this.minecraft.level.addBreakingBlockEffects(this.destroyBlockPos, this.destroyDirection, true);
                }
 
                return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, direction, sequence);
@@ -246,11 +255,6 @@ public class MultiPlayerGameMode {
             return false;
          } else {
             this.destroyProgress += state.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), pos);
-            if (this.destroyTicks % 4.0F == 0.0F) {
-               SoundType soundType = state.getSoundType();
-               this.minecraft.getSoundManager().play(new SimpleSoundInstance(soundType.getHitSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 8.0F, soundType.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), pos));
-            }
-
             ++this.destroyTicks;
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, pos, state, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
@@ -263,9 +267,13 @@ public class MultiPlayerGameMode {
                   this.destroyBlock(pos);
                   return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, direction, sequence);
                });
+               this.destroyDirection = null;
                this.destroyProgress = 0.0F;
                this.destroyTicks = 0.0F;
                this.destroyDelay = 5;
+            } else if (this.destroyDirection != direction) {
+               this.destroyDirection = direction;
+               this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.CHANGE_DESTROY_DIRECTION, pos, direction));
             }
 
             this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
@@ -352,16 +360,23 @@ public class MultiPlayerGameMode {
 
          if (!itemStack.isEmpty() && !player.getCooldowns().isOnCooldown(itemStack)) {
             UseOnContext context = new UseOnContext(player, hand, blockHit);
-            InteractionResult success;
+            InteractionResult result;
             if (player.hasInfiniteMaterials()) {
                int count = itemStack.getCount();
-               success = itemStack.useOn(context);
+               result = itemStack.useOn(context);
                itemStack.setCount(count);
             } else {
-               success = itemStack.useOn(context);
+               result = itemStack.useOn(context);
+               if (result instanceof InteractionResult.Success) {
+                  InteractionResult.Success success = (InteractionResult.Success)result;
+                  ItemStack resultItemStack = (ItemStack)Objects.requireNonNullElseGet(success.heldItemTransformedTo(), () -> player.getItemInHand(hand));
+                  if (resultItemStack != itemStack) {
+                     player.setItemInHand(hand, resultItemStack);
+                  }
+               }
             }
 
-            return success;
+            return result;
          } else {
             return InteractionResult.PASS;
          }
@@ -402,12 +417,12 @@ public class MultiPlayerGameMode {
       }
    }
 
-   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook) {
-      return this.createPlayer(level, stats, recipeBook, Input.EMPTY, false);
+   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final ItemActivation itemActivation) {
+      return this.createPlayer(level, stats, recipeBook, Input.EMPTY, false, itemActivation);
    }
 
-   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting) {
-      return new LocalPlayer(this.minecraft, level, this.connection, stats, recipeBook, lastSentInput, wasSprinting, this.minecraft.computeChatAbilities());
+   public LocalPlayer createPlayer(final ClientLevel level, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ItemActivation itemActivation) {
+      return new LocalPlayer(this.minecraft, level, this.connection, stats, recipeBook, lastSentInput, wasSprinting, this.minecraft.computeChatAbilities(), itemActivation);
    }
 
    public void attack(final Player player, final Entity entity) {
@@ -415,6 +430,10 @@ public class MultiPlayerGameMode {
       this.connection.send(new ServerboundAttackPacket(entity.getId()));
       player.attack(entity);
       player.resetAttackStrengthTicker();
+      if (player.getAbilities().instabuild) {
+         this.destroyDelay = 5;
+      }
+
    }
 
    public void spectate(final Entity entity) {
@@ -491,11 +510,12 @@ public class MultiPlayerGameMode {
       player.releaseUsingItem();
    }
 
-   public void piercingAttack(final PiercingWeapon weapon) {
+   public void piercingAttack(final SwingAnimation swingAnimation, final PiercingWeapon weapon) {
       this.ensureHasSentCarriedItem();
       this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
       this.minecraft.player.onAttack();
       this.minecraft.player.postPiercingAttack();
+      this.minecraft.player.swing(InteractionHand.MAIN_HAND, swingAnimation, false);
       weapon.makeSound(this.minecraft.player);
    }
 
@@ -541,5 +561,16 @@ public class MultiPlayerGameMode {
 
    public void handleSlotStateChanged(final int slotId, final int containerId, final boolean newState) {
       this.connection.send(new ServerboundContainerSlotStateChangedPacket(slotId, containerId, newState));
+   }
+
+   public void dropItem(final LocalPlayer player, final boolean all) {
+      ServerboundPlayerActionPacket.Action action = all ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
+      ItemStack prediction = player.getInventory().removeFromSelected(all);
+      this.ensureHasSentCarriedItem();
+      this.connection.send(new ServerboundPlayerActionPacket(action, BlockPos.ZERO, Direction.DOWN));
+      if (!prediction.isEmpty()) {
+         player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+      }
+
    }
 }

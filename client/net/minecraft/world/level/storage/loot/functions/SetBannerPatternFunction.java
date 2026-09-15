@@ -3,7 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeColor;
@@ -18,8 +18,8 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
    private final BannerPatternLayers patterns;
    private final boolean append;
 
-   private SetBannerPatternFunction(final List<LootItemCondition> predicates, final BannerPatternLayers patterns, final boolean append) {
-      super(predicates);
+   private SetBannerPatternFunction(final Optional<Holder<LootItemCondition>> condition, final BannerPatternLayers patterns, final boolean append) {
+      super(condition);
       this.patterns = patterns;
       this.append = append;
    }
@@ -56,7 +56,7 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new SetBannerPatternFunction(this.getConditions(), this.patterns.build(), this.append);
+         return new SetBannerPatternFunction(this.getCondition(), this.patterns.build(), this.append);
       }
 
       public Builder addPattern(final Holder<BannerPattern> pattern, final DyeColor color) {

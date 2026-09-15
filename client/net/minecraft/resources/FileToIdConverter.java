@@ -34,11 +34,23 @@ public record FileToIdConverter(String prefix, String extension) {
       return id.getPath().endsWith(this.extension);
    }
 
+   public boolean prefixMatches(final Identifier id) {
+      return id.getPath().startsWith(this.prefix);
+   }
+
+   public boolean matches(final Identifier id) {
+      return this.prefixMatches(id) && this.extensionMatches(id);
+   }
+
+   private ResourceManager.Selector extensionSelector() {
+      return this::extensionMatches;
+   }
+
    public Map<Identifier, Resource> listMatchingResources(final ResourceManager manager) {
-      return manager.listResources(this.prefix, this::extensionMatches);
+      return manager.listResources(this.prefix, this.extensionSelector());
    }
 
    public Map<Identifier, List<Resource>> listMatchingResourceStacks(final ResourceManager manager) {
-      return manager.listResourceStacks(this.prefix, this::extensionMatches);
+      return manager.listResourceStacks(this.prefix, this.extensionSelector());
    }
 }

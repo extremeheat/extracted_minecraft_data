@@ -11,7 +11,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class DarkOakTrunkPlacer extends TrunkPlacer {
@@ -25,13 +24,13 @@ public class DarkOakTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.DARK_OAK_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
       BlockPos below = origin.below();
-      placeBelowTrunkBlock(level, trunkSetter, random, below, config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.east(), config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.south(), config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.south().east(), config);
+      placeBelowTrunkBlock(level, trunkSetter, random, below, tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.east(), tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.south(), tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.south().east(), tree);
       Direction leanDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int leanHeight = treeHeight - random.nextInt(4);
       int leanSteps = 2 - random.nextInt(3);
@@ -52,10 +51,10 @@ public class DarkOakTrunkPlacer extends TrunkPlacer {
          int yy = y + dy;
          BlockPos blockPos = new BlockPos(tx, yy, tz);
          if (TreeFeature.isAirOrLeaves(level, blockPos)) {
-            this.placeLog(level, trunkSetter, random, blockPos, config);
-            this.placeLog(level, trunkSetter, random, blockPos.east(), config);
-            this.placeLog(level, trunkSetter, random, blockPos.south(), config);
-            this.placeLog(level, trunkSetter, random, blockPos.east().south(), config);
+            this.placeLog(level, trunkSetter, random, blockPos, tree);
+            this.placeLog(level, trunkSetter, random, blockPos.east(), tree);
+            this.placeLog(level, trunkSetter, random, blockPos.south(), tree);
+            this.placeLog(level, trunkSetter, random, blockPos.east().south(), tree);
          }
       }
 
@@ -67,7 +66,7 @@ public class DarkOakTrunkPlacer extends TrunkPlacer {
                int length = random.nextInt(3) + 2;
 
                for(int branchY = 0; branchY < length; ++branchY) {
-                  this.placeLog(level, trunkSetter, random, new BlockPos(x + ox, ey - branchY - 1, z + oz), config);
+                  this.placeLog(level, trunkSetter, random, new BlockPos(x + ox, ey - branchY - 1, z + oz), tree);
                }
 
                attachments.add(new FoliagePlacer.FoliageAttachment(new BlockPos(x + ox, ey, z + oz), 0, false));

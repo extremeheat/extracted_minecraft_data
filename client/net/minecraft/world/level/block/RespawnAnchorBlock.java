@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -45,16 +44,11 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class RespawnAnchorBlock extends Block {
-   public static final MapCodec<RespawnAnchorBlock> CODEC = simpleCodec(RespawnAnchorBlock::new);
    public static final int MIN_CHARGES = 0;
    public static final int MAX_CHARGES = 4;
    public static final IntegerProperty CHARGE;
    private static final ImmutableList<Vec3i> RESPAWN_HORIZONTAL_OFFSETS;
    private static final ImmutableList<Vec3i> RESPAWN_OFFSETS;
-
-   public MapCodec<RespawnAnchorBlock> codec() {
-      return CODEC;
-   }
 
    public RespawnAnchorBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -148,7 +142,7 @@ public class RespawnAnchorBlock extends Block {
 
    public static void charge(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state) {
       BlockState newState = (BlockState)state.setValue(CHARGE, (Integer)state.getValue(CHARGE) + 1);
-      level.setBlock(pos, newState, 3);
+      level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
       level.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }

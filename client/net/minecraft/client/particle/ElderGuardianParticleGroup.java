@@ -7,16 +7,14 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
-import org.joml.Quaternionfc;
 
 public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParticle> {
    public ElderGuardianParticleGroup(final ParticleEngine engine) {
@@ -34,7 +32,7 @@ public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParti
 
       public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
          for(ElderGuardianParticleRenderState state : this.states) {
-            submitNodeCollector.submitModel(state.model, Unit.INSTANCE, state.poseStack, state.renderType, 15728880, OverlayTexture.NO_OVERLAY, state.color, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.submitModel(state.model, Unit.INSTANCE, state.poseStack, state.renderType, 15728880, OverlayTexture.NO_OVERLAY, state.color, (UvMapping)null, 0);
          }
 
       }
@@ -51,8 +49,8 @@ public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParti
          int color = ARGB.colorFromFloat(alpha, 1.0F, 1.0F, 1.0F);
          PoseStack poseStack = new PoseStack();
          poseStack.pushPose();
-         poseStack.mulPose((Quaternionfc)camera.rotation());
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(60.0F - 150.0F * ageScale));
+         poseStack.rotate(camera.rotation());
+         poseStack.rotateDegrees(Axis.XP, 60.0F - 150.0F * ageScale);
          float scale = 0.42553192F;
          poseStack.scale(0.42553192F, -0.42553192F, -0.42553192F);
          poseStack.translate(0.0F, -0.56F, 3.5F);

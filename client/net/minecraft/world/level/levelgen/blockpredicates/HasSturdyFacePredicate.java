@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 
 public class HasSturdyFacePredicate implements BlockPredicate {
    private final Vec3i offset;
@@ -18,7 +18,7 @@ public class HasSturdyFacePredicate implements BlockPredicate {
       this.direction = direction;
    }
 
-   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public boolean test(final LevelAccessor level, final BlockPos origin) {
       BlockPos testPosition = origin.offset(this.offset);
       return level.getBlockState(testPosition).isFaceSturdy(level, testPosition, this.direction);
    }

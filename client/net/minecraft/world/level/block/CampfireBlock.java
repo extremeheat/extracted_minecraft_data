@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -13,10 +10,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -57,7 +56,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((b) -> b.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((b) -> b.fireDamage), propertiesCodec()).apply(i, CampfireBlock::new));
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED;
@@ -67,10 +65,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    private static final int SMOKE_DISTANCE = 5;
    private final boolean spawnParticles;
    private final int fireDamage;
-
-   public MapCodec<CampfireBlock> codec() {
-      return CODEC;
-   }
 
    public CampfireBlock(final boolean spawnParticles, final int fireDamage, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -96,7 +90,18 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
       }
 
-      return InteractionResult.TRY_WITH_EMPTY_HAND;
+      if (itemStack.is(ItemTags.DOUSES_CAMPFIRES) && (Boolean)state.getValue(LIT)) {
+         if (!level.isClientSide()) {
+            level.levelEvent((Entity)null, 1009, pos, 0);
+         }
+
+         douse(player, level, pos, state);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
+         itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
+         return InteractionResult.SUCCESS;
+      } else {
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
+      }
    }
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
@@ -145,7 +150,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       }
    }
 
-   public static void dowse(final @Nullable Entity source, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+   public static void douse(final @Nullable Entity source, final LevelAccessor level, final BlockPos pos, final BlockState state) {
       if (level.isClientSide()) {
          for(int j = 0; j < 20; ++j) {
             makeParticles((Level)level, pos, (Boolean)state.getValue(SIGNAL_FIRE), true);
@@ -163,10 +168,10 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
                level.playSound((Entity)null, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
-            dowse((Entity)null, level, pos, state);
+            douse((Entity)null, level, pos, state);
          }
 
-         level.setBlock(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)((BlockState)state.setValue(WATERLOGGED, true)).setValue(LIT, false));
          level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
          return true;
       } else {

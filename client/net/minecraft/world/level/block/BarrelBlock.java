@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,13 +24,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class BarrelBlock extends BaseEntityBlock {
-   public static final MapCodec<BarrelBlock> CODEC = simpleCodec(BarrelBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty OPEN;
-
-   public MapCodec<BarrelBlock> codec() {
-      return CODEC;
-   }
 
    public BarrelBlock(final BlockBehaviour.Properties properties) {
       super(properties);

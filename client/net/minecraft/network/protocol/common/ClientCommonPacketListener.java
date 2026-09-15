@@ -15,6 +15,8 @@ public interface ClientCommonPacketListener extends ClientCookiePacketListener {
 
    void handleResourcePackPop(ClientboundResourcePackPopPacket packet);
 
+   void handlePostEffects(ClientboundPostEffectsPacket packet);
+
    void handleUpdateTags(ClientboundUpdateTagsPacket packet);
 
    void handleStoreCookie(ClientboundStoreCookiePacket packet);

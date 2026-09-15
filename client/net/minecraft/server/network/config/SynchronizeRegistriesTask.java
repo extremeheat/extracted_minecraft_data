@@ -34,7 +34,7 @@ public class SynchronizeRegistriesTask implements ConfigurationTask {
 
    private void sendRegistries(final Consumer<Packet<?>> connection, final Set<KnownPack> negotiatedPacks) {
       DynamicOps<Tag> ops = this.registries.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
-      RegistrySynchronization.packRegistries(ops, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), negotiatedPacks, (registryKey, entries) -> connection.accept(new ClientboundRegistryDataPacket(registryKey, entries)));
+      RegistrySynchronization.packRegistries(ops, this.registries.getAccessFrom(RegistryLayer.WORLD), negotiatedPacks, (registryKey, entries) -> connection.accept(new ClientboundRegistryDataPacket(registryKey, entries)));
       connection.accept(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
    }
 

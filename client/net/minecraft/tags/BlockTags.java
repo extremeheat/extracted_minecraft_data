@@ -20,6 +20,7 @@ public final class BlockTags {
    public static final TagKey<Block> WOODEN_PRESSURE_PLATES;
    public static final TagKey<Block> WOODEN_SHELVES;
    public static final TagKey<Block> DOORS;
+   public static final TagKey<Block> SAPLINGS;
    public static final TagKey<Block> BAMBOO_BLOCKS;
    public static final TagKey<Block> PALE_OAK_LOGS;
    public static final TagKey<Block> JUNGLE_LOGS;
@@ -44,6 +45,7 @@ public final class BlockTags {
    public static final TagKey<Block> GOLD_ORES;
    public static final TagKey<Block> IRON_ORES;
    public static final TagKey<Block> COPPER_ORES;
+   public static final TagKey<Block> ORES;
    public static final TagKey<Block> DIRT;
    public static final TagKey<Block> MUD;
    public static final TagKey<Block> MOSS_BLOCKS;
@@ -51,6 +53,8 @@ public final class BlockTags {
    public static final TagKey<Block> TERRACOTTA;
    public static final TagKey<Block> GLAZED_TERRACOTTA;
    public static final TagKey<Block> CONCRETE;
+   public static final TagKey<Block> CONCRETE_SLABS;
+   public static final TagKey<Block> CONCRETE_STAIRS;
    public static final TagKey<Block> CONCRETE_POWDERS;
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Block> SHULKER_BOXES;
@@ -61,6 +65,9 @@ public final class BlockTags {
    public static final TagKey<Block> COPPER_GOLEM_STATUES;
    public static final TagKey<Block> LANTERNS;
    public static final TagKey<Block> BARS;
+   public static final TagKey<Block> SKULLS;
+   public static final TagKey<Block> WOOL_SLABS;
+   public static final TagKey<Block> WOOL_STAIRS;
    public static final TagKey<Block> CEILING_HANGING_SIGNS;
    public static final TagKey<Block> STANDING_SIGNS;
    public static final TagKey<Block> BEE_ATTRACTIVE;
@@ -111,19 +118,22 @@ public final class BlockTags {
    public static final TagKey<Block> CAN_GLIDE_THROUGH;
    public static final TagKey<Block> CAUSES_PERIODIC_GEYSER_ERUPTIONS;
    public static final TagKey<Block> CAUSES_CONTINUOUS_GEYSER_ERUPTIONS;
+   public static final TagKey<Block> NETHER_PORTAL_FRAME;
+   public static final TagKey<Block> CONDUIT_EFFECT_BLOCK;
    public static final TagKey<Block> INFINIBURN_OVERWORLD;
    public static final TagKey<Block> INFINIBURN_NETHER;
    public static final TagKey<Block> INFINIBURN_END;
    public static final TagKey<Block> SUBSTRATE_OVERWORLD;
    public static final TagKey<Block> BASE_STONE_OVERWORLD;
    public static final TagKey<Block> STONE_ORE_REPLACEABLES;
+   public static final TagKey<Block> HEIGHT_SPECIFIC_ORE_REPLACEABLES;
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES;
    public static final TagKey<Block> BASE_STONE_NETHER;
-   public static final TagKey<Block> OVERWORLD_CARVER_REPLACEABLES;
-   public static final TagKey<Block> NETHER_CARVER_REPLACEABLES;
    public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE;
    public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE;
    public static final TagKey<Block> CANNOT_REPLACE_BELOW_TREE_TRUNK;
+   public static final TagKey<Block> CANNOT_PLACE_BASALT_PILLAR_ON;
+   public static final TagKey<Block> UNCARVABLE;
    public static final TagKey<Block> CANDLE_CAKES;
    public static final TagKey<Block> CAULDRONS;
    public static final TagKey<Block> CRYSTAL_SOUND_BLOCKS;
@@ -132,6 +142,7 @@ public final class BlockTags {
    public static final TagKey<Block> CAMEL_SAND_STEP_SOUND_BLOCKS;
    public static final TagKey<Block> HAPPY_GHAST_AVOIDS;
    public static final TagKey<Block> OCCLUDES_VIBRATION_SIGNALS;
+   public static final TagKey<Block> CUSHION_USES_COLLISION_SHAPE;
    public static final TagKey<Block> DRIPSTONE_REPLACEABLE;
    public static final TagKey<Block> SULFUR_SPIKE_REPLACEABLE;
    public static final TagKey<Block> CAVE_VINES;
@@ -152,6 +163,8 @@ public final class BlockTags {
    public static final TagKey<Block> SHEARS_EXTREME_BREAKING_SPEED;
    public static final TagKey<Block> SHEARS_MAJOR_BREAKING_SPEED;
    public static final TagKey<Block> SHEARS_MINOR_BREAKING_SPEED;
+   public static final TagKey<Block> TURNS_INTO_DIRT_PATH;
+   public static final TagKey<Block> TURNS_INTO_FARMLAND;
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL;
    public static final TagKey<Block> NEEDS_IRON_TOOL;
    public static final TagKey<Block> NEEDS_STONE_TOOL;
@@ -166,6 +179,7 @@ public final class BlockTags {
    public static final TagKey<Block> LAVA_POOL_STONE_CANNOT_REPLACE;
    public static final TagKey<Block> GEODE_INVALID_BLOCKS;
    public static final TagKey<Block> FROG_PREFER_JUMP_TO;
+   public static final TagKey<Block> SCULK_GROWTH_INHIBITORS;
    public static final TagKey<Block> SCULK_REPLACEABLE;
    public static final TagKey<Block> SCULK_REPLACEABLE_WORLD_GEN;
    public static final TagKey<Block> ANCIENT_CITY_REPLACEABLE;
@@ -184,7 +198,7 @@ public final class BlockTags {
    public static final TagKey<Block> BATS_SPAWNABLE_ON;
    public static final TagKey<Block> CAMELS_SPAWNABLE_ON;
    public static final TagKey<Block> AZALEA_GROWS_ON;
-   public static final TagKey<Block> CONVERTABLE_TO_MUD;
+   public static final TagKey<Block> CONVERTIBLE_TO_MUD;
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH;
    public static final TagKey<Block> MANGROVE_ROOTS_CAN_GROW_THROUGH;
    public static final TagKey<Block> SNAPS_GOAT_HORN;
@@ -192,6 +206,11 @@ public final class BlockTags {
    public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS;
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_DRAG_DOWN;
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_PUSH_UP;
+   public static final TagKey<Block> CATS_CAN_SIT_ON;
+   public static final TagKey<Block> CATS_CAN_LIE_ON;
+   public static final TagKey<Block> SPEEDS_UP_ZOMBIE_VILLAGER_CURING;
+   public static final TagKey<Block> VILLAGERS_CAN_SLEEP_ON_BED;
+   public static final TagKey<Block> VILLAGER_BABIES_CAN_JUMP_ON_BED;
    public static final TagKey<Block> SUPPORTS_VEGETATION;
    public static final TagKey<Block> SUPPORTS_DRY_VEGETATION;
    public static final TagKey<Block> SUPPORTS_CROPS;
@@ -244,7 +263,13 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS;
+   public static final TagKey<Block> REQUIRED_FOR_POPLAR_LEAF_AMBIENCE;
    public static final TagKey<Block> SPELEOTHEMS;
+   public static final TagKey<Block> DANGEROUS_FOR_TELEPORTATION;
+   public static final TagKey<Block> CAT_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> ENDERMAN_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> SHULKER_DOES_NOT_TELEPORT_TO;
+   public static final TagKey<Block> CONSUMABLE_DOES_NOT_TELEPORT_TO;
    public static final TagKey<Block> FOX_IMMUNE_TO;
    public static final TagKey<Block> POLAR_BEAR_IMMUNE_TO;
    public static final TagKey<Block> SNOW_GOLEM_IMMUNE_TO;
@@ -252,6 +277,17 @@ public final class BlockTags {
    public static final TagKey<Block> WITHER_IMMUNE_TO;
    public static final TagKey<Block> WITHER_SKELETON_IMMUNE_TO;
    public static final TagKey<Block> DEFAULT_IMMUNE_TO;
+   public static final TagKey<Block> BLOCKS_MOTION;
+   public static final TagKey<Block> BLOCKS_MOTION_NO_LEAVES;
+   public static final TagKey<Block> ENTITIES_CAN_TELEPORT_TO;
+   public static final TagKey<Block> BLOCKS_DOLPHIN_JUMP;
+   public static final TagKey<Block> ICE_MELTS_WHEN_DESTROYED_ABOVE;
+   public static final TagKey<Block> CAUSES_SUFFOCATION;
+   public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP;
+   public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES;
+   public static final TagKey<Block> BLOCKS_LAVA_FIRE_SPREAD;
+   public static final TagKey<Block> BLOCKS_FLUID_FLOW;
+   public static final TagKey<Block> WASHED_AWAY_BY_FLUIDS;
    public static final TagKey<Block> AIR;
 
    private BlockTags() {
@@ -278,6 +314,7 @@ public final class BlockTags {
       WOODEN_PRESSURE_PLATES = BlockItemTags.WOODEN_PRESSURE_PLATES.block();
       WOODEN_SHELVES = BlockItemTags.WOODEN_SHELVES.block();
       DOORS = BlockItemTags.DOORS.block();
+      SAPLINGS = BlockItemTags.SAPLINGS.block();
       BAMBOO_BLOCKS = BlockItemTags.BAMBOO_BLOCKS.block();
       PALE_OAK_LOGS = BlockItemTags.PALE_OAK_LOGS.block();
       JUNGLE_LOGS = BlockItemTags.JUNGLE_LOGS.block();
@@ -302,6 +339,7 @@ public final class BlockTags {
       GOLD_ORES = BlockItemTags.GOLD_ORES.block();
       IRON_ORES = BlockItemTags.IRON_ORES.block();
       COPPER_ORES = BlockItemTags.COPPER_ORES.block();
+      ORES = BlockItemTags.ORES.block();
       DIRT = BlockItemTags.DIRT.block();
       MUD = BlockItemTags.MUD.block();
       MOSS_BLOCKS = BlockItemTags.MOSS_BLOCKS.block();
@@ -309,6 +347,8 @@ public final class BlockTags {
       TERRACOTTA = BlockItemTags.TERRACOTTA.block();
       GLAZED_TERRACOTTA = BlockItemTags.GLAZED_TERRACOTTA.block();
       CONCRETE = BlockItemTags.CONCRETE.block();
+      CONCRETE_SLABS = BlockItemTags.CONCRETE_SLABS.block();
+      CONCRETE_STAIRS = BlockItemTags.CONCRETE_STAIRS.block();
       CONCRETE_POWDERS = BlockItemTags.CONCRETE_POWDERS.block();
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.block();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.block();
@@ -319,6 +359,9 @@ public final class BlockTags {
       COPPER_GOLEM_STATUES = BlockItemTags.COPPER_GOLEM_STATUES.block();
       LANTERNS = BlockItemTags.LANTERNS.block();
       BARS = BlockItemTags.BARS.block();
+      SKULLS = BlockItemTags.SKULLS.block();
+      WOOL_SLABS = BlockItemTags.WOOL_SLABS.block();
+      WOOL_STAIRS = BlockItemTags.WOOL_STAIRS.block();
       CEILING_HANGING_SIGNS = BlockItemTags.HANGING_SIGNS.block();
       STANDING_SIGNS = BlockItemTags.SIGNS.block();
       BEE_ATTRACTIVE = BlockItemTags.BEE_FOOD.block();
@@ -369,19 +412,22 @@ public final class BlockTags {
       CAN_GLIDE_THROUGH = create("can_glide_through");
       CAUSES_PERIODIC_GEYSER_ERUPTIONS = create("causes_periodic_geyser_eruptions");
       CAUSES_CONTINUOUS_GEYSER_ERUPTIONS = create("causes_continuous_geyser_eruptions");
+      NETHER_PORTAL_FRAME = create("nether_portal_frame");
+      CONDUIT_EFFECT_BLOCK = create("conduit_effect_block");
       INFINIBURN_OVERWORLD = create("infiniburn_overworld");
       INFINIBURN_NETHER = create("infiniburn_nether");
       INFINIBURN_END = create("infiniburn_end");
       SUBSTRATE_OVERWORLD = create("substrate_overworld");
       BASE_STONE_OVERWORLD = create("base_stone_overworld");
       STONE_ORE_REPLACEABLES = create("stone_ore_replaceables");
+      HEIGHT_SPECIFIC_ORE_REPLACEABLES = create("height_specific_ore_replaceables");
       DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
       BASE_STONE_NETHER = create("base_stone_nether");
-      OVERWORLD_CARVER_REPLACEABLES = create("overworld_carver_replaceables");
-      NETHER_CARVER_REPLACEABLES = create("nether_carver_replaceables");
       BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
       BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");
       CANNOT_REPLACE_BELOW_TREE_TRUNK = create("cannot_replace_below_tree_trunk");
+      CANNOT_PLACE_BASALT_PILLAR_ON = create("cannot_place_basalt_pillar_on");
+      UNCARVABLE = create("uncarvable");
       CANDLE_CAKES = create("candle_cakes");
       CAULDRONS = create("cauldrons");
       CRYSTAL_SOUND_BLOCKS = create("crystal_sound_blocks");
@@ -390,6 +436,7 @@ public final class BlockTags {
       CAMEL_SAND_STEP_SOUND_BLOCKS = create("camel_sand_step_sound_blocks");
       HAPPY_GHAST_AVOIDS = create("happy_ghast_avoids");
       OCCLUDES_VIBRATION_SIGNALS = create("occludes_vibration_signals");
+      CUSHION_USES_COLLISION_SHAPE = create("cushion_uses_collision_shape");
       DRIPSTONE_REPLACEABLE = create("dripstone_replaceable_blocks");
       SULFUR_SPIKE_REPLACEABLE = create("sulfur_spike_replaceable_blocks");
       CAVE_VINES = create("cave_vines");
@@ -410,6 +457,8 @@ public final class BlockTags {
       SHEARS_EXTREME_BREAKING_SPEED = create("shears_extreme_breaking_speed");
       SHEARS_MAJOR_BREAKING_SPEED = create("shears_major_breaking_speed");
       SHEARS_MINOR_BREAKING_SPEED = create("shears_minor_breaking_speed");
+      TURNS_INTO_DIRT_PATH = create("turns_into_dirt_path");
+      TURNS_INTO_FARMLAND = create("turns_into_farmland");
       NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
       NEEDS_IRON_TOOL = create("needs_iron_tool");
       NEEDS_STONE_TOOL = create("needs_stone_tool");
@@ -424,6 +473,7 @@ public final class BlockTags {
       LAVA_POOL_STONE_CANNOT_REPLACE = create("lava_pool_stone_cannot_replace");
       GEODE_INVALID_BLOCKS = create("geode_invalid_blocks");
       FROG_PREFER_JUMP_TO = create("frog_prefer_jump_to");
+      SCULK_GROWTH_INHIBITORS = create("sculk_growth_inhibitors");
       SCULK_REPLACEABLE = create("sculk_replaceable");
       SCULK_REPLACEABLE_WORLD_GEN = create("sculk_replaceable_world_gen");
       ANCIENT_CITY_REPLACEABLE = create("ancient_city_replaceable");
@@ -442,7 +492,7 @@ public final class BlockTags {
       BATS_SPAWNABLE_ON = create("bats_spawnable_on");
       CAMELS_SPAWNABLE_ON = create("camels_spawnable_on");
       AZALEA_GROWS_ON = create("azalea_grows_on");
-      CONVERTABLE_TO_MUD = create("convertable_to_mud");
+      CONVERTIBLE_TO_MUD = create("convertible_to_mud");
       MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");
       MANGROVE_ROOTS_CAN_GROW_THROUGH = create("mangrove_roots_can_grow_through");
       SNAPS_GOAT_HORN = create("snaps_goat_horn");
@@ -450,6 +500,11 @@ public final class BlockTags {
       REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");
       ENABLES_BUBBLE_COLUMN_DRAG_DOWN = create("enables_bubble_column_drag_down");
       ENABLES_BUBBLE_COLUMN_PUSH_UP = create("enables_bubble_column_push_up");
+      CATS_CAN_SIT_ON = create("cats_can_sit_on");
+      CATS_CAN_LIE_ON = create("cats_can_lie_on");
+      SPEEDS_UP_ZOMBIE_VILLAGER_CURING = create("speeds_up_zombie_villager_curing");
+      VILLAGERS_CAN_SLEEP_ON_BED = create("villagers_can_sleep_on_bed");
+      VILLAGER_BABIES_CAN_JUMP_ON_BED = create("villager_babies_can_jump_on_bed");
       SUPPORTS_VEGETATION = create("supports_vegetation");
       SUPPORTS_DRY_VEGETATION = create("supports_dry_vegetation");
       SUPPORTS_CROPS = create("supports_crops");
@@ -502,7 +557,13 @@ public final class BlockTags {
       TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS = create("triggers_ambient_desert_sand_block_sounds");
       TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
       TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
+      REQUIRED_FOR_POPLAR_LEAF_AMBIENCE = create("required_for_poplar_leaf_ambience");
       SPELEOTHEMS = create("speleothems");
+      DANGEROUS_FOR_TELEPORTATION = create("dangerous_for_teleportation");
+      CAT_DOES_NOT_TELEPORT_TO = create("cat_does_not_teleport_to");
+      ENDERMAN_DOES_NOT_TELEPORT_TO = create("enderman_does_not_teleport_to");
+      SHULKER_DOES_NOT_TELEPORT_TO = create("shulker_does_not_teleport_to");
+      CONSUMABLE_DOES_NOT_TELEPORT_TO = create("consumable_does_not_teleport_to");
       FOX_IMMUNE_TO = create("fox_immune_to");
       POLAR_BEAR_IMMUNE_TO = create("polar_bear_immune_to");
       SNOW_GOLEM_IMMUNE_TO = create("snow_golem_immune_to");
@@ -510,6 +571,17 @@ public final class BlockTags {
       WITHER_IMMUNE_TO = create("wither_immune_to");
       WITHER_SKELETON_IMMUNE_TO = create("wither_skeleton_immune_to");
       DEFAULT_IMMUNE_TO = create("default_immune_to");
+      BLOCKS_MOTION = create("blocks_motion");
+      BLOCKS_MOTION_NO_LEAVES = create("blocks_motion_no_leaves");
+      ENTITIES_CAN_TELEPORT_TO = create("entities_can_teleport_to");
+      BLOCKS_DOLPHIN_JUMP = create("blocks_dolphin_jump");
+      ICE_MELTS_WHEN_DESTROYED_ABOVE = create("ice_melts_when_destroyed_above");
+      CAUSES_SUFFOCATION = create("causes_suffocation");
+      BLOCKS_MOTION_IN_HEIGHTMAP = create("blocks_motion_in_heightmap");
+      BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES = create("blocks_motion_in_heightmap_no_leaves");
+      BLOCKS_LAVA_FIRE_SPREAD = create("blocks_lava_fire_spread");
+      BLOCKS_FLUID_FLOW = create("blocks_fluid_flow");
+      WASHED_AWAY_BY_FLUIDS = create("washed_away_by_fluids");
       AIR = create("air");
    }
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
-import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -71,9 +71,9 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       this.advancements.setListener(this);
       if (this.selectedTab == null && !this.tabs.isEmpty()) {
          AdvancementTab firstTab = (AdvancementTab)this.tabs.values().iterator().next();
-         this.advancements.setSelectedTab(firstTab.getRootNode().holder(), true);
+         this.advancements.setSelectedTab(firstTab.getRootAdvancement(), true);
       } else {
-         this.advancements.setSelectedTab(this.selectedTab == null ? null : this.selectedTab.getRootNode().holder(), true);
+         this.advancements.setSelectedTab(this.selectedTab == null ? null : this.selectedTab.getRootAdvancement(), true);
       }
 
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
@@ -111,13 +111,13 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 0) {
+      if (event.button() == 1) {
          int xo = (this.width - 252) / 2;
          int yo = (this.height - 140) / 2;
 
          for(AdvancementTab tab : this.tabs.values()) {
             if (tab.isMouseOver(xo, yo, event.x(), event.y())) {
-               this.advancements.setSelectedTab(tab.getRootNode().holder(), true);
+               this.advancements.setSelectedTab(tab.getRootAdvancement(), true);
                break;
             }
          }
@@ -128,8 +128,12 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public boolean keyPressed(final KeyEvent event) {
       if (this.minecraft.options.keyAdvancements.matches(event)) {
-         this.minecraft.gui.setScreen((Screen)null);
-         this.minecraft.mouseHandler.grabMouse();
+         if (this.lastScreen != null) {
+            this.minecraft.gui.setScreen(this.lastScreen);
+         } else {
+            this.minecraft.mouseHandler.grabMouse();
+         }
+
          return true;
       } else {
          return super.keyPressed(event);
@@ -156,7 +160,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
-      if (event.button() != 0) {
+      if (event.button() != 1) {
          this.isScrolling = false;
          return false;
       } else {
@@ -238,31 +242,50 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    }
 
-   public void onAddAdvancementRoot(final AdvancementNode root) {
-      AdvancementTab tab = AdvancementTab.create(this.minecraft, this, this.tabs.size(), root);
-      if (tab != null) {
-         this.tabs.put(root.holder(), tab);
+   public void onAdvancementsUpdated() {
+      Map<AdvancementHolder, AdvancementTab> oldTabs = Map.copyOf(this.tabs);
+      this.tabs.clear();
+      AdvancementTree tree = this.advancements.tree();
+
+      for(AdvancementNode root : tree.roots()) {
+         AdvancementHolder rootHolder = root.holder();
+         if (!this.tabs.containsKey(rootHolder)) {
+            AdvancementTab newTab = AdvancementTab.create(this.minecraft, this, this.tabs.size(), root);
+            if (newTab != null) {
+               AdvancementTab oldTab = (AdvancementTab)oldTabs.get(rootHolder);
+               if (oldTab != null) {
+                  newTab.copyPosition(oldTab);
+               }
+
+               this.tabs.put(rootHolder, newTab);
+            }
+         }
       }
-   }
 
-   public void onRemoveAdvancementRoot(final AdvancementNode root) {
-   }
-
-   public void onAddAdvancementTask(final AdvancementNode task) {
-      AdvancementTab tab = this.getTab(task);
-      if (tab != null) {
-         tab.addAdvancement(task);
+      for(AdvancementNode task : tree.tasks()) {
+         AdvancementTab tab = this.getTab(task);
+         if (tab != null) {
+            tab.addAdvancement(task);
+         }
       }
 
-   }
+      this.advancements.progress().forEach((holder, progress) -> {
+         AdvancementNode node = tree.get(holder);
+         if (node != null) {
+            AdvancementWidget widget = this.getAdvancementWidget(node);
+            if (widget != null) {
+               widget.setProgress(progress);
+            }
+         }
 
-   public void onRemoveAdvancementTask(final AdvancementNode task) {
-   }
+      });
+      if (this.selectedTab != null) {
+         this.selectedTab = (AdvancementTab)this.tabs.get(this.selectedTab.getRootAdvancement());
+      }
 
-   public void onUpdateAdvancementProgress(final AdvancementNode advancement, final AdvancementProgress progress) {
-      AdvancementWidget widget = this.getAdvancementWidget(advancement);
-      if (widget != null) {
-         widget.setProgress(progress);
+      if (this.selectedTab == null && !this.tabs.isEmpty()) {
+         this.selectedTab = (AdvancementTab)this.tabs.values().iterator().next();
+         this.advancements.setSelectedTab(this.selectedTab.getRootAdvancement(), true);
       }
 
    }

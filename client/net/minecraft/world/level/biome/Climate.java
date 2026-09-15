@@ -15,12 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
 import org.jspecify.annotations.Nullable;
 
 public class Climate {
@@ -53,17 +51,8 @@ public class Climate {
       return (float)coord / 10000.0F;
    }
 
-   public static Sampler empty() {
-      DensityFunction zero = DensityFunctions.zero();
-      return new Sampler(zero, zero, zero, zero, zero, zero, List.of());
-   }
-
-   public static BlockPos findSpawnPosition(final List<ParameterPoint> targetClimates, final Sampler sampler) {
-      return (new SpawnFinder(targetClimates, sampler)).result.location();
-   }
-
    protected static final class RTree<T> {
-      private static final int CHILDREN_PER_NODE = 6;
+      private static final int CHILDREN_PER_NODE = 19;
       private final Node<T> root;
       private final ThreadLocal<@Nullable Leaf<T>> lastResult = new ThreadLocal();
 
@@ -73,6 +62,10 @@ public class Climate {
       }
 
       public static <T> RTree<T> create(final List<Pair<ParameterPoint, T>> values) {
+         return create(values, 19);
+      }
+
+      public static <T> RTree<T> create(final List<Pair<ParameterPoint, T>> values, final int childrenPerNode) {
          if (values.isEmpty()) {
             throw new IllegalArgumentException("Need at least one value to build the search tree.");
          } else {
@@ -81,17 +74,17 @@ public class Climate {
                throw new IllegalStateException("Expecting parameter space to be 7, got " + dimensions);
             } else {
                List<Leaf<T>> leaves = (List)values.stream().map((p) -> new Leaf((ParameterPoint)p.getFirst(), p.getSecond())).collect(Collectors.toCollection(ArrayList::new));
-               return new RTree<T>(build(dimensions, leaves));
+               return new RTree<T>(build(dimensions, leaves, childrenPerNode));
             }
          }
       }
 
-      private static <T> Node<T> build(final int dimensions, final List<? extends Node<T>> children) {
+      private static <T> Node<T> build(final int dimensions, final List<? extends Node<T>> children, final int childrenPerNode) {
          if (children.isEmpty()) {
             throw new IllegalStateException("Need at least one child to build a node");
          } else if (children.size() == 1) {
             return (Node)children.get(0);
-         } else if (children.size() <= 6) {
+         } else if (children.size() <= childrenPerNode) {
             children.sort(Comparator.comparingLong((leaf) -> {
                long totalMagnitude = 0L;
 
@@ -110,7 +103,7 @@ public class Climate {
 
             for(int d = 0; d < dimensions; ++d) {
                sort(children, dimensions, d, false);
-               List<SubTree<T>> buckets = bucketize(children);
+               List<SubTree<T>> buckets = bucketize(children, childrenPerNode);
                long totalCost = 0L;
 
                for(SubTree<T> bucket : buckets) {
@@ -125,7 +118,7 @@ public class Climate {
             }
 
             sort(minBuckets, dimensions, minDimension, true);
-            return new SubTree<T>((List)minBuckets.stream().map((b) -> build(dimensions, Arrays.asList(b.children))).collect(Collectors.toList()));
+            return new SubTree<T>((List)minBuckets.stream().map((b) -> build(dimensions, Arrays.asList(b.children), childrenPerNode)).collect(Collectors.toList()));
          }
       }
 
@@ -147,10 +140,10 @@ public class Climate {
          });
       }
 
-      private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes) {
+      private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes, final int childrenPerNode) {
          List<SubTree<T>> buckets = Lists.newArrayList();
          List<Node<T>> children = Lists.newArrayList();
-         int expectedChildrenCount = (int)Math.pow(6.0, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log(6.0)));
+         int expectedChildrenCount = (int)Math.pow((double)childrenPerNode, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log((double)childrenPerNode)));
 
          for(Node<T> child : nodes) {
             children.add(child);
@@ -286,9 +279,18 @@ public class Climate {
       }
 
       public ParameterList(final List<Pair<ParameterPoint, T>> values) {
+         this(values, 19);
+      }
+
+      private ParameterList(final List<Pair<ParameterPoint, T>> values, final int childrenPerNode) {
          super();
          this.values = values;
-         this.index = Climate.RTree.<T>create(values);
+         this.index = Climate.RTree.<T>create(values, childrenPerNode);
+      }
+
+      @VisibleForTesting
+      public ParameterList<T> rebuildWithChildrenPerNode(final int childrenPerNode) {
+         return new ParameterList<T>(this.values, childrenPerNode);
       }
 
       public List<Pair<ParameterPoint, T>> values() {
@@ -345,7 +347,7 @@ public class Climate {
          super();
       }
 
-      private long fitness(final TargetPoint target) {
+      public long fitness(final TargetPoint target) {
          return Mth.square(this.temperature.distance(target.temperature)) + Mth.square(this.humidity.distance(target.humidity)) + Mth.square(this.continentalness.distance(target.continentalness)) + Mth.square(this.erosion.distance(target.erosion)) + Mth.square(this.depth.distance(target.depth)) + Mth.square(this.weirdness.distance(target.weirdness)) + Mth.square(this.offset);
       }
 
@@ -392,18 +394,12 @@ public class Climate {
          return above > 0L ? above : Math.max(below, 0L);
       }
 
-      public long distance(final Parameter target) {
-         long above = target.min() - this.max;
-         long below = this.min - target.max();
-         return above > 0L ? above : Math.max(below, 0L);
-      }
-
       public Parameter span(final @Nullable Parameter other) {
          return other == null ? this : new Parameter(Math.min(this.min, other.min()), Math.max(this.max, other.max()));
       }
    }
 
-   public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness, List<ParameterPoint> spawnTarget) {
+   public static record Sampler(DensitySampler.Bound temperature, DensitySampler.Bound humidity, DensitySampler.Bound continentalness, DensitySampler.Bound erosion, DensitySampler.Bound depth, DensitySampler.Bound weirdness) {
       public Sampler {
          super();
       }
@@ -412,66 +408,7 @@ public class Climate {
          int blockX = QuartPos.toBlock(quartX);
          int blockY = QuartPos.toBlock(quartY);
          int blockZ = QuartPos.toBlock(quartZ);
-         DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(blockX, blockY, blockZ);
-         return Climate.target((float)this.temperature.compute(context), (float)this.humidity.compute(context), (float)this.continentalness.compute(context), (float)this.erosion.compute(context), (float)this.depth.compute(context), (float)this.weirdness.compute(context));
-      }
-
-      public BlockPos findSpawnPosition() {
-         return this.spawnTarget.isEmpty() ? BlockPos.ZERO : Climate.findSpawnPosition(this.spawnTarget, this);
-      }
-   }
-
-   private static class SpawnFinder {
-      private static final long MAX_RADIUS = 2048L;
-      private Result result;
-
-      private SpawnFinder(final List<ParameterPoint> targetClimates, final Sampler sampler) {
-         super();
-         this.result = getSpawnPositionAndFitness(targetClimates, sampler, 0, 0);
-         this.radialSearch(targetClimates, sampler, 2048.0F, 512.0F);
-         this.radialSearch(targetClimates, sampler, 512.0F, 32.0F);
-      }
-
-      private void radialSearch(final List<ParameterPoint> targetClimates, final Sampler sampler, final float maxRadius, final float radiusIncrement) {
-         float angle = 0.0F;
-         float radius = radiusIncrement;
-         BlockPos searchOrigin = this.result.location();
-
-         while(radius <= maxRadius) {
-            int x = searchOrigin.getX() + (int)(Math.sin((double)angle) * (double)radius);
-            int z = searchOrigin.getZ() + (int)(Math.cos((double)angle) * (double)radius);
-            Result candidate = getSpawnPositionAndFitness(targetClimates, sampler, x, z);
-            if (candidate.fitness() < this.result.fitness()) {
-               this.result = candidate;
-            }
-
-            angle += radiusIncrement / radius;
-            if ((double)angle > 6.283185307179586) {
-               angle = 0.0F;
-               radius += radiusIncrement;
-            }
-         }
-
-      }
-
-      private static Result getSpawnPositionAndFitness(final List<ParameterPoint> targetClimates, final Sampler sampler, final int blockX, final int blockZ) {
-         TargetPoint targetPoint = sampler.sample(QuartPos.fromBlock(blockX), 0, QuartPos.fromBlock(blockZ));
-         TargetPoint zeroDepthTargetPoint = new TargetPoint(targetPoint.temperature(), targetPoint.humidity(), targetPoint.continentalness(), targetPoint.erosion(), 0L, targetPoint.weirdness());
-         long minFitness = 9223372036854775807L;
-
-         for(ParameterPoint point : targetClimates) {
-            minFitness = Math.min(minFitness, point.fitness(zeroDepthTargetPoint));
-         }
-
-         long distanceBiasToWorldOrigin = Mth.square((long)blockX) + Mth.square((long)blockZ);
-         long fitnessWithDistance = minFitness * Mth.square(2048L) + distanceBiasToWorldOrigin;
-         return new Result(new BlockPos(blockX, 0, blockZ), fitnessWithDistance);
-      }
-
-      private static record Result(BlockPos location, long fitness) {
-         private Result {
-            super();
-         }
+         return Climate.target(this.temperature.sampleValue(blockX, blockY, blockZ), this.humidity.sampleValue(blockX, blockY, blockZ), this.continentalness.sampleValue(blockX, blockY, blockZ), this.erosion.sampleValue(blockX, blockY, blockZ), this.depth.sampleValue(blockX, blockY, blockZ), this.weirdness.sampleValue(blockX, blockY, blockZ));
       }
    }
 

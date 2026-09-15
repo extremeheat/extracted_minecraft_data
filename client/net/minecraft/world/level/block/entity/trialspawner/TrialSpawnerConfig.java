@@ -6,11 +6,12 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -47,8 +48,15 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
       return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(spawnData), this.lootTablesToEject, this.itemsToDropWhenOminous);
    }
 
+   public TrialSpawnerConfig withSpawning(final TypedEntityData<EntityType<?>> entityData) {
+      CompoundTag tag = new CompoundTag();
+      SpawnData spawnData = new SpawnData(tag, Optional.empty(), Optional.empty());
+      entityData.loadInto(spawnData, BuiltInRegistries.ENTITY_TYPE);
+      return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, WeightedList.of(spawnData), this.lootTablesToEject, this.itemsToDropWhenOminous);
+   }
+
    static {
-      CODEC = RegistryFileCodec.<Holder<TrialSpawnerConfig>>create(Registries.TRIAL_SPAWNER_CONFIG, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.TRIAL_SPAWNER_CONFIG, DIRECT_CODEC);
    }
 
    public static class Builder {

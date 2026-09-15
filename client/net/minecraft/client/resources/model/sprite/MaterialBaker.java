@@ -16,8 +16,10 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class MaterialBaker {
+public class MaterialBaker {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private final SpriteLoader.Preparations blockAtlas;
+   private final SpriteLoader.Preparations itemAtlas;
    private final Material.Baked missingSprite;
    private final Material.Baked missingSpriteForceTranslucent;
    private final Multimap<String, Identifier> missingSprites = Multimaps.synchronizedMultimap(HashMultimap.create());
@@ -25,13 +27,15 @@ public abstract class MaterialBaker {
    private final Map<Material, @Nullable Material.Baked> bakedMaterials = new ConcurrentHashMap();
    private final Function<Material, @Nullable Material.Baked> bakerFunction = this::bake;
 
-   public MaterialBaker(final TextureAtlasSprite missingSprite) {
+   public MaterialBaker(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas) {
       super();
-      this.missingSprite = new Material.Baked(missingSprite, false);
-      this.missingSpriteForceTranslucent = new Material.Baked(missingSprite, true);
+      this.blockAtlas = blockAtlas;
+      this.itemAtlas = itemAtlas;
+      this.missingSprite = new Material.Baked(blockAtlas.missing(), false);
+      this.missingSpriteForceTranslucent = new Material.Baked(blockAtlas.missing(), true);
    }
 
-   public Material.Baked replacementForMissingMaterial(final Material material) {
+   private Material.Baked replacementForMissingMaterial(final Material material) {
       return material.forceTranslucent() ? this.missingSpriteForceTranslucent : this.missingSprite;
    }
 
@@ -49,9 +53,12 @@ public abstract class MaterialBaker {
       }
    }
 
-   protected abstract Material.@Nullable Baked bake(Material material);
+   private Material.@Nullable Baked bake(final Material material) {
+      Material.Baked itemMaterial = bakeForAtlas(material, this.itemAtlas);
+      return itemMaterial != null ? itemMaterial : bakeForAtlas(material, this.blockAtlas);
+   }
 
-   protected static Material.@Nullable Baked bakeForAtlas(final Material material, final SpriteLoader.Preparations atlas) {
+   private static Material.@Nullable Baked bakeForAtlas(final Material material, final SpriteLoader.Preparations atlas) {
       TextureAtlasSprite sprite = atlas.getSprite(material.sprite());
       return sprite != null ? new Material.Baked(sprite, material.forceTranslucent()) : null;
    }

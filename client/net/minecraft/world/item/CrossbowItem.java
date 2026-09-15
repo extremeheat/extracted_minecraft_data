@@ -152,7 +152,8 @@ public class CrossbowItem extends ProjectileWeaponItem {
       if (level instanceof ServerLevel serverLevel) {
          ChargedProjectiles charged = (ChargedProjectiles)weapon.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
          if (charged != null && !charged.isEmpty()) {
-            this.shoot(serverLevel, shooter, hand, weapon, charged.itemCopies(), power, uncertainty, shooter instanceof Player, targetOverride);
+            List<ItemStack> projectiles = charged.itemCopies().toList();
+            this.shoot(serverLevel, shooter, hand, weapon, projectiles, power, uncertainty, shooter instanceof Player, targetOverride);
             if (shooter instanceof ServerPlayer) {
                ServerPlayer player = (ServerPlayer)shooter;
                CriteriaTriggers.SHOT_CROSSBOW.trigger(player, weapon);

@@ -130,21 +130,10 @@ public class RaidCommand {
    private static int check(final CommandSourceStack source) throws CommandSyntaxException {
       Raid raid = getRaid(source.getPlayerOrException());
       if (raid != null) {
-         StringBuilder status = new StringBuilder();
-         status.append("Found a started raid! ");
-         source.sendSuccess(() -> Component.literal(status.toString()), false);
-         StringBuilder status2 = new StringBuilder();
-         status2.append("Num groups spawned: ");
-         status2.append(raid.getGroupsSpawned());
-         status2.append(" Raid omen level: ");
-         status2.append(raid.getRaidOmenLevel());
-         status2.append(" Num mobs: ");
-         status2.append(raid.getTotalRaidersAlive());
-         status2.append(" Raid health: ");
-         status2.append(raid.getHealthOfLivingRaiders());
-         status2.append(" / ");
-         status2.append(raid.getTotalHealth());
-         source.sendSuccess(() -> Component.literal(status2.toString()), false);
+         source.sendSuccess(() -> Component.literal("Found a started raid!"), false);
+         int var10000 = raid.getGroupsSpawned();
+         String status = "Num groups spawned: " + var10000 + " Raid omen level: " + raid.getRaidOmenLevel() + " Num mobs: " + raid.getTotalRaidersAlive() + " Raid health: " + raid.getHealthOfLivingRaiders() + " / " + raid.getTotalHealth();
+         source.sendSuccess(() -> Component.literal(status), false);
          return 1;
       } else {
          source.sendFailure(Component.literal("Found no started raids"));

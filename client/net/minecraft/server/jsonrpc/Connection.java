@@ -193,10 +193,10 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
          JsonElement result = this.dispatchIncomingRequest(method, params);
          return result != null && sendResponse ? JsonRPCUtils.createSuccessResult(id, result) : null;
       } catch (InvalidParameterJsonRpcException e) {
-         LOGGER.debug("Invalid parameter invocation {}: {}, {}", new Object[]{method, params, e.getMessage()});
+         LOGGER.debug("Invalid parameter invocation {}: {}", new Object[]{method, params, e});
          return sendResponse ? JsonRPCErrors.INVALID_PARAMS.create(id, e.getMessage()) : null;
       } catch (EncodeJsonRpcException e) {
-         LOGGER.error("Failed to encode json rpc response {}: {}", method, e.getMessage());
+         LOGGER.error("Failed to encode json rpc response {}", method, e);
          return sendResponse ? JsonRPCErrors.INTERNAL_ERROR.create(id, e.getMessage()) : null;
       } catch (InvalidRequestJsonRpcException e) {
          return sendResponse ? JsonRPCErrors.INVALID_REQUEST.create(id, e.getMessage()) : null;

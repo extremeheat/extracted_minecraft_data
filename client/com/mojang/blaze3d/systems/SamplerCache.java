@@ -1,9 +1,10 @@
 package com.mojang.blaze3d.systems;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
 import java.util.OptionalDouble;
 
 public class SamplerCache {

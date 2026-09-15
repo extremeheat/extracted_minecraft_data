@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,8 +26,6 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       this.growPerTickProbability = growPerTickProbability;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
-
-   protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
 
    public BlockState getStateForPlacement(final RandomSource random) {
       return (BlockState)this.defaultBlockState().setValue(AGE, random.nextInt(25));
@@ -91,16 +88,16 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       builder.add(AGE);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos growthPos = pos.relative(this.growthDirection);
       return this.canGrowInto(level.getBlockState(growthPos)) && level.isInsideBuildHeight(growthPos);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos forwardPos = pos.relative(this.growthDirection);
       int nextAge = Math.min((Integer)state.getValue(AGE) + 1, 25);
       int blocksToGrow = this.getBlocksToGrowWhenBonemealed(random);

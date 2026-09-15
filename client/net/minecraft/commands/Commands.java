@@ -56,6 +56,7 @@ import net.minecraft.server.commands.BossBarCommands;
 import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.commands.CloneCommands;
+import net.minecraft.server.commands.ComputeCommand;
 import net.minecraft.server.commands.DamageCommand;
 import net.minecraft.server.commands.DataPackCommand;
 import net.minecraft.server.commands.DeOpCommands;
@@ -80,7 +81,6 @@ import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.commands.GameRuleCommand;
 import net.minecraft.server.commands.GiveCommand;
 import net.minecraft.server.commands.HelpCommand;
-import net.minecraft.server.commands.ItemCommands;
 import net.minecraft.server.commands.JfrCommand;
 import net.minecraft.server.commands.KickCommand;
 import net.minecraft.server.commands.KillCommand;
@@ -95,6 +95,7 @@ import net.minecraft.server.commands.ParticleCommand;
 import net.minecraft.server.commands.PerfCommand;
 import net.minecraft.server.commands.PlaceCommand;
 import net.minecraft.server.commands.PlaySoundCommand;
+import net.minecraft.server.commands.PostEffectCommand;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.server.commands.RaidCommand;
 import net.minecraft.server.commands.RandomCommand;
@@ -141,6 +142,7 @@ import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
+import net.minecraft.server.commands.item.ItemCommands;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
@@ -152,7 +154,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -181,8 +182,9 @@ public class Commands {
       BossBarCommands.register(this.dispatcher, context);
       ClearInventoryCommands.register(this.dispatcher, context);
       CloneCommands.register(this.dispatcher, context);
+      ComputeCommand.register(this.dispatcher, context);
       DamageCommand.register(this.dispatcher, context);
-      DataCommands.register(this.dispatcher);
+      DataCommands.register(this.dispatcher, context);
       DataPackCommand.register(this.dispatcher, context);
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
@@ -209,8 +211,9 @@ public class Commands {
       MsgCommand.register(this.dispatcher);
       SwingCommand.register(this.dispatcher);
       ParticleCommand.register(this.dispatcher, context);
-      PlaceCommand.register(this.dispatcher);
+      PlaceCommand.register(this.dispatcher, context);
       PlaySoundCommand.register(this.dispatcher);
+      PostEffectCommand.register(this.dispatcher);
       RandomCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
       RecipeCommand.register(this.dispatcher);
@@ -503,7 +506,7 @@ public class Commands {
    }
 
    public static void validate() {
-      CommandBuildContext context = createValidationContext(VanillaRegistries.createLookup());
+      CommandBuildContext context = createValidationContext(VanillaRegistries.createWorldLookup());
       CommandDispatcher<CommandSourceStack> dispatcher = (new Commands(Commands.CommandSelection.ALL, context)).getDispatcher();
       RootCommandNode<CommandSourceStack> root = dispatcher.getRoot();
       dispatcher.findAmbiguities((parent, child, sibling, ambiguities) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{dispatcher.getPath(child), dispatcher.getPath(sibling), ambiguities}));
@@ -520,7 +523,7 @@ public class Commands {
    }
 
    public static CommandSourceStack createCompilationContext(final PermissionSet compilationPermissions) {
-      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, CommonComponents.EMPTY, (MinecraftServer)null);
    }
 
    static {

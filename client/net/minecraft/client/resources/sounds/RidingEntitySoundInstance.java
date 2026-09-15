@@ -18,6 +18,9 @@ public class RidingEntitySoundInstance extends AbstractTickableSoundInstance {
       super(soundEvent, soundSource, SoundInstance.createUnseededRandom());
       this.player = player;
       this.entity = entity;
+      this.x = entity.getX();
+      this.y = entity.getY();
+      this.z = entity.getZ();
       this.underwaterSound = underwaterSound;
       this.volumeMin = volumeMin;
       this.volumeMax = volumeMax;
@@ -60,6 +63,9 @@ public class RidingEntitySoundInstance extends AbstractTickableSoundInstance {
                this.volume = this.volumeMin;
             }
 
+            this.x = this.entity.getX();
+            this.y = this.entity.getY();
+            this.z = this.entity.getZ();
          }
       } else {
          this.stop();

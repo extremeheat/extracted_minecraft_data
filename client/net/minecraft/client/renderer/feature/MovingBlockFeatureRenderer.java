@@ -35,8 +35,8 @@ public class MovingBlockFeatureRenderer extends RenderTypeFeatureRenderer<Submit
          BlockStateModel model = context.blockStateModelSet().get(blockState);
          this.poseStack.setIdentity();
          this.poseStack.mulPose(submit.pose());
-         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, quad.materialInfo().layer(), submit.outlineColor());
-         BlockQuadOutput solidQuadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, ChunkSectionLayer.SOLID, submit.outlineColor());
+         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, submit.forceTranslucent() ? ChunkSectionLayer.TRANSLUCENT : quad.materialInfo().layer(), submit.outlineColor());
+         BlockQuadOutput solidQuadOutput = (x, y, z, quad, instance) -> this.putBakedQuad(this.poseStack, x, y, z, quad, instance, submit.forceTranslucent() ? ChunkSectionLayer.TRANSLUCENT : ChunkSectionLayer.SOLID, submit.outlineColor());
          BlockQuadOutput blockOutput = ModelBlockRenderer.forceOpaque(cutoutLeaves, blockState) ? solidQuadOutput : quadOutput;
          long blockSeed = blockState.getSeed(movingBlockRenderState.randomSeedPos);
          blockRenderer.tesselateBlock(blockOutput, 0.0F, 0.0F, 0.0F, movingBlockRenderState, movingBlockRenderState.blockPos, blockState, model, blockSeed);
@@ -68,7 +68,7 @@ public class MovingBlockFeatureRenderer extends RenderTypeFeatureRenderer<Submit
       poseStack.popPose();
    }
 
-   public static record Submit(Matrix4fc pose, MovingBlockRenderState movingBlockRenderState, int outlineColor) implements TranslucentSubmit {
+   public static record Submit(Matrix4fc pose, MovingBlockRenderState movingBlockRenderState, int outlineColor, boolean forceTranslucent) implements TranslucentSubmit {
       public Submit {
          super();
       }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -36,15 +35,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class NoteBlock extends Block {
-   public static final MapCodec<NoteBlock> CODEC = simpleCodec(NoteBlock::new);
    public static final EnumProperty<NoteBlockInstrument> INSTRUMENT;
    public static final BooleanProperty POWERED;
    public static final IntegerProperty NOTE;
    public static final int NOTE_VOLUME = 3;
-
-   public MapCodec<NoteBlock> codec() {
-      return CODEC;
-   }
 
    public NoteBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -78,7 +72,7 @@ public class NoteBlock extends Block {
             this.playNote((Entity)null, state, level, pos);
          }
 
-         level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, signal));
       }
 
    }
@@ -98,7 +92,7 @@ public class NoteBlock extends Block {
    protected InteractionResult useWithoutItem(BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (!level.isClientSide()) {
          state = (BlockState)state.cycle(NOTE);
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
          this.playNote(player, state, level, pos);
          player.awardStat(Stats.TUNE_NOTEBLOCK);
       }

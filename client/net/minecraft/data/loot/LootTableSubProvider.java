@@ -1,10 +1,19 @@
 package net.minecraft.data.loot;
 
-import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
+import net.minecraft.data.worldgen.BootstrapContextAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 @FunctionalInterface
 public interface LootTableSubProvider {
-   void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output);
+   void run();
+
+   public interface Context extends BootstrapContextAccess {
+      Holder.Reference<LootTable> accept(ResourceKey<LootTable> key, LootTable.Builder value);
+   }
+
+   public interface Factory {
+      LootTableSubProvider create(Context context);
+   }
 }

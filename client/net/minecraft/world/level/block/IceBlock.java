@@ -1,12 +1,12 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -14,16 +14,11 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class IceBlock extends HalfTransparentBlock {
-   public static final MapCodec<IceBlock> CODEC = simpleCodec(IceBlock::new);
-
-   public MapCodec<? extends IceBlock> codec() {
-      return CODEC;
-   }
-
    public IceBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
@@ -32,7 +27,7 @@ public class IceBlock extends HalfTransparentBlock {
       return Blocks.WATER.defaultBlockState();
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
       if (!EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)) {
          if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
@@ -41,7 +36,7 @@ public class IceBlock extends HalfTransparentBlock {
          }
 
          BlockState belowState = level.getBlockState(pos.below());
-         if (belowState.blocksMotion() || belowState.liquid()) {
+         if (belowState.is(BlockTags.ICE_MELTS_WHEN_DESTROYED_ABOVE) || belowState.liquid()) {
             level.setBlockAndUpdate(pos, meltsInto());
          }
       }
@@ -61,6 +56,7 @@ public class IceBlock extends HalfTransparentBlock {
       } else {
          level.setBlockAndUpdate(pos, meltsInto());
          level.neighborChanged(pos, meltsInto().getBlock(), (Orientation)null);
+         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
       }
    }
 }

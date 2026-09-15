@@ -15,7 +15,7 @@ public record NameAndId(UUID id, String name) {
       this(profile.id(), profile.name());
    }
 
-   public NameAndId(final com.mojang.authlib.yggdrasil.response.NameAndId profile) {
+   public NameAndId(final com.mojang.authlib.services.response.NameAndId profile) {
       this(profile.id(), profile.name());
    }
 

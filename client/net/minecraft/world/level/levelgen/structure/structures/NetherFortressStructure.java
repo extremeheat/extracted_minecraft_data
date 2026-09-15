@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.random.WeightedList;
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.MobSpawnSettings;
@@ -47,7 +49,7 @@ public class NetherFortressStructure extends Structure {
    }
 
    static {
-      FORTRESS_ENEMIES = WeightedList.<MobSpawnSettings.SpawnerData>builder().add(new MobSpawnSettings.SpawnerData(EntityTypes.BLAZE, 2, 3), 10).add(new MobSpawnSettings.SpawnerData(EntityTypes.ZOMBIFIED_PIGLIN, 4, 4), 5).add(new MobSpawnSettings.SpawnerData(EntityTypes.WITHER_SKELETON, 5, 5), 8).add(new MobSpawnSettings.SpawnerData(EntityTypes.SKELETON, 5, 5), 2).add(new MobSpawnSettings.SpawnerData(EntityTypes.MAGMA_CUBE, 4, 4), 3).build();
+      FORTRESS_ENEMIES = WeightedList.<MobSpawnSettings.SpawnerData>builder().add(new MobSpawnSettings.SpawnerData(EntityTypes.BLAZE, new UniformInt(2, 3)), 10).add(new MobSpawnSettings.SpawnerData(EntityTypes.ZOMBIFIED_PIGLIN, new ConstantInt(4)), 5).add(new MobSpawnSettings.SpawnerData(EntityTypes.WITHER_SKELETON, new ConstantInt(5)), 8).add(new MobSpawnSettings.SpawnerData(EntityTypes.SKELETON, new ConstantInt(5)), 2).add(new MobSpawnSettings.SpawnerData(EntityTypes.MAGMA_CUBE, new ConstantInt(4)), 3).build();
       CODEC = simpleCodec(NetherFortressStructure::new);
    }
 }

@@ -3,27 +3,22 @@ package net.minecraft.advancements;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public record AdvancementRequirements(List<List<String>> requirements) {
    public static final Codec<AdvancementRequirements> CODEC;
+   public static final StreamCodec<ByteBuf, AdvancementRequirements> STREAM_CODEC;
    public static final AdvancementRequirements EMPTY;
-
-   public AdvancementRequirements(final FriendlyByteBuf input) {
-      this(input.readList((in) -> in.readList(FriendlyByteBuf::readUtf)));
-   }
 
    public AdvancementRequirements {
       super();
-   }
-
-   public void write(final FriendlyByteBuf output) {
-      output.writeCollection(this.requirements, (out, set) -> out.writeCollection(set, FriendlyByteBuf::writeUtf));
    }
 
    public static AdvancementRequirements allOf(final Collection<String> criteria) {
@@ -117,6 +112,7 @@ public record AdvancementRequirements(List<List<String>> requirements) {
 
    static {
       CODEC = Codec.STRING.listOf().listOf().xmap(AdvancementRequirements::new, AdvancementRequirements::requirements);
+      STREAM_CODEC = ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()).apply(ByteBufCodecs.list()).map(AdvancementRequirements::new, AdvancementRequirements::requirements);
       EMPTY = new AdvancementRequirements(List.of());
    }
 

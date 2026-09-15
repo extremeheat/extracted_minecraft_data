@@ -13,8 +13,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 public interface TestEnvironmentDefinition<SavedDataType> {
    Codec<TestEnvironmentDefinition<?>> DIRECT_CODEC = BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE.byNameCodec().dispatch(TestEnvironmentDefinition::codec, (c) -> c);
-   Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryFileCodec.<Holder<TestEnvironmentDefinition<?>>>create(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
+   Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryCodecs.holder(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
 
    static MapCodec<? extends TestEnvironmentDefinition<?>> bootstrap(final Registry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
@@ -146,7 +146,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
 
       public Long setup(final ServerLevel level) {
          MinecraftServer server = level.getServer();
-         long previous = server.clockManager().getTotalTicks(this.clock);
+         long previous = server.clockManager().getInstance(this.clock).totalTicks();
          server.clockManager().setTotalTicks(this.clock, (long)this.time);
          return previous;
       }

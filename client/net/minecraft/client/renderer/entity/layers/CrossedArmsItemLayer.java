@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.joml.Quaternionfc;
 
 public class CrossedArmsItemLayer<S extends HoldingEntityRenderState, M extends EntityModel<S> & VillagerLikeModel<S>> extends RenderLayer<S, M> {
    public CrossedArmsItemLayer(final RenderLayerParent<S, M> renderer) {
@@ -28,9 +27,9 @@ public class CrossedArmsItemLayer<S extends HoldingEntityRenderState, M extends 
 
    protected void applyTranslation(final S state, final PoseStack poseStack) {
       ((VillagerLikeModel)this.getParentModel()).translateToArms(state, poseStack);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotation(0.75F));
+      poseStack.rotate(Axis.XP, 0.75F);
       poseStack.scale(1.07F, 1.07F, 1.07F);
       poseStack.translate(0.0F, 0.13F, -0.34F);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotation(3.1415927F));
+      poseStack.rotate(Axis.XP, 3.1415927F);
    }
 }

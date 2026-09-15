@@ -18,9 +18,9 @@ public class PillagerOutpostPools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> outpostRot = processorLists.getOrThrow(ProcessorLists.OUTPOST_ROT);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.legacy("pillager_outpost/base_plate"), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "pillager_outpost/towers", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.list(ImmutableList.of(StructurePoolElement.legacy("pillager_outpost/watchtower"), StructurePoolElement.legacy("pillager_outpost/watchtower_overgrown", outpostRot))), 1)), StructureTemplatePool.Projection.RIGID));

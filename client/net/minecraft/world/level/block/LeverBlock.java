@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -35,13 +34,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
-   public static final MapCodec<LeverBlock> CODEC = simpleCodec(LeverBlock::new);
    public static final BooleanProperty POWERED;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<LeverBlock> codec() {
-      return CODEC;
-   }
 
    protected LeverBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -81,7 +75,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    public void pull(BlockState state, final Level level, final BlockPos pos, final @Nullable Player player) {
       state = (BlockState)state.cycle(POWERED);
-      level.setBlock(pos, state, 3);
+      level.setBlockAndUpdate(pos, state);
       this.updateNeighbours(state, level, pos);
       playSound(player, level, pos, state);
       level.gameEvent(player, (Boolean)state.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);

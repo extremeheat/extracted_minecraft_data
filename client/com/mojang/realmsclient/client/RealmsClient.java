@@ -6,6 +6,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
 import com.mojang.realmsclient.dto.GuardedSerializer;
+import com.mojang.realmsclient.dto.InviteCodeList;
+import com.mojang.realmsclient.dto.InviteCodeRequestDto;
 import com.mojang.realmsclient.dto.Ops;
 import com.mojang.realmsclient.dto.OutboundPlayer;
 import com.mojang.realmsclient.dto.PendingInvite;
@@ -13,6 +15,7 @@ import com.mojang.realmsclient.dto.PendingInvitesList;
 import com.mojang.realmsclient.dto.PingResult;
 import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.PreferredRegionsDto;
+import com.mojang.realmsclient.dto.RealmTierConfigurationDto;
 import com.mojang.realmsclient.dto.RealmsConfigurationDto;
 import com.mojang.realmsclient.dto.RealmsDescriptionDto;
 import com.mojang.realmsclient.dto.RealmsJoinInformation;
@@ -41,6 +44,7 @@ import com.mojang.realmsclient.util.UploadTokenCache;
 import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -75,6 +79,14 @@ public class RealmsClient {
    private static final String TRIALS_RESOURCE = "trial";
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
    private static final String FEATURE_FLAGS_RESOURCE = "feature/v1";
+   private static final String INVITE_CODES_RESOURCE = "api/v1.0/invite/codes";
+   private static final String ACCEPT_HEADER = "Accept";
+   private static final String APPLICATION_JSON = "application/json";
+   private static final String MOJANG_AUTH_HEADER = "x-mojangauth";
+   private static final String REALMS_PLATFORM_HEADER = "X-Realms-Platform";
+   private static final String PATH_INVITE_CODES_UPDATE = "/update";
+   private static final String PATH_INVITE_CODES_DELETE = "/delete/$CODE";
+   private static final String PATH_INVITE_CODES_USE = "/use";
    private static final String PATH_LIST_ALL_REALMS = "/listUserWorldsOfType/any";
    private static final String PATH_CREATE_SNAPSHOT_REALM = "/$PARENT_WORLD_ID/createPrereleaseRealm";
    private static final String PATH_SNAPSHOT_ELIGIBLE_REALMS = "/listPrereleaseEligibleWorlds";
@@ -94,6 +106,9 @@ public class RealmsClient {
    private static final String PATH_REJECT_INVITE = "/reject/$INVITATION_ID";
    private static final String PATH_UNINVITE_MYSELF = "/$WORLD_ID";
    private static final String PATH_WORLD_CONFIGURE = "/$WORLD_ID/configuration";
+   private static final String PATH_WORLD_TIER_CONFIGURATION = "/$WORLD_ID/configuration/tier";
+   private static final String PATH_WORLD_RENDER_DISTANCE = "/$WORLD_ID/configuration/renderDistance/$RENDER_DISTANCE";
+   private static final String PATH_WORLD_SIM_DISTANCE = "/$WORLD_ID/configuration/simDistance/$SIM_DISTANCE";
    private static final String PATH_SLOT = "/$WORLD_ID/slot/$SLOT_ID";
    private static final String PATH_WORLD_OPEN = "/$WORLD_ID/open";
    private static final String PATH_WORLD_CLOSE = "/$WORLD_ID/close";
@@ -225,6 +240,34 @@ public class RealmsClient {
       return RealmsServer.parse(GSON, json);
    }
 
+   public RealmTierConfigurationDto getRealmTierConfiguration(final long realmId) throws RealmsServiceException {
+      String asciiUrl = this.url("worlds" + "/$WORLD_ID/configuration/tier".replace("$WORLD_ID", String.valueOf(realmId)));
+      String json = this.execute(Request.get(asciiUrl));
+
+      try {
+         RealmTierConfigurationDto tierConfiguration = (RealmTierConfigurationDto)GSON.fromJson(json, RealmTierConfigurationDto.class);
+         if (tierConfiguration != null && tierConfiguration.renderDistance() != null && tierConfiguration.simDistance() != null) {
+            return tierConfiguration;
+         }
+
+         LOGGER.error("Could not parse Realm tier configuration: {}", json);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse Realm tier configuration", e);
+      }
+
+      throw new RealmsServiceException(RealmsError.CustomError.configurationError());
+   }
+
+   public void updateRenderDistance(final long realmId, final int renderDistance) throws RealmsServiceException {
+      String asciiUrl = this.url("worlds" + "/$WORLD_ID/configuration/renderDistance/$RENDER_DISTANCE".replace("$WORLD_ID", String.valueOf(realmId)).replace("$RENDER_DISTANCE", String.valueOf(renderDistance)));
+      this.execute(Request.put(asciiUrl, ""));
+   }
+
+   public void updateSimulationDistance(final long realmId, final int simulationDistance) throws RealmsServiceException {
+      String asciiUrl = this.url("worlds" + "/$WORLD_ID/configuration/simDistance/$SIM_DISTANCE".replace("$WORLD_ID", String.valueOf(realmId)).replace("$SIM_DISTANCE", String.valueOf(simulationDistance)));
+      this.execute(Request.put(asciiUrl, ""));
+   }
+
    public PreferredRegionsDto getPreferredRegionSelections() throws RealmsServiceException {
       String asciiUrl = this.url("regions/preferredRegions");
       String json = this.execute(Request.get(asciiUrl));
@@ -303,6 +346,51 @@ public class RealmsClient {
       String asciiUrl = this.url("invites" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(realmId)));
       String json = this.execute(Request.post(asciiUrl, GSON.toJson((ReflectionBasedSerialization)playerInfo)));
       return RealmsServer.parse(GSON, json).players;
+   }
+
+   public InviteCodeList inviteCodes(final long realmId) throws RealmsServiceException {
+      Request<?> request = this.inviteCodesRequest(realmId);
+      String json = this.execute(request);
+      return InviteCodeList.parse(json);
+   }
+
+   private Request<?> inviteCodesRequest(final long realmId) {
+      String asciiUrl = frontendV2Url("api/v1.0/invite/codes", "realmId=" + realmId);
+      return frontendV2Request(Request.get(asciiUrl), this.minecraft.getUser().getAccessToken());
+   }
+
+   private static Request<?> frontendV2Request(final Request<?> request, final String accessToken) {
+      request.connection.setRequestProperty("x-mojangauth", accessToken);
+      if (ENVIRONMENT == RealmsClient.Environment.LOCAL) {
+         request.connection.setRequestProperty("X-Realms-Platform", "Java");
+      }
+
+      return request;
+   }
+
+   public void createInviteCode(final long realmId, final boolean enabled, final @Nullable Instant expiration) throws RealmsServiceException {
+      InviteCodeRequestDto request = new InviteCodeRequestDto((String)null, realmId, enabled, expiration == null ? null : expiration.toEpochMilli());
+      String asciiUrl = frontendV2Url("api/v1.0/invite/codes", (String)null);
+      this.execute(frontendV2Request(Request.post(asciiUrl, GSON.toJson((ReflectionBasedSerialization)request)), this.minecraft.getUser().getAccessToken()));
+   }
+
+   public void updateInviteCode(final long realmId, final String code, final boolean enabled, final @Nullable Instant expiration) throws RealmsServiceException {
+      InviteCodeRequestDto request = new InviteCodeRequestDto(code, realmId, enabled, expiration == null ? null : expiration.toEpochMilli());
+      String asciiUrl = frontendV2Url("api/v1.0/invite/codes/update", (String)null);
+      this.execute(frontendV2Request(Request.post(asciiUrl, GSON.toJson((ReflectionBasedSerialization)request)), this.minecraft.getUser().getAccessToken()));
+   }
+
+   public void deleteInviteCode(final String code) throws RealmsServiceException {
+      String asciiUrl = frontendV2Url("api/v1.0/invite/codes" + "/delete/$CODE".replace("$CODE", code), (String)null);
+      this.execute(frontendV2Request(Request.delete(asciiUrl), this.minecraft.getUser().getAccessToken()));
+   }
+
+   public void redeemInviteCode(final String code) throws RealmsServiceException {
+      String var10000 = frontendV2Url("api/v1.0/invite/codes/use", (String)null);
+      String asciiUrl = var10000 + "/" + code.trim();
+      Request<?> request = frontendV2Request(Request.post(asciiUrl, ""), this.minecraft.getUser().getAccessToken());
+      request.connection.setRequestProperty("Accept", "application/json");
+      this.execute(request);
    }
 
    public BackupList backupsFor(final long realmId) throws RealmsServiceException {
@@ -472,12 +560,20 @@ public class RealmsClient {
       }
    }
 
+   private static String frontendV2Url(final String path, final @Nullable String queryString) {
+      try {
+         return (new URI(ENVIRONMENT.protocol, ENVIRONMENT.frontendV2Url, "/" + path, queryString, (String)null)).toASCIIString();
+      } catch (URISyntaxException e) {
+         throw new IllegalArgumentException(path, e);
+      }
+   }
+
    private String execute(final Request<?> request) throws RealmsServiceException {
       request.cookie("sid", this.sessionId);
       request.cookie("user", this.username);
       WorldVersion version = SharedConstants.getCurrentVersion();
       request.cookie("version", version.name());
-      request.addVersionHeaders(version.protocolVersion(), RealmsMainScreen.isSnapshot());
+      request.addVersionHeaders(version.id(), version.protocolVersion(), RealmsMainScreen.isSnapshot());
 
       try {
          int responseCode = request.responseCode();
@@ -515,17 +611,19 @@ public class RealmsClient {
    }
 
    public static enum Environment {
-      PRODUCTION("pc.realms.minecraft.net", "java.frontendlegacy.realms.minecraft-services.net", "https"),
-      STAGE("pc-stage.realms.minecraft.net", "java.frontendlegacy.stage-c2a40e62.realms.minecraft-services.net", "https"),
-      LOCAL("localhost:8080", "localhost:8080", "http");
+      PRODUCTION("pc.realms.minecraft.net", "java.frontendlegacy.realms.minecraft-services.net", "java.frontend.realms.minecraft-services.net", "https"),
+      STAGE("pc-stage.realms.minecraft.net", "java.frontendlegacy.stage-c2a40e62.realms.minecraft-services.net", "java.frontend.stage-c2a40e62.realms.minecraft-services.net", "https"),
+      LOCAL("localhost:8080", "localhost:8080", "localhost:8080", "http");
 
       public final String baseUrl;
       public final String alternativeUrl;
+      public final String frontendV2Url;
       public final String protocol;
 
-      private Environment(final String baseUrl, final String alternativeUrl, final String protocol) {
+      private Environment(final String baseUrl, final String alternativeUrl, final String frontendV2Url, final String protocol) {
          this.baseUrl = baseUrl;
          this.alternativeUrl = alternativeUrl;
+         this.frontendV2Url = frontendV2Url;
          this.protocol = protocol;
       }
 

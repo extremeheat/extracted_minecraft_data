@@ -27,7 +27,6 @@ import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import javax.crypto.Cipher;
@@ -81,7 +80,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private boolean handlingFault;
    private volatile @Nullable DisconnectionDetails delayedDisconnect;
    private @Nullable BandwidthDebugMonitor bandwidthDebugMonitor;
-   private @Nullable UUID intendedProfileId;
 
    public Connection(final PacketFlow receiving) {
       super();
@@ -596,14 +594,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public void setBandwidthLogger(final LocalSampleLogger bandwidthLogger) {
       this.bandwidthDebugMonitor = new BandwidthDebugMonitor(bandwidthLogger);
-   }
-
-   public void setIntendedProfileId(final UUID profileId) {
-      this.intendedProfileId = profileId;
-   }
-
-   public @Nullable UUID getIntendedProfileId() {
-      return this.intendedProfileId;
    }
 
    static {

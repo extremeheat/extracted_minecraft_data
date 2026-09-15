@@ -27,10 +27,8 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.resources.Identifier;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Avatar;
@@ -42,10 +40,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwingAnimationType;
-import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 
 public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity> extends LivingEntityRenderer<AvatarlikeEntity, AvatarRenderState, PlayerModel> {
    public AvatarRenderer(final EntityRendererProvider.Context context, final boolean slimSteve) {
@@ -86,7 +81,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    private static HumanoidModel.ArmPose getArmPose(final Avatar avatar, final ItemStack itemInHand, final InteractionHand hand) {
       if (itemInHand.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
-      } else if (!avatar.swinging && itemInHand.is(Items.CROSSBOW) && CrossbowItem.isCharged(itemInHand)) {
+      } else if (!avatar.isSwinging() && itemInHand.is(Items.CROSSBOW) && CrossbowItem.isCharged(itemInHand)) {
          return HumanoidModel.ArmPose.CROSSBOW_HOLD;
       } else {
          if (avatar.getUsedItemHand() == hand && avatar.getUseItemRemainingTicks() > 0) {
@@ -124,12 +119,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
             }
          }
 
-         SwingAnimation attack = (SwingAnimation)itemInHand.get(DataComponents.SWING_ANIMATION);
-         if (attack != null && attack.type() == SwingAnimationType.STAB && avatar.swinging) {
-            return HumanoidModel.ArmPose.SPEAR;
-         } else {
-            return itemInHand.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
-         }
+         return HumanoidMobRenderer.usesSpearPose(itemInHand, hand.asArm(avatar.getMainArm()), avatar) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
       }
    }
 
@@ -241,7 +231,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       model.rightSleeve.visible = hasSleeve;
       model.leftArm.zRot = -0.1F;
       model.rightArm.zRot = 0.1F;
-      submitNodeCollector.submitModelPart(arm, poseStack, RenderTypes.entityTranslucent(skinTexture), lightCoords, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
+      submitNodeCollector.submitModelPart(arm, poseStack, RenderTypes.entityTranslucent(skinTexture), lightCoords, OverlayTexture.NO_OVERLAY, (UvMapping)null);
    }
 
    protected void setupRotations(final AvatarRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
@@ -251,17 +241,17 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
          super.setupRotations(state, poseStack, bodyRot, entityScale);
          float scale = state.fallFlyingScale();
          if (!state.isAutoSpinAttack) {
-            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(scale * (-90.0F - xRot)));
+            poseStack.rotateDegrees(Axis.XP, scale * (-90.0F - xRot));
          }
 
          if (state.shouldApplyFlyingYRot) {
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotation(state.flyingYRot));
+            poseStack.rotate(Axis.YP, state.flyingYRot);
          }
       } else if (swimAmount > 0.0F) {
          super.setupRotations(state, poseStack, bodyRot, entityScale);
          float targetXRot = state.isInWater ? -90.0F - xRot : -90.0F;
          float xAngle = Mth.lerp(swimAmount, 0.0F, targetXRot);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xAngle));
+         poseStack.rotateDegrees(Axis.XP, xAngle);
          if (state.isVisuallySwimming) {
             poseStack.translate(0.0F, -1.0F, 0.3F);
          }

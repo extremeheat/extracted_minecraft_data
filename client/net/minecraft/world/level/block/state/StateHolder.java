@@ -15,8 +15,8 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class StateHolder<O, S> {
    private static final int VALUE_NOT_FOUND = -1;
-   public static final String NAME_TAG = "Name";
-   public static final String PROPERTIES_TAG = "Properties";
+   public static final String ID_TAG = "id";
+   public static final String PROPERTIES_TAG = "properties";
    protected final O owner;
    private final Property<?>[] propertyKeys;
    private final Comparable<?>[] propertyValues;
@@ -149,10 +149,10 @@ public abstract class StateHolder<O, S> {
    }
 
    protected static <O, S extends StateHolder<O, S>> Codec<S> codec(final Codec<O> ownerCodec, final Function<O, S> defaultState, final Function<O, StateDefinition<O, S>> stateDefinition) {
-      return ownerCodec.dispatch("Name", (s) -> s.owner, (o) -> {
+      return ownerCodec.dispatch("id", (s) -> s.owner, (o) -> {
          StateDefinition<O, S> definition = (StateDefinition)stateDefinition.apply(o);
          S defaultValue = (StateHolder)defaultState.apply(o);
-         return definition.isSingletonState() ? MapCodec.unit(defaultValue) : definition.propertiesCodec().codec().lenientOptionalFieldOf("Properties").xmap((oo) -> (StateHolder)oo.orElse(defaultValue), Optional::of);
+         return definition.isSingletonState() ? MapCodec.unit(defaultValue) : definition.propertiesCodec().codec().lenientOptionalFieldOf("properties").xmap((oo) -> (StateHolder)oo.orElse(defaultValue), Optional::of);
       });
    }
 }

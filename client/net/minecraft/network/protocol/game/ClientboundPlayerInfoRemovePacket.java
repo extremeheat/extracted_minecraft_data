@@ -1,26 +1,19 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket>codec(ClientboundPlayerInfoRemovePacket::write, ClientboundPlayerInfoRemovePacket::new);
-
-   private ClientboundPlayerInfoRemovePacket(final FriendlyByteBuf input) {
-      this(input.readList(UUIDUtil.STREAM_CODEC));
-   }
+   public static final StreamCodec<ByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC;
 
    public ClientboundPlayerInfoRemovePacket {
       super();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeCollection(this.profileIds, UUIDUtil.STREAM_CODEC);
    }
 
    public PacketType<ClientboundPlayerInfoRemovePacket> type() {
@@ -29,5 +22,9 @@ public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implement
 
    public void handle(final ClientGamePacketListener listener) {
       listener.handlePlayerInfoRemove(this);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundPlayerInfoRemovePacket::profileIds, ClientboundPlayerInfoRemovePacket::new);
    }
 }

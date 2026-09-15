@@ -52,6 +52,6 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
    }
 
    private Optional<BlockPos> findNearestRepellent(final ServerLevel level, final Hoglin body) {
-      return BlockPos.findClosestMatch(body.blockPosition(), 8, 4, (pos) -> level.getBlockState(pos).is(BlockTags.HOGLIN_REPELLENTS));
+      return level.findBlocksInBoxByManhattanDistance(body.blockPosition(), 8, 4).filterState((state) -> state.is(BlockTags.HOGLIN_REPELLENTS)).findFirst();
    }
 }

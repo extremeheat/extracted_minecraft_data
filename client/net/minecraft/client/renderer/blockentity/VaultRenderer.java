@@ -17,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.entity.vault.VaultClientData;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity, VaultRenderState> {
@@ -50,7 +49,7 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity, Vaul
       if (state.displayItem != null) {
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.4F, 0.5F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.spin));
+         poseStack.rotateDegrees(Axis.YP, state.spin);
          ItemEntityRenderer.renderMultipleFromCount(poseStack, submitNodeCollector, state.lightCoords, state.displayItem, this.random);
          poseStack.popPose();
       }

@@ -10,11 +10,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
@@ -25,12 +22,8 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
    private final Codec<T> codec;
    private final FileToIdConverter lister;
 
-   protected SimpleJsonResourceReloadListener(final HolderLookup.Provider registries, final Codec<T> codec, final ResourceKey<? extends Registry<T>> registryKey) {
-      this((DynamicOps)registries.createSerializationContext(JsonOps.INSTANCE), codec, FileToIdConverter.registry(registryKey));
-   }
-
    protected SimpleJsonResourceReloadListener(final Codec<T> codec, final FileToIdConverter lister) {
-      this((DynamicOps)JsonOps.INSTANCE, codec, lister);
+      this(JsonOps.INSTANCE, codec, lister);
    }
 
    private SimpleJsonResourceReloadListener(final DynamicOps<JsonElement> ops, final Codec<T> codec, final FileToIdConverter lister) {
@@ -42,38 +35,30 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
 
    protected Map<Identifier, T> prepare(final ResourceManager manager, final ProfilerFiller profiler) {
       Map<Identifier, T> result = new HashMap();
-      scanDirectory(manager, this.lister, this.ops, this.codec, result);
-      return result;
-   }
 
-   public static <T> void scanDirectory(final ResourceManager manager, final ResourceKey<? extends Registry<T>> registryKey, final DynamicOps<JsonElement> ops, final Codec<T> codec, final Map<Identifier, T> result) {
-      scanDirectory(manager, FileToIdConverter.registry(registryKey), ops, codec, result);
-   }
-
-   public static <T> void scanDirectory(final ResourceManager manager, final FileToIdConverter lister, final DynamicOps<JsonElement> ops, final Codec<T> codec, final Map<Identifier, T> result) {
-      for(Map.Entry<Identifier, Resource> entry : lister.listMatchingResources(manager).entrySet()) {
+      for(Map.Entry<Identifier, Resource> entry : this.lister.listMatchingResources(manager).entrySet()) {
          Identifier location = (Identifier)entry.getKey();
-         Identifier id = lister.fileToId(location);
+         Identifier id = this.lister.fileToId(location);
 
          try {
             Reader reader = ((Resource)entry.getValue()).openAsReader();
 
             try {
-               codec.parse(ops, StrictJsonParser.parse(reader)).ifSuccess((parsed) -> {
+               this.codec.parse(this.ops, StrictJsonParser.parse(reader)).ifSuccess((parsed) -> {
                   if (result.putIfAbsent(id, parsed) != null) {
                      throw new IllegalStateException("Duplicate data file ignored with ID " + String.valueOf(id));
                   }
                }).ifError((error) -> LOGGER.error("Couldn't parse data file '{}' from '{}': {}", new Object[]{id, location, error}));
-            } catch (Throwable var13) {
+            } catch (Throwable var12) {
                if (reader != null) {
                   try {
                      reader.close();
-                  } catch (Throwable var12) {
-                     var13.addSuppressed(var12);
+                  } catch (Throwable var11) {
+                     var12.addSuppressed(var11);
                   }
                }
 
-               throw var13;
+               throw var12;
             }
 
             if (reader != null) {
@@ -84,5 +69,6 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
          }
       }
 
+      return result;
    }
 }

@@ -2,11 +2,13 @@ package net.minecraft.util.filefix;
 
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import net.minecraft.util.FileUtil;
 import org.slf4j.Logger;
@@ -24,7 +26,7 @@ public class FileFixUtil {
       if (Files.exists(fromAbsolute, new LinkOption[0])) {
          Path toAbsolute = baseDirectory.resolve(to);
          if (Files.exists(toAbsolute, new LinkOption[0])) {
-            LOGGER.warn("Target already exists, skipping move from {} to {}", from, to);
+            throw new FileAlreadyExistsException(String.format(Locale.ROOT, "Cannot move file from %s to %s: Target already exists", from, to));
          } else {
             FileUtil.createDirectoriesSafe(toAbsolute.getParent());
             Files.move(fromAbsolute, toAbsolute, StandardCopyOption.COPY_ATTRIBUTES);

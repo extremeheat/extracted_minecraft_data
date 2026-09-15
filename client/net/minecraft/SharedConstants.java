@@ -17,32 +17,32 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4903;
+   public static final int WORLD_VERSION = 5023;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 776;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 777;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 322;
-   public static final int SNBT_NAG_VERSION = 4882;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 338;
+   public static final int SNBT_NAG_VERSION = 4997;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 88;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 97;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 1;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 107;
+   public static final int DATA_PACK_FORMAT_MAJOR = 121;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 1;
-   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "3.0.0";
+   public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "3.1.0";
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -84,7 +84,6 @@ public class SharedConstants {
    public static final boolean DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN = debugFlag("KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN");
    public static final boolean DEBUG_DONT_SAVE_WORLD = debugFlag("DONT_SAVE_WORLD");
    public static final boolean DEBUG_LARGE_DRIPSTONE = debugFlag("LARGE_DRIPSTONE");
-   public static final boolean DEBUG_CARVERS = debugFlag("CARVERS");
    public static final boolean DEBUG_ORE_VEINS = debugFlag("ORE_VEINS");
    public static final boolean DEBUG_SCULK_CATALYST = debugFlag("SCULK_CATALYST");
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = debugFlag("BYPASS_REALMS_VERSION_CHECK");
@@ -104,7 +103,6 @@ public class SharedConstants {
    public static final boolean DEBUG_VERBOSE_COMMAND_ERRORS = debugFlag("VERBOSE_COMMAND_ERRORS");
    public static final boolean DEBUG_DEV_COMMANDS = debugFlag("DEV_COMMANDS");
    public static final boolean DEBUG_ACTIVE_TEXT_AREAS = debugFlag("ACTIVE_TEXT_AREAS");
-   public static final boolean DEBUG_PREFER_WAYLAND = debugFlag("PREFER_WAYLAND");
    public static final boolean DEBUG_SIMULATE_LIBRARY_LOAD_FAILURE = debugFlag("SIMULATE_LIBRARY_LOAD_FAILURE");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
@@ -131,13 +129,16 @@ public class SharedConstants {
    public static final boolean DEBUG_WORLD_RECREATE;
    public static final boolean DEBUG_SHOW_SERVER_DEBUG_VALUES;
    public static final boolean DEBUG_FEATURE_COUNT;
+   public static final boolean DEBUG_CALCULATE_SOLID;
    public static final boolean DEBUG_FORCE_TELEMETRY;
    public static final boolean DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND;
+   public static final boolean DEBUG_ENABLE_FARLANDS;
    public static final long MAXIMUM_TICK_TIME_NANOS;
    public static final float MAXIMUM_BLOCK_EXPLOSION_RESISTANCE = 3600000.0F;
    public static final boolean USE_DEVONLY = false;
    public static boolean CHECK_DATA_FIXER_SCHEMA;
    public static boolean IS_RUNNING_IN_IDE;
+   public static boolean IS_RENDERDOC_ATTACHED;
    public static final int WORLD_RESOLUTION = 16;
    public static final int MAX_CHAT_LENGTH = 256;
    public static final int MAX_USER_INPUT_COMMAND_LENGTH = 32500;
@@ -222,7 +223,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 776;
+      return 777;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {
@@ -243,10 +244,13 @@ public class SharedConstants {
       DEBUG_WORLD_RECREATE = debugFlag("WORLD_RECREATE");
       DEBUG_SHOW_SERVER_DEBUG_VALUES = debugFlag("SHOW_SERVER_DEBUG_VALUES");
       DEBUG_FEATURE_COUNT = debugFlag("FEATURE_COUNT");
+      DEBUG_CALCULATE_SOLID = debugFlag("CALCULATE_SOLID");
       DEBUG_FORCE_TELEMETRY = debugFlag("FORCE_TELEMETRY");
       DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND = debugFlag("DONT_SEND_TELEMETRY_TO_BACKEND");
+      DEBUG_ENABLE_FARLANDS = debugFlag("ENABLE_FARLANDS");
       MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
       CHECK_DATA_FIXER_SCHEMA = true;
+      IS_RENDERDOC_ATTACHED = false;
       ILLEGAL_FILE_CHARACTERS = new char[]{'/', '\n', '\r', '\t', '\u0000', '\f', '`', '?', '*', '\\', '<', '>', '|', '"', ':'};
       ResourceLeakDetector.setLevel(NETTY_LEAK_DETECTION);
       CommandSyntaxException.ENABLE_COMMAND_STACK_TRACES = COMMAND_STACK_TRACES;

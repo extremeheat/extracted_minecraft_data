@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -28,13 +27,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
-   public static final MapCodec<GrindstoneBlock> CODEC = simpleCodec(GrindstoneBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.grindstone_title");
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<GrindstoneBlock> codec() {
-      return CODEC;
-   }
 
    protected GrindstoneBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 
@@ -26,9 +25,9 @@ public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
       if (!state.isInvisible || appearsGlowingWithInvisibility) {
          int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
          if (appearsGlowingWithInvisibility) {
-            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.outline(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.outline(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor);
          } else {
-            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.entityTranslucent(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.entityTranslucent(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor);
          }
 
       }

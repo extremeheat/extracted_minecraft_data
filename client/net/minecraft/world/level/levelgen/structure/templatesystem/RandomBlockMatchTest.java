@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
@@ -19,7 +20,7 @@ public class RandomBlockMatchTest extends RuleTest {
       this.probability = probability;
    }
 
-   public boolean test(final BlockState blockState, final RandomSource random) {
+   public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState.is(this.block) && random.nextFloat() < this.probability;
    }
 

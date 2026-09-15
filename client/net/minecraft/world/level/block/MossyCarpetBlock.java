@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -33,7 +32,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MossyCarpetBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<MossyCarpetBlock> CODEC = simpleCodec(MossyCarpetBlock::new);
    public static final BooleanProperty BASE;
    public static final EnumProperty<WallSide> NORTH;
    public static final EnumProperty<WallSide> EAST;
@@ -41,10 +39,6 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public static final EnumProperty<WallSide> WEST;
    public static final Map<Direction, EnumProperty<WallSide>> PROPERTY_BY_DIRECTION;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<MossyCarpetBlock> codec() {
-      return CODEC;
-   }
 
    public MossyCarpetBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -172,7 +166,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
          Objects.requireNonNull(random);
          BlockState topper = createTopperWithSideChance(level, pos, random::nextBoolean);
          if (!topper.isAir()) {
-            level.setBlock(pos.above(), topper, 3);
+            level.setBlockAndUpdate(pos.above(), topper);
          }
 
       }
@@ -243,18 +237,18 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return (EnumProperty)PROPERTY_BY_DIRECTION.get(direction);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (Boolean)state.getValue(BASE) && !createTopperWithSideChance(level, pos, () -> true).isAir();
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockState topper = createTopperWithSideChance(level, pos, () -> true);
       if (!topper.isAir()) {
-         level.setBlock(pos.above(), topper, 3);
+         level.setBlockAndUpdate(pos.above(), topper);
       }
 
    }

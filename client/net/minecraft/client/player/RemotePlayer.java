@@ -38,10 +38,6 @@ public class RemotePlayer extends AbstractClientPlayer {
    }
 
    public void aiStep() {
-      if (this.isInterpolating()) {
-         this.getInterpolation().interpolate();
-      }
-
       if (this.lerpHeadSteps > 0) {
          this.lerpHeadRotationStep(this.lerpHeadSteps, this.lerpYHeadRot);
          --this.lerpHeadSteps;
@@ -52,7 +48,6 @@ public class RemotePlayer extends AbstractClientPlayer {
          --this.lerpDeltaMovementSteps;
       }
 
-      this.updateSwingTime();
       this.updateBob();
 
       try (Zone ignored = Profiler.get().zone("push")) {
@@ -63,7 +58,12 @@ public class RemotePlayer extends AbstractClientPlayer {
 
    public void lerpMotion(final Vec3 movement) {
       this.lerpDeltaMovement = movement;
-      this.lerpDeltaMovementSteps = this.getType().updateInterval() + 1;
+      if (this.getType().hasUpdateInterval()) {
+         this.lerpDeltaMovementSteps = this.getType().updateInterval() + 1;
+      } else {
+         this.lerpDeltaMovementSteps = 1;
+      }
+
    }
 
    protected void updatePlayerPose() {

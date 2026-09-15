@@ -15,9 +15,9 @@ public class BastionHousingUnitsPools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> housing = processorLists.getOrThrow(ProcessorLists.HOUSING);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Pools.register(context, "bastion/units/center_pieces", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/center_pieces/center_0", housing), 1), Pair.of(StructurePoolElement.single("bastion/units/center_pieces/center_1", housing), 1), Pair.of(StructurePoolElement.single("bastion/units/center_pieces/center_2", housing), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "bastion/units/pathways", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/pathways/pathway_0", housing), 1), Pair.of(StructurePoolElement.single("bastion/units/pathways/pathway_wall_0", housing), 1)), StructureTemplatePool.Projection.RIGID));

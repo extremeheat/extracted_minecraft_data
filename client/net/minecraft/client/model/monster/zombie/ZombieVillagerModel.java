@@ -56,8 +56,8 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
       return mesh;
    }
 
-   public void setupAnim(final S state) {
-      super.setupAnim(state);
+   protected void setupAttackAnimation(final S state) {
+      super.setupAttackAnimation(state);
       AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, state.isAggressive, state);
    }
 

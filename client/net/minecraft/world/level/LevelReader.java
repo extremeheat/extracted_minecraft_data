@@ -15,7 +15,11 @@ import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.blockscan.BlockMatcher;
+import net.minecraft.world.level.blockscan.BoxBlockMatcher;
+import net.minecraft.world.level.blockscan.OrderedBlockMatcher;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -23,7 +27,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
+public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeResolver {
    @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate);
 
    /** @deprecated */
@@ -136,26 +140,7 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
    }
 
    default boolean containsAnyLiquid(final AABB box) {
-      int x0 = Mth.floor(box.minX);
-      int x1 = Mth.ceil(box.maxX);
-      int y0 = Mth.floor(box.minY);
-      int y1 = Mth.ceil(box.maxY);
-      int z0 = Mth.floor(box.minZ);
-      int z1 = Mth.ceil(box.maxZ);
-      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-      for(int x = x0; x < x1; ++x) {
-         for(int y = y0; y < y1; ++y) {
-            for(int z = z0; z < z1; ++z) {
-               BlockState blockState = this.getBlockState(pos.set(x, y, z));
-               if (!blockState.getFluidState().isEmpty()) {
-                  return true;
-               }
-            }
-         }
-      }
-
-      return false;
+      return this.findBlocksIn(box).filterState((state) -> !state.getFluidState().isEmpty()).anyMatched();
    }
 
    default int getMaxLocalRawBrightness(final BlockPos pos) {
@@ -167,7 +152,31 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
    }
 
    default int getEffectiveSkyBrightness(final BlockPos pos) {
-      return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
+      return Math.max(this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken(), 0);
+   }
+
+   default BlockMatcher findBlocksIn(final AABB box) {
+      return this.findBlocksIn(BlockPos.containing(box.getMinPosition()), BlockPos.containing(box.getMaxPosition()));
+   }
+
+   default BlockMatcher findBlocksIn(final BlockPos from, final BlockPos to) {
+      return new BoxBlockMatcher(this, from, to);
+   }
+
+   default OrderedBlockMatcher findBlocksIn(final Iterable<BlockPos> positions) {
+      return new OrderedBlockMatcher(this, positions);
+   }
+
+   default OrderedBlockMatcher findBlocksInBoxByManhattanDistance(final BlockPos origin, final int range) {
+      return this.findBlocksIn(BlockPos.withinBoxByManhattanDistance(origin, range, range, range));
+   }
+
+   default OrderedBlockMatcher findBlocksInBoxByManhattanDistance(final BlockPos origin, final int rangeXZ, final int rangeY) {
+      return this.findBlocksIn(BlockPos.withinBoxByManhattanDistance(origin, rangeXZ, rangeY, rangeXZ));
+   }
+
+   default OrderedBlockMatcher findBlocksInManhattan(final BlockPos origin, final int range) {
+      return this.findBlocksIn(BlockPos.withinManhattan(origin, range));
    }
 
    /** @deprecated */

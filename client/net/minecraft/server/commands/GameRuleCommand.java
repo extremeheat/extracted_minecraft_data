@@ -3,6 +3,8 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -12,6 +14,8 @@ import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class GameRuleCommand {
+   private static final Dynamic2CommandExceptionType ERROR_GAME_RULE_NOT_SET = new Dynamic2CommandExceptionType((gameRule, value) -> Component.translatableEscape("commands.gamerule.not_set", gameRule, value));
+
    public GameRuleCommand() {
       super();
    }
@@ -32,12 +36,18 @@ public class GameRuleCommand {
       return (LiteralArgumentBuilder)((LiteralArgumentBuilder)ruleLiteral.executes((c) -> queryRule((CommandSourceStack)c.getSource(), gameRule))).then(Commands.argument("value", gameRule.argument()).executes((c) -> setRule(c, gameRule)));
    }
 
-   private static <T> int setRule(final CommandContext<CommandSourceStack> context, final GameRule<T> gameRule) {
+   private static <T> int setRule(final CommandContext<CommandSourceStack> context, final GameRule<T> gameRule) throws CommandSyntaxException {
       CommandSourceStack source = (CommandSourceStack)context.getSource();
       T value = (T)context.getArgument("value", gameRule.valueClass());
-      source.getLevel().getGameRules().set(gameRule, value, ((CommandSourceStack)context.getSource()).getServer());
-      source.sendSuccess(() -> Component.translatable("commands.gamerule.set", gameRule.id(), gameRule.serialize(value)), true);
-      return gameRule.getCommandResult(value);
+      GameRules gameRules = source.getLevel().getGameRules();
+      String seralizedValue = gameRule.serialize(value);
+      if (gameRules.get(gameRule).equals(value)) {
+         throw ERROR_GAME_RULE_NOT_SET.create(gameRule, seralizedValue);
+      } else {
+         gameRules.set(gameRule, value, ((CommandSourceStack)context.getSource()).getServer());
+         source.sendSuccess(() -> Component.translatable("commands.gamerule.set", gameRule.id(), seralizedValue), true);
+         return gameRule.getCommandResult(value);
+      }
    }
 
    private static <T> int queryRule(final CommandSourceStack source, final GameRule<T> gameRule) {

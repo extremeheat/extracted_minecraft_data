@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,13 +18,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallBannerBlock extends AbstractBannerBlock {
-   public static final MapCodec<WallBannerBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(i, WallBannerBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<WallBannerBlock> codec() {
-      return CODEC;
-   }
 
    public WallBannerBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
       super(color, properties);

@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -113,26 +112,20 @@ public class StructureTemplate {
          this.size = size;
 
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-            for(BlockPos pos : BlockPos.betweenClosed(minCorner, maxCorner)) {
+            level.findBlocksIn(minCorner, maxCorner).filterState((state) -> !ignoreBlocks.contains(state.getBlock())).forEach((pos, state) -> {
                BlockPos relativePos = pos.subtract(minCorner);
-               BlockState blockState = level.getBlockState(pos);
-               Stream var10000 = ignoreBlocks.stream();
-               Objects.requireNonNull(blockState);
-               if (!var10000.anyMatch(blockState::is)) {
-                  BlockEntity blockEntity = level.getBlockEntity(pos);
-                  StructureBlockInfo info;
-                  if (blockEntity != null) {
-                     TagValueOutput output = TagValueOutput.createWithContext(reporter, level.registryAccess());
-                     blockEntity.saveWithId(output);
-                     info = new StructureBlockInfo(relativePos, blockState, output.buildResult());
-                  } else {
-                     info = new StructureBlockInfo(relativePos, blockState, (CompoundTag)null);
-                  }
-
-                  addToLists(info, fullBlockList, blockEntitiesList, otherBlocksList);
+               BlockEntity blockEntity = level.getBlockEntity(pos);
+               StructureBlockInfo info;
+               if (blockEntity != null) {
+                  TagValueOutput output = TagValueOutput.createWithContext(reporter, level.registryAccess());
+                  blockEntity.saveWithId(output);
+                  info = new StructureBlockInfo(relativePos, state, output.buildResult());
+               } else {
+                  info = new StructureBlockInfo(relativePos, state, (CompoundTag)null);
                }
-            }
 
+               addToLists(info, fullBlockList, blockEntitiesList, otherBlocksList);
+            });
             List<StructureBlockInfo> blockInfoList = buildInfoList(fullBlockList, blockEntitiesList, otherBlocksList);
             this.palettes.clear();
             this.palettes.add(new Palette(blockInfoList));
@@ -202,8 +195,7 @@ public class StructureTemplate {
          List<JigsawBlockInfo> result = new ArrayList(jigsaws.size());
 
          for(JigsawBlockInfo jigsaw : jigsaws) {
-            StructureBlockInfo blockInfo = jigsaw.info;
-            result.add(jigsaw.withInfo(new StructureBlockInfo(calculateRelativePosition(settings, blockInfo.pos()).offset(position), blockInfo.state.rotate(settings.getRotation()), blockInfo.nbt)));
+            result.add(jigsaw.withInfo(calculateRelativePosition(settings, jigsaw.pos).offset(position), jigsaw.state.rotate(settings.getRotation())));
          }
 
          return result;
@@ -452,6 +444,10 @@ public class StructureTemplate {
             posTag.add(DoubleTag.valueOf(pos.z));
             tag.put("Pos", posTag);
             tag.remove("UUID");
+            if (tag.contains("block_pos")) {
+               tag.store("block_pos", BlockPos.CODEC, blockPos);
+            }
+
             createEntityIgnoreException(problemReporter, level, tag).ifPresent((entity) -> {
                float yRot = entity.rotate(rotation);
                yRot += entity.mirror(mirror) - entity.getYRot();
@@ -776,22 +772,22 @@ public class StructureTemplate {
       }
    }
 
-   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, Identifier name, ResourceKey<StructureTemplatePool> pool, Identifier target, int placementPriority, int selectionPriority) {
+   public static record JigsawBlockInfo(BlockPos pos, BlockState state, JigsawBlockEntity.JointType jointType, @Nullable Identifier name, ResourceKey<StructureTemplatePool> pool, Identifier target, int placementPriority, int selectionPriority) {
       public JigsawBlockInfo {
          super();
       }
 
-      public static JigsawBlockInfo of(final StructureBlockInfo info) {
+      public static JigsawBlockInfo parse(final StructureBlockInfo info) {
          CompoundTag nbt = (CompoundTag)Objects.requireNonNull(info.nbt(), () -> String.valueOf(info) + " nbt was null");
-         return new JigsawBlockInfo(info, StructureTemplate.getJointType(nbt, info.state()), (Identifier)nbt.read("name", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), (ResourceKey)nbt.read("pool", JigsawBlockEntity.POOL_CODEC).orElse(Pools.EMPTY), (Identifier)nbt.read("target", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), nbt.getIntOr("placement_priority", 0), nbt.getIntOr("selection_priority", 0));
+         return new JigsawBlockInfo(info.pos(), info.state(), StructureTemplate.getJointType(nbt, info.state()), (Identifier)nbt.read("name", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), (ResourceKey)nbt.read("pool", JigsawBlockEntity.POOL_CODEC).orElse(Pools.EMPTY), (Identifier)nbt.read("target", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), nbt.getIntOr("placement_priority", 0), nbt.getIntOr("selection_priority", 0));
       }
 
       public String toString() {
-         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool.identifier(), this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
+         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d>", this.pos, this.state, this.name, this.pool.identifier(), this.target, this.placementPriority, this.selectionPriority);
       }
 
-      public JigsawBlockInfo withInfo(final StructureBlockInfo info) {
-         return new JigsawBlockInfo(info, this.jointType, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority);
+      public JigsawBlockInfo withInfo(final BlockPos pos, final BlockState state) {
+         return new JigsawBlockInfo(pos, state, this.jointType, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority);
       }
    }
 
@@ -820,7 +816,7 @@ public class StructureTemplate {
 
       public List<JigsawBlockInfo> jigsaws() {
          if (this.cachedJigsaws == null) {
-            this.cachedJigsaws = this.blocks(Blocks.JIGSAW).stream().map(JigsawBlockInfo::of).toList();
+            this.cachedJigsaws = this.blocks(Blocks.JIGSAW).stream().map(JigsawBlockInfo::parse).toList();
          }
 
          return this.cachedJigsaws;

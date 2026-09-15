@@ -3,29 +3,30 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.core.BlockPos;
+import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.npc.InventoryCarrier;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> extends Behavior<E> {
+public class GoAndGiveItemsToTarget<E extends LivingEntity> extends Behavior<E> {
    private static final int CLOSE_ENOUGH_DISTANCE_TO_TARGET = 3;
-   private static final int ITEM_PICKUP_COOLDOWN_AFTER_THROWING = 60;
-   private final Vec3 throwVelocity;
    private final Function<LivingEntity, Optional<PositionTracker>> targetPositionGetter;
    private final float speedModifier;
    private final ItemThrower<E> itemThrower;
+   private final MemoryModuleType<Integer> cooldownMemory;
+   private final int cooldownDuration;
+   private final Predicate<E> hasItemPredicate;
 
-   public GoAndGiveItemsToTarget(final Function<LivingEntity, Optional<PositionTracker>> targetPositionGetter, final float speedModifier, final int timeoutDuration, final ItemThrower<E> itemThrower) {
-      super(Map.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, MemoryStatus.REGISTERED), timeoutDuration);
+   public GoAndGiveItemsToTarget(final Function<LivingEntity, Optional<PositionTracker>> targetPositionGetter, final float speedModifier, final int timeoutDuration, final ItemThrower<E> itemThrower, final MemoryModuleType<Integer> cooldownMemory, final int cooldownDuration, final Predicate<E> hasItemPredicate) {
+      super(Map.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, cooldownMemory, MemoryStatus.REGISTERED), timeoutDuration);
       this.targetPositionGetter = targetPositionGetter;
       this.speedModifier = speedModifier;
       this.itemThrower = itemThrower;
-      this.throwVelocity = new Vec3(0.20000000298023224, 0.30000001192092896, 0.20000000298023224);
+      this.cooldownMemory = cooldownMemory;
+      this.cooldownDuration = cooldownDuration;
+      this.hasItemPredicate = hasItemPredicate;
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final E body) {
@@ -47,28 +48,19 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
          Vec3 depositPosition = depositTarget.currentPosition();
          double distanceToTarget = depositPosition.distanceTo(body.getEyePosition());
          if (distanceToTarget < 3.0) {
-            ItemStack item = ((InventoryCarrier)body).getInventory().removeItem(0, 1);
-            if (!item.isEmpty()) {
-               BehaviorUtils.throwItem(body, item, depositPosition.add(0.0, 1.0, 0.0), this.throwVelocity, 0.2F);
-               this.itemThrower.onItemThrown(level, body, item, depositTarget.currentBlockPosition());
-               body.getBrain().setMemory(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, 60);
-            }
+            this.itemThrower.throwItem(level, body, depositTarget.currentPosition());
+            body.getBrain().setMemory(this.cooldownMemory, this.cooldownDuration);
          }
 
       }
    }
 
    private boolean canThrowItemToTarget(final E body) {
-      if (((InventoryCarrier)body).getInventory().isEmpty()) {
-         return false;
-      } else {
-         Optional<PositionTracker> positionTracker = (Optional)this.targetPositionGetter.apply(body);
-         return positionTracker.isPresent();
-      }
+      return this.hasItemPredicate.test(body) && ((Optional)this.targetPositionGetter.apply(body)).isPresent();
    }
 
    @FunctionalInterface
    public interface ItemThrower<E> {
-      void onItemThrown(ServerLevel level, E thrower, ItemStack item, final BlockPos targetPos);
+      void throwItem(ServerLevel level, E thrower, Vec3 targetPos);
    }
 }

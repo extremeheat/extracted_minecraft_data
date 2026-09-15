@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
@@ -24,16 +24,18 @@ public abstract class ReloadableTexture extends AbstractTexture {
    }
 
    public void apply(final TextureContents contents) {
-      boolean clamp = contents.clamp();
-      boolean blur = contents.blur();
-      AddressMode addressMode = clamp ? AddressMode.CLAMP_TO_EDGE : AddressMode.REPEAT;
-      FilterMode minMag = blur ? FilterMode.LINEAR : FilterMode.NEAREST;
-      this.sampler = RenderSystem.getSamplerCache().getSampler(addressMode, addressMode, minMag, minMag, false);
+      this.setSampler(contents);
 
       try (NativeImage image = contents.image()) {
          this.doLoad(image);
       }
 
+   }
+
+   protected void setSampler(final TextureContents contents) {
+      AddressMode addressMode = contents.clamp() ? AddressMode.CLAMP_TO_EDGE : AddressMode.REPEAT;
+      FilterMode minMag = contents.blur() ? FilterMode.LINEAR : FilterMode.NEAREST;
+      this.sampler = RenderSystem.getSamplerCache().getSampler(addressMode, addressMode, minMag, minMag, false);
    }
 
    protected void doLoad(final NativeImage image) {

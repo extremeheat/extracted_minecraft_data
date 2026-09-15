@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
@@ -65,9 +64,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    }
 
    protected void setupRotations(final ArmorStandRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - bodyRot));
+      poseStack.rotateDegrees(Axis.YP, 180.0F - bodyRot);
       if (state.wiggle < 5.0F) {
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin((double)(state.wiggle / 1.5F * 3.1415927F)) * 3.0F));
+         poseStack.rotateDegrees(Axis.YP, Mth.sin((double)(state.wiggle / 1.5F * 3.1415927F)) * 3.0F);
       }
 
    }

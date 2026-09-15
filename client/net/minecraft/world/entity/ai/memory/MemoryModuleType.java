@@ -73,7 +73,6 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Player> TEMPTING_PLAYER;
    public static final MemoryModuleType<Integer> TEMPTATION_COOLDOWN_TICKS;
    public static final MemoryModuleType<Integer> GAZE_COOLDOWN_TICKS;
-   public static final MemoryModuleType<Boolean> IS_TEMPTED;
    public static final MemoryModuleType<Integer> LONG_JUMP_COOLDOWN_TICKS;
    public static final MemoryModuleType<Boolean> LONG_JUMP_MID_JUMP;
    public static final MemoryModuleType<Boolean> HAS_HUNTING_COOLDOWN;
@@ -217,7 +216,6 @@ public class MemoryModuleType<U> {
       TEMPTING_PLAYER = register("tempting_player");
       TEMPTATION_COOLDOWN_TICKS = register("temptation_cooldown_ticks", Codec.INT);
       GAZE_COOLDOWN_TICKS = register("gaze_cooldown_ticks", Codec.INT);
-      IS_TEMPTED = register("is_tempted", Codec.BOOL);
       LONG_JUMP_COOLDOWN_TICKS = register("long_jump_cooling_down", Codec.INT);
       LONG_JUMP_MID_JUMP = register("long_jump_mid_jump");
       HAS_HUNTING_COOLDOWN = register("has_hunting_cooldown", Codec.BOOL);

@@ -10,7 +10,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.OminousItemSpawner;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Quaternionfc;
 
 public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawner, ItemClusterRenderState> {
    private static final float ROTATION_SPEED = 40.0F;
@@ -42,7 +41,7 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
          }
 
          float currentSpin = Mth.wrapDegrees(state.ageInTicks * 40.0F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(currentSpin));
+         poseStack.rotateDegrees(Axis.YP, currentSpin);
          ItemEntityRenderer.submitMultipleFromCount(poseStack, submitNodeCollector, 15728880, state, this.random);
          poseStack.popPose();
       }

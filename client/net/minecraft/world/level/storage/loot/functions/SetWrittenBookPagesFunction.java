@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.Filterable;
@@ -17,8 +19,8 @@ public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
    private final List<Filterable<Component>> pages;
    private final ListOperation pageOperation;
 
-   protected SetWrittenBookPagesFunction(final List<LootItemCondition> predicates, final List<Filterable<Component>> pages, final ListOperation pageOperation) {
-      super(predicates);
+   protected SetWrittenBookPagesFunction(final Optional<Holder<LootItemCondition>> condition, final List<Filterable<Component>> pages, final ListOperation pageOperation) {
+      super(condition);
       this.pages = pages;
       this.pageOperation = pageOperation;
    }

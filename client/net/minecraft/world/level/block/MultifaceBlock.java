@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -31,7 +30,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<MultifaceBlock> CODEC = simpleCodec(MultifaceBlock::new);
    public static final BooleanProperty WATERLOGGED;
    private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
    protected static final Direction[] DIRECTIONS;
@@ -39,10 +37,6 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
    private final boolean canRotate;
    private final boolean canMirrorX;
    private final boolean canMirrorZ;
-
-   protected MapCodec<? extends MultifaceBlock> codec() {
-      return CODEC;
-   }
 
    public MultifaceBlock(final BlockBehaviour.Properties properties) {
       super(properties);

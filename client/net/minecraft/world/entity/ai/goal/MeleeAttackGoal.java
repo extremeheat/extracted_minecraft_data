@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -113,7 +112,7 @@ public class MeleeAttackGoal extends Goal {
                this.ticksUntilNextPathRecalculation += 5;
             }
 
-            if (!this.mob.getNavigation().moveTo((Entity)target, this.speedModifier)) {
+            if (!this.mob.getNavigation().moveTo(target, 0, this.speedModifier)) {
                this.ticksUntilNextPathRecalculation += 15;
             }
 
@@ -128,7 +127,7 @@ public class MeleeAttackGoal extends Goal {
    protected void checkAndPerformAttack(final LivingEntity target) {
       if (this.canPerformAttack(target)) {
          this.resetAttackCooldown();
-         this.mob.swing(InteractionHand.MAIN_HAND);
+         this.mob.swingForAttack(InteractionHand.MAIN_HAND);
          this.mob.doHurtTarget(getServerLevel(this.mob), target);
       }
 

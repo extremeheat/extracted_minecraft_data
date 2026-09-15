@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -18,14 +16,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, SaplingBlock::new));
    public static final IntegerProperty STAGE;
+   public static final int BRIGHTNESS_FOR_SAPLING_GROWTH = 9;
+   public static final int TICK_CHANCE_FOR_SAPLING_GROWTH = 7;
    private static final VoxelShape SHAPE;
    protected final TreeGrower treeGrower;
-
-   public MapCodec<? extends SaplingBlock> codec() {
-      return CODEC;
-   }
 
    protected SaplingBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -53,20 +48,24 @@ public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
 
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       if (level instanceof ServerLevel serverLevel) {
-         int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
-         return level.isInsideBuildHeight(pos.above(heightOffset));
+         if (!this.treeGrower.canGrow(serverLevel, pos, state)) {
+            return false;
+         } else {
+            int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
+            return level.isInsideBuildHeight(pos.above(heightOffset));
+         }
       } else {
          return false;
       }
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (double)level.getRandom().nextFloat() < 0.45;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.advanceTree(level, pos, state, random);
    }
 

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -22,11 +21,9 @@ import net.minecraft.util.StringRepresentable;
 
 public class DatapackStructureReport implements DataProvider {
    private final PackOutput output;
-   private static final Entry PSEUDO_REGISTRY = new Entry(true, false, true);
    private static final Entry STABLE_DYNAMIC_REGISTRY = new Entry(true, true, true);
    private static final Entry UNSTABLE_DYNAMIC_REGISTRY = new Entry(true, true, false);
    private static final Entry BUILT_IN_REGISTRY = new Entry(false, true, true);
-   private static final Map<ResourceKey<? extends Registry<?>>, Entry> MANUAL_ENTRIES;
    private static final Map<String, CustomPackEntry> NON_REGISTRY_ENTRIES;
    private static final Codec<ResourceKey<? extends Registry<?>>> REGISTRY_KEY_CODEC;
 
@@ -55,14 +52,13 @@ public class DatapackStructureReport implements DataProvider {
    private Map<ResourceKey<? extends Registry<?>>, Entry> listRegistries() {
       Map<ResourceKey<? extends Registry<?>>, Entry> result = new HashMap();
       BuiltInRegistries.REGISTRY.forEach((entry) -> this.putIfNotPresent(result, entry.key(), BUILT_IN_REGISTRY));
-      RegistryDataLoader.WORLDGEN_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
+      RegistryDataLoader.WORLD_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
       RegistryDataLoader.DIMENSION_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), UNSTABLE_DYNAMIC_REGISTRY));
-      MANUAL_ENTRIES.forEach((key, entry) -> this.putIfNotPresent(result, key, entry));
+      RegistryDataLoader.RELOADABLE_REGISTRIES.forEach((entry) -> this.putIfNotPresent(result, entry.key(), STABLE_DYNAMIC_REGISTRY));
       return result;
    }
 
    static {
-      MANUAL_ENTRIES = Map.of(Registries.RECIPE, PSEUDO_REGISTRY, Registries.ADVANCEMENT, PSEUDO_REGISTRY, Registries.LOOT_TABLE, STABLE_DYNAMIC_REGISTRY, Registries.ITEM_MODIFIER, STABLE_DYNAMIC_REGISTRY, Registries.PREDICATE, STABLE_DYNAMIC_REGISTRY);
       NON_REGISTRY_ENTRIES = Map.of("structure", new CustomPackEntry(DatapackStructureReport.Format.STRUCTURE, new Entry(true, false, true)), "function", new CustomPackEntry(DatapackStructureReport.Format.MCFUNCTION, new Entry(true, true, true)));
       REGISTRY_KEY_CODEC = Identifier.CODEC.xmap(ResourceKey::createRegistryKey, ResourceKey::identifier);
    }

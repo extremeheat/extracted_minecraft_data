@@ -6,8 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
@@ -46,7 +46,7 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
    private void findNewTarget(final ServerLevel level) {
       if (this.currentPath == null || this.currentPath.isDone()) {
          int currentNodeIndex = this.dragon.findClosestNode();
-         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(this.dragon.getFightOrigin()));
          Player playerNearestToEgg = level.getNearestPlayer(NEAR_EGG_TARGETING, this.dragon, (double)egg.getX(), (double)egg.getY(), (double)egg.getZ());
          int targetNodeIndex;
          if (playerNearestToEgg != null) {

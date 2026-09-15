@@ -7,13 +7,11 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 
-public class CountPlacement extends RepeatingPlacement {
-   public static final MapCodec<CountPlacement> CODEC = IntProviders.codec(0, 4096).fieldOf("count").xmap(CountPlacement::new, (c) -> c.count);
-   private final IntProvider count;
+public record CountPlacement(IntProvider count) implements RepeatingPlacement {
+   public static final MapCodec<CountPlacement> CODEC = IntProviders.codec(0, 4096).fieldOf("count").xmap(CountPlacement::new, CountPlacement::count);
 
-   private CountPlacement(final IntProvider count) {
+   public CountPlacement {
       super();
-      this.count = count;
    }
 
    public static CountPlacement of(final IntProvider count) {
@@ -24,11 +22,11 @@ public class CountPlacement extends RepeatingPlacement {
       return of(ConstantInt.of(count));
    }
 
-   protected int count(final RandomSource random, final BlockPos origin) {
+   public int count(final RandomSource random, final BlockPos origin) {
       return this.count.sample(random);
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.COUNT;
+   public MapCodec<CountPlacement> codec() {
+      return CODEC;
    }
 }

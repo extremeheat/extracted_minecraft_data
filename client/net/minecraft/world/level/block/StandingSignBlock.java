@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -19,12 +17,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class StandingSignBlock extends SignBlock implements PlainSignBlock {
-   public static final MapCodec<StandingSignBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(i, StandingSignBlock::new));
    public static final IntegerProperty ROTATION;
-
-   public MapCodec<StandingSignBlock> codec() {
-      return CODEC;
-   }
 
    public StandingSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
       super(type, properties.sound(type.soundType()));

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,14 +14,17 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -32,12 +34,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class TntBlock extends Block {
-   public static final MapCodec<TntBlock> CODEC = simpleCodec(TntBlock::new);
    public static final BooleanProperty UNSTABLE;
-
-   public MapCodec<TntBlock> codec() {
-      return CODEC;
-   }
 
    public TntBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -77,12 +74,19 @@ public class TntBlock extends Block {
    }
 
    public static boolean prime(final Level level, final BlockPos pos) {
-      return prime(level, pos, (LivingEntity)null);
+      return prime(level, pos, (LivingEntity)null, ItemStack.EMPTY);
    }
 
-   private static boolean prime(final Level level, final BlockPos pos, final @Nullable LivingEntity source) {
+   public static boolean prime(final Level level, final BlockPos pos, final @Nullable LivingEntity source, final ItemStack itemStack) {
       if (level instanceof ServerLevel serverLevel) {
          if ((Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES)) {
+            if (source instanceof Player) {
+               Player player = (Player)source;
+               if (player.gameMode() == GameType.ADVENTURE && !itemStack.canBreakBlockInAdventureMode(new BlockInWorld(level, pos, false))) {
+                  return false;
+               }
+            }
+
             PrimedTnt tnt = new PrimedTnt(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, source);
             level.addFreshEntity(tnt);
             level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -98,7 +102,7 @@ public class TntBlock extends Block {
       if (!itemStack.is(Items.FLINT_AND_STEEL) && !itemStack.is(Items.FIRE_CHARGE)) {
          return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);
       } else {
-         if (prime(level, pos, player)) {
+         if (prime(level, pos, player, itemStack)) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
             Item item = itemStack.getItem();
             if (itemStack.is(Items.FLINT_AND_STEEL)) {
@@ -133,7 +137,15 @@ public class TntBlock extends Block {
                var10002 = null;
             }
 
-            if (prime(level, pos, var10002)) {
+            ItemStack var10003;
+            if (projectile instanceof AbstractArrow) {
+               AbstractArrow arr = (AbstractArrow)projectile;
+               var10003 = arr.getPickupItemStackOrigin();
+            } else {
+               var10003 = ItemStack.EMPTY;
+            }
+
+            if (prime(level, pos, var10002, var10003)) {
                level.removeBlock(pos, false);
             }
          }

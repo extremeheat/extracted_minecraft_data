@@ -1,6 +1,7 @@
 package net.minecraft.world.item;
 
 import java.util.stream.Stream;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -31,7 +32,7 @@ public class ItemUtils {
             return newItemStack;
          } else {
             if (!player.getInventory().add(newItemStack)) {
-               player.drop(newItemStack, false);
+               player.drop(newItemStack, false, Prediction.PREDICTED);
             }
 
             return itemStack;

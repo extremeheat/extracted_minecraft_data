@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;

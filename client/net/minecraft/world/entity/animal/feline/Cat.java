@@ -41,7 +41,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.CatLieOnBedGoal;
+import net.minecraft.world.entity.ai.goal.CatLieOnBlockGoal;
 import net.minecraft.world.entity.ai.goal.CatSitOnBlockGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
@@ -107,7 +107,7 @@ public class Cat extends TamableAnimal {
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
       this.goalSelector.addGoal(3, new CatRelaxOnOwnerGoal(this));
       this.goalSelector.addGoal(4, this.temptGoal);
-      this.goalSelector.addGoal(5, new CatLieOnBedGoal(this, 1.1, 8));
+      this.goalSelector.addGoal(5, new CatLieOnBlockGoal(this, 1.1, 8));
       this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0, 10.0F, 5.0F));
       this.goalSelector.addGoal(7, new CatSitOnBlockGoal(this, 0.8));
       this.goalSelector.addGoal(8, new LeapAtTargetGoal(this, 0.3F));
@@ -567,8 +567,10 @@ public class Cat extends TamableAnimal {
 
                BlockPos ownerPos = this.ownerPlayer.blockPosition();
                BlockState ownerPosState = this.cat.level().getBlockState(ownerPos);
-               if (ownerPosState.is(BlockTags.BEDS)) {
-                  this.goalPos = (BlockPos)ownerPosState.getOptionalValue(BedBlock.FACING).map((bedDir) -> ownerPos.relative(bedDir.getOpposite())).orElseGet(() -> new BlockPos(ownerPos));
+               if (ownerPosState.is(BlockTags.CATS_CAN_LIE_ON)) {
+                  Optional var10001 = ownerPosState.getOptionalValue(BedBlock.FACING).map((bedDir) -> ownerPos.relative(bedDir.getOpposite()));
+                  Objects.requireNonNull(ownerPos);
+                  this.goalPos = (BlockPos)var10001.orElseGet(ownerPos::immutable);
                   return !this.spaceIsOccupied();
                }
             }
@@ -614,7 +616,7 @@ public class Cat extends TamableAnimal {
          RandomSource random = this.cat.getRandom();
          BlockPos.MutableBlockPos catPos = new BlockPos.MutableBlockPos();
          catPos.set(this.cat.isLeashed() ? this.cat.getLeashHolder().blockPosition() : this.cat.blockPosition());
-         this.cat.randomTeleport((double)(catPos.getX() + random.nextInt(11) - 5), (double)(catPos.getY() + random.nextInt(5) - 2), (double)(catPos.getZ() + random.nextInt(11) - 5), false);
+         this.cat.randomTeleport((double)(catPos.getX() + random.nextInt(11) - 5), (double)(catPos.getY() + random.nextInt(5) - 2), (double)(catPos.getZ() + random.nextInt(11) - 5), false, BlockTags.CAT_DOES_NOT_TELEPORT_TO);
          catPos.set(this.cat.blockPosition());
          this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (level, itemStack) -> level.addFreshEntity(new ItemEntity(level, (double)catPos.getX() - (double)Mth.sin((double)(this.cat.yBodyRot * 0.017453292F)), (double)catPos.getY(), (double)catPos.getZ() + (double)Mth.cos((double)(this.cat.yBodyRot * 0.017453292F)), itemStack)));
       }

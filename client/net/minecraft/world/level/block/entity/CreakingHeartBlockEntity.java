@@ -100,7 +100,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
             entity.ticker = entity.level == null ? 20 : entity.level.getRandom().nextInt(5) + 20;
             BlockState updatedState = updateCreakingState(level, state, pos, entity);
             if (updatedState != state) {
-               level.setBlock(pos, updatedState, 3);
+               level.setBlockAndUpdate(pos, updatedState);
                if (updatedState.getValue(CreakingHeartBlock.STATE) == CreakingHeartState.UPROOTED) {
                   return;
                }
@@ -275,7 +275,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                }
 
                if (neighbourState.is(Blocks.RESIN_CLUMP) && !MultifaceBlock.hasFace(neighbourState, opposite)) {
-                  level.setBlock(neightbourPos, (BlockState)neighbourState.setValue(MultifaceBlock.getFaceProperty(opposite), true), 3);
+                  level.setBlockAndUpdate(neightbourPos, (BlockState)neighbourState.setValue(MultifaceBlock.getFaceProperty(opposite), true));
                   placedResin.setValue(neightbourPos);
                   return BlockPos.TraversalNodeStatus.STOP;
                }

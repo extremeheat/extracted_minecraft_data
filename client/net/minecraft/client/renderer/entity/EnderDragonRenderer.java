@@ -6,12 +6,11 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.dragon.EnderDragonModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -21,11 +20,10 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
@@ -49,20 +47,20 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       poseStack.pushPose();
       float yr = state.getHistoricalPos(7).yRot();
       float rot2 = (float)(state.getHistoricalPos(5).y() - state.getHistoricalPos(10).y());
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-yr));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(rot2 * 10.0F));
+      poseStack.rotateDegrees(Axis.YP, -yr);
+      poseStack.rotateDegrees(Axis.XP, rot2 * 10.0F);
       poseStack.translate(0.0F, 0.0F, 1.0F);
       poseStack.scale(-1.0F, -1.0F, 1.0F);
       poseStack.translate(0.0F, -1.501F, 0.0F);
       int overlayCoords = OverlayTexture.pack(0.0F, state.hasRedOverlay);
       if (state.deathTime > 0.0F) {
          int color = ARGB.white(1.0F - state.deathTime / 200.0F);
-         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor);
       } else {
-         submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor);
       }
 
-      submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       if (state.deathTime > 0.0F) {
          float deathTime = state.deathTime / 200.0F;
          poseStack.pushPose();
@@ -119,8 +117,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       float length = Mth.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
       poseStack.pushPose();
       poseStack.translate(0.0F, 2.0F, 0.0F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)deltaZ, (double)deltaX)) - 1.5707964F));
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)horizontalLength, (double)deltaY)) - 1.5707964F));
+      poseStack.rotate(Axis.YP, (float)(-Math.atan2((double)deltaZ, (double)deltaX)) - 1.5707964F);
+      poseStack.rotate(Axis.XP, (float)(-Math.atan2((double)horizontalLength, (double)deltaY)) - 1.5707964F);
       float v0 = 0.0F - timeInTicks * 0.01F;
       float v1 = length / 32.0F - timeInTicks * 0.01F;
       submitNodeCollector.submitCustomGeometry(poseStack, BEAM, (pose, buffer) -> {
@@ -166,7 +164,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       DragonPhaseInstance phase = entity.getPhaseManager().getCurrentPhase();
       state.isLandingOrTakingOff = phase == EnderDragonPhase.LANDING || phase == EnderDragonPhase.TAKEOFF;
       state.isSitting = phase.isSitting();
-      BlockPos egg = entity.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(entity.getFightOrigin()));
+      BlockPos egg = entity.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(entity.getFightOrigin()));
       state.distanceToEgg = egg.distToCenterSqr(entity.position());
       state.partialTicks = entity.isDeadOrDying() ? 0.0F : partialTicks;
       state.flightHistory.copyFrom(entity.flightHistory);

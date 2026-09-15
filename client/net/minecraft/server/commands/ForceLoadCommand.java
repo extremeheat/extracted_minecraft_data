@@ -26,6 +26,8 @@ public class ForceLoadCommand {
    private static final Dynamic2CommandExceptionType ERROR_NOT_TICKING = new Dynamic2CommandExceptionType((pos, dimension) -> Component.translatableEscape("commands.forceload.query.failure", pos, dimension));
    private static final SimpleCommandExceptionType ERROR_ALL_ADDED = new SimpleCommandExceptionType(Component.translatable("commands.forceload.added.failure"));
    private static final SimpleCommandExceptionType ERROR_NONE_REMOVED = new SimpleCommandExceptionType(Component.translatable("commands.forceload.removed.failure"));
+   private static final CommandResponseTracker.MessagesWithArg<ChunkPos, ForceLoadParams> RESPONSE_ADD;
+   private static final CommandResponseTracker.MessagesWithArg<ChunkPos, ForceLoadParams> RESPONSE_REMOVE;
 
    public ForceLoadCommand() {
       super();
@@ -54,7 +56,7 @@ public class ForceLoadCommand {
       LongSet forcedChunks = level.getForceLoadedChunks();
       int chunkCount = forcedChunks.size();
       if (chunkCount > 0) {
-         String chunkList = Joiner.on(", ").join(forcedChunks.stream().sorted().map(ChunkPos::unpack).map(ChunkPos::toString).iterator());
+         String chunkList = Joiner.on(", ").join(forcedChunks.longStream().sorted().mapToObj(ChunkPos::unpack).map(ChunkPos::toString).iterator());
          if (chunkCount == 1) {
             source.sendSuccess(() -> Component.translatable("commands.forceload.list.single", Component.translationArg(dimension.identifier()), chunkList), false);
          } else {
@@ -90,39 +92,39 @@ public class ForceLoadCommand {
          if (chunkCount > 256L) {
             throw ERROR_TOO_MANY_CHUNKS.create(256, chunkCount);
          } else {
+            CommandResponseTracker<ChunkPos> tracker = CommandResponseTracker.<ChunkPos>create();
             ServerLevel level = source.getLevel();
             ResourceKey<Level> dimension = level.dimension();
-            ChunkPos firstChanged = null;
-            int changedCount = 0;
 
             for(int x = minChunkX; x <= maxChunkX; ++x) {
                for(int z = minChunkZ; z <= maxChunkZ; ++z) {
-                  boolean changed = level.setChunkForced(x, z, add);
-                  if (changed) {
-                     ++changedCount;
-                     if (firstChanged == null) {
-                        firstChanged = new ChunkPos(x, z);
-                     }
-                  }
+                  tracker.track(new ChunkPos(x, z), level.setChunkForced(x, z, add));
                }
             }
 
-            if (changedCount == 0) {
-               throw (add ? ERROR_ALL_ADDED : ERROR_NONE_REMOVED).create();
-            } else {
-               if (changedCount == 1) {
-                  source.sendSuccess(() -> Component.translatable("commands.forceload." + (add ? "added" : "removed") + ".single", Component.translationArg(firstChanged), Component.translationArg(dimension.identifier())), true);
-               } else {
-                  ChunkPos min = new ChunkPos(minChunkX, minChunkZ);
-                  ChunkPos max = new ChunkPos(maxChunkX, maxChunkZ);
-                  source.sendSuccess(() -> Component.translatable("commands.forceload." + (add ? "added" : "removed") + ".multiple", changedCount, Component.translationArg(dimension.identifier()), Component.translationArg(min), Component.translationArg(max)), true);
-               }
-
-               return changedCount;
-            }
+            return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)(add ? RESPONSE_ADD : RESPONSE_REMOVE), new ForceLoadParams(dimension, minChunkX, minChunkZ, maxChunkX, maxChunkZ));
          }
       } else {
          throw BlockPosArgument.ERROR_OUT_OF_WORLD.create();
+      }
+   }
+
+   static {
+      RESPONSE_ADD = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_ALL_ADDED, (CommandResponseTracker.SingleHandlerWithArg)((chunkPos, var1, params) -> Component.translatable("commands.forceload.added.single", Component.translationArg(chunkPos), Component.translationArg(params.dimension().identifier()))), (CommandResponseTracker.MultipleHandlerWithArg)((chunkCount, var1, params) -> Component.translatable("commands.forceload.added.multiple", chunkCount, Component.translationArg(params.dimension().identifier()), Component.translationArg(params.min()), Component.translationArg(params.max()))));
+      RESPONSE_REMOVE = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_NONE_REMOVED, (CommandResponseTracker.SingleHandlerWithArg)((chunkPos, var1, params) -> Component.translatable("commands.forceload.removed.single", Component.translationArg(chunkPos), Component.translationArg(params.dimension().identifier()))), (CommandResponseTracker.MultipleHandlerWithArg)((chunkCount, var1, params) -> Component.translatable("commands.forceload.removed.multiple", chunkCount, Component.translationArg(params.dimension().identifier()), Component.translationArg(params.min()), Component.translationArg(params.max()))));
+   }
+
+   private static record ForceLoadParams(ResourceKey<Level> dimension, int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ) {
+      private ForceLoadParams {
+         super();
+      }
+
+      public ChunkPos min() {
+         return new ChunkPos(this.minChunkX, this.minChunkZ);
+      }
+
+      public ChunkPos max() {
+         return new ChunkPos(this.maxChunkX, this.maxChunkZ);
       }
    }
 }

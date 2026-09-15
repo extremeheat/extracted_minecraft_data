@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
@@ -76,6 +77,11 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
 
    public void setEntityId(final EntityType<?> type, final RandomSource random) {
       this.spawner.setEntityId(type, this.level, random, this.worldPosition);
+      this.setChanged();
+   }
+
+   public void setEntityData(final TypedEntityData<EntityType<?>> data, final RandomSource random) {
+      this.spawner.setEntityData(data, this.level, random, this.worldPosition);
       this.setChanged();
    }
 

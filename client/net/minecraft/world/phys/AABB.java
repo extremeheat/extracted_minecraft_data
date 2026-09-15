@@ -416,6 +416,10 @@ public class AABB {
       return new AABB(center.x - sizeX / 2.0, center.y - sizeY / 2.0, center.z - sizeZ / 2.0, center.x + sizeX / 2.0, center.y + sizeY / 2.0, center.z + sizeZ / 2.0);
    }
 
+   public AABB nextDeflated() {
+      return new AABB(Math.nextUp(this.minX), Math.nextUp(this.minY), Math.nextUp(this.minZ), Math.nextDown(this.maxX), Math.nextDown(this.maxY), Math.nextDown(this.maxZ));
+   }
+
    public static class Builder {
       private float minX = 1.0F / 0.0F;
       private float minY = 1.0F / 0.0F;

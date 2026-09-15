@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,12 +23,6 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class PumpkinBlock extends Block {
-   public static final MapCodec<PumpkinBlock> CODEC = simpleCodec(PumpkinBlock::new);
-
-   public MapCodec<PumpkinBlock> codec() {
-      return CODEC;
-   }
-
    protected PumpkinBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
@@ -41,7 +34,7 @@ public class PumpkinBlock extends Block {
          ServerLevel serverLevel = (ServerLevel)level;
          Direction clickedDirection = hitResult.getDirection();
          Direction direction = clickedDirection.getAxis() == Direction.Axis.Y ? player.getDirection().getOpposite() : clickedDirection;
-         dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.CARVE_PUMPKIN, state, level.getBlockEntity(pos), itemStack, player, (ignored, pumpkinSeeds) -> {
+         dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.CARVE_PUMPKIN, pos, state, level.getBlockEntity(pos), itemStack, player, (ignored, pumpkinSeeds) -> {
             ItemEntity entity = new ItemEntity(level, (double)pos.getX() + 0.5 + (double)direction.getStepX() * 0.65, (double)pos.getY() + 0.1, (double)pos.getZ() + 0.5 + (double)direction.getStepZ() * 0.65, pumpkinSeeds);
             RandomSource random = level.getRandom();
             entity.setDeltaMovement(0.05 * (double)direction.getStepX() + random.nextDouble() * 0.02, 0.05, 0.05 * (double)direction.getStepZ() + random.nextDouble() * 0.02);

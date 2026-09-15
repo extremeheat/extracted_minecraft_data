@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.TrialSpawnerBlock;
@@ -59,6 +60,15 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements TrialSpawner
          Util.logAndPauseIfInIde("Expected non-null level");
       } else {
          this.trialSpawner.overrideEntityToSpawn(type, this.level);
+         this.setChanged();
+      }
+   }
+
+   public void setEntityData(final TypedEntityData<EntityType<?>> entityData, final RandomSource random) {
+      if (this.level == null) {
+         Util.logAndPauseIfInIde("Expected non-null level");
+      } else {
+         this.trialSpawner.overrideEntityToSpawn(entityData, this.level);
          this.setChanged();
       }
    }

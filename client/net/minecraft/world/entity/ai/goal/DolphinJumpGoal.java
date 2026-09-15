@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.dolphin.Dolphin;
@@ -42,7 +43,7 @@ public class DolphinJumpGoal extends JumpGoal {
 
    private boolean waterIsClear(final BlockPos dolphinPos, final int stepX, final int stepZ, final int currentStep) {
       BlockPos nextPos = dolphinPos.offset(stepX * currentStep, 0, stepZ * currentStep);
-      return this.dolphin.level().getFluidState(nextPos).is(FluidTags.WATER) && !this.dolphin.level().getBlockState(nextPos).blocksMotion();
+      return this.dolphin.level().getFluidState(nextPos).is(FluidTags.WATER) && !this.dolphin.level().getBlockState(nextPos).is(BlockTags.BLOCKS_DOLPHIN_JUMP);
    }
 
    private boolean surfaceIsClear(final BlockPos dolphinPos, final int stepX, final int stepZ, final int currentStep) {

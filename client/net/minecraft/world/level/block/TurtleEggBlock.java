@@ -1,8 +1,8 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -33,7 +33,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class TurtleEggBlock extends Block {
-   public static final MapCodec<TurtleEggBlock> CODEC = simpleCodec(TurtleEggBlock::new);
    public static final IntegerProperty HATCH;
    public static final IntegerProperty EGGS;
    public static final int MAX_HATCH_LEVEL = 2;
@@ -41,10 +40,6 @@ public class TurtleEggBlock extends Block {
    public static final int MAX_EGGS = 4;
    private static final VoxelShape SHAPE_SINGLE;
    private static final VoxelShape SHAPE_MULTIPLE;
-
-   public MapCodec<TurtleEggBlock> codec() {
-      return CODEC;
-   }
 
    public TurtleEggBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -69,7 +64,7 @@ public class TurtleEggBlock extends Block {
 
    private void destroyEgg(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final int randomness) {
       if (state.is(Blocks.TURTLE_EGG) && level instanceof ServerLevel serverLevel) {
-         if (this.canDestroyEgg(serverLevel, entity) && level.getRandom().nextInt(randomness) == 0) {
+         if (this.canDestroyEgg(serverLevel, pos, entity) && level.getRandom().nextInt(randomness) == 0) {
             this.decreaseEggs(serverLevel, pos, state);
          }
       }
@@ -136,7 +131,7 @@ public class TurtleEggBlock extends Block {
       return chance > 0.0F && level.getRandom().nextFloat() < chance;
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
       this.decreaseEggs(level, pos, state);
    }
@@ -158,12 +153,13 @@ public class TurtleEggBlock extends Block {
       builder.add(HATCH, EGGS);
    }
 
-   private boolean canDestroyEgg(final ServerLevel level, final Entity entity) {
+   private boolean canDestroyEgg(final ServerLevel level, final BlockPos pos, final Entity entity) {
       if (!(entity instanceof Turtle) && !(entity instanceof Bat)) {
-         if (!(entity instanceof LivingEntity)) {
-            return false;
+         if (entity instanceof Player) {
+            Player player = (Player)entity;
+            return !level.getServer().isUnderSpawnProtection(level, pos, player);
          } else {
-            return entity instanceof Player || (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING);
+            return entity instanceof LivingEntity ? (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) : false;
          }
       } else {
          return false;

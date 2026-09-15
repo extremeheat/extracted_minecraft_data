@@ -3,15 +3,12 @@ package net.minecraft.world.level.block;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -27,7 +24,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class CopperChestBlock extends ChestBlock {
-   public static final MapCodec<CopperChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperChestBlock::getState), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, CopperChestBlock::new));
    private static final Supplier<Map<Block, Block>> COPPER_TO_COPPER_CHEST_MAPPING = Suppliers.memoize(() -> {
       ImmutableMap.Builder<Block, Block> result = ImmutableMap.builder();
       WeatheringCopperCollection var10000 = Blocks.COPPER_BLOCK;
@@ -37,10 +33,6 @@ public class CopperChestBlock extends ChestBlock {
       return result.buildOrThrow();
    });
    private final WeatheringCopper.WeatherState weatherState;
-
-   public MapCodec<? extends CopperChestBlock> codec() {
-      return CODEC;
-   }
 
    public CopperChestBlock(final WeatheringCopper.WeatherState weatherState, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
       super(() -> BlockEntityTypes.CHEST, openSound, closeSound, properties);

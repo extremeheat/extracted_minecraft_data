@@ -51,7 +51,7 @@ public class ValidateNearbyPoi {
 
    private static boolean bedIsOccupied(final ServerLevel poiLevel, final BlockPos poiPos, final LivingEntity body) {
       BlockState blockState = poiLevel.getBlockState(poiPos);
-      return blockState.is(BlockTags.BEDS) && (Boolean)blockState.getValue(BedBlock.OCCUPIED) && !body.isSleeping();
+      return blockState.is(BlockTags.VILLAGERS_CAN_SLEEP_ON_BED) && (Boolean)blockState.getValue(BedBlock.OCCUPIED) && !body.isSleeping();
    }
 
    private static boolean bedIsOccupiedByVillager(final ServerLevel poiLevel, final BlockPos poiPos) {

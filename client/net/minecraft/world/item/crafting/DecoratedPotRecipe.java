@@ -2,6 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -59,9 +60,13 @@ public class DecoratedPotRecipe extends CustomRecipe {
    }
 
    public ItemStack assemble(final CraftingInput input) {
-      PotDecorations decorations = new PotDecorations(back(input).getItem(), left(input).getItem(), right(input).getItem(), front(input).getItem());
+      PotDecorations decorations = new PotDecorations(convertToOptional(back(input)), convertToOptional(left(input)), convertToOptional(right(input)), convertToOptional(front(input)));
       DataComponentPatch components = DataComponentPatch.builder().set(DataComponents.POT_DECORATIONS, decorations).build();
       return this.result.apply(components);
+   }
+
+   private static Optional<ItemStackTemplate> convertToOptional(final ItemStack input) {
+      return input.isEmpty() ? Optional.empty() : Optional.of(ItemStackTemplate.fromNonEmptyStack(input, 1));
    }
 
    public RecipeSerializer<DecoratedPotRecipe> getSerializer() {

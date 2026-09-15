@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.ClientSideMerchant;
@@ -52,6 +53,10 @@ public class MerchantMenu extends AbstractContainerMenu {
    public void slotsChanged(final Container container) {
       this.tradeContainer.updateSellItem();
       super.slotsChanged(container);
+   }
+
+   public void updateSellItem() {
+      this.tradeContainer.updateSellItem();
    }
 
    public void setSelectionHint(final int hint) {
@@ -161,20 +166,20 @@ public class MerchantMenu extends AbstractContainerMenu {
 
             ItemStack itemStack = this.tradeContainer.removeItemNoUpdate(0);
             if (!itemStack.isEmpty()) {
-               player.drop(itemStack, false);
+               player.drop(itemStack, false, Prediction.SERVER_ONLY);
             }
 
             itemStack = this.tradeContainer.removeItemNoUpdate(1);
             if (!itemStack.isEmpty()) {
-               player.drop(itemStack, false);
+               player.drop(itemStack, false, Prediction.SERVER_ONLY);
             }
 
             return;
          }
 
          if (player instanceof ServerPlayer) {
-            player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(0));
-            player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(1));
+            player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(0), Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(1), Prediction.SERVER_ONLY);
          }
 
       }

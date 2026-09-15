@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -16,21 +15,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SnowLayerBlock extends Block {
-   public static final MapCodec<SnowLayerBlock> CODEC = simpleCodec(SnowLayerBlock::new);
    public static final int MAX_HEIGHT = 8;
    public static final IntegerProperty LAYERS;
    private static final VoxelShape[] SHAPES;
    public static final int HEIGHT_IMPASSABLE = 5;
-
-   public MapCodec<SnowLayerBlock> codec() {
-      return CODEC;
-   }
 
    protected SnowLayerBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -88,6 +83,7 @@ public class SnowLayerBlock extends Block {
       if (level.getBrightness(LightLayer.BLOCK, pos) > 11) {
          dropResources(state, level, pos);
          level.removeBlock(pos, false);
+         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
       }
 
    }

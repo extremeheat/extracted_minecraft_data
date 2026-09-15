@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.joml.Quaternionfc;
 
 public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, EndermanModel<EndermanRenderState>> {
    public CarriedBlockLayer(final RenderLayerParent<EndermanRenderState, EndermanModel<EndermanRenderState>> renderer) {
@@ -20,12 +19,12 @@ public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, Enderman
       if (!carriedBlock.isEmpty()) {
          poseStack.pushPose();
          poseStack.translate(0.0F, 0.6875F, -0.75F);
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(20.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(45.0F));
+         poseStack.rotateDegrees(Axis.XP, 20.0F);
+         poseStack.rotateDegrees(Axis.YP, 45.0F);
          poseStack.translate(0.25F, 0.1875F, 0.25F);
          float s = 0.5F;
          poseStack.scale(-0.5F, -0.5F, 0.5F);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.YP, 90.0F);
          carriedBlock.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
       }

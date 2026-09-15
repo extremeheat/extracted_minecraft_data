@@ -3,14 +3,15 @@ package net.minecraft.advancements.triggers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
 
 public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -27,14 +28,14 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       this.trigger(player, (t) -> t.matches(projectileContext, hitPosition, signalStrength));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints signalStrength, Optional<ContextAwarePredicate> projectile) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(i, TriggerInstance::new));
+   public static record TriggerInstance(Optional<Holder<LootItemCondition>> player, MinMaxBounds.Ints signalStrength, Optional<Holder<LootItemCondition>> projectile) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), LootItemCondition.CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(i, TriggerInstance::new));
 
       public TriggerInstance {
          super();
       }
 
-      public static Criterion<TriggerInstance> targetHit(final MinMaxBounds.Ints redstoneSignalStrength, final Optional<ContextAwarePredicate> projectile) {
+      public static Criterion<TriggerInstance> targetHit(final MinMaxBounds.Ints redstoneSignalStrength, final Optional<Holder<LootItemCondition>> projectile) {
          return CriteriaTriggers.TARGET_BLOCK_HIT.createCriterion(new TriggerInstance(Optional.empty(), redstoneSignalStrength, projectile));
       }
 
@@ -42,13 +43,13 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          if (!this.signalStrength.matches(signalStrength)) {
             return false;
          } else {
-            return !this.projectile.isPresent() || ((ContextAwarePredicate)this.projectile.get()).matches(projectile);
+            return !this.projectile.isPresent() || ((LootItemCondition)((Holder)this.projectile.get()).value()).test(projectile);
          }
       }
 
       public void validate(final ValidationContextSource validator) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
-         Validatable.validate(validator.entityContext(), "projectile", this.projectile);
+         Validatable.validateHolder(validator.entityContext(), "projectile", this.projectile);
       }
    }
 }

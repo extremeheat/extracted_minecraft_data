@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuFence;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.GpuFence;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
@@ -39,7 +39,7 @@ public class MappableRingBuffer implements AutoCloseable {
    public GpuBuffer currentBuffer() {
       GpuFence fence = this.fences[this.current];
       if (fence != null) {
-         fence.awaitCompletion(9223372036854775807L);
+         fence.awaitCompletion(-1L);
          fence.close();
          this.fences[this.current] = null;
       }

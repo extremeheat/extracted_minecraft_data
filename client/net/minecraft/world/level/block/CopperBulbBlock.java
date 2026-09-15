@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -17,13 +16,8 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class CopperBulbBlock extends Block {
-   public static final MapCodec<CopperBulbBlock> CODEC = simpleCodec(CopperBulbBlock::new);
    public static final BooleanProperty POWERED;
    public static final BooleanProperty LIT;
-
-   protected MapCodec<? extends CopperBulbBlock> codec() {
-      return CODEC;
-   }
 
    public CopperBulbBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -53,7 +47,7 @@ public class CopperBulbBlock extends Block {
             level.playSound((Entity)null, pos, (Boolean)newState.getValue(LIT) ? SoundEvents.COPPER_BULB_TURN_ON : SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS);
          }
 
-         level.setBlock(pos, (BlockState)newState.setValue(POWERED, signal), 3);
+         level.setBlockAndUpdate(pos, (BlockState)newState.setValue(POWERED, signal));
       }
    }
 

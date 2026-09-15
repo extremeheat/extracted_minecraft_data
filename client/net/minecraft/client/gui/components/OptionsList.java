@@ -60,7 +60,7 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
       Objects.requireNonNull(this.minecraft.font);
       int lineHeight = 9;
       int paddingTop = this.children().isEmpty() ? 0 : lineHeight * 2;
-      this.addEntry(new HeaderEntry(this.screen, text, paddingTop), paddingTop + lineHeight + 4);
+      this.addEntry(new HeaderEntry(this.screen, text, paddingTop), paddingTop + lineHeight * 2);
    }
 
    public int getRowWidth() {
@@ -124,13 +124,13 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
    protected static class HeaderEntry extends AbstractEntry {
       private final Screen screen;
       private final int paddingTop;
-      private final StringWidget widget;
+      private final FocusableTextWidget widget;
 
       protected HeaderEntry(final Screen screen, final Component text, final int paddingTop) {
          super();
          this.screen = screen;
          this.paddingTop = paddingTop;
-         this.widget = new StringWidget(text, screen.getFont());
+         this.widget = FocusableTextWidget.builder(text, screen.getFont()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
       public List<? extends NarratableEntry> narratables() {
@@ -138,7 +138,7 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         this.widget.setPosition(this.screen.width / 2 - 155, this.getContentY() + this.paddingTop);
+         this.widget.setPosition(this.screen.width / 2 - this.widget.getWidth() / 2, this.getContentY() + this.paddingTop);
          this.widget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 

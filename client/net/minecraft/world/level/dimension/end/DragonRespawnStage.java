@@ -1,8 +1,8 @@
 package net.minecraft.world.level.dimension.end;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -11,8 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 
 public enum DragonRespawnStage implements StringRepresentable {
    START("start") {
@@ -60,8 +58,8 @@ public enum DragonRespawnStage implements StringRepresentable {
                   }
 
                   level.explode((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, Level.ExplosionInteraction.BLOCK);
-                  EndSpikeConfiguration configuration = new EndSpikeConfiguration(true, ImmutableList.of(spike), new BlockPos(0, 128, 0));
-                  Feature.END_SPIKE.place(configuration, level, level.getChunkSource().getGenerator(), RandomSource.create(), new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()));
+                  EndSpikeFeature feature = new EndSpikeFeature(List.of(spike), true, Optional.of(new BlockPos(0, 128, 0)));
+                  feature.place(level, level.getChunkSource().getGenerator(), RandomSource.create(), new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()));
                }
             } else if (startOfBeam) {
                fight.setRespawnStage(SUMMONING_DRAGON);

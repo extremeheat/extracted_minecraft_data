@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -21,14 +20,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HangingMossBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<HangingMossBlock> CODEC = simpleCodec(HangingMossBlock::new);
    private static final VoxelShape SHAPE_BASE = Block.column(14.0, 0.0, 16.0);
    private static final VoxelShape SHAPE_TIP = Block.column(14.0, 2.0, 16.0);
    public static final BooleanProperty TIP;
-
-   public MapCodec<HangingMossBlock> codec() {
-      return CODEC;
-   }
 
    public HangingMossBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -82,7 +76,7 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
       builder.add(TIP);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos growPos = this.getTip(level, pos).below();
       return this.canGrowInto(level.getBlockState(growPos)) && level.isInsideBuildHeight(growPos);
    }
@@ -103,11 +97,11 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
       return forwardPos.relative(Direction.UP).immutable();
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos tipPos = this.getTip(level, pos).below();
       if (this.canGrowInto(level.getBlockState(tipPos))) {
          level.setBlockAndUpdate(tipPos, (BlockState)state.setValue(TIP, true));

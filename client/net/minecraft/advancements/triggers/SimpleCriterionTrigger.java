@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.SimpleInstance> implements CriterionTrigger<T> {
    public SimpleCriterionTrigger() {
@@ -29,8 +30,8 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
          for(Map.Entry<PlayerAdvancements.TriggerInstanceKey, T> entry : listenersForType.entrySet()) {
             T value = (T)(entry.getValue());
             if (matcher.test(value)) {
-               Optional<ContextAwarePredicate> predicate = value.player();
-               if (!predicate.isPresent() || ((ContextAwarePredicate)predicate.get()).matches(playerContext)) {
+               Optional<Holder<LootItemCondition>> predicate = value.player();
+               if (!predicate.isPresent() || ((LootItemCondition)((Holder)predicate.get()).value()).test(playerContext)) {
                   if (matchedConditions == null) {
                      matchedConditions = new ArrayList();
                   }
@@ -51,9 +52,9 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
 
    public interface SimpleInstance extends CriterionTriggerInstance {
       default void validate(final ValidationContextSource validator) {
-         Validatable.validate(validator.entityContext(), "player", this.player());
+         Validatable.validateHolder(validator.entityContext(), "player", this.player());
       }
 
-      Optional<ContextAwarePredicate> player();
+      Optional<Holder<LootItemCondition>> player();
    }
 }

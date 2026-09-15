@@ -20,4 +20,6 @@ public interface NarrationElementOutput {
    void add(final NarratedElementType type, final NarrationThunk<?> contents);
 
    NarrationElementOutput nest();
+
+   NarrationTrigger narrationTrigger();
 }

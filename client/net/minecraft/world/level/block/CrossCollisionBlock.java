@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -34,8 +33,6 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
       this.collisionShapes = this.makeShapes(postWidth, collisionHeight, wallWidth, 0.0F, collisionHeight);
       this.shapes = this.makeShapes(postWidth, postHeight, wallWidth, 0.0F, wallHeight);
    }
-
-   protected abstract MapCodec<? extends CrossCollisionBlock> codec();
 
    protected Function<BlockState, VoxelShape> makeShapes(final float postWidth, final float postHeight, final float wallWidth, final float wallBottom, final float wallTop) {
       VoxelShape post = Block.column((double)postWidth, 0.0, (double)postHeight);

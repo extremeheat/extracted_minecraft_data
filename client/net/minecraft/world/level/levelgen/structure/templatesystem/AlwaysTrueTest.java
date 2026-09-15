@@ -18,7 +18,7 @@ public class AlwaysTrueTest extends RuleTest {
       return true;
    }
 
-   public boolean test(final BlockState blockState, final RandomSource random) {
+   public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return true;
    }
 

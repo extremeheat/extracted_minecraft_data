@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -17,14 +16,9 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
 public class SpongeBlock extends Block {
-   public static final MapCodec<SpongeBlock> CODEC = simpleCodec(SpongeBlock::new);
    public static final int MAX_DEPTH = 6;
    public static final int MAX_COUNT = 64;
    private static final Direction[] ALL_DIRECTIONS = Direction.values();
-
-   public MapCodec<SpongeBlock> codec() {
-      return CODEC;
-   }
 
    protected SpongeBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -73,7 +67,7 @@ public class SpongeBlock extends Block {
                }
 
                if (state.getBlock() instanceof LiquidBlock) {
-                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                  level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                } else {
                   if (!state.is(Blocks.KELP) && !state.is(Blocks.KELP_PLANT) && !state.is(Blocks.SEAGRASS) && !state.is(Blocks.TALL_SEAGRASS)) {
                      return BlockPos.TraversalNodeStatus.SKIP;
@@ -81,7 +75,7 @@ public class SpongeBlock extends Block {
 
                   BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
                   dropResources(state, level, pos, blockEntity);
-                  level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                  level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                }
 
                return BlockPos.TraversalNodeStatus.ACCEPT;

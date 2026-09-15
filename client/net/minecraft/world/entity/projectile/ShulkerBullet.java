@@ -296,6 +296,10 @@ public class ShulkerBullet extends Projectile {
       this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
    }
 
+   protected void onRedirectProjectile(final Projectile hitProjectile) {
+      hitProjectile.deflect(ProjectileDeflection.MOMENTUM_DEFLECT, this, this.owner, true, 1.0);
+   }
+
    private void destroy() {
       this.discard();
       this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of((Entity)this));

@@ -1,5 +1,8 @@
 package net.minecraft.world.inventory;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -8,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.commands.ParserUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -46,6 +51,7 @@ public class SlotRanges {
       addSingleSlot(values, "player.cursor", 499);
       addSlotRange(values, "player.crafting.", 500, 4);
    });
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN = new DynamicCommandExceptionType((id) -> Component.translatableEscape("slot.unknown", id));
    public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray((x$0) -> new SlotRange[x$0]));
    private static final Function<String, @Nullable SlotRange> NAME_LOOKUP;
 
@@ -95,6 +101,21 @@ public class SlotRanges {
 
    public static Stream<String> singleSlotNames() {
       return SLOTS.stream().filter((e) -> e.size() == 1).map(StringRepresentable::getSerializedName);
+   }
+
+   public static @Nullable SlotRange tryRead(final StringReader reader) {
+      String name = ParserUtils.readWhile(reader, (c) -> c != ' ');
+      return nameToIds(name);
+   }
+
+   public static SlotRange read(final StringReader reader) throws CommandSyntaxException {
+      String name = ParserUtils.readWhile(reader, (c) -> c != ' ');
+      SlotRange result = nameToIds(name);
+      if (result == null) {
+         throw ERROR_UNKNOWN.createWithContext(reader, name);
+      } else {
+         return result;
+      }
    }
 
    static {

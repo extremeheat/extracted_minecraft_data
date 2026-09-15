@@ -75,17 +75,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    public boolean isFireNearby() {
-      if (this.level == null) {
-         return false;
-      } else {
-         for(BlockPos pos : BlockPos.betweenClosed(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1))) {
-            if (this.level.getBlockState(pos).getBlock() instanceof FireBlock) {
-               return true;
-            }
-         }
-
-         return false;
-      }
+      return this.level == null ? false : this.level.findBlocksIn(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1)).filterState((state) -> state.getBlock() instanceof FireBlock).anyMatched();
    }
 
    public boolean isEmpty() {

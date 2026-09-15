@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
@@ -30,7 +30,7 @@ public record StructureSet(List<StructureSelectionEntry> structures, StructurePl
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<StructureSet>>create(Registries.STRUCTURE_SET, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.STRUCTURE_SET, DIRECT_CODEC);
    }
 
    public static record StructureSelectionEntry(Holder<Structure> structure, int weight) {

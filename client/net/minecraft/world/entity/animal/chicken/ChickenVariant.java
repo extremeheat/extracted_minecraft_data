@@ -6,10 +6,10 @@ import java.util.List;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.variant.ModelAndTexture;
 import net.minecraft.world.entity.variant.PriorityProvider;
@@ -36,7 +36,7 @@ public record ChickenVariant(ModelAndTexture<ModelType> modelAndTexture, ClientA
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<ChickenVariant>>create(Registries.CHICKEN_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.CHICKEN_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.CHICKEN_VARIANT);
    }
 

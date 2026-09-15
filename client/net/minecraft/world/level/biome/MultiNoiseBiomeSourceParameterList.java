@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 
@@ -43,7 +43,7 @@ public class MultiNoiseBiomeSourceParameterList {
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<MultiNoiseBiomeSourceParameterList>>create(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, DIRECT_CODEC);
    }
 
    public static record Preset(Identifier id, SourceProvider provider) {

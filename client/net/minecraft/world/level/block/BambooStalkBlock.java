@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +24,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BambooStalkBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<BambooStalkBlock> CODEC = simpleCodec(BambooStalkBlock::new);
    private static final VoxelShape SHAPE_SMALL = Block.column(6.0, 0.0, 16.0);
    private static final VoxelShape SHAPE_LARGE = Block.column(10.0, 0.0, 16.0);
    private static final VoxelShape SHAPE_COLLISION = Block.column(3.0, 0.0, 16.0);
@@ -37,10 +35,6 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    public static final int STAGE_DONE_GROWING = 1;
    public static final int AGE_THIN_BAMBOO = 0;
    public static final int AGE_THICK_BAMBOO = 1;
-
-   public MapCodec<BambooStalkBlock> codec() {
-      return CODEC;
-   }
 
    public BambooStalkBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -129,18 +123,18 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       return directionToNeighbour == Direction.UP && neighbourState.is(Blocks.BAMBOO) && (Integer)neighbourState.getValue(AGE) > (Integer)state.getValue(AGE) ? (BlockState)state.cycle(AGE) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int heightAbove = this.getHeightAboveUpToMax(level, pos);
       int heightBelow = this.getHeightBelowUpToMax(level, pos);
       BlockPos growthPos = pos.above(heightAbove + 1);
       return heightAbove + heightBelow + 1 < 16 && (Integer)level.getBlockState(pos.above(heightAbove)).getValue(STAGE) != 1 && level.isInsideBuildHeight(growthPos) && level.isEmptyBlock(growthPos);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int heightAbove = this.getHeightAboveUpToMax(level, pos);
       int heightBelow = this.getHeightBelowUpToMax(level, pos);
       int totalHeight = heightAbove + heightBelow + 1;
@@ -171,8 +165,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
             if (belowState.is(Blocks.BAMBOO) && belowState.getValue(LEAVES) != BambooLeaves.NONE) {
                leaves = BambooLeaves.LARGE;
                if (twoBelowState.is(Blocks.BAMBOO)) {
-                  level.setBlock(pos.below(), (BlockState)belowState.setValue(LEAVES, BambooLeaves.SMALL), 3);
-                  level.setBlock(twoBelowPos, (BlockState)twoBelowState.setValue(LEAVES, BambooLeaves.NONE), 3);
+                  level.setBlockAndUpdate(pos.below(), (BlockState)belowState.setValue(LEAVES, BambooLeaves.SMALL));
+                  level.setBlockAndUpdate(twoBelowPos, (BlockState)twoBelowState.setValue(LEAVES, BambooLeaves.NONE));
                }
             }
          } else {
@@ -182,7 +176,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
 
       int age = (Integer)state.getValue(AGE) != 1 && !twoBelowState.is(Blocks.BAMBOO) ? 0 : 1;
       int stage = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
-      level.setBlock(pos.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, age)).setValue(LEAVES, leaves)).setValue(STAGE, stage), 3);
+      level.setBlockAndUpdate(pos.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, age)).setValue(LEAVES, leaves)).setValue(STAGE, stage));
    }
 
    protected int getHeightAboveUpToMax(final BlockGetter level, final BlockPos pos) {

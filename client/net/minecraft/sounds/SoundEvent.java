@@ -6,11 +6,11 @@ import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 
 public record SoundEvent(Identifier location, Optional<Float> fixedRange) {
    public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("sound_id").forGetter(SoundEvent::location), Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)).apply(i, SoundEvent::create));
@@ -39,7 +39,7 @@ public record SoundEvent(Identifier location, Optional<Float> fixedRange) {
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<SoundEvent>>create(Registries.SOUND_EVENT, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.SOUND_EVENT, DIRECT_CODEC);
       DIRECT_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, SoundEvent::location, ByteBufCodecs.FLOAT.apply(ByteBufCodecs::optional), SoundEvent::fixedRange, SoundEvent::create);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.SOUND_EVENT, DIRECT_STREAM_CODEC);
    }

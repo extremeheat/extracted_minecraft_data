@@ -29,6 +29,7 @@ public class EnchantCommand {
    private static final DynamicCommandExceptionType ERROR_INCOMPATIBLE = new DynamicCommandExceptionType((item) -> Component.translatableEscape("commands.enchant.failed.incompatible", item));
    private static final Dynamic2CommandExceptionType ERROR_LEVEL_TOO_HIGH = new Dynamic2CommandExceptionType((level, max) -> Component.translatableEscape("commands.enchant.failed.level", level, max));
    private static final SimpleCommandExceptionType ERROR_NOTHING_HAPPENED = new SimpleCommandExceptionType(Component.translatable("commands.enchant.failed"));
+   private static final CommandResponseTracker.MessagesWithArgs<Entity, Holder<Enchantment>, Integer> RESPONSE_ENCHANT;
 
    public EnchantCommand() {
       super();
@@ -43,7 +44,7 @@ public class EnchantCommand {
       if (level > enchantment.getMaxLevel()) {
          throw ERROR_LEVEL_TOO_HIGH.create(level, enchantment.getMaxLevel());
       } else {
-         int success = 0;
+         CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
 
          for(Entity entity : targets) {
             if (entity instanceof LivingEntity) {
@@ -52,29 +53,23 @@ public class EnchantCommand {
                if (!item.isEmpty()) {
                   if (enchantment.canEnchant(item) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantmentsForCrafting(item).keySet(), enchantmentHolder)) {
                      item.enchant(enchantmentHolder, level);
-                     ++success;
+                     tracker.track(entity);
                   } else if (targets.size() == 1) {
                      throw ERROR_INCOMPATIBLE.create(item.getHoverName().getString());
                   }
                } else if (targets.size() == 1) {
-                  throw ERROR_NO_ITEM.create(target.getName().getString());
+                  throw ERROR_NO_ITEM.create(target.getDisplayName().getString());
                }
             } else if (targets.size() == 1) {
-               throw ERROR_NOT_LIVING_ENTITY.create(entity.getName().getString());
+               throw ERROR_NOT_LIVING_ENTITY.create(entity.getDisplayName().getString());
             }
          }
 
-         if (success == 0) {
-            throw ERROR_NOTHING_HAPPENED.create();
-         } else {
-            if (targets.size() == 1) {
-               source.sendSuccess(() -> Component.translatable("commands.enchant.success.single", Enchantment.getFullname(enchantmentHolder, level), ((Entity)targets.iterator().next()).getDisplayName()), true);
-            } else {
-               source.sendSuccess(() -> Component.translatable("commands.enchant.success.multiple", Enchantment.getFullname(enchantmentHolder, level), targets.size()), true);
-            }
-
-            return success;
-         }
+         return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_ENCHANT, enchantmentHolder, level);
       }
+   }
+
+   static {
+      RESPONSE_ENCHANT = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_NOTHING_HAPPENED, (CommandResponseTracker.SingleHandlerWithArgs)((entity, var1, enchantment, level) -> Component.translatable("commands.enchant.success.single", Enchantment.getFullname(enchantment, level), entity.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArgs)((entityCount, var1, enchantment, level) -> Component.translatable("commands.enchant.success.multiple", Enchantment.getFullname(enchantment, level), entityCount)));
    }
 }

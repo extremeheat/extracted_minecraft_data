@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,15 +15,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SporeBlossomBlock extends Block {
-   public static final MapCodec<SporeBlossomBlock> CODEC = simpleCodec(SporeBlossomBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 13.0, 16.0);
    private static final int ADD_PARTICLE_ATTEMPTS = 14;
    private static final int PARTICLE_XZ_RADIUS = 10;
    private static final int PARTICLE_Y_MAX = 10;
-
-   public MapCodec<SporeBlossomBlock> codec() {
-      return CODEC;
-   }
 
    public SporeBlossomBlock(final BlockBehaviour.Properties properties) {
       super(properties);

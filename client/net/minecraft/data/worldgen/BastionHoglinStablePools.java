@@ -15,10 +15,10 @@ public class BastionHoglinStablePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> stableDegradation = processorLists.getOrThrow(ProcessorLists.STABLE_DEGRADATION);
       Holder<StructureProcessorList> sideWallDegradation = processorLists.getOrThrow(ProcessorLists.SIDE_WALL_DEGRADATION);
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Pools.register(context, "bastion/hoglin_stable/starting_pieces", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/starting_stairs_0", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/starting_stairs_1", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/starting_stairs_2", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/starting_stairs_3", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/starting_stairs_4", stableDegradation), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "bastion/hoglin_stable/mirrored_starting_pieces", new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/stairs_0_mirrored", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/stairs_1_mirrored", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/stairs_2_mirrored", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/stairs_3_mirrored", stableDegradation), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/starting_pieces/stairs_4_mirrored", stableDegradation), 1)), StructureTemplatePool.Projection.RIGID));

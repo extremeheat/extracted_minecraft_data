@@ -120,7 +120,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
       }
 
       public CommandSourceStack createCommandSourceStack(final ServerLevel level, final CommandSource source) {
-         return new CommandSourceStack(source, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), level, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), level.getServer(), MinecartCommandBlock.this);
+         return new CommandSourceStack(source, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), level, LevelBasedPermissionSet.GAMEMASTER, level.getServer(), MinecartCommandBlock.this);
       }
 
       public boolean isValid() {

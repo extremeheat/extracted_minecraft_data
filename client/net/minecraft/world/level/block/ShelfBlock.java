@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
@@ -50,16 +49,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContainer, SideChainPartBlock, SimpleWaterloggedBlock {
-   public static final MapCodec<ShelfBlock> CODEC = simpleCodec(ShelfBlock::new);
    public static final BooleanProperty POWERED;
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<SideChainPart> SIDE_CHAIN_PART;
    public static final BooleanProperty WATERLOGGED;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<ShelfBlock> codec() {
-      return CODEC;
-   }
 
    public ShelfBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -100,7 +94,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                newState = (BlockState)newState.setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED);
             }
 
-            level.setBlock(pos, newState, 3);
+            level.setBlockAndUpdate(pos, newState);
             this.playSound(level, pos, signal ? SoundEvents.SHELF_ACTIVATE : SoundEvents.SHELF_DEACTIVATE);
             level.gameEvent(signal ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(newState));
          }
@@ -140,7 +134,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
 
             Inventory inventory = player.getInventory();
             if (level.isClientSide()) {
-               return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
+               return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.CONSUME);
             }
 
             if (!(Boolean)state.getValue(POWERED)) {
@@ -155,7 +149,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                   this.playSound(level, pos, SoundEvents.SHELF_PLACE_ITEM);
                }
 
-               return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
+               return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(itemStack);
             }
 
             ItemStack previousItem = inventory.getSelectedItem();
@@ -166,10 +160,10 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
 
             this.playSound(level, pos, SoundEvents.SHELF_MULTI_SWAP);
             if (previousItem == inventory.getSelectedItem()) {
-               return InteractionResult.SUCCESS;
+               return InteractionResult.SUCCESS_SERVER;
             }
 
-            return InteractionResult.SUCCESS.heldItemTransformedTo(inventory.getSelectedItem());
+            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(inventory.getSelectedItem());
          }
       }
 

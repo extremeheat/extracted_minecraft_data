@@ -29,7 +29,7 @@ public record SetBlockProperties(BlockItemStateProperties properties, Vec3i offs
       BlockPos blockPos = BlockPos.containing(position).offset(this.offset);
       BlockState state = entity.level().getBlockState(blockPos);
       BlockState modified = this.properties.apply(state);
-      if (state != modified && entity.level().setBlock(blockPos, modified, 3)) {
+      if (state != modified && entity.level().setBlockAndUpdate(blockPos, modified)) {
          this.triggerGameEvent.ifPresent((event) -> serverLevel.gameEvent(entity, event, blockPos));
       }
 

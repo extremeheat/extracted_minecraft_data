@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -27,8 +26,6 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
       this.type = type;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false));
    }
-
-   protected abstract MapCodec<? extends AbstractSkullBlock> codec();
 
    public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       return new SkullBlockEntity(worldPosition, blockState);

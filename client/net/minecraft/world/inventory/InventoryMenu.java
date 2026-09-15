@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -147,7 +148,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
          slot.onTake(player, stack);
          if (slotIndex == 0) {
-            player.drop(stack, false);
+            player.drop(stack, false, Prediction.PREDICTED);
          }
       }
 

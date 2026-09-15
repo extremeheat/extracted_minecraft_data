@@ -30,9 +30,9 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import org.jspecify.annotations.Nullable;
 
@@ -87,41 +87,41 @@ public class StrongholdPieces {
       return hasAnyPieces;
    }
 
-   private static @Nullable StrongholdPiece findAndCreatePieceFactory(final Class<? extends StrongholdPiece> pieceClass, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
+   private static @Nullable StrongholdPiece findAndCreatePieceFactory(final Class<? extends StrongholdPiece> pieceClass, final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
       StrongholdPiece strongholdPiece = null;
       if (pieceClass == Straight.class) {
-         strongholdPiece = StrongholdPieces.Straight.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.Straight.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == PrisonHall.class) {
-         strongholdPiece = StrongholdPieces.PrisonHall.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.PrisonHall.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == LeftTurn.class) {
-         strongholdPiece = StrongholdPieces.LeftTurn.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.LeftTurn.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == RightTurn.class) {
-         strongholdPiece = StrongholdPieces.RightTurn.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.RightTurn.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == RoomCrossing.class) {
-         strongholdPiece = StrongholdPieces.RoomCrossing.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.RoomCrossing.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == StraightStairsDown.class) {
-         strongholdPiece = StrongholdPieces.StraightStairsDown.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.StraightStairsDown.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == StairsDown.class) {
-         strongholdPiece = StrongholdPieces.StairsDown.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.StairsDown.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == FiveCrossing.class) {
-         strongholdPiece = StrongholdPieces.FiveCrossing.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.FiveCrossing.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == ChestCorridor.class) {
-         strongholdPiece = StrongholdPieces.ChestCorridor.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.ChestCorridor.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == Library.class) {
-         strongholdPiece = StrongholdPieces.Library.createPiece(structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.Library.createPiece(builder, random, footX, footY, footZ, direction, depth);
       } else if (pieceClass == PortalRoom.class) {
-         strongholdPiece = StrongholdPieces.PortalRoom.createPiece(structurePieceAccessor, footX, footY, footZ, direction, depth);
+         strongholdPiece = StrongholdPieces.PortalRoom.createPiece(builder, footX, footY, footZ, direction, depth);
       }
 
       return strongholdPiece;
    }
 
-   private static @Nullable StrongholdPiece generatePieceFromSmallDoor(final StartPiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
+   private static @Nullable StrongholdPiece generatePieceFromSmallDoor(final StartPiece startPiece, final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
       if (!updatePieceWeight()) {
          return null;
       } else {
          if (imposedPiece != null) {
-            StrongholdPiece strongholdPiece = findAndCreatePieceFactory(imposedPiece, structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+            StrongholdPiece strongholdPiece = findAndCreatePieceFactory(imposedPiece, builder, random, footX, footY, footZ, direction, depth);
             imposedPiece = null;
             if (strongholdPiece != null) {
                return strongholdPiece;
@@ -141,7 +141,7 @@ public class StrongholdPieces {
                      break;
                   }
 
-                  StrongholdPiece strongholdPiece = findAndCreatePieceFactory(piece.pieceClass, structurePieceAccessor, random, footX, footY, footZ, direction, depth);
+                  StrongholdPiece strongholdPiece = findAndCreatePieceFactory(piece.pieceClass, builder, random, footX, footY, footZ, direction, depth);
                   if (strongholdPiece != null) {
                      ++piece.placeCount;
                      startPiece.previousPiece = piece;
@@ -155,7 +155,7 @@ public class StrongholdPieces {
             }
          }
 
-         BoundingBox box = StrongholdPieces.FillerCorridor.findPieceBox(structurePieceAccessor, random, footX, footY, footZ, direction);
+         BoundingBox box = StrongholdPieces.FillerCorridor.findPieceBox(builder, random, footX, footY, footZ, direction);
          if (box != null && box.minY() > 1) {
             return new FillerCorridor(depth, box, direction);
          } else {
@@ -164,13 +164,13 @@ public class StrongholdPieces {
       }
    }
 
-   private static @Nullable StructurePiece generateAndAddPiece(final StartPiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
+   private static @Nullable StructurePiece generateAndAddPiece(final StartPiece startPiece, final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int depth) {
       if (depth > 50) {
          return null;
       } else if (Math.abs(footX - startPiece.getBoundingBox().minX()) <= 112 && Math.abs(footZ - startPiece.getBoundingBox().minZ()) <= 112) {
-         StructurePiece newPiece = generatePieceFromSmallDoor(startPiece, structurePieceAccessor, random, footX, footY, footZ, direction, depth + 1);
+         StructurePiece newPiece = generatePieceFromSmallDoor(startPiece, builder, random, footX, footY, footZ, direction, depth + 1);
          if (newPiece != null) {
-            structurePieceAccessor.addPiece(newPiece);
+            builder.addPiece(newPiece);
             startPiece.pendingChildren.add(newPiece);
          }
 
@@ -279,21 +279,21 @@ public class StrongholdPieces {
          }
       }
 
-      protected @Nullable StructurePiece generateSmallDoorChildForward(final StartPiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int xOff, final int yOff) {
+      protected @Nullable StructurePiece generateSmallDoorChildForward(final StartPiece startPiece, final StructurePiecesBuilder builder, final RandomSource random, final int xOff, final int yOff) {
          Direction orientation = this.getOrientation();
          if (orientation != null) {
             switch (orientation) {
                case NORTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + xOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, orientation, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + xOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, orientation, this.getGenDepth());
                }
                case SOUTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + xOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, orientation, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + xOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, orientation, this.getGenDepth());
                }
                case WEST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + xOff, orientation, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + xOff, orientation, this.getGenDepth());
                }
                case EAST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + xOff, orientation, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + xOff, orientation, this.getGenDepth());
                }
             }
          }
@@ -301,21 +301,21 @@ public class StrongholdPieces {
          return null;
       }
 
-      protected @Nullable StructurePiece generateSmallDoorChildLeft(final StartPiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int yOff, final int zOff) {
+      protected @Nullable StructurePiece generateSmallDoorChildLeft(final StartPiece startPiece, final StructurePiecesBuilder builder, final RandomSource random, final int yOff, final int zOff) {
          Direction orientation = this.getOrientation();
          if (orientation != null) {
             switch (orientation) {
                case NORTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.WEST, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.WEST, this.getGenDepth());
                }
                case SOUTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.WEST, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() - 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.WEST, this.getGenDepth());
                }
                case WEST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, Direction.NORTH, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, Direction.NORTH, this.getGenDepth());
                }
                case EAST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, Direction.NORTH, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.minZ() - 1, Direction.NORTH, this.getGenDepth());
                }
             }
          }
@@ -323,21 +323,21 @@ public class StrongholdPieces {
          return null;
       }
 
-      protected @Nullable StructurePiece generateSmallDoorChildRight(final StartPiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int yOff, final int zOff) {
+      protected @Nullable StructurePiece generateSmallDoorChildRight(final StartPiece startPiece, final StructurePiecesBuilder builder, final RandomSource random, final int yOff, final int zOff) {
          Direction orientation = this.getOrientation();
          if (orientation != null) {
             switch (orientation) {
                case NORTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.EAST, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.EAST, this.getGenDepth());
                }
                case SOUTH -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.EAST, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.maxX() + 1, this.boundingBox.minY() + yOff, this.boundingBox.minZ() + zOff, Direction.EAST, this.getGenDepth());
                }
                case WEST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, Direction.SOUTH, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, Direction.SOUTH, this.getGenDepth());
                }
                case EAST -> {
-                  return StrongholdPieces.generateAndAddPiece(startPiece, structurePieceAccessor, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, Direction.SOUTH, this.getGenDepth());
+                  return StrongholdPieces.generateAndAddPiece(startPiece, builder, random, this.boundingBox.minX() + zOff, this.boundingBox.minY() + yOff, this.boundingBox.maxZ() + 1, Direction.SOUTH, this.getGenDepth());
                }
             }
          }
@@ -388,10 +388,10 @@ public class StrongholdPieces {
          tag.putInt("Steps", this.steps);
       }
 
-      public static @Nullable BoundingBox findPieceBox(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction) {
+      public static @Nullable BoundingBox findPieceBox(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction) {
          int maxLength = 3;
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 5, 5, 4, direction);
-         StructurePiece collisionPiece = structurePieceAccessor.findCollisionPiece(box);
+         StructurePiece collisionPiece = builder.findCollisionPiece(box);
          if (collisionPiece == null) {
             return null;
          } else {
@@ -468,17 +468,17 @@ public class StrongholdPieces {
          tag.putBoolean("Source", this.isSource);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
          if (this.isSource) {
             StrongholdPieces.imposedPiece = FiveCrossing.class;
          }
 
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 1, 1);
       }
 
-      public static @Nullable StairsDown createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable StairsDown createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -7, 0, 5, 11, 5, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new StairsDown(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new StairsDown(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -550,21 +550,21 @@ public class StrongholdPieces {
          tag.putBoolean("Right", this.rightChild);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 1, 1);
          if (this.leftChild) {
-            this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, 1, 2);
+            this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, 1, 2);
          }
 
          if (this.rightChild) {
-            this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, 1, 2);
+            this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, 1, 2);
          }
 
       }
 
-      public static @Nullable Straight createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable Straight createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 5, 5, 7, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new Straight(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new Straight(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -610,13 +610,13 @@ public class StrongholdPieces {
          tag.putBoolean("Chest", this.hasPlacedChest);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 1, 1);
       }
 
-      public static @Nullable ChestCorridor createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable ChestCorridor createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 5, 5, 7, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new ChestCorridor(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new ChestCorridor(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -656,13 +656,13 @@ public class StrongholdPieces {
          super(StructurePieceType.STRONGHOLD_STRAIGHT_STAIRS_DOWN, tag);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 1, 1);
       }
 
-      public static @Nullable StraightStairsDown createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable StraightStairsDown createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -7, 0, 5, 11, 8, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new StraightStairsDown(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new StraightStairsDown(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -710,19 +710,19 @@ public class StrongholdPieces {
          super(StructurePieceType.STRONGHOLD_LEFT_TURN, tag);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
          Direction orientation = this.getOrientation();
          if (orientation != Direction.NORTH && orientation != Direction.EAST) {
-            this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+            this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, 1, 1);
          } else {
-            this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+            this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, 1, 1);
          }
 
       }
 
-      public static @Nullable LeftTurn createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable LeftTurn createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 5, 5, 5, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new LeftTurn(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new LeftTurn(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -749,19 +749,19 @@ public class StrongholdPieces {
          super(StructurePieceType.STRONGHOLD_RIGHT_TURN, tag);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
          Direction orientation = this.getOrientation();
          if (orientation != Direction.NORTH && orientation != Direction.EAST) {
-            this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+            this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, 1, 1);
          } else {
-            this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+            this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, 1, 1);
          }
 
       }
 
-      public static @Nullable RightTurn createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable RightTurn createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 5, 5, 5, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new RightTurn(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new RightTurn(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -800,15 +800,15 @@ public class StrongholdPieces {
          tag.putInt("Type", this.type);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 4, 1);
-         this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, 1, 4);
-         this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, 1, 4);
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 4, 1);
+         this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, 1, 4);
+         this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, 1, 4);
       }
 
-      public static @Nullable RoomCrossing createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable RoomCrossing createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -4, -1, 0, 11, 7, 11, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new RoomCrossing(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new RoomCrossing(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -915,13 +915,13 @@ public class StrongholdPieces {
          super(StructurePieceType.STRONGHOLD_PRISON_HALL, tag);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 1, 1);
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 1, 1);
       }
 
-      public static @Nullable PrisonHall createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable PrisonHall createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -1, -1, 0, 9, 5, 11, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new PrisonHall(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new PrisonHall(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -977,11 +977,11 @@ public class StrongholdPieces {
          tag.putBoolean("Tall", this.isTall);
       }
 
-      public static @Nullable Library createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable Library createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -4, -1, 0, 14, 11, 15, direction);
-         if (!isOkBox(box) || structurePieceAccessor.findCollisionPiece(box) != null) {
+         if (!isOkBox(box) || builder.findCollisionPiece(box) != null) {
             box = BoundingBox.orientBox(footX, footY, footZ, -4, -1, 0, 14, 6, 15, direction);
-            if (!isOkBox(box) || structurePieceAccessor.findCollisionPiece(box) != null) {
+            if (!isOkBox(box) || builder.findCollisionPiece(box) != null) {
                return null;
             }
          }
@@ -1130,7 +1130,7 @@ public class StrongholdPieces {
          tag.putBoolean("rightHigh", this.rightHigh);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
          int zOffA = 3;
          int zOffB = 5;
          Direction orientation = this.getOrientation();
@@ -1139,28 +1139,28 @@ public class StrongholdPieces {
             zOffB = 8 - zOffB;
          }
 
-         this.generateSmallDoorChildForward((StartPiece)startPiece, structurePieceAccessor, random, 5, 1);
+         this.generateSmallDoorChildForward((StartPiece)startPiece, builder, random, 5, 1);
          if (this.leftLow) {
-            this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, zOffA, 1);
+            this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, zOffA, 1);
          }
 
          if (this.leftHigh) {
-            this.generateSmallDoorChildLeft((StartPiece)startPiece, structurePieceAccessor, random, zOffB, 7);
+            this.generateSmallDoorChildLeft((StartPiece)startPiece, builder, random, zOffB, 7);
          }
 
          if (this.rightLow) {
-            this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, zOffA, 1);
+            this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, zOffA, 1);
          }
 
          if (this.rightHigh) {
-            this.generateSmallDoorChildRight((StartPiece)startPiece, structurePieceAccessor, random, zOffB, 7);
+            this.generateSmallDoorChildRight((StartPiece)startPiece, builder, random, zOffB, 7);
          }
 
       }
 
-      public static @Nullable FiveCrossing createPiece(final StructurePieceAccessor structurePieceAccessor, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable FiveCrossing createPiece(final StructurePiecesBuilder builder, final RandomSource random, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -4, -3, 0, 10, 9, 11, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new FiveCrossing(genDepth, random, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new FiveCrossing(genDepth, random, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
@@ -1221,16 +1221,16 @@ public class StrongholdPieces {
          tag.putBoolean("Mob", this.hasPlacedSpawner);
       }
 
-      public void addChildren(final StructurePiece startPiece, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      public void addChildren(final StructurePiece startPiece, final StructurePiecesBuilder builder, final RandomSource random) {
          if (startPiece != null) {
             ((StartPiece)startPiece).portalRoomPiece = this;
          }
 
       }
 
-      public static @Nullable PortalRoom createPiece(final StructurePieceAccessor structurePieceAccessor, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
+      public static @Nullable PortalRoom createPiece(final StructurePiecesBuilder builder, final int footX, final int footY, final int footZ, final Direction direction, final int genDepth) {
          BoundingBox box = BoundingBox.orientBox(footX, footY, footZ, -4, -1, 0, 11, 8, 16, direction);
-         return isOkBox(box) && structurePieceAccessor.findCollisionPiece(box) == null ? new PortalRoom(genDepth, box, direction) : null;
+         return isOkBox(box) && builder.findCollisionPiece(box) == null ? new PortalRoom(genDepth, box, direction) : null;
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {

@@ -4,8 +4,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.authlib.minecraft.SessionService;
+import com.mojang.authlib.services.ProfileResult;
 import com.mojang.datafixers.util.Either;
 import java.time.Duration;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public interface ProfileResolver {
       private final LoadingCache<String, Optional<GameProfile>> profileCacheByName;
       private final LoadingCache<UUID, Optional<GameProfile>> profileCacheById;
 
-      public Cached(final MinecraftSessionService sessionService, final UserNameToIdResolver nameToIdCache) {
+      public Cached(final SessionService sessionService, final UserNameToIdResolver nameToIdCache) {
          super();
          this.profileCacheById = CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(10L)).maximumSize(256L).build(new CacheLoader<UUID, Optional<GameProfile>>() {
             {

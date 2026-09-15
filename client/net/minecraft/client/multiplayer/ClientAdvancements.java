@@ -1,5 +1,6 @@
 package net.minecraft.client.multiplayer;
 
+import com.google.common.collect.Iterables;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
@@ -37,28 +38,34 @@ public class ClientAdvancements {
       if (packet.shouldReset()) {
          this.tree.clear();
          this.progress.clear();
+         if (this.listener != null) {
+            this.listener.onAdvancementsCleared();
+         }
       }
 
-      this.tree.remove(packet.getRemoved());
-      this.tree.addAll(packet.getAdded());
+      this.tree.remove(packet.removed());
+      this.tree.addAll(Iterables.transform(packet.added(), ClientboundUpdateAdvancementsPacket.PositionedAdvancement::advancement));
 
-      for(Map.Entry<Identifier, AdvancementProgress> entry : packet.getProgress().entrySet()) {
+      for(ClientboundUpdateAdvancementsPacket.PositionedAdvancement positionedAdvancement : packet.added()) {
+         AdvancementNode node = this.tree.get(positionedAdvancement.advancement());
+         if (node != null) {
+            node.setLocation(positionedAdvancement.x(), positionedAdvancement.y());
+         }
+      }
+
+      for(Map.Entry<Identifier, AdvancementProgress> entry : packet.progress().entrySet()) {
          AdvancementNode node = this.tree.get((Identifier)entry.getKey());
          if (node != null) {
             AdvancementProgress progress = (AdvancementProgress)entry.getValue();
             progress.update(node.advancement().requirements());
             this.progress.put(node.holder(), progress);
-            if (this.listener != null) {
-               this.listener.onUpdateAdvancementProgress(node, progress);
-            }
-
             if (!packet.shouldReset() && progress.isDone()) {
                if (this.minecraft.level != null) {
                   this.telemetryManager.onAdvancementDone(this.minecraft.level, node.holder());
                }
 
                Optional<DisplayInfo> display = node.advancement().display();
-               if (packet.shouldShowAdvancements() && display.isPresent() && ((DisplayInfo)display.get()).shouldShowToast()) {
+               if (packet.showAdvancements() && display.isPresent() && ((DisplayInfo)display.get()).showToast()) {
                   this.minecraft.gui.toastManager().addToast(new AdvancementToast(node.holder()));
                }
             }
@@ -67,9 +74,17 @@ public class ClientAdvancements {
          }
       }
 
+      if (this.listener != null) {
+         this.listener.onAdvancementsUpdated();
+      }
+
    }
 
-   public AdvancementTree getTree() {
+   public Map<AdvancementHolder, AdvancementProgress> progress() {
+      return this.progress;
+   }
+
+   public AdvancementTree tree() {
       return this.tree;
    }
 
@@ -90,15 +105,8 @@ public class ClientAdvancements {
 
    public void setListener(final @Nullable Listener listener) {
       this.listener = listener;
-      this.tree.setListener(listener);
       if (listener != null) {
-         this.progress.forEach((holder, progress) -> {
-            AdvancementNode node = this.tree.get(holder);
-            if (node != null) {
-               listener.onUpdateAdvancementProgress(node, progress);
-            }
-
-         });
+         listener.onAdvancementsUpdated();
          listener.onSelectedTabChanged(this.selectedTab);
       }
 
@@ -109,8 +117,10 @@ public class ClientAdvancements {
       return node != null ? node.holder() : null;
    }
 
-   public interface Listener extends AdvancementTree.Listener {
-      void onUpdateAdvancementProgress(AdvancementNode advancement, AdvancementProgress progress);
+   public interface Listener {
+      void onAdvancementsUpdated();
+
+      void onAdvancementsCleared();
 
       void onSelectedTabChanged(@Nullable AdvancementHolder selectedTab);
    }

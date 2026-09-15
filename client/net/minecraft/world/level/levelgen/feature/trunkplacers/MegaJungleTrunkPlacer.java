@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
@@ -24,9 +24,9 @@ public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
       return TrunkPlacerType.MEGA_JUNGLE_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
-      attachments.addAll(super.placeTrunk(level, trunkSetter, random, treeHeight, origin, config));
+      attachments.addAll(super.placeTrunk(level, trunkSetter, random, treeHeight, origin, tree));
 
       for(int branchHeight = treeHeight - 2 - random.nextInt(4); branchHeight > treeHeight / 2; branchHeight -= 2 + random.nextInt(4)) {
          float angle = random.nextFloat() * 6.2831855F;
@@ -37,7 +37,7 @@ public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
             bx = (int)(1.5F + Mth.cos((double)angle) * (float)b);
             bz = (int)(1.5F + Mth.sin((double)angle) * (float)b);
             BlockPos pos = origin.offset(bx, branchHeight - 3 + b / 2, bz);
-            this.placeLog(level, trunkSetter, random, pos, config);
+            this.placeLog(level, trunkSetter, random, pos, tree);
          }
 
          attachments.add(new FoliagePlacer.FoliageAttachment(origin.offset(bx, branchHeight, bz), -2, false));

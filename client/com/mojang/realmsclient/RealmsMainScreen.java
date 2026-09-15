@@ -2,6 +2,7 @@ package com.mojang.realmsclient;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.Ping;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -12,19 +13,20 @@ import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
 import com.mojang.realmsclient.dto.RegionPingResult;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
+import com.mojang.realmsclient.gui.RealmsHeader;
 import com.mojang.realmsclient.gui.RealmsServerList;
-import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import com.mojang.realmsclient.gui.screens.RealmsCreateRealmScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
+import com.mojang.realmsclient.gui.screens.RealmsJoinRealmWithCodeScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
-import com.mojang.realmsclient.gui.screens.RealmsPendingInvitesScreen;
+import com.mojang.realmsclient.gui.screens.RealmsPdpScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.task.DataFetcher;
-import com.mojang.realmsclient.util.RealmsPersistence;
 import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -53,7 +55,7 @@ import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.PopupScreen;
-import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.RealmsButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.WidgetTooltipHolder;
@@ -61,12 +63,12 @@ import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.Layout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientActivePlayersTooltip;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -96,8 +98,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final Identifier EXPIRES_SOON_SPRITE = Identifier.withDefaultNamespace("realm_status/expires_soon");
    private static final Identifier OPEN_SPRITE = Identifier.withDefaultNamespace("realm_status/open");
    private static final Identifier CLOSED_SPRITE = Identifier.withDefaultNamespace("realm_status/closed");
-   private static final Identifier INVITE_SPRITE = Identifier.withDefaultNamespace("icon/invite");
-   private static final Identifier NEWS_SPRITE = Identifier.withDefaultNamespace("icon/news");
    public static final Identifier HARDCORE_MODE_SPRITE = Identifier.withDefaultNamespace("hud/heart/hardcore_full");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Identifier NO_REALMS_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/no_realms.png");
@@ -117,8 +117,8 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final Component SERVER_CLOSED_TOOLTIP = Component.translatable("mco.selectServer.closed");
    private static final Component UNITIALIZED_WORLD_NARRATION;
    private static final Component NO_REALMS_TEXT;
-   private static final Component NO_PENDING_INVITES;
-   private static final Component PENDING_INVITES;
+   private static final Component ADD_REALM_TEXT;
+   private static final Component FREE_TRIAL;
    private static final Component INCOMPATIBLE_POPUP_TITLE;
    private static final Component INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE;
    private static final int BUTTON_WIDTH = 100;
@@ -147,54 +147,31 @@ public class RealmsMainScreen extends RealmsScreen {
    private RealmsServerList serverList;
    private List<RealmsServer> availableSnapshotServers = List.of();
    private RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists(Map.of());
-   private volatile boolean trialsAvailable;
-   private volatile @Nullable String newsLink;
+   private boolean redirectToPdpIfNoRealms;
+   private boolean trialAvailable;
    private final List<RealmsNotification> notifications = new ArrayList();
+   private final RealmsHeader header;
    private Button addRealmButton;
-   private NotificationButton pendingInvitesButton;
-   private NotificationButton newsButton;
    private LayoutState activeLayoutState;
    private @Nullable HeaderAndFooterLayout layout;
 
    public RealmsMainScreen(final Screen lastScreen) {
       super(TITLE);
       this.lastScreen = lastScreen;
+      this.redirectToPdpIfNoRealms = lastScreen instanceof TitleScreen && Minecraft.getInstance().gui.screen() == lastScreen;
+      this.header = new RealmsHeader(this, this::openJoinRealmScreen);
       this.inviteNarrationLimiter = RateLimiter.create(0.01666666753590107);
    }
 
    public void init() {
       this.serverList = new RealmsServerList(this.minecraft);
       this.realmSelectionList = new RealmSelectionList();
-      Component invitesTitle = Component.translatable("mco.invites.title");
-      this.pendingInvitesButton = new NotificationButton(invitesTitle, INVITE_SPRITE, (var2) -> this.minecraft.gui.setScreen(new RealmsPendingInvitesScreen(this, invitesTitle)), (Component)null);
-      Component newsTitle = Component.translatable("mco.news");
-      this.newsButton = new NotificationButton(newsTitle, NEWS_SPRITE, (b) -> {
-         String newsLink = this.newsLink;
-         if (newsLink != null) {
-            ConfirmLinkScreen.confirmLinkNow(this, (String)newsLink);
-            if (this.newsButton.notificationCount() != 0) {
-               RealmsPersistence.RealmsPersistenceData data = RealmsPersistence.readFile();
-               data.hasUnreadNews = false;
-               RealmsPersistence.writeFile(data);
-               this.newsButton.setNotificationCount(0);
-            }
-
-         }
-      }, newsTitle);
       this.playButton = Button.builder(PLAY_TEXT, (button) -> play(this.getSelectedServer(), this)).width(100).build();
       this.configureButton = Button.builder(CONFIGURE_SERVER_TEXT, (button) -> this.configureClicked(this.getSelectedServer())).width(100).build();
       this.renewButton = Button.builder(SUBSCRIPTION_RENEW_TEXT, (button) -> this.onRenew(this.getSelectedServer())).width(100).build();
       this.leaveButton = Button.builder(LEAVE_SERVER_TEXT, (button) -> this.leaveClicked(this.getSelectedServer())).width(100).build();
-      this.addRealmButton = Button.builder(Component.translatable("mco.selectServer.purchase"), (button) -> this.openTrialAvailablePopup()).size(100, 20).build();
+      this.addRealmButton = this.createAddRealmButton();
       this.backButton = Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(100).build();
-      if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
-         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(5, 5, 100, 20, Component.literal("Realm"), (button, value) -> {
-            snapshotToggle = value;
-            this.availableSnapshotServers = List.of();
-            this.debugRefreshDataFetchers();
-         }));
-      }
-
       this.updateLayout(RealmsMainScreen.LayoutState.LOADING);
       this.updateButtonStates();
       this.availability.thenAcceptAsync((result) -> {
@@ -234,7 +211,11 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void updateLayout(final LayoutState state) {
-      if (this.activeLayoutState != state) {
+      this.updateLayout(state, false);
+   }
+
+   private void updateLayout(final LayoutState state, final boolean force) {
+      if (force || this.activeLayoutState != state) {
          if (this.layout != null) {
             this.layout.visitWidgets((x$0) -> this.removeWidget(x$0));
          }
@@ -264,22 +245,24 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private Layout createHeader() {
-      int sideCellWidth = 90;
-      LinearLayout buttons = LinearLayout.horizontal().spacing(4);
-      buttons.defaultCellSetting().alignVerticallyMiddle();
-      buttons.addChild(this.pendingInvitesButton);
-      buttons.addChild(this.newsButton);
-      LinearLayout header = LinearLayout.horizontal();
-      header.defaultCellSetting().alignVerticallyMiddle();
-      header.addChild(SpacerElement.width(90));
-      header.addChild(realmsLogo(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
-      ((FrameLayout)header.addChild(new FrameLayout(90, 44))).addChild(buttons, (Consumer)(LayoutSettings::alignHorizontallyRight));
-      return header;
+      return this.header.createLayout(realmsLogo(), 44, 4);
+   }
+
+   private Button createAddRealmButton() {
+      return (Button)(this.trialAvailable ? new RealmsButton(0, 0, 100, 20, FREE_TRIAL, (var1) -> this.openRealmsPdp()) : Button.builder(ADD_REALM_TEXT, (var1) -> this.openRealmsPdp()).size(100, 20).build());
    }
 
    private Layout createFooter(final LayoutState state) {
       GridLayout footer = (new GridLayout()).spacing(4);
       GridLayout.RowHelper helper = footer.createRowHelper(3);
+      if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
+         helper.addChild(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(0, 0, 100, 20, Component.literal("Realm"), (button, value) -> {
+            snapshotToggle = value;
+            this.availableSnapshotServers = List.of();
+            this.debugRefreshDataFetchers();
+         }), 3, helper.newCellSettings().alignHorizontallyCenter());
+      }
+
       if (state == RealmsMainScreen.LayoutState.LIST) {
          helper.addChild(this.playButton);
          helper.addChild(this.configureButton);
@@ -304,6 +287,7 @@ public class RealmsMainScreen extends RealmsScreen {
       RealmsServer server = this.getSelectedServer();
       boolean serverSelected = server != null;
       this.addRealmButton.active = this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING;
+      this.header.setJoinRealmButtonActive(this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING);
       this.playButton.active = serverSelected && server.shouldPlayButtonBeActive();
       if (!this.playButton.active && serverSelected && server.state == RealmsServer.State.CLOSED) {
          this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
@@ -355,6 +339,7 @@ public class RealmsMainScreen extends RealmsScreen {
          this.serverList.updateServersList(updatedServers.serverList());
          this.availableSnapshotServers = updatedServers.availableSnapshotServers();
          this.refreshListAndLayout();
+         this.openPdpIfNoRealms();
          boolean ownsNonExpiredRealmServer = false;
 
          for(RealmsServer retrievedServer : this.serverList) {
@@ -390,19 +375,17 @@ public class RealmsMainScreen extends RealmsScreen {
 
       });
       result.subscribe(dataSource.pendingInvitesTask, (numberOfPendingInvites) -> {
-         this.pendingInvitesButton.setNotificationCount(numberOfPendingInvites);
-         this.pendingInvitesButton.setTooltip(numberOfPendingInvites == 0 ? Tooltip.create(NO_PENDING_INVITES) : Tooltip.create(PENDING_INVITES));
+         this.header.setPendingInvites(numberOfPendingInvites);
          if (numberOfPendingInvites > 0 && this.inviteNarrationLimiter.tryAcquire(1)) {
             this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("mco.configure.world.invite.narration", numberOfPendingInvites));
          }
 
       });
-      result.subscribe(dataSource.trialAvailabilityTask, (newStatus) -> this.trialsAvailable = newStatus);
+      result.subscribe(dataSource.trialAvailabilityTask, this::setTrialAvailable);
       result.subscribe(dataSource.onlinePlayersTask, (playerList) -> this.onlinePlayersPerRealm = playerList);
       result.subscribe(dataSource.newsTask, (news) -> {
          dataSource.newsManager.updateUnreadNews(news);
-         this.newsLink = dataSource.newsManager.newsLink();
-         this.newsButton.setNotificationCount(dataSource.newsManager.hasUnreadNews() ? 2147483647 : 0);
+         this.header.setNews(dataSource.newsManager.newsLink(), dataSource.newsManager.hasUnreadNews());
       });
       return result;
    }
@@ -445,8 +428,27 @@ public class RealmsMainScreen extends RealmsScreen {
       this.updateButtonStates();
    }
 
+   private void openPdpIfNoRealms() {
+      if (this.redirectToPdpIfNoRealms) {
+         this.redirectToPdpIfNoRealms = false;
+         if (this.serverList.isEmpty() && this.availableSnapshotServers.isEmpty() && this.minecraft.gui.screen() == this) {
+            this.minecraft.gui.setScreen(new RealmsPdpScreen(this.lastScreen, this.trialAvailable, this::openJoinRealmScreen, () -> this.minecraft.gui.setScreen(this)));
+         }
+
+      }
+   }
+
+   private void setTrialAvailable(final boolean trialAvailable) {
+      if (this.trialAvailable != trialAvailable) {
+         this.trialAvailable = trialAvailable;
+         this.addRealmButton = this.createAddRealmButton();
+         this.updateLayout(this.activeLayoutState, true);
+         this.updateButtonStates();
+      }
+   }
+
    private void pingRegions() {
-      Thread pingThread = new Thread(() -> {
+      Util.nonCriticalIoPool().execute(() -> {
          List<RegionPingResult> regionPingResultList = Ping.pingAllRegions();
          RealmsClient client = RealmsClient.getOrCreate();
          PingResult pingResult = new PingResult(regionPingResultList, this.getOwnedNonExpiredRealmIds());
@@ -457,9 +459,7 @@ public class RealmsMainScreen extends RealmsScreen {
             LOGGER.warn("Could not send ping result to Realms: ", t);
          }
 
-      }, "Realms ping");
-      pingThread.setDaemon(true);
-      pingThread.start();
+      });
    }
 
    private List<Long> getOwnedNonExpiredRealmIds() {
@@ -476,10 +476,11 @@ public class RealmsMainScreen extends RealmsScreen {
 
    private void onRenew(final @Nullable RealmsServer server) {
       if (server != null) {
-         String extensionUrl = CommonLinks.extendRealms(server.remoteSubscriptionId, this.minecraft.getUser().getProfileId(), server.expiredTrial);
+         CommonLinks.ExtensionReference reference = server.expiredTrial ? CommonLinks.ExtensionReference.EXPIRED_TRIAL : CommonLinks.ExtensionReference.EXPIRED_REALM;
+         URI extensionUrl = CommonLinks.extendRealms(server.remoteSubscriptionId, this.minecraft.getUser().getProfileId(), reference);
          this.minecraft.gui.setScreen(new ConfirmLinkScreen((result) -> {
             if (result) {
-               Util.getPlatform().openUri(extensionUrl);
+               Blaze3D.openUri(extensionUrl);
             } else {
                this.minecraft.gui.setScreen(this);
             }
@@ -567,10 +568,6 @@ public class RealmsMainScreen extends RealmsScreen {
          graphics.text(this.font, (String)("Minecraft " + SharedConstants.getCurrentVersion().name()), 2, this.height - 10, -1);
       }
 
-      if (this.trialsAvailable && this.addRealmButton.active) {
-         AddRealmPopupScreen.extractDiamond(graphics, this.addRealmButton);
-      }
-
       switch (RealmsClient.ENVIRONMENT) {
          case STAGE -> this.extractEnvironment(graphics, "STAGE!", -256);
          case LOCAL -> this.extractEnvironment(graphics, "LOCAL!", -8388737);
@@ -578,8 +575,19 @@ public class RealmsMainScreen extends RealmsScreen {
 
    }
 
-   private void openTrialAvailablePopup() {
-      this.minecraft.gui.setScreen(new AddRealmPopupScreen(this, this.trialsAvailable));
+   private void openRealmsPdp() {
+      this.minecraft.gui.setScreen(new RealmsPdpScreen(this, this.trialAvailable, this::openJoinRealmScreen));
+   }
+
+   private void openJoinRealmScreen() {
+      Screen lastScreen = this.minecraft.gui.screen();
+      if (lastScreen != null) {
+         this.minecraft.gui.setScreen(new RealmsJoinRealmWithCodeScreen(lastScreen, () -> {
+            this.minecraft.gui.setScreen(this);
+            this.resetScreen();
+         }));
+      }
+
    }
 
    public static void play(final @Nullable RealmsServer server, final Screen cancelScreen) {
@@ -653,8 +661,8 @@ public class RealmsMainScreen extends RealmsScreen {
    static {
       UNITIALIZED_WORLD_NARRATION = Component.translatable("gui.narrate.button", SERVER_UNITIALIZED_TEXT);
       NO_REALMS_TEXT = Component.translatable("mco.selectServer.noRealms");
-      NO_PENDING_INVITES = Component.translatable("mco.invites.nopending");
-      PENDING_INVITES = Component.translatable("mco.invites.pending");
+      ADD_REALM_TEXT = Component.translatable("mco.selectServer.purchase");
+      FREE_TRIAL = Component.translatable("mco.selectServer.freeTrial");
       INCOMPATIBLE_POPUP_TITLE = Component.translatable("mco.compatibility.incompatible.popup.title");
       INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE = Component.translatable("mco.compatibility.incompatible.releaseType.popup.message");
       SNAPSHOT = !SharedConstants.getCurrentVersion().stable();
@@ -1163,38 +1171,6 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public RealmsServer getServer() {
          return this.serverData;
-      }
-   }
-
-   private static class NotificationButton extends SpriteIconButton.CenteredIcon {
-      private static final Identifier[] NOTIFICATION_ICONS = new Identifier[]{Identifier.withDefaultNamespace("notification/1"), Identifier.withDefaultNamespace("notification/2"), Identifier.withDefaultNamespace("notification/3"), Identifier.withDefaultNamespace("notification/4"), Identifier.withDefaultNamespace("notification/5"), Identifier.withDefaultNamespace("notification/more")};
-      private static final int UNKNOWN_COUNT = 2147483647;
-      private static final int SIZE = 20;
-      private static final int SPRITE_SIZE = 14;
-      private int notificationCount;
-
-      public NotificationButton(final Component title, final Identifier texture, final Button.OnPress onPress, final @Nullable Component tooltip) {
-         super(20, 20, title, 14, 14, 0, 0, new WidgetSprites(texture), onPress, tooltip, (Button.CreateNarration)null, false);
-      }
-
-      private int notificationCount() {
-         return this.notificationCount;
-      }
-
-      public void setNotificationCount(final int notificationCount) {
-         this.notificationCount = notificationCount;
-      }
-
-      public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-         super.extractContents(graphics, mouseX, mouseY, a);
-         if (this.isActive() && this.notificationCount != 0) {
-            this.extractNotificationCounter(graphics);
-         }
-
-      }
-
-      private void extractNotificationCounter(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
       }
    }
 

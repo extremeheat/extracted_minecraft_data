@@ -2,17 +2,18 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PostChain implements AutoCloseable {
    public static final Identifier MAIN_TARGET_ID = Identifier.withDefaultNamespace("main");
+   private final Identifier id;
    private final List<PostPass> passes;
    private final Map<Identifier, PostChainConfig.InternalTarget> internalTargets;
    private final Set<Identifier> externalTargets;
@@ -37,8 +39,9 @@ public class PostChain implements AutoCloseable {
    private final Projection projection;
    private final ProjectionMatrixBuffer projectionMatrixBuffer;
 
-   private PostChain(final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) {
+   private PostChain(final Identifier id, final List<PostPass> passes, final Map<Identifier, PostChainConfig.InternalTarget> internalTargets, final Set<Identifier> externalTargets, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) {
       super();
+      this.id = id;
       this.passes = passes;
       this.internalTargets = internalTargets;
       this.externalTargets = externalTargets;
@@ -46,9 +49,12 @@ public class PostChain implements AutoCloseable {
       this.projectionMatrixBuffer = projectionMatrixBuffer;
    }
 
+   public Identifier id() {
+      return this.id;
+   }
+
    public static PostChain load(final PostChainConfig config, final TextureManager textureManager, final Set<Identifier> allowedExternalTargets, final Identifier id, final Projection projection, final ProjectionMatrixBuffer projectionMatrixBuffer) throws ShaderManager.CompilationException {
-      Stream<Identifier> referencedTargets = config.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
-      Set<Identifier> referencedExternalTargets = (Set)referencedTargets.filter((targetId) -> !config.internalTargets().containsKey(targetId)).collect(Collectors.toSet());
+      Set<Identifier> referencedExternalTargets = getReferencedExternalTargets(config);
       Set<Identifier> invalidExternalTargets = Sets.difference(referencedExternalTargets, allowedExternalTargets);
       if (!invalidExternalTargets.isEmpty()) {
          throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + String.valueOf(invalidExternalTargets));
@@ -60,8 +66,13 @@ public class PostChain implements AutoCloseable {
             passes.add(createPass(textureManager, pass, id.withSuffix("/" + i)));
          }
 
-         return new PostChain(passes.build(), config.internalTargets(), referencedExternalTargets, projection, projectionMatrixBuffer);
+         return new PostChain(id, passes.build(), config.internalTargets(), referencedExternalTargets, projection, projectionMatrixBuffer);
       }
+   }
+
+   public static Set<Identifier> getReferencedExternalTargets(final PostChainConfig config) {
+      Stream<Identifier> referencedTargets = config.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
+      return (Set)referencedTargets.filter((targetId) -> !config.internalTargets().containsKey(targetId)).collect(Collectors.toSet());
    }
 
    private static PostPass createPass(final TextureManager textureManager, final PostChainConfig.Pass config, final Identifier id) throws ShaderManager.CompilationException {
@@ -69,7 +80,7 @@ public class PostChain implements AutoCloseable {
       BindGroupLayout.Builder bindGroupLayoutBuilder = BindGroupLayout.builder();
 
       for(PostChainConfig.Input input : config.inputs()) {
-         bindGroupLayoutBuilder.withSampler(input.samplerName() + "Sampler");
+         bindGroupLayoutBuilder.withUniform(input.samplerName() + "Sampler", UniformType.COMBINED_IMAGE_SAMPLER);
       }
 
       bindGroupLayoutBuilder.withUniform("SamplerInfo", UniformType.UNIFORM_BUFFER);
@@ -79,8 +90,9 @@ public class PostChain implements AutoCloseable {
       }
 
       pipelineBuilder.withBindGroupLayout(bindGroupLayoutBuilder.build());
+      pipelineBuilder.withColorTargetState(ColorTargetState.DEFAULT);
       RenderPipeline pipeline = pipelineBuilder.build();
-      if (!RenderSystem.getDevice().precompilePipeline(pipeline).isValid()) {
+      if (RenderSystem.getCompiledPipelineNullable(pipeline) == null) {
          throw new ShaderManager.CompilationException("Failed to compile post processing pipeline " + String.valueOf(pipeline.getLocation()));
       } else {
          List<PostPass.Input> inputs = new ArrayList();
@@ -232,7 +244,7 @@ public class PostChain implements AutoCloseable {
       for(Map.Entry<Identifier, PostChainConfig.InternalTarget> entry : this.internalTargets.entrySet()) {
          Identifier id = (Identifier)entry.getKey();
          PostChainConfig.InternalTarget target = (PostChainConfig.InternalTarget)entry.getValue();
-         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), true, ARGB.vector4fFromARGB32(target.clearColor()), GpuFormat.RGBA8_UNORM);
+         RenderTargetDescriptor descriptor = new RenderTargetDescriptor((Integer)target.width().orElse(screenWidth), (Integer)target.height().orElse(screenHeight), new RenderTargetDescriptor.TextureProperties(ARGB.vector4fFromARGB32(target.clearColor()), GpuFormat.RGBA8_UNORM), RenderTargetDescriptor.TextureProperties.DEFAULT_DEPTH);
          if (target.persistent()) {
             RenderTarget persistentTarget = this.getOrCreatePersistentTarget(id, descriptor);
             targets.put(id, frame.importExternal(id.toString(), persistentTarget));
@@ -275,9 +287,13 @@ public class PostChain implements AutoCloseable {
       return target;
    }
 
-   public void close() {
+   public void closePersistentTargets() {
       this.persistentTargets.values().forEach(RenderTarget::destroyBuffers);
       this.persistentTargets.clear();
+   }
+
+   public void close() {
+      this.closePersistentTargets();
 
       for(PostPass pass : this.passes) {
          pass.close();

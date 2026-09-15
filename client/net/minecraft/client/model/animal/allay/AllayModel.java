@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.entity.state.AllayRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
-import org.joml.Quaternionfc;
 
 public class AllayModel extends EntityModel<AllayRenderState> implements ArmedModel<AllayRenderState> {
    private final ModelPart head;
@@ -100,7 +99,7 @@ public class AllayModel extends EntityModel<AllayRenderState> implements ArmedMo
       this.root.translateAndRotate(poseStack);
       this.body.translateAndRotate(poseStack);
       poseStack.translate(0.0F, 0.0625F, 0.1875F);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotation(this.right_arm.xRot));
+      poseStack.rotate(Axis.XP, this.right_arm.xRot);
       poseStack.scale(0.7F, 0.7F, 0.7F);
       poseStack.translate(0.0625F, 0.0F, 0.0F);
    }

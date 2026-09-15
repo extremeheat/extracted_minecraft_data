@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.friends;
 
-import com.mojang.authlib.yggdrasil.response.PresenceResponse;
-import com.mojang.authlib.yggdrasil.response.PresenceStatusDto;
+import com.mojang.authlib.services.response.PresenceResponse;
+import com.mojang.authlib.services.response.PresenceStatusDto;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
@@ -167,28 +166,7 @@ public class FriendsOverlayScreen extends Screen {
    }
 
    public boolean keyPressed(final KeyEvent event) {
-      label22: {
-         if (this.minecraft.options.keyFriends.matches(event)) {
-            GuiEventListener var3 = this.getFocused();
-            if (!(var3 instanceof AddFriendWidget)) {
-               break label22;
-            }
-
-            AddFriendWidget addFriendWidget = (AddFriendWidget)var3;
-            if (!addFriendWidget.getEditBox().isFocused()) {
-               break label22;
-            }
-         }
-
-         if (this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(event)) {
-            return true;
-         }
-
-         return super.keyPressed(event);
-      }
-
-      this.onClose();
-      return true;
+      return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(event) ? true : super.keyPressed(event);
    }
 
    public void onClose() {

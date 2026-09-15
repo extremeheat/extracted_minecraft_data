@@ -25,12 +25,12 @@ import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.slf4j.Logger;
 
 @SuppressForbidden(
@@ -54,7 +54,6 @@ public class Bootstrap {
             throw new IllegalStateException("Unable to load registries");
          } else {
             FireBlock.bootStrap();
-            ComposterBlock.bootStrap();
             if (EntityType.getKey(EntityTypes.PLAYER) == null) {
                throw new IllegalStateException("Failed loading EntityTypes");
             } else {
@@ -63,6 +62,7 @@ public class Bootstrap {
                CauldronInteractions.bootStrap();
                BuiltInRegistries.bootStrap();
                CreativeModeTabs.validate();
+               LootContextParamSets.validate();
                wrapStreams();
                bootstrapDuration.set(Duration.between(start, Instant.now()).toMillis());
             }

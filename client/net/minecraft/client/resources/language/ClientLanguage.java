@@ -33,14 +33,19 @@ public class ClientLanguage extends Language {
 
       for(String languageCode : languageStack) {
          String path = String.format(Locale.ROOT, "lang/%s.json", languageCode);
+         boolean hasAnyTranslations = false;
 
          for(String namespace : resourceManager.getNamespaces()) {
-            try {
-               Identifier location = Identifier.fromNamespaceAndPath(namespace, path);
-               appendFrom(languageCode, resourceManager.getResourceStack(location), translations);
-            } catch (Exception e) {
-               LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{namespace, path, e.toString()});
+            Identifier location = Identifier.fromNamespaceAndPath(namespace, path);
+            List<Resource> resourceStack = resourceManager.getResourceStack(location);
+            if (!resourceStack.isEmpty()) {
+               appendFrom(languageCode, resourceStack, translations);
+               hasAnyTranslations = true;
             }
+         }
+
+         if (!hasAnyTranslations) {
+            throw new EmptyTranslationsException(languageCode);
          }
       }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.Map;
@@ -45,7 +44,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BigDripleafBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, BonemealableBlock {
-   public static final MapCodec<BigDripleafBlock> CODEC = simpleCodec(BigDripleafBlock::new);
    private static final BooleanProperty WATERLOGGED;
    private static final EnumProperty<Tilt> TILT;
    private static final int NO_TICK = -1;
@@ -55,10 +53,6 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Simp
    private static final int LOWEST_LEAF_TOP = 13;
    private static final Map<Tilt, VoxelShape> SHAPE_LEAF;
    private final Function<BlockState, VoxelShape> shapes;
-
-   public MapCodec<BigDripleafBlock> codec() {
-      return CODEC;
-   }
 
    protected BigDripleafBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -107,7 +101,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Simp
 
    protected static boolean place(final LevelAccessor level, final BlockPos pos, final FluidState fluidState, final Direction facing) {
       BlockState newState = (BlockState)((BlockState)Blocks.BIG_DRIPLEAF.defaultBlockState().setValue(WATERLOGGED, fluidState.isSourceOfType(Fluids.WATER))).setValue(FACING, facing);
-      return level.setBlock(pos, newState, 3);
+      return level.setBlockAndUpdate(pos, newState);
    }
 
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
@@ -136,15 +130,15 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Simp
       }
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return canGrowInto(level, pos.above());
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BlockPos abovePos = pos.above();
       if (canPlaceAt(level, abovePos)) {
          Direction facing = (Direction)state.getValue(FACING);

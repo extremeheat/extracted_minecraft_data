@@ -47,6 +47,7 @@ import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
@@ -94,7 +95,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.CardinalLighting;
@@ -109,9 +109,10 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -134,6 +135,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -253,7 +256,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(final EnvironmentAttributeSystem.Builder environmentAttributes) {
       environmentAttributes.addDefaultLayers(this);
-      int flashColor = ARGB.color(204, 204, 255);
+      Vector3fc flashColor = new Vector3f(0.8F, 0.8F, 1.0F);
       environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_COLOR, (skyColor, cacheTickId) -> this.getSkyFlashTime() > 0 ? ARGB.srgbLerp(0.22F, skyColor, flashColor) : skyColor);
       environmentAttributes.addTimeBasedLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (skyFactor, cacheTickId) -> this.getSkyFlashTime() > 0 ? 1.0F : skyFactor);
       return environmentAttributes;
@@ -430,12 +433,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    public void tickNonPassenger(final Entity entity) {
-      entity.setOldPosAndRot();
-      ++entity.tickCount;
       ProfilerFiller var10000 = Profiler.get();
       Holder var10001 = entity.typeHolder();
       Objects.requireNonNull(var10001);
       var10000.push(var10001::getRegisteredName);
+      entity.commonTick();
       entity.tick();
       Profiler.get().pop();
 
@@ -448,8 +450,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private void tickPassenger(final Entity vehicle, final Entity entity) {
       if (!entity.isRemoved() && entity.getVehicle() == vehicle) {
          if (entity instanceof Player || this.tickingEntities.contains(entity)) {
-            entity.setOldPosAndRot();
-            ++entity.tickCount;
+            entity.commonTick();
             entity.rideTick();
 
             for(Entity passenger : entity.getPassengers()) {
@@ -664,13 +665,13 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    }
 
-   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions) {
+   public void createFireworks(final double x, final double y, final double z, final double xd, final double yd, final double zd, final List<FireworkExplosion> explosions, final boolean playSound) {
       if (explosions.isEmpty()) {
          for(int i = 0; i < this.random.nextInt(3) + 2; ++i) {
             this.addParticle(ParticleTypes.POOF, x, y, z, this.random.nextGaussian() * 0.05, 0.005, this.random.nextGaussian() * 0.05);
          }
       } else {
-         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, x, y, z, xd, yd, zd, this.minecraft.particleEngine, explosions));
+         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, x, y, z, xd, yd, zd, this.minecraft.particleEngine, explosions, playSound));
       }
 
    }
@@ -689,6 +690,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public TickRateManager tickRateManager() {
       return this.tickRateManager;
+   }
+
+   public float getRelativeTickSpeed() {
+      float tickrate = this.tickRateManager.tickrate();
+      return tickrate > 20.0F ? tickrate / 20.0F : 1.0F;
    }
 
    public ClientClockManager clockManager() {
@@ -763,11 +769,11 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    }
 
-   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+   public void globalLevelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       this.levelEventHandler.globalLevelEvent(type, pos, data);
    }
 
-   public void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data) {
+   public void levelEvent(final @Nullable Entity source, final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       try {
          this.levelEventHandler.levelEvent(type, pos, data);
       } catch (Throwable t) {
@@ -949,43 +955,59 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       }
    }
 
-   public void addBreakingBlockEffect(final BlockPos pos, final Direction direction) {
+   public void addBreakingBlockEffects(final BlockPos pos, final Direction direction, final boolean playSound) {
       BlockState blockState = this.getBlockState(pos);
-      if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.shouldSpawnTerrainParticles()) {
-         int x = pos.getX();
-         int y = pos.getY();
-         int z = pos.getZ();
-         float r = 0.1F;
-         AABB shape = blockState.getShape(this, pos).bounds();
-         double xp = (double)x + this.random.nextDouble() * (shape.maxX - shape.minX - 0.20000000298023224) + 0.10000000149011612 + shape.minX;
-         double yp = (double)y + this.random.nextDouble() * (shape.maxY - shape.minY - 0.20000000298023224) + 0.10000000149011612 + shape.minY;
-         double zp = (double)z + this.random.nextDouble() * (shape.maxZ - shape.minZ - 0.20000000298023224) + 0.10000000149011612 + shape.minZ;
-         if (direction == Direction.DOWN) {
-            yp = (double)y + shape.minY - 0.10000000149011612;
+      if (!blockState.isAir()) {
+         if (playSound) {
+            this.playBreakingSound(pos, blockState);
          }
 
-         if (direction == Direction.UP) {
-            yp = (double)y + shape.maxY + 0.10000000149011612;
+         if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.shouldSpawnTerrainParticles()) {
+            this.addBreakingParticles(pos, direction, blockState);
          }
 
-         if (direction == Direction.NORTH) {
-            zp = (double)z + shape.minZ - 0.10000000149011612;
-         }
-
-         if (direction == Direction.SOUTH) {
-            zp = (double)z + shape.maxZ + 0.10000000149011612;
-         }
-
-         if (direction == Direction.WEST) {
-            xp = (double)x + shape.minX - 0.10000000149011612;
-         }
-
-         if (direction == Direction.EAST) {
-            xp = (double)x + shape.maxX + 0.10000000149011612;
-         }
-
-         this.minecraft.particleEngine.add((new TerrainParticle(this, xp, yp, zp, 0.0, 0.0, 0.0, blockState, pos)).setPower(0.2F).scale(0.6F));
       }
+   }
+
+   private void addBreakingParticles(final BlockPos pos, final Direction direction, final BlockState blockState) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
+      float r = 0.1F;
+      AABB shape = blockState.getShape(this, pos).bounds();
+      double xp = (double)x + this.random.nextDouble() * (shape.maxX - shape.minX - 0.20000000298023224) + 0.10000000149011612 + shape.minX;
+      double yp = (double)y + this.random.nextDouble() * (shape.maxY - shape.minY - 0.20000000298023224) + 0.10000000149011612 + shape.minY;
+      double zp = (double)z + this.random.nextDouble() * (shape.maxZ - shape.minZ - 0.20000000298023224) + 0.10000000149011612 + shape.minZ;
+      if (direction == Direction.DOWN) {
+         yp = (double)y + shape.minY - 0.10000000149011612;
+      }
+
+      if (direction == Direction.UP) {
+         yp = (double)y + shape.maxY + 0.10000000149011612;
+      }
+
+      if (direction == Direction.NORTH) {
+         zp = (double)z + shape.minZ - 0.10000000149011612;
+      }
+
+      if (direction == Direction.SOUTH) {
+         zp = (double)z + shape.maxZ + 0.10000000149011612;
+      }
+
+      if (direction == Direction.WEST) {
+         xp = (double)x + shape.minX - 0.10000000149011612;
+      }
+
+      if (direction == Direction.EAST) {
+         xp = (double)x + shape.maxX + 0.10000000149011612;
+      }
+
+      this.minecraft.particleEngine.add((new TerrainParticle(this, xp, yp, zp, 0.0, 0.0, 0.0, blockState, pos)).setPower(0.2F).scale(0.6F));
+   }
+
+   private void playBreakingSound(final BlockPos pos, final BlockState blockState) {
+      SoundType soundType = blockState.getSoundType();
+      this.minecraft.getSoundManager().play(new SimpleSoundInstance(soundType.getHitSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 8.0F, soundType.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), pos));
    }
 
    public void setServerSimulationDistance(final int serverSimulationDistance) {
@@ -998,14 +1020,6 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    public FeatureFlagSet enabledFeatures() {
       return this.connection.enabledFeatures();
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.connection.potionBrewing();
-   }
-
-   public FuelValues fuelValues() {
-      return this.connection.fuelValues();
    }
 
    public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final Level.ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> secondaryParticles, final Holder<SoundEvent> explosionSound) {

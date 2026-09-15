@@ -33,6 +33,18 @@ public class EmptyNotificationService implements NotificationService {
    public void serverActivityOccured() {
    }
 
+   public void worldUpgradeStarted() {
+   }
+
+   public void worldUpgradeProgress(final float progressPercentage) {
+   }
+
+   public void worldUpgradeFinished() {
+   }
+
+   public void worldUpgradeFailed(final String reason) {
+   }
+
    public void playerOped(final ServerOpListEntry operator) {
    }
 

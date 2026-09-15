@@ -84,6 +84,7 @@ public class FileFixerUpper {
       int loadedVersion = NbtUtils.getDataVersion(levelDataTag);
       if (this.requiresFileFixing(loadedVersion)) {
          LOGGER.info("Starting upgrade for world \"{}\"", worldAccess.getLevelId());
+         upgradeProgress.notifications().worldUpgradeStarted();
          Path worldFolder = worldAccess.getLevelDirectory().path();
          Path fileFixDirectory = worldFolder.resolve("filefix");
          Path tempWorld = fileFixDirectory.resolve("new_world");
@@ -92,14 +93,18 @@ public class FileFixerUpper {
          try {
             moves = this.startOrContinueFileFixing(upgradeProgress, toVersion, worldFolder, tempWorld, fileFixDirectory, loadedVersion);
          } catch (IOException e) {
+            upgradeProgress.notifications().worldUpgradeFailed("The world upgrade failed during file fixing");
             throw new AbortedFileFixException(e);
          }
 
          try {
-            swapInFixedWorld(worldAccess, moves, fileFixDirectory, tempWorld);
+            swapInFixedWorld(worldAccess, moves, fileFixDirectory, tempWorld, upgradeProgress);
          } catch (AbortedFileFixException e) {
             if (e.notRevertedMoves().isEmpty()) {
                cleanup(fileFixDirectory);
+               upgradeProgress.notifications().worldUpgradeFailed("The world upgrade failed while swapping in the file-fixed world");
+            } else {
+               upgradeProgress.notifications().worldUpgradeFailed("The world upgrade failed while swapping in the file-fixed world and some moves were not reverted");
             }
 
             throw e;
@@ -108,6 +113,7 @@ public class FileFixerUpper {
          try {
             levelDataTag = worldAccess.getUnfixedDataTag(false);
          } catch (IOException e) {
+            upgradeProgress.notifications().worldUpgradeFailed("The world upgrade failed while reading level.dat");
             throw new UncheckedIOException(e);
          }
 
@@ -262,7 +268,7 @@ public class FileFixerUpper {
    }
 
    @VisibleForTesting
-   protected static void swapInFixedWorld(final LevelStorageSource.LevelStorageAccess worldAccess, final List<FileMove> moves, final Path fileFixDirectory, final Path tempWorld) throws FileFixException {
+   protected static void swapInFixedWorld(final LevelStorageSource.LevelStorageAccess worldAccess, final List<FileMove> moves, final Path fileFixDirectory, final Path tempWorld, final UpgradeProgress upgradeProgress) throws FileFixException {
       Path worldFolder = worldAccess.getLevelDirectory().path();
       Path savesDirectory = worldFolder.getParent();
       String worldName = worldFolder.getFileName().toString();
@@ -310,18 +316,18 @@ public class FileFixerUpper {
                CopyOnWriteFileSystem.moveFilesWithRetry(moves, moveOptions);
                LOGGER.info("Moving new world to top level");
                Files.move(tempWorld, tempWorldTopLevel, moveOptions);
-            } catch (Exception var23) {
-               LOGGER.error("Encountered error while trying to create new world folder:", var23);
+            } catch (Exception var24) {
+               LOGGER.error("Encountered error while trying to create new world folder:", var24);
                List<FileMove> failedMoves = CopyOnWriteFileSystem.tryRevertMoves(moves, moveOptions);
                if (failedMoves.isEmpty()) {
                   try {
                      Files.deleteIfExists(movesFile);
-                  } catch (IOException var15) {
-                     LOGGER.warn("Failed to delete {}", movesFile, var23);
+                  } catch (IOException var16) {
+                     LOGGER.warn("Failed to delete {}", movesFile, var24);
                   }
                }
 
-               throw new AbortedFileFixException(var23, failedMoves, fileSystemCapabilities);
+               throw new AbortedFileFixException(var24, failedMoves, fileSystemCapabilities);
             }
 
             LOGGER.info("Complete move");
@@ -388,6 +394,7 @@ public class FileFixerUpper {
          }
 
          LOGGER.info("Upgrade done for world \"{}\"", worldAccess.getLevelId());
+         upgradeProgress.notifications().worldUpgradeFinished();
       }
    }
 

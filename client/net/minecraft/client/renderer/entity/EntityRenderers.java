@@ -96,6 +96,7 @@ public class EntityRenderers {
       register(EntityTypes.COW, CowRenderer::new);
       register(EntityTypes.CREAKING, CreakingRenderer::new);
       register(EntityTypes.CREEPER, CreeperRenderer::new);
+      register(EntityTypes.CUSHION, CushionRenderer::new);
       register(EntityTypes.DARK_OAK_BOAT, (context) -> new BoatRenderer(context, ModelLayers.DARK_OAK_BOAT));
       register(EntityTypes.DARK_OAK_CHEST_BOAT, (context) -> new BoatRenderer(context, ModelLayers.DARK_OAK_CHEST_BOAT));
       register(EntityTypes.DOLPHIN, DolphinRenderer::new);
@@ -169,6 +170,8 @@ public class EntityRenderers {
       register(EntityTypes.PIGLIN_BRUTE, (context) -> new PiglinRenderer(context, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE_ARMOR, ModelLayers.PIGLIN_BRUTE_ARMOR));
       register(EntityTypes.PILLAGER, PillagerRenderer::new);
       register(EntityTypes.POLAR_BEAR, PolarBearRenderer::new);
+      register(EntityTypes.POPLAR_BOAT, (context) -> new BoatRenderer(context, ModelLayers.POPLAR_BOAT));
+      register(EntityTypes.POPLAR_CHEST_BOAT, (context) -> new BoatRenderer(context, ModelLayers.POPLAR_CHEST_BOAT));
       register(EntityTypes.PUFFERFISH, PufferfishRenderer::new);
       register(EntityTypes.RABBIT, RabbitRenderer::new);
       register(EntityTypes.RAVAGER, RavagerRenderer::new);

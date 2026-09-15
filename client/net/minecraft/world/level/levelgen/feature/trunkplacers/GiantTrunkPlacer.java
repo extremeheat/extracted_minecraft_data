@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class GiantTrunkPlacer extends TrunkPlacer {
@@ -23,28 +23,28 @@ public class GiantTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.GIANT_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       BlockPos below = origin.below();
-      placeBelowTrunkBlock(level, trunkSetter, random, below, config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.east(), config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.south(), config);
-      placeBelowTrunkBlock(level, trunkSetter, random, below.south().east(), config);
+      placeBelowTrunkBlock(level, trunkSetter, random, below, tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.east(), tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.south(), tree);
+      placeBelowTrunkBlock(level, trunkSetter, random, below.south().east(), tree);
       BlockPos.MutableBlockPos trunkPos = new BlockPos.MutableBlockPos();
 
       for(int hh = 0; hh < treeHeight; ++hh) {
-         this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 0, hh, 0);
+         this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, tree, origin, 0, hh, 0);
          if (hh < treeHeight - 1) {
-            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 1, hh, 0);
-            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 1, hh, 1);
-            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, config, origin, 0, hh, 1);
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, tree, origin, 1, hh, 0);
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, tree, origin, 1, hh, 1);
+            this.placeLogIfFreeWithOffset(level, trunkSetter, random, trunkPos, tree, origin, 0, hh, 1);
          }
       }
 
       return ImmutableList.of(new FoliagePlacer.FoliageAttachment(origin.above(treeHeight), 0, true));
    }
 
-   private void placeLogIfFreeWithOffset(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos trunkPos, final TreeConfiguration config, final BlockPos treePos, final int x, final int y, final int z) {
+   private void placeLogIfFreeWithOffset(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos trunkPos, final TreeFeature tree, final BlockPos treePos, final int x, final int y, final int z) {
       trunkPos.setWithOffset(treePos, x, y, z);
-      this.placeLogIfFree(level, trunkSetter, random, trunkPos, config);
+      this.placeLogIfFree(level, trunkSetter, random, trunkPos, tree);
    }
 }

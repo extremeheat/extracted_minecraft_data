@@ -4,11 +4,13 @@ import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
 import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
@@ -40,7 +42,7 @@ public class Pack {
    }
 
    public static @Nullable Metadata readPackMetadata(final PackLocationInfo location, final ResourcesSupplier resources, final PackFormat currentPackVersion, final PackType type) {
-      try (PackResources pack = resources.openPrimary(location)) {
+      try (PackMetadataResources pack = resources.openMetadata(location)) {
          PackMetadataSection meta;
          try {
             meta = (PackMetadataSection)pack.getMetadataSection(PackMetadataSection.forPackType(type));
@@ -90,8 +92,12 @@ public class Pack {
       return this.metadata.requestedFeatures();
    }
 
-   public PackResources open() {
-      return this.resources.openFull(this.location, this.metadata);
+   public PackMetadataResources openMetadata() {
+      return this.resources.openMetadata(this.location);
+   }
+
+   public Stream<PackResources> open() {
+      return this.resources.openResources(this.location, this.metadata);
    }
 
    public String getId() {
@@ -184,8 +190,8 @@ public class Pack {
    }
 
    public interface ResourcesSupplier {
-      PackResources openPrimary(PackLocationInfo location);
+      PackMetadataResources openMetadata(PackLocationInfo location);
 
-      PackResources openFull(PackLocationInfo location, Metadata metadata);
+      Stream<PackResources> openResources(PackLocationInfo location, Metadata metadata);
    }
 }

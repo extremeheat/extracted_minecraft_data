@@ -6,10 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.material.MapColor;
 
 public class MapDecorationTypes {
-   private static final int COPPER_COLOR = 12741452;
    public static final Holder<MapDecorationType> PLAYER = register("player", "player", false, true);
    public static final Holder<MapDecorationType> FRAME = register("frame", "frame", true, true);
    public static final Holder<MapDecorationType> RED_MARKER = register("red_marker", "red_marker", false, true);
@@ -18,8 +16,8 @@ public class MapDecorationTypes {
    public static final Holder<MapDecorationType> TARGET_POINT = register("target_point", "target_point", true, false);
    public static final Holder<MapDecorationType> PLAYER_OFF_MAP = register("player_off_map", "player_off_map", false, true);
    public static final Holder<MapDecorationType> PLAYER_OFF_LIMITS = register("player_off_limits", "player_off_limits", false, true);
-   public static final Holder<MapDecorationType> WOODLAND_MANSION = register("mansion", "woodland_mansion", true, 5393476, false, true);
-   public static final Holder<MapDecorationType> OCEAN_MONUMENT = register("monument", "ocean_monument", true, 3830373, false, true);
+   public static final Holder<MapDecorationType> WOODLAND_MANSION = register("mansion", "woodland_mansion", true, false);
+   public static final Holder<MapDecorationType> OCEAN_MONUMENT = register("monument", "ocean_monument", true, false);
    public static final Holder<MapDecorationType> WHITE_BANNER = register("banner_white", "white_banner", true, true);
    public static final Holder<MapDecorationType> ORANGE_BANNER = register("banner_orange", "orange_banner", true, true);
    public static final Holder<MapDecorationType> MAGENTA_BANNER = register("banner_magenta", "magenta_banner", true, true);
@@ -37,14 +35,19 @@ public class MapDecorationTypes {
    public static final Holder<MapDecorationType> RED_BANNER = register("banner_red", "red_banner", true, true);
    public static final Holder<MapDecorationType> BLACK_BANNER = register("banner_black", "black_banner", true, true);
    public static final Holder<MapDecorationType> RED_X = register("red_x", "red_x", true, false);
-   public static final Holder<MapDecorationType> DESERT_VILLAGE;
-   public static final Holder<MapDecorationType> PLAINS_VILLAGE;
-   public static final Holder<MapDecorationType> SAVANNA_VILLAGE;
-   public static final Holder<MapDecorationType> SNOWY_VILLAGE;
-   public static final Holder<MapDecorationType> TAIGA_VILLAGE;
-   public static final Holder<MapDecorationType> JUNGLE_TEMPLE;
-   public static final Holder<MapDecorationType> SWAMP_HUT;
-   public static final Holder<MapDecorationType> TRIAL_CHAMBERS;
+   public static final Holder<MapDecorationType> DESERT_VILLAGE = register("village_desert", "desert_village", true, false);
+   public static final Holder<MapDecorationType> PLAINS_VILLAGE = register("village_plains", "plains_village", true, false);
+   public static final Holder<MapDecorationType> SAVANNA_VILLAGE = register("village_savanna", "savanna_village", true, false);
+   public static final Holder<MapDecorationType> SNOWY_VILLAGE = register("village_snowy", "snowy_village", true, false);
+   public static final Holder<MapDecorationType> TAIGA_VILLAGE = register("village_taiga", "taiga_village", true, false);
+   public static final Holder<MapDecorationType> JUNGLE_TEMPLE = register("jungle_temple", "jungle_temple", true, false);
+   public static final Holder<MapDecorationType> SWAMP_HUT = register("swamp_hut", "swamp_hut", true, false);
+   public static final Holder<MapDecorationType> TRIAL_CHAMBERS = register("trial_chambers", "trial_chambers", true, false);
+   public static final Holder<MapDecorationType> ABANDONED_CAMP = register("abandoned_camp", "abandoned_camp", true, false);
+   public static final Holder<MapDecorationType> ANCIENT_CITY = register("ancient_city", "ancient_city", true, false);
+   public static final Holder<MapDecorationType> DESERT_PYRAMID = register("desert_pyramid", "desert_pyramid", true, false);
+   public static final Holder<MapDecorationType> MINESHAFT = register("mineshaft", "mineshaft", true, false);
+   public static final Holder<MapDecorationType> OCEAN_RUIN_WARM = register("ocean_ruin_warm", "warm_ocean_ruins", true, false);
 
    public MapDecorationTypes() {
       super();
@@ -55,23 +58,8 @@ public class MapDecorationTypes {
    }
 
    private static Holder<MapDecorationType> register(final String name, final String assetName, final boolean showOnItemFrame, final boolean trackCount) {
-      return register(name, assetName, showOnItemFrame, -1, trackCount, false);
-   }
-
-   private static Holder<MapDecorationType> register(final String name, final String assetName, final boolean showOnItemFrame, final int mapColor, final boolean trackCount, final boolean explorationMapElement) {
       ResourceKey<MapDecorationType> key = ResourceKey.create(Registries.MAP_DECORATION_TYPE, Identifier.withDefaultNamespace(name));
-      MapDecorationType type = new MapDecorationType(Identifier.withDefaultNamespace(assetName), showOnItemFrame, mapColor, explorationMapElement, trackCount);
+      MapDecorationType type = new MapDecorationType(Identifier.withDefaultNamespace(assetName), showOnItemFrame, trackCount);
       return Registry.registerForHolder(BuiltInRegistries.MAP_DECORATION_TYPE, key, type);
-   }
-
-   static {
-      DESERT_VILLAGE = register("village_desert", "desert_village", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      PLAINS_VILLAGE = register("village_plains", "plains_village", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      SAVANNA_VILLAGE = register("village_savanna", "savanna_village", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      SNOWY_VILLAGE = register("village_snowy", "snowy_village", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      TAIGA_VILLAGE = register("village_taiga", "taiga_village", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      JUNGLE_TEMPLE = register("jungle_temple", "jungle_temple", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      SWAMP_HUT = register("swamp_hut", "swamp_hut", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
-      TRIAL_CHAMBERS = register("trial_chambers", "trial_chambers", true, 12741452, false, true);
    }
 }

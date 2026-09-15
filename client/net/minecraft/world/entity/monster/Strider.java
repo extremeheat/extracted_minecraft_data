@@ -415,7 +415,7 @@ public class Strider extends Animal implements ItemSteerable {
          return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
       } else {
          RandomSource random = level.getRandom();
-         if (random.nextInt(30) == 0) {
+         if (random.nextInt(30) == 0 && level.getLevel().isSpawningMonsters()) {
             Mob jockey = (Mob)EntityTypes.ZOMBIFIED_PIGLIN.create(level.getLevel(), (EntitySpawnReason)EntitySpawnReason.JOCKEY);
             if (jockey != null) {
                groupData = this.spawnJockey(level, difficulty, jockey, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(random), false));

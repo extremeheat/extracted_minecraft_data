@@ -36,6 +36,11 @@ public class TimeCommand {
    private static final DynamicCommandExceptionType ERROR_NO_DEFAULT_CLOCK = new DynamicCommandExceptionType((dimension) -> Component.translatableEscape("commands.time.no_default_clock", dimension));
    private static final Dynamic2CommandExceptionType ERROR_NO_TIME_MARKER_FOUND = new Dynamic2CommandExceptionType((clock, timeMarker) -> Component.translatableEscape("commands.time.no_time_marker_found", timeMarker, clock));
    private static final Dynamic2CommandExceptionType ERROR_WRONG_TIMELINE_FOR_CLOCK = new Dynamic2CommandExceptionType((clock, timeline) -> Component.translatableEscape("commands.time.wrong_timeline_for_clock", timeline, clock));
+   private static final Dynamic2CommandExceptionType ERROR_ALREADY_AT_TIME_MARKER = new Dynamic2CommandExceptionType((clock, marker) -> Component.translatableEscape("commands.time.set.already_at_time_marker", clock, marker));
+   private static final Dynamic2CommandExceptionType ERROR_ALREADY_AT_TIME = new Dynamic2CommandExceptionType((clock, time) -> Component.translatableEscape("commands.time.set.already_at_time", clock, time));
+   private static final DynamicCommandExceptionType ERROR_ALREADY_PAUSED = new DynamicCommandExceptionType((clock) -> Component.translatableEscape("commands.time.pause.already_paused", clock));
+   private static final DynamicCommandExceptionType ERROR_ALREADY_RUNNING = new DynamicCommandExceptionType((clock) -> Component.translatableEscape("commands.time.pause.already_running", clock));
+   private static final Dynamic2CommandExceptionType ERROR_ALREADY_SAME_RATE = new Dynamic2CommandExceptionType((clock, rate) -> Component.translatableEscape("commands.time.rate.already_same", clock, rate));
    private static final int MAX_CLOCK_RATE = 1000;
 
    public TimeCommand() {
@@ -69,7 +74,7 @@ public class TimeCommand {
 
    private static int queryTime(final CommandSourceStack source, final Holder<WorldClock> clock) {
       ServerClockManager clockManager = source.getServer().clockManager();
-      long totalTicks = clockManager.getTotalTicks(clock);
+      long totalTicks = clockManager.getInstance(clock).totalTicks();
       source.sendSuccess(() -> Component.translatable("commands.time.query.absolute", clock.getRegisteredName(), totalTicks), false);
       return wrapTime(totalTicks);
    }
@@ -96,41 +101,67 @@ public class TimeCommand {
       }
    }
 
-   private static int setTotalTicks(final CommandSourceStack source, final Holder<WorldClock> clock, final int totalTicks) {
+   private static int setTotalTicks(final CommandSourceStack source, final Holder<WorldClock> clock, final int totalTicks) throws CommandSyntaxException {
       ServerClockManager clockManager = source.getServer().clockManager();
-      clockManager.setTotalTicks(clock, (long)totalTicks);
-      source.sendSuccess(() -> Component.translatable("commands.time.set.absolute", clock.getRegisteredName(), totalTicks), true);
-      return totalTicks;
+      if (clockManager.getInstance(clock).totalTicks() == (long)totalTicks) {
+         throw ERROR_ALREADY_AT_TIME.create(clock.getRegisteredName(), totalTicks);
+      } else {
+         clockManager.setTotalTicks(clock, (long)totalTicks);
+         source.sendSuccess(() -> Component.translatable("commands.time.set.absolute", clock.getRegisteredName(), totalTicks), true);
+         return totalTicks;
+      }
    }
 
    private static int addTime(final CommandSourceStack source, final Holder<WorldClock> clock, final int time) {
       ServerClockManager clockManager = source.getServer().clockManager();
       clockManager.addTicks(clock, time);
-      long totalTicks = clockManager.getTotalTicks(clock);
+      long totalTicks = clockManager.getInstance(clock).totalTicks();
       source.sendSuccess(() -> Component.translatable("commands.time.set.absolute", clock.getRegisteredName(), totalTicks), true);
       return wrapTime(totalTicks);
    }
 
    private static int setTimeToTimeMarker(final CommandSourceStack source, final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) throws CommandSyntaxException {
       ServerClockManager clockManager = source.getServer().clockManager();
-      if (!clockManager.moveToTimeMarker(clock, timeMarkerId)) {
-         throw ERROR_NO_TIME_MARKER_FOUND.create(clock.getRegisteredName(), timeMarkerId);
-      } else {
-         source.sendSuccess(() -> Component.translatable("commands.time.set.time_marker", clock.getRegisteredName(), timeMarkerId.identifier().toString()), true);
-         return wrapTime(clockManager.getTotalTicks(clock));
+      ServerClockManager.MoveResult moveResult = clockManager.moveToTimeMarker(clock, timeMarkerId);
+      String clockName = clock.getRegisteredName();
+      String timeMarkerName = timeMarkerId.identifier().toString();
+      switch (moveResult) {
+         case NO_TIME_MARKER_FOUND:
+            throw ERROR_NO_TIME_MARKER_FOUND.create(clockName, timeMarkerName);
+         case NOT_MOVED:
+            throw ERROR_ALREADY_AT_TIME_MARKER.create(clockName, timeMarkerName);
+         case MOVED:
+            source.sendSuccess(() -> Component.translatable("commands.time.set.time_marker", clockName, timeMarkerName), true);
+         default:
+            return wrapTime(clockManager.getInstance(clock).totalTicks());
       }
    }
 
-   private static int setPaused(final CommandSourceStack source, final Holder<WorldClock> clock, final boolean paused) {
-      source.getServer().clockManager().setPaused(clock, paused);
-      source.sendSuccess(() -> Component.translatable(paused ? "commands.time.pause" : "commands.time.resume", clock.getRegisteredName()), true);
-      return 1;
+   private static int setPaused(final CommandSourceStack source, final Holder<WorldClock> clock, final boolean paused) throws CommandSyntaxException {
+      ServerClockManager clockManager = source.getServer().clockManager();
+      String clockName = clock.getRegisteredName();
+      if (clockManager.getInstance(clock).isPaused() == paused) {
+         if (paused) {
+            throw ERROR_ALREADY_PAUSED.create(clockName);
+         } else {
+            throw ERROR_ALREADY_RUNNING.create(clockName);
+         }
+      } else {
+         clockManager.setPaused(clock, paused);
+         source.sendSuccess(() -> Component.translatable(paused ? "commands.time.pause" : "commands.time.resume", clockName), true);
+         return 1;
+      }
    }
 
-   private static int setRate(final CommandSourceStack source, final Holder<WorldClock> clock, final float rate) {
-      source.getServer().clockManager().setRate(clock, rate);
-      source.sendSuccess(() -> Component.translatable("commands.time.rate", clock.getRegisteredName(), rate), true);
-      return 1;
+   private static int setRate(final CommandSourceStack source, final Holder<WorldClock> clock, final float rate) throws CommandSyntaxException {
+      ServerClockManager clockManager = source.getServer().clockManager();
+      if (clockManager.getInstance(clock).rate() == rate) {
+         throw ERROR_ALREADY_SAME_RATE.create(clock.getRegisteredName(), rate);
+      } else {
+         clockManager.setRate(clock, rate);
+         source.sendSuccess(() -> Component.translatable("commands.time.rate", clock.getRegisteredName(), rate), true);
+         return 1;
+      }
    }
 
    private static int wrapTime(final long ticks) {

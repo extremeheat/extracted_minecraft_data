@@ -11,11 +11,14 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +30,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -38,6 +42,8 @@ import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -56,15 +62,17 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    public static final int BURN_TIME_STANDARD = 200;
    public static final int BURN_COOL_SPEED = 2;
    private static final Codec<Map<ResourceKey<Recipe<?>>, Integer>> RECIPES_USED_CODEC;
-   private static final short DEFAULT_COOKING_TIMER = 0;
-   private static final short DEFAULT_COOKING_TOTAL_TIME = 0;
-   private static final short DEFAULT_LIT_TIME_REMAINING = 0;
-   private static final short DEFAULT_LIT_TOTAL_TIME = 0;
+   private static final int DEFAULT_COOKING_TIMER = 0;
+   private static final int DEFAULT_COOKING_TOTAL_TIME = 0;
+   private static final int DEFAULT_LIT_TIME_REMAINING = 0;
+   private static final int DEFAULT_LIT_TOTAL_TIME = 0;
+   private static final float DEFAULT_SPEED_MULTIPLIER = 1.0F;
    protected NonNullList<ItemStack> items;
    private int litTimeRemaining;
    private int litTotalTime;
    private int cookingTimer;
    private int cookingTotalTime;
+   private float speedMultiplier;
    protected final ContainerData dataAccess;
    private final Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed;
    private final RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> quickCheck;
@@ -72,6 +80,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    protected AbstractFurnaceBlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState, final RecipeType<? extends AbstractCookingRecipe> recipeType) {
       super(type, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
+      this.speedMultiplier = 1.0F;
       this.dataAccess = new ContainerData() {
          {
             Objects.requireNonNull(AbstractFurnaceBlockEntity.this);
@@ -119,20 +128,22 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       super.loadAdditional(input);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(input, this.items);
-      this.cookingTimer = input.getShortOr("cooking_time_spent", (short)0);
-      this.cookingTotalTime = input.getShortOr("cooking_total_time", (short)0);
-      this.litTimeRemaining = input.getShortOr("lit_time_remaining", (short)0);
-      this.litTotalTime = input.getShortOr("lit_total_time", (short)0);
+      this.cookingTimer = input.getIntOr("cooking_time_spent", 0);
+      this.cookingTotalTime = input.getIntOr("cooking_total_time", 0);
+      this.litTimeRemaining = input.getIntOr("lit_time_remaining", 0);
+      this.litTotalTime = input.getIntOr("lit_total_time", 0);
+      this.speedMultiplier = input.getFloatOr("speed_multiplier", 1.0F);
       this.recipesUsed.clear();
       this.recipesUsed.putAll((Map)input.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
    }
 
    protected void saveAdditional(final ValueOutput output) {
       super.saveAdditional(output);
-      output.putShort("cooking_time_spent", (short)this.cookingTimer);
-      output.putShort("cooking_total_time", (short)this.cookingTotalTime);
-      output.putShort("lit_time_remaining", (short)this.litTimeRemaining);
-      output.putShort("lit_total_time", (short)this.litTotalTime);
+      output.putInt("cooking_time_spent", this.cookingTimer);
+      output.putInt("cooking_total_time", this.cookingTotalTime);
+      output.putInt("lit_time_remaining", this.litTimeRemaining);
+      output.putInt("lit_total_time", this.litTotalTime);
+      output.putFloat("speed_multiplier", this.speedMultiplier);
       ContainerHelper.saveAllItems(output, this.items);
       output.store("RecipesUsed", RECIPES_USED_CODEC, this.recipesUsed);
    }
@@ -163,11 +174,19 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
                ItemStack burnResult = ((AbstractCookingRecipe)recipe.value()).assemble(input);
                if (!burnResult.isEmpty() && canBurn(entity.items, maxStackSize, burnResult)) {
                   if (!isLit) {
-                     int newLitTime = entity.getBurnDuration(level.fuelValues(), fuel);
+                     int newLitTime = entity.getBurnDuration(level, fuel);
+                     float newSpeedMultiplier = entity.getSpeedMultiplier(level, fuel);
                      entity.litTimeRemaining = newLitTime;
                      entity.litTotalTime = newLitTime;
+                     entity.speedMultiplier = newSpeedMultiplier;
+                     if (entity.cookingTotalTime > 0 && entity.cookingTimer < entity.cookingTotalTime) {
+                        float completionRatio = (float)entity.cookingTimer / (float)entity.cookingTotalTime;
+                        entity.cookingTotalTime = getTotalCookTime(recipe, entity);
+                        entity.cookingTimer = (int)Math.ceil((double)(completionRatio * (float)entity.cookingTotalTime));
+                     }
+
                      if (newLitTime > 0) {
-                        consumeFuel(entity.items, fuel);
+                        consumeFuel(level, pos, entity.items, fuel);
                         isLit = true;
                         changed = true;
                      }
@@ -175,9 +194,9 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
                   if (isLit) {
                      ++entity.cookingTimer;
-                     if (entity.cookingTimer == entity.cookingTotalTime) {
+                     if (entity.cookingTimer >= entity.cookingTotalTime) {
                         entity.cookingTimer = 0;
-                        entity.cookingTotalTime = ((AbstractCookingRecipe)recipe.value()).cookingTime();
+                        entity.cookingTotalTime = getTotalCookTime(recipe, entity);
                         burn(entity.items, ingredient, burnResult);
                         entity.setRecipeUsed(recipe);
                         changed = true;
@@ -199,7 +218,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       if (wasLit != isLit) {
          changed = true;
          state = (BlockState)state.setValue(AbstractFurnaceBlock.LIT, isLit);
-         level.setBlock(pos, state, 3);
+         level.setBlockAndUpdate(pos, state);
       }
 
       if (changed) {
@@ -208,14 +227,20 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    }
 
-   private static void consumeFuel(final NonNullList<ItemStack> items, final ItemStack fuel) {
+   private static void consumeFuel(final ServerLevel level, final BlockPos pos, final NonNullList<ItemStack> items, final ItemStack fuel) {
       Item fuelItem = fuel.getItem();
+      ItemStackTemplate remainder = fuelItem.getCraftingRemainder();
+      ItemStack newFuel = fuel;
       fuel.shrink(1);
-      if (fuel.isEmpty()) {
-         ItemStackTemplate remainder = fuelItem.getCraftingRemainder();
-         items.set(1, remainder != null ? remainder.create() : ItemStack.EMPTY);
+      if (remainder != null) {
+         if (fuel.isEmpty()) {
+            newFuel = remainder.create();
+         } else {
+            Containers.dropItemStack(level, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), remainder.create());
+         }
       }
 
+      items.set(1, newFuel);
    }
 
    private static boolean canBurn(final NonNullList<ItemStack> items, final int maxStackSize, final ItemStack burnResult) {
@@ -246,13 +271,22 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       inputItemStack.shrink(1);
    }
 
-   protected int getBurnDuration(final FuelValues fuelValues, final ItemStack itemStack) {
-      return fuelValues.burnDuration(itemStack);
+   protected int getBurnDuration(final ServerLevel level, final ItemStack fuelItem) {
+      return ResolvableInt.getFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::burnTime, this.getLootContext(level), 0);
+   }
+
+   protected float getSpeedMultiplier(final ServerLevel level, final ItemStack fuelItem) {
+      return ResolvableFloat.getFromItem(fuelItem, DataComponents.COOKING_FUEL, CookingFuel::speedMultiplier, this.getLootContext(level), 1.0F);
+   }
+
+   private static int getTotalCookTime(final RecipeHolder<? extends AbstractCookingRecipe> recipe, final AbstractFurnaceBlockEntity entity) {
+      int cookingTotalTime = ((AbstractCookingRecipe)recipe.value()).cookingTime();
+      return entity.speedMultiplier > 0.0F ? (int)Math.ceil((double)((float)cookingTotalTime / entity.speedMultiplier)) : cookingTotalTime;
    }
 
    private static int getTotalCookTime(final ServerLevel level, final AbstractFurnaceBlockEntity entity) {
       SingleRecipeInput input = new SingleRecipeInput(entity.getItem(0));
-      return (Integer)entity.quickCheck.getRecipeFor(input, level).map((recipeHolder) -> ((AbstractCookingRecipe)recipeHolder.value()).cookingTime()).orElse(200);
+      return (Integer)entity.quickCheck.getRecipeFor(input, level).map((recipeHolder) -> getTotalCookTime(recipeHolder, entity)).orElse(200);
    }
 
    public int[] getSlotsForFace(final Direction direction) {
@@ -268,11 +302,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    public boolean canTakeItemThroughFace(final int slot, final ItemStack itemStack, final Direction direction) {
-      if (direction == Direction.DOWN && slot == 1) {
-         return itemStack.is(Items.WATER_BUCKET) || itemStack.is(Items.BUCKET);
-      } else {
-         return true;
-      }
+      return direction == Direction.DOWN && slot == 1 ? itemStack.is(ItemTags.FURNACE_FUEL_BOTTOM_TAKEABLE) : true;
    }
 
    public int getContainerSize() {
@@ -311,7 +341,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          return true;
       } else {
          ItemStack fuelSlot = this.items.get(1);
-         return this.level.fuelValues().isFuel(itemStack) || itemStack.is(Items.BUCKET) && !fuelSlot.is(Items.BUCKET);
+         return itemStack.has(DataComponents.COOKING_FUEL) || itemStack.is(Items.BUCKET) && !fuelSlot.is(Items.BUCKET);
       }
    }
 

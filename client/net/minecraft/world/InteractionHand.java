@@ -6,6 +6,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
 
 public enum InteractionHand {
    MAIN_HAND(0),
@@ -17,6 +18,17 @@ public enum InteractionHand {
 
    private InteractionHand(final int id) {
       this.id = id;
+   }
+
+   public HumanoidArm asArm(final HumanoidArm mainArm) {
+      HumanoidArm var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = mainArm;
+         case 1 -> var10000 = mainArm.getOpposite();
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public EquipmentSlot asEquipmentSlot() {

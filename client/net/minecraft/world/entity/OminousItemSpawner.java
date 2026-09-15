@@ -133,7 +133,7 @@ public class OminousItemSpawner extends Entity {
    }
 
    public PushReaction getPistonPushReaction() {
-      return PushReaction.IGNORE;
+      return PushReaction.IGNORE_ENTITY;
    }
 
    public boolean isIgnoringBlockTriggers() {

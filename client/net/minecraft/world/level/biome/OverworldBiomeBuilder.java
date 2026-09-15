@@ -3,8 +3,10 @@ package net.minecraft.world.level.biome;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -16,9 +18,12 @@ import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.VisibleForDebug;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
+import net.minecraft.world.level.levelgen.OverworldFunctionSet;
+import net.minecraft.world.level.levelgen.SpawnTargetPoint;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.op.SplineFunction;
 
 public final class OverworldBiomeBuilder {
    private static final float VALLEY_SIZE = 0.05F;
@@ -70,16 +75,16 @@ public final class OverworldBiomeBuilder {
       this.farInlandContinentalness = Climate.Parameter.span(0.3F, 1.0F);
       this.OCEANS = new ResourceKey[][]{{Biomes.DEEP_FROZEN_OCEAN, Biomes.DEEP_COLD_OCEAN, Biomes.DEEP_OCEAN, Biomes.DEEP_LUKEWARM_OCEAN, Biomes.WARM_OCEAN}, {Biomes.FROZEN_OCEAN, Biomes.COLD_OCEAN, Biomes.OCEAN, Biomes.LUKEWARM_OCEAN, Biomes.WARM_OCEAN}};
       this.MIDDLE_BIOMES = new ResourceKey[][]{{Biomes.SNOWY_PLAINS, Biomes.SNOWY_PLAINS, Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.TAIGA}, {Biomes.PLAINS, Biomes.PLAINS, Biomes.FOREST, Biomes.TAIGA, Biomes.OLD_GROWTH_SPRUCE_TAIGA}, {Biomes.FLOWER_FOREST, Biomes.PLAINS, Biomes.FOREST, Biomes.BIRCH_FOREST, Biomes.DARK_FOREST}, {Biomes.SAVANNA, Biomes.SAVANNA, Biomes.FOREST, Biomes.JUNGLE, Biomes.JUNGLE}, {Biomes.DESERT, Biomes.DESERT, Biomes.DESERT, Biomes.DESERT, Biomes.DESERT}};
-      this.MIDDLE_BIOMES_VARIANT = new ResourceKey[][]{{Biomes.ICE_SPIKES, null, Biomes.SNOWY_TAIGA, null, null}, {null, null, null, null, Biomes.OLD_GROWTH_PINE_TAIGA}, {Biomes.SUNFLOWER_PLAINS, null, null, Biomes.OLD_GROWTH_BIRCH_FOREST, null}, {null, null, Biomes.PLAINS, Biomes.SPARSE_JUNGLE, Biomes.BAMBOO_JUNGLE}, {null, null, null, null, null}};
+      this.MIDDLE_BIOMES_VARIANT = new ResourceKey[][]{{Biomes.ICE_SPIKES, null, Biomes.SNOWY_TAIGA, null, null}, {Biomes.DAPPLED_FOREST, null, null, null, Biomes.OLD_GROWTH_PINE_TAIGA}, {Biomes.SUNFLOWER_PLAINS, null, null, Biomes.OLD_GROWTH_BIRCH_FOREST, null}, {null, null, Biomes.PLAINS, Biomes.SPARSE_JUNGLE, Biomes.BAMBOO_JUNGLE}, {null, null, null, null, null}};
       this.PLATEAU_BIOMES = new ResourceKey[][]{{Biomes.SNOWY_PLAINS, Biomes.SNOWY_PLAINS, Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.SNOWY_TAIGA}, {Biomes.MEADOW, Biomes.MEADOW, Biomes.FOREST, Biomes.TAIGA, Biomes.OLD_GROWTH_SPRUCE_TAIGA}, {Biomes.MEADOW, Biomes.MEADOW, Biomes.MEADOW, Biomes.MEADOW, Biomes.PALE_GARDEN}, {Biomes.SAVANNA_PLATEAU, Biomes.SAVANNA_PLATEAU, Biomes.FOREST, Biomes.FOREST, Biomes.JUNGLE}, {Biomes.BADLANDS, Biomes.BADLANDS, Biomes.BADLANDS, Biomes.WOODED_BADLANDS, Biomes.WOODED_BADLANDS}};
       this.PLATEAU_BIOMES_VARIANT = new ResourceKey[][]{{Biomes.ICE_SPIKES, null, null, null, null}, {Biomes.CHERRY_GROVE, null, Biomes.MEADOW, Biomes.MEADOW, Biomes.OLD_GROWTH_PINE_TAIGA}, {Biomes.CHERRY_GROVE, Biomes.CHERRY_GROVE, Biomes.FOREST, Biomes.BIRCH_FOREST, null}, {null, null, null, null, null}, {Biomes.ERODED_BADLANDS, Biomes.ERODED_BADLANDS, null, null, null}};
       this.SHATTERED_BIOMES = new ResourceKey[][]{{Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST}, {null, null, null, null, null}, {null, null, null, null, null}};
    }
 
-   public List<Climate.ParameterPoint> spawnTarget() {
-      Climate.Parameter surfaceDepth = Climate.Parameter.point(0.0F);
+   public List<SpawnTargetPoint> spawnTarget(final OverworldFunctionSet<Holder<DensityFunction>> functions, final Holder<DensityFunction> weirdness) {
+      Climate.Parameter inland = Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE);
       float riverClearance = 0.16F;
-      return List.of(new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(-1.0F, -0.16F), 0L), new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(0.16F, 1.0F), 0L));
+      return List.of(new SpawnTargetPoint(Map.of(functions.temperature(), this.FULL_RANGE, functions.vegetation(), this.FULL_RANGE, functions.continents(), inland, functions.erosion(), this.FULL_RANGE, weirdness, Climate.Parameter.span(-1.0F, -0.16F))), new SpawnTargetPoint(Map.of(functions.temperature(), this.FULL_RANGE, functions.vegetation(), this.FULL_RANGE, functions.continents(), inland, functions.erosion(), this.FULL_RANGE, weirdness, Climate.Parameter.span(0.16F, 1.0F))));
    }
 
    void addBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
@@ -95,9 +100,9 @@ public final class OverworldBiomeBuilder {
    private void addDebugBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
       HolderLookup.Provider builtIns = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
       HolderGetter<DensityFunction> densityFunctions = builtIns.lookupOrThrow(Registries.DENSITY_FUNCTION);
-      DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.CONTINENTS)));
-      DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.EROSION)));
-      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED)));
+      SplineFunction.Coordinate continents = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.OVERWORLD_FUNCTIONS.continents())));
+      SplineFunction.Coordinate erosion = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.OVERWORLD_FUNCTIONS.erosion())));
+      SplineFunction.Coordinate ridges = new SplineFunction.Coordinate(new DensityFunctions.HolderHolder(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED)));
       biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
       CubicSpline<?> erosionOffsetSpline = TerrainProvider.buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, Float2FloatFunction.identity());
       if (erosionOffsetSpline instanceof CubicSpline.Multipoint<?> multipoint) {
@@ -410,8 +415,8 @@ public final class OverworldBiomeBuilder {
       biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.point(1.1F), weirdness, offset), biome));
    }
 
-   public static boolean isDeepDarkRegion(final DensityFunction erosion, final DensityFunction depth, final DensityFunction.FunctionContext context) {
-      return erosion.compute(context) < -0.22499999403953552 && depth.compute(context) > 0.8999999761581421;
+   public static DensityFunction deepDarkRegion(final DensityFunction erosion, final DensityFunction depth) {
+      return DensityFunctions.min(DensityFunctions.sub(DensityFunctions.constant(-0.225F), erosion), DensityFunctions.max(depth.sub(0.9F), DensityFunctions.constant(0.0F)));
    }
 
    public static String getDebugStringForPeaksAndValleys(final double peaksAndValleys) {

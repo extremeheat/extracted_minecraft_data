@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,13 +14,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallSkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(i, WallSkullBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
-
-   public MapCodec<? extends WallSkullBlock> codec() {
-      return CODEC;
-   }
 
    protected WallSkullBlock(final SkullBlock.Type type, final BlockBehaviour.Properties properties) {
       super(type, properties);

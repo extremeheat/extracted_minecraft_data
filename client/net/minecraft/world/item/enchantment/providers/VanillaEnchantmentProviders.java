@@ -20,7 +20,7 @@ public interface VanillaEnchantmentProviders {
    ResourceKey<EnchantmentProvider> ENDERMAN_LOOT_DROP = create("enderman_loot_drop");
 
    static void bootstrap(final BootstrapContext<EnchantmentProvider> context) {
-      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
+      HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
       context.register(MOB_SPAWN_EQUIPMENT, new EnchantmentsByCostWithDifficulty(enchantments.getOrThrow(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT), 5, 17));
       context.register(PILLAGER_SPAWN_CROSSBOW, new SingleEnchantment(enchantments.getOrThrow(Enchantments.PIERCING), ConstantInt.of(1)));
       context.register(RAID_PILLAGER_POST_WAVE_3, new SingleEnchantment(enchantments.getOrThrow(Enchantments.QUICK_CHARGE), ConstantInt.of(1)));

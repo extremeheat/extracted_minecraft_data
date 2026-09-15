@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.layers.PhantomEyesLayer;
 import net.minecraft.client.renderer.entity.state.PhantomRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Phantom;
-import org.joml.Quaternionfc;
 
 public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, PhantomModel> {
    private static final Identifier PHANTOM_LOCATION = Identifier.withDefaultNamespace("textures/entity/phantom/phantom.png");
@@ -40,6 +39,6 @@ public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, Ph
 
    protected void setupRotations(final PhantomRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
       super.setupRotations(state, poseStack, bodyRot, entityScale);
-      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(state.xRot));
+      poseStack.rotateDegrees(Axis.XP, state.xRot);
    }
 }

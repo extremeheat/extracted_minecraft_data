@@ -1,141 +1,178 @@
 package net.minecraft.world.level.levelgen;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.densityfunction.DensityBufferPool;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunctionCompiler;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.material.MaterialSystem;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
+import net.minecraft.world.level.levelgen.synth.Noise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public final class RandomState {
+   private static final int MAX_BUFFER_POOLS = 16;
+   private static final int MAX_BUFFER_AGE_TICKS = 20;
+   private final long seed;
    private final PositionalRandomFactory random;
-   private final HolderGetter<NormalNoise.NoiseParameters> noises;
+   private final HolderGetter<NormalNoise> noises;
    private final NoiseRouter router;
-   private final Climate.Sampler sampler;
-   private final SurfaceSystem surfaceSystem;
-   private final PositionalRandomFactory aquiferRandom;
-   private final PositionalRandomFactory oreRandom;
-   private final Map<ResourceKey<NormalNoise.NoiseParameters>, NormalNoise> noiseIntances;
+   private final MaterialSystem materialSystem;
+   private final Map<ResourceKey<NormalNoise>, Noise> noiseInstances;
    private final Map<Identifier, PositionalRandomFactory> positionalRandoms;
+   private final DensityFunctionCompiler densityFunctionCompiler;
+   private final ReentrantLock densityBufferPoolLock = new ReentrantLock();
+   private final List<DensityBufferPool> densityBufferPools = new ArrayList(16);
 
-   public static RandomState create(final HolderGetter.Provider holders, final ResourceKey<NoiseGeneratorSettings> noiseSettings, final long seed) {
-      return create((NoiseGeneratorSettings)holders.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(noiseSettings).value(), holders.lookupOrThrow(Registries.NOISE), seed);
+   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final NoiseGeneratorSettings settings) {
+      return create(noises, seed, settings.useLegacyRandomSource(), settings.defaultBlock(), settings.seaLevel(), settings.noiseRouter());
    }
 
-   public static RandomState create(final NoiseGeneratorSettings settings, final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed) {
-      return new RandomState(settings, noises, seed);
+   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter noiseRouter) {
+      return new RandomState(noises, seed, useLegacyRandom, defaultBlock, seaLevel, noiseRouter);
    }
 
-   private RandomState(final NoiseGeneratorSettings settings, final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed) {
+   private RandomState(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter router) {
       super();
-      this.random = settings.getRandomSource().newInstance(seed).forkPositional();
+      WorldgenRandom.Algorithm randomAlgorithm = useLegacyRandom ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
+      this.seed = seed;
+      this.random = randomAlgorithm.newInstance(seed).forkPositional();
       this.noises = noises;
-      this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional();
-      this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional();
-      this.noiseIntances = new ConcurrentHashMap();
+      this.router = router;
+      this.noiseInstances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
-      this.surfaceSystem = new SurfaceSystem(this, settings.defaultBlock(), settings.seaLevel(), this.random);
-      final boolean useLegacyInit = settings.useLegacyRandomSource();
-
-      class NoiseWiringHelper implements DensityFunction.Visitor {
-         private final Map<DensityFunction, DensityFunction> wrapped;
-
-         NoiseWiringHelper() {
+      this.materialSystem = new MaterialSystem(this, defaultBlock, seaLevel, router.chunkSurfaceLevel(), this.random);
+      this.densityFunctionCompiler = new DensityFunctionCompiler(new DensityFunction.CompileContext() {
+         {
             Objects.requireNonNull(RandomState.this);
-            super();
-            this.wrapped = new HashMap();
          }
 
          private RandomSource newLegacyInstance(final long seedOffset) {
             return new LegacyRandomSource(seed + seedOffset);
          }
 
-         public DensityFunction.NoiseHolder visitNoise(final DensityFunction.NoiseHolder noise) {
-            Holder<NormalNoise.NoiseParameters> noiseData = noise.noiseData();
-            if (noiseData.is(Noises.TEMPERATURE_NETHER)) {
-               NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), noiseData.value());
-               return new DensityFunction.NoiseHolder(noiseData, newNoise);
-            } else if (noiseData.is(Noises.VEGETATION_NETHER)) {
-               NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), noiseData.value());
-               return new DensityFunction.NoiseHolder(noiseData, newNoise);
+         public Noise createNoiseSampler(final Holder<NormalNoise> parameters) {
+            if (parameters.is(Noises.TEMPERATURE_NETHER)) {
+               return ((NormalNoise)parameters.value()).createForLegacyNetherBiome(this.newLegacyInstance(0L));
             } else {
-               NormalNoise instantiate = RandomState.this.getOrCreateNoise((ResourceKey)noiseData.unwrapKey().orElseThrow());
-               return new DensityFunction.NoiseHolder(noiseData, instantiate);
+               return parameters.is(Noises.VEGETATION_NETHER) ? ((NormalNoise)parameters.value()).createForLegacyNetherBiome(this.newLegacyInstance(1L)) : RandomState.this.getOrCreateNoise((ResourceKey)parameters.unwrapKey().orElseThrow());
             }
          }
 
-         private DensityFunction wrapNew(final DensityFunction function) {
-            if (function instanceof BlendedNoise noise) {
-               RandomSource terrainRandom = useLegacyInit ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(Identifier.withDefaultNamespace("terrain"));
-               return noise.withNewRandom(terrainRandom);
-            } else {
-               return (DensityFunction)(function instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(seed) : function);
-            }
+         public RandomSource createRandom(final Identifier seedx) {
+            return useLegacyRandom && seed.equals(BlendedNoise.NOISE_SEED) ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(seed);
          }
 
-         public DensityFunction apply(final DensityFunction function) {
-            return (DensityFunction)this.wrapped.computeIfAbsent(function, this::wrapNew);
+         public RandomSource createEndIslandRandom() {
+            return new LegacyRandomSource(seed);
          }
-      }
-
-      this.router = settings.noiseRouter().mapAll(new NoiseWiringHelper());
-      DensityFunction.Visitor noiseFlattener = new DensityFunction.Visitor() {
-         private final Map<DensityFunction, DensityFunction> wrapped;
-
-         {
-            Objects.requireNonNull(RandomState.this);
-            this.wrapped = new HashMap();
-         }
-
-         private DensityFunction wrapNew(final DensityFunction function) {
-            if (function instanceof DensityFunctions.HolderHolder holder) {
-               return (DensityFunction)holder.function().value();
-            } else if (function instanceof DensityFunctions.Marker marker) {
-               return marker.wrapped();
-            } else {
-               return function;
-            }
-         }
-
-         public DensityFunction apply(final DensityFunction input) {
-            return (DensityFunction)this.wrapped.computeIfAbsent(input, this::wrapNew);
-         }
-      };
-      this.sampler = new Climate.Sampler(this.router.temperature().mapAll(noiseFlattener), this.router.vegetation().mapAll(noiseFlattener), this.router.continents().mapAll(noiseFlattener), this.router.erosion().mapAll(noiseFlattener), this.router.depth().mapAll(noiseFlattener), this.router.ridges().mapAll(noiseFlattener), settings.spawnTarget());
+      });
    }
 
-   public NormalNoise getOrCreateNoise(final ResourceKey<NormalNoise.NoiseParameters> noise) {
-      return (NormalNoise)this.noiseIntances.computeIfAbsent(noise, (key) -> Noises.instantiate(this.noises, this.random, noise));
+   public DensitySamplerSet samplersWithContext(final SamplerContext context) {
+      return new DensitySamplerSet() {
+         {
+            Objects.requireNonNull(RandomState.this);
+         }
+
+         public DensitySampler.Bound get(final DensityFunction function) {
+            return RandomState.this.getSampler(function).bind(context);
+         }
+
+         public float sampleValue(final DensityFunction function, final int blockX, final int blockY, final int blockZ) {
+            return RandomState.this.getSampler(function).sampleValue(context, blockX, blockY, blockZ);
+         }
+      };
+   }
+
+   public Climate.Sampler createClimateSampler(final SamplerContext context) {
+      return this.router.createClimateSampler(this.samplersWithContext(context));
+   }
+
+   public Noise getOrCreateNoise(final ResourceKey<NormalNoise> noise) {
+      return (Noise)this.noiseInstances.computeIfAbsent(noise, (key) -> Noises.instantiate(this.noises, this.random, noise));
    }
 
    public PositionalRandomFactory getOrCreateRandomFactory(final Identifier name) {
       return (PositionalRandomFactory)this.positionalRandoms.computeIfAbsent(name, (key) -> this.random.fromHashOf(name).forkPositional());
    }
 
-   public NoiseRouter router() {
-      return this.router;
+   public MaterialSystem surfaceSystem() {
+      return this.materialSystem;
    }
 
-   public Climate.Sampler sampler() {
-      return this.sampler;
+   public DensitySampler getSampler(final DensityFunction function) {
+      return this.densityFunctionCompiler.getSampler(function);
    }
 
-   public SurfaceSystem surfaceSystem() {
-      return this.surfaceSystem;
+   @VisibleForDebug
+   public float sampleBlockValueUncached(final DensityFunction function, final int x, final int y, final int z) {
+      return this.getSampler(function).sampleValue(SamplerContext.EMPTY_UNCACHED, x, y, z);
    }
 
-   public PositionalRandomFactory aquiferRandom() {
-      return this.aquiferRandom;
+   public DensityBufferPool acquireDensityBufferPool() {
+      this.densityBufferPoolLock.lock();
+
+      DensityBufferPool var1;
+      try {
+         if (!this.densityBufferPools.isEmpty()) {
+            var1 = (DensityBufferPool)this.densityBufferPools.removeLast();
+            return var1;
+         }
+
+         var1 = new DensityBufferPool(20);
+      } finally {
+         this.densityBufferPoolLock.unlock();
+      }
+
+      return var1;
    }
 
-   public PositionalRandomFactory oreRandom() {
-      return this.oreRandom;
+   public void releaseDensityBufferPool(final DensityBufferPool pool) {
+      this.densityBufferPoolLock.lock();
+
+      try {
+         if (this.densityBufferPools.size() < 16) {
+            this.densityBufferPools.add(pool);
+         }
+      } finally {
+         this.densityBufferPoolLock.unlock();
+      }
+
+   }
+
+   public void garbageCollect() {
+      this.densityBufferPoolLock.lock();
+
+      try {
+         this.densityBufferPools.removeIf((pool) -> {
+            pool.garbageCollect();
+            return pool.isEmpty();
+         });
+      } finally {
+         this.densityBufferPoolLock.unlock();
+      }
+
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public long seed() {
+      return this.seed;
    }
 }

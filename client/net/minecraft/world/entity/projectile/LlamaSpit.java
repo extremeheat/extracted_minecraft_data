@@ -43,7 +43,8 @@ public class LlamaSpit extends Projectile {
       double y = this.getY() + movement.y;
       double z = this.getZ() + movement.z;
       this.updateRotation();
-      if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
+      boolean touchesNoAir = this.level().findBlocksIn(this.getBoundingBox()).filterState(BlockBehaviour.BlockStateBase::isAir).noneMatched();
+      if (touchesNoAir) {
          this.discard();
       } else if (this.isInWater()) {
          this.discard();

@@ -70,7 +70,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
       return true;
    }
 
-   protected AABB getBoundingBoxForCulling(final Illusioner entity) {
-      return super.getBoundingBoxForCulling(entity).inflate(3.0, 0.0, 3.0);
+   protected AABB getBoundingBoxForCulling(final Illusioner entity, final float partialTicks) {
+      return super.getBoundingBoxForCulling(entity, partialTicks).inflate(3.0, 0.0, 3.0);
    }
 }

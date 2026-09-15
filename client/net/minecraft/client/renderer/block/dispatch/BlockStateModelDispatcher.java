@@ -70,8 +70,8 @@ public record BlockStateModelDispatcher(Optional<SimpleModelSelectors> simpleMod
                      output.accept(state, wrapper);
                   }
                }
-            } catch (Exception e) {
-               BlockStateModelDispatcher.LOGGER.warn("Exception loading blockstate definition: '{}' for variant: '{}': {}", new Object[]{source.get(), selectorString, e.getMessage()});
+            } catch (Exception var9) {
+               BlockStateModelDispatcher.LOGGER.warn("Exception loading blockstate definition: '{}' for variant: '{}'", source.get(), selectorString);
             }
 
          });

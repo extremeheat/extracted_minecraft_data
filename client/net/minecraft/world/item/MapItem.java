@@ -43,9 +43,13 @@ public class MapItem extends Item {
 
    public static ItemStack create(final ServerLevel level, final int originX, final int originZ, final byte scale, final boolean trackPosition, final boolean unlimitedTracking) {
       ItemStack map = new ItemStack(Items.FILLED_MAP);
+      applyNewSavedData(level, map, originX, originZ, scale, trackPosition, unlimitedTracking);
+      return map;
+   }
+
+   public static void applyNewSavedData(final ServerLevel level, final ItemStack map, final int originX, final int originZ, final byte scale, final boolean trackPosition, final boolean unlimitedTracking) {
       MapId newId = createNewSavedData(level, originX, originZ, scale, trackPosition, unlimitedTracking, level.dimension());
       map.set(DataComponents.MAP_ID, newId);
-      return map;
    }
 
    public static @Nullable MapItemSavedData getSavedData(final @Nullable MapId id, final Level level) {
@@ -200,11 +204,12 @@ public class MapItem extends Item {
             boolean[] isBiomeWatery = new boolean[16384];
             int unscaledStartX = centerX / scale - 64;
             int unscaledStartZ = centerZ / scale - 64;
+            int biomeSampleY = level.getSeaLevel();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
             for(int row = 0; row < 128; ++row) {
                for(int column = 0; column < 128; ++column) {
-                  Holder<Biome> biome = level.getBiome(pos.set((unscaledStartX + column) * scale, 0, (unscaledStartZ + row) * scale));
+                  Holder<Biome> biome = level.getBiome(pos.set((unscaledStartX + column) * scale, biomeSampleY, (unscaledStartZ + row) * scale));
                   isBiomeWatery[row * 128 + column] = biome.is(BiomeTags.WATER_ON_MAP_OUTLINES);
                }
             }

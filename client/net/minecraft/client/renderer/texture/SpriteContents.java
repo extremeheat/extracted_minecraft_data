@@ -1,19 +1,19 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Transparency;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -358,12 +358,12 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
          int frameProgressAsInt = (int)(frameProgress * 1000.0F);
          if (this.animationInfo.interpolateFrames) {
             int newFrame = ((FrameInfo)frames.get((this.frame + 1) % frames.size())).index;
-            renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE);
-            renderPass.bindTexture("CurrentSprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
-            renderPass.bindTexture("NextSprite", (GpuTextureView)this.frameTexturesByIndex.get(newFrame), sampler);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE));
+            renderPass.setUniform("CurrentSprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
+            renderPass.setUniform("NextSprite", (GpuTextureView)this.frameTexturesByIndex.get(newFrame), sampler);
          } else if (this.isDirty) {
-            renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
-            renderPass.bindTexture("Sprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT));
+            renderPass.setUniform("Sprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
          }
 
          renderPass.setUniform("SpriteAnimationInfo", ubo);

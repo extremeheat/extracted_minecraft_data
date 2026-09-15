@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -14,18 +15,18 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class MissingItemModel implements ItemModel {
-   private final List<BakedQuad> quads;
+   private final ItemQuads itemQuads;
    private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
    private final Matrix4fc transform;
 
    public MissingItemModel(final List<BakedQuad> quads, final ModelRenderProperties properties) {
-      this(quads, Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(quads)), properties, new Matrix4f());
+      this(ItemQuads.split(quads), Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(quads)), properties, new Matrix4f());
    }
 
-   private MissingItemModel(final List<BakedQuad> quads, final Supplier<Vector3fc[]> extents, final ModelRenderProperties properties, final Matrix4fc transform) {
+   private MissingItemModel(final ItemQuads itemQuads, final Supplier<Vector3fc[]> extents, final ModelRenderProperties properties, final Matrix4fc transform) {
       super();
-      this.quads = quads;
+      this.itemQuads = itemQuads;
       this.extents = extents;
       this.properties = properties;
       this.transform = transform;
@@ -37,10 +38,10 @@ public class MissingItemModel implements ItemModel {
       this.properties.applyToLayer(layer, displayContext);
       layer.setExtents(this.extents);
       layer.setLocalTransform(this.transform);
-      layer.prepareQuadList().addAll(this.quads);
+      layer.setQuads(this.itemQuads);
    }
 
    public MissingItemModel withTransform(final Matrix4fc transform) {
-      return transform.equals(this.transform) ? this : new MissingItemModel(this.quads, this.extents, this.properties, transform);
+      return transform.equals(this.transform) ? this : new MissingItemModel(this.itemQuads, this.extents, this.properties, transform);
    }
 }

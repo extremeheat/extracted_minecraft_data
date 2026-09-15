@@ -8,12 +8,10 @@ import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import org.joml.Quaternionfc;
 
 public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderLayer<AvatarRenderState, M> {
    private final Model<S> model;
@@ -35,9 +33,9 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
       float directionXZ = Mth.sqrt(directionX * directionX + directionZ * directionZ);
       float yRot = (float)(Math.atan2((double)directionX, (double)directionZ) * 57.2957763671875);
       float xRot = (float)(Math.atan2((double)directionY, (double)directionXZ) * 57.2957763671875);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot - 90.0F));
-      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(xRot));
-      submitNodeCollector.submitModel(this.model, this.modelState, poseStack, this.texture, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.rotateDegrees(Axis.YP, yRot - 90.0F);
+      poseStack.rotateDegrees(Axis.ZP, xRot);
+      submitNodeCollector.submitModel(this.model, this.modelState, poseStack, this.texture, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor);
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {

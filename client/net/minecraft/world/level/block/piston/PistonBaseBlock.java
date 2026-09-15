@@ -2,9 +2,6 @@ package net.minecraft.world.level.block.piston;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -44,7 +41,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PistonBaseBlock extends DirectionalBlock {
-   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("sticky").forGetter((b) -> b.isSticky), propertiesCodec()).apply(i, PistonBaseBlock::new));
    public static final BooleanProperty EXTENDED;
    public static final int TRIGGER_EXTEND = 0;
    public static final int TRIGGER_CONTRACT = 1;
@@ -52,10 +48,6 @@ public class PistonBaseBlock extends DirectionalBlock {
    public static final int PLATFORM_THICKNESS = 4;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final boolean isSticky;
-
-   public MapCodec<PistonBaseBlock> codec() {
-      return CODEC;
-   }
 
    public PistonBaseBlock(final boolean isSticky, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -194,7 +186,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             }
 
             if (!pistonPiece) {
-               if (b0 != 1 || movingState.isAir() || !isPushable(movingState, level, twoPos, direction.getOpposite(), false, direction) || movingState.getPistonPushReaction() != PushReaction.NORMAL && !movingState.is(Blocks.PISTON) && !movingState.is(Blocks.STICKY_PISTON)) {
+               if (b0 != 1 || movingState.isAir() || !isPushable(movingState, level, twoPos, direction.getOpposite(), false, direction) || movingState.getPistonPushReaction() != PushReaction.PUSH_PULL && !movingState.is(Blocks.PISTON) && !movingState.is(Blocks.STICKY_PISTON)) {
                   level.removeBlock(pos.relative(direction), false);
                } else {
                   this.moveBlocks(level, pos, direction, false);
@@ -215,36 +207,32 @@ public class PistonBaseBlock extends DirectionalBlock {
       if (pos.getY() >= level.getMinY() && pos.getY() <= level.getMaxY() && level.getWorldBorder().isWithinBounds(pos)) {
          if (state.isAir()) {
             return true;
-         } else if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.CRYING_OBSIDIAN) && !state.is(Blocks.RESPAWN_ANCHOR) && !state.is(Blocks.REINFORCED_DEEPSLATE)) {
-            if (direction == Direction.DOWN && pos.getY() == level.getMinY()) {
-               return false;
-            } else if (direction == Direction.UP && pos.getY() == level.getMaxY()) {
-               return false;
-            } else {
-               if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
-                  if (state.getDestroySpeed(level, pos) == -1.0F) {
-                     return false;
-                  }
-
-                  switch (state.getPistonPushReaction()) {
-                     case BLOCK -> {
-                        return false;
-                     }
-                     case DESTROY -> {
-                        return allowDestroyable;
-                     }
-                     case PUSH_ONLY -> {
-                        return direction == connectionDirection;
-                     }
-                  }
-               } else if ((Boolean)state.getValue(EXTENDED)) {
+         } else if (direction == Direction.DOWN && pos.getY() == level.getMinY()) {
+            return false;
+         } else if (direction == Direction.UP && pos.getY() == level.getMaxY()) {
+            return false;
+         } else {
+            if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
+               if (state.getDestroySpeed(level, pos) == -1.0F) {
                   return false;
                }
 
-               return !state.hasBlockEntity();
+               switch (state.getPistonPushReaction()) {
+                  case IMMOVEABLE -> {
+                     return false;
+                  }
+                  case POPPED -> {
+                     return allowDestroyable;
+                  }
+                  case PUSH -> {
+                     return direction == connectionDirection;
+                  }
+               }
+            } else if ((Boolean)state.getValue(EXTENDED)) {
+               return false;
             }
-         } else {
-            return false;
+
+            return !state.hasBlockEntity();
          }
       } else {
          return false;

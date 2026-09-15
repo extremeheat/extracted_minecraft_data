@@ -1,6 +1,8 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.EnumSet;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -23,9 +25,14 @@ public class OwnerHurtByTargetGoal extends TargetGoal {
          if (owner == null) {
             return false;
          } else {
-            this.ownerLastHurtBy = owner.getLastHurtByMob();
-            int ts = owner.getLastHurtByMobTimestamp();
-            return ts != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT) && this.tameAnimal.wantsToAttack(this.ownerLastHurtBy, owner);
+            DamageSource lastDamageSource = owner.getLastDamageSource(100);
+            if (lastDamageSource != null && !lastDamageSource.is(DamageTypeTags.NO_WOLF_RETALIATION)) {
+               this.ownerLastHurtBy = owner.getLastHurtByMob();
+               int ts = owner.getLastHurtByMobTimestamp();
+               return ts != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT) && this.tameAnimal.wantsToAttack(this.ownerLastHurtBy, owner);
+            } else {
+               return false;
+            }
          }
       } else {
          return false;

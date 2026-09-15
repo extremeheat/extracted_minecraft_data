@@ -28,10 +28,10 @@ public class TrialChambersStructurePools {
    }
 
    public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
-      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = context.lookup(Registries.TEMPLATE_POOL);
       Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
       Holder<StructureTemplatePool> hallwayFallback = pools.getOrThrow(HALLWAY_FALLBACK);
-      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      HolderGetter<StructureProcessorList> processorLists = context.lookup(Registries.PROCESSOR_LIST);
       Holder<StructureProcessorList> trialChambersCopperBulbDegradation = processorLists.getOrThrow(ProcessorLists.TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION);
       context.register(START, new StructureTemplatePool(empty, List.of(Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_1", trialChambersCopperBulbDegradation), 1), Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_2", trialChambersCopperBulbDegradation), 1)), StructureTemplatePool.Projection.RIGID));
       Pools.register(context, "trial_chambers/chamber/entrance_cap", new StructureTemplatePool(empty, List.of(Pair.of(StructurePoolElement.single("trial_chambers/chamber/entrance_cap", trialChambersCopperBulbDegradation), 1)), StructureTemplatePool.Projection.RIGID));

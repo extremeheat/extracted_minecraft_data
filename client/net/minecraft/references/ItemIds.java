@@ -42,6 +42,8 @@ public class ItemIds {
    public static final ResourceKey<Item> DARK_OAK_CHEST_BOAT = create("dark_oak_chest_boat");
    public static final ResourceKey<Item> PALE_OAK_BOAT = create("pale_oak_boat");
    public static final ResourceKey<Item> PALE_OAK_CHEST_BOAT = create("pale_oak_chest_boat");
+   public static final ResourceKey<Item> POPLAR_BOAT = create("poplar_boat");
+   public static final ResourceKey<Item> POPLAR_CHEST_BOAT = create("poplar_chest_boat");
    public static final ResourceKey<Item> MANGROVE_BOAT = create("mangrove_boat");
    public static final ResourceKey<Item> MANGROVE_CHEST_BOAT = create("mangrove_chest_boat");
    public static final ResourceKey<Item> BAMBOO_RAFT = create("bamboo_raft");
@@ -186,6 +188,22 @@ public class ItemIds {
    public static final ResourceKey<Item> SUGAR = create("sugar");
    public static final ResourceKey<Item> COOKIE = create("cookie");
    public static final ResourceKey<Item> FILLED_MAP = create("filled_map");
+   public static final ResourceKey<Item> OCEAN_MONUMENT_MAP = create("ocean_monument_map");
+   public static final ResourceKey<Item> WOODLAND_MANSION_MAP = create("woodland_mansion_map");
+   public static final ResourceKey<Item> BURIED_TRIAL_CHAMBERS_MAP = create("buried_trial_chambers_map");
+   public static final ResourceKey<Item> JUNGLE_PYRAMID_MAP = create("jungle_pyramid_map");
+   public static final ResourceKey<Item> SWAMP_HUT_MAP = create("swamp_hut_map");
+   public static final ResourceKey<Item> DESERT_VILLAGE_MAP = create("desert_village_map");
+   public static final ResourceKey<Item> PLAINS_VILLAGE_MAP = create("plains_village_map");
+   public static final ResourceKey<Item> SAVANNA_VILLAGE_MAP = create("savanna_village_map");
+   public static final ResourceKey<Item> SNOWY_VILLAGE_MAP = create("snowy_village_map");
+   public static final ResourceKey<Item> TAIGA_VILLAGE_MAP = create("taiga_village_map");
+   public static final ResourceKey<Item> BURIED_TREASURE_MAP = create("buried_treasure_map");
+   public static final ResourceKey<Item> BURIED_ANCIENT_CITY_MAP = create("buried_ancient_city_map");
+   public static final ResourceKey<Item> BURIED_MINESHAFT_MAP = create("buried_mineshaft_map");
+   public static final ResourceKey<Item> DESERT_PYRAMID_MAP = create("desert_pyramid_map");
+   public static final ResourceKey<Item> ABANDONED_CAMP_MAP = create("abandoned_camp_map");
+   public static final ResourceKey<Item> WARM_OCEAN_RUINS_MAP = create("warm_ocean_ruins_map");
    public static final ResourceKey<Item> SHEARS = create("shears");
    public static final ResourceKey<Item> MELON_SLICE = create("melon_slice");
    public static final ResourceKey<Item> DRIED_KELP = create("dried_kelp");
@@ -454,6 +472,7 @@ public class ItemIds {
    public static final ColorCollection<ResourceKey<Item>> HARNESS;
    public static final ColorCollection<ResourceKey<Item>> DYED_BUNDLE;
    public static final ColorCollection<ResourceKey<Item>> DYE;
+   public static final ColorCollection<ResourceKey<Item>> CUSHION;
 
    public ItemIds() {
       super();
@@ -731,5 +750,6 @@ public class ItemIds {
       HARNESS = createSimpleColored("harness");
       DYED_BUNDLE = createSimpleColored("bundle");
       DYE = createSimpleColored("dye");
+      CUSHION = createSimpleColored("cushion");
    }
 }

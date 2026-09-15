@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +30,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,7 +56,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.attribute.BedRule;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -65,12 +64,14 @@ import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEquipment;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
@@ -81,8 +82,6 @@ import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -99,7 +98,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -107,10 +105,13 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractBedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -123,7 +124,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Team;
 import org.jspecify.annotations.Nullable;
 
 public abstract class Player extends Avatar implements ContainerUser {
@@ -168,6 +168,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    private ItemStack lastItemInMainHand;
    private final ItemCooldowns cooldowns;
    private Optional<GlobalPos> lastDeathLocation;
+   protected final List<Identifier> postEffects;
    public @Nullable FishingHook fishing;
    protected float hurtDir;
 
@@ -176,6 +177,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
+      this.postEffects = new ArrayList();
       this.setUUID(gameProfile.id());
       this.gameProfile = gameProfile;
       this.inventory = new Inventory(this, this.equipment);
@@ -228,8 +230,14 @@ public abstract class Player extends Avatar implements ContainerUser {
             this.sleepCounter = 100;
          }
 
-         if (!this.level().isClientSide() && !((BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, this.position())).canSleep(this.level())) {
-            this.stopSleepInBed(false, true);
+         if (!this.level().isClientSide()) {
+            Block var2 = this.getInBlockState().getBlock();
+            if (var2 instanceof AbstractBedBlock) {
+               AbstractBedBlock abstractBedBlock = (AbstractBedBlock)var2;
+               if (!abstractBedBlock.getBedRule(this.level(), this.blockPosition()).canSleep(this.level())) {
+                  this.stopSleepInBed(false, true);
+               }
+            }
          }
       } else if (this.sleepCounter > 0) {
          ++this.sleepCounter;
@@ -385,7 +393,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return 20;
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 9) {
          this.completeUsingItem();
       } else if (id == 23) {
@@ -425,7 +433,6 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       super.aiStep();
-      this.updateSwingTime();
       this.yHeadRot = this.getYRot();
       this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
@@ -551,10 +558,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void handleCreativeModeItemDrop(final ItemStack stack) {
    }
 
-   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand) {
-      return this.drop(itemStack, false, thrownFromHand);
-   }
-
    public float getDestroySpeed(final BlockState state) {
       float speed = this.inventory.getSelectedItem().getDestroySpeed(state);
       if (speed > 1.0F) {
@@ -566,15 +569,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (this.hasEffect(MobEffects.MINING_FATIGUE)) {
-         float var10000;
-         switch (this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
-            case 0 -> var10000 = 0.3F;
-            case 1 -> var10000 = 0.09F;
-            case 2 -> var10000 = 0.0027F;
-            default -> var10000 = 8.1E-4F;
-         }
-
-         float scale = var10000;
+         int amplifier = this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier();
+         float scale = (float)Math.pow(0.3, (double)(amplifier + 1));
          speed *= scale;
       }
 
@@ -682,8 +678,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker, final DamageSource source, final float damage) {
-      super.blockUsingItem(level, attacker, source, damage);
+   protected void blockUsingItem(final ServerLevel level, final LivingEntity attacker, final DamageSource source, final float damage, final boolean fullyBlocked) {
+      super.blockUsingItem(level, attacker, source, damage, fullyBlocked);
       ItemStack itemBlockingWith = this.getItemBlockingWith();
       BlocksAttacks blocksAttacks = itemBlockingWith != null ? (BlocksAttacks)itemBlockingWith.get(DataComponents.BLOCKS_ATTACKS) : null;
       float secondsToDisableBlocking = attacker.getSecondsToDisableBlocking();
@@ -698,13 +694,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public boolean canHarmPlayer(final Player target) {
-      Team team = this.getTeam();
-      Team otherTeam = target.getTeam();
-      if (team == null) {
-         return true;
-      } else {
-         return !team.isAlliedTo(otherTeam) ? true : team.isAllowFriendlyFire();
-      }
+      return this.doTeamsAllowDamage(target);
    }
 
    protected void hurtArmor(final DamageSource damageSource, final float damage) {
@@ -744,7 +734,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   public void openTextEdit(final SignBlockEntity sign, final boolean isFrontText) {
+   public void openTextEdit(final SignBlockEntity sign, final SignTextSlot slot) {
    }
 
    public void openMinecartCommandBlock(final MinecartCommandBlock commandBlock) {
@@ -963,7 +953,7 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    private boolean deflectProjectile(final Entity entity) {
       if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectile) {
-         if (projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true)) {
+         if (projectile.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true, 1.0)) {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource());
             return true;
          }
@@ -1064,9 +1054,9 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (entity instanceof ServerPlayer serverPlayer) {
-         if (entity.hurtMarked) {
+         if (entity.syncVelocity) {
             serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
-            entity.hurtMarked = false;
+            entity.syncVelocity = false;
             entity.setDeltaMovement(oldMovement);
          }
       }
@@ -1154,7 +1144,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             }
 
             boolean dismounted = false;
-            if (dismounts && target.isPassenger()) {
+            if (dismounts && target.isPassenger() && !target.is(EntityTypeTags.CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE)) {
                dismounted = true;
                target.stopRiding();
             }
@@ -1197,8 +1187,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   public boolean canSimulateMovement() {
-      return !this.level().isClientSide() || this.isLocalPlayer();
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.AUTHORITATIVE_SIDE_AND_SERVER;
    }
 
    public boolean isEffectiveAi() {
@@ -1240,10 +1230,13 @@ public abstract class Player extends Avatar implements ContainerUser {
       return true;
    }
 
-   public Either<BedSleepingProblem, Unit> startSleepInBed(final BlockPos pos) {
-      this.startSleeping(pos);
-      this.sleepCounter = 0;
-      return Either.right(Unit.INSTANCE);
+   public Either<BedSleepingProblem, Unit> startSleepInBed(final AbstractBedBlock bedBlock, final BlockState bedBlockState, final BedRule rule, final BlockPos pos) {
+      if (!this.startSleeping(pos)) {
+         return Either.left(Player.BedSleepingProblem.OTHER_PROBLEM);
+      } else {
+         this.sleepCounter = 0;
+         return Either.right(Unit.INSTANCE);
+      }
    }
 
    public void stopSleepInBed(final boolean forcefulWakeUp, final boolean updateLevelList) {
@@ -1296,13 +1289,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void triggerRecipeCrafted(final RecipeHolder<?> recipe, final List<ItemStack> itemStacks) {
-   }
-
-   public void awardRecipesByKey(final List<ResourceKey<Recipe<?>>> recipeIds) {
-   }
-
-   public int resetRecipes(final Collection<RecipeHolder<?>> recipe) {
-      return 0;
    }
 
    public void travel(final Vec3 input) {
@@ -1363,7 +1349,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public boolean tryToStartFallFlying() {
-      if (!this.isFallFlying() && this.canGlide() && !this.isInWater()) {
+      if (!this.isFallFlying() && this.canGlide() && !this.isInLiquid()) {
          this.startFallFlying();
          return true;
       } else {
@@ -1493,10 +1479,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    protected boolean hasEnoughFoodToDoExhaustiveManoeuvres() {
       return this.getFoodData().hasEnoughFood() || this.getAbilities().mayfly;
-   }
-
-   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
-      return Optional.empty();
    }
 
    public FoodData getFoodData() {

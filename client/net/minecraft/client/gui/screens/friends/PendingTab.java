@@ -15,6 +15,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 class PendingTab extends AbstractFriendsTab {
    private static final Component RECEIVED_HEADER;
@@ -25,6 +26,7 @@ class PendingTab extends AbstractFriendsTab {
    private final LinearLayout pendingScrollableContent;
    private final LoadingDotsWidget loadingDotsWidget;
    private final ScrollableLayout scrollableLayout;
+   private @Nullable FrameLayout contentFrame;
 
    PendingTab(final Minecraft minecraft, final LoadingDotsWidget loadingDotsWidget, final FriendsOverlayScreen screen, final int width, final int height) {
       super(width, height);
@@ -43,6 +45,10 @@ class PendingTab extends AbstractFriendsTab {
    void rearrangeElements() {
       this.scrollableLayout.setMinHeight(this.height);
       this.scrollableLayout.setMaxHeight(this.height);
+      if (this.contentFrame != null) {
+         this.contentFrame.setMinHeight(this.height);
+      }
+
    }
 
    public Component getTabTitle() {
@@ -68,18 +74,21 @@ class PendingTab extends AbstractFriendsTab {
 
    public void showLoading() {
       this.pendingScrollableContent.removeChildren();
-      this.pendingScrollableContent.addChild(this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height));
+      this.contentFrame = this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height);
+      this.pendingScrollableContent.addChild(this.contentFrame);
    }
 
    public void showError(final Component message) {
       this.pendingScrollableContent.removeChildren();
       int maxWidth = this.getListContentWidth();
       MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), maxWidth);
-      this.pendingScrollableContent.addChild(this.createCenteredFrame(text, maxWidth, this.height));
+      this.contentFrame = this.createCenteredFrame(text, maxWidth, this.height);
+      this.pendingScrollableContent.addChild(this.contentFrame);
    }
 
    public void updateEntries(final List<IncomingEntry> incomingEntries, final List<OutgoingEntry> outgoingEntries) {
       this.pendingScrollableContent.removeChildren();
+      this.contentFrame = null;
       if (!incomingEntries.isEmpty()) {
          this.pendingScrollableContent.addChild(this.createText(RECEIVED_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
          LinearLayout var10001 = this.pendingScrollableContent;
@@ -106,7 +115,8 @@ class PendingTab extends AbstractFriendsTab {
       content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
       int maxWidth = this.getListContentWidth();
       content.addChild(this.createCenteredText(EMPTY_STATE, this.screen.getFont(), maxWidth));
-      this.pendingScrollableContent.addChild(this.createCenteredFrame(content, maxWidth, this.height));
+      this.contentFrame = this.createCenteredFrame(content, maxWidth, this.height);
+      this.pendingScrollableContent.addChild(this.contentFrame);
    }
 
    static {

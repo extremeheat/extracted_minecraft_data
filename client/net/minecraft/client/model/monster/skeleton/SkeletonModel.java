@@ -48,19 +48,19 @@ public class SkeletonModel<S extends SkeletonRenderState> extends HumanoidModel<
    public void setupAnim(final S state) {
       super.setupAnim(state);
       if (state.isAggressive && !state.isHoldingBow) {
-         float attackTime = state.attackTime;
-         float attack2 = Mth.sin((double)(attackTime * 3.1415927F));
-         float attack = Mth.sin((double)((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F));
+         float swingAnimation = state.swingAnimation;
+         float swing2 = Mth.sin((double)(swingAnimation * 3.1415927F));
+         float swing = Mth.sin((double)((1.0F - (1.0F - swingAnimation) * (1.0F - swingAnimation)) * 3.1415927F));
          this.rightArm.zRot = 0.0F;
          this.leftArm.zRot = 0.0F;
-         this.rightArm.yRot = -(0.1F - attack2 * 0.6F);
-         this.leftArm.yRot = 0.1F - attack2 * 0.6F;
+         this.rightArm.yRot = -(0.1F - swing2 * 0.6F);
+         this.leftArm.yRot = 0.1F - swing2 * 0.6F;
          this.rightArm.xRot = -1.5707964F;
          this.leftArm.xRot = -1.5707964F;
          ModelPart var10000 = this.rightArm;
-         var10000.xRot -= attack2 * 1.2F - attack * 0.4F;
+         var10000.xRot -= swing2 * 1.2F - swing * 0.4F;
          var10000 = this.leftArm;
-         var10000.xRot -= attack2 * 1.2F - attack * 0.4F;
+         var10000.xRot -= swing2 * 1.2F - swing * 0.4F;
          AnimationUtils.bobArms(this.rightArm, this.leftArm, state.ageInTicks);
       }
 

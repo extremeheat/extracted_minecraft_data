@@ -30,7 +30,7 @@ public class AdvancementToast implements Toast {
       super();
       this.wantedVisibility = Toast.Visibility.HIDE;
       this.advancement = advancement;
-      this.iconItem = (ItemStack)advancement.value().display().map((d) -> d.getIcon().create()).orElse(ItemStack.EMPTY);
+      this.iconItem = (ItemStack)advancement.value().display().map((d) -> d.icon().create()).orElse(ItemStack.EMPTY);
    }
 
    public Toast.Visibility getWantedVisibility() {
@@ -52,24 +52,24 @@ public class AdvancementToast implements Toast {
 
    private boolean isChallengeAdvancement() {
       Optional<DisplayInfo> displayInfo = this.advancement.value().display();
-      return displayInfo.isPresent() && ((DisplayInfo)displayInfo.get()).getType().equals(AdvancementType.CHALLENGE);
+      return displayInfo.isPresent() && ((DisplayInfo)displayInfo.get()).type().equals(AdvancementType.CHALLENGE);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
       DisplayInfo display = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (display != null) {
-         List<FormattedCharSequence> lines = font.split(display.getTitle(), 125);
-         int titleColor = display.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
+         List<FormattedCharSequence> lines = font.split(display.title(), 125);
+         int titleColor = display.type() == AdvancementType.CHALLENGE ? -30465 : -256;
          if (lines.size() == 1) {
-            graphics.text(font, (Component)display.getType().getDisplayName(), 30, 7, titleColor, false);
+            graphics.text(font, (Component)display.type().getDisplayName(), 30, 7, titleColor, false);
             graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)lines.get(0)), 30, 18, -1, false);
          } else {
             int unlockTextTime = 1500;
             float unlockFadeTime = 300.0F;
             if (fullyVisibleForMs < 1500L) {
                int alpha = Mth.floor(Mth.clamp((float)(1500L - fullyVisibleForMs) / 300.0F, 0.0F, 1.0F) * 255.0F);
-               graphics.text(font, (Component)display.getType().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
+               graphics.text(font, (Component)display.type().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
             } else {
                int alpha = Mth.floor(Mth.clamp((float)(fullyVisibleForMs - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;

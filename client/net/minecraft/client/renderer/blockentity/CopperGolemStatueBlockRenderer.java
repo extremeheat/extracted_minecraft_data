@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.animal.golem.CopperGolemOxidationLevels;
@@ -63,7 +64,12 @@ public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<Coppe
       poseStack.pushPose();
       poseStack.mulPose(modelTransformation(state.direction));
       CopperGolemStatueModel model = (CopperGolemStatueModel)this.models.get(state.pose);
-      submitNodeCollector.submitModel(model, Unit.INSTANCE, poseStack, CopperGolemOxidationLevels.getOxidationLevel(state.oxidationState).texture(), state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress);
+      Identifier texture = CopperGolemOxidationLevels.getOxidationLevel(state.oxidationState).texture();
+      submitNodeCollector.submitModel(model, Unit.INSTANCE, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+      if (state.breakProgress != null) {
+         submitNodeCollector.order(1).submitCrumblingOverlay(model, Unit.INSTANCE, poseStack, model.renderType(texture), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+      }
+
       poseStack.popPose();
    }
 

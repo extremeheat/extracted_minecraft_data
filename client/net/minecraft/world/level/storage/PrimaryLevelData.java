@@ -8,6 +8,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
@@ -46,8 +48,9 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Set<String> knownServerBrands;
    private boolean wasModded;
    private final Set<String> removedFeatureFlags;
+   private List<Integer> versionHistory;
 
-   private PrimaryLevelData(final @Nullable UUID singlePlayerUUID, final boolean wasModded, final LevelData.RespawnData respawnData, final long gameTime, final int version, final boolean initialized, final Set<String> knownServerBrands, final Set<String> removedFeatureFlags, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle) {
+   private PrimaryLevelData(final @Nullable UUID singlePlayerUUID, final boolean wasModded, final LevelData.RespawnData respawnData, final long gameTime, final int version, final boolean initialized, final Set<String> knownServerBrands, final Set<String> removedFeatureFlags, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle, final List<Integer> versionHistory) {
       super();
       this.wasModded = wasModded;
       this.respawnData = respawnData;
@@ -60,10 +63,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.settings = settings;
       this.specialWorldProperty = specialWorldProperty;
       this.worldGenSettingsLifecycle = worldGenSettingsLifecycle;
+      this.versionHistory = versionHistory;
    }
 
    public PrimaryLevelData(final LevelSettings levelSettings, final SpecialWorldProperty specialWorldProperty, final Lifecycle lifecycle) {
-      this((UUID)null, false, LevelData.RespawnData.DEFAULT, 0L, 19133, false, Sets.newLinkedHashSet(), new HashSet(), levelSettings.copy(), specialWorldProperty, lifecycle);
+      this((UUID)null, false, LevelData.RespawnData.DEFAULT, 0L, 19133, false, Sets.newLinkedHashSet(), new HashSet(), levelSettings.copy(), specialWorldProperty, lifecycle, List.of());
    }
 
    public static <T> PrimaryLevelData parse(final Dynamic<T> input, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle) {
@@ -72,7 +76,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       OptionalDynamic var10002 = input.get("singleplayer_uuid");
       Codec var10003 = UUIDUtil.CODEC;
       Objects.requireNonNull(var10003);
-      return new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle);
+      return new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle, input.get("version_history").orElseEmptyList().asList((d) -> d.asInt(-1)));
    }
 
    public CompoundTag createTag(@Nullable UUID singlePlayerUUID) {
@@ -93,6 +97,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       }
 
       writeVersionTag(tag);
+      this.writeVersionHistory(tag);
       NbtUtils.addCurrentDataVersion(tag);
       tag.putInt("GameType", this.settings.gameType().getId());
       tag.store("spawn", LevelData.RespawnData.CODEC, this.respawnData);
@@ -130,6 +135,19 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    public static Dynamic<?> writeVersionTag(final Dynamic<?> tag) {
       Dynamic<?> worldVersion = tag.emptyMap().set("Name", tag.createString(SharedConstants.getCurrentVersion().name())).set("Id", tag.createInt(SharedConstants.getCurrentVersion().dataVersion().version())).set("Snapshot", tag.createBoolean(!SharedConstants.getCurrentVersion().stable())).set("Series", tag.createString(SharedConstants.getCurrentVersion().dataVersion().series()));
       return tag.set("Version", worldVersion);
+   }
+
+   public void writeVersionHistory(final CompoundTag tag) {
+      ListTag list = new ListTag();
+      Stream var10000 = this.versionHistory.stream().map(IntTag::valueOf);
+      Objects.requireNonNull(list);
+      var10000.forEach(list::add);
+      int currentVersion = SharedConstants.getCurrentVersion().dataVersion().version();
+      if (this.versionHistory.isEmpty() || (Integer)this.versionHistory.getLast() != currentVersion) {
+         list.add(IntTag.valueOf(currentVersion));
+      }
+
+      tag.put("version_history", list);
    }
 
    private static ListTag stringCollectionToTag(final Set<String> values) {

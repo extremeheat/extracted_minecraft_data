@@ -9,23 +9,33 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
-public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListener> {
+public abstract class ClientboundMoveEntityPacket implements MovementPacket<ClientGamePacketListener> {
+   private static final int ON_GROUND_FLAG = 1;
+   private static final int STEP_COUNT_OFFSET = 1;
    protected final int entityId;
-   protected final short xa;
-   protected final short ya;
-   protected final short za;
+   protected final VecDelta delta;
    protected final byte yRot;
    protected final byte xRot;
    protected final boolean onGround;
    protected final boolean hasRot;
    protected final boolean hasPos;
 
-   protected ClientboundMoveEntityPacket(final int entityId, final short xa, final short ya, final short za, final byte yRot, final byte xRot, final boolean onGround, final boolean hasRot, final boolean hasPos) {
+   protected static boolean unpackOnGround(final int properties) {
+      return (properties & 1) != 0;
+   }
+
+   protected static int unpackStepCount(final int properties) {
+      return properties >>> 1;
+   }
+
+   protected static int packProperties(final boolean onGround, final int stepCount) {
+      return (onGround ? 1 : 0) | stepCount << 1;
+   }
+
+   protected ClientboundMoveEntityPacket(final int entityId, final VecDelta delta, final byte yRot, final byte xRot, final boolean onGround, final boolean hasRot, final boolean hasPos) {
       super();
       this.entityId = entityId;
-      this.xa = xa;
-      this.ya = ya;
-      this.za = za;
+      this.delta = delta;
       this.yRot = yRot;
       this.xRot = xRot;
       this.onGround = onGround;
@@ -47,16 +57,8 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
       return level.getEntity(this.entityId);
    }
 
-   public short getXa() {
-      return this.xa;
-   }
-
-   public short getYa() {
-      return this.ya;
-   }
-
-   public short getZa() {
-      return this.za;
+   public VecDelta getPositionDelta() {
+      return this.delta;
    }
 
    public float getYRot() {
@@ -82,29 +84,25 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    public static class PosRot extends ClientboundMoveEntityPacket {
       public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.<FriendlyByteBuf, PosRot>codec(PosRot::write, PosRot::read);
 
-      public PosRot(final int id, final short xa, final short ya, final short za, final byte yRot, final byte xRot, final boolean onGround) {
-         super(id, xa, ya, za, yRot, xRot, onGround, true, true);
+      public PosRot(final int id, final VecDelta delta, final byte yRot, final byte xRot, final boolean onGround) {
+         super(id, delta, yRot, xRot, onGround, true, true);
       }
 
       private static PosRot read(final FriendlyByteBuf input) {
          int entityId = input.readVarInt();
-         short xa = input.readShort();
-         short ya = input.readShort();
-         short za = input.readShort();
+         int properties = input.readVarInt();
+         VecDelta delta = VecDelta.read(input, unpackStepCount(properties));
          byte yRot = input.readByte();
          byte xRot = input.readByte();
-         boolean onGround = input.readBoolean();
-         return new PosRot(entityId, xa, ya, za, yRot, xRot, onGround);
+         return new PosRot(entityId, delta, yRot, xRot, unpackOnGround(properties));
       }
 
       private void write(final FriendlyByteBuf output) {
          output.writeVarInt(this.entityId);
-         output.writeShort(this.xa);
-         output.writeShort(this.ya);
-         output.writeShort(this.za);
+         output.writeVarInt(packProperties(this.onGround, this.delta.stepCount()));
+         VecDelta.write(output, this.delta);
          output.writeByte(this.yRot);
          output.writeByte(this.xRot);
-         output.writeBoolean(this.onGround);
       }
 
       public PacketType<PosRot> type() {
@@ -115,25 +113,21 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    public static class Pos extends ClientboundMoveEntityPacket {
       public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.<FriendlyByteBuf, Pos>codec(Pos::write, Pos::read);
 
-      public Pos(final int id, final short xa, final short ya, final short za, final boolean onGround) {
-         super(id, xa, ya, za, (byte)0, (byte)0, onGround, false, true);
+      public Pos(final int id, final VecDelta delta, final boolean onGround) {
+         super(id, delta, (byte)0, (byte)0, onGround, false, true);
       }
 
       private static Pos read(final FriendlyByteBuf input) {
          int entityId = input.readVarInt();
-         short xa = input.readShort();
-         short ya = input.readShort();
-         short za = input.readShort();
-         boolean onGround = input.readBoolean();
-         return new Pos(entityId, xa, ya, za, onGround);
+         int properties = input.readVarInt();
+         VecDelta delta = VecDelta.read(input, unpackStepCount(properties));
+         return new Pos(entityId, delta, unpackOnGround(properties));
       }
 
       private void write(final FriendlyByteBuf output) {
          output.writeVarInt(this.entityId);
-         output.writeShort(this.xa);
-         output.writeShort(this.ya);
-         output.writeShort(this.za);
-         output.writeBoolean(this.onGround);
+         output.writeVarInt(packProperties(this.onGround, this.delta.stepCount()));
+         VecDelta.write(output, this.delta);
       }
 
       public PacketType<Pos> type() {
@@ -145,22 +139,22 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
       public static final StreamCodec<FriendlyByteBuf, Rot> STREAM_CODEC = Packet.<FriendlyByteBuf, Rot>codec(Rot::write, Rot::read);
 
       public Rot(final int id, final byte yRot, final byte xRot, final boolean onGround) {
-         super(id, (short)0, (short)0, (short)0, yRot, xRot, onGround, true, false);
+         super(id, VecDelta.ZERO, yRot, xRot, onGround, true, false);
       }
 
       private static Rot read(final FriendlyByteBuf input) {
          int entityId = input.readVarInt();
+         boolean onGround = input.readBoolean();
          byte yRot = input.readByte();
          byte xRot = input.readByte();
-         boolean onGround = input.readBoolean();
          return new Rot(entityId, yRot, xRot, onGround);
       }
 
       private void write(final FriendlyByteBuf output) {
          output.writeVarInt(this.entityId);
+         output.writeBoolean(this.onGround);
          output.writeByte(this.yRot);
          output.writeByte(this.xRot);
-         output.writeBoolean(this.onGround);
       }
 
       public PacketType<Rot> type() {

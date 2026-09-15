@@ -24,6 +24,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -282,8 +283,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.behavior.getKnownMovement(super.getKnownMovement());
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.behavior.getInterpolation();
+   protected InterpolationHandler createInterpolationHandler() {
+      return useExperimentalMovement(this.level()) ? InterpolationHandler.NO_OP : LinearInterpolationHandler.create(this);
+   }
+
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
+      this.behavior.onInterpolationStart(interpolation);
    }
 
    public void recreateFromPacket(final ClientboundAddEntityPacket packet) {

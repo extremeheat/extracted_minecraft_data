@@ -95,7 +95,7 @@ public class RuinedPortalStructure extends Structure {
          int projectedY = findSuitableY(random, chunkGenerator, chosenSetup.placement(), airPocket, surfaceY, boundingBox.getYSpan(), boundingBox, heightAccessor, randomState);
          BlockPos origin = new BlockPos(basePosition.getX(), projectedY, basePosition.getZ());
          return Optional.of(new Structure.GenerationStub(origin, (builder) -> {
-            RuinedPortalPiece.Properties properties = new RuinedPortalPiece.Properties(chosenSetup.canBeCold() && isCold(origin, context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(origin.getX()), QuartPos.fromBlock(origin.getY()), QuartPos.fromBlock(origin.getZ()), randomState.sampler()), chunkGenerator.getSeaLevel()), chosenSetup.mossiness(), airPocket, chosenSetup.overgrown(), chosenSetup.vines(), chosenSetup.replaceWithBlackstone());
+            RuinedPortalPiece.Properties properties = new RuinedPortalPiece.Properties(chosenSetup.canBeCold() && isCold(origin, context.biomeResolver().getNoiseBiome(QuartPos.fromBlock(origin.getX()), QuartPos.fromBlock(origin.getY()), QuartPos.fromBlock(origin.getZ())), chunkGenerator.getSeaLevel()), chosenSetup.mossiness(), airPocket, chosenSetup.overgrown(), chosenSetup.vines(), chosenSetup.replaceWithBlackstone());
             builder.addPiece(new RuinedPortalPiece(context.registryAccess(), context.structureTemplateManager(), origin, chosenSetup.placement(), properties, templateLocation, template, rotation, mirror, pivot));
          }));
       }

@@ -4,9 +4,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.UserApiService;
-import com.mojang.authlib.yggdrasil.FriendsService;
-import com.mojang.authlib.yggdrasil.FriendsService.ResultCode;
-import com.mojang.authlib.yggdrasil.response.FriendDto;
+import com.mojang.authlib.services.FriendsService;
+import com.mojang.authlib.services.FriendsService.ResultCode;
+import com.mojang.authlib.services.response.FriendDto;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -241,7 +241,7 @@ public class PlayerSocialManager {
       return this.presenceHandler;
    }
 
-   public boolean isFriend(UUID uuid) {
+   public boolean isFriend(final UUID uuid) {
       for(PlayerData playerData : this.getFriends()) {
          if (playerData.id.equals(uuid)) {
             return true;

@@ -344,12 +344,11 @@ public class Camel extends AbstractHorse {
             return interactionResult;
          } else if (this.isFood(itemStack)) {
             return this.fedFood(player, itemStack);
+         } else if (this.getPassengers().size() < 2 && !this.isBaby()) {
+            this.doPlayerRide(player);
+            return InteractionResult.CONSUME;
          } else {
-            if (this.getPassengers().size() < 2 && !this.isBaby()) {
-               this.doPlayerRide(player);
-            }
-
-            return (InteractionResult)(this.isBaby() && player.isHolding(Items.GOLDEN_DANDELION) ? super.mobInteract(player, hand) : InteractionResult.CONSUME);
+            return (InteractionResult)(this.isBaby() && player.isHolding(Items.GOLDEN_DANDELION) ? super.mobInteract(player, hand) : InteractionResult.FAIL);
          }
       }
    }

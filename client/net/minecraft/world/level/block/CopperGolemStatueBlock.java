@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,16 +42,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CopperGolemStatueBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperGolemStatueBlock::getWeatheringState), propertiesCodec()).apply(i, CopperGolemStatueBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<Pose> POSE;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
    private final WeatheringCopper.WeatherState weatheringState;
-
-   public MapCodec<? extends CopperGolemStatueBlock> codec() {
-      return CODEC;
-   }
 
    public CopperGolemStatueBlock(final WeatheringCopper.WeatherState weatherState, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -98,7 +91,7 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
 
    protected void updatePose(final Level level, final BlockState state, final BlockPos pos, final Player player) {
       level.playSound((Entity)null, pos, SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
-      level.setBlock(pos, (BlockState)state.setValue(POSE, ((Pose)state.getValue(POSE)).getNextPose()), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POSE, ((Pose)state.getValue(POSE)).getNextPose()));
       level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
    }
 

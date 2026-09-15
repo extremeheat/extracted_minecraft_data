@@ -85,7 +85,11 @@ public class BoundingBox {
    }
 
    public boolean intersects(final BoundingBox other) {
-      return this.maxX >= other.minX && this.minX <= other.maxX && this.maxZ >= other.minZ && this.minZ <= other.maxZ && this.maxY >= other.minY && this.minY <= other.maxY;
+      return this.intersects(other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ);
+   }
+
+   public boolean intersects(final int minX, final int minY, final int minZ, final int maxX, final int maxY, final int maxZ) {
+      return this.maxX >= minX && this.minX <= maxX && this.maxZ >= minZ && this.minZ <= maxZ && this.maxY >= minY && this.minY <= maxY;
    }
 
    public boolean intersects(final int minX, final int minZ, final int maxX, final int maxZ) {

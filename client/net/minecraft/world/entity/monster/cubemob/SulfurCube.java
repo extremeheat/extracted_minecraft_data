@@ -96,7 +96,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private SulfurCubeArchetype.KnockbackModifiers knockbackModifier;
    private SulfurCubeArchetype.SoundSettings soundSettings;
    private int fuse;
-   private List<SulfurCubeArchetype.ContactDamage> contactDamages;
+   private final List<SulfurCubeArchetype.ContactDamage> contactDamages;
    private static final EntityDataAccessor<Integer> MAX_FUSE;
    private static final EntityDataAccessor<Boolean> FROM_BUCKET;
    private static final boolean DEFAULT_FROM_BUCKET = false;
@@ -205,7 +205,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return 1.0F;
    }
 
-   protected boolean isDealsDamage() {
+   protected boolean canDealDamage() {
       return false;
    }
 
@@ -324,7 +324,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             if ((Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES) && !this.isPrimed()) {
                int fuse = ((SulfurCubeArchetype.ExplosionData)this.explosionData.get()).fuse();
                int fuseTime = imminent ? PrimedTnt.getRandomShortFuse(fuse, this.getRandom()) : fuse;
-               this.setInvulnerable(true);
+               this.setPermanentlyInvulnerable(true);
                this.setFuse(fuseTime);
                this.entityData.set(MAX_FUSE, fuseTime);
                this.makeSound(SoundEvents.TNT_PRIMED);
@@ -512,7 +512,8 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       Level var3 = this.level();
       if (var3 instanceof ServerLevel serverLevel) {
          for(SulfurCubeArchetype.ContactDamage damage : this.contactDamages) {
-            entity.hurtServer(serverLevel, new DamageSource(damage.damageType(), damage.attributeToSource() ? this : null), damage.amount().sample(this.getRandom()));
+            Entity damageSource = !damage.attributeToSource() && !(entity instanceof Player) ? null : this;
+            entity.hurtServer(serverLevel, new DamageSource(damage.damageType(), damageSource), damage.amount().sample(this.getRandom()));
          }
       }
 
@@ -843,12 +844,12 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return new Vec3(0.0, (double)(this.getBbHeight() / 2.0F), 0.0);
    }
 
-   protected void setcubeMobHealth(final int actualSize) {
+   protected void setCubeMobHealth(final int actualSize) {
       this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)(4 * actualSize));
    }
 
    public boolean isInvulnerableToPiercingWeapon() {
-      return this.isInvulnerable() && !this.isPrimed();
+      return super.isInvulnerableToPiercingWeapon() && !this.isPrimed();
    }
 
    public boolean canBePickedFromInside() {

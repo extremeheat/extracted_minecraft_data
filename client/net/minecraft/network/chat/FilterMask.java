@@ -1,11 +1,17 @@
 package net.minecraft.network.chat;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import io.netty.buffer.ByteBuf;
 import java.util.BitSet;
+import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import org.apache.commons.lang3.StringUtils;
@@ -13,12 +19,10 @@ import org.jspecify.annotations.Nullable;
 
 public class FilterMask {
    public static final Codec<FilterMask> CODEC = StringRepresentable.fromEnum(Type::values).dispatch(FilterMask::type, Type::codec);
+   public static final StreamCodec<ByteBuf, FilterMask> STREAM_CODEC;
    public static final FilterMask FULLY_FILTERED;
    public static final FilterMask PASS_THROUGH;
    public static final Style FILTERED_STYLE;
-   private static final MapCodec<FilterMask> PASS_THROUGH_CODEC;
-   private static final MapCodec<FilterMask> FULLY_FILTERED_CODEC;
-   private static final MapCodec<FilterMask> PARTIALLY_FILTERED_CODEC;
    private static final char HASH = '#';
    private final BitSet mask;
    private final Type type;
@@ -45,27 +49,6 @@ public class FilterMask {
 
    private BitSet mask() {
       return this.mask;
-   }
-
-   public static FilterMask read(final FriendlyByteBuf input) {
-      Type type = (Type)input.readEnum(Type.class);
-      FilterMask var10000;
-      switch (type.ordinal()) {
-         case 0 -> var10000 = PASS_THROUGH;
-         case 1 -> var10000 = FULLY_FILTERED;
-         case 2 -> var10000 = new FilterMask(input.readBitSet(), FilterMask.Type.PARTIALLY_FILTERED);
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
-   public static void write(final FriendlyByteBuf output, final FilterMask mask) {
-      output.writeEnum(mask.type);
-      if (mask.type == FilterMask.Type.PARTIALLY_FILTERED) {
-         output.writeBitSet(mask.mask);
-      }
-
    }
 
    public void setFiltered(final int index) {
@@ -163,25 +146,31 @@ public class FilterMask {
    }
 
    static {
+      STREAM_CODEC = FilterMask.Type.STREAM_CODEC.dispatch(FilterMask::type, Type::streamCodec);
       FULLY_FILTERED = new FilterMask(new BitSet(0), FilterMask.Type.FULLY_FILTERED);
       PASS_THROUGH = new FilterMask(new BitSet(0), FilterMask.Type.PASS_THROUGH);
       FILTERED_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_GRAY).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.filtered")));
-      PASS_THROUGH_CODEC = MapCodec.unit(PASS_THROUGH);
-      FULLY_FILTERED_CODEC = MapCodec.unit(FULLY_FILTERED);
-      PARTIALLY_FILTERED_CODEC = ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask).fieldOf("value");
    }
 
    private static enum Type implements StringRepresentable {
-      PASS_THROUGH("pass_through", () -> FilterMask.PASS_THROUGH_CODEC),
-      FULLY_FILTERED("fully_filtered", () -> FilterMask.FULLY_FILTERED_CODEC),
-      PARTIALLY_FILTERED("partially_filtered", () -> FilterMask.PARTIALLY_FILTERED_CODEC);
+      PASS_THROUGH(0, "pass_through", () -> MapCodec.unit(FilterMask.PASS_THROUGH), () -> StreamCodec.unit(FilterMask.PASS_THROUGH)),
+      FULLY_FILTERED(1, "fully_filtered", () -> MapCodec.unit(FilterMask.FULLY_FILTERED), () -> StreamCodec.unit(FilterMask.FULLY_FILTERED)),
+      PARTIALLY_FILTERED(2, "partially_filtered", () -> ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask).fieldOf("value"), () -> ByteBufCodecs.BIT_SET.map(FilterMask::new, FilterMask::mask));
 
+      private static final IntFunction<Type> ID_MAP = ByIdMap.<Type>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.idMapper(ID_MAP, (t) -> t.id);
+      private final int id;
       private final String serializedName;
       private final Supplier<MapCodec<FilterMask>> codec;
+      private final Supplier<StreamCodec<ByteBuf, FilterMask>> streamCodec;
 
-      private Type(final String serializedName, final Supplier<MapCodec<FilterMask>> codec) {
+      private Type(final int id, final String serializedName, final Supplier<MapCodec<FilterMask>> codec, final Supplier<StreamCodec<ByteBuf, FilterMask>> streamCodec) {
+         this.id = id;
          this.serializedName = serializedName;
-         this.codec = codec;
+         Objects.requireNonNull(codec);
+         this.codec = Suppliers.memoize(codec::get);
+         Objects.requireNonNull(streamCodec);
+         this.streamCodec = Suppliers.memoize(streamCodec::get);
       }
 
       public String getSerializedName() {
@@ -190,6 +179,10 @@ public class FilterMask {
 
       private MapCodec<FilterMask> codec() {
          return (MapCodec)this.codec.get();
+      }
+
+      private StreamCodec<ByteBuf, FilterMask> streamCodec() {
+         return (StreamCodec)this.streamCodec.get();
       }
 
       // $FF: synthetic method

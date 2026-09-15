@@ -6,7 +6,6 @@ import net.minecraft.client.model.object.crystal.EndCrystalModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -29,7 +28,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       poseStack.pushPose();
       poseStack.scale(2.0F, 2.0F, 2.0F);
       poseStack.translate(0.0F, -0.5F, 0.0F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, END_CRYSTAL_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, END_CRYSTAL_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       poseStack.popPose();
       Vec3 beamOffset = state.beamOffset;
       if (beamOffset != null) {
@@ -67,7 +66,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
 
    }
 
-   public boolean shouldRender(final EndCrystal entity, final Frustum culler, final double camX, final double camY, final double camZ) {
-      return super.shouldRender(entity, culler, camX, camY, camZ) || entity.getBeamTarget() != null;
+   public boolean shouldRender(final EndCrystal entity, final Frustum culler, final double camX, final double camY, final double camZ, final float partialTicks) {
+      return super.shouldRender(entity, culler, camX, camY, camZ, partialTicks) || entity.getBeamTarget() != null;
    }
 }

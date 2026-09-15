@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.sounds.SoundEvent;
 
 public record PigSoundVariant(PigSoundSet adultSounds, PigSoundSet babySounds) {
@@ -25,7 +25,7 @@ public record PigSoundVariant(PigSoundSet adultSounds, PigSoundSet babySounds) {
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<PigSoundVariant>>create(Registries.PIG_SOUND_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.PIG_SOUND_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.PIG_SOUND_VARIANT);
    }
 

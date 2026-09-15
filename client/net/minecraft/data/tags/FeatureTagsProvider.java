@@ -6,11 +6,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.tags.FeatureTags;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 
-public class FeatureTagsProvider extends TagsProvider<ConfiguredFeature<?, ?>> {
+public class FeatureTagsProvider extends TagsProvider<Feature> {
    public FeatureTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
-      super(output, Registries.CONFIGURED_FEATURE, lookupProvider);
+      super(output, Registries.FEATURE, lookupProvider);
    }
 
    protected void addTags(final HolderLookup.Provider registries) {

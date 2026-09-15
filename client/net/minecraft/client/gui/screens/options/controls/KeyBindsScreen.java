@@ -51,6 +51,10 @@ public class KeyBindsScreen extends OptionsSubScreen {
       this.keyBindsList.updateSize(this.width, this.layout);
    }
 
+   public void refreshKeybindLabels() {
+      this.keyBindsList.refreshEntries();
+   }
+
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.selectedKey != null) {
          this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(event.button()));

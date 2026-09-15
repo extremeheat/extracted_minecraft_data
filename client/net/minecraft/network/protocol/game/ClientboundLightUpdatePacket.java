@@ -1,7 +1,8 @@
 package net.minecraft.network.protocol.game;
 
+import io.netty.buffer.ByteBuf;
 import java.util.BitSet;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -9,30 +10,15 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 
-public class ClientboundLightUpdatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundLightUpdatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLightUpdatePacket>codec(ClientboundLightUpdatePacket::write, ClientboundLightUpdatePacket::new);
-   private final int x;
-   private final int z;
-   private final ClientboundLightUpdatePacketData lightData;
+public record ClientboundLightUpdatePacket(int x, int z, ClientboundLightUpdatePacketData lightData) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<ByteBuf, ClientboundLightUpdatePacket> STREAM_CODEC;
 
    public ClientboundLightUpdatePacket(final ChunkPos pos, final LevelLightEngine lightEngine, final @Nullable BitSet skyChangedLightSectionFilter, final @Nullable BitSet blockChangedLightSectionFilter) {
-      super();
-      this.x = pos.x();
-      this.z = pos.z();
-      this.lightData = new ClientboundLightUpdatePacketData(pos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
+      this(pos.x(), pos.z(), new ClientboundLightUpdatePacketData(pos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter));
    }
 
-   private ClientboundLightUpdatePacket(final FriendlyByteBuf input) {
+   public ClientboundLightUpdatePacket {
       super();
-      this.x = input.readVarInt();
-      this.z = input.readVarInt();
-      this.lightData = new ClientboundLightUpdatePacketData(input, this.x, this.z);
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeVarInt(this.x);
-      output.writeVarInt(this.z);
-      this.lightData.write(output);
    }
 
    public PacketType<ClientboundLightUpdatePacket> type() {
@@ -43,15 +29,7 @@ public class ClientboundLightUpdatePacket implements Packet<ClientGamePacketList
       listener.handleLightUpdatePacket(this);
    }
 
-   public int getX() {
-      return this.x;
-   }
-
-   public int getZ() {
-      return this.z;
-   }
-
-   public ClientboundLightUpdatePacketData getLightData() {
-      return this.lightData;
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundLightUpdatePacket::x, ByteBufCodecs.VAR_INT, ClientboundLightUpdatePacket::z, ClientboundLightUpdatePacketData.STREAM_CODEC, ClientboundLightUpdatePacket::lightData, ClientboundLightUpdatePacket::new);
    }
 }

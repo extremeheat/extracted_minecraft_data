@@ -62,6 +62,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
@@ -73,6 +74,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerStatsCounter;
@@ -116,6 +118,7 @@ public abstract class PlayerList {
    private final MinecraftServer server;
    private final List<ServerPlayer> players = Lists.newArrayList();
    private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
+   private final Map<NameAndId, PermissionLevel> playerPermissions = Maps.newHashMap();
    private final UserBanList bans;
    private final IpBanList ipBans;
    private final ServerOpList ops;
@@ -126,7 +129,6 @@ public abstract class PlayerList {
    private final LayeredRegistryAccess<RegistryLayer> registries;
    private int viewDistance;
    private int simulationDistance;
-   private boolean allowCommandsForAllPlayers;
    private int sendAllPlayerInfoIn;
 
    public PlayerList(final MinecraftServer server, final LayeredRegistryAccess<RegistryLayer> registries, final PlayerDataStorage playerIo, final NotificationService notificationService) {
@@ -190,6 +192,7 @@ public abstract class PlayerList {
       level.addNewPlayer(player);
       this.server.getCustomBossEvents().onPlayerConnect(player);
       this.sendActivePlayerEffects(player);
+      player.sendPostEffects();
       player.initInventoryMenu();
       this.server.notificationManager().playerJoined(player);
       playerConnection.resumeFlushing();
@@ -371,6 +374,10 @@ public abstract class PlayerList {
          player.addTag(tag);
       }
 
+      for(Identifier postEffect : serverPlayer.getPostEffects()) {
+         player.addPostEffect(postEffect);
+      }
+
       Vec3 pos = respawnInfo.position();
       player.snapTo(pos.x, pos.y, pos.z, respawnInfo.yRot(), respawnInfo.xRot());
       if (respawnInfo.missingRespawnBlock()) {
@@ -386,6 +393,7 @@ public abstract class PlayerList {
       player.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
       player.connection.send(new ClientboundSetExperiencePacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
       this.sendActivePlayerEffects(player);
+      player.sendPostEffects();
       this.sendLevelInfo(player, level);
       this.sendPlayerPermissionLevel(player);
       level.addRespawnedPlayer(player);
@@ -545,7 +553,7 @@ public abstract class PlayerList {
       if (this.ops.contains(nameAndId)) {
          return true;
       } else {
-         return this.server.isSingleplayerOwner(nameAndId) ? this.server.getWorldData().isAllowCommands() : this.allowCommandsForAllPlayers;
+         return this.server.isSingleplayerOwner(nameAndId) ? this.server.getWorldData().isAllowCommands() : false;
       }
    }
 
@@ -658,10 +666,6 @@ public abstract class PlayerList {
 
    public MinecraftServer getServer() {
       return this.server;
-   }
-
-   public void setAllowCommandsForAllPlayers(final boolean allowCommands) {
-      this.allowCommandsForAllPlayers = allowCommands;
    }
 
    public void removeAll() {
@@ -823,10 +827,6 @@ public abstract class PlayerList {
          player.getRecipeBook().sendInitialRecipeBook(player);
       }
 
-   }
-
-   public boolean isAllowCommandsForAllPlayers() {
-      return this.allowCommandsForAllPlayers;
    }
 
    static {

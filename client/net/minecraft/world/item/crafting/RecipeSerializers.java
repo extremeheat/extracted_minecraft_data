@@ -28,6 +28,7 @@ public class RecipeSerializers {
       Registry.register(registry, (String)"campfire_cooking", CampfireCookingRecipe.SERIALIZER);
       Registry.register(registry, (String)"stonecutting", StonecutterRecipe.SERIALIZER);
       Registry.register(registry, (String)"smithing_transform", SmithingTransformRecipe.SERIALIZER);
+      Registry.register(registry, (String)"brewing", BrewingRecipe.SERIALIZER);
       return Registry.register(registry, (String)"smithing_trim", SmithingTrimRecipe.SERIALIZER);
    }
 }

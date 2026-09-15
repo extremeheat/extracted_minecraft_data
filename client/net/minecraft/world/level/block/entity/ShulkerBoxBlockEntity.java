@@ -129,7 +129,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          List<Entity> entities = level.getEntities((Entity)null, aabb);
          if (!entities.isEmpty()) {
             for(Entity entity : entities) {
-               if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
+               if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY) {
                   entity.move(MoverType.SHULKER_BOX, new Vec3((aabb.getXsize() + 0.01) * (double)direction.getStepX(), (aabb.getYsize() + 0.01) * (double)direction.getStepY(), (aabb.getZsize() + 0.01) * (double)direction.getStepZ()));
                }
             }

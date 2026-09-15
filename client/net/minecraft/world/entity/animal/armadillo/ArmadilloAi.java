@@ -142,7 +142,7 @@ public class ArmadilloAi {
       }
 
       protected boolean checkExtraStartConditions(final ServerLevel level, final Armadillo body) {
-         return body.onGround();
+         return body.onGround() && !body.isInLiquid();
       }
 
       protected boolean canStillUse(final ServerLevel level, final Armadillo body, final long timestamp) {

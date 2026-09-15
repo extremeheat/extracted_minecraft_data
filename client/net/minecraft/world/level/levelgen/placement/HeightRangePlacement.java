@@ -2,7 +2,7 @@ package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -10,13 +10,11 @@ import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.heightproviders.TrapezoidHeight;
 import net.minecraft.world.level.levelgen.heightproviders.UniformHeight;
 
-public class HeightRangePlacement extends PlacementModifier {
-   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(HeightProvider.CODEC.fieldOf("height").forGetter((c) -> c.height)).apply(i, HeightRangePlacement::new));
-   private final HeightProvider height;
+public record HeightRangePlacement(HeightProvider height) implements PlacementModifier {
+   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(HeightProvider.CODEC.fieldOf("height").forGetter(HeightRangePlacement::height)).apply(i, HeightRangePlacement::new));
 
-   private HeightRangePlacement(final HeightProvider height) {
+   public HeightRangePlacement {
       super();
-      this.height = height;
    }
 
    public static HeightRangePlacement of(final HeightProvider height) {
@@ -31,11 +29,11 @@ public class HeightRangePlacement extends PlacementModifier {
       return of(TrapezoidHeight.of(minInclusive, maxInclusive));
    }
 
-   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      return Stream.of(origin.atY(this.height.sample(random, context)));
+   public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
+      output.accept(origin.atY(this.height.sample(random, context)));
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.HEIGHT_RANGE;
+   public MapCodec<HeightRangePlacement> codec() {
+      return CODEC;
    }
 }

@@ -63,6 +63,22 @@ public class NotificationManager implements NotificationService {
       this.notificationServices.forEach(NotificationService::serverActivityOccured);
    }
 
+   public void worldUpgradeStarted() {
+      this.notificationServices.forEach((notificationService) -> notificationService.worldUpgradeStarted());
+   }
+
+   public void worldUpgradeProgress(final float progressPercentage) {
+      this.notificationServices.forEach((notificationService) -> notificationService.worldUpgradeProgress(progressPercentage));
+   }
+
+   public void worldUpgradeFinished() {
+      this.notificationServices.forEach((notificationService) -> notificationService.worldUpgradeFinished());
+   }
+
+   public void worldUpgradeFailed(final String reason) {
+      this.notificationServices.forEach((notificationService) -> notificationService.worldUpgradeFailed(reason));
+   }
+
    public void playerOped(final ServerOpListEntry operator) {
       this.notificationServices.forEach((notificationService) -> notificationService.playerOped(operator));
    }

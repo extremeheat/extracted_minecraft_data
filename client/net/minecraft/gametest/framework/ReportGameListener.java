@@ -142,6 +142,6 @@ public class ReportGameListener implements GameTestListener {
    }
 
    protected static void say(final ServerLevel level, final ChatFormatting format, final String text) {
-      level.getPlayers((player) -> true).forEach((player) -> player.sendSystemMessage(Component.literal(text).withStyle(format)));
+      level.getServer().getPlayerList().getPlayers().forEach((player) -> player.sendSystemMessage(Component.literal(text).withStyle(format)));
    }
 }

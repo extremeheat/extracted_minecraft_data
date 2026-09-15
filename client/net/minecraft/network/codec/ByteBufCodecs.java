@@ -14,8 +14,13 @@ import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
+import java.security.Key;
+import java.security.PublicKey;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +51,8 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Crypt;
+import net.minecraft.util.CryptException;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionfc;
@@ -163,6 +170,15 @@ public interface ByteBufCodecs {
          FriendlyByteBuf.writeLongArray(output, value);
       }
    };
+   StreamCodec<ByteBuf, BitSet> BIT_SET = new StreamCodec<ByteBuf, BitSet>() {
+      public BitSet decode(final ByteBuf input) {
+         return BitSet.valueOf(FriendlyByteBuf.readByteArray(input));
+      }
+
+      public void encode(final ByteBuf output, final BitSet value) {
+         FriendlyByteBuf.writeByteArray(output, value.toByteArray());
+      }
+   };
    StreamCodec<ByteBuf, String> STRING_UTF8 = stringUtf8(32767);
    StreamCodec<ByteBuf, Tag> TAG = tagCodec(NbtAccounter::defaultQuota);
    StreamCodec<ByteBuf, Tag> TRUSTED_TAG = tagCodec(NbtAccounter::unlimitedHeap);
@@ -244,6 +260,17 @@ public interface ByteBufCodecs {
          output.writeByte(ARGB.blue(value));
       }
    };
+   StreamCodec<ByteBuf, Instant> INSTANT = LONG.map(Instant::ofEpochMilli, Instant::toEpochMilli);
+   int PUBLIC_KEY_SIZE = 256;
+   int MAX_PUBLIC_KEY_HEADER_SIZE = 256;
+   int MAX_PUBLIC_KEY_LENGTH = 512;
+   StreamCodec<ByteBuf, PublicKey> PUBLIC_KEY = byteArray(512).map((bytes) -> {
+      try {
+         return Crypt.byteToPublicKey(bytes);
+      } catch (CryptException e) {
+         throw new DecoderException("Malformed public key bytes", e);
+      }
+   }, Key::getEncoded);
 
    static StreamCodec<ByteBuf, byte[]> byteArray(final int maxSize) {
       return new StreamCodec<ByteBuf, byte[]>() {
@@ -269,6 +296,18 @@ public interface ByteBufCodecs {
 
          public void encode(final ByteBuf output, final String value) {
             Utf8String.write(output, value, maxStringLength);
+         }
+      };
+   }
+
+   static StreamCodec<ByteBuf, BitSet> fixedBitSet(final int size) {
+      return new StreamCodec<ByteBuf, BitSet>() {
+         public BitSet decode(final ByteBuf input) {
+            return FriendlyByteBuf.readFixedBitSet(input, size);
+         }
+
+         public void encode(final ByteBuf output, final BitSet value) {
+            FriendlyByteBuf.writeFixedBitSet(output, value, size);
          }
       };
    }
@@ -444,6 +483,42 @@ public interface ByteBufCodecs {
 
    static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, List<V>> list(final int maxSize) {
       return (original) -> collection(ArrayList::new, original, maxSize);
+   }
+
+   static <B extends ByteBuf, V, C extends Collection<V>> StreamCodec<B, C> fixedSizeCollection(final IntFunction<C> constructor, final StreamCodec<? super B, V> elementCodec, final int size) {
+      return new StreamCodec<B, C>() {
+         public C decode(final B input) {
+            C result = (C)((Collection)constructor.apply(size));
+
+            for(int i = 0; i < size; ++i) {
+               result.add(elementCodec.decode(input));
+            }
+
+            return result;
+         }
+
+         public void encode(final B output, final C value) {
+            if (value.size() != size) {
+               int var10002 = size;
+               throw new EncoderException("Invalid list size, expected " + var10002 + ", but got " + value.size());
+            } else {
+               Iterator<V> iterator = value.iterator();
+
+               for(int i = 0; i < size; ++i) {
+                  elementCodec.encode(output, iterator.next());
+               }
+
+            }
+         }
+      };
+   }
+
+   static <B extends ByteBuf, V, C extends Collection<V>> StreamCodec.CodecOperation<B, V, C> fixedSizeCollection(final IntFunction<C> constructor, final int size) {
+      return (original) -> fixedSizeCollection(constructor, original, size);
+   }
+
+   static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, List<V>> fixedSizeList(final int size) {
+      return (original) -> fixedSizeCollection(ArrayList::new, original, size);
    }
 
    static <B extends ByteBuf, K, V, M extends Map<K, V>> StreamCodec<B, M> map(final IntFunction<? extends M> constructor, final StreamCodec<? super B, K> keyCodec, final StreamCodec<? super B, V> valueCodec) {

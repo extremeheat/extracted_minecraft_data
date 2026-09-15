@@ -34,7 +34,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -213,7 +212,7 @@ public class EnchantmentHelper {
       doPostAttackEffectsWithItemSourceOnBreak(serverLevel, victim, damageSource, source, (Consumer)null);
    }
 
-   public static void doPostAttackEffectsWithItemSourceOnBreak(final ServerLevel serverLevel, final Entity victim, final DamageSource damageSource, final @Nullable ItemStack source, final @Nullable Consumer<Item> attackerlessOnBreak) {
+   public static void doPostAttackEffectsWithItemSourceOnBreak(final ServerLevel serverLevel, final Entity victim, final DamageSource damageSource, final @Nullable ItemStack source, final @Nullable Consumer<ItemStack> attackerlessOnBreak) {
       if (victim instanceof LivingEntity livingVictim) {
          runIterationOnEquipment(livingVictim, (enchantment, level, item) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.VICTIM, victim, damageSource));
       }
@@ -283,7 +282,7 @@ public class EnchantmentHelper {
       return Math.max(0, modifiedAmount.intValue());
    }
 
-   public static void onProjectileSpawned(final ServerLevel serverLevel, final ItemStack weapon, final Projectile projectileEntity, final Consumer<Item> onBreak) {
+   public static void onProjectileSpawned(final ServerLevel serverLevel, final ItemStack weapon, final Projectile projectileEntity, final Consumer<ItemStack> onBreak) {
       Entity var6 = projectileEntity.getOwner();
       LivingEntity var10000;
       if (var6 instanceof LivingEntity le) {
@@ -297,7 +296,7 @@ public class EnchantmentHelper {
       runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).onProjectileSpawned(serverLevel, level, item, projectileEntity));
    }
 
-   public static void onHitBlock(final ServerLevel serverLevel, final ItemStack weapon, final @Nullable LivingEntity owner, final Entity entity, final @Nullable EquipmentSlot slot, final Vec3 hitLocation, final BlockState hitBlock, final Consumer<Item> onBreak) {
+   public static void onHitBlock(final ServerLevel serverLevel, final ItemStack weapon, final @Nullable LivingEntity owner, final Entity entity, final @Nullable EquipmentSlot slot, final Vec3 hitLocation, final BlockState hitBlock, final Consumer<ItemStack> onBreak) {
       EnchantedItemInUse item = new EnchantedItemInUse(weapon, slot, owner, onBreak);
       runIterationOnItem(weapon, (enchantment, level) -> ((Enchantment)enchantment.value()).onHitBlock(serverLevel, level, item, entity, hitLocation, hitBlock));
    }

@@ -1,13 +1,16 @@
 package net.minecraft.client.gui.render;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Projection;
@@ -91,24 +94,28 @@ public class GuiItemAtlas implements AutoCloseable {
       int bottom = top + this.slotTextureSize;
       GpuDevice device = RenderSystem.getDevice();
       if (clear) {
-         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
+         device.createCommandEncoder().clearColorAndDepthTextures(this.texture, GuiRenderer.CLEAR_COLOR, this.depthTexture, 0.0, left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize, 0);
       }
 
       this.poseStack.pushPose();
       this.poseStack.translate((float)left + (float)this.slotTextureSize / 2.0F, (float)top + (float)this.slotTextureSize / 2.0F, 0.0F);
       this.poseStack.scale((float)this.slotTextureSize, (float)(-this.slotTextureSize), (float)this.slotTextureSize);
-      RenderSystem.outputColorTextureOverride = this.textureView;
-      RenderSystem.outputDepthTextureOverride = this.depthTextureView;
       this.projection.setupOrtho(-1000.0F, 1000.0F, (float)this.textureSize, (float)this.textureSize, true);
       RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
       RenderSystem.enableScissorForRenderTypeDraws(left, this.textureSize - bottom, this.slotTextureSize, this.slotTextureSize);
       Lighting.Entry lighting = item.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
       Minecraft.getInstance().gameRenderer.lighting().setupFor(lighting);
       item.submit(this.poseStack, this.submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
-      this.featureRenderDispatcher.renderAllFeatures(this.submitNodeStorage);
+
+      try (
+         FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.submitNodeStorage);
+         RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item to GUI item atlas", this.textureView, Optional.empty(), this.depthTextureView, OptionalDouble.empty());
+      ) {
+         RenderSystem.bindDefaultUniforms(renderPass);
+         FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+      }
+
       RenderSystem.disableScissorForRenderTypeDraws();
-      RenderSystem.outputColorTextureOverride = null;
-      RenderSystem.outputDepthTextureOverride = null;
       this.poseStack.popPose();
    }
 

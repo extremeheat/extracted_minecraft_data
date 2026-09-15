@@ -1,5 +1,6 @@
 package net.minecraft.util.debug;
 
+import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.server.level.ServerLevel;
@@ -38,31 +39,10 @@ import net.minecraft.world.entity.schedule.Activity;
 import org.jspecify.annotations.Nullable;
 
 public record DebugBrainDump(String name, String profession, int xp, float health, float maxHealth, String inventory, boolean wantsGolem, int angerLevel, List<String> activities, List<String> behaviors, List<String> memories, List<String> gossips, Set<BlockPos> pois, Set<BlockPos> potentialPois) {
-   public static final StreamCodec<FriendlyByteBuf, DebugBrainDump> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, DebugBrainDump>of((output, value) -> value.write(output), DebugBrainDump::new);
-
-   public DebugBrainDump(final FriendlyByteBuf input) {
-      this(input.readUtf(), input.readUtf(), input.readInt(), input.readFloat(), input.readFloat(), input.readUtf(), input.readBoolean(), input.readInt(), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), input.readList(FriendlyByteBuf::readUtf), (Set)input.readCollection(HashSet::new, BlockPos.STREAM_CODEC), (Set)input.readCollection(HashSet::new, BlockPos.STREAM_CODEC));
-   }
+   public static final StreamCodec<ByteBuf, DebugBrainDump> STREAM_CODEC;
 
    public DebugBrainDump {
       super();
-   }
-
-   public void write(final FriendlyByteBuf output) {
-      output.writeUtf(this.name);
-      output.writeUtf(this.profession);
-      output.writeInt(this.xp);
-      output.writeFloat(this.health);
-      output.writeFloat(this.maxHealth);
-      output.writeUtf(this.inventory);
-      output.writeBoolean(this.wantsGolem);
-      output.writeInt(this.angerLevel);
-      output.writeCollection(this.activities, FriendlyByteBuf::writeUtf);
-      output.writeCollection(this.behaviors, FriendlyByteBuf::writeUtf);
-      output.writeCollection(this.memories, FriendlyByteBuf::writeUtf);
-      output.writeCollection(this.gossips, FriendlyByteBuf::writeUtf);
-      output.writeCollection(this.pois, BlockPos.STREAM_CODEC);
-      output.writeCollection(this.potentialPois, BlockPos.STREAM_CODEC);
    }
 
    public static DebugBrainDump takeBrainDump(final ServerLevel serverLevel, final LivingEntity entity) {
@@ -255,5 +235,9 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
 
    public boolean hasPotentialPoi(final BlockPos poiPos) {
       return this.potentialPois.contains(poiPos);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, DebugBrainDump::name, ByteBufCodecs.STRING_UTF8, DebugBrainDump::profession, ByteBufCodecs.INT, DebugBrainDump::xp, ByteBufCodecs.FLOAT, DebugBrainDump::health, ByteBufCodecs.FLOAT, DebugBrainDump::maxHealth, ByteBufCodecs.STRING_UTF8, DebugBrainDump::inventory, ByteBufCodecs.BOOL, DebugBrainDump::wantsGolem, ByteBufCodecs.INT, DebugBrainDump::angerLevel, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), DebugBrainDump::activities, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), DebugBrainDump::behaviors, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), DebugBrainDump::memories, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), DebugBrainDump::gossips, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)), DebugBrainDump::pois, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)), DebugBrainDump::potentialPois, DebugBrainDump::new);
    }
 }

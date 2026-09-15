@@ -40,7 +40,16 @@ public class BlockItem extends Item {
 
    public InteractionResult useOn(final UseOnContext context) {
       InteractionResult placeResult = this.place(new BlockPlaceContext(context));
-      return !placeResult.consumesAction() && context.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(context.getLevel(), context.getPlayer(), context.getHand()) : placeResult;
+      if (placeResult.consumesAction()) {
+         return placeResult;
+      } else {
+         InteractionResult result = super.useOn(context);
+         if (result.consumesAction()) {
+            return result;
+         } else {
+            return context.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(context.getLevel(), context.getPlayer(), context.getHand()) : placeResult;
+         }
+      }
    }
 
    public InteractionResult place(final BlockPlaceContext placeContext) {
@@ -65,8 +74,8 @@ public class BlockItem extends Item {
                ItemStack itemStack = updatedPlaceContext.getItemInHand();
                BlockState placedState = level.getBlockState(pos);
                if (placedState.is(placementState.getBlock())) {
-                  placedState = this.updateBlockStateFromTag(pos, level, itemStack, placedState);
-                  this.updateCustomBlockEntityTag(pos, level, player, itemStack, placedState);
+                  placedState = updateBlockStateFromTag(pos, level, itemStack, placedState);
+                  updateCustomBlockEntityTag(level, player, pos, itemStack);
                   updateBlockEntityComponents(level, pos, itemStack);
                   placedState.getBlock().setPlacedBy(level, pos, placedState, player, itemStack);
                   if (player instanceof ServerPlayer) {
@@ -102,16 +111,12 @@ public class BlockItem extends Item {
 
    }
 
-   protected boolean updateCustomBlockEntityTag(final BlockPos pos, final Level level, final @Nullable Player player, final ItemStack itemStack, final BlockState placedState) {
-      return updateCustomBlockEntityTag(level, player, pos, itemStack);
-   }
-
    protected @Nullable BlockState getPlacementState(final BlockPlaceContext context) {
       BlockState stateForPlacement = this.getBlock().getStateForPlacement(context);
       return stateForPlacement != null && this.canPlace(context, stateForPlacement) ? stateForPlacement : null;
    }
 
-   private BlockState updateBlockStateFromTag(final BlockPos pos, final Level level, final ItemStack itemStack, final BlockState placedState) {
+   private static BlockState updateBlockStateFromTag(final BlockPos pos, final Level level, final ItemStack itemStack, final BlockState placedState) {
       BlockItemStateProperties blockState = (BlockItemStateProperties)itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
       if (blockState.isEmpty()) {
          return placedState;
@@ -152,7 +157,7 @@ public class BlockItem extends Item {
                }
 
                if (!type.onlyOpCanSetNbt() || player != null && player.canUseGameMasterBlocks()) {
-                  return customData.loadInto(blockEntity, level.registryAccess());
+                  return customData.loadInto((BlockEntity)blockEntity, level.registryAccess());
                }
 
                return false;

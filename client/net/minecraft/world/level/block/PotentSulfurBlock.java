@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -31,12 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PotentSulfurBlock extends BaseEntityBlock {
    public static final int ALLOWED_WATER_BLOCKS_ABOVE = 4;
-   public static final MapCodec<PotentSulfurBlock> CODEC = simpleCodec(PotentSulfurBlock::new);
    public static final EnumProperty<PotentSulfurState> STATE;
-
-   public MapCodec<PotentSulfurBlock> codec() {
-      return CODEC;
-   }
 
    public PotentSulfurBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -1,21 +1,18 @@
 package net.minecraft.world.inventory;
 
-import java.util.Optional;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.crafting.PotionIngredient;
+import net.minecraft.world.item.crafting.RecipeAccess;
+import net.minecraft.world.item.crafting.RecipePropertySet;
 
 public class BrewingStandMenu extends AbstractContainerMenu {
    private static final Identifier EMPTY_SLOT_FUEL = Identifier.withDefaultNamespace("container/slot/brewing_fuel");
@@ -25,7 +22,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    private static final int INGREDIENT_SLOT = 3;
    private static final int FUEL_SLOT = 4;
    private static final int SLOT_COUNT = 5;
-   private static final int DATA_COUNT = 2;
+   private static final int DATA_COUNT = 4;
    private static final int INV_SLOT_START = 5;
    private static final int INV_SLOT_END = 32;
    private static final int USE_ROW_SLOT_START = 32;
@@ -35,20 +32,20 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    private final Slot ingredientSlot;
 
    public BrewingStandMenu(final int containerId, final Inventory inventory) {
-      this(containerId, inventory, new SimpleContainer(5), new SimpleContainerData(2));
+      this(containerId, inventory, new SimpleContainer(5), new SimpleContainerData(4));
    }
 
    public BrewingStandMenu(final int containerId, final Inventory inventory, final Container brewingStand, final ContainerData brewingStandData) {
       super(MenuType.BREWING_STAND, containerId);
       checkContainerSize(brewingStand, 5);
-      checkContainerDataCount(brewingStandData, 2);
+      checkContainerDataCount(brewingStandData, 4);
       this.brewingStand = brewingStand;
       this.brewingStandData = brewingStandData;
-      PotionBrewing potionBrewing = inventory.player.level().potionBrewing();
-      this.addSlot(new PotionSlot(brewingStand, 0, 56, 51));
-      this.addSlot(new PotionSlot(brewingStand, 1, 79, 58));
-      this.addSlot(new PotionSlot(brewingStand, 2, 102, 51));
-      this.ingredientSlot = this.addSlot(new IngredientsSlot(potionBrewing, brewingStand, 3, 79, 17));
+      RecipeAccess recipeAccess = inventory.player.level().recipeAccess();
+      this.addSlot(new PotionSlot(recipeAccess, brewingStand, 0, 56, 51));
+      this.addSlot(new PotionSlot(recipeAccess, brewingStand, 1, 79, 58));
+      this.addSlot(new PotionSlot(recipeAccess, brewingStand, 2, 102, 51));
+      this.ingredientSlot = this.addSlot(new IngredientsSlot(recipeAccess.propertySet(RecipePropertySet.BREWING_REAGENTS), brewingStand, 3, 79, 17));
       this.addSlot(new FuelSlot(brewingStand, 4, 17, 17));
       this.addDataSlots(brewingStandData);
       this.addStandardInventorySlots(inventory, 8, 84);
@@ -61,6 +58,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    public ItemStack quickMoveStack(final Player player, final int slotIndex) {
       ItemStack clicked = ItemStack.EMPTY;
       Slot slot = this.slots.get(slotIndex);
+      RecipeAccess recipeAccess = player.level().recipeAccess();
       if (slot != null && slot.hasItem()) {
          ItemStack stack = slot.getItem();
          clicked = stack.copy();
@@ -73,7 +71,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
                if (!this.moveItemStackTo(stack, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(clicked)) {
+            } else if (PotionIngredient.isPotionInput(clicked, recipeAccess)) {
                if (!this.moveItemStackTo(stack, 0, 3, false)) {
                   return ItemStack.EMPTY;
                }
@@ -116,17 +114,28 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       return this.brewingStandData.get(1);
    }
 
+   public int getTotalFuel() {
+      return this.brewingStandData.get(3);
+   }
+
    public int getBrewingTicks() {
       return this.brewingStandData.get(0);
    }
 
+   public int getTotalBrewingTicks() {
+      return this.brewingStandData.get(2);
+   }
+
    private static class PotionSlot extends Slot {
-      public PotionSlot(final Container container, final int slot, final int x, final int y) {
+      private final RecipeAccess recipeAccess;
+
+      public PotionSlot(final RecipeAccess recipeAccess, final Container container, final int slot, final int x, final int y) {
          super(container, slot, x, y);
+         this.recipeAccess = recipeAccess;
       }
 
       public boolean mayPlace(final ItemStack itemStack) {
-         return mayPlaceItem(itemStack);
+         return PotionIngredient.isPotionInput(itemStack, this.recipeAccess);
       }
 
       public int getMaxStackSize() {
@@ -134,16 +143,12 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
 
       public void onTake(final Player player, final ItemStack carried) {
-         Optional<Holder<Potion>> potion = ((PotionContents)carried.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
-         if (potion.isPresent() && player instanceof ServerPlayer serverPlayer) {
-            CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, (Holder)potion.get());
+         PotionContents potionContents = (PotionContents)carried.get(DataComponents.POTION_CONTENTS);
+         if (potionContents != null && player instanceof ServerPlayer serverPlayer) {
+            CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, potionContents);
          }
 
          super.onTake(player, carried);
-      }
-
-      public static boolean mayPlaceItem(final ItemStack itemStack) {
-         return itemStack.is(Items.POTION) || itemStack.is(Items.SPLASH_POTION) || itemStack.is(Items.LINGERING_POTION) || itemStack.is(Items.GLASS_BOTTLE);
       }
 
       public Identifier getNoItemIcon() {
@@ -152,15 +157,15 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    }
 
    private static class IngredientsSlot extends Slot {
-      private final PotionBrewing potionBrewing;
+      private final RecipePropertySet propertySet;
 
-      public IngredientsSlot(final PotionBrewing potionBrewing, final Container container, final int slot, final int x, final int y) {
+      public IngredientsSlot(final RecipePropertySet propertySet, final Container container, final int slot, final int x, final int y) {
          super(container, slot, x, y);
-         this.potionBrewing = potionBrewing;
+         this.propertySet = propertySet;
       }
 
       public boolean mayPlace(final ItemStack itemStack) {
-         return this.potionBrewing.isIngredient(itemStack);
+         return this.propertySet.test(itemStack);
       }
    }
 
@@ -174,7 +179,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
 
       public static boolean mayPlaceItem(final ItemStack itemStack) {
-         return itemStack.is(ItemTags.BREWING_FUEL);
+         return itemStack.has(DataComponents.BREWING_FUEL);
       }
 
       public Identifier getNoItemIcon() {

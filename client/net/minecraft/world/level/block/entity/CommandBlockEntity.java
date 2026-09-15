@@ -11,7 +11,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -46,7 +45,7 @@ public class CommandBlockEntity extends BlockEntity {
 
       public CommandSourceStack createCommandSourceStack(final ServerLevel level, final CommandSource source) {
          Direction facing = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
-         return new CommandSourceStack(source, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, facing.toYRot()), level, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), this.getName(), level.getServer(), (Entity)null);
+         return new CommandSourceStack(source, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, facing.toYRot()), level, LevelBasedPermissionSet.GAMEMASTER, this.getName(), level.getServer());
       }
 
       public boolean isValid() {

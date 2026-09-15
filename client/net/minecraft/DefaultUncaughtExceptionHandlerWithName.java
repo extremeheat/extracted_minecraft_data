@@ -11,7 +11,6 @@ public class DefaultUncaughtExceptionHandlerWithName implements Thread.UncaughtE
    }
 
    public void uncaughtException(final Thread t, final Throwable e) {
-      this.logger.error("Caught previously unhandled exception :");
-      this.logger.error(t.getName(), e);
+      this.logger.error("Caught previously unhandled exception in {}", t.getName(), e);
    }
 }

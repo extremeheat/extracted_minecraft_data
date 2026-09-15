@@ -15,6 +15,8 @@ import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -61,10 +64,12 @@ public class HoneycombItem extends Item implements SignApplicator {
          level.setBlock(pos, waxedState, 11);
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, waxedState));
          level.levelEvent(player, 3003, pos, 0);
+         level.playSound(player, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          if (oldState.getBlock() instanceof ChestBlock && oldState.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
             BlockPos neighborPos = ChestBlock.getConnectedBlockPos(pos, oldState);
             level.gameEvent(GameEvent.BLOCK_CHANGE, neighborPos, GameEvent.Context.of(player, level.getBlockState(neighborPos)));
             level.levelEvent(player, 3003, neighborPos, 0);
+            level.playSound(player, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
 
          return InteractionResult.SUCCESS;
@@ -75,9 +80,11 @@ public class HoneycombItem extends Item implements SignApplicator {
       return Optional.ofNullable((Block)((BiMap)WAXABLES.get()).get(oldState.getBlock())).map((b) -> b.withPropertiesOf(oldState));
    }
 
-   public boolean tryApplyToSign(final Level level, final SignBlockEntity sign, final boolean isFrontText, final ItemStack item, final Player player) {
+   public boolean tryApplyToSign(final Level level, final SignBlockEntity sign, final SignTextSlot slot, final ItemStack item, final Player player) {
       if (sign.setWaxed(true)) {
-         level.levelEvent((Entity)null, 3003, sign.getBlockPos(), 0);
+         BlockPos blockPos = sign.getBlockPos();
+         level.levelEvent((Entity)null, 3003, blockPos, 0);
+         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {
          return false;

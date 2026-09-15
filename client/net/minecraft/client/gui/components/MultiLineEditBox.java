@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.TextInputManager;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -101,6 +102,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       }
    }
 
+   public boolean capturesInput() {
+      return this.visible && this.isFocused();
+   }
+
    public boolean preeditUpdated(final @Nullable PreeditEvent event) {
       IMEPreeditOverlay var10001;
       if (event != null) {
@@ -122,7 +127,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       } else {
          int cursor = this.textField.cursor();
          boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime);
-         boolean needsValidCursorPos = this.preeditOverlay != null;
+         boolean needsValidCursorPos = this.capturesInput();
          boolean insertCursor = cursor < value.length();
          int cursorX = 0;
          int cursorY = 0;
@@ -134,25 +139,28 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             Objects.requireNonNull(this.font);
             boolean lineWithinVisibleBounds = this.withinContentAreaTopBottom(drawTop, drawTop + 9);
             if (!hasDrawnCursor && (needsValidCursorPos || showCursor) && insertCursor && cursor >= lineView.beginIndex() && cursor <= lineView.endIndex()) {
+               String textBeforeCursor = value.substring(lineView.beginIndex(), cursor);
+               int textBeforeCursorPosRight = innerLeft + this.font.width(textBeforeCursor);
+               cursorX = textBeforeCursorPosRight;
+               cursorY = drawTop;
                if (lineWithinVisibleBounds) {
-                  String textBeforeCursor = value.substring(lineView.beginIndex(), cursor);
-                  int textBeforeCursorPosRight = innerLeft + this.font.width(textBeforeCursor);
                   String textAfterCursor = value.substring(cursor, lineView.endIndex());
                   graphics.text(this.font, textBeforeCursor, innerLeft, drawTop, this.textColor, this.textShadow);
                   graphics.text(this.font, textAfterCursor, textBeforeCursorPosRight, drawTop, this.textColor, this.textShadow);
-                  cursorX = textBeforeCursorPosRight;
-                  cursorY = drawTop;
                   if (showCursor) {
                      int var10003 = this.cursorColor;
                      Objects.requireNonNull(this.font);
                      TextCursorUtils.extractInsertCursor(graphics, textBeforeCursorPosRight, drawTop, var10003, 9 + 1);
                   }
-
-                  hasDrawnCursor = true;
                }
-            } else if (lineWithinVisibleBounds) {
+
+               hasDrawnCursor = true;
+            } else {
                String substring = value.substring(lineView.beginIndex(), lineView.endIndex());
-               graphics.text(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
+               if (lineWithinVisibleBounds) {
+                  graphics.text(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
+               }
+
                if ((needsValidCursorPos || showCursor) && !insertCursor) {
                   cursorX = innerLeft + this.font.width(substring);
                   cursorY = drawTop;
@@ -210,7 +218,14 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             graphics.requestCursor(CursorTypes.IBEAM);
          }
 
-         if (this.preeditOverlay != null) {
+         if (this.preeditOverlay == null) {
+            if (this.capturesInput()) {
+               TextInputManager var10000 = Minecraft.getInstance().textInputManager();
+               int var30 = cursorX + 1;
+               Objects.requireNonNull(this.font);
+               var10000.setTextInputArea(cursorX, cursorY, var30, cursorY + 9 + 1);
+            }
+         } else {
             this.preeditOverlay.updateInputPosition(cursorX, cursorY);
             graphics.setPreeditOverlay(this.preeditOverlay);
          }

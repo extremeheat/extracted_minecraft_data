@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.CartographyTableMenu;
 import net.minecraft.world.item.ItemStack;
@@ -52,7 +53,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
                }
             }
 
-            if (isScaling && mapData.scale >= 4) {
+            if (isScaling && (!map.is(ItemTags.EXTENDABLE_MAPS) || mapData.scale >= 4)) {
                locked = true;
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 35, yo + 31, 28, 21);
             }

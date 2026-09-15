@@ -2,8 +2,8 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +30,7 @@ public class FeatureSorter {
    }
 
    public static <T> List<StepFeatureData> buildFeaturesPerStep(final List<T> featureSources, final Function<T, List<HolderSet<PlacedFeature>>> featureGetter, final boolean tryReducingError) {
-      Object2IntMap<PlacedFeature> featureIndex = new Object2IntOpenHashMap();
+      Reference2IntMap<PlacedFeature> featureIndex = new Reference2IntOpenHashMap();
       MutableInt nextFeatureIndex = new MutableInt(0);
 
       record FeatureData(int featureIndex, int step, PlacedFeature feature) {

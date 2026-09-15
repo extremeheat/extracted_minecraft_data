@@ -10,11 +10,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -30,13 +30,13 @@ import org.slf4j.Logger;
 
 public class EnchantRandomlyFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<EnchantRandomlyFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((f) -> f.onlyCompatible), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantRandomlyFunction::new));
+   public static final MapCodec<EnchantRandomlyFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(RegistryCodecs.holderSet(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((f) -> f.onlyCompatible), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantRandomlyFunction::new));
    private final Optional<HolderSet<Enchantment>> options;
    private final boolean onlyCompatible;
    private final boolean includeAdditionalCostComponent;
 
-   private EnchantRandomlyFunction(final List<LootItemCondition> predicates, final Optional<HolderSet<Enchantment>> options, final boolean onlyCompatible, final boolean includeAdditionalCostComponent) {
-      super(predicates);
+   private EnchantRandomlyFunction(final Optional<Holder<LootItemCondition>> condition, final Optional<HolderSet<Enchantment>> options, final boolean onlyCompatible, final boolean includeAdditionalCostComponent) {
+      super(condition);
       this.options = options;
       this.onlyCompatible = onlyCompatible;
       this.includeAdditionalCostComponent = includeAdditionalCostComponent;
@@ -84,8 +84,8 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       return new Builder();
    }
 
-   public static Builder randomApplicableEnchantment(final HolderLookup.Provider registries) {
-      return randomEnchantment().withOneOf(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
+   public static Builder randomApplicableEnchantment(final HolderGetter<Enchantment> enchantments) {
+      return randomEnchantment().withOneOf(enchantments.getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -127,7 +127,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new EnchantRandomlyFunction(this.getConditions(), this.options, this.onlyCompatible, this.includeAdditionalCostComponent);
+         return new EnchantRandomlyFunction(this.getCondition(), this.options, this.onlyCompatible, this.includeAdditionalCostComponent);
       }
    }
 }

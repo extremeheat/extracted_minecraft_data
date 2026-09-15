@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -13,30 +12,33 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BushBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<BushBlock> CODEC = simpleCodec(BushBlock::new);
-   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 13.0);
-
-   public MapCodec<BushBlock> codec() {
-      return CODEC;
-   }
+   public static final int DEFAULT_SHAPE_HEIGHT = 13;
+   private final VoxelShape shape;
+   private final int shapeHeight;
 
    protected BushBlock(final BlockBehaviour.Properties properties) {
+      this(properties, 13);
+   }
+
+   protected BushBlock(final BlockBehaviour.Properties properties, final int shapeHeight) {
       super(properties);
+      this.shapeHeight = shapeHeight;
+      this.shape = Block.column(16.0, 0.0, (double)shapeHeight);
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
-      return SHAPE;
+      return this.shape;
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, state);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       BonemealableBlock.findSpreadableNeighbourPos(level, pos, state).ifPresent((blockPos) -> level.setBlockAndUpdate(blockPos, this.defaultBlockState()));
    }
 }

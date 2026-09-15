@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -32,15 +31,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CakeBlock extends Block {
-   public static final MapCodec<CakeBlock> CODEC = simpleCodec(CakeBlock::new);
    public static final int MAX_BITES = 6;
    public static final IntegerProperty BITES;
    public static final int FULL_CAKE_SIGNAL;
    private static final VoxelShape[] SHAPES;
-
-   public MapCodec<CakeBlock> codec() {
-      return CODEC;
-   }
 
    protected CakeBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -92,7 +86,7 @@ public class CakeBlock extends Block {
          int bites = (Integer)state.getValue(BITES);
          level.gameEvent(player, (Holder)GameEvent.EAT, (BlockPos)pos);
          if (bites < 6) {
-            level.setBlock(pos, (BlockState)state.setValue(BITES, bites + 1), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(BITES, bites + 1));
          } else {
             level.removeBlock(pos, false);
             level.gameEvent(player, (Holder)GameEvent.BLOCK_DESTROY, (BlockPos)pos);

@@ -54,6 +54,7 @@ public class SectionUpdateTracker {
          super();
          this.isDirty = isDirty;
          this.isDirtyFromPlayer = isDirtyFromPlayer;
+         this.sectionNode = sectionNode;
       }
 
       public void setDirty(final boolean fromPlayer) {

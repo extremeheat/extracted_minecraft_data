@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -126,6 +128,14 @@ public final class TypedEntityData<IdType> implements TooltipProvider {
          entity.setUUID(uuid);
       }
 
+   }
+
+   public boolean loadInto(final SpawnData spawnData, final DefaultedRegistry<IdType> registry) {
+      CompoundTag entityTag = spawnData.getEntityToSpawn();
+      CompoundTag oldTag = entityTag.copy();
+      spawnData.getEntityToSpawn().putString("id", registry.getKey(this.type()).toString());
+      entityTag.merge(this.getUnsafe());
+      return !entityTag.equals(oldTag);
    }
 
    public boolean loadInto(final BlockEntity blockEntity, final HolderLookup.Provider registries) {

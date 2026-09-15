@@ -12,6 +12,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -20,8 +21,10 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BlockAttachedEntity extends Entity {
+   public static final String TAG_BLOCK_POS = "block_pos";
    private static final Logger LOGGER = LogUtils.getLogger();
-   private int checkInterval;
+   private static final int CHECK_INTERVAL = 100;
+   private int ticksSinceLastCheck;
    protected BlockPos pos;
 
    protected BlockAttachedEntity(final EntityType<? extends BlockAttachedEntity> type, final Level level) {
@@ -39,8 +42,9 @@ public abstract class BlockAttachedEntity extends Entity {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel level) {
          this.checkBelowWorld();
-         if (this.checkInterval++ == 100) {
-            this.checkInterval = 0;
+         if (this.ticksSinceLastCheck++ >= 100) {
+            this.ticksSinceLastCheck = 0;
+            this.tickAtCheckInterval();
             if (!this.isRemoved() && !this.survives()) {
                this.discard();
                this.dropItem(level, (Entity)null);
@@ -48,6 +52,9 @@ public abstract class BlockAttachedEntity extends Entity {
          }
       }
 
+   }
+
+   protected void tickAtCheckInterval() {
    }
 
    public abstract boolean survives();
@@ -64,6 +71,19 @@ public abstract class BlockAttachedEntity extends Entity {
       }
    }
 
+   public void kill(final ServerLevel level) {
+      this.kill(level, this);
+   }
+
+   public void kill(final ServerLevel level, final @Nullable Entity attributedTo) {
+      this.onKilled();
+      this.remove(Entity.RemovalReason.KILLED);
+      this.gameEvent(GameEvent.ENTITY_DIE, (Entity)(attributedTo != null ? attributedTo : this));
+   }
+
+   protected void onKilled() {
+   }
+
    public boolean hurtClient(final DamageSource source) {
       return !this.isInvulnerableToBase(source);
    }
@@ -75,7 +95,7 @@ public abstract class BlockAttachedEntity extends Entity {
          return false;
       } else {
          if (!this.isRemoved()) {
-            this.kill(level);
+            this.kill(level, source.getEntity());
             this.markHurt();
             this.dropItem(level, source.getEntity());
          }

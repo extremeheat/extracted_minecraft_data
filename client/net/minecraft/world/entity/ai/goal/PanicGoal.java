@@ -10,7 +10,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -91,8 +91,8 @@ public class PanicGoal extends Goal {
       return !this.mob.getNavigation().isDone();
    }
 
-   protected @Nullable BlockPos lookForWater(final BlockGetter level, final Entity mob, final int xzDist) {
+   protected @Nullable BlockPos lookForWater(final LevelReader level, final Entity mob, final int xzDist) {
       BlockPos mobPosition = mob.blockPosition();
-      return !level.getBlockState(mobPosition).getCollisionShape(level, mobPosition).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(mob.blockPosition(), xzDist, 1, (pos) -> level.getFluidState(pos).is(FluidTags.WATER)).orElse((Object)null);
+      return !level.getBlockState(mobPosition).getCollisionShape(level, mobPosition).isEmpty() ? null : (BlockPos)level.findBlocksInBoxByManhattanDistance(mobPosition, xzDist, 1).filterState((state) -> state.getFluidState().is(FluidTags.WATER)).findFirst().orElse((Object)null);
    }
 }

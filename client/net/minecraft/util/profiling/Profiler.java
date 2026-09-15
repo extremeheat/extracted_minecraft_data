@@ -15,8 +15,13 @@ public final class Profiler {
    }
 
    public static Scope use(final ProfilerFiller filler) {
-      startUsing(filler);
-      return Profiler::stopUsing;
+      if (filler instanceof InactiveProfiler) {
+         return () -> {
+         };
+      } else {
+         startUsing(filler);
+         return Profiler::stopUsing;
+      }
    }
 
    private static void startUsing(final ProfilerFiller filler) {

@@ -27,6 +27,9 @@ public class EffectCommands {
    private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.effect.give.failed"));
    private static final SimpleCommandExceptionType ERROR_CLEAR_EVERYTHING_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.effect.clear.everything.failed"));
    private static final SimpleCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.effect.clear.specific.failed"));
+   private static final CommandResponseTracker.MessagesWithArgs<LivingEntity, MobEffect, Integer> RESPONSE_GIVE;
+   private static final CommandResponseTracker.Messages<Entity> RESPONSE_CLEAR_ALL;
+   private static final CommandResponseTracker.MessagesWithArg<Entity, MobEffect> RESPONSE_CLEAR_SINGLE;
 
    public EffectCommands() {
       super();
@@ -38,90 +41,59 @@ public class EffectCommands {
 
    private static int giveEffect(final CommandSourceStack source, final Collection<? extends Entity> entities, final Holder<MobEffect> effectHolder, final @Nullable Integer seconds, final int amplifier, final boolean particles) throws CommandSyntaxException {
       MobEffect effect = effectHolder.value();
-      int count = 0;
-      int duration;
-      if (seconds != null) {
-         if (effect.isInstantaneous()) {
-            duration = seconds;
-         } else if (seconds == -1) {
-            duration = -1;
-         } else {
-            duration = seconds * 20;
-         }
-      } else if (effect.isInstantaneous()) {
-         duration = 1;
-      } else {
-         duration = 600;
-      }
+      int duration = computeDurationInTicks(seconds, effect);
+      CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
 
       for(Entity entity : entities) {
          if (entity instanceof LivingEntity livingEntity) {
             MobEffectInstance instance = new MobEffectInstance(effectHolder, duration, amplifier, false, particles);
-            if (livingEntity.addEffect(instance, source.getEntity())) {
-               ++count;
-            }
+            tracker.track(livingEntity, livingEntity.addEffect(instance, source.getEntity()));
          }
       }
 
-      if (count == 0) {
-         throw ERROR_GIVE_FAILED.create();
-      } else {
-         if (entities.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.effect.give.success.single", effect.getDisplayName(), ((Entity)entities.iterator().next()).getDisplayName(), duration / 20), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.effect.give.success.multiple", effect.getDisplayName(), entities.size(), duration / 20), true);
-         }
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArgs)RESPONSE_GIVE, effect, duration);
+   }
 
-         return count;
+   private static int computeDurationInTicks(final @Nullable Integer seconds, final MobEffect effect) {
+      if (seconds != null) {
+         if (effect.isInstantaneous()) {
+            return seconds;
+         } else {
+            return seconds == -1 ? -1 : seconds * 20;
+         }
+      } else {
+         return effect.isInstantaneous() ? 1 : 600;
       }
    }
 
    private static int clearEffects(final CommandSourceStack source, final Collection<? extends Entity> entities) throws CommandSyntaxException {
-      int count = 0;
+      CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
 
       for(Entity entity : entities) {
          if (entity instanceof LivingEntity livingEntity) {
-            if (livingEntity.removeAllEffects()) {
-               ++count;
-            }
+            tracker.track(livingEntity, livingEntity.removeAllEffects());
          }
       }
 
-      if (count == 0) {
-         throw ERROR_CLEAR_EVERYTHING_FAILED.create();
-      } else {
-         if (entities.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.effect.clear.everything.success.single", ((Entity)entities.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.effect.clear.everything.success.multiple", entities.size()), true);
-         }
-
-         return count;
-      }
+      return tracker.sendFeedback(source, true, RESPONSE_CLEAR_ALL);
    }
 
    private static int clearEffect(final CommandSourceStack source, final Collection<? extends Entity> entities, final Holder<MobEffect> effectHolder) throws CommandSyntaxException {
       MobEffect effect = effectHolder.value();
-      int count = 0;
+      CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
 
       for(Entity entity : entities) {
          if (entity instanceof LivingEntity livingEntity) {
-            if (livingEntity.removeEffect(effectHolder)) {
-               ++count;
-            }
+            tracker.track(livingEntity, livingEntity.removeEffect(effectHolder));
          }
       }
 
-      if (count == 0) {
-         throw ERROR_CLEAR_SPECIFIC_FAILED.create();
-      } else {
-         if (entities.size() == 1) {
-            source.sendSuccess(() -> Component.translatable("commands.effect.clear.specific.success.single", effect.getDisplayName(), ((Entity)entities.iterator().next()).getDisplayName()), true);
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.effect.clear.specific.success.multiple", effect.getDisplayName(), entities.size()), true);
-         }
+      return tracker.sendFeedback(source, true, (CommandResponseTracker.MessagesWithArg)RESPONSE_CLEAR_SINGLE, effect);
+   }
 
-         return count;
-      }
+   static {
+      RESPONSE_GIVE = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_GIVE_FAILED, (CommandResponseTracker.SingleHandlerWithArgs)((entity, var1, effect, duration) -> Component.translatable("commands.effect.give.success.single", effect.getDisplayName(), entity.getDisplayName(), duration / 20)), (CommandResponseTracker.MultipleHandlerWithArgs)((entityCount, var1, effect, duration) -> Component.translatable("commands.effect.give.success.multiple", effect.getDisplayName(), entityCount, duration / 20)));
+      RESPONSE_CLEAR_ALL = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_CLEAR_EVERYTHING_FAILED, (CommandResponseTracker.SingleHandler)((entity, var1) -> Component.translatable("commands.effect.clear.everything.success.single", entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, var1) -> Component.translatable("commands.effect.clear.everything.success.multiple", entityCount)));
+      RESPONSE_CLEAR_SINGLE = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_CLEAR_SPECIFIC_FAILED, (CommandResponseTracker.SingleHandlerWithArg)((entity, var1, effect) -> Component.translatable("commands.effect.clear.specific.success.single", effect.getDisplayName(), entity.getDisplayName())), (CommandResponseTracker.MultipleHandlerWithArg)((entityCount, var1, effect) -> Component.translatable("commands.effect.clear.specific.success.multiple", effect.getDisplayName(), entityCount)));
    }
 }

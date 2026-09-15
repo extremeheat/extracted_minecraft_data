@@ -5,6 +5,7 @@ import net.minecraft.world.phys.AABB;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Frustum {
@@ -102,6 +103,16 @@ public class Frustum {
       }
 
       return frustumPoints;
+   }
+
+   public AABB getNearPlaneBounds() {
+      Matrix4f clipToWorldMatrix = this.matrix.invert(new Matrix4f());
+      AABB.Builder builder = new AABB.Builder();
+      builder.include(clipToWorldMatrix.transformProject(new Vector3f(-1.0F, -1.0F, -1.0F)));
+      builder.include(clipToWorldMatrix.transformProject(new Vector3f(1.0F, -1.0F, -1.0F)));
+      builder.include(clipToWorldMatrix.transformProject(new Vector3f(1.0F, 1.0F, -1.0F)));
+      builder.include(clipToWorldMatrix.transformProject(new Vector3f(-1.0F, 1.0F, -1.0F)));
+      return builder.build();
    }
 
    public double getCamX() {

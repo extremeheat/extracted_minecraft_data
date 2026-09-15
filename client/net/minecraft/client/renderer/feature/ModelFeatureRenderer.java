@@ -8,7 +8,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.feature.submit.BatchableSubmit;
 import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import org.jspecify.annotations.Nullable;
 
 public class ModelFeatureRenderer extends RenderTypeFeatureRenderer<Submit<?>> {
@@ -31,8 +31,8 @@ public class ModelFeatureRenderer extends RenderTypeFeatureRenderer<Submit<?>> {
       VertexConsumer buffer = this.getVertexBuilder(submit.renderType());
       if (submit.sheetedDecalPose() != null) {
          buffer = new SheetedDecalTextureGenerator(buffer, submit.sheetedDecalPose(), 1.0F);
-      } else if (submit.sprite() != null) {
-         buffer = submit.sprite().wrap(buffer);
+      } else if (submit.uvMapping() != null) {
+         buffer = submit.uvMapping().wrap(buffer);
       }
 
       Model<? super S> model = submit.model();
@@ -46,7 +46,7 @@ public class ModelFeatureRenderer extends RenderTypeFeatureRenderer<Submit<?>> {
       }
    }
 
-   public static record Submit<S>(RenderType renderType, PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, PoseStack.@Nullable Pose sheetedDecalPose) implements BatchableSubmit, TranslucentSubmit {
+   public static record Submit<S>(RenderType renderType, PoseStack.Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, @Nullable UvMapping uvMapping, PoseStack.@Nullable Pose sheetedDecalPose) implements BatchableSubmit, TranslucentSubmit {
       public Submit {
          super();
       }

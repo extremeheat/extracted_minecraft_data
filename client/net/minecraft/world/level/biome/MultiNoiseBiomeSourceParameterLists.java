@@ -15,7 +15,7 @@ public class MultiNoiseBiomeSourceParameterLists {
    }
 
    public static void bootstrap(final BootstrapContext<MultiNoiseBiomeSourceParameterList> context) {
-      HolderGetter<Biome> biomes = context.<Biome>lookup(Registries.BIOME);
+      HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
       context.register(NETHER, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.NETHER, biomes));
       context.register(OVERWORLD, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD, biomes));
    }

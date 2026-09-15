@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -85,7 +86,7 @@ public abstract class LavaFluid extends FlowingFluid {
                      level.setBlockAndUpdate(testPos, BaseFireBlock.getState(level, testPos));
                      return;
                   }
-               } else if (blockState.blocksMotion()) {
+               } else if (blockState.is(BlockTags.BLOCKS_LAVA_FIRE_SPREAD)) {
                   return;
                }
             }
@@ -179,7 +180,7 @@ public abstract class LavaFluid extends FlowingFluid {
          FluidState fluidState = level.getFluidState(pos);
          if (this.is(FluidTags.LAVA) && fluidState.is(FluidTags.WATER)) {
             if (state.getBlock() instanceof LiquidBlock) {
-               level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+               level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
             }
 
             this.fizz(level, pos);

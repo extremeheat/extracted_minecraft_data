@@ -143,14 +143,12 @@ import net.minecraft.world.Stopwatches;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.clock.WorldClocks;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.CatSpawner;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.CustomSpawner;
@@ -162,7 +160,6 @@ import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
@@ -176,7 +173,7 @@ import net.minecraft.world.level.levelgen.PatrolSpawner;
 import net.minecraft.world.level.levelgen.PhantomSpawner;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.saveddata.WeatherData;
 import net.minecraft.world.level.storage.CommandStorage;
@@ -209,7 +206,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
    public static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
    private static final int SERVER_ACTIVITY_MONITOR_SECONDS_BETWEEN_NOTIFICATIONS = 30;
-   private static final Map<String, String> LEGACY_WORLD_NAMES_FOR_REALMS_LOG;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -288,8 +284,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final ServerDebugSubscribers debugSubscribers;
    protected final WorldData worldData;
    private LevelData.RespawnData effectiveRespawnData;
-   private final PotionBrewing potionBrewing;
-   private FuelValues fuelValues;
    private int emptyTicks;
    private volatile boolean isSaving;
    private final SuppressedExceptionCollector suppressedExceptions;
@@ -360,9 +354,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.structureTemplateManager = new StructureTemplateManager(worldStem.resourceManager(), storageSource, fixerUpper, blockLookup);
          this.serverThread = serverThread;
          this.executor = Util.backgroundExecutor();
-         this.potionBrewing = PotionBrewing.bootstrap(this.worldData.enabledFeatures());
          this.resources.managers.getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
-         this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
          this.notificationManager = notificationManager;
          this.serverActivityMonitor = new ServerActivityMonitor(notificationManager, 30);
@@ -490,7 +482,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          levelData.setSpawn(LevelData.RespawnData.of(level.dimension(), BlockPos.ZERO.above(80), 0.0F, 0.0F));
       } else {
          ServerChunkCache chunkSource = level.getChunkSource();
-         ChunkPos spawnChunk = ChunkPos.containing(chunkSource.randomState().sampler().findSpawnPosition());
+         ChunkPos spawnChunk = chunkSource.getGenerator().getOrigin(chunkSource.randomState());
          levelLoadListener.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
          levelLoadListener.updateFocus(level.dimension(), spawnChunk);
          int height = chunkSource.getGenerator().getSpawnHeight(level);
@@ -525,7 +517,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          if (spawnBonusChest) {
-            level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((feature) -> ((ConfiguredFeature)feature.value()).place(level, chunkSource.getGenerator(), level.getRandom(), levelData.getRespawnData().pos()));
+            level.registryAccess().lookup(Registries.FEATURE).flatMap((registry) -> registry.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((feature) -> ((Feature)feature.value()).place(level, chunkSource.getGenerator(), level.getRandom(), levelData.getRespawnData().pos()));
          }
 
          levelLoadListener.finish(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN);
@@ -604,15 +596,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.savedDataStorage.saveAndJoin();
       } else {
          this.savedDataStorage.scheduleSave();
-      }
-
-      if (flush) {
-         for(ServerLevel level : this.getAllLevels()) {
-            String storageName = level.getChunkSource().chunkMap.getStorageName();
-            LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", LEGACY_WORLD_NAMES_FOR_REALMS_LOG.getOrDefault(storageName, storageName));
-         }
-
-         LOGGER.info("ThreadedAnvilChunkStorage: All dimensions are saved");
       }
 
       return result;
@@ -1268,7 +1251,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void sendSystemMessage(final Component message) {
-      LOGGER.info(message.getString());
+      LOGGER.info("System chat: {}", message.getString());
    }
 
    public KeyPair getKeyPair() {
@@ -1434,7 +1417,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.isReady;
    }
 
-   public boolean publishServer(final MultiplayerScope scope, final @Nullable GameType gameMode, final boolean allowCommands, final int port) {
+   public boolean publishServer(final MultiplayerScope scope, final boolean allowCommands, final int port) {
       return false;
    }
 
@@ -1531,7 +1514,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          Stream var10000 = packsToEnable.stream();
          PackRepository var10001 = this.packRepository;
          Objects.requireNonNull(var10001);
-         return (ImmutableList)var10000.map(var10001::getPack).filter(Objects::nonNull).map(Pack::open).collect(ImmutableList.toImmutableList());
+         return (ImmutableList)var10000.map(var10001::getPack).filter(Objects::nonNull).flatMap(Pack::open).collect(ImmutableList.toImmutableList());
       }, this).thenCompose((packsToLoad) -> {
          CloseableResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, packsToLoad);
          List<Registry.PendingTags<?>> postponedTags = TagLoader.loadTagsForExistingRegistries(resources, this.registries.compositeAccess());
@@ -1553,7 +1536,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.getPlayerList().reloadResources();
          this.functionManager.replaceLibrary(this.resources.managers.getFunctionLibrary());
          this.structureTemplateManager.onResourceManagerReload(this.resources.resourceManager);
-         this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
       }, this);
       if (this.isSameThread()) {
          Objects.requireNonNull(result);
@@ -1679,7 +1661,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel level = this.findRespawnDimension();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, "Server", Component.literal("Server"), this, (Entity)null);
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, Component.literal("Server"), this);
    }
 
    public ServerLevel findRespawnDimension() {
@@ -1802,15 +1784,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public LevelBasedPermissionSet getProfilePermissions(final NameAndId nameAndId) {
       if (this.getPlayerList().isOp(nameAndId)) {
          ServerOpListEntry opListEntry = (ServerOpListEntry)this.getPlayerList().getOps().get(nameAndId);
-         if (opListEntry != null) {
-            return opListEntry.permissions();
-         } else if (this.isSingleplayerOwner(nameAndId)) {
-            return LevelBasedPermissionSet.OWNER;
-         } else if (this.isSingleplayer()) {
-            return this.getPlayerList().isAllowCommandsForAllPlayers() ? LevelBasedPermissionSet.OWNER : LevelBasedPermissionSet.ALL;
-         } else {
-            return this.operatorUserPermissions();
-         }
+         return opListEntry != null ? opListEntry.permissions() : this.operatorUserPermissions();
       } else {
          return LevelBasedPermissionSet.ALL;
       }
@@ -2066,7 +2040,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return true;
    }
 
-   public StructureTemplateManager getStructureManager() {
+   public StructureTemplateManager getStructureTemplateManager() {
       return this.structureTemplateManager;
    }
 
@@ -2096,6 +2070,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public @Nullable GameType getForcedGameType() {
       return null;
+   }
+
+   public boolean forceGameMode() {
+      return false;
+   }
+
+   public void setForceGameMode(final boolean forceGameMode) {
    }
 
    public ResourceManager getResourceManager() {
@@ -2293,14 +2274,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.suppressedExceptions.addEntry("packet/" + String.valueOf(packetType), throwable);
    }
 
-   public PotionBrewing potionBrewing() {
-      return this.potionBrewing;
-   }
-
-   public FuelValues fuelValues() {
-      return this.fuelValues;
-   }
-
    public ServerLinks serverLinks() {
       return ServerLinks.EMPTY;
    }
@@ -2322,7 +2295,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       OVERLOADED_WARNING_INTERVAL_NANOS = 10L * TimeUtil.NANOSECONDS_PER_SECOND;
       STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
       PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
-      LEGACY_WORLD_NAMES_FOR_REALMS_LOG = Map.of("overworld", "world", "the_nether", "DIM-1", "the_end", "DIM1");
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");

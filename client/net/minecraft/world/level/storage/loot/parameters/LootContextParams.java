@@ -4,6 +4,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.SlotProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,6 +27,7 @@ public class LootContextParams {
    public static final ContextKey<Integer> ENCHANTMENT_LEVEL = ContextKey.<Integer>vanilla("enchantment_level");
    public static final ContextKey<Boolean> ENCHANTMENT_ACTIVE = ContextKey.<Boolean>vanilla("enchantment_active");
    public static final ContextKey<Unit> ADDITIONAL_COST_COMPONENT_ALLOWED = ContextKey.<Unit>vanilla("additional_cost_component_allowed");
+   public static final ContextKey<SlotProvider> CONTAINER = ContextKey.<SlotProvider>vanilla("container");
 
    public LootContextParams() {
       super();

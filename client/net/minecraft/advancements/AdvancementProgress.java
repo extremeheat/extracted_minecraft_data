@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -15,8 +16,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -26,6 +28,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    private static final Codec<Instant> OBTAINED_TIME_CODEC;
    private static final Codec<Map<String, CriterionProgress>> CRITERIA_CODEC;
    public static final Codec<AdvancementProgress> CODEC;
+   public static final StreamCodec<ByteBuf, AdvancementProgress> STREAM_CODEC;
    private final Map<String, CriterionProgress> criteria;
    private AdvancementRequirements requirements;
 
@@ -89,15 +92,6 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    public String toString() {
       String var10000 = String.valueOf(this.criteria);
       return "AdvancementProgress{criteria=" + var10000 + ", requirements=" + String.valueOf(this.requirements) + "}";
-   }
-
-   public void serializeToNetwork(final FriendlyByteBuf output) {
-      output.writeMap(this.criteria, FriendlyByteBuf::writeUtf, (b, v) -> v.serializeToNetwork(b));
-   }
-
-   public static AdvancementProgress fromNetwork(final FriendlyByteBuf input) {
-      Map<String, CriterionProgress> criteria = input.<String, CriterionProgress>readMap(FriendlyByteBuf::readUtf, CriterionProgress::fromNetwork);
-      return new AdvancementProgress(criteria);
    }
 
    public @Nullable CriterionProgress getCriterion(final String id) {
@@ -182,5 +176,6 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT).xmap(Instant::from, (instant) -> instant.atZone(ZoneId.systemDefault()));
       CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((map) -> Util.mapValues(map, CriterionProgress::new), (map) -> (Map)map.entrySet().stream().filter((e) -> ((CriterionProgress)e.getValue()).isDone()).collect(Collectors.toMap(Map.Entry::getKey, (e) -> (Instant)Objects.requireNonNull(((CriterionProgress)e.getValue()).getObtained()))));
       CODEC = RecordCodecBuilder.create((i) -> i.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((a) -> a.criteria), ExtraCodecs.optionalAlwaysPresentFieldOf(Codec.BOOL, "done", true).forGetter(AdvancementProgress::isDone)).apply(i, (criteria, done) -> new AdvancementProgress(new HashMap(criteria))));
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, CriterionProgress.STREAM_CODEC), (a) -> a.criteria, AdvancementProgress::new);
    }
 }

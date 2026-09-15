@@ -2,11 +2,13 @@ package com.mojang.realmsclient.gui;
 
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.util.RealmsPersistence;
+import java.net.URI;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsNewsManager {
    private final RealmsPersistence newsLocalStorage;
    private boolean hasUnreadNews;
-   private String newsLink;
+   private @Nullable URI newsLink;
 
    public RealmsNewsManager(final RealmsPersistence newsLocalStorage) {
       super();
@@ -20,7 +22,7 @@ public class RealmsNewsManager {
       return this.hasUnreadNews;
    }
 
-   public String newsLink() {
+   public @Nullable URI newsLink() {
       return this.newsLink;
    }
 

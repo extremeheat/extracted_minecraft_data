@@ -6,10 +6,10 @@ import java.util.List;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.world.entity.variant.PriorityProvider;
 import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnContext;
@@ -34,7 +34,7 @@ public record FrogVariant(ClientAsset.ResourceTexture assetInfo, SpawnPrioritySe
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<FrogVariant>>create(Registries.FROG_VARIANT);
+      CODEC = RegistryCodecs.holder(Registries.FROG_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.FROG_VARIANT);
    }
 }

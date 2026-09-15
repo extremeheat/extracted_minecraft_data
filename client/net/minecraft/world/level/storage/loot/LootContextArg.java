@@ -22,6 +22,10 @@ public interface LootContextArg<R> {
       return original;
    }
 
+   static <R> LootContextArg<R> of(final ContextKey<? extends R> contextParam) {
+      return () -> contextParam;
+   }
+
    static <R> Codec<LootContextArg<R>> createArgCodec(final UnaryOperator<ArgCodecBuilder<R>> consumer) {
       return ((ArgCodecBuilder)consumer.apply(new ArgCodecBuilder())).build();
    }
@@ -32,7 +36,7 @@ public interface LootContextArg<R> {
       ContextKey<? extends T> contextParam();
 
       default @Nullable R get(final LootContext context) {
-         T value = (T)context.getOptionalParameter(this.contextParam());
+         T value = (T)context.getOptional(this.contextParam());
          return (R)(value != null ? this.get(value) : null);
       }
    }
@@ -41,7 +45,7 @@ public interface LootContextArg<R> {
       ContextKey<? extends T> contextParam();
 
       default @Nullable T get(final LootContext context) {
-         return (T)context.getOptionalParameter(this.contextParam());
+         return (T)context.getOptional(this.contextParam());
       }
    }
 
@@ -78,6 +82,11 @@ public interface LootContextArg<R> {
 
       public ArgCodecBuilder<R> anyItemStack(final Function<? super ContextKey<? extends ItemInstance>, ? extends LootContextArg<R>> function) {
          return this.anyOf(LootContext.ItemStackTarget.values(), (target) -> (LootContextArg)function.apply(target.contextParam()));
+      }
+
+      public ArgCodecBuilder<R> or(final String name, final LootContextArg<R> arg) {
+         this.sources.put(name, arg);
+         return this;
       }
 
       private Codec<LootContextArg<R>> build() {

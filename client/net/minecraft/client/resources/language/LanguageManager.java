@@ -11,8 +11,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ErrorScreen;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -22,13 +25,15 @@ import org.slf4j.Logger;
 public class LanguageManager implements ResourceManagerReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LanguageInfo DEFAULT_LANGUAGE = new LanguageInfo("US", "English", false);
+   private final Minecraft minecraft;
    private Map<String, LanguageInfo> languages;
    private String currentCode;
    private final Consumer<ClientLanguage> reloadCallback;
 
-   public LanguageManager(final String languageCode, final Consumer<ClientLanguage> reloadCallback) {
+   public LanguageManager(final Minecraft minecraft, final String languageCode, final Consumer<ClientLanguage> reloadCallback) {
       super();
       this.languages = ImmutableMap.of("en_us", DEFAULT_LANGUAGE);
+      this.minecraft = minecraft;
       this.currentCode = languageCode;
       this.reloadCallback = reloadCallback;
    }
@@ -64,9 +69,17 @@ public class LanguageManager implements ResourceManagerReloadListener {
          }
       }
 
-      ClientLanguage locale = ClientLanguage.loadFrom(resourceManager, languageStack, defaultRightToLeft);
-      Language.inject(locale);
-      this.reloadCallback.accept(locale);
+      try {
+         ClientLanguage locale = ClientLanguage.loadFrom(resourceManager, languageStack, defaultRightToLeft);
+         Language.inject(locale);
+         this.reloadCallback.accept(locale);
+      } catch (EmptyTranslationsException ex) {
+         this.minecraft.gui.setScreen(new ErrorScreen(Component.translatable("options.language.load_translations_failed"), Component.translatable("options.language.empty_or_missing_translation", ex.getLanguageCode())));
+         LOGGER.warn("Skipped unable to find any translations for {}", ex.getLanguageCode());
+      } catch (Exception ex) {
+         LOGGER.warn("Unable to load languages: {} ({})", languageStack, ex.toString());
+      }
+
    }
 
    public void setSelected(final String code) {

@@ -25,6 +25,8 @@ public class DebugEntrySimplePerformanceImpactors implements DebugScreenEntry {
          displayer.addLine(String.format(Locale.ROOT, "Filtering: %s", filteringMethod.caption().getString()));
       }
 
+      boolean isMultiDrawIndirect = minecraft.levelRenderer.isChunkRenderingUsingMultiDrawIndirect();
+      displayer.addLine(String.format(Locale.ROOT, "Terrain Rendering: %s", isMultiDrawIndirect ? "multidrawindirect" : "naive"));
    }
 
    public boolean isAllowed(final boolean reducedDebugInfo) {

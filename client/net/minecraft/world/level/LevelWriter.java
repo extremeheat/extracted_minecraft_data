@@ -9,6 +9,10 @@ import org.jspecify.annotations.Nullable;
 public interface LevelWriter {
    boolean setBlock(BlockPos pos, BlockState blockState, @Block.UpdateFlags int updateFlags, int updateLimit);
 
+   default boolean setBlockAndUpdate(final BlockPos pos, final BlockState blockState) {
+      return this.setBlock(pos, blockState, 3);
+   }
+
    default boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags) {
       return this.setBlock(pos, blockState, updateFlags, 512);
    }

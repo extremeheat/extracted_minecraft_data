@@ -20,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
@@ -40,6 +41,7 @@ import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 public class AllayAi {
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 1.0F;
@@ -54,6 +56,8 @@ public class AllayAi {
    private static final int TIME_TO_FORGET_NOTEBLOCK = 600;
    private static final int DISTANCE_TO_WANTED_ITEM = 32;
    private static final int GIVE_ITEM_TIMEOUT_DURATION = 20;
+   private static final Vec3 THROW_VELOCITY = new Vec3(0.20000000298023224, 0.30000001192092896, 0.20000000298023224);
+   private static final int ITEM_PICKUP_COOLDOWN_DURATION = 60;
 
    public AllayAi() {
       super();
@@ -68,7 +72,11 @@ public class AllayAi {
    }
 
    private static ActivityData<Allay> initIdleActivity() {
-      return ActivityData.<Allay>create(Activity.IDLE, 0, ImmutableList.of(GoToWantedItem.create((mob) -> true, 1.75F, true, 32), new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20, AllayAi::onItemThrown), StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F), SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      return ActivityData.<Allay>create(Activity.IDLE, 0, ImmutableList.of(GoToWantedItem.create((mob) -> true, 1.75F, true, 32), new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20, AllayAi::throwItem, MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, 60, AllayAi::hasItemToThrow), StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F), SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+   }
+
+   private static boolean hasItemToThrow(final Allay allay) {
+      return !allay.getInventory().isEmpty();
    }
 
    public static void updateActivity(final Allay body) {
@@ -138,11 +146,15 @@ public class AllayAi {
       return Optional.empty();
    }
 
-   private static void onItemThrown(final ServerLevel level, final Allay thrower, final ItemStack item, final BlockPos targetPos) {
-      getLikedPlayer(thrower).ifPresent((player) -> CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.trigger(player, targetPos.below(), item));
-      if (level.getGameTime() % 7L == 0L && level.getRandom().nextDouble() < 0.9) {
-         float pitch = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, level.getRandom());
-         level.playSound((Entity)null, thrower, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, pitch);
+   private static void throwItem(final ServerLevel level, final Allay thrower, final Vec3 targetPos) {
+      ItemStack item = thrower.getInventory().removeItem(0, 1);
+      if (!item.isEmpty()) {
+         BehaviorUtils.throwItem(thrower, item, targetPos.add(0.0, 1.0, 0.0), THROW_VELOCITY, 0.2F);
+         getLikedPlayer(thrower).ifPresent((player) -> CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.trigger(player, BlockPos.containing(targetPos).below(), item));
+         if (level.getGameTime() % 7L == 0L && level.getRandom().nextDouble() < 0.9) {
+            float pitch = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, level.getRandom());
+            level.playSound((Entity)null, thrower, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, pitch);
+         }
       }
 
    }

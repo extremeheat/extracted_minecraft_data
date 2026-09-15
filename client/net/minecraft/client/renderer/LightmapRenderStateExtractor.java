@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.state.LightmapRenderState;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
@@ -51,9 +50,9 @@ public class LightmapRenderStateExtractor {
             profiler.push("lightmap");
             Camera camera = this.renderer.mainCamera();
             renderState.blockFactor = this.blockLightFlicker + 1.4F;
-            renderState.blockLightTint = ARGB.vector3fFromRGB24((Integer)camera.attributeProbe().getValue(EnvironmentAttributes.BLOCK_LIGHT_TINT, partialTicks));
+            renderState.blockLightTint = (Vector3fc)camera.attributeProbe().getValue(EnvironmentAttributes.BLOCK_LIGHT_TINT, partialTicks);
             renderState.skyFactor = (Float)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_LIGHT_FACTOR, partialTicks);
-            renderState.skyLightColor = ARGB.vector3fFromRGB24((Integer)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_LIGHT_COLOR, partialTicks));
+            renderState.skyLightColor = (Vector3fc)camera.attributeProbe().getValue(EnvironmentAttributes.SKY_LIGHT_COLOR, partialTicks);
             EndFlashState endFlashState = level.endFlashState();
             if (endFlashState != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
                float intensity = endFlashState.getIntensity(partialTicks);
@@ -64,7 +63,7 @@ public class LightmapRenderStateExtractor {
                }
             }
 
-            renderState.ambientColor = ARGB.vector3fFromRGB24((Integer)camera.attributeProbe().getValue(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, partialTicks));
+            renderState.ambientColor = (Vector3fc)camera.attributeProbe().getValue(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, partialTicks);
             float brightnessOption = ((Double)this.minecraft.options.gamma().get()).floatValue();
             float darknessEffectScaleOption = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
             float darknessEffectBrightnessModifier = player.getEffectBlendFactor(MobEffects.DARKNESS, partialTicks) * darknessEffectScaleOption;
@@ -79,7 +78,7 @@ public class LightmapRenderStateExtractor {
                renderState.nightVisionEffectIntensity = 0.0F;
             }
 
-            renderState.nightVisionColor = ARGB.vector3fFromRGB24((Integer)camera.attributeProbe().getValue(EnvironmentAttributes.NIGHT_VISION_COLOR, partialTicks));
+            renderState.nightVisionColor = (Vector3fc)camera.attributeProbe().getValue(EnvironmentAttributes.NIGHT_VISION_COLOR, partialTicks);
             renderState.bossOverlayWorldDarkening = this.renderer.bossOverlayWorldDarkening(partialTicks);
             profiler.pop();
             this.needsUpdate = false;

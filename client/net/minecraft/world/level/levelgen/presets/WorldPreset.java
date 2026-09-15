@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
@@ -49,6 +49,6 @@ public class WorldPreset {
    }
 
    static {
-      CODEC = RegistryFileCodec.<Holder<WorldPreset>>create(Registries.WORLD_PRESET, DIRECT_CODEC);
+      CODEC = RegistryCodecs.holder(Registries.WORLD_PRESET, DIRECT_CODEC);
    }
 }

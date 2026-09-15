@@ -11,11 +11,11 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface BonemealableBlock {
-   boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state);
+   boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, BonemealSource source);
 
-   boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state);
+   boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source);
 
-   void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state);
+   void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source);
 
    static boolean hasSpreadableNeighbourPos(final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
       return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.stream().toList(), level, pos, blockToPlace).isPresent();

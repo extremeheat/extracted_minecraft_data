@@ -1,17 +1,17 @@
 package net.minecraft.client.renderer.texture;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -178,10 +178,10 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
          for(int level = 0; level < this.mipLevelCount; ++level) {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
                RenderSystem.bindDefaultUniforms(renderPass);
-               renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT));
 
                for(int i = 0; i < staticSprites.size(); ++i) {
-                  renderPass.bindTexture("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
+                  renderPass.setUniform("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
                   renderPass.setUniform("SpriteAnimationInfo", ubo.slice((long)(i * uboBlockSize + level * spriteUboSize), (long)SpriteContents.UBO_SIZE));
                   renderPass.draw(6, 1, 0, 0);
                }

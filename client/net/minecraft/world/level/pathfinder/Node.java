@@ -1,12 +1,16 @@
 package net.minecraft.world.level.pathfinder;
 
+import com.mojang.datafixers.util.Function3;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Node {
+   public static final StreamCodec<ByteBuf, Node> DEBUG_STREAM_CODEC = createDebugStreamCodec(Node::new);
    public final int x;
    public final int y;
    public final int z;
@@ -20,6 +24,18 @@ public class Node {
    public float walkedDistance;
    public float costMalus;
    public PathType type;
+
+   protected static <N extends Node> StreamCodec<ByteBuf, N> createDebugStreamCodec(final Function3<Integer, Integer, Integer, N> factory) {
+      return StreamCodec.composite(ByteBufCodecs.INT, (n) -> n.x, ByteBufCodecs.INT, (n) -> n.y, ByteBufCodecs.INT, (n) -> n.z, ByteBufCodecs.FLOAT, (n) -> n.walkedDistance, ByteBufCodecs.FLOAT, (n) -> n.costMalus, ByteBufCodecs.BOOL, (n) -> n.closed, PathType.STREAM_CODEC, (n) -> n.type, ByteBufCodecs.FLOAT, (n) -> n.f, (x, y, z, walkedDistance, costMalus, closed, type, f) -> {
+         N node = (N)((Node)factory.apply(x, y, z));
+         node.walkedDistance = walkedDistance;
+         node.costMalus = costMalus;
+         node.closed = closed;
+         node.type = type;
+         node.f = f;
+         return node;
+      });
+   }
 
    public Node(final int x, final int y, final int z) {
       super();
@@ -122,30 +138,5 @@ public class Node {
 
    public String toString() {
       return "Node{x=" + this.x + ", y=" + this.y + ", z=" + this.z + "}";
-   }
-
-   public void writeToStream(final FriendlyByteBuf buffer) {
-      buffer.writeInt(this.x);
-      buffer.writeInt(this.y);
-      buffer.writeInt(this.z);
-      buffer.writeFloat(this.walkedDistance);
-      buffer.writeFloat(this.costMalus);
-      buffer.writeBoolean(this.closed);
-      buffer.writeEnum(this.type);
-      buffer.writeFloat(this.f);
-   }
-
-   public static Node createFromStream(final FriendlyByteBuf buffer) {
-      Node node = new Node(buffer.readInt(), buffer.readInt(), buffer.readInt());
-      readContents(buffer, node);
-      return node;
-   }
-
-   protected static void readContents(final FriendlyByteBuf buffer, final Node node) {
-      node.walkedDistance = buffer.readFloat();
-      node.costMalus = buffer.readFloat();
-      node.closed = buffer.readBoolean();
-      node.type = (PathType)buffer.readEnum(PathType.class);
-      node.f = buffer.readFloat();
    }
 }

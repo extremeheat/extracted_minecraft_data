@@ -47,8 +47,8 @@ public class WindCharge extends AbstractWindCharge {
 
    }
 
-   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack) {
-      return this.noDeflectTicks > 0 ? false : super.deflect(deflection, deflectingEntity, newOwner, byAttack);
+   public boolean deflect(final ProjectileDeflection deflection, final @Nullable Entity deflectingEntity, final @Nullable EntityReference<Entity> newOwner, final boolean byAttack, final Vec3 power) {
+      return this.noDeflectTicks > 0 ? false : super.deflect(deflection, deflectingEntity, newOwner, byAttack, power);
    }
 
    protected void explode(final Vec3 position) {

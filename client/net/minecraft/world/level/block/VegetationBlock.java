@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -16,8 +15,6 @@ public abstract class VegetationBlock extends Block {
    protected VegetationBlock(final BlockBehaviour.Properties properties) {
       super(properties);
    }
-
-   protected abstract MapCodec<? extends VegetationBlock> codec();
 
    protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return state.is(BlockTags.SUPPORTS_VEGETATION);

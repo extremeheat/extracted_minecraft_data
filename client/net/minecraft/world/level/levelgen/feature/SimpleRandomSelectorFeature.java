@@ -1,26 +1,35 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.CompositeFeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
-public class SimpleRandomSelectorFeature extends Feature<CompositeFeatureConfiguration> {
-   public SimpleRandomSelectorFeature(final Codec<CompositeFeatureConfiguration> codec) {
-      super(codec);
+public record SimpleRandomSelectorFeature(HolderSet<PlacedFeature> features) implements Feature {
+   public static final MapCodec<SimpleRandomSelectorFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features").forGetter(SimpleRandomSelectorFeature::features)).apply(i, SimpleRandomSelectorFeature::new));
+
+   public SimpleRandomSelectorFeature {
+      super();
    }
 
-   public boolean place(final FeaturePlaceContext<CompositeFeatureConfiguration> context) {
-      RandomSource random = context.random();
-      CompositeFeatureConfiguration config = context.config();
-      WorldGenLevel level = context.level();
-      BlockPos origin = context.origin();
-      ChunkGenerator chunkGenerator = context.chunkGenerator();
-      int index = random.nextInt(config.features().size());
-      PlacedFeature feature = (PlacedFeature)config.features().get(index).value();
+   public MapCodec<SimpleRandomSelectorFeature> codec() {
+      return CODEC;
+   }
+
+   public Stream<Holder<Feature>> getSubFeatures() {
+      return this.features.stream().flatMap((f) -> ((PlacedFeature)f.value()).getFeatures());
+   }
+
+   public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+      int index = random.nextInt(this.features.size());
+      PlacedFeature feature = this.features.get(index).value();
       return feature.place(level, chunkGenerator, random, origin);
    }
 }

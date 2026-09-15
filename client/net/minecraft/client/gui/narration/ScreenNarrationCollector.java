@@ -14,9 +14,9 @@ public class ScreenNarrationCollector {
       super();
    }
 
-   public void update(final Consumer<NarrationElementOutput> updater) {
+   public void update(final Consumer<NarrationElementOutput> updater, final NarrationTrigger narrationTrigger) {
       ++this.generation;
-      updater.accept(new Output(0));
+      updater.accept(new Output(0, narrationTrigger));
    }
 
    public String collectNarrationText(final boolean force) {
@@ -50,11 +50,13 @@ public class ScreenNarrationCollector {
 
    private class Output implements NarrationElementOutput {
       private final int depth;
+      private final NarrationTrigger narrationTrigger;
 
-      private Output(final int depth) {
+      private Output(final int depth, final NarrationTrigger narrationTrigger) {
          Objects.requireNonNull(ScreenNarrationCollector.this);
          super();
          this.depth = depth;
+         this.narrationTrigger = narrationTrigger;
       }
 
       public void add(final NarratedElementType type, final NarrationThunk<?> contents) {
@@ -62,7 +64,11 @@ public class ScreenNarrationCollector {
       }
 
       public NarrationElementOutput nest() {
-         return ScreenNarrationCollector.this.new Output(this.depth + 1);
+         return ScreenNarrationCollector.this.new Output(this.depth + 1, this.narrationTrigger);
+      }
+
+      public NarrationTrigger narrationTrigger() {
+         return this.narrationTrigger;
       }
    }
 

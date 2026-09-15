@@ -2,12 +2,9 @@ package net.minecraft.world.level.levelgen.placement;
 
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
@@ -25,10 +22,6 @@ public class PlacementContext extends WorldGenerationContext {
 
    public int getHeight(final Heightmap.Types type, final int x, final int z) {
       return this.level.getHeight(type, x, z);
-   }
-
-   public CarvingMask getCarvingMask(final ChunkPos pos) {
-      return ((ProtoChunk)this.level.getChunk(pos.x(), pos.z())).getOrCreateCarvingMask();
    }
 
    public BlockState getBlockState(final BlockPos pos) {

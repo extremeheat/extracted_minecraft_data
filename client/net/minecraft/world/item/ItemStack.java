@@ -89,6 +89,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -322,12 +323,16 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       if (player != null && !player.getAbilities().mayBuild && !this.canPlaceOnBlockInAdventureMode(new BlockInWorld(context.getLevel(), pos, false))) {
          return InteractionResult.PASS;
       } else {
+         ItemStack stackBeforeUse = this.copy();
          Item usedItem = this.getItem();
          InteractionResult result = usedItem.useOn(context);
          if (player != null && result instanceof InteractionResult.Success) {
             InteractionResult.Success success = (InteractionResult.Success)result;
             if (success.wasItemInteraction()) {
                player.awardStat(Stats.ITEM_USED.get(usedItem));
+               ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
+               ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
+               return success.heldItemTransformedTo(resultItemStack);
             }
          }
 
@@ -344,7 +349,9 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
       InteractionResult result = this.getItem().use(level, player, hand);
       if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
-         return success.heldItemTransformedTo(success.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(player, stackBeforeUse) : success.heldItemTransformedTo().applyAfterUseComponentSideEffects(player, stackBeforeUse));
+         ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
+         ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
+         return success.heldItemTransformedTo(resultItemStack);
       } else {
          return result;
       }
@@ -406,7 +413,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
    }
 
-   public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+   public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable ServerPlayer player, final Consumer<ItemStack> onBreak) {
       int newAmount = this.processDurabilityChange(amount, level, player);
       if (newAmount != 0) {
          this.applyDamage(this.getDamageValue() + newAmount, player, onBreak);
@@ -424,16 +431,16 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       }
    }
 
-   private void applyDamage(final int newDamage, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+   private void applyDamage(final int newDamage, final @Nullable ServerPlayer player, final Consumer<ItemStack> onBreak) {
       if (player != null) {
          CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(player, this, newDamage);
       }
 
       this.setDamageValue(newDamage);
       if (this.isBroken()) {
-         Item item = this.getItem();
+         ItemStack broken = this.copy();
          this.shrink(1);
-         onBreak.accept(item);
+         onBreak.accept(broken);
       }
 
    }
@@ -809,12 +816,16 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return hoverName;
    }
 
-   public <T extends TooltipProvider> void addToTooltip(final DataComponentType<T> type, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> consumer, final TooltipFlag flag) {
-      T component = (T)(this.get(type));
+   public <T> void addToTooltip(final DataComponentType<T> type, final TooltipProvider.Getter<T> tooltipGetter, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> consumer, final TooltipFlag flag) {
+      T component = (T)this.get(type);
       if (component != null && display.shows(type)) {
-         component.addToTooltip(context, consumer, flag, this.components);
+         tooltipGetter.get(component).addToTooltip(context, consumer, flag, this.components);
       }
 
+   }
+
+   public <T extends TooltipProvider> void addToTooltip(final DataComponentType<T> type, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> consumer, final TooltipFlag flag) {
+      this.addToTooltip(type, (c) -> c, context, display, consumer, flag);
    }
 
    public List<Component> getTooltipLines(final Item.TooltipContext context, final @Nullable Player player, final TooltipFlag tooltipFlag) {
@@ -857,6 +868,8 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       this.addAttributeTooltips(builder, display, player);
       this.addUnitComponentToTooltip(DataComponents.INTANGIBLE_PROJECTILE, INTANGIBLE_TOOLTIP, display, builder);
       this.addUnitComponentToTooltip(DataComponents.UNBREAKABLE, UNBREAKABLE_TOOLTIP, display, builder);
+      this.addToTooltip(DataComponents.SIGN_TEXT_FRONT, SignText.FRONT_TEXT, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.SIGN_TEXT_BACK, SignText.BACK_TEXT, context, display, builder, tooltipFlag);
       this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, context, display, builder, tooltipFlag);
       this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, context, display, builder, tooltipFlag);
       this.addToTooltip(DataComponents.BLOCK_STATE, context, display, builder, tooltipFlag);
@@ -1004,8 +1017,12 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return result;
    }
 
-   public SwingAnimation getSwingAnimation() {
-      return (SwingAnimation)this.getOrDefault(DataComponents.SWING_ANIMATION, SwingAnimation.DEFAULT);
+   public SwingAnimation getAttackAnimation() {
+      return (SwingAnimation)this.getOrDefault(DataComponents.ATTACK_ANIMATION, SwingAnimation.DEFAULT);
+   }
+
+   public SwingAnimation getInteractAnimation() {
+      return (SwingAnimation)this.getOrDefault(DataComponents.INTERACT_ANIMATION, SwingAnimation.DEFAULT);
    }
 
    public boolean canPlaceOnBlockInAdventureMode(final BlockInWorld blockInWorld) {

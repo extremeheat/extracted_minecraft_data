@@ -2,7 +2,7 @@ package net.minecraft.world.level.levelgen.blockpredicates;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 
 public class TrueBlockPredicate implements BlockPredicate {
    public static final TrueBlockPredicate INSTANCE = new TrueBlockPredicate();
@@ -12,7 +12,7 @@ public class TrueBlockPredicate implements BlockPredicate {
       super();
    }
 
-   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+   public boolean test(final LevelAccessor level, final BlockPos origin) {
       return true;
    }
 

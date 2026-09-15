@@ -24,6 +24,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.HashedStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
@@ -40,6 +41,8 @@ import org.slf4j.Logger;
 public abstract class AbstractContainerMenu {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int SLOT_CLICKED_OUTSIDE = -999;
+   public static final int CONTAINER_CLICK_PRIMARY = 0;
+   public static final int CONTAINER_CLICK_SECONDARY = 1;
    public static final int QUICKCRAFT_TYPE_CHARITABLE = 0;
    public static final int QUICKCRAFT_TYPE_GREEDY = 1;
    public static final int QUICKCRAFT_TYPE_CLONE = 2;
@@ -415,15 +418,15 @@ public abstract class AbstractContainerMenu {
          }
       } else if (this.quickcraftStatus != 0) {
          this.resetQuickCraft();
-      } else if ((containerInput == ContainerInput.PICKUP || containerInput == ContainerInput.QUICK_MOVE) && (buttonNum == 0 || buttonNum == 1)) {
-         ClickAction clickAction = buttonNum == 0 ? ClickAction.PRIMARY : ClickAction.SECONDARY;
+      } else if ((containerInput == ContainerInput.PICKUP || containerInput == ContainerInput.QUICK_MOVE) && isContainerClickButton(buttonNum)) {
+         ClickAction clickAction = getClickAction(buttonNum);
          if (slotIndex == -999) {
             if (!this.getCarried().isEmpty()) {
                if (clickAction == ClickAction.PRIMARY) {
-                  player.drop(this.getCarried(), true);
+                  player.drop(this.getCarried(), true, Prediction.PREDICTED);
                   this.setCarried(ItemStack.EMPTY);
                } else {
-                  player.drop(this.getCarried().split(1), true);
+                  player.drop(this.getCarried().split(1), true, Prediction.PREDICTED);
                }
             }
          } else if (containerInput == ContainerInput.QUICK_MOVE) {
@@ -509,7 +512,7 @@ public abstract class AbstractContainerMenu {
                   target.setByPlayer(source.split(maxStackSize));
                   target.onTake(player, targetItemStack);
                   if (!inventory.add(targetItemStack)) {
-                     player.drop(targetItemStack, true);
+                     player.drop(targetItemStack, true, Prediction.PREDICTED);
                   }
                } else {
                   inventory.setItem(buttonNum, targetItemStack);
@@ -531,7 +534,7 @@ public abstract class AbstractContainerMenu {
          }
 
          ItemStack itemStack = slot.safeTake(amount, 2147483647, player);
-         player.drop(itemStack, true);
+         player.drop(itemStack, true, Prediction.PREDICTED);
          player.handleCreativeModeItemDrop(itemStack);
          if (buttonNum == 1) {
             while(!itemStack.isEmpty() && ItemStack.isSameItem(slot.getItem(), itemStack)) {
@@ -540,7 +543,7 @@ public abstract class AbstractContainerMenu {
                }
 
                itemStack = slot.safeTake(amount, 2147483647, player);
-               player.drop(itemStack, true);
+               player.drop(itemStack, true, Prediction.PREDICTED);
                player.handleCreativeModeItemDrop(itemStack);
             }
          }
@@ -566,6 +569,21 @@ public abstract class AbstractContainerMenu {
          }
       }
 
+   }
+
+   private static boolean isContainerClickButton(final int buttonNum) {
+      return buttonNum == 0 || buttonNum == 1;
+   }
+
+   private static ClickAction getClickAction(final int buttonNum) {
+      ClickAction var10000;
+      switch (buttonNum) {
+         case 0 -> var10000 = ClickAction.PRIMARY;
+         case 1 -> var10000 = ClickAction.SECONDARY;
+         default -> throw new IllegalArgumentException("Not a container click button: " + buttonNum);
+      }
+
+      return var10000;
    }
 
    private boolean tryItemClickBehaviourOverride(final Player player, final ClickAction clickAction, final Slot slot, final ItemStack clicked, final ItemStack carried) {
@@ -610,29 +628,15 @@ public abstract class AbstractContainerMenu {
    }
 
    private static void dropOrPlaceInInventory(final Player player, final ItemStack carried) {
-      boolean playerRemovedNotChangingDimension;
-      boolean var10000;
-      label27: {
-         playerRemovedNotChangingDimension = player.isRemoved() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
-         if (player instanceof ServerPlayer serverPlayer) {
-            if (serverPlayer.hasDisconnected()) {
-               var10000 = true;
-               break label27;
-            }
+      if (player instanceof ServerPlayer serverPlayer) {
+         boolean playerRemovedNotChangingDimension = serverPlayer.isRemoved() && serverPlayer.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
+         if (!playerRemovedNotChangingDimension && !serverPlayer.hasDisconnected()) {
+            serverPlayer.getInventory().placeItemBackInInventory(carried, Prediction.SERVER_ONLY);
+         } else {
+            serverPlayer.drop(carried, false, Prediction.SERVER_ONLY);
          }
 
-         var10000 = false;
       }
-
-      boolean serverPlayerHasDisconnected = var10000;
-      if (!playerRemovedNotChangingDimension && !serverPlayerHasDisconnected) {
-         if (player instanceof ServerPlayer) {
-            player.getInventory().placeItemBackInInventory(carried);
-         }
-      } else {
-         player.drop(carried, false);
-      }
-
    }
 
    protected void clearContainer(final Player player, final Container container) {

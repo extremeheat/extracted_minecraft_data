@@ -7,7 +7,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -26,7 +25,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -49,6 +50,7 @@ public class ServerConnectionListener {
    private volatile @Nullable UUID sessionId;
    private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
+   private final Queue<Connection> pendingConnections = new ConcurrentLinkedQueue();
 
    public ServerConnectionListener(final MinecraftServer server) {
       super();
@@ -78,7 +80,7 @@ public class ServerConnectionListener {
                Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
                int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
                Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
-               ServerConnectionListener.this.connections.add(connection);
+               ServerConnectionListener.this.pendingConnections.add(connection);
                connection.configurePacketHandler(pipeline);
                connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
             }
@@ -111,26 +113,6 @@ public class ServerConnectionListener {
       }
 
       return newChannel.channel().localAddress();
-   }
-
-   public void acceptChannel(final Channel channel, final UUID profileId) {
-      channel.pipeline().addLast(new ChannelHandler[]{new ChannelInitializer<Channel>() {
-         {
-            Objects.requireNonNull(ServerConnectionListener.this);
-         }
-
-         protected void initChannel(final Channel ch) {
-            int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
-            Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
-            ChannelPipeline pipeline = ch.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
-            Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
-            connection.configurePacketHandler(pipeline);
-            connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
-            connection.setIntendedProfileId(profileId);
-            ServerConnectionListener.this.connections.add(connection);
-         }
-      }});
-      EventLoopGroupHolder.local().eventLoopGroup().register(channel).syncUninterruptibly();
    }
 
    public void stop() {
@@ -168,6 +150,7 @@ public class ServerConnectionListener {
 
    public void tick() {
       synchronized(this.connections) {
+         this.addPendingConnections();
          Iterator<Connection> iterator = this.connections.iterator();
 
          while(iterator.hasNext()) {
@@ -204,6 +187,14 @@ public class ServerConnectionListener {
 
    public MinecraftServer getServer() {
       return this.server;
+   }
+
+   private void addPendingConnections() {
+      Connection connection;
+      while((connection = (Connection)this.pendingConnections.poll()) != null) {
+         this.connections.add(connection);
+      }
+
    }
 
    public List<Connection> getConnections() {

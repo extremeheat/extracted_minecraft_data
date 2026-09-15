@@ -51,7 +51,7 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    protected boolean canStillUse(final ServerLevel level, final Mob body, final long timestamp) {
-      return body.isBaby() && this.targetBed != null && this.isBed(level, this.targetBed) && !this.tiredOfWalking(level, body) && !this.tiredOfJumping(level, body);
+      return body.isBaby() && this.targetBed != null && this.isJumpable(level, this.targetBed) && !this.tiredOfWalking(level, body) && !this.tiredOfJumping(level, body);
    }
 
    protected boolean timedOut(final long timestamp) {
@@ -84,15 +84,15 @@ public class JumpOnBed extends Behavior<Mob> {
    private boolean onOrOverBed(final ServerLevel level, final Mob body) {
       BlockPos bodyPos = body.blockPosition();
       BlockPos oneBelow = bodyPos.below();
-      return this.isBed(level, bodyPos) || this.isBed(level, oneBelow);
+      return this.isJumpable(level, bodyPos) || this.isJumpable(level, oneBelow);
    }
 
    private boolean onBedSurface(final ServerLevel level, final Mob body) {
-      return this.isBed(level, body.blockPosition());
+      return this.isJumpable(level, body.blockPosition());
    }
 
-   private boolean isBed(final ServerLevel level, final BlockPos bodyPos) {
-      return level.getBlockState(bodyPos).is(BlockTags.BEDS);
+   private boolean isJumpable(final ServerLevel level, final BlockPos bodyPos) {
+      return level.getBlockState(bodyPos).is(BlockTags.VILLAGER_BABIES_CAN_JUMP_ON_BED);
    }
 
    private Optional<BlockPos> getNearestBed(final Mob body) {

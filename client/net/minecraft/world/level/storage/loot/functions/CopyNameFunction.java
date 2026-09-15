@@ -2,8 +2,9 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.Nameable;
@@ -16,8 +17,8 @@ public class CopyNameFunction extends LootItemConditionalFunction {
    public static final MapCodec<CopyNameFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((f) -> f.source)).apply(i, CopyNameFunction::new));
    private final LootContextArg<Object> source;
 
-   private CopyNameFunction(final List<LootItemCondition> predicates, final LootContextArg<?> source) {
-      super(predicates);
+   private CopyNameFunction(final Optional<Holder<LootItemCondition>> condition, final LootContextArg<?> source) {
+      super(condition);
       this.source = LootContextArg.<Object>cast(source);
    }
 

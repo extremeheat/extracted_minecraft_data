@@ -33,7 +33,7 @@ public interface CatVariants {
    }
 
    static void bootstrap(final BootstrapContext<CatVariant> context) {
-      HolderGetter<Structure> structures = context.<Structure>lookup(Registries.STRUCTURE);
+      HolderGetter<Structure> structures = context.lookup(Registries.STRUCTURE);
       registerForAnyConditions(context, TABBY, "entity/cat/cat_tabby", "entity/cat/cat_tabby_baby");
       registerForAnyConditions(context, BLACK, "entity/cat/cat_black", "entity/cat/cat_black_baby");
       registerForAnyConditions(context, RED, "entity/cat/cat_red", "entity/cat/cat_red_baby");

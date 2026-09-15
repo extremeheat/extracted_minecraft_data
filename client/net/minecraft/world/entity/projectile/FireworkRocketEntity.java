@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -190,7 +191,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    }
 
    protected void onHitBlock(final BlockHitResult hitResult) {
-      BlockPos pos = new BlockPos(hitResult.getBlockPos());
+      BlockPos pos = hitResult.getBlockPos().immutable();
       this.level().getBlockState(pos).entityInside(this.level(), pos, this, InsideBlockEffectApplier.NOOP, true);
       Level var4 = this.level();
       if (var4 instanceof ServerLevel level) {
@@ -252,10 +253,10 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       return (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 17 && this.level().isClientSide()) {
          Vec3 movement = this.getDeltaMovement();
-         this.level().createFireworks(this.getX(), this.getY(), this.getZ(), movement.x, movement.y, movement.z, this.getExplosions());
+         this.level().createFireworks(this.getX(), this.getY(), this.getZ(), movement.x, movement.y, movement.z, this.getExplosions(), !this.isSilent());
       }
 
       super.handleEntityEvent(id);

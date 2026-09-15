@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustColorTransitionOptions;
@@ -44,7 +43,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<SculkSensorBlock> CODEC = simpleCodec(SculkSensorBlock::new);
    public static final int ACTIVE_TICKS = 30;
    public static final int COOLDOWN_TICKS = 10;
    public static final EnumProperty<SculkSensorPhase> PHASE;
@@ -52,10 +50,6 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
    private static final float[] RESONANCE_PITCH_BEND;
-
-   public MapCodec<? extends SculkSensorBlock> codec() {
-      return CODEC;
-   }
 
    public SculkSensorBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -75,7 +69,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (getPhase(state) != SculkSensorPhase.ACTIVE) {
          if (getPhase(state) == SculkSensorPhase.COOLDOWN) {
-            level.setBlock(pos, (BlockState)state.setValue(PHASE, SculkSensorPhase.INACTIVE), 3);
+            level.setBlockAndUpdate(pos, (BlockState)state.setValue(PHASE, SculkSensorPhase.INACTIVE));
             if (!(Boolean)state.getValue(WATERLOGGED)) {
                level.playSound((Entity)null, pos, SoundEvents.SCULK_CLICKING_STOP, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.2F + 0.8F);
             }
@@ -166,7 +160,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    public static void deactivate(final Level level, final BlockPos pos, final BlockState state) {
-      level.setBlock(pos, (BlockState)((BlockState)state.setValue(PHASE, SculkSensorPhase.COOLDOWN)).setValue(POWER, 0), 3);
+      level.setBlockAndUpdate(pos, (BlockState)((BlockState)state.setValue(PHASE, SculkSensorPhase.COOLDOWN)).setValue(POWER, 0));
       level.scheduleTick(pos, state.getBlock(), 10);
       updateNeighbours(level, pos, state);
    }
@@ -177,7 +171,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    public void activate(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state, final int calculatedPower, final int vibrationFrequency) {
-      level.setBlock(pos, (BlockState)((BlockState)state.setValue(PHASE, SculkSensorPhase.ACTIVE)).setValue(POWER, calculatedPower), 3);
+      level.setBlockAndUpdate(pos, (BlockState)((BlockState)state.setValue(PHASE, SculkSensorPhase.ACTIVE)).setValue(POWER, calculatedPower));
       level.scheduleTick(pos, state.getBlock(), this.getActiveTicks());
       updateNeighbours(level, pos, state);
       tryResonateVibration(sourceEntity, level, pos, vibrationFrequency);

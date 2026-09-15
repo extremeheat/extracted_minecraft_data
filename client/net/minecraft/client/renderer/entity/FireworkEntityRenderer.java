@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Quaternionfc;
 
 public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity, FireworkRocketRenderState> {
    private final ItemModelResolver itemModelResolver;
@@ -21,11 +20,11 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity,
 
    public void submit(final FireworkRocketRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      poseStack.mulPose((Quaternionfc)camera.orientation);
+      poseStack.rotate(camera.orientation);
       if (state.isShotAtAngle) {
-         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
-         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
+         poseStack.rotateDegrees(Axis.ZP, 180.0F);
+         poseStack.rotateDegrees(Axis.YP, 180.0F);
+         poseStack.rotateDegrees(Axis.XP, 90.0F);
       }
 
       state.item.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);

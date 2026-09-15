@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.ParserUtils;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.SlotRange;
@@ -19,7 +18,6 @@ import net.minecraft.world.inventory.SlotRanges;
 
 public class SlotArgument implements ArgumentType<Integer> {
    private static final Collection<String> EXAMPLES = Arrays.asList("container.5", "weapon");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_SLOT = new DynamicCommandExceptionType((id) -> Component.translatableEscape("slot.unknown", id));
    private static final DynamicCommandExceptionType ERROR_ONLY_SINGLE_SLOT_ALLOWED = new DynamicCommandExceptionType((id) -> Component.translatableEscape("slot.only_single_allowed", id));
 
    public SlotArgument() {
@@ -35,12 +33,9 @@ public class SlotArgument implements ArgumentType<Integer> {
    }
 
    public Integer parse(final StringReader reader) throws CommandSyntaxException {
-      String name = ParserUtils.readWhile(reader, (c) -> c != ' ');
-      SlotRange result = SlotRanges.nameToIds(name);
-      if (result == null) {
-         throw ERROR_UNKNOWN_SLOT.createWithContext(reader, name);
-      } else if (result.size() != 1) {
-         throw ERROR_ONLY_SINGLE_SLOT_ALLOWED.createWithContext(reader, name);
+      SlotRange result = SlotRanges.read(reader);
+      if (result.size() != 1) {
+         throw ERROR_ONLY_SINGLE_SLOT_ALLOWED.createWithContext(reader, result.getSerializedName());
       } else {
          return result.slots().getInt(0);
       }

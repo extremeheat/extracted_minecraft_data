@@ -3,8 +3,12 @@ package net.minecraft.client.gui;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.BanDetails;
-import com.mojang.authlib.yggdrasil.ProfileActionType;
-import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.authlib.services.ProfileActionType;
+import com.mojang.authlib.services.ProfileResult;
+import com.mojang.blaze3d.Blaze3D;
+import com.mojang.jtracy.Section;
+import com.mojang.jtracy.SectionCategory;
+import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +59,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
@@ -65,11 +68,13 @@ import org.slf4j.Logger;
 
 public class Gui {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final SectionCategory TRACY_CURRENT_SCREEN = TracyClient.createSectionCategory("Current Screen");
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
    public static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private final Minecraft minecraft;
    public final Hud hud;
    private final GuiRenderState guiRenderState;
+   private @Nullable Section screenTracySection;
    private @Nullable Screen screen;
    private @Nullable Overlay overlay;
    private boolean clientLevelTeardownInProgress;
@@ -117,13 +122,7 @@ public class Gui {
       }
 
       if (this.screen != null) {
-         try {
-            this.screen.tick();
-         } catch (Throwable t) {
-            CrashReport report = CrashReport.forThrowable(t, "Ticking screen");
-            this.screen.fillCrashDetails(report);
-            throw new ReportedException(report);
-         }
+         this.screen.tick();
       }
 
       profiler.pop();
@@ -234,7 +233,14 @@ public class Gui {
          LOGGER.error("setScreen called from non-game thread");
       }
 
+      if (this.screenTracySection != null) {
+         this.screenTracySection.close();
+         this.screenTracySection = null;
+      }
+
       if (this.screen != null) {
+         this.screen.clearFocus();
+         this.minecraft.textInputManager().stopTextInput();
          this.screen.removed();
       } else {
          this.minecraft.setLastInputType(InputType.NONE);
@@ -261,6 +267,8 @@ public class Gui {
       this.screen = screen;
       if (this.screen != null) {
          this.screen.added();
+         String name = this.screen.getTitle().getString();
+         this.screenTracySection = TRACY_CURRENT_SCREEN.enterSection(name.isBlank() ? this.screen.getClass().getSimpleName() : name);
       }
 
       if (screen != null) {
@@ -277,6 +285,7 @@ public class Gui {
          this.minecraft.mouseHandler.grabMouse();
       }
 
+      this.minecraft.mouseHandler.resyncMousePosition();
       this.minecraft.updateTitle();
    }
 
@@ -368,7 +377,7 @@ public class Gui {
    }
 
    public void openChatAndAddText(final ChatComponent.ChatMethod chatMethod, final String text) {
-      this.openChatScreen(ChatComponent.ChatMethod.COMMAND);
+      this.openChatScreen(chatMethod);
       Screen var4 = this.screen;
       if (var4 instanceof ChatScreen chatScreen) {
          chatScreen.insertText(text, false);
@@ -407,7 +416,7 @@ public class Gui {
       if (multiplayerBan != null) {
          screens.add((Function)(next) -> BanNoticeScreens.create((result) -> {
                if (result) {
-                  Util.getPlatform().openUri(CommonLinks.SUSPENSION_HELP);
+                  Blaze3D.openUri(CommonLinks.SUSPENSION_HELP);
                }
 
                next.run();

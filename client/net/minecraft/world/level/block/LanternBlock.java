@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -23,15 +22,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class LanternBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<LanternBlock> CODEC = simpleCodec(LanternBlock::new);
    public static final BooleanProperty HANGING;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE_STANDING;
    private static final VoxelShape SHAPE_HANGING;
-
-   public MapCodec<? extends LanternBlock> codec() {
-      return CODEC;
-   }
 
    public LanternBlock(final BlockBehaviour.Properties properties) {
       super(properties);

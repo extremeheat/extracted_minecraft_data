@@ -127,7 +127,7 @@ public class PortalForcer {
          for(int height = -1; height < 4; ++height) {
             if (width == -1 || width == 2 || height == -1 || height == 3) {
                mutable.setWithOffset(closestFullPosition, width * direction.getStepX(), height, width * direction.getStepZ());
-               this.level.setBlock(mutable, Blocks.OBSIDIAN.defaultBlockState(), 3);
+               this.level.setBlockAndUpdate(mutable, Blocks.OBSIDIAN.defaultBlockState());
             }
          }
       }

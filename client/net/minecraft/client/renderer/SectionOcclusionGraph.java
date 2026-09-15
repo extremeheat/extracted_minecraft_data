@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
@@ -143,6 +144,7 @@ public class SectionOcclusionGraph {
          sectionsToPropagateFrom.add(section);
       }
 
+      Minecraft.getInstance().levelRenderer.removeTransientBlocksInSection(section.getSectionNode(), section.getSectionMesh().getCompileTaskStartTime());
    }
 
    public void update(final CameraRenderState camera, final int fov, final ChunkLoadingRenderState chunkLoadingRenderState) {
@@ -276,8 +278,8 @@ public class SectionOcclusionGraph {
                if (storage.sectionTree.add(node.section)) {
                   onSectionAdded.accept(node.section);
                }
-            } else {
-               node.section.sectionMesh.compareAndSet(CompiledSectionMesh.UNCOMPILED, CompiledSectionMesh.EMPTY);
+            } else if (node.section.sectionMesh.compareAndSet(CompiledSectionMesh.UNCOMPILED, CompiledSectionMesh.EMPTY)) {
+               node.section.updateUploadTime();
             }
 
             boolean distantFromCamera = Math.abs(SectionPos.x(sectionNode) - cameraSectionPos.x()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE || Math.abs(SectionPos.y(sectionNode) - cameraSectionPos.y()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE || Math.abs(SectionPos.z(sectionNode) - cameraSectionPos.z()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE;
@@ -378,7 +380,6 @@ public class SectionOcclusionGraph {
             SectionRenderDispatcher.RenderSection section = this.viewArea.getRenderSection(sectionNode);
             if (section != null) {
                this.schedulePropagationFrom(section);
-               section.setWasPreviouslyEmpty(true);
             }
          }
       }

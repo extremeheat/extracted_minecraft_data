@@ -65,6 +65,7 @@ public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional
    public void attack(final LivingEntity attacker, final EquipmentSlot hand) {
       float damage = (float)attacker.getAttributeValue(Attributes.ATTACK_DAMAGE);
       ItemStack weaponItem = attacker.getItemBySlot(hand);
+      SwingAnimation swingAnimation = weaponItem.getAttackAnimation();
       AttackRange attackRange = attacker.getAttackRangeWith(weaponItem);
       boolean hitSomething = false;
 
@@ -79,7 +80,7 @@ public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional
       }
 
       this.makeSound(attacker);
-      attacker.swing(InteractionHand.MAIN_HAND, false);
+      attacker.swingAndResetAttackStrength(InteractionHand.MAIN_HAND, swingAnimation, false);
    }
 
    static {

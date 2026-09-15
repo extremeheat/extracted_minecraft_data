@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
-import com.mojang.serialization.Lifecycle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.RegistryOps;
@@ -40,8 +38,9 @@ public class PlaceholderLookupProvider implements HolderGetter.Provider {
             Objects.requireNonNull(PlaceholderLookupProvider.this);
          }
 
-         public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(final ResourceKey<? extends Registry<? extends T>> registryKey) {
-            return PlaceholderLookupProvider.this.context.lookup(registryKey).map(RegistryOps.RegistryInfo::fromRegistryLookup).or(() -> Optional.of(new RegistryOps.RegistryInfo(PlaceholderLookupProvider.this.lookup.castAsOwner(), PlaceholderLookupProvider.this.lookup.castAsLookup(), Lifecycle.experimental())));
+         public <T> Optional<HolderGetter<T>> lookup(final ResourceKey<? extends Registry<? extends T>> registryKey) {
+            Optional<HolderGetter<T>> result = PlaceholderLookupProvider.this.context.lookup(registryKey).map((e) -> e);
+            return result.or(() -> Optional.of(PlaceholderLookupProvider.this.lookup.castAsLookup()));
          }
       });
    }
@@ -62,7 +61,7 @@ public class PlaceholderLookupProvider implements HolderGetter.Provider {
       return !this.holders.isEmpty() || !this.holderSets.isEmpty();
    }
 
-   private class UniversalLookup implements HolderGetter<Object>, HolderOwner<Object> {
+   private class UniversalLookup implements HolderGetter<Object> {
       private UniversalLookup() {
          Objects.requireNonNull(PlaceholderLookupProvider.this);
          super();
@@ -93,10 +92,6 @@ public class PlaceholderLookupProvider implements HolderGetter.Provider {
       }
 
       public <T> HolderGetter<T> castAsLookup() {
-         return this;
-      }
-
-      public <T> HolderOwner<T> castAsOwner() {
          return this;
       }
    }

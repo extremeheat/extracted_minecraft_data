@@ -77,7 +77,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       public CategoryEntry(final KeyMapping.Category category) {
          Objects.requireNonNull(KeyBindsList.this);
          super();
-         this.categoryName = FocusableTextWidget.builder(category.label(), KeyBindsList.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
+         this.categoryName = FocusableTextWidget.builder(category.label().copy().withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD), KeyBindsList.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
@@ -124,6 +124,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         this.updateChangeButtonMessage();
          int resetButtonX = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
          int buttonY = this.getContentY() - 2;
          this.resetButton.setPosition(resetButtonX, buttonY);
@@ -154,7 +155,6 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       }
 
       public void refreshEntry() {
-         this.changeButton.setMessage(this.key.getTranslatedKeyMessage());
          this.resetButton.active = !this.key.isDefault();
          this.hasCollision = false;
          MutableComponent tooltip = Component.empty();
@@ -172,16 +172,25 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          }
 
          if (this.hasCollision) {
-            this.changeButton.setMessage(Component.literal("[ ").append((Component)this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE)).append(" ]").withStyle(ChatFormatting.YELLOW));
             this.changeButton.setTooltip(Tooltip.create(Component.translatable("controls.keybinds.duplicateKeybinds", tooltip)));
          } else {
             this.changeButton.setTooltip((Tooltip)null);
          }
 
-         if (KeyBindsList.this.keyBindsScreen.selectedKey == this.key) {
-            this.changeButton.setMessage(Component.literal("> ").append((Component)this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE, ChatFormatting.UNDERLINE)).append(" <").withStyle(ChatFormatting.YELLOW));
+         this.updateChangeButtonMessage();
+      }
+
+      private void updateChangeButtonMessage() {
+         Component message = this.key.getTranslatedKeyMessage();
+         if (this.hasCollision) {
+            message = Component.literal("[ ").append((Component)message.copy().withStyle(ChatFormatting.WHITE)).append(" ]").withStyle(ChatFormatting.YELLOW);
          }
 
+         if (KeyBindsList.this.keyBindsScreen.selectedKey == this.key) {
+            message = Component.literal("> ").append((Component)message.copy().withStyle(ChatFormatting.WHITE, ChatFormatting.UNDERLINE)).append(" <").withStyle(ChatFormatting.YELLOW);
+         }
+
+         this.changeButton.setMessage(message);
       }
    }
 }

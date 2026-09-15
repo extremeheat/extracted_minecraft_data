@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,7 +26,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StemBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<StemBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((b) -> b.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("attached_stem").forGetter((b) -> b.attachedStem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((b) -> b.seed), TagKey.codec(Registries.BLOCK).fieldOf("stem_support_blocks").forGetter((b) -> b.stemSupportBlocks), TagKey.codec(Registries.BLOCK).fieldOf("fruit_support_blocks").forGetter((b) -> b.fruitSupportBlocks), propertiesCodec()).apply(i, StemBlock::new));
    public static final int MAX_AGE = 7;
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPES;
@@ -37,10 +34,6 @@ public class StemBlock extends VegetationBlock implements BonemealableBlock {
    private final ResourceKey<Item> seed;
    private final TagKey<Block> stemSupportBlocks;
    private final TagKey<Block> fruitSupportBlocks;
-
-   public MapCodec<StemBlock> codec() {
-      return CODEC;
-   }
 
    protected StemBlock(final ResourceKey<Block> fruit, final ResourceKey<Block> attachedStem, final ResourceKey<Item> seed, final TagKey<Block> stemSupportBlocks, final TagKey<Block> fruitSupportBlocks, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -91,15 +84,15 @@ public class StemBlock extends VegetationBlock implements BonemealableBlock {
       return new ItemStack((ItemLike)DataFixUtils.orElse(level.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return (Integer)state.getValue(AGE) != 7;
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int age = Math.min(7, (Integer)state.getValue(AGE) + Mth.nextInt(random, 2, 5));
       BlockState newState = (BlockState)state.setValue(AGE, age);
       level.setBlock(pos, newState, 2);

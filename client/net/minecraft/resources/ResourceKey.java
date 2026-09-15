@@ -11,7 +11,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.StreamCodec;
 
 public class ResourceKey<T> {
-   private static final ConcurrentMap<InternKey, ResourceKey<?>> VALUES = (new MapMaker()).weakValues().makeMap();
+   public static final StreamCodec<ByteBuf, ResourceKey<? extends Registry<?>>> REGISTRY_STREAM_CODEC;
+   private static final ConcurrentMap<InternKey, ResourceKey<?>> VALUES;
    private final Identifier registryName;
    private final Identifier identifier;
 
@@ -72,6 +73,11 @@ public class ResourceKey<T> {
 
    public ResourceKey<Registry<T>> registryKey() {
       return createRegistryKey(this.registryName);
+   }
+
+   static {
+      REGISTRY_STREAM_CODEC = Identifier.STREAM_CODEC.map(ResourceKey::createRegistryKey, ResourceKey::identifier);
+      VALUES = (new MapMaker()).weakValues().makeMap();
    }
 
    private static record InternKey(Identifier registry, Identifier identifier) {

@@ -30,20 +30,14 @@ public class OldMinecartBehavior extends MinecartBehavior {
    private static final double MAX_SPEED_IN_WATER = 0.2;
    private static final double MAX_SPEED_ON_LAND = 0.4;
    private static final double ABSOLUTE_MAX_SPEED = 0.4;
-   private final InterpolationHandler interpolation;
    private Vec3 targetDeltaMovement;
 
    public OldMinecartBehavior(final AbstractMinecart minecart) {
       super(minecart);
       this.targetDeltaMovement = Vec3.ZERO;
-      this.interpolation = new InterpolationHandler(minecart, this::onInterpolation);
    }
 
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
-   }
-
-   public void onInterpolation(final InterpolationHandler interpolation) {
+   public void onInterpolationStart(final InterpolationHandler interpolation) {
       this.setDeltaMovement(this.targetDeltaMovement);
    }
 
@@ -90,9 +84,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
          this.setYRot(this.getYRot() % 360.0F);
          this.pushAndPickupEntities();
       } else {
-         if (this.interpolation.hasActiveInterpolation()) {
-            this.interpolation.interpolate();
-         } else {
+         if (!this.minecart.getInterpolation().hasActiveInterpolation()) {
             this.minecart.reapplyPosition();
             this.setXRot(this.getXRot() % 360.0F);
             this.setYRot(this.getYRot() % 360.0F);

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,17 +41,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class LecternBlock extends BaseEntityBlock {
-   public static final MapCodec<LecternBlock> CODEC = simpleCodec(LecternBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty HAS_BOOK;
    private static final VoxelShape SHAPE_COLLISION;
    private static final Map<Direction, VoxelShape> SHAPES;
    private static final int PAGE_CHANGE_IMPULSE_TICKS = 2;
-
-   public MapCodec<LecternBlock> codec() {
-      return CODEC;
-   }
 
    protected LecternBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -130,7 +124,7 @@ public class LecternBlock extends BaseEntityBlock {
 
    public static void resetBookState(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state, final boolean hasBook) {
       BlockState newState = (BlockState)((BlockState)state.setValue(POWERED, false)).setValue(HAS_BOOK, hasBook);
-      level.setBlock(pos, newState, 3);
+      level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
       updateBelow(level, pos, state);
    }
@@ -142,7 +136,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    private static void changePowered(final Level level, final BlockPos pos, final BlockState state, final boolean isPowered) {
-      level.setBlock(pos, (BlockState)state.setValue(POWERED, isPowered), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(POWERED, isPowered));
       updateBelow(level, pos, state);
    }
 

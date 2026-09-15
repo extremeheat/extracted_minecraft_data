@@ -1,10 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
@@ -18,17 +15,11 @@ import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 
 public class CoralBlock extends Block {
-   public static final MapCodec<Block> DEAD_CORAL_FIELD;
-   public static final MapCodec<CoralBlock> CODEC;
    private final Block deadBlock;
 
    public CoralBlock(final Block deadBlock, final BlockBehaviour.Properties properties) {
       super(properties);
       this.deadBlock = deadBlock;
-   }
-
-   public MapCodec<CoralBlock> codec() {
-      return CODEC;
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
@@ -63,10 +54,5 @@ public class CoralBlock extends Block {
       }
 
       return this.defaultBlockState();
-   }
-
-   static {
-      DEAD_CORAL_FIELD = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("dead");
-      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DEAD_CORAL_FIELD.forGetter((b) -> b.deadBlock), propertiesCodec()).apply(i, CoralBlock::new));
    }
 }

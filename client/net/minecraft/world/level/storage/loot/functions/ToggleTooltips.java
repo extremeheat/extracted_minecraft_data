@@ -3,8 +3,9 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
@@ -16,8 +17,8 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    public static final MapCodec<ToggleTooltips> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Codec.unboundedMap(DataComponentType.CODEC, Codec.BOOL).fieldOf("toggles").forGetter((e) -> e.values)).apply(i, ToggleTooltips::new));
    private final Map<DataComponentType<?>, Boolean> values;
 
-   private ToggleTooltips(final List<LootItemCondition> predicates, final Map<DataComponentType<?>, Boolean> values) {
-      super(predicates);
+   private ToggleTooltips(final Optional<Holder<LootItemCondition>> condition, final Map<DataComponentType<?>, Boolean> values) {
+      super(condition);
       this.values = values;
    }
 

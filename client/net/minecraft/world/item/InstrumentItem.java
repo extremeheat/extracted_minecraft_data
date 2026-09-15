@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.InstrumentComponent;
@@ -34,7 +35,16 @@ public class InstrumentItem extends Item {
          Instrument instrument = (Instrument)((Holder)instrumentHolder.get()).value();
          player.startUsingItem(hand);
          play(level, player, instrument);
-         player.getCooldowns().addCooldown(itemStack, Mth.floor(instrument.useDuration() * 20.0F));
+         int durabilityDamage = instrument.durabilityDamage();
+         if (durabilityDamage > 0) {
+            itemStack.hurtAndBreak(durabilityDamage, player, (EquipmentSlot)hand.asEquipmentSlot());
+         }
+
+         float instrumentCooldown = instrument.useDuration();
+         if (instrumentCooldown > 0.0F) {
+            player.getCooldowns().addCooldown(itemStack, Mth.floor(instrumentCooldown * 20.0F));
+         }
+
          player.awardStat(Stats.ITEM_USED.get(this));
          return InteractionResult.CONSUME;
       } else {

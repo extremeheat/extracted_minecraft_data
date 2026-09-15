@@ -1,10 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
@@ -15,20 +11,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -38,42 +26,21 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> implements RecipeAccess {
+public class RecipeManager implements RecipeAccess {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<ResourceKey<RecipePropertySet>, IngredientExtractor> RECIPE_PROPERTY_SETS;
-   private static final FileToIdConverter RECIPE_LISTER;
-   private final HolderLookup.Provider registries;
-   private RecipeMap recipes;
-   private Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets;
-   private SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes;
-   private List<ServerDisplayInfo> allDisplays;
-   private Map<ResourceKey<Recipe<?>>, List<ServerDisplayInfo>> recipeToDisplay;
+   private final RecipeMap recipes;
+   private Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets = Map.of();
+   private SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
+   private List<ServerDisplayInfo> allDisplays = List.of();
+   private Map<ResourceKey<Recipe<?>>, List<ServerDisplayInfo>> recipeToDisplay = Map.of();
+   private final Collection<RecipeHolder<?>> learnableRecipes;
 
    public RecipeManager(final HolderLookup.Provider registries) {
       super();
-      this.recipes = RecipeMap.EMPTY;
-      this.propertySets = Map.of();
-      this.stonecutterRecipes = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
-      this.allDisplays = List.of();
-      this.recipeToDisplay = Map.of();
-      this.registries = registries;
-   }
-
-   protected RecipeMap prepare(final ResourceManager manager, final ProfilerFiller profiler) {
-      SortedMap<Identifier, Recipe<?>> recipes = new TreeMap();
-      SimpleJsonResourceReloadListener.scanDirectory(manager, RECIPE_LISTER, this.registries.createSerializationContext(JsonOps.INSTANCE), Recipe.CODEC, recipes);
-      List<RecipeHolder<?>> recipeHolders = new ArrayList(recipes.size());
-      recipes.forEach((id, recipe) -> {
-         ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
-         RecipeHolder<?> holder = new RecipeHolder(key, recipe);
-         recipeHolders.add(holder);
-      });
-      return RecipeMap.create(recipeHolders);
-   }
-
-   protected void apply(final RecipeMap recipes, final ResourceManager manager, final ProfilerFiller profiler) {
-      this.recipes = recipes;
-      LOGGER.info("Loaded {} recipes", recipes.values().size());
+      HolderLookup.RegistryLookup<Recipe<?>> recipeRegistries = registries.lookupOrThrow(Registries.RECIPE);
+      this.recipes = RecipeMap.create(recipeRegistries);
+      this.learnableRecipes = (Collection)this.recipes.values().stream().filter((r) -> !r.value().isSpecial()).collect(Collectors.toUnmodifiableList());
    }
 
    public void finalizeRecipeLoading(final FeatureFlagSet enabledFlags) {
@@ -151,6 +118,10 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return this.recipes.values();
    }
 
+   public Collection<RecipeHolder<?>> getLearnableRecipes() {
+      return this.learnableRecipes;
+   }
+
    public @Nullable ServerDisplayInfo getRecipeFromDisplay(final RecipeDisplayId id) {
       int index = id.index();
       return index >= 0 && index < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(index) : null;
@@ -162,12 +133,6 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
          recipes.forEach((e) -> output.accept(e.display));
       }
 
-   }
-
-   @VisibleForTesting
-   protected static RecipeHolder<?> fromJson(final ResourceKey<Recipe<?>> id, final JsonObject object, final HolderLookup.Provider registries) {
-      Recipe<?> recipe = (Recipe)Recipe.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), object).getOrThrow(JsonParseException::new);
-      return new RecipeHolder(id, recipe);
    }
 
    public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> type) {
@@ -262,8 +227,25 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
          }
 
          return var10000;
-      }, RecipePropertySet.FURNACE_INPUT, forSingleInput(RecipeType.SMELTING), RecipePropertySet.BLAST_FURNACE_INPUT, forSingleInput(RecipeType.BLASTING), RecipePropertySet.SMOKER_INPUT, forSingleInput(RecipeType.SMOKING), RecipePropertySet.CAMPFIRE_INPUT, forSingleInput(RecipeType.CAMPFIRE_COOKING));
-      RECIPE_LISTER = FileToIdConverter.registry(Registries.RECIPE);
+      }, RecipePropertySet.FURNACE_INPUT, forSingleInput(RecipeType.SMELTING), RecipePropertySet.BLAST_FURNACE_INPUT, forSingleInput(RecipeType.BLASTING), RecipePropertySet.SMOKER_INPUT, forSingleInput(RecipeType.SMOKING), RecipePropertySet.CAMPFIRE_INPUT, forSingleInput(RecipeType.CAMPFIRE_COOKING), RecipePropertySet.BREWING_INPUTS, (IngredientExtractor)(recipe) -> {
+         Optional var10000;
+         if (recipe instanceof BrewingRecipe brewingRecipe) {
+            var10000 = Optional.of(brewingRecipe.getInput().ingredient());
+         } else {
+            var10000 = Optional.empty();
+         }
+
+         return var10000;
+      }, RecipePropertySet.BREWING_REAGENTS, (IngredientExtractor)(recipe) -> {
+         Optional var10000;
+         if (recipe instanceof BrewingRecipe brewingRecipe) {
+            var10000 = Optional.of(brewingRecipe.getReagent().ingredient());
+         } else {
+            var10000 = Optional.empty();
+         }
+
+         return var10000;
+      });
    }
 
    public static record ServerDisplayInfo(RecipeDisplayEntry display, RecipeHolder<?> parent) {

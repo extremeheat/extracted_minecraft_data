@@ -2,20 +2,18 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.function.Function;
+import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
 
-public record NoiseRouter(DensityFunction barrierNoise, DensityFunction fluidLevelFloodednessNoise, DensityFunction fluidLevelSpreadNoise, DensityFunction lavaNoise, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction depth, DensityFunction ridges, DensityFunction preliminarySurfaceLevel, DensityFunction finalDensity, DensityFunction veinToggle, DensityFunction veinRidged, DensityFunction veinGap) {
-   public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create((i) -> i.group(field("barrier", NoiseRouter::barrierNoise), field("fluid_level_floodedness", NoiseRouter::fluidLevelFloodednessNoise), field("fluid_level_spread", NoiseRouter::fluidLevelSpreadNoise), field("lava", NoiseRouter::lavaNoise), field("temperature", NoiseRouter::temperature), field("vegetation", NoiseRouter::vegetation), field("continents", NoiseRouter::continents), field("erosion", NoiseRouter::erosion), field("depth", NoiseRouter::depth), field("ridges", NoiseRouter::ridges), field("preliminary_surface_level", NoiseRouter::preliminarySurfaceLevel), field("final_density", NoiseRouter::finalDensity), field("vein_toggle", NoiseRouter::veinToggle), field("vein_ridged", NoiseRouter::veinRidged), field("vein_gap", NoiseRouter::veinGap)).apply(i, NoiseRouter::new));
+public record NoiseRouter(DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction depth, DensityFunction ridges, DensityFunction chunkSurfaceLevel, DensityFunction finalDensity) {
+   public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create((i) -> i.group(DensityFunction.CODEC.fieldOf("temperature").forGetter(NoiseRouter::temperature), DensityFunction.CODEC.fieldOf("vegetation").forGetter(NoiseRouter::vegetation), DensityFunction.CODEC.fieldOf("continents").forGetter(NoiseRouter::continents), DensityFunction.CODEC.fieldOf("erosion").forGetter(NoiseRouter::erosion), DensityFunction.CODEC.fieldOf("depth").forGetter(NoiseRouter::depth), DensityFunction.CODEC.fieldOf("ridges").forGetter(NoiseRouter::ridges), DensityFunction.CODEC.fieldOf("chunk_surface_level").forGetter(NoiseRouter::chunkSurfaceLevel), DensityFunction.CODEC.fieldOf("final_density").forGetter(NoiseRouter::finalDensity)).apply(i, NoiseRouter::new));
 
    public NoiseRouter {
       super();
    }
 
-   private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(final String name, final Function<NoiseRouter, DensityFunction> getter) {
-      return DensityFunction.CODEC.fieldOf(name).forGetter(getter);
-   }
-
-   public NoiseRouter mapAll(final DensityFunction.Visitor visitor) {
-      return new NoiseRouter(this.barrierNoise.mapAll(visitor), this.fluidLevelFloodednessNoise.mapAll(visitor), this.fluidLevelSpreadNoise.mapAll(visitor), this.lavaNoise.mapAll(visitor), this.temperature.mapAll(visitor), this.vegetation.mapAll(visitor), this.continents.mapAll(visitor), this.erosion.mapAll(visitor), this.depth.mapAll(visitor), this.ridges.mapAll(visitor), this.preliminarySurfaceLevel.mapAll(visitor), this.finalDensity.mapAll(visitor), this.veinToggle.mapAll(visitor), this.veinRidged.mapAll(visitor), this.veinGap.mapAll(visitor));
+   public Climate.Sampler createClimateSampler(final DensitySamplerSet densitySamplers) {
+      return new Climate.Sampler(densitySamplers.get(this.temperature), densitySamplers.get(this.vegetation), densitySamplers.get(this.continents), densitySamplers.get(this.erosion), densitySamplers.get(this.depth), densitySamplers.get(this.ridges));
    }
 }

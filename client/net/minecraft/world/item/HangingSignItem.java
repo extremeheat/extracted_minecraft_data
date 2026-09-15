@@ -7,9 +7,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WallHangingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class HangingSignItem extends SignItem {
+public class HangingSignItem extends StandingAndWallBlockItem {
    public HangingSignItem(final Block hangingSign, final Block wallHangingSign, final Item.Properties properties) {
-      super(properties, hangingSign, wallHangingSign, Direction.UP);
+      super(hangingSign, wallHangingSign, Direction.UP, properties);
    }
 
    protected boolean canPlace(final LevelReader level, final BlockState possibleState, final BlockPos pos) {

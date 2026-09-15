@@ -270,7 +270,7 @@ public class HappyGhast extends Animal {
 
    protected void addPassenger(final Entity passenger) {
       if (!this.isVehicle()) {
-         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.HARNESS_GOGGLES_DOWN, this.getSoundSource(), 1.0F, 1.0F);
+         this.playSound(SoundEvents.HARNESS_GOGGLES_DOWN);
       }
 
       super.addPassenger(passenger);
@@ -292,7 +292,7 @@ public class HappyGhast extends Animal {
 
       if (!this.isVehicle()) {
          this.clearHome();
-         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.HARNESS_GOGGLES_UP, this.getSoundSource(), 1.0F, 1.0F);
+         this.playSound(SoundEvents.HARNESS_GOGGLES_UP);
       }
 
    }

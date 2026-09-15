@@ -4,23 +4,21 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeavesBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import org.slf4j.Logger;
@@ -28,7 +26,7 @@ import org.slf4j.Logger;
 public class Heightmap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Predicate<BlockState> NOT_AIR = (input) -> !input.isAir();
-   private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
+   private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = (state) -> state.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP);
    private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
    private final ChunkAccess chunk;
@@ -44,34 +42,37 @@ public class Heightmap {
    public static void primeHeightmaps(final ChunkAccess chunk, final Set<Types> types) {
       if (!types.isEmpty()) {
          int size = types.size();
-         ObjectList<Heightmap> heightmaps = new ObjectArrayList(size);
-         ObjectListIterator<Heightmap> iterator = heightmaps.iterator();
+         List<Heightmap> allHeightmaps = new ObjectArrayList(size);
+
+         for(Types type : types) {
+            allHeightmaps.add(chunk.getOrCreateHeightmapUnprimed(type));
+         }
+
+         List<Heightmap> remainingHeightmaps = new ObjectArrayList(size);
          int highestSectionPosition = chunk.getHighestSectionPosition() + 16;
          BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
          for(int x = 0; x < 16; ++x) {
             for(int z = 0; z < 16; ++z) {
-               for(Types type : types) {
-                  heightmaps.add(chunk.getOrCreateHeightmapUnprimed(type));
-               }
+               remainingHeightmaps.clear();
+               remainingHeightmaps.addAll(allHeightmaps);
 
                for(int y = highestSectionPosition - 1; y >= chunk.getMinY(); --y) {
                   pos.set(x, y, z);
                   BlockState state = chunk.getBlockState(pos);
                   if (!state.is(Blocks.AIR)) {
-                     while(iterator.hasNext()) {
-                        Heightmap heightmap = (Heightmap)iterator.next();
+                     for(int i = 0; i < remainingHeightmaps.size(); ++i) {
+                        Heightmap heightmap = (Heightmap)remainingHeightmaps.get(i);
                         if (heightmap.isOpaque.test(state)) {
                            heightmap.setHeight(x, z, y + 1);
-                           iterator.remove();
+                           remainingHeightmaps.remove(i);
+                           --i;
                         }
                      }
 
-                     if (heightmaps.isEmpty()) {
+                     if (remainingHeightmaps.isEmpty()) {
                         break;
                      }
-
-                     iterator.back(size);
                   }
                }
             }
@@ -162,8 +163,8 @@ public class Heightmap {
       WORLD_SURFACE(1, "WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
       OCEAN_FLOOR_WG(2, "OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR(3, "OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (input) -> input.blocksMotion() || !input.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> (input.blocksMotion() || !input.getFluidState().isEmpty()) && !(input.getBlock() instanceof LeavesBlock));
+      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (input) -> input.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP) || !input.getFluidState().isEmpty()),
+      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> input.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES) || !input.getFluidState().isEmpty());
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
       private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);

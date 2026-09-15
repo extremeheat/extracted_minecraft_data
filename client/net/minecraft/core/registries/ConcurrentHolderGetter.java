@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -35,5 +36,9 @@ public class ConcurrentHolderGetter<T> implements HolderGetter<T> {
             return this.original.get(id);
          }
       });
+   }
+
+   public boolean canSerialize(final HolderOwner<T> owner) {
+      return this.original.canSerialize(owner);
    }
 }

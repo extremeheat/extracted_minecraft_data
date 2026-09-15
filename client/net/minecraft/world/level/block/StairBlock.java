@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,7 +26,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StairBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<StairBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("base_state").forGetter((b) -> b.baseState), propertiesCodec()).apply(i, StairBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<Half> HALF;
    public static final EnumProperty<StairsShape> SHAPE;
@@ -44,10 +41,6 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    private static final Map<Direction, VoxelShape> SHAPE_TOP_INNER;
    private final Block base;
    protected final BlockState baseState;
-
-   public MapCodec<? extends StairBlock> codec() {
-      return CODEC;
-   }
 
    protected StairBlock(final BlockState baseState, final BlockBehaviour.Properties properties) {
       super(properties);

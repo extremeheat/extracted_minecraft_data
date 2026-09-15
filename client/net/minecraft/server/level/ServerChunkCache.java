@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
@@ -63,7 +63,6 @@ public class ServerChunkCache extends ChunkSource {
    public final ChunkMap chunkMap;
    private final SavedDataStorage savedDataStorage;
    private final TicketStorage ticketStorage;
-   private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
    private static final int CACHE_SIZE = 4;
    private final long[] lastChunkPos = new long[4];
@@ -74,7 +73,7 @@ public class ServerChunkCache extends ChunkSource {
    @VisibleForDebug
    private NaturalSpawner.@Nullable SpawnState lastSpawnState;
 
-   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage) {
+   public ServerChunkCache(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer fixerUpper, final StructureTemplateManager structureTemplateManager, final Executor executor, final ChunkGenerator generator, final int viewDistance, final int simulationDistance, final boolean syncWrites, final ChunkStatusUpdateListener chunkStatusListener) {
       super();
       this.level = level;
       this.mainThreadProcessor = new MainThreadExecutor(level);
@@ -89,7 +88,7 @@ public class ServerChunkCache extends ChunkSource {
 
       this.savedDataStorage = new SavedDataStorage(dataFolder, fixerUpper, level.registryAccess());
       this.ticketStorage = (TicketStorage)this.savedDataStorage.computeIfAbsent(TicketStorage.TYPE);
-      this.chunkMap = new ChunkMap(level, levelStorage, fixerUpper, structureTemplateManager, executor, this.mainThreadProcessor, this, generator, chunkStatusListener, overworldDataStorage, this.ticketStorage, viewDistance, syncWrites);
+      this.chunkMap = new ChunkMap(level, levelStorage, fixerUpper, structureTemplateManager, executor, this.mainThreadProcessor, this, generator, chunkStatusListener, this.ticketStorage, viewDistance, syncWrites);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(simulationDistance);
@@ -310,15 +309,12 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    private void tickChunks() {
-      long time = this.level.getGameTime();
-      long timeDiff = time - this.lastInhabitedUpdate;
-      this.lastInhabitedUpdate = time;
       if (!this.level.isDebug()) {
          ProfilerFiller profiler = Profiler.get();
          profiler.push("pollingChunks");
          if (this.level.tickRateManager().runsNormally()) {
             profiler.push("tickingChunks");
-            this.tickChunks(profiler, timeDiff);
+            this.tickChunks(profiler);
             profiler.pop();
          }
 
@@ -341,10 +337,10 @@ public class ServerChunkCache extends ChunkSource {
       profiler.pop();
    }
 
-   private void tickChunks(final ProfilerFiller profiler, final long timeDiff) {
+   private void tickChunks(final ProfilerFiller profiler) {
       profiler.push("naturalSpawnCount");
       int chunkCount = this.distanceManager.getNaturalSpawnChunkCount();
-      NaturalSpawner.SpawnState spawnCookie = NaturalSpawner.createState(chunkCount, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
+      NaturalSpawner.SpawnState spawnCookie = NaturalSpawner.createState(chunkCount, this.level, this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
       this.lastSpawnState = spawnCookie;
       boolean doMobSpawning = (Boolean)this.level.getGameRules().get(GameRules.SPAWN_MOBS);
       int tickSpeed = (Integer)this.level.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
@@ -366,7 +362,7 @@ public class ServerChunkCache extends ChunkSource {
          profiler.popPush("tickSpawningChunks");
 
          for(LevelChunk chunk : spawningChunks) {
-            this.tickSpawningChunk(chunk, timeDiff, spawningCategories, spawnCookie);
+            this.tickSpawningChunk(chunk, spawningCategories, spawnCookie);
          }
       } finally {
          spawningChunks.clear();
@@ -382,9 +378,9 @@ public class ServerChunkCache extends ChunkSource {
       profiler.pop();
    }
 
-   private void tickSpawningChunk(final LevelChunk chunk, final long timeDiff, final List<MobCategory> spawningCategories, final NaturalSpawner.SpawnState spawnCookie) {
+   private void tickSpawningChunk(final LevelChunk chunk, final List<MobCategory> spawningCategories, final NaturalSpawner.SpawnState spawnCookie) {
       ChunkPos chunkPos = chunk.getPos();
-      chunk.incrementInhabitedTime(timeDiff);
+      chunk.incrementInhabitedTime();
       if (this.distanceManager.inEntityTickingRange(chunkPos.pack())) {
          this.level.tickThunder(chunk);
       }
@@ -516,6 +512,10 @@ public class ServerChunkCache extends ChunkSource {
 
    public void sendToTrackingPlayers(final Entity entity, final Packet<? super ClientGamePacketListener> packet) {
       this.chunkMap.sendToTrackingPlayers(entity, packet);
+   }
+
+   public void sendToTrackingPlayersFiltered(final Entity entity, final Packet<? super ClientGamePacketListener> packet, final Predicate<ServerPlayer> targetPredicate) {
+      this.chunkMap.sendToTrackingPlayersFiltered(entity, packet, targetPredicate);
    }
 
    public void setViewDistance(final int newDistance) {

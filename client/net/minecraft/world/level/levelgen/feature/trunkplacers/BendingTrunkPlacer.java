@@ -14,7 +14,6 @@ import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class BendingTrunkPlacer extends TrunkPlacer {
@@ -32,12 +31,12 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       return TrunkPlacerType.BENDING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int logHeight = treeHeight - 1;
       BlockPos.MutableBlockPos pos = origin.mutable();
       BlockPos belowPos = pos.below();
-      placeBelowTrunkBlock(level, trunkSetter, random, belowPos, config);
+      placeBelowTrunkBlock(level, trunkSetter, random, belowPos, tree);
       List<FoliagePlacer.FoliageAttachment> foliagePoints = Lists.newArrayList();
 
       for(int i = 0; i <= logHeight; ++i) {
@@ -46,7 +45,7 @@ public class BendingTrunkPlacer extends TrunkPlacer {
          }
 
          if (TreeFeature.validTreePos(level, pos)) {
-            this.placeLog(level, trunkSetter, random, pos, config);
+            this.placeLog(level, trunkSetter, random, pos, tree);
          }
 
          if (i >= this.minHeightForLeaves) {
@@ -60,7 +59,7 @@ public class BendingTrunkPlacer extends TrunkPlacer {
 
       for(int i = 0; i <= dirLength; ++i) {
          if (TreeFeature.validTreePos(level, pos)) {
-            this.placeLog(level, trunkSetter, random, pos, config);
+            this.placeLog(level, trunkSetter, random, pos, tree);
          }
 
          foliagePoints.add(new FoliagePlacer.FoliageAttachment(pos.immutable(), 0, false));

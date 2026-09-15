@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,18 +27,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class FarmlandBlock extends Block {
-   public static final MapCodec<FarmlandBlock> CODEC = simpleCodec(FarmlandBlock::new);
+   private final Block baseBlock;
    public static final IntegerProperty MOISTURE;
    private static final VoxelShape SHAPE;
    public static final int MAX_MOISTURE = 7;
 
-   public MapCodec<FarmlandBlock> codec() {
-      return CODEC;
-   }
-
-   protected FarmlandBlock(final BlockBehaviour.Properties properties) {
+   protected FarmlandBlock(final Block baseBlock, final BlockBehaviour.Properties properties) {
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(MOISTURE, 0));
+      this.baseBlock = baseBlock;
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
@@ -56,7 +52,7 @@ public class FarmlandBlock extends Block {
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos()) ? Blocks.DIRT.defaultBlockState() : super.getStateForPlacement(context);
+      return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos()) ? this.baseBlock.defaultBlockState() : super.getStateForPlacement(context);
    }
 
    protected boolean useShapeForLightOcclusion(final BlockState state) {
@@ -69,7 +65,7 @@ public class FarmlandBlock extends Block {
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (!state.canSurvive(level, pos)) {
-         turnToDirt((Entity)null, state, level, pos);
+         this.turnToBaseBlock((Entity)null, state, level, pos);
       }
 
    }
@@ -80,7 +76,7 @@ public class FarmlandBlock extends Block {
          if (moisture > 0) {
             level.setBlock(pos, (BlockState)state.setValue(MOISTURE, moisture - 1), 2);
          } else if (!shouldMaintainFarmland(level, pos)) {
-            turnToDirt((Entity)null, state, level, pos);
+            this.turnToBaseBlock((Entity)null, state, level, pos);
          }
       } else if (moisture < 7) {
          level.setBlock(pos, (BlockState)state.setValue(MOISTURE, 7), 2);
@@ -90,16 +86,27 @@ public class FarmlandBlock extends Block {
 
    public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
       if (level instanceof ServerLevel serverLevel) {
-         if ((double)level.getRandom().nextFloat() < fallDistance - 0.5 && entity instanceof LivingEntity && (entity instanceof Player || (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) && entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F) {
-            turnToDirt(entity, state, level, pos);
+         if ((double)level.getRandom().nextFloat() < fallDistance - 0.5 && entity instanceof LivingEntity) {
+            boolean var10000;
+            if (entity instanceof Player) {
+               Player player = (Player)entity;
+               var10000 = !level.getServer().isUnderSpawnProtection(serverLevel, pos, player);
+            } else {
+               var10000 = (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING);
+            }
+
+            boolean canTrample = var10000;
+            if (canTrample && entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F) {
+               this.turnToBaseBlock(entity, state, level, pos);
+            }
          }
       }
 
       super.fallOn(level, state, pos, entity, fallDistance);
    }
 
-   public static void turnToDirt(final @Nullable Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
-      BlockState newState = pushEntitiesUp(state, Blocks.DIRT.defaultBlockState(), level, pos);
+   public void turnToBaseBlock(final @Nullable Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
+      BlockState newState = pushEntitiesUp(state, this.baseBlock.defaultBlockState(), level, pos);
       level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
    }
@@ -109,13 +116,7 @@ public class FarmlandBlock extends Block {
    }
 
    private static boolean isNearWater(final LevelReader level, final BlockPos pos) {
-      for(BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 1, 4))) {
-         if (level.getFluidState(blockPos).is(FluidTags.WATER)) {
-            return true;
-         }
-      }
-
-      return false;
+      return level.findBlocksIn(pos.offset(-4, 0, -4), pos.offset(4, 1, 4)).filterState((state) -> state.getFluidState().is(FluidTags.WATER)).anyMatched();
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

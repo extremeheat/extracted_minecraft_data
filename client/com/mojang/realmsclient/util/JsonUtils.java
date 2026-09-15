@@ -3,6 +3,7 @@ package com.mojang.realmsclient.util;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.util.UndashedUuid;
+import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
@@ -59,6 +60,20 @@ public class JsonUtils {
       }
    }
 
+   public static URI getRequiredUri(final String key, final JsonObject node) {
+      URI uri = getUriNullable(key, node);
+      if (uri == null) {
+         throw new IllegalStateException("Missing required URI property: " + key);
+      } else {
+         return uri;
+      }
+   }
+
+   public static @Nullable URI getUriNullable(final String key, final JsonObject node) {
+      String string = getStringOr(key, node, (String)null);
+      return string != null && !string.isEmpty() ? URI.create(string) : null;
+   }
+
    @Contract("_,_,!null->!null;_,_,null->_")
    public static @Nullable UUID getUuidOr(final String key, final JsonObject node, final @Nullable UUID defaultValue) {
       String uuidAsString = getStringOr(key, node, (String)null);
@@ -95,5 +110,11 @@ public class JsonUtils {
    public static Instant getDateOr(final String key, final JsonObject node) {
       JsonElement element = node.get(key);
       return element != null ? Instant.ofEpochMilli(Long.parseLong(element.getAsString())) : Instant.EPOCH;
+   }
+
+   @Contract("_,_,!null->!null;_,_,null->_")
+   public static @Nullable Instant getEpochMillisOr(final String key, final JsonObject node, final @Nullable Instant defaultValue) {
+      JsonElement element = node.get(key);
+      return element != null && !element.isJsonNull() ? Instant.ofEpochMilli(Long.parseLong(element.getAsString())) : defaultValue;
    }
 }

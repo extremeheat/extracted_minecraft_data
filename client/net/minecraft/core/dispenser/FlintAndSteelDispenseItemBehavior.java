@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -36,7 +37,7 @@ public class FlintAndSteelDispenseItemBehavior extends OptionalDispenseItemBehav
             level.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, targetPos);
          } else if (!CampfireBlock.canLight(target) && !CandleBlock.canLight(target) && !CandleCakeBlock.canLight(target)) {
             if (target.getBlock() instanceof TntBlock) {
-               if (TntBlock.prime(level, targetPos)) {
+               if (TntBlock.prime(level, targetPos, (LivingEntity)null, dispensed)) {
                   level.removeBlock(targetPos, false);
                } else {
                   this.setSuccess(false);

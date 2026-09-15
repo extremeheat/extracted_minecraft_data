@@ -18,9 +18,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.EndGatewayFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -133,7 +132,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
          BlockPos exitPortalPos = findOrCreateValidTeleportPos(currentLevel, portalEntryPos);
          exitPortalPos = exitPortalPos.above(10);
          LOGGER.debug("Creating portal at {}", exitPortalPos);
-         spawnGatewayPortal(currentLevel, exitPortalPos, EndGatewayConfiguration.knownExit(portalEntryPos, false));
+         spawnGatewayPortal(currentLevel, exitPortalPos, EndGatewayFeature.knownExit(portalEntryPos, false));
          this.setExitPosition(exitPortalPos, this.exactTeleport);
       }
 
@@ -158,7 +157,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       if (exitPortalPos == null) {
          BlockPos newExitPortalPos = BlockPos.containing(exitPortalXZPosTentative.x + 0.5, 75.0, exitPortalXZPosTentative.z + 0.5);
          LOGGER.debug("Failed to find a suitable block to teleport to, spawning an island on {}", newExitPortalPos);
-         level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(EndFeatures.END_ISLAND)).ifPresent((endIsland) -> ((ConfiguredFeature)endIsland.value()).place(level, level.getChunkSource().getGenerator(), RandomSource.create(newExitPortalPos.asLong()), newExitPortalPos));
+         level.registryAccess().lookup(Registries.FEATURE).flatMap((registry) -> registry.get(EndFeatures.END_ISLAND)).ifPresent((endIsland) -> ((Feature)endIsland.value()).place(level, level.getChunkSource().getGenerator(), RandomSource.create(newExitPortalPos.asLong()), newExitPortalPos));
          exitPortalPos = newExitPortalPos;
       } else {
          LOGGER.debug("Found suitable block to teleport to: {}", exitPortalPos);
@@ -237,8 +236,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       return closest;
    }
 
-   private static void spawnGatewayPortal(final ServerLevel level, final BlockPos portalPos, final EndGatewayConfiguration config) {
-      Feature.END_GATEWAY.place(config, level, level.getChunkSource().getGenerator(), RandomSource.create(), portalPos);
+   private static void spawnGatewayPortal(final ServerLevel level, final BlockPos portalPos, final EndGatewayFeature feature) {
+      feature.place(level, level.getChunkSource().getGenerator(), RandomSource.create(), portalPos);
    }
 
    public boolean shouldRenderFace(final Direction direction) {

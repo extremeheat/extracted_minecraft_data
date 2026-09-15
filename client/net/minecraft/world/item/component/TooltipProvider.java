@@ -8,4 +8,9 @@ import net.minecraft.world.item.TooltipFlag;
 
 public interface TooltipProvider {
    void addToTooltip(Item.TooltipContext context, Consumer<Component> consumer, TooltipFlag flag, DataComponentGetter components);
+
+   @FunctionalInterface
+   public interface Getter<T> {
+      TooltipProvider get(T component);
+   }
 }

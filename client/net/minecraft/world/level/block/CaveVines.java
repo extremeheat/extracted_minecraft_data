@@ -25,7 +25,7 @@ public interface CaveVines {
       if ((Boolean)state.getValue(BERRIES)) {
          if (level instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)level;
-            Block.dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.HARVEST_CAVE_VINE, state, level.getBlockEntity(pos), (ItemInstance)null, sourceEntity, (serverlvl, itemStack) -> Block.popResource(serverlvl, pos, itemStack));
+            Block.dropFromBlockInteractLootTable(serverLevel, BuiltInLootTables.HARVEST_CAVE_VINE, pos, state, level.getBlockEntity(pos), (ItemInstance)null, sourceEntity, (serverlvl, itemStack) -> Block.popResource(serverlvl, pos, itemStack));
             float pitch = Mth.randomBetween(serverLevel.getRandom(), 0.8F, 1.2F);
             serverLevel.playSound((Entity)null, pos, SoundEvents.CAVE_VINES_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, pitch);
             BlockState newState = (BlockState)state.setValue(BERRIES, false);

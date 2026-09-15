@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.Scanner;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.ChaseCommand;
@@ -166,7 +165,7 @@ public class ChaseClient {
          if (!players.isEmpty()) {
             ServerPlayer player = (ServerPlayer)players.get(0);
             ServerLevel level = this.server.overworld();
-            CommandSourceStack commandSourceStack = new CommandSourceStack(player.commandSource(), Vec3.atLowerCornerOf(level.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, "", CommonComponents.EMPTY, this.server, player);
+            CommandSourceStack commandSourceStack = new CommandSourceStack(player.commandSource(), Vec3.atLowerCornerOf(level.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, this.server, player);
             Commands commands = this.server.getCommands();
             commands.performPrefixedCommand(commandSourceStack, command);
          }

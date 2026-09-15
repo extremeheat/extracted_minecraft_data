@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 
-public interface HolderGetter<T> {
+public interface HolderGetter<T> extends HolderOwner<T> {
    Optional<Holder.Reference<T>> get(final ResourceKey<T> id);
 
    default Holder.Reference<T> getOrThrow(final ResourceKey<T> id) {

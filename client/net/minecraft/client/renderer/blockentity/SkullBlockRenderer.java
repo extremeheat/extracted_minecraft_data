@@ -109,7 +109,11 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
    public static void submitSkull(final float animationValue, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SkullModelBase model, final RenderType renderType, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       SkullModelBase.State modelState = new SkullModelBase.State();
       modelState.animationPos = animationValue;
-      submitNodeCollector.submitModel(model, modelState, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor, breakProgress);
+      submitNodeCollector.submitModel(model, modelState, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor);
+      if (breakProgress != null) {
+         submitNodeCollector.order(1).submitCrumblingOverlay(model, modelState, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, breakProgress);
+      }
+
    }
 
    private RenderType resolveSkullRenderType(final SkullBlock.Type type, final SkullBlockEntity entity) {
@@ -129,6 +133,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
 
    public static RenderType getPlayerSkinRenderType(final Identifier texture) {
       return RenderTypes.entityTranslucent(texture);
+   }
+
+   public static RenderType getPlayerSkinRenderTypeCutout(final Identifier texture) {
+      return RenderTypes.entityCutout(texture);
    }
 
    private static Transformation createWallTransformation(final Direction wallDirection) {

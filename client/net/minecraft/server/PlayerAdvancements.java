@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -211,8 +212,8 @@ public class PlayerAdvancements {
          if (!wasDone && progress.isDone()) {
             holder.value().rewards().grant(this.player);
             holder.value().display().ifPresent((display) -> {
-               if (display.shouldAnnounceChat() && (Boolean)this.player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
-                  this.playerList.broadcastSystemMessage(display.getType().createAnnouncement(holder, this.player), false);
+               if (display.announceToChat() && (Boolean)this.player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
+                  this.playerList.broadcastSystemMessage(display.type().createAnnouncement(holder, this.player), false);
                }
 
             });
@@ -279,7 +280,7 @@ public class PlayerAdvancements {
    public void flushDirty(final ServerPlayer player, final boolean showAdvancements) {
       if (this.isFirstPacket || !this.rootsToUpdate.isEmpty() || !this.progressChanged.isEmpty()) {
          Map<Identifier, AdvancementProgress> progress = new HashMap();
-         Set<AdvancementHolder> added = new HashSet();
+         Set<AdvancementNode> added = new HashSet();
          Set<Identifier> removed = new HashSet();
 
          for(AdvancementNode root : this.rootsToUpdate) {
@@ -296,7 +297,8 @@ public class PlayerAdvancements {
 
          this.progressChanged.clear();
          if (!progress.isEmpty() || !added.isEmpty() || !removed.isEmpty()) {
-            player.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, added, removed, progress, showAdvancements));
+            List<ClientboundUpdateAdvancementsPacket.PositionedAdvancement> convertedAdded = added.stream().map(ClientboundUpdateAdvancementsPacket.PositionedAdvancement::fromNode).toList();
+            player.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, convertedAdded, removed, progress, showAdvancements));
          }
       }
 
@@ -332,12 +334,12 @@ public class PlayerAdvancements {
       this.progress.put(holder, progress);
    }
 
-   private void updateTreeVisibility(final AdvancementNode root, final Set<AdvancementHolder> added, final Set<Identifier> removed) {
+   private void updateTreeVisibility(final AdvancementNode root, final Set<AdvancementNode> added, final Set<Identifier> removed) {
       AdvancementVisibilityEvaluator.evaluateVisibility(root, (node) -> this.getOrStartProgress(node.holder()).isDone(), (node, shouldBeVisible) -> {
          AdvancementHolder advancement = node.holder();
          if (shouldBeVisible) {
             if (this.visible.add(advancement)) {
-               added.add(advancement);
+               added.add(node);
                if (this.progress.containsKey(advancement)) {
                   this.progressChanged.add(advancement);
                }

@@ -109,9 +109,9 @@ public class SoundEvents {
    public static final SoundEvent ARROW_HIT = register("entity.arrow.hit");
    public static final SoundEvent ARROW_HIT_PLAYER = register("entity.arrow.hit_player");
    public static final SoundEvent ARROW_SHOOT = register("entity.arrow.shoot");
-   public static final SoundEvent AXE_STRIP = register("item.axe.strip");
-   public static final SoundEvent AXE_SCRAPE = register("item.axe.scrape");
-   public static final SoundEvent AXE_WAX_OFF = register("item.axe.wax_off");
+   public static final Holder.Reference<SoundEvent> AXE_STRIP = registerForHolder("item.axe.strip");
+   public static final Holder.Reference<SoundEvent> AXE_SCRAPE = registerForHolder("item.axe.scrape");
+   public static final Holder.Reference<SoundEvent> AXE_WAX_OFF = registerForHolder("item.axe.wax_off");
    public static final SoundEvent AXOLOTL_ATTACK = register("entity.axolotl.attack");
    public static final SoundEvent AXOLOTL_DEATH = register("entity.axolotl.death");
    public static final SoundEvent AXOLOTL_HURT = register("entity.axolotl.hurt");
@@ -484,6 +484,10 @@ public class SoundEvents {
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_2 = registerForHolder("item.crossbow.quick_charge_2");
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_3 = registerForHolder("item.crossbow.quick_charge_3");
    public static final SoundEvent CROSSBOW_SHOOT = register("item.crossbow.shoot");
+   public static final SoundEvent CUSHION_BREAK = register("entity.cushion.break");
+   public static final SoundEvent CUSHION_PLACE = register("entity.cushion.place");
+   public static final SoundEvent CUSHION_SIT = register("entity.cushion.sit");
+   public static final SoundEvent CUSHION_GET_UP = register("entity.cushion.get_up");
    public static final SoundEvent DEAD_BUSH_IDLE = register("block.deadbush.idle");
    public static final SoundEvent DECORATED_POT_BREAK = register("block.decorated_pot.break");
    public static final SoundEvent DECORATED_POT_FALL = register("block.decorated_pot.fall");
@@ -816,7 +820,7 @@ public class SoundEvents {
    public static final SoundEvent HARNESS_UNEQUIP = register("entity.happy_ghast.unequip");
    public static final SoundEvent HARNESS_GOGGLES_UP = register("entity.happy_ghast.harness_goggles_up");
    public static final SoundEvent HARNESS_GOGGLES_DOWN = register("entity.happy_ghast.harness_goggles_down");
-   public static final SoundEvent HOE_TILL = register("item.hoe.till");
+   public static final Holder.Reference<SoundEvent> HOE_TILL = registerForHolder("item.hoe.till");
    public static final SoundEvent HOGLIN_AMBIENT = register("entity.hoglin.ambient");
    public static final SoundEvent HOGLIN_ANGRY = register("entity.hoglin.angry");
    public static final SoundEvent HOGLIN_ATTACK = register("entity.hoglin.attack");
@@ -1437,7 +1441,7 @@ public class SoundEvents {
    public static final SoundEvent SHROOMLIGHT_PLACE = register("block.shroomlight.place");
    public static final SoundEvent SHROOMLIGHT_HIT = register("block.shroomlight.hit");
    public static final SoundEvent SHROOMLIGHT_FALL = register("block.shroomlight.fall");
-   public static final SoundEvent SHOVEL_FLATTEN = register("item.shovel.flatten");
+   public static final Holder.Reference<SoundEvent> SHOVEL_FLATTEN = registerForHolder("item.shovel.flatten");
    public static final SoundEvent SHULKER_AMBIENT = register("entity.shulker.ambient");
    public static final SoundEvent SHULKER_BOX_CLOSE = register("block.shulker_box.close");
    public static final SoundEvent SHULKER_BOX_OPEN = register("block.shulker_box.open");
@@ -1902,6 +1906,25 @@ public class SoundEvents {
    public static final SoundEvent SULFUR_CUBE_SMALL_JUMP = register("entity.small_sulfur_cube.jump");
    public static final SoundEvent SULFUR_CUBE_SMALL_SQUISH = register("entity.small_sulfur_cube.squish");
    public static final SoundEvent SULFUR_CUBE_SMALL_EAT = register("entity.small_sulfur_cube.eat");
+   public static final SoundEvent SHELF_MUSHROOM_BREAK = register("block.shelf_mushroom.break");
+   public static final SoundEvent SHELF_MUSHROOM_FALL = register("block.shelf_mushroom.fall");
+   public static final SoundEvent SHELF_MUSHROOM_PLACE = register("block.shelf_mushroom.place");
+   public static final SoundEvent SHELF_MUSHROOM_STEP = register("block.shelf_mushroom.step");
+   public static final SoundEvent SHELF_MUSHROOM_BOUNCE = register("block.shelf_mushroom.bounce");
+   public static final SoundEvent POPLAR_LEAVES_BREAK = register("block.poplar_leaves.break");
+   public static final SoundEvent POPLAR_LEAVES_HIT = register("block.poplar_leaves.hit");
+   public static final SoundEvent POPLAR_LEAVES_FALL = register("block.poplar_leaves.fall");
+   public static final SoundEvent POPLAR_LEAVES_PLACE = register("block.poplar_leaves.place");
+   public static final SoundEvent POPLAR_LEAVES_STEP = register("block.poplar_leaves.step");
+   public static final Holder.Reference<SoundEvent> POPLAR_LEAVES_AMBIENT = registerForHolder("block.poplar_leaves.ambient");
+   public static final SoundEvent STRAW_BED_BREAK = register("block.straw_bed.break");
+   public static final SoundEvent STRAW_BED_BREAK_LEAVE = register("block.straw_bed.break_leave");
+   public static final SoundEvent STRAW_BED_STEP = register("block.straw_bed.step");
+   public static final SoundEvent STRAW_BED_PLACE = register("block.straw_bed.place");
+   public static final SoundEvent STRAW_BED_HIT = register("block.straw_bed.hit");
+   public static final SoundEvent STRAW_BED_FALL = register("block.straw_bed.fall");
+   public static final SoundEvent RED_SHRUB_BREAK = register("block.red_shrub.break");
+   public static final SoundEvent RED_SHRUB_PLACE = register("block.red_shrub.place");
 
    public SoundEvents() {
       super();

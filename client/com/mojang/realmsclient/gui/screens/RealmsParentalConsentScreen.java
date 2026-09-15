@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import java.net.URI;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -32,7 +31,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
       this.layout.addChild(this.textWidget);
       LinearLayout buttonLayout = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
       Component privacyInfo = Component.translatable("mco.account.privacy.info.button");
-      buttonLayout.addChild(Button.builder(privacyInfo, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.GDPR)).build());
+      buttonLayout.addChild(Button.builder(privacyInfo, ConfirmLinkScreen.confirmLink(this, CommonLinks.GDPR)).build());
       buttonLayout.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();

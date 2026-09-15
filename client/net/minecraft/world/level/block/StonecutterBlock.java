@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -25,14 +24,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class StonecutterBlock extends Block {
-   public static final MapCodec<StonecutterBlock> CODEC = simpleCodec(StonecutterBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.stonecutter");
    public static final EnumProperty<Direction> FACING;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<StonecutterBlock> codec() {
-      return CODEC;
-   }
 
    public StonecutterBlock(final BlockBehaviour.Properties properties) {
       super(properties);

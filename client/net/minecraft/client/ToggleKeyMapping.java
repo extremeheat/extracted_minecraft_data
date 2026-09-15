@@ -9,7 +9,7 @@ public class ToggleKeyMapping extends KeyMapping {
    private final boolean shouldRestore;
 
    public ToggleKeyMapping(final String name, final int value, final KeyMapping.Category category, final BooleanSupplier needsToggle, final boolean shouldRestore) {
-      this(name, InputConstants.Type.KEYSYM, value, category, needsToggle, shouldRestore);
+      this(name, InputConstants.Type.KEYBOARD, value, category, needsToggle, shouldRestore);
    }
 
    public ToggleKeyMapping(final String name, final InputConstants.Type type, final int value, final KeyMapping.Category category, final BooleanSupplier needsToggle, final boolean shouldRestore) {
@@ -42,7 +42,7 @@ public class ToggleKeyMapping extends KeyMapping {
    }
 
    public boolean shouldRestoreStateOnScreenClosed() {
-      boolean shouldRestore = this.shouldRestore && this.needsToggle.getAsBoolean() && this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
+      boolean shouldRestore = this.shouldRestore && this.needsToggle.getAsBoolean() && this.key.getType() == InputConstants.Type.KEYBOARD && this.releasedByScreenWhenDown;
       this.releasedByScreenWhenDown = false;
       return shouldRestore;
    }

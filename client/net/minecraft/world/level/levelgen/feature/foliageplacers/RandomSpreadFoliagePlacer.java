@@ -8,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 
 public class RandomSpreadFoliagePlacer extends FoliagePlacer {
    public static final MapCodec<RandomSpreadFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(i.group(IntProviders.codec(1, 512).fieldOf("foliage_height").forGetter((c) -> c.foliageHeight), Codec.intRange(0, 256).fieldOf("leaf_placement_attempts").forGetter((c) -> c.leafPlacementAttempts))).apply(i, RandomSpreadFoliagePlacer::new));
@@ -25,18 +25,18 @@ public class RandomSpreadFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.RANDOM_SPREAD_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeFeature tree, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       BlockPos origin = foliageAttachment.pos();
       BlockPos.MutableBlockPos pos = origin.mutable();
 
       for(int i = 0; i < this.leafPlacementAttempts; ++i) {
          pos.setWithOffset(origin, random.nextInt(leafRadius) - random.nextInt(leafRadius), random.nextInt(foliageHeight) - random.nextInt(foliageHeight), random.nextInt(leafRadius) - random.nextInt(leafRadius));
-         tryPlaceLeaf(level, foliageSetter, random, config, pos);
+         tryPlaceLeaf(level, foliageSetter, random, tree, pos);
       }
 
    }
 
-   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeFeature tree) {
       return this.foliageHeight.sample(random);
    }
 

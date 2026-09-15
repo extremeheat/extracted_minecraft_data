@@ -11,6 +11,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -190,7 +191,7 @@ public class Ravager extends Raider {
       return this.stunnedTick <= 0 && this.roarTick <= 0 ? super.hasLineOfSight(target) : false;
    }
 
-   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage) {
+   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage, final boolean fullyBlocked) {
       if (this.roarTick == 0) {
          if (this.random.nextDouble() < 0.5) {
             this.stunnedTick = 40;
@@ -201,7 +202,7 @@ public class Ravager extends Raider {
             this.strongKnockback(defender);
          }
 
-         defender.hurtMarked = true;
+         defender.syncVelocity = true;
       }
 
    }
@@ -244,7 +245,7 @@ public class Ravager extends Raider {
       entity.push(xd / dd * 4.0, 0.2, zd / dd * 4.0);
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.attackTick = 10;
          this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);

@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
@@ -62,7 +63,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       if (!player.level().isClientSide()) {
          ItemStack itemStack = this.paymentSlot.remove(this.paymentSlot.getMaxStackSize());
          if (!itemStack.isEmpty()) {
-            player.drop(itemStack, false);
+            player.drop(itemStack, false, Prediction.SERVER_ONLY);
          }
 
       }

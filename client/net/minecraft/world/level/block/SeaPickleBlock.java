@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +25,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SeaPickleBlock extends VegetationBlock implements SimpleWaterloggedBlock, BonemealableBlock {
-   public static final MapCodec<SeaPickleBlock> CODEC = simpleCodec(SeaPickleBlock::new);
    public static final int MAX_PICKLES = 4;
    public static final IntegerProperty PICKLES;
    public static final BooleanProperty WATERLOGGED;
@@ -34,10 +32,6 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
    private static final VoxelShape SHAPE_TWO;
    private static final VoxelShape SHAPE_THREE;
    private static final VoxelShape SHAPE_FOUR;
-
-   public MapCodec<SeaPickleBlock> codec() {
-      return CODEC;
-   }
 
    protected SeaPickleBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -104,15 +98,15 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
       builder.add(PICKLES, WATERLOGGED);
    }
 
-   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return !isDead(state) && level.getBlockState(pos.below()).is(BlockTags.CORAL_BLOCKS);
    }
 
-   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       return true;
    }
 
-   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       int span = 5;
       int zSpan = 1;
       int height = 2;
@@ -129,7 +123,7 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
                if (!position.equals(pos) && random.nextInt(6) == 0 && level.getBlockState(position).is(Blocks.WATER)) {
                   BlockState belowState = level.getBlockState(position.below());
                   if (belowState.is(BlockTags.CORAL_BLOCKS)) {
-                     level.setBlock(position, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, random.nextInt(4) + 1), 3);
+                     level.setBlockAndUpdate(position, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, random.nextInt(4) + 1));
                   }
                }
             }

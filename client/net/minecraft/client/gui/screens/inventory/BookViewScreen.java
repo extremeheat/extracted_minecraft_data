@@ -150,12 +150,12 @@ public class BookViewScreen extends Screen {
          return true;
       } else {
          boolean var10000;
-         switch (event.key()) {
-            case 266:
+         switch (event.shortcutKey()) {
+            case 1073741899:
                this.backButton.onPress(event);
                var10000 = true;
                break;
-            case 267:
+            case 1073741902:
                this.forwardButton.onPress(event);
                var10000 = true;
                break;
@@ -217,7 +217,7 @@ public class BookViewScreen extends Screen {
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 0) {
+      if (event.button() == 1) {
          ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(this.font, (int)event.x(), (int)event.y());
          this.visitText(finder, true);
          Style clickedStyle = finder.result();

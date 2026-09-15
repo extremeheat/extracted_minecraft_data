@@ -13,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
-import org.joml.Quaternionfc;
 
 public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRenderState> {
    private static final float ITEM_MIN_HOVER_HEIGHT = 0.0625F;
@@ -47,7 +46,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
          float bob = Mth.sin((double)(state.ageInTicks / 10.0F + state.bobOffset)) * 0.1F + 0.1F;
          poseStack.translate(0.0F, bob + minOffsetY, 0.0F);
          float spin = ItemEntity.getSpin(state.ageInTicks, state.bobOffset);
-         poseStack.mulPose((Quaternionfc)Axis.YP.rotation(spin));
+         poseStack.rotate(Axis.YP, spin);
          submitMultipleFromCount(poseStack, submitNodeCollector, state.lightCoords, state, this.random, boundingBox);
          poseStack.popPose();
          super.submit(state, poseStack, submitNodeCollector, camera);

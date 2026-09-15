@@ -19,6 +19,7 @@ public class SuggestionProviders {
    public static final SuggestionProvider<SharedSuggestionProvider> ASK_SERVER;
    public static final SuggestionProvider<SharedSuggestionProvider> AVAILABLE_SOUNDS;
    public static final SuggestionProvider<SharedSuggestionProvider> SUMMONABLE_ENTITIES;
+   public static final SuggestionProvider<SharedSuggestionProvider> POST_EFFECTS;
 
    public SuggestionProviders() {
       super();
@@ -56,6 +57,7 @@ public class SuggestionProviders {
       ASK_SERVER = register(ID_ASK_SERVER, (c, p) -> ((SharedSuggestionProvider)c.getSource()).customSuggestion(c));
       AVAILABLE_SOUNDS = register(Identifier.withDefaultNamespace("available_sounds"), (c, p) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)c.getSource()).getAvailableSounds(), p));
       SUMMONABLE_ENTITIES = register(Identifier.withDefaultNamespace("summonable_entities"), (c, p) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((entityType) -> entityType.isEnabled(((SharedSuggestionProvider)c.getSource()).enabledFeatures()) && entityType.canSummon()), p, EntityType::getKey, EntityType::getDescription));
+      POST_EFFECTS = register(Identifier.withDefaultNamespace("post_effects"), (c, p) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)c.getSource()).getAvailablePostEffects(), p));
    }
 
    private static record RegisteredSuggestion(Identifier name, SuggestionProvider<SharedSuggestionProvider> delegate) implements SuggestionProvider<SharedSuggestionProvider> {

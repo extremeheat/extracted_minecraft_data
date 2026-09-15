@@ -50,8 +50,8 @@ public interface Bucketable {
             tag.putBoolean("Glowing", entity.hasGlowingTag());
          }
 
-         if (entity.isInvulnerable()) {
-            tag.putBoolean("Invulnerable", entity.isInvulnerable());
+         if (entity.isPermanentlyInvulnerable()) {
+            tag.putBoolean("Invulnerable", entity.isPermanentlyInvulnerable());
          }
 
          if (entity.isPersistenceRequired()) {
@@ -79,7 +79,7 @@ public interface Bucketable {
       var10000.ifPresent(entity::setGlowingTag);
       var10000 = tag.getBoolean("Invulnerable");
       Objects.requireNonNull(entity);
-      var10000.ifPresent(entity::setInvulnerable);
+      var10000.ifPresent(entity::setPermanentlyInvulnerable);
       tag.getBoolean("PersistenceRequired").ifPresent((required) -> {
          if (required) {
             entity.setPersistenceRequired();

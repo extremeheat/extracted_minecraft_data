@@ -9,7 +9,7 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeverBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.RepeaterBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TripWireBlock;
@@ -163,15 +163,15 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(level, (BlockState)((BlockState)Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.WEST)).setValue(TripWireHookBlock.ATTACHED, true), 4, -3, 8, chunkBB);
          this.placeBlock(level, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.EAST, true)).setValue(TripWireBlock.WEST, true)).setValue(TripWireBlock.ATTACHED, true), 2, -3, 8, chunkBB);
          this.placeBlock(level, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.EAST, true)).setValue(TripWireBlock.WEST, true)).setValue(TripWireBlock.ATTACHED, true), 3, -3, 8, chunkBB);
-         BlockState redstoneWireNS = (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE);
+         BlockState redstoneWireNS = (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.SOUTH, RedstoneSide.SIDE);
          this.placeBlock(level, redstoneWireNS, 5, -3, 7, chunkBB);
          this.placeBlock(level, redstoneWireNS, 5, -3, 6, chunkBB);
          this.placeBlock(level, redstoneWireNS, 5, -3, 5, chunkBB);
          this.placeBlock(level, redstoneWireNS, 5, -3, 4, chunkBB);
          this.placeBlock(level, redstoneWireNS, 5, -3, 3, chunkBB);
          this.placeBlock(level, redstoneWireNS, 5, -3, 2, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 5, -3, 1, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 4, -3, 1, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.WEST, RedstoneSide.SIDE), 5, -3, 1, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.WEST, RedstoneSide.SIDE), 4, -3, 1, chunkBB);
          this.placeBlock(level, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3, -3, 1, chunkBB);
          if (!this.placedTrap1) {
             this.placedTrap1 = this.createDispenser(level, chunkBB, random, 3, -2, 1, Direction.NORTH, BuiltInLootTables.JUNGLE_TEMPLE_DISPENSER);
@@ -183,9 +183,9 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(level, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 2, chunkBB);
          this.placeBlock(level, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 3, chunkBB);
          this.placeBlock(level, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 4, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 8, -3, 6, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE), 9, -3, 6, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.UP), 9, -3, 5, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.WEST, RedstoneSide.SIDE), 8, -3, 6, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.WEST, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.SOUTH, RedstoneSide.SIDE), 9, -3, 6, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.SOUTH, RedstoneSide.UP), 9, -3, 5, chunkBB);
          this.placeBlock(level, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 9, -3, 4, chunkBB);
          this.placeBlock(level, redstoneWireNS, 9, -2, 4, chunkBB);
          if (!this.placedTrap2) {
@@ -221,7 +221,7 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(level, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 10, -2, 9, chunkBB);
          this.placeBlock(level, redstoneWireNS, 8, -2, 9, chunkBB);
          this.placeBlock(level, redstoneWireNS, 8, -2, 10, chunkBB);
-         this.placeBlock(level, (BlockState)((BlockState)((BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 10, -1, 9, chunkBB);
+         this.placeBlock(level, (BlockState)((BlockState)((BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedstoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.SOUTH, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedstoneWireBlock.WEST, RedstoneSide.SIDE), 10, -1, 9, chunkBB);
          this.placeBlock(level, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.UP), 9, -2, 8, chunkBB);
          this.placeBlock(level, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -2, 8, chunkBB);
          this.placeBlock(level, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -1, 8, chunkBB);

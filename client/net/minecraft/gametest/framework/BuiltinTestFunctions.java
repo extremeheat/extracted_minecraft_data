@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 
-public class BuiltinTestFunctions extends TestFunctionLoader {
+public class BuiltinTestFunctions implements TestFunctionLoader {
    public static final ResourceKey<Consumer<GameTestHelper>> ALWAYS_PASS = create("always_pass");
    public static final Consumer<GameTestHelper> ALWAYS_PASS_INSTANCE = GameTestHelper::succeed;
 
@@ -20,8 +20,8 @@ public class BuiltinTestFunctions extends TestFunctionLoader {
    }
 
    public static Consumer<GameTestHelper> bootstrap(final Registry<Consumer<GameTestHelper>> registry) {
-      registerLoader(new BuiltinTestFunctions());
-      runLoaders(registry);
+      TestFunctionLoader.registerLoader(new BuiltinTestFunctions());
+      TestFunctionLoader.runLoaders(registry);
       return ALWAYS_PASS_INSTANCE;
    }
 

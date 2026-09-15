@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -23,12 +22,7 @@ import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<BarrierBlock> CODEC = simpleCodec(BarrierBlock::new);
    public static final BooleanProperty WATERLOGGED;
-
-   public MapCodec<BarrierBlock> codec() {
-      return CODEC;
-   }
 
    protected BarrierBlock(final BlockBehaviour.Properties properties) {
       super(properties);

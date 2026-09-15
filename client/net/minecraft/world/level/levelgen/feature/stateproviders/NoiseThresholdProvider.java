@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
@@ -20,7 +20,7 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
    private final List<BlockState> lowStates;
    private final List<BlockState> highStates;
 
-   public NoiseThresholdProvider(final long seed, final NormalNoise.NoiseParameters parameters, final float scale, final float threshold, final float highChance, final BlockState defaultState, final List<BlockState> lowStates, final List<BlockState> highStates) {
+   public NoiseThresholdProvider(final long seed, final NormalNoise parameters, final float scale, final float threshold, final float highChance, final BlockState defaultState, final List<BlockState> lowStates, final List<BlockState> highStates) {
       super(seed, parameters, scale);
       this.threshold = threshold;
       this.highChance = highChance;
@@ -29,12 +29,12 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
       this.highStates = highStates;
    }
 
-   protected BlockStateProviderType<?> type() {
-      return BlockStateProviderType.NOISE_THRESHOLD_PROVIDER;
+   public MapCodec<NoiseThresholdProvider> codec() {
+      return CODEC;
    }
 
-   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
-      double localValue = this.getNoiseValue(pos, (double)this.scale);
+   public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
+      double localValue = (double)this.getNoiseValue(pos, (double)this.scale);
       if (localValue < (double)this.threshold) {
          return (BlockState)Util.getRandom(this.lowStates, random);
       } else {

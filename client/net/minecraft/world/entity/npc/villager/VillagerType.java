@@ -8,11 +8,11 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.biome.Biome;
@@ -60,7 +60,7 @@ public final class VillagerType {
    }
 
    static {
-      CODEC = RegistryFixedCodec.<Holder<VillagerType>>create(Registries.VILLAGER_TYPE);
+      CODEC = RegistryCodecs.holder(Registries.VILLAGER_TYPE);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.VILLAGER_TYPE);
       BY_BIOME = (Map)Util.make(Maps.newHashMap(), (map) -> {
          map.put(Biomes.BADLANDS, DESERT);

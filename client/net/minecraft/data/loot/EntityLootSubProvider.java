@@ -8,38 +8,41 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.predicates.DamageSourcePredicate;
 import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.EnchantmentPredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.advancements.predicates.TagPredicate;
 import net.minecraft.advancements.predicates.entity.EntityEquipmentPredicate;
 import net.minecraft.advancements.predicates.entity.EntityFlagsPredicate;
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.predicates.entity.SheepPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
 import net.minecraft.core.component.predicates.EnchantmentsPredicate;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.DamageSourceCondition;
@@ -47,33 +50,48 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 
 public abstract class EntityLootSubProvider implements LootTableSubProvider {
-   protected final HolderLookup.Provider registries;
+   protected final LootTableSubProvider.Context output;
+   protected final HolderGetter<Item> items;
+   protected final HolderGetter<Enchantment> enchantments;
+   protected final HolderGetter<EntityType<?>> entityTypes;
+   protected final HolderGetter<FrogVariant> frogVariants;
+   protected final HolderGetter<DamageType> damageTypes;
+   protected final HolderGetter<LootTable> lootTables;
    private final FeatureFlagSet allowed;
    private final FeatureFlagSet required;
    private final Map<EntityType<?>, Map<ResourceKey<LootTable>, LootTable.Builder>> map;
 
-   protected final AnyOfCondition.Builder shouldSmeltLoot() {
-      HolderLookup.RegistryLookup<Enchantment> enchantmentsRegistry = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return AnyOfCondition.anyOf(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().flags(EntityFlagsPredicate.Builder.flags().setOnFire(true))), LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.DIRECT_ATTACKER, EntityPredicate.Builder.entity().equipment(EntityEquipmentPredicate.Builder.equipment().mainhand(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(enchantmentsRegistry.getOrThrow(EnchantmentTags.SMELTS_LOOT), MinMaxBounds.Ints.ANY)))).build())))));
+   protected EntityLootSubProvider(final FeatureFlagSet enabledFeatures, final LootTableSubProvider.Context output) {
+      this(enabledFeatures, enabledFeatures, output);
    }
 
-   protected EntityLootSubProvider(final FeatureFlagSet enabledFeatures, final HolderLookup.Provider registries) {
-      this(enabledFeatures, enabledFeatures, registries);
-   }
-
-   protected EntityLootSubProvider(final FeatureFlagSet allowed, final FeatureFlagSet required, final HolderLookup.Provider registries) {
+   protected EntityLootSubProvider(final FeatureFlagSet allowed, final FeatureFlagSet required, final LootTableSubProvider.Context output) {
       super();
       this.map = Maps.newHashMap();
       this.allowed = allowed;
       this.required = required;
-      this.registries = registries;
+      this.output = output;
+      this.items = output.lookup(Registries.ITEM);
+      this.enchantments = output.lookup(Registries.ENCHANTMENT);
+      this.entityTypes = output.lookup(Registries.ENTITY_TYPE);
+      this.frogVariants = output.lookup(Registries.FROG_VARIANT);
+      this.damageTypes = output.lookup(Registries.DAMAGE_TYPE);
+      this.lootTables = output.lookup(Registries.LOOT_TABLE);
    }
 
-   public static LootPool.Builder createSheepDispatchPool(final ColorCollection<ResourceKey<LootTable>> tableNames) {
+   protected DamageSourcePredicate.Builder projectileDamage() {
+      return DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(this.damageTypes, DamageTypeTags.IS_PROJECTILE));
+   }
+
+   protected final AnyOfCondition.Builder shouldSmeltLoot() {
+      return AnyOfCondition.anyOf(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().flags(EntityFlagsPredicate.Builder.flags().setOnFire(true))), LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.DIRECT_ATTACKER, EntityPredicate.Builder.entity().equipment(EntityEquipmentPredicate.Builder.equipment().mainhand(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(this.enchantments.getOrThrow(EnchantmentTags.SMELTS_LOOT), MinMaxBounds.Ints.ANY)))).build())))));
+   }
+
+   public static LootPool.Builder createSheepDispatchPool(final ColorCollection<Holder<LootTable>> tableNames) {
       AlternativesEntry.Builder variants = AlternativesEntry.alternatives();
 
       for(DyeColor color : DyeColor.VALUES) {
-         variants = variants.otherwise(NestedLootTable.lootTableReference(tableNames.pick(color)).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, color)).sheep(SheepPredicate.hasWool()))));
+         variants = variants.otherwise((LootPoolEntryContainer.Builder)NestedLootTable.lootTableReference(tableNames.pick(color)).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, color)).sheep(SheepPredicate.hasWool()))));
       }
 
       return LootPool.lootPool().add(variants);
@@ -81,10 +99,10 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
 
    public abstract void generate();
 
-   public void generate(final BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output) {
+   public void run() {
       this.generate();
       Set<ResourceKey<LootTable>> seen = new HashSet();
-      BuiltInRegistries.ENTITY_TYPE.listElements().forEach((holder) -> {
+      this.output.listContextElements(Registries.ENTITY_TYPE).forEach((holder) -> {
          EntityType<?> type = (EntityType)holder.value();
          if (type.isEnabled(this.allowed)) {
             Optional<ResourceKey<LootTable>> defaultLootTable = type.getDefaultLootTable();
@@ -99,7 +117,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                      if (!seen.add(id)) {
                         throw new IllegalStateException(String.format(Locale.ROOT, "Duplicate loottable '%s' for '%s'", id, holder.key().identifier()));
                      } else {
-                        output.accept(id, builder);
+                        this.output.accept(id, builder);
                      }
                   });
                }
@@ -117,12 +135,12 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       }
    }
 
-   protected LootItemCondition.Builder killedByFrog(final HolderGetter<EntityType<?>> entityTypes) {
-      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(entityTypes, EntityTypes.FROG)));
+   protected LootItemCondition.Builder killedByFrog() {
+      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(this.entityTypes, EntityTypes.FROG)));
    }
 
-   protected LootItemCondition.Builder killedByFrogVariant(final HolderGetter<EntityType<?>> entityTypes, final HolderGetter<FrogVariant> frogVariants, final ResourceKey<FrogVariant> variant) {
-      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(entityTypes, EntityTypes.FROG).components(DataComponentExactPredicate.expect(DataComponents.FROG_VARIANT, frogVariants.getOrThrow(variant)))));
+   protected LootItemCondition.Builder killedByFrogVariant(final ResourceKey<FrogVariant> variant) {
+      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(this.entityTypes, EntityTypes.FROG).components(DataComponentExactPredicate.expect(DataComponents.FROG_VARIANT, this.frogVariants.getOrThrow(variant)))));
    }
 
    protected void add(final EntityType<?> type, final LootTable.Builder builder) {

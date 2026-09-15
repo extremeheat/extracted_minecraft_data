@@ -1,15 +1,13 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
@@ -33,14 +31,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerPotBlock extends Block {
-   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((b) -> b.potted), propertiesCodec()).apply(i, FlowerPotBlock::new));
    private static final Map<Block, Block> POTTED_BY_CONTENT = Maps.newHashMap();
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final Block potted;
-
-   public MapCodec<FlowerPotBlock> codec() {
-      return CODEC;
-   }
 
    public FlowerPotBlock(final Block potted, final BlockBehaviour.Properties properties) {
       super(properties);
@@ -67,7 +60,7 @@ public class FlowerPotBlock extends Block {
       } else if (!this.isEmpty()) {
          return InteractionResult.CONSUME;
       } else {
-         level.setBlock(pos, newContents, 3);
+         level.setBlockAndUpdate(pos, newContents);
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          player.awardStat(Stats.POT_FLOWER);
          itemStack.consume(1, player);
@@ -81,10 +74,10 @@ public class FlowerPotBlock extends Block {
       } else {
          ItemStack plant = new ItemStack(this.potted);
          if (!player.addItem(plant)) {
-            player.drop(plant, false);
+            player.drop(plant, false, Prediction.PREDICTED);
          }
 
-         level.setBlock(pos, Blocks.FLOWER_POT.defaultBlockState(), 3);
+         level.setBlockAndUpdate(pos, Blocks.FLOWER_POT.defaultBlockState());
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          return InteractionResult.SUCCESS;
       }
@@ -119,7 +112,7 @@ public class FlowerPotBlock extends Block {
          boolean isOpen = this.potted == Blocks.OPEN_EYEBLOSSOM;
          boolean shouldBeOpen = ((TriState)level.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, pos)).toBoolean(isOpen);
          if (isOpen != shouldBeOpen) {
-            level.setBlock(pos, this.opposite(state), 3);
+            level.setBlockAndUpdate(pos, this.opposite(state));
             EyeblossomBlock.Type newType = EyeblossomBlock.Type.fromBoolean(isOpen).transform();
             newType.spawnTransformParticle(level, pos, random);
             level.playSound((Entity)null, pos, newType.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);

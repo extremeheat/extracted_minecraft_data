@@ -4,10 +4,11 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class DebugMemoryUntracker {
-   private static final @Nullable MethodHandle UNTRACK = (MethodHandle)GLX.make(() -> {
+   private static final @Nullable MethodHandle UNTRACK = (MethodHandle)Util.make(() -> {
       try {
          MethodHandles.Lookup lookup = MethodHandles.lookup();
          Class<?> debugAllocator = Class.forName("org.lwjgl.system.MemoryManage$DebugAllocator");

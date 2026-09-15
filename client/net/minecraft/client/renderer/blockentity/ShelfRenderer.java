@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.ShelfBlock;
 import net.minecraft.world.level.block.entity.ShelfBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity, ShelfRenderState> {
@@ -59,19 +58,18 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity, Shel
       for(int slot = 0; slot < state.items.length; ++slot) {
          ItemStackRenderState itemStackRenderState = state.items[slot];
          if (itemStackRenderState != null) {
-            this.submitItem(state, itemStackRenderState, poseStack, submitNodeCollector, slot, yRot);
+            submitItem(state, itemStackRenderState, poseStack, submitNodeCollector, slot, yRot);
          }
       }
 
    }
 
-   private void submitItem(final ShelfRenderState state, final ItemStackRenderState itemStackRenderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int slot, final float yRot) {
-      float itemSlotPosition = (float)(slot - 1) * 0.3125F;
-      Vec3 itemOffset = new Vec3((double)itemSlotPosition, state.alignToBottom ? -0.25 : 0.0, -0.25);
+   private static void submitItem(final ShelfRenderState state, final ItemStackRenderState itemStackRenderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int slot, final float yRot) {
+      float itemSlotOffsetX = (float)(slot - 1) * 0.3125F;
       poseStack.pushPose();
       poseStack.translate(0.5F, 0.5F, 0.5F);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot));
-      poseStack.translate(itemOffset);
+      poseStack.rotateDegrees(Axis.YP, yRot);
+      poseStack.translate(itemSlotOffsetX, state.alignToBottom ? -0.25F : 0.0F, -0.25F);
       poseStack.scale(0.25F, 0.25F, 0.25F);
       AABB box = itemStackRenderState.getModelBoundingBox();
       double offsetY = -box.minY;

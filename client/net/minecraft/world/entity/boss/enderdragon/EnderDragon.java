@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,7 +42,6 @@ import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.BinaryHeap;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -236,7 +236,6 @@ public class EnderDragon extends Mob implements Enemy {
                   this.setDeltaMovement(this.getDeltaMovement().multiply(slide, 0.9100000262260437, slide));
                }
             } else {
-               this.interpolation.interpolate();
                this.phaseManager.getCurrentPhase().doClientTick();
             }
 
@@ -263,7 +262,7 @@ public class EnderDragon extends Mob implements Enemy {
             Level var11 = this.level();
             if (var11 instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)var11;
-               if (this.hurtTime == 0) {
+               if (!this.wasHurtRecently()) {
                   this.knockBack(serverLevel, serverLevel.getEntities(this, this.wing1.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
                   this.knockBack(serverLevel, serverLevel.getEntities(this, this.wing2.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
                   this.hurt(serverLevel, serverLevel.getEntities(this, this.head.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
@@ -374,7 +373,7 @@ public class EnderDragon extends Mob implements Enemy {
             double zd = entity.getZ() - zm;
             double dd = Math.max(xd * xd + zd * zd, 0.1);
             entity.push(xd / dd * 4.0, 0.20000000298023224, zd / dd * 4.0);
-            if (!this.phaseManager.getCurrentPhase().isSitting() && livingTarget.getLastHurtByMobTimestamp() < entity.tickCount - 2) {
+            if (!this.phaseManager.getCurrentPhase().isSitting() && livingTarget.getLastHurtByMobTimestamp() < entity.tickCount - 2 && this.doTeamsAllowDamage(livingTarget)) {
                DamageSource damageSource = this.damageSources().mobAttack(this);
                entity.hurtServer(serverLevel, damageSource, 5.0F);
                EnchantmentHelper.doPostAttackEffects(serverLevel, entity, damageSource);
@@ -386,7 +385,7 @@ public class EnderDragon extends Mob implements Enemy {
 
    private void hurt(final ServerLevel level, final List<Entity> entities) {
       for(Entity target : entities) {
-         if (target instanceof LivingEntity) {
+         if (target instanceof LivingEntity && this.doTeamsAllowDamage(target)) {
             DamageSource damageSource = this.damageSources().mobAttack(this);
             target.hurtServer(level, damageSource, 10.0F);
             EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
@@ -438,7 +437,7 @@ public class EnderDragon extends Mob implements Enemy {
          return false;
       } else {
          damage = this.phaseManager.getCurrentPhase().onHurt(source, damage);
-         if (part != this.head) {
+         if (part != this.head && part != this.neck) {
             damage = damage / 4.0F + Math.min(damage, 1.0F);
          }
 
@@ -478,9 +477,9 @@ public class EnderDragon extends Mob implements Enemy {
 
    }
 
-   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage) {
+   public void knockback(final double power, final double xd, final double zd, final DamageSource source, final float damage, final boolean comesFromEffect) {
       if (!this.phaseManager.getCurrentPhase().isSitting()) {
-         super.knockback(power, xd, zd, source, damage);
+         super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }
    }
 
@@ -512,7 +511,7 @@ public class EnderDragon extends Mob implements Enemy {
          xpCount = 12000;
       }
 
-      Level level = this.level();
+      ServerLevel level = this.level();
       if (level instanceof ServerLevel level) {
          if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && (Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
             ExperienceOrb.award(level, this.position(), Mth.floor((float)xpCount * 0.08F));
@@ -534,7 +533,7 @@ public class EnderDragon extends Mob implements Enemy {
       if (this.dragonDeathTime >= 200) {
          Level var13 = this.level();
          if (var13 instanceof ServerLevel) {
-            ServerLevel level = (ServerLevel)var13;
+            level = (ServerLevel)var13;
             if ((Boolean)level.getGameRules().get(GameRules.MOB_DROPS)) {
                ExperienceOrb.award(level, this.position(), Mth.floor((float)xpCount * 0.2F));
             }
@@ -777,7 +776,7 @@ public class EnderDragon extends Mob implements Enemy {
             result = this.getViewVector(a);
          }
       } else {
-         BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.fightOrigin));
+         BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderDragonFight.getPodiumLocation(this.fightOrigin));
          float dist = Math.max((float)Math.sqrt(egg.distToCenterSqr(this.position())) / 4.0F, 1.0F);
          float yOffset = 6.0F / dist;
          float xRotOld = this.getXRot();
@@ -850,6 +849,10 @@ public class EnderDragon extends Mob implements Enemy {
 
    protected float sanitizeScale(final float scale) {
       return 1.0F;
+   }
+
+   public MoveSimulationType getMoveSimulationType() {
+      return this.isDeadOrDying() ? MoveSimulationType.SERVER_AND_CLIENT : super.getMoveSimulationType();
    }
 
    static {

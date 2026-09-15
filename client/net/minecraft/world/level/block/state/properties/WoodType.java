@@ -21,6 +21,7 @@ public record WoodType(String name, BlockSetType setType, SoundType soundType, S
    public static final WoodType JUNGLE;
    public static final WoodType DARK_OAK;
    public static final WoodType PALE_OAK;
+   public static final WoodType POPLAR;
    public static final WoodType CRIMSON;
    public static final WoodType WARPED;
    public static final WoodType MANGROVE;
@@ -56,6 +57,7 @@ public record WoodType(String name, BlockSetType setType, SoundType soundType, S
       JUNGLE = register(new WoodType("jungle", BlockSetType.JUNGLE));
       DARK_OAK = register(new WoodType("dark_oak", BlockSetType.DARK_OAK));
       PALE_OAK = register(new WoodType("pale_oak", BlockSetType.PALE_OAK));
+      POPLAR = register(new WoodType("poplar", BlockSetType.POPLAR));
       CRIMSON = register(new WoodType("crimson", BlockSetType.CRIMSON, SoundType.NETHER_WOOD, SoundType.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN));
       WARPED = register(new WoodType("warped", BlockSetType.WARPED, SoundType.NETHER_WOOD, SoundType.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN));
       MANGROVE = register(new WoodType("mangrove", BlockSetType.MANGROVE));

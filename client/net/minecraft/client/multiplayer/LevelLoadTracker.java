@@ -160,9 +160,8 @@ public class LevelLoadTracker implements LevelLoadListener {
             LevelLoadTracker.LOGGER.warn("Timed out while waiting for the client to load chunks, letting the player into the world anyway");
             return true;
          } else {
-            BlockPos playerPos = this.player.blockPosition();
             BlockPos cameraPos = Minecraft.getInstance().gameRenderer.mainCamera().blockPosition();
-            return !this.level.isOutsideBuildHeight(playerPos.getY()) && !this.level.isOutsideBuildHeight(cameraPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.playerSectionReady.get() : true;
+            return !this.level.isOutsideBuildHeight(cameraPos.getY()) && !this.player.isSpectator() && this.player.isAlive() ? this.playerSectionReady.get() : true;
          }
       }
    }

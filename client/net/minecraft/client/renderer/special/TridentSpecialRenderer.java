@@ -7,10 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.projectile.TridentModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
@@ -26,9 +23,10 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      submitNodeCollector.order(0).submitModel(this.model, Unit.INSTANCE, poseStack, (Identifier)TridentModel.TEXTURE, lightCoords, overlayCoords, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       if (hasFoil) {
-         submitNodeCollector.order(1).submitModel(this.model, Unit.INSTANCE, poseStack, (RenderType)RenderTypes.entityGlint(), lightCoords, overlayCoords, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(TridentModel.TEXTURE), lightCoords, overlayCoords, outlineColor);
+      } else {
+         submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, TridentModel.TEXTURE, lightCoords, overlayCoords, outlineColor);
       }
 
    }

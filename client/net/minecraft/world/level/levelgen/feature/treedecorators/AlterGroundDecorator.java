@@ -3,15 +3,16 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
    public static final MapCodec<AlterGroundDecorator> CODEC;
-   private final BlockStateProvider provider;
+   private final Holder<BlockStateProvider> provider;
 
-   public AlterGroundDecorator(final BlockStateProvider provider) {
+   public AlterGroundDecorator(final Holder<BlockStateProvider> provider) {
       super();
       this.provider = provider;
    }
@@ -57,7 +58,7 @@ public class AlterGroundDecorator extends TreeDecorator {
    private void placeBlockAt(final TreeDecorator.Context context, final BlockPos pos) {
       for(int dy = 2; dy >= -3; --dy) {
          BlockPos cursor = pos.above(dy);
-         BlockState replaceWith = this.provider.getOptionalState(context.level(), context.random(), cursor);
+         BlockState replaceWith = ((BlockStateProvider)this.provider.value()).getOptionalState(context.level(), context.random(), cursor);
          if (replaceWith != null) {
             context.setBlock(cursor, replaceWith);
             break;

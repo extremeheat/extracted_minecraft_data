@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,16 +19,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(i, SkullBlock::new));
    public static final int MAX = RotationSegment.getMaxSegmentIndex();
    private static final int ROTATIONS;
    public static final IntegerProperty ROTATION;
    private static final VoxelShape SHAPE;
    private static final VoxelShape SHAPE_PIGLIN;
-
-   public MapCodec<? extends SkullBlock> codec() {
-      return CODEC;
-   }
+   private static final VoxelShape SHAPE_DRAGON_OUTLINE;
 
    protected SkullBlock(final Type type, final BlockBehaviour.Properties properties) {
       super(type, properties);
@@ -38,6 +32,10 @@ public class SkullBlock extends AbstractSkullBlock {
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return this.getType() == SkullBlock.Types.DRAGON ? SHAPE_DRAGON_OUTLINE : this.getCollisionShape(state, level, pos, context);
+   }
+
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return this.getType() == SkullBlock.Types.PIGLIN ? SHAPE_PIGLIN : SHAPE;
    }
 
@@ -63,6 +61,7 @@ public class SkullBlock extends AbstractSkullBlock {
       ROTATION = BlockStateProperties.ROTATION_16;
       SHAPE = Block.column(8.0, 0.0, 8.0);
       SHAPE_PIGLIN = Block.column(10.0, 0.0, 8.0);
+      SHAPE_DRAGON_OUTLINE = Block.column(8.0, 0.0, 8.5);
    }
 
    public interface Type extends StringRepresentable {

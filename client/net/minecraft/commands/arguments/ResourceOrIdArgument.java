@@ -35,14 +35,19 @@ import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.IdentifierParseRule;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.jspecify.annotations.Nullable;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
-   private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
+   static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
    public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((error) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", error));
    public static final Dynamic2CommandExceptionType ERROR_NO_SUCH_ELEMENT = new Dynamic2CommandExceptionType((id, registry) -> Component.translatableEscape("argument.resource_or_id.no_such_element", id, registry));
    public static final DynamicOps<Tag> OPS;
@@ -105,6 +110,30 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return getResource(context, name);
    }
 
+   public static ContextFloatProviderArgument floatProvider(final CommandBuildContext context) {
+      return new ContextFloatProviderArgument(context);
+   }
+
+   public static Holder<ContextFloatProvider> getFloatProvider(final CommandContext<CommandSourceStack> context, final String name) {
+      return getResource(context, name);
+   }
+
+   public static ContextIntProviderArgument intProvider(final CommandBuildContext context) {
+      return new ContextIntProviderArgument(context);
+   }
+
+   public static Holder<ContextIntProvider> getIntProvider(final CommandContext<CommandSourceStack> context, final String name) {
+      return getResource(context, name);
+   }
+
+   public static FeatureArgument feature(final CommandBuildContext context) {
+      return new FeatureArgument(context);
+   }
+
+   public static Holder<Feature> getFeature(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return getResource(context, name);
+   }
+
    public static DialogArgument dialog(final CommandBuildContext context) {
       return new DialogArgument(context);
    }
@@ -146,13 +175,31 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    public static class LootModifierArgument extends ResourceOrIdArgument<LootItemFunction> {
       protected LootModifierArgument(final CommandBuildContext context) {
-         super(context, Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC);
+         super(context, Registries.ITEM_MODIFIER, LootItemFunctions.DIRECT_CODEC);
       }
    }
 
    public static class LootPredicateArgument extends ResourceOrIdArgument<LootItemCondition> {
       protected LootPredicateArgument(final CommandBuildContext context) {
          super(context, Registries.PREDICATE, LootItemCondition.DIRECT_CODEC);
+      }
+   }
+
+   public static class ContextFloatProviderArgument extends ResourceOrIdArgument<ContextFloatProvider> {
+      protected ContextFloatProviderArgument(final CommandBuildContext context) {
+         super(context, Registries.CONTEXT_FLOAT_PROVIDER, ContextFloatProviders.DIRECT_CODEC);
+      }
+   }
+
+   public static class ContextIntProviderArgument extends ResourceOrIdArgument<ContextIntProvider> {
+      protected ContextIntProviderArgument(final CommandBuildContext context) {
+         super(context, Registries.CONTEXT_INT_PROVIDER, ContextIntProviders.DIRECT_CODEC);
+      }
+   }
+
+   public static class FeatureArgument extends ResourceOrIdArgument<Feature> {
+      protected FeatureArgument(final CommandBuildContext context) {
+         super(context, Registries.FEATURE, Feature.DIRECT_CODEC);
       }
    }
 

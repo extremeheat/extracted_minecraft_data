@@ -1,8 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import java.util.Locale;
-import net.minecraft.client.Minecraft;
 
 public enum ChunkSectionLayerGroup {
    OPAQUE(new ChunkSectionLayer[]{ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}),
@@ -22,18 +20,6 @@ public enum ChunkSectionLayerGroup {
 
    public ChunkSectionLayer[] layers() {
       return this.layers;
-   }
-
-   public RenderTarget outputTarget() {
-      Minecraft minecraft = Minecraft.getInstance();
-      RenderTarget var10000;
-      switch (this.ordinal()) {
-         case 1 -> var10000 = minecraft.levelRenderer.translucentTarget();
-         default -> var10000 = minecraft.gameRenderer.mainRenderTarget();
-      }
-
-      RenderTarget renderTarget = var10000;
-      return renderTarget != null ? renderTarget : minecraft.gameRenderer.mainRenderTarget();
    }
 
    // $FF: synthetic method

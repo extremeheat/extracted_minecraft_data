@@ -1,8 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.TrailParticleOption;
@@ -27,14 +24,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeblossomBlock extends FlowerBlock {
-   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("open").forGetter((e) -> e.type.open), propertiesCodec()).apply(i, EyeblossomBlock::new));
    private static final int EYEBLOSSOM_XZ_RANGE = 3;
    private static final int EYEBLOSSOM_Y_RANGE = 2;
    private final Type type;
-
-   public MapCodec<? extends EyeblossomBlock> codec() {
-      return CODEC;
-   }
 
    public EyeblossomBlock(final Type type, final BlockBehaviour.Properties properties) {
       super(type.effect, type.effectDuration, properties);
@@ -78,17 +70,15 @@ public class EyeblossomBlock extends FlowerBlock {
          return false;
       } else {
          Type newType = this.type.transform();
-         level.setBlock(pos, newType.state(), 3);
+         level.setBlockAndUpdate(pos, newType.state());
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
          newType.spawnTransformParticle(level, pos, random);
-         BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 2, 3)).forEach((nearby) -> {
-            BlockState nearbyState = level.getBlockState(nearby);
-            if (nearbyState == state) {
-               double distance = Math.sqrt(pos.distSqr(nearby));
-               int delay = random.nextIntBetweenInclusive((int)(distance * 5.0), (int)(distance * 10.0));
-               level.scheduleTick(nearby, state.getBlock(), delay);
-            }
-
+         BlockPos minPos = pos.offset(-3, -2, -3);
+         BlockPos maxPos = pos.offset(3, 2, 3);
+         level.findBlocksIn(minPos, maxPos).filterState((nearbyState) -> nearbyState == state).forEach((nearbyPos, var5) -> {
+            double distance = Math.sqrt(pos.distSqr(nearbyPos));
+            int delay = random.nextIntBetweenInclusive((int)(distance * 5.0), (int)(distance * 10.0));
+            level.scheduleTick(nearbyPos, state.getBlock(), delay);
          });
          return true;
       }

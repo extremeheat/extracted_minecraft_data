@@ -1,7 +1,8 @@
 package net.minecraft.network.protocol.game;
 
+import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -9,31 +10,16 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.FilterMask;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.SignedMessageBody;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import org.jspecify.annotations.Nullable;
 
-public record ClientboundPlayerChatPacket(int globalIndex, UUID sender, int index, @Nullable MessageSignature signature, SignedMessageBody.Packed body, @Nullable Component unsignedContent, FilterMask filterMask, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket>codec(ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new);
-
-   private ClientboundPlayerChatPacket(final RegistryFriendlyByteBuf input) {
-      this(input.readVarInt(), input.readUUID(), input.readVarInt(), (MessageSignature)input.readNullable(MessageSignature::read), new SignedMessageBody.Packed(input), (Component)FriendlyByteBuf.readNullable(input, ComponentSerialization.TRUSTED_STREAM_CODEC), FilterMask.read(input), (ChatType.Bound)ChatType.Bound.STREAM_CODEC.decode(input));
-   }
+public record ClientboundPlayerChatPacket(int globalIndex, UUID sender, int index, Optional<MessageSignature> signature, SignedMessageBody.Packed body, Optional<Component> unsignedContent, FilterMask filterMask, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC;
 
    public ClientboundPlayerChatPacket {
       super();
-   }
-
-   private void write(final RegistryFriendlyByteBuf output) {
-      output.writeVarInt(this.globalIndex);
-      output.writeUUID(this.sender);
-      output.writeVarInt(this.index);
-      output.writeNullable(this.signature, MessageSignature::write);
-      this.body.write(output);
-      FriendlyByteBuf.writeNullable(output, this.unsignedContent, ComponentSerialization.TRUSTED_STREAM_CODEC);
-      FilterMask.write(output, this.filterMask);
-      ChatType.Bound.STREAM_CODEC.encode(output, this.chatType);
    }
 
    public PacketType<ClientboundPlayerChatPacket> type() {
@@ -46,5 +32,9 @@ public record ClientboundPlayerChatPacket(int globalIndex, UUID sender, int inde
 
    public boolean isSkippable() {
       return true;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundPlayerChatPacket::globalIndex, UUIDUtil.STREAM_CODEC, ClientboundPlayerChatPacket::sender, ByteBufCodecs.VAR_INT, ClientboundPlayerChatPacket::index, MessageSignature.STREAM_CODEC.apply(ByteBufCodecs::optional), ClientboundPlayerChatPacket::signature, SignedMessageBody.Packed.STREAM_CODEC, ClientboundPlayerChatPacket::body, ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC, ClientboundPlayerChatPacket::unsignedContent, FilterMask.STREAM_CODEC, ClientboundPlayerChatPacket::filterMask, ChatType.Bound.STREAM_CODEC, ClientboundPlayerChatPacket::chatType, ClientboundPlayerChatPacket::new);
    }
 }

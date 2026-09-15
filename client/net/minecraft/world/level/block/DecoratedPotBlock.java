@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -50,16 +48,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<DecoratedPotBlock> CODEC = simpleCodec(DecoratedPotBlock::new);
    public static final Identifier SHERDS_DYNAMIC_DROP_ID = Identifier.withDefaultNamespace("sherds");
    public static final EnumProperty<Direction> HORIZONTAL_FACING;
    public static final BooleanProperty CRACKED;
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape SHAPE;
-
-   public MapCodec<DecoratedPotBlock> codec() {
-      return CODEC;
-   }
 
    protected DecoratedPotBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -153,10 +146,10 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockEntity maybeEntity = (BlockEntity)params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (maybeEntity instanceof DecoratedPotBlockEntity entity) {
          params.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, (output) -> {
-            for(Item item : entity.getDecorations().ordered()) {
-               output.accept(item.getDefaultInstance());
-            }
-
+            entity.getDecorations().left().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().back().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().front().ifPresent((item) -> output.accept(item.create()));
+            entity.getDecorations().right().ifPresent((item) -> output.accept(item.create()));
          });
       }
 
@@ -185,7 +178,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
       BlockPos pos = blockHit.getBlockPos();
       if (level instanceof ServerLevel serverLevel) {
-         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel)) {
+         if (projectile.mayInteract(serverLevel, pos) && projectile.mayBreak(serverLevel, pos)) {
             level.setBlock(pos, (BlockState)state.setValue(CRACKED, true), 260);
             level.destroyBlock(pos, true, projectile);
          }

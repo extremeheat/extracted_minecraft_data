@@ -215,8 +215,8 @@ public class SynchedEntityData {
 
       public <T> Builder define(final EntityDataAccessor<T> accessor, final T value) {
          int id = accessor.id();
-         if (id > this.itemsById.length) {
-            throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is " + this.itemsById.length + ")");
+         if (id >= this.itemsById.length) {
+            throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is " + (this.itemsById.length - 1) + ")");
          } else if (this.itemsById[id] != null) {
             throw new IllegalArgumentException("Duplicate id value for " + id + "!");
          } else if (EntityDataSerializers.getSerializedId(accessor.serializer()) < 0) {

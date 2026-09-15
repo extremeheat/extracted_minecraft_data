@@ -1,9 +1,35 @@
 package net.minecraft.world.phys;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.StreamCodec;
 
 public class BlockHitResult extends HitResult {
+   public static final StreamCodec<ByteBuf, BlockHitResult> STREAM_CODEC = new StreamCodec<ByteBuf, BlockHitResult>() {
+      public BlockHitResult decode(final ByteBuf input) {
+         BlockPos pos = (BlockPos)BlockPos.STREAM_CODEC.decode(input);
+         Direction face = (Direction)Direction.STREAM_CODEC.decode(input);
+         float clickX = input.readFloat();
+         float clickY = input.readFloat();
+         float clickZ = input.readFloat();
+         boolean inside = input.readBoolean();
+         boolean worldBorder = input.readBoolean();
+         return new BlockHitResult(new Vec3((double)pos.getX() + (double)clickX, (double)pos.getY() + (double)clickY, (double)pos.getZ() + (double)clickZ), face, pos, inside, worldBorder);
+      }
+
+      public void encode(final ByteBuf output, final BlockHitResult blockHit) {
+         BlockPos blockPos = blockHit.getBlockPos();
+         BlockPos.STREAM_CODEC.encode(output, blockPos);
+         Direction.STREAM_CODEC.encode(output, blockHit.getDirection());
+         Vec3 location = blockHit.getLocation();
+         output.writeFloat((float)(location.x - (double)blockPos.getX()));
+         output.writeFloat((float)(location.y - (double)blockPos.getY()));
+         output.writeFloat((float)(location.z - (double)blockPos.getZ()));
+         output.writeBoolean(blockHit.isInside());
+         output.writeBoolean(blockHit.isWorldBorderHit());
+      }
+   };
    private final Direction direction;
    private final BlockPos blockPos;
    private final boolean miss;

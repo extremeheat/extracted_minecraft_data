@@ -1,9 +1,11 @@
 package net.minecraft.network.chat;
 
 import com.mojang.authlib.GameProfile;
+import io.netty.buffer.ByteBuf;
 import java.time.Duration;
 import java.util.UUID;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 
@@ -29,21 +31,18 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
    }
 
    public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
+      public static final StreamCodec<ByteBuf, Data> STREAM_CODEC;
+
       public Data {
          super();
       }
 
-      public static Data read(final FriendlyByteBuf input) {
-         return new Data(input.readUUID(), new ProfilePublicKey.Data(input));
-      }
-
-      public static void write(final FriendlyByteBuf output, final Data data) {
-         output.writeUUID(data.sessionId);
-         data.profilePublicKey.write(output);
-      }
-
       public RemoteChatSession validate(final GameProfile profile, final SignatureValidator serviceSignatureValidator) throws ProfilePublicKey.ValidationException {
          return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(serviceSignatureValidator, profile.id(), this.profilePublicKey));
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC, Data::sessionId, ProfilePublicKey.Data.STREAM_CODEC, Data::profilePublicKey, Data::new);
       }
    }
 }

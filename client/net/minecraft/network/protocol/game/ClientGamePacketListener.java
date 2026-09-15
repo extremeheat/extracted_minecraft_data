@@ -17,6 +17,8 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
 
    void handleHurtAnimation(ClientboundHurtAnimationPacket packet);
 
+   void handleSwingAnimation(ClientboundSwingAnimationPacket packet);
+
    void handleAwardStats(ClientboundAwardStatsPacket packet);
 
    void handleRecipeBookAdd(ClientboundRecipeBookAddPacket packet);
@@ -62,6 +64,8 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
    void handleEntityLinkPacket(ClientboundSetEntityLinkPacket packet);
 
    void handleSetEntityPassengersPacket(ClientboundSetPassengersPacket packet);
+
+   void handleAddTransientBlockPacket(ClientboundAddTransientBlockPacket packet);
 
    void handleExplosion(ClientboundExplodePacket packet);
 

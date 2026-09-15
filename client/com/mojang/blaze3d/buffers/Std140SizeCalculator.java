@@ -44,13 +44,13 @@ public class Std140SizeCalculator {
 
    public Std140SizeCalculator putVec3() {
       this.align(16);
-      this.size += 16;
+      this.size += 12;
       return this;
    }
 
    public Std140SizeCalculator putIVec3() {
       this.align(16);
-      this.size += 16;
+      this.size += 12;
       return this;
    }
 

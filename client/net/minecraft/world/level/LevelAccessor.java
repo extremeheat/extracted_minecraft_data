@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -69,9 +70,9 @@ public interface LevelAccessor extends CommonLevelAccessor, ScheduledTickAccess 
 
    void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd);
 
-   void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data);
+   void levelEvent(final @Nullable Entity source, final @LevelEvent.Value int type, final BlockPos pos, final int data);
 
-   default void levelEvent(final int type, final BlockPos pos, final int data) {
+   default void levelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       this.levelEvent((Entity)null, type, pos, data);
    }
 

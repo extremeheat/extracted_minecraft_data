@@ -43,7 +43,6 @@ import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -75,11 +74,13 @@ import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.UpdateInterval;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TicketStorage;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -100,12 +101,12 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.levelgen.NoiseRouterData;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
@@ -142,7 +143,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private final ChunkTaskDispatcher lightTaskDispatcher;
    private final ChunkStatusUpdateListener chunkStatusListener;
    private final DistanceManager distanceManager;
-   private final String storageName;
    private final PlayerMap playerMap;
    private final Int2ObjectMap<TrackedEntity> entityMap;
    private final Long2ByteMap chunkTypeCache;
@@ -153,7 +153,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private int serverViewDistance;
    private final WorldGenContext worldGenContext;
 
-   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final Supplier<SavedDataStorage> overworldDataStorage, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
+   public ChunkMap(final ServerLevel level, final LevelStorageSource.LevelStorageAccess levelStorage, final DataFixer dataFixer, final StructureTemplateManager structureManager, final Executor executor, final BlockableEventLoop<Runnable> mainThreadExecutor, final LightChunkGetter chunkGetter, final ChunkGenerator generator, final ChunkStatusUpdateListener chunkStatusListener, final TicketStorage ticketStorage, final int serverViewDistance, final boolean syncWrites) {
       super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK);
       this.visibleChunkMap = this.updatingChunkMap.clone();
       this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
@@ -167,14 +167,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.unloadQueue = Queues.newConcurrentLinkedQueue();
       this.activeChunkWrites = new AtomicInteger();
       Path storageFolder = levelStorage.getDimensionPath(level.dimension());
-      this.storageName = storageFolder.getFileName().toString();
       this.level = level;
       RegistryAccess registryAccess = level.registryAccess();
       long levelSeed = level.getSeed();
       if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
-         this.randomState = RandomState.create((NoiseGeneratorSettings)((NoiseGeneratorSettings)noiseGenerator.generatorSettings().value()), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value());
       } else {
-         this.randomState = RandomState.create((NoiseGeneratorSettings)NoiseGeneratorSettings.dummy(), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none());
       }
 
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);
@@ -1117,10 +1116,10 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          EntityType<?> type = entity.getType();
          int range = type.clientTrackingRange() * 16;
          if (range != 0) {
-            int updateInterval = type.updateInterval();
             if (this.entityMap.containsKey(entity.getId())) {
                throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Entity is already tracked!"));
             } else {
+               UpdateInterval updateInterval = type.hasUpdateInterval() ? UpdateInterval.periodic(type.updateInterval()) : UpdateInterval.NEVER;
                TrackedEntity trackedEntity = new TrackedEntity(entity, range, updateInterval, type.trackDeltas());
                this.entityMap.put(entity.getId(), trackedEntity);
                trackedEntity.updatePlayers(this.level.players());
@@ -1270,10 +1269,6 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return this.poiManager;
    }
 
-   public String getStorageName() {
-      return this.storageName;
-   }
-
    void onFullChunkStatusChange(final ChunkPos pos, final FullChunkStatus status) {
       this.chunkStatusListener.onChunkStatusChange(pos, status);
    }
@@ -1334,7 +1329,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       private SectionPos lastSectionPos;
       private final Set<ServerPlayerConnection> seenBy;
 
-      public TrackedEntity(final Entity entity, final int range, final int updateInterval, final boolean trackDelta) {
+      public TrackedEntity(final Entity entity, final int range, final UpdateInterval updateInterval, final boolean trackDelta) {
          Objects.requireNonNull(ChunkMap.this);
          super();
          this.seenBy = Sets.newIdentityHashSet();

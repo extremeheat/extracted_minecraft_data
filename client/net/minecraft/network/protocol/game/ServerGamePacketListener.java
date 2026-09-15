@@ -9,7 +9,7 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
       return ConnectionProtocol.PLAY;
    }
 
-   void handleAnimate(ServerboundSwingPacket packet);
+   void handlePunch(ServerboundPunchPacket packet);
 
    void handleChat(ServerboundChatPacket packet);
 

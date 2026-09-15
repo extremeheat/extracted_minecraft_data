@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -509,7 +508,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       return false;
    }
 
-   public void replaceWithPacketData(final FriendlyByteBuf buffer, final Map<Heightmap.Types, long[]> heightmaps, final Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities) {
+   public void replaceWithPacketData(final int chunkX, final int chunkZ, final ClientboundLevelChunkPacketData chunkData) {
+      FriendlyByteBuf buffer = chunkData.getReadBuffer();
+      Map<Heightmap.Types, long[]> heightmaps = chunkData.getHeightmaps();
       this.clearAllBlockEntities();
 
       for(LevelChunkSection section : this.sections) {
@@ -520,7 +521,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       this.initializeLightSources();
 
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         blockEntities.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(pos, type, tag) -> {
+         chunkData.forEachBlockEntityTag(chunkX, chunkZ, (pos, type, tag) -> {
             BlockEntity blockEntity = this.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
             if (blockEntity != null && tag != null && blockEntity.getType() == type) {
                blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), this.level.registryAccess(), tag));

@@ -5,7 +5,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
@@ -15,7 +14,7 @@ public abstract class EyesLayer<S extends EntityRenderState, M extends EntityMod
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
-      submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, (RenderType)this.renderType(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, (RenderType)this.renderType(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
    }
 
    public abstract RenderType renderType();

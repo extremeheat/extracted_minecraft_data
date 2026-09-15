@@ -70,6 +70,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
@@ -91,6 +92,7 @@ import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
@@ -111,7 +113,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
@@ -125,11 +126,12 @@ import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -221,6 +223,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private final List<CustomSpawner> customSpawners;
    private @Nullable EnderDragonFight dragonFight;
    private final Int2ObjectMap<EnderDragonPart> dragonParts = new Int2ObjectOpenHashMap();
+   private final BiomeResolver uncachedBiomeResolver;
    private final StructureManager structureManager;
    private final StructureCheck structureCheck;
    private final boolean tickTime;
@@ -237,12 +240,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       DataFixer fixerUpper = server.getFixerUpper();
       EntityPersistentStorage<Entity> entityStorage = new EntityStorage(new SimpleRegionStorage(new RegionStorageInfo(levelStorage.getLevelId(), dimension, "entities"), levelStorage.getDimensionPath(dimension).resolve("entities"), fixerUpper, syncWrites, DataFixTypes.ENTITY_CHUNK), this, server);
       this.entityManager = new PersistentEntitySectionManager<Entity>(Entity.class, new EntityCallbacks(), entityStorage);
-      StructureTemplateManager var10006 = server.getStructureManager();
+      StructureTemplateManager var10006 = server.getStructureTemplateManager();
       int var10009 = server.getPlayerList().getViewDistance();
       int var10010 = server.getPlayerList().getSimulationDistance();
       PersistentEntitySectionManager var10012 = this.entityManager;
       Objects.requireNonNull(var10012);
-      this.chunkSource = new ServerChunkCache(this, levelStorage, fixerUpper, var10006, executor, generator, var10009, var10010, syncWrites, var10012::updateChunkStatus, () -> server.overworld().getDataStorage());
+      this.chunkSource = new ServerChunkCache(this, levelStorage, fixerUpper, var10006, executor, generator, var10009, var10010, syncWrites, var10012::updateChunkStatus);
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
       if (this.canHaveWeather()) {
@@ -257,7 +260,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       WorldGenSettings worldGenSettings = server.getWorldGenSettings();
       WorldOptions options = worldGenSettings.options();
       long seed = options.seed();
-      this.structureCheck = new StructureCheck(this.chunkSource.chunkScanner(), this.registryAccess(), server.getStructureManager(), dimension, generator, this.chunkSource.randomState(), this, generator.getBiomeSource(), seed, fixerUpper);
+      this.structureCheck = new StructureCheck(this.chunkSource.chunkScanner(), this.registryAccess(), server.getStructureTemplateManager(), dimension, generator, this.chunkSource.randomState(), this, generator.getBiomeSource(), seed, fixerUpper);
       this.structureManager = new StructureManager(this, options, this.structureCheck);
       if (this.dimensionType().hasEnderDragonFight()) {
          this.dragonFight = (EnderDragonFight)this.getDataStorage().computeIfAbsent(EnderDragonFight.TYPE);
@@ -268,6 +271,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.gameEventDispatcher = new GameEventDispatcher(this);
       this.waypointManager = new ServerWaypointManager();
       this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
+      this.uncachedBiomeResolver = this.getChunkSource().getGenerator().getBiomeSource().createUncachedResolver(this.getChunkSource().randomState());
       this.updateSkyBrightness();
    }
 
@@ -287,7 +291,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
-      return this.getChunkSource().getGenerator().getBiomeSource().getNoiseBiome(quartX, quartY, quartZ, this.getChunkSource().randomState().sampler());
+      return this.uncachedBiomeResolver.getNoiseBiome(quartX, quartY, quartZ);
+   }
+
+   public BiomeResolver uncachedBiomeResolver() {
+      return this.uncachedBiomeResolver;
    }
 
    public StructureManager structureManager() {
@@ -424,6 +432,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
       this.debugSynchronizers.tick(this.server.debugSubscribers());
       profiler.pop();
+      this.chunkSource.randomState().garbageCollect();
    }
 
    public boolean shouldTickBlocksAt(final long chunkPos) {
@@ -776,13 +785,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    public void tickNonPassenger(final Entity entity) {
-      entity.setOldPosAndRot();
       ProfilerFiller profiler = Profiler.get();
-      ++entity.tickCount;
       Holder var10001 = entity.typeHolder();
       Objects.requireNonNull(var10001);
       profiler.push(var10001::getRegisteredName);
       profiler.incrementCounter("tickNonPassenger");
+      entity.commonTick();
       entity.tick();
       profiler.pop();
 
@@ -795,13 +803,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private void tickPassenger(final Entity vehicle, final Entity entity) {
       if (!entity.isRemoved() && entity.getVehicle() == vehicle) {
          if (entity instanceof Player || this.entityTickList.contains(entity)) {
-            entity.setOldPosAndRot();
-            ++entity.tickCount;
             ProfilerFiller profiler = Profiler.get();
             Holder var10001 = entity.typeHolder();
             Objects.requireNonNull(var10001);
             profiler.push(var10001::getRegisteredName);
             profiler.incrementCounter("tickPassenger");
+            entity.commonTick();
             entity.rideTick();
             profiler.pop();
 
@@ -890,11 +897,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          if (selector.test(entity)) {
             result.add(entity);
             if (result.size() >= maxResults) {
-               return AbortableIterationConsumer.Continuation.ABORT;
+               return Continuation.ABORT;
             }
          }
 
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         return Continuation.CONTINUE;
       }));
    }
 
@@ -1031,7 +1038,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       var10000.broadcast(var10001, sourceEntity.getX(), sourceEntity.getY(), sourceEntity.getZ(), (double)((SoundEvent)sound.value()).getRange(volume), this.dimension(), new ClientboundSoundEntityPacket(sound, source, sourceEntity, volume, pitch, seed));
    }
 
-   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+   public void globalLevelEvent(final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       if ((Boolean)this.getGameRules().get(GameRules.GLOBAL_SOUND_EVENTS)) {
          this.server.getPlayerList().getPlayers().forEach((player) -> {
             Vec3 soundPos;
@@ -1055,7 +1062,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    }
 
-   public void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data) {
+   public void levelEvent(final @Nullable Entity source, final @LevelEvent.Value int type, final BlockPos pos, final int data) {
       PlayerList var10000 = this.server.getPlayerList();
       Player var10001;
       if (source instanceof Player player) {
@@ -1128,7 +1135,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.neighborUpdater.neighborChanged(state, pos, changedBlock, orientation, movedByPiston);
    }
 
-   public void broadcastEntityEvent(final Entity entity, final byte event) {
+   public void broadcastEntityEvent(final Entity entity, final @EntityEvent.Value byte event) {
       this.getChunkSource().sendToTrackingPlayersAndSelf(entity, new ClientboundEntityEventPacket(entity, event));
    }
 
@@ -1160,7 +1167,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       for(ServerPlayer player : this.players) {
          if (player.distanceToSqr(center) < 4096.0) {
             Optional<Vec3> playerKnockback = Optional.ofNullable((Vec3)explosion.getHitPlayers().get(player));
-            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, playerKnockback, explosionParticle, explosionSound, blockParticles));
+            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, playerKnockback, explosionParticle, explosionSound, blockParticles, source == null || !source.isSilent()));
          }
       }
 
@@ -1212,16 +1219,36 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return this.portalForcer;
    }
 
-   public StructureTemplateManager getStructureManager() {
-      return this.server.getStructureManager();
+   public StructureTemplateManager getStructureTemplateManager() {
+      return this.server.getStructureTemplateManager();
    }
 
    public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed) {
-      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed);
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, speed, randomizationType);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, xSpeed, ySpeed, zSpeed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, false, false, x, y, z, count, xDist, yDist, zDist, xSpeed, ySpeed, zSpeed, randomizationType);
    }
 
    public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed) {
-      ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, overrideLimiter, alwaysShow, x, y, z, (float)xDist, (float)yDist, (float)zDist, (float)speed, count);
+      return this.sendParticles(particle, overrideLimiter, alwaysShow, x, y, z, count, xDist, yDist, zDist, speed, speed, speed, ClientboundLevelParticlesPacket.RandomizationType.DEFAULT);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double speed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      return this.sendParticles(particle, overrideLimiter, alwaysShow, x, y, z, count, xDist, yDist, zDist, speed, speed, speed, randomizationType);
+   }
+
+   public <T extends ParticleOptions> int sendParticles(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final int count, final double xDist, final double yDist, final double zDist, final double xSpeed, final double ySpeed, final double zSpeed, final ClientboundLevelParticlesPacket.RandomizationType randomizationType) {
+      ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, overrideLimiter, alwaysShow, x, y, z, (float)xDist, (float)yDist, (float)zDist, (float)xSpeed, (float)ySpeed, (float)zSpeed, count, randomizationType);
       int result = 0;
 
       for(int i = 0; i < this.players.size(); ++i) {
@@ -1292,16 +1319,16 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    public @Nullable BlockPos findNearestMapStructure(final TagKey<Structure> structureTag, final BlockPos origin, final int maxSearchRadius, final boolean createReference) {
       Optional<HolderSet.Named<Structure>> tag = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(structureTag);
-      if (tag.isEmpty()) {
-         return null;
-      } else {
-         Pair<BlockPos, Holder<Structure>> result = this.getChunkSource().getGenerator().findNearestMapStructure(this, (HolderSet)tag.get(), origin, maxSearchRadius, createReference);
-         return result != null ? (BlockPos)result.getFirst() : null;
-      }
+      return tag.isEmpty() ? null : this.findNearestMapStructure((HolderSet)tag.get(), origin, maxSearchRadius, createReference);
+   }
+
+   public @Nullable BlockPos findNearestMapStructure(final HolderSet<Structure> structureTag, final BlockPos origin, final int maxSearchRadius, final boolean createReference) {
+      Pair<BlockPos, Holder<Structure>> result = this.getChunkSource().getGenerator().findNearestMapStructure(this, structureTag, origin, maxSearchRadius, createReference);
+      return result != null ? (BlockPos)result.getFirst() : null;
    }
 
    public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final Predicate<Holder<Biome>> biomeTest, final BlockPos origin, final int maxSearchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical) {
-      return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(origin, maxSearchRadius, sampleResolutionHorizontal, sampleResolutionVertical, biomeTest, this.getChunkSource().randomState().sampler(), this);
+      return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(origin, maxSearchRadius, sampleResolutionHorizontal, sampleResolutionVertical, biomeTest, this.getChunkSource().randomState(), this);
    }
 
    public WorldBorder getWorldBorder() {
@@ -1734,14 +1761,6 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    public FeatureFlagSet enabledFeatures() {
       return this.server.getWorldData().enabledFeatures();
-   }
-
-   public PotionBrewing potionBrewing() {
-      return this.server.potionBrewing();
-   }
-
-   public FuelValues fuelValues() {
-      return this.server.fuelValues();
    }
 
    public GameRules getGameRules() {

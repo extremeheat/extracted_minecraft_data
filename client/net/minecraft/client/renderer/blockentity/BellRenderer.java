@@ -39,7 +39,11 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
    public void submit(final BellRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       BellModel.State modelState = new BellModel.State(state.ticks, state.shakeDirection);
       this.model.setupAnim(modelState);
-      submitNodeCollector.submitModel(this.model, modelState, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, BELL_TEXTURE, this.sprites, 0, state.breakProgress);
+      submitNodeCollector.submitModel(this.model, modelState, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, BELL_TEXTURE, this.sprites, 0);
+      if (state.breakProgress != null) {
+         submitNodeCollector.order(1).submitCrumblingOverlay(this.model, modelState, poseStack, BELL_TEXTURE.renderType(this.model.renderType()), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+      }
+
    }
 
    static {

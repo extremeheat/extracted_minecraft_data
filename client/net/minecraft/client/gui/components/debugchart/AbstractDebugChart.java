@@ -28,8 +28,7 @@ public abstract class AbstractDebugChart {
       return 60 + 9;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int left, final int width) {
-      int bottom = graphics.guiHeight();
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
       graphics.fill(left, bottom - 60, left + width, bottom, -1873784752);
       long avg = 0L;
       long min = 2147483647L;

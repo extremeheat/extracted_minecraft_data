@@ -39,7 +39,7 @@ public class VillagerGoalPackages {
 
    private static boolean validateBedPoi(final ServerLevel level, final BlockPos blockPos) {
       BlockState blockState = level.getBlockState(blockPos);
-      return blockState.is(BlockTags.BEDS) && !(Boolean)blockState.getValue(BedBlock.OCCUPIED);
+      return blockState.is(BlockTags.VILLAGERS_CAN_SLEEP_ON_BED) && !(Boolean)blockState.getValue(BedBlock.OCCUPIED);
    }
 
    public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getWorkPackage(final Holder<VillagerProfession> profession, final float speedModifier) {

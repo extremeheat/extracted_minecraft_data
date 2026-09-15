@@ -14,6 +14,7 @@ public class CommonPacketTypes {
    public static final PacketType<ClientboundPingPacket> CLIENTBOUND_PING = createClientbound("ping");
    public static final PacketType<ClientboundResourcePackPopPacket> CLIENTBOUND_RESOURCE_PACK_POP = createClientbound("resource_pack_pop");
    public static final PacketType<ClientboundResourcePackPushPacket> CLIENTBOUND_RESOURCE_PACK_PUSH = createClientbound("resource_pack_push");
+   public static final PacketType<ClientboundPostEffectsPacket> CLIENTBOUND_POST_EFFECTS = createClientbound("post_effects");
    public static final PacketType<ClientboundServerLinksPacket> CLIENTBOUND_SERVER_LINKS = createClientbound("server_links");
    public static final PacketType<ClientboundShowDialogPacket> CLIENTBOUND_SHOW_DIALOG = createClientbound("show_dialog");
    public static final PacketType<ClientboundStoreCookiePacket> CLIENTBOUND_STORE_COOKIE = createClientbound("store_cookie");

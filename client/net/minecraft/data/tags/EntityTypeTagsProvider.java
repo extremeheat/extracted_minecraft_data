@@ -49,7 +49,7 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE).add(EntityTypeIds.BREEZE, EntityTypeIds.SKELETON, EntityTypeIds.BOGGED, EntityTypeIds.STRAY, EntityTypeIds.ZOMBIE, EntityTypeIds.HUSK, EntityTypeIds.SPIDER, EntityTypeIds.CAVE_SPIDER, EntityTypeIds.SLIME);
       this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add(EntityTypeIds.SILVERFISH);
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityTypeIds.SLIME);
-      this.tag(EntityTypeTags.BOAT).add(EntityTypeIds.OAK_BOAT, EntityTypeIds.SPRUCE_BOAT, EntityTypeIds.BIRCH_BOAT, EntityTypeIds.JUNGLE_BOAT, EntityTypeIds.ACACIA_BOAT, EntityTypeIds.CHERRY_BOAT, EntityTypeIds.DARK_OAK_BOAT, EntityTypeIds.PALE_OAK_BOAT, EntityTypeIds.MANGROVE_BOAT, EntityTypeIds.BAMBOO_RAFT);
+      this.tag(EntityTypeTags.BOAT).add(EntityTypeIds.OAK_BOAT, EntityTypeIds.SPRUCE_BOAT, EntityTypeIds.BIRCH_BOAT, EntityTypeIds.JUNGLE_BOAT, EntityTypeIds.ACACIA_BOAT, EntityTypeIds.CHERRY_BOAT, EntityTypeIds.DARK_OAK_BOAT, EntityTypeIds.PALE_OAK_BOAT, EntityTypeIds.MANGROVE_BOAT, EntityTypeIds.BAMBOO_RAFT, EntityTypeIds.POPLAR_BOAT);
       this.tag(EntityTypeTags.CAN_EQUIP_SADDLE).add(EntityTypeIds.HORSE, EntityTypeIds.SKELETON_HORSE, EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.DONKEY, EntityTypeIds.MULE, EntityTypeIds.PIG, EntityTypeIds.STRIDER, EntityTypeIds.CAMEL, EntityTypeIds.CAMEL_HUSK, EntityTypeIds.NAUTILUS, EntityTypeIds.ZOMBIE_NAUTILUS);
       this.tag(EntityTypeTags.CAN_EQUIP_HARNESS).add(EntityTypeIds.HAPPY_GHAST);
       this.tag(EntityTypeTags.CAN_WEAR_HORSE_ARMOR).add(EntityTypeIds.HORSE).add(EntityTypeIds.ZOMBIE_HORSE);
@@ -62,5 +62,6 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityTypeIds.HORSE, EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.MULE, EntityTypeIds.DONKEY, EntityTypeIds.CAMEL, EntityTypeIds.CAMEL_HUSK);
       this.tag(EntityTypeTags.CANNOT_BE_AGE_LOCKED).add(EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.SKELETON_HORSE, EntityTypeIds.VILLAGER);
       this.tag(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS).add(EntityTypeIds.ENDER_DRAGON);
+      this.tag(EntityTypeTags.CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE).add(EntityTypeIds.INTERACTION);
    }
 }

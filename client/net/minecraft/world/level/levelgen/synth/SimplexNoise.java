@@ -1,42 +1,26 @@
 package net.minecraft.world.level.levelgen.synth;
 
+import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class SimplexNoise {
-   protected static final int[][] GRADIENT = new int[][]{{1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1}, {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}, {1, 1, 0}, {0, -1, 1}, {-1, 1, 0}, {0, -1, -1}};
+public class SimplexNoise extends GradientNoise {
+   public static final Interval RANGE = Interval.ofSymmetric(2.0F);
+   public static final double STANDARD_DEVIATION = 0.42544;
    private static final double SQRT_3 = Math.sqrt(3.0);
    private static final double F2;
    private static final double G2;
-   private final int[] p = new int[512];
-   public final double xo;
-   public final double yo;
-   public final double zo;
 
    public SimplexNoise(final RandomSource random) {
-      super();
-      this.xo = random.nextDouble() * 256.0;
-      this.yo = random.nextDouble() * 256.0;
-      this.zo = random.nextDouble() * 256.0;
-
-      for(int i = 0; i < 256; this.p[i] = i++) {
-      }
-
-      for(int i = 0; i < 256; ++i) {
-         int offset = random.nextInt(256 - i);
-         int tmp = this.p[i];
-         this.p[i] = this.p[offset + i];
-         this.p[offset + i] = tmp;
-      }
-
+      super(random);
    }
 
-   private int p(final int x) {
-      return this.p[x & 255];
+   public SimplexNoise(final RandomSource random, final boolean discardNoiseOffset) {
+      super(random, discardNoiseOffset ? 0.0 : 256.0);
    }
 
-   protected static double dot(final int[] g, final double x, final double y, final double z) {
-      return (double)g[0] * x + (double)g[1] * y + (double)g[2] * z;
+   public Interval range() {
+      return RANGE;
    }
 
    private double getCornerNoise3D(final int index, final double x, final double y, final double z, final double base) {
@@ -46,13 +30,15 @@ public class SimplexNoise {
          n0 = 0.0;
       } else {
          t0 *= t0;
-         n0 = t0 * t0 * dot(GRADIENT[index], x, y, z);
+         n0 = t0 * t0 * GRADIENT[index].dot(x, y, z);
       }
 
       return n0;
    }
 
-   public double getValue(final double xin, final double yin) {
+   public float get(final double _xin, final double _yin) {
+      double xin = _xin + this.offsetX;
+      double yin = _yin + this.offsetY;
       double s = (xin + yin) * F2;
       int i = Mth.floor(xin + s);
       int j = Mth.floor(yin + s);
@@ -77,16 +63,19 @@ public class SimplexNoise {
       double y2 = y0 - 1.0 + 2.0 * G2;
       int ii = i & 255;
       int jj = j & 255;
-      int gi0 = this.p(ii + this.p(jj)) % 12;
-      int gi1 = this.p(ii + i1 + this.p(jj + j1)) % 12;
-      int gi2 = this.p(ii + 1 + this.p(jj + 1)) % 12;
+      int gi0 = this.permute(ii + this.permute(jj)) % 12;
+      int gi1 = this.permute(ii + i1 + this.permute(jj + j1)) % 12;
+      int gi2 = this.permute(ii + 1 + this.permute(jj + 1)) % 12;
       double n0 = this.getCornerNoise3D(gi0, x0, y0, 0.0, 0.5);
       double n1 = this.getCornerNoise3D(gi1, x1, y1, 0.0, 0.5);
       double n2 = this.getCornerNoise3D(gi2, x2, y2, 0.0, 0.5);
-      return 70.0 * (n0 + n1 + n2);
+      return (float)(70.0 * (n0 + n1 + n2));
    }
 
-   public double getValue(final double xin, final double yin, final double zin) {
+   public float get(final double _xin, final double _yin, final double _zin) {
+      double xin = _xin + this.offsetX;
+      double yin = _yin + this.offsetY;
+      double zin = _zin + this.offsetZ;
       double F3 = 0.3333333333333333;
       double s = (xin + yin + zin) * 0.3333333333333333;
       int i = Mth.floor(xin + s);
@@ -164,15 +153,15 @@ public class SimplexNoise {
       int ii = i & 255;
       int jj = j & 255;
       int kk = k & 255;
-      int gi0 = this.p(ii + this.p(jj + this.p(kk))) % 12;
-      int gi1 = this.p(ii + i1 + this.p(jj + j1 + this.p(kk + k1))) % 12;
-      int gi2 = this.p(ii + i2 + this.p(jj + j2 + this.p(kk + k2))) % 12;
-      int gi3 = this.p(ii + 1 + this.p(jj + 1 + this.p(kk + 1))) % 12;
+      int gi0 = this.permute(ii + this.permute(jj + this.permute(kk))) % 12;
+      int gi1 = this.permute(ii + i1 + this.permute(jj + j1 + this.permute(kk + k1))) % 12;
+      int gi2 = this.permute(ii + i2 + this.permute(jj + j2 + this.permute(kk + k2))) % 12;
+      int gi3 = this.permute(ii + 1 + this.permute(jj + 1 + this.permute(kk + 1))) % 12;
       double n0 = this.getCornerNoise3D(gi0, x0, y0, z0, 0.6);
       double n1 = this.getCornerNoise3D(gi1, x1, y1, z1, 0.6);
       double n2 = this.getCornerNoise3D(gi2, x2, y2, z2, 0.6);
       double n3 = this.getCornerNoise3D(gi3, x3, y3, z3, 0.6);
-      return 32.0 * (n0 + n1 + n2 + n3);
+      return (float)(32.0 * (n0 + n1 + n2 + n3));
    }
 
    static {

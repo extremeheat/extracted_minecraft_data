@@ -5,7 +5,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
@@ -23,8 +25,8 @@ public class SetContainerContents extends LootItemConditionalFunction {
    private final ContainerComponentManipulator<?> component;
    private final List<LootPoolEntryContainer> entries;
 
-   private SetContainerContents(final List<LootItemCondition> predicates, final ContainerComponentManipulator<?> component, final List<LootPoolEntryContainer> entries) {
-      super(predicates);
+   private SetContainerContents(final Optional<Holder<LootItemCondition>> condition, final ContainerComponentManipulator<?> component, final List<LootPoolEntryContainer> entries) {
+      super(condition);
       this.component = component;
       this.entries = List.copyOf(entries);
    }
@@ -76,7 +78,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
       }
 
       public LootItemFunction build() {
-         return new SetContainerContents(this.getConditions(), this.component, this.entries.build());
+         return new SetContainerContents(this.getCondition(), this.component, this.entries.build());
       }
    }
 }

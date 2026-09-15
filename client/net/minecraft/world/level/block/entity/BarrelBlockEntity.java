@@ -125,7 +125,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    private void updateBlockState(final BlockState state, final boolean isOpen) {
-      this.level.setBlock(this.getBlockPos(), (BlockState)state.setValue(BarrelBlock.OPEN, isOpen), 3);
+      this.level.setBlockAndUpdate(this.getBlockPos(), (BlockState)state.setValue(BarrelBlock.OPEN, isOpen));
    }
 
    private void playSound(final BlockState state, final SoundEvent event) {

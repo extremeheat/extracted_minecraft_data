@@ -79,6 +79,10 @@ public class Font {
       return outlineOutput;
    }
 
+   public TextRenderable prepareBackground(final float x0, final float y0, final float x1, final float y1, final int color) {
+      return this.provider.effect().createEffect(x0, y0, x1, y1, -0.01F, color, 0, 0.0F);
+   }
+
    private BakedGlyph getGlyph(final int codepoint, final Style style) {
       GlyphSource glyphSource = this.getGlyphSource(style.getFont());
       BakedGlyph glyph = glyphSource.getGlyph(codepoint);

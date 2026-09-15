@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
@@ -130,7 +130,7 @@ public class Main {
          }
 
          File universePath = new File((String)options.valueOf(universe));
-         Services services = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), universePath);
+         Services services = Services.create(MinecraftServicesDiscoveryService.create(Proxy.NO_PROXY), universePath);
          NotificationManager notificationManager = new NotificationManager();
          ManagementServer jsonRpcServer = JsonRpc.create(settings, notificationManager);
          String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);
@@ -157,7 +157,7 @@ public class Main {
                return;
             }
 
-            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
+            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress(notificationManager));
          } else {
             levelDataTag = null;
          }
@@ -175,7 +175,7 @@ public class Main {
             worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(worldLoadConfig, (context) -> {
                   Registry<LevelStem> datapackDimensions = context.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                   if (levelDataTag != null) {
-                     LevelDataAndDimensions worldData = LevelStorageSource.getLevelDataAndDimensions(access, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldgen());
+                     LevelDataAndDimensions worldData = LevelStorageSource.getLevelDataAndDimensions(access, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldRegistries());
                      return new WorldLoader.DataLoadOutput(worldData.worldDataAndGenSettings(), worldData.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
@@ -228,16 +228,16 @@ public class Main {
       if (demoMode) {
          createLevelSettings = MinecraftServer.DEMO_SETTINGS;
          worldOptions = WorldOptions.DEMO_OPTIONS;
-         dimensions = WorldPresets.createNormalWorldDimensions(context.datapackWorldgen());
+         dimensions = WorldPresets.createNormalWorldDimensions(context.datapackWorldRegistries());
       } else {
          DedicatedServerProperties properties = settings.getProperties();
          createLevelSettings = new LevelSettings(properties.levelName, properties.gameMode.get(), new LevelSettings.DifficultySettings(properties.difficulty.get(), properties.hardcore, false), false, context.dataConfiguration());
          worldOptions = bonusChest ? properties.worldOptions.withBonusChest(true) : properties.worldOptions;
-         dimensions = properties.createDimensions(context.datapackWorldgen());
+         dimensions = properties.createDimensions(context.datapackWorldRegistries());
       }
 
       WorldDimensions.Complete finalDimensions = dimensions.bake(datapackDimensions);
-      Lifecycle lifecycle = finalDimensions.lifecycle().add(context.datapackWorldgen().allRegistriesLifecycle());
+      Lifecycle lifecycle = finalDimensions.lifecycle().add(context.datapackWorldRegistries().allRegistriesLifecycle());
       PrimaryLevelData primaryLevelData = new PrimaryLevelData(createLevelSettings, finalDimensions.specialWorldProperty(), lifecycle);
       return new WorldLoader.DataLoadOutput<LevelDataAndDimensions.WorldDataAndGenSettings>(new LevelDataAndDimensions.WorldDataAndGenSettings(primaryLevelData, new WorldGenSettings(worldOptions, dimensions)), finalDimensions.dimensionsRegistryAccess());
    }
@@ -277,7 +277,7 @@ public class Main {
             Component status = upgrader.getStatus();
             if (lastStatus != status) {
                lastStatus = status;
-               LOGGER.info(upgrader.getStatus().getString());
+               LOGGER.info("{}", upgrader.getStatus().getString());
             }
 
             int totalChunks = upgrader.getTotalChunks();

@@ -6,24 +6,22 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 
-public class BlockPredicateFilter extends PlacementFilter {
-   public static final MapCodec<BlockPredicateFilter> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPredicate.CODEC.fieldOf("predicate").forGetter((c) -> c.predicate)).apply(i, BlockPredicateFilter::new));
-   private final BlockPredicate predicate;
+public record BlockPredicateFilter(BlockPredicate predicate) implements PlacementFilter {
+   public static final MapCodec<BlockPredicateFilter> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPredicate.CODEC.fieldOf("predicate").forGetter(BlockPredicateFilter::predicate)).apply(i, BlockPredicateFilter::new));
 
-   private BlockPredicateFilter(final BlockPredicate predicate) {
+   public BlockPredicateFilter {
       super();
-      this.predicate = predicate;
    }
 
    public static BlockPredicateFilter forPredicate(final BlockPredicate predicate) {
       return new BlockPredicateFilter(predicate);
    }
 
-   protected boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+   public boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
       return this.predicate.test(context.getLevel(), origin);
    }
 
-   public PlacementModifierType<?> type() {
-      return PlacementModifierType.BLOCK_PREDICATE_FILTER;
+   public MapCodec<BlockPredicateFilter> codec() {
+      return CODEC;
    }
 }

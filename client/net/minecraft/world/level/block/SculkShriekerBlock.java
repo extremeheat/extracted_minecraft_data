@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -33,16 +32,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<SculkShriekerBlock> CODEC = simpleCodec(SculkShriekerBlock::new);
    public static final BooleanProperty SHRIEKING;
    public static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty CAN_SUMMON;
    private static final VoxelShape SHAPE_COLLISION;
    public static final double TOP_Y;
-
-   public MapCodec<SculkShriekerBlock> codec() {
-      return CODEC;
-   }
 
    public SculkShriekerBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -68,7 +62,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(SHRIEKING)) {
-         level.setBlock(pos, (BlockState)state.setValue(SHRIEKING, false), 3);
+         level.setBlockAndUpdate(pos, (BlockState)state.setValue(SHRIEKING, false));
          level.getBlockEntity(pos, BlockEntityTypes.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryRespond(level));
       }
 

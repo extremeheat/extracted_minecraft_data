@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -16,6 +15,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.Containers;
@@ -63,14 +63,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class BeehiveBlock extends BaseEntityBlock {
-   public static final MapCodec<BeehiveBlock> CODEC = simpleCodec(BeehiveBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty HONEY_LEVEL;
    public static final int MAX_HONEY_LEVELS = 5;
-
-   public MapCodec<BeehiveBlock> codec() {
-      return CODEC;
-   }
 
    public BeehiveBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -85,16 +80,16 @@ public class BeehiveBlock extends BaseEntityBlock {
       return (Integer)state.getValue(HONEY_LEVEL);
    }
 
-   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+   public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
       super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
-      if (!level.isClientSide() && blockEntity instanceof BeehiveBlockEntity beehiveBlockEntity) {
+      if (blockEntity instanceof BeehiveBlockEntity beehiveBlockEntity) {
          if (!EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_BEE_SPAWNS_WHEN_MINING)) {
             beehiveBlockEntity.emptyAllLivingFromHive(player, state, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
             Containers.updateNeighboursAfterDestroy(state, level, pos);
             this.angerNearbyBees(level, pos);
          }
 
-         CriteriaTriggers.BEE_NEST_DESTROYED.trigger((ServerPlayer)player, state, destroyedWith, beehiveBlockEntity.getOccupantCount());
+         CriteriaTriggers.BEE_NEST_DESTROYED.trigger(player, state, destroyedWith, beehiveBlockEntity.getOccupantCount());
       }
 
    }
@@ -124,7 +119,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    public static void dropHoneycomb(final ServerLevel level, final ItemStack tool, final BlockState blockState, final @Nullable BlockEntity blockEntity, final @Nullable Entity entity, final BlockPos pos) {
-      dropFromBlockInteractLootTable(level, BuiltInLootTables.HARVEST_BEEHIVE, blockState, blockEntity, tool, entity, (serverLevel, stack) -> popResource(serverLevel, pos, stack));
+      dropFromBlockInteractLootTable(level, BuiltInLootTables.HARVEST_BEEHIVE, pos, blockState, blockEntity, tool, entity, (serverLevel, stack) -> popResource(serverLevel, pos, stack));
    }
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
@@ -152,7 +147,7 @@ public class BeehiveBlock extends BaseEntityBlock {
                if (itemStack.isEmpty()) {
                   player.setItemInHand(hand, new ItemStack(Items.HONEY_BOTTLE));
                } else if (!player.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
-                  player.drop(new ItemStack(Items.HONEY_BOTTLE), false);
+                  player.drop(new ItemStack(Items.HONEY_BOTTLE), false, Prediction.PREDICTED);
                }
 
                hiveEmptied = true;
@@ -201,7 +196,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    public void resetHoneyLevel(final Level level, final BlockState state, final BlockPos pos) {
-      level.setBlock(pos, (BlockState)state.setValue(HONEY_LEVEL, 0), 3);
+      level.setBlockAndUpdate(pos, (BlockState)state.setValue(HONEY_LEVEL, 0));
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

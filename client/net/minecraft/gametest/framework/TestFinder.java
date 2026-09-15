@@ -10,6 +10,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 
 public class TestFinder implements TestInstanceFinder, TestPosFinder {
@@ -19,7 +20,7 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
    private final TestPosFinder testPosFinder;
    private final CommandSourceStack source;
 
-   public Stream<BlockPos> findTestPos() {
+   public Stream<GlobalPos> findTestPos() {
       return this.testPosFinder.findTestPos();
    }
 
@@ -44,7 +45,7 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
 
    public static class Builder {
       private final UnaryOperator<Supplier<Stream<Holder.Reference<GameTestInstance>>>> testFinderWrapper;
-      private final UnaryOperator<Supplier<Stream<BlockPos>>> structureBlockPosFinderWrapper;
+      private final UnaryOperator<Supplier<Stream<GlobalPos>>> structureBlockPosFinderWrapper;
 
       public Builder() {
          super();
@@ -52,7 +53,7 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
          this.structureBlockPosFinderWrapper = (f) -> f;
       }
 
-      private Builder(final UnaryOperator<Supplier<Stream<Holder.Reference<GameTestInstance>>>> testFinderWrapper, final UnaryOperator<Supplier<Stream<BlockPos>>> structureBlockPosFinderWrapper) {
+      private Builder(final UnaryOperator<Supplier<Stream<Holder.Reference<GameTestInstance>>>> testFinderWrapper, final UnaryOperator<Supplier<Stream<GlobalPos>>> structureBlockPosFinderWrapper) {
          super();
          this.testFinderWrapper = testFinderWrapper;
          this.structureBlockPosFinderWrapper = structureBlockPosFinderWrapper;
@@ -77,39 +78,39 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
       }
 
       private TestFinder build(final CommandSourceStack source, final TestInstanceFinder testInstanceFinder, final TestPosFinder testPosFinder) {
+         List<Holder.Reference<GameTestInstance>> selectedTests = testInstanceFinder.findTests().toList();
          UnaryOperator var10003 = this.testFinderWrapper;
-         Objects.requireNonNull(testInstanceFinder);
-         Supplier var4 = (Supplier)var10003.apply(testInstanceFinder::findTests);
-         Objects.requireNonNull(var4);
-         TestInstanceFinder var5 = var4::get;
-         UnaryOperator var10004 = this.structureBlockPosFinderWrapper;
-         Objects.requireNonNull(testPosFinder);
-         Supplier var6 = (Supplier)var10004.apply(testPosFinder::findTestPos);
-         Objects.requireNonNull(var6);
-         return new TestFinder(source, var5, var6::get);
+         Objects.requireNonNull(selectedTests);
+         Supplier var5 = (Supplier)var10003.apply(selectedTests::stream);
+         Objects.requireNonNull(var5);
+         return new TestFinder(source, var5::get, () -> {
+            UnaryOperator var10000 = this.structureBlockPosFinderWrapper;
+            Objects.requireNonNull(testPosFinder);
+            return (Stream)((Supplier)var10000.apply(testPosFinder::findTestPos)).get();
+         });
       }
 
       public TestFinder radius(final CommandContext<CommandSourceStack> sourceStack, final int radius) {
          CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
          BlockPos pos = BlockPos.containing(source.getPosition());
-         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, radius, source.getLevel()));
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, radius, source.getLevel()).map((p) -> new GlobalPos(source.getLevel().dimension(), p)));
       }
 
       public TestFinder nearest(final CommandContext<CommandSourceStack> sourceStack) {
          CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
          BlockPos pos = BlockPos.containing(source.getPosition());
-         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findNearestTest(pos, 15, source.getLevel()).stream());
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findNearestTest(pos, 15, source.getLevel()).map((p) -> new GlobalPos(source.getLevel().dimension(), p)).stream());
       }
 
       public TestFinder allNearby(final CommandContext<CommandSourceStack> sourceStack) {
          CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
          BlockPos pos = BlockPos.containing(source.getPosition());
-         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, 250, source.getLevel()));
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(pos, 250, source.getLevel()).map((p) -> new GlobalPos(source.getLevel().dimension(), p)));
       }
 
       public TestFinder lookedAt(final CommandContext<CommandSourceStack> sourceStack) {
          CommandSourceStack source = (CommandSourceStack)sourceStack.getSource();
-         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.lookedAtTestPos(BlockPos.containing(source.getPosition()), source.getPlayer().getCamera(), source.getLevel()));
+         return this.build(source, TestFinder.NO_FUNCTIONS, () -> StructureUtils.lookedAtTestPos(BlockPos.containing(source.getPosition()), source.getPlayer().getCamera(), source.getLevel()).map((p) -> new GlobalPos(source.getLevel().dimension(), p)));
       }
 
       public TestFinder failedTests(final CommandContext<CommandSourceStack> sourceStack, final boolean onlyRequiredTests) {

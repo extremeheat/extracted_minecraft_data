@@ -79,6 +79,7 @@ public class Stats {
    public static final Identifier INTERACT_WITH_CRAFTING_TABLE;
    public static final Identifier OPEN_CHEST;
    public static final Identifier SLEEP_IN_BED;
+   public static final Identifier SLEEP_IN_STRAW_BED;
    public static final Identifier OPEN_SHULKER_BOX;
    public static final Identifier OPEN_BARREL;
    public static final Identifier INTERACT_WITH_BLAST_FURNACE;
@@ -183,6 +184,7 @@ public class Stats {
       INTERACT_WITH_CRAFTING_TABLE = makeCustomStat("interact_with_crafting_table", StatFormatter.DEFAULT);
       OPEN_CHEST = makeCustomStat("open_chest", StatFormatter.DEFAULT);
       SLEEP_IN_BED = makeCustomStat("sleep_in_bed", StatFormatter.DEFAULT);
+      SLEEP_IN_STRAW_BED = makeCustomStat("sleep_in_straw_bed", StatFormatter.DEFAULT);
       OPEN_SHULKER_BOX = makeCustomStat("open_shulker_box", StatFormatter.DEFAULT);
       OPEN_BARREL = makeCustomStat("open_barrel", StatFormatter.DEFAULT);
       INTERACT_WITH_BLAST_FURNACE = makeCustomStat("interact_with_blast_furnace", StatFormatter.DEFAULT);

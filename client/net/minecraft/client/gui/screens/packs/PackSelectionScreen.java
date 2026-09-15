@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.packs;
 
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -43,7 +44,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackDetector;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -117,7 +118,7 @@ public class PackSelectionScreen extends Screen {
       this.availablePackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
       this.selectedPackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      footer.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (button) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
+      footer.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (button) -> Blaze3D.openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
       this.doneButton = (Button)footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
@@ -312,7 +313,7 @@ public class PackSelectionScreen extends Screen {
    private Identifier loadPackIcon(final TextureManager textureManager, final Pack pack) {
       try {
          Identifier var9;
-         try (PackResources packResources = pack.open()) {
+         try (PackMetadataResources packResources = pack.openMetadata()) {
             IoSupplier<InputStream> resource = packResources.getRootResource("pack.png");
             if (resource == null) {
                return DEFAULT_ICON;

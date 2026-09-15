@@ -3,8 +3,8 @@ package net.minecraft.gametest.framework;
 import com.google.common.base.Stopwatch;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ServicesKeySet;
+import com.mojang.authlib.minecraft.SessionService;
+import com.mojang.authlib.services.ServicesKeySet;
 import com.mojang.brigadier.StringReader;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
@@ -106,7 +106,7 @@ public class GameTestServer extends MinecraftServer {
          Stopwatch stopwatch = Stopwatch.createStarted();
          WorldStem worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(initConfig, (context) -> {
                Registry<LevelStem> noDatapackDimensions = (new MappedRegistry<LevelStem>(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-               WorldDimensions worldDimensions = ((WorldPreset)context.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions();
+               WorldDimensions worldDimensions = ((WorldPreset)context.datapackWorldRegistries().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT_ALL_DIMENSIONS).value()).createWorldDimensions();
                WorldDimensions.Complete dimensions = worldDimensions.bake(noDatapackDimensions);
                PrimaryLevelData levelData = new PrimaryLevelData(testSettings, dimensions.specialWorldProperty(), dimensions.lifecycle());
                return new WorldLoader.DataLoadOutput(new LevelDataAndDimensions.WorldDataAndGenSettings(levelData, new WorldGenSettings(WORLD_OPTIONS, worldDimensions)), dimensions.dimensionsRegistryAccess());
@@ -136,18 +136,17 @@ public class GameTestServer extends MinecraftServer {
       });
       Gizmos.withCollector(GizmoCollector.NOOP);
       this.loadLevel();
-      ServerLevel level = this.overworld();
-      this.testBatches = this.evaluateTestsToRun(level);
+      this.testBatches = this.evaluateTestsToRun(this);
       LOGGER.info("Started game test server");
       return true;
    }
 
-   private List<GameTestBatch> evaluateTestsToRun(final ServerLevel level) {
-      Registry<GameTestInstance> testRegistry = level.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
+   private List<GameTestBatch> evaluateTestsToRun(final MinecraftServer server) {
+      Registry<GameTestInstance> testRegistry = server.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
       Collection<Holder.Reference<GameTestInstance>> tests;
       GameTestBatchFactory.TestDecorator decorator;
       if (this.testSelection.isPresent()) {
-         tests = getTestsForSelection(level.registryAccess(), (String)this.testSelection.get()).filter((test) -> !((GameTestInstance)test.value()).manualOnly()).toList();
+         tests = getTestsForSelection(server.registryAccess(), (String)this.testSelection.get()).filter((test) -> !((GameTestInstance)test.value()).manualOnly()).toList();
          if (tests.isEmpty()) {
             LOGGER.warn("Test selection matcher ({}) found no tests", this.testSelection.get());
             System.exit(-1);
@@ -168,7 +167,7 @@ public class GameTestServer extends MinecraftServer {
          decorator = GameTestBatchFactory.DIRECT;
       }
 
-      return GameTestBatchFactory.divideIntoBatches(tests, decorator, level);
+      return GameTestBatchFactory.divideIntoBatches(tests, decorator, server);
    }
 
    private static Stream<GameTestInfo> rotateAndMultiply(final Holder.Reference<GameTestInstance> test, final ServerLevel level) {
@@ -205,12 +204,12 @@ public class GameTestServer extends MinecraftServer {
       }
 
       if (level.getGameTime() % 20L == 0L) {
-         LOGGER.info(this.testTracker.getProgressBar());
+         LOGGER.info("{}", this.testTracker.getProgressBar());
       }
 
       if (this.testTracker.isDone()) {
          this.halt(false);
-         LOGGER.info(this.testTracker.getProgressBar());
+         LOGGER.info("{}", this.testTracker.getProgressBar());
          GlobalTestReporter.finish();
          LOGGER.info("========= {} GAME TESTS COMPLETE IN {} ======================", this.testTracker.getTotalCount(), this.stopwatch.stop());
          if (this.testTracker.hasFailedRequired()) {
@@ -270,9 +269,9 @@ public class GameTestServer extends MinecraftServer {
 
    private void startTests(final ServerLevel level) {
       RandomSource random = level.getRandom();
-      BlockPos startPos = new BlockPos(random.nextIntBetweenInclusive(-14999992, 14999992), -59, random.nextIntBetweenInclusive(-14999992, 14999992));
+      BlockPos startPos = new BlockPos(random.nextIntBetweenInclusive(-14999992, 14999992), 4, random.nextIntBetweenInclusive(-14999992, 14999992));
       level.setRespawnData(LevelData.RespawnData.of(level.dimension(), startPos, 0.0F, 0.0F));
-      GameTestRunner runner = GameTestRunner.Builder.fromBatches(this.testBatches, level).newStructureSpawner(new StructureGridSpawner(startPos, 8, false)).build();
+      GameTestRunner runner = GameTestRunner.Builder.fromBatches(this.testBatches, this).newStructureSpawner(new StructureGridSpawner((var1) -> startPos, 8, false)).build();
       Collection<GameTestInfo> testInfos = runner.getTestInfos();
       this.testTracker = new MultipleTestTracker(testInfos);
       LOGGER.info("{} tests are now running at position {}!", this.testTracker.getTotalCount(), startPos.toShortString());
@@ -338,7 +337,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    static {
-      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver(), new MockProfileResolver());
+      NO_SERVICES = new Services((SessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver(), new MockProfileResolver());
       ENABLED_FEATURES = FeatureFlags.REGISTRY.allFlags().subtract(FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS));
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
    }

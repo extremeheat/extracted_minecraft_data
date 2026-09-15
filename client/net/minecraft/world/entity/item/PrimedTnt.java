@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.BlockGetter;
@@ -104,6 +105,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          }
       }
 
+      this.setRequiresPrecisePosition(this.horizontalCollision || this.verticalCollision);
    }
 
    private void explode() {
@@ -180,6 +182,10 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
+   }
+
+   public MoveSimulationType getMoveSimulationType() {
+      return MoveSimulationType.SERVER_AND_CLIENT;
    }
 
    static {

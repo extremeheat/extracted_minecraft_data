@@ -11,73 +11,67 @@ import net.minecraft.world.entity.LightningBolt;
 import org.joml.Matrix4fc;
 
 public class LightningBoltRenderer extends EntityRenderer<LightningBolt, LightningBoltRenderState> {
+   private static final float BOLT_RED = 0.45F;
+   private static final float BOLT_GREEN = 0.45F;
+   private static final float BOLT_BLUE = 0.5F;
+   private static final int SEGMENT_COUNT = 8;
+   private static final int LAYER_COUNT = 4;
+   private static final int BRANCH_COUNT = 3;
+   private static final int BRANCH_SEGMENT_COUNT = 3;
+
    public LightningBoltRenderer(final EntityRendererProvider.Context context) {
       super(context);
    }
 
    public void submit(final LightningBoltRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
-      float[] xOffs = new float[8];
-      float[] zOffs = new float[8];
-      float xOff = 0.0F;
-      float zOff = 0.0F;
+      float[] xOffsets = new float[8];
+      float[] zOffsets = new float[8];
+      float xOffset = 0.0F;
+      float zOffset = 0.0F;
       RandomSource random = RandomSource.createThreadLocalInstance(state.seed);
 
-      for(int h = 7; h >= 0; --h) {
-         xOffs[h] = xOff;
-         zOffs[h] = zOff;
-         xOff += (float)(random.nextInt(11) - 5);
-         zOff += (float)(random.nextInt(11) - 5);
+      for(int heightSegmentIndex = 7; heightSegmentIndex >= 0; --heightSegmentIndex) {
+         xOffsets[heightSegmentIndex] = xOffset;
+         zOffsets[heightSegmentIndex] = zOffset;
+         xOffset += (float)(random.nextInt(11) - 5);
+         zOffset += (float)(random.nextInt(11) - 5);
       }
 
       submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.lightning(), (pose, buffer) -> {
          Matrix4fc poseMatrix = pose.pose();
 
-         for(int r = 0; r < 4; ++r) {
+         for(int layer = 0; layer < 4; ++layer) {
             RandomSource random = RandomSource.createThreadLocalInstance(state.seed);
 
-            for(int p = 0; p < 3; ++p) {
-               int hs = 7;
-               int ht = 0;
-               if (p > 0) {
-                  hs = 7 - p;
-               }
+            for(int branchNumber = 0; branchNumber < 3; ++branchNumber) {
+               boolean isTrunkBranch = branchNumber == 0;
+               int branchStartSegment = 7 - branchNumber;
+               int branchEndSegment = isTrunkBranch ? 0 : branchStartSegment - 3 + 1;
+               float segmentStartX = xOffsets[branchStartSegment] - xOffset;
+               float segmentStartZ = zOffsets[branchStartSegment] - zOffset;
 
-               if (p > 0) {
-                  ht = hs - 2;
-               }
-
-               float xo0 = xOffs[hs] - xOff;
-               float zo0 = zOffs[hs] - zOff;
-
-               for(int h = hs; h >= ht; --h) {
-                  float xo1 = xo0;
-                  float zo1 = zo0;
-                  if (p == 0) {
-                     xo0 += (float)(random.nextInt(11) - 5);
-                     zo0 += (float)(random.nextInt(11) - 5);
+               for(int currentSegment = branchStartSegment; currentSegment >= branchEndSegment; --currentSegment) {
+                  float segmentEndX = segmentStartX;
+                  float segmentEndZ = segmentStartZ;
+                  if (isTrunkBranch) {
+                     segmentStartX += (float)(random.nextInt(11) - 5);
+                     segmentStartZ += (float)(random.nextInt(11) - 5);
                   } else {
-                     xo0 += (float)(random.nextInt(31) - 15);
-                     zo0 += (float)(random.nextInt(31) - 15);
+                     segmentStartX += (float)(random.nextInt(31) - 15);
+                     segmentStartZ += (float)(random.nextInt(31) - 15);
                   }
 
-                  float br = 0.5F;
-                  float boltRed = 0.45F;
-                  float boltGreen = 0.45F;
-                  float boltBlue = 0.5F;
-                  float rr1 = 0.1F + (float)r * 0.2F;
-                  if (p == 0) {
-                     rr1 *= (float)h * 0.1F + 1.0F;
+                  float topRadius = 0.1F + (float)layer * 0.2F;
+                  float bottomRadius = topRadius;
+                  if (isTrunkBranch) {
+                     topRadius *= (float)currentSegment * 0.1F + 1.0F;
+                     bottomRadius *= (float)(currentSegment - 1) * 0.1F + 1.0F;
                   }
 
-                  float rr2 = 0.1F + (float)r * 0.2F;
-                  if (p == 0) {
-                     rr2 *= ((float)h - 1.0F) * 0.1F + 1.0F;
-                  }
-
-                  quad(poseMatrix, buffer, xo0, zo0, h, xo1, zo1, 0.45F, 0.45F, 0.5F, rr1, rr2, false, false, true, false);
-                  quad(poseMatrix, buffer, xo0, zo0, h, xo1, zo1, 0.45F, 0.45F, 0.5F, rr1, rr2, true, false, true, true);
-                  quad(poseMatrix, buffer, xo0, zo0, h, xo1, zo1, 0.45F, 0.45F, 0.5F, rr1, rr2, true, true, false, true);
-                  quad(poseMatrix, buffer, xo0, zo0, h, xo1, zo1, 0.45F, 0.45F, 0.5F, rr1, rr2, false, true, false, false);
+                  quad(poseMatrix, buffer, segmentStartX, segmentStartZ, segmentEndX, segmentEndZ, currentSegment, topRadius, bottomRadius, false, false, true, false);
+                  quad(poseMatrix, buffer, segmentStartX, segmentStartZ, segmentEndX, segmentEndZ, currentSegment, topRadius, bottomRadius, true, false, true, true);
+                  quad(poseMatrix, buffer, segmentStartX, segmentStartZ, segmentEndX, segmentEndZ, currentSegment, topRadius, bottomRadius, true, true, false, true);
+                  quad(poseMatrix, buffer, segmentStartX, segmentStartZ, segmentEndX, segmentEndZ, currentSegment, topRadius, bottomRadius, false, true, false, false);
                }
             }
          }
@@ -85,11 +79,11 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       });
    }
 
-   private static void quad(final Matrix4fc pose, final VertexConsumer buffer, final float xo0, final float zo0, final int h, final float xo1, final float zo1, final float boltRed, final float boltGreen, final float boltBlue, final float rr1, final float rr2, final boolean px1, final boolean pz1, final boolean px2, final boolean pz2) {
-      buffer.addVertex(pose, xo0 + (px1 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz1 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex(pose, xo1 + (px1 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz1 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex(pose, xo1 + (px2 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz2 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex(pose, xo0 + (px2 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz2 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
+   private static void quad(final Matrix4fc pose, final VertexConsumer buffer, final float segmentStartX, final float segmentStartZ, final float segmentEndX, final float segmentEndZ, final int currentSegment, final float topRadius, final float bottomRadius, final boolean rightXPositive, final boolean rightZPositive, final boolean leftXPositive, final boolean leftZPositive) {
+      buffer.addVertex(pose, segmentStartX + (rightXPositive ? bottomRadius : -bottomRadius), (float)(currentSegment * 16), segmentStartZ + (rightZPositive ? bottomRadius : -bottomRadius)).setColor(0.45F, 0.45F, 0.5F, 0.3F);
+      buffer.addVertex(pose, segmentEndX + (rightXPositive ? topRadius : -topRadius), (float)((currentSegment + 1) * 16), segmentEndZ + (rightZPositive ? topRadius : -topRadius)).setColor(0.45F, 0.45F, 0.5F, 0.3F);
+      buffer.addVertex(pose, segmentEndX + (leftXPositive ? topRadius : -topRadius), (float)((currentSegment + 1) * 16), segmentEndZ + (leftZPositive ? topRadius : -topRadius)).setColor(0.45F, 0.45F, 0.5F, 0.3F);
+      buffer.addVertex(pose, segmentStartX + (leftXPositive ? bottomRadius : -bottomRadius), (float)(currentSegment * 16), segmentStartZ + (leftZPositive ? bottomRadius : -bottomRadius)).setColor(0.45F, 0.45F, 0.5F, 0.3F);
    }
 
    public LightningBoltRenderState createRenderState() {

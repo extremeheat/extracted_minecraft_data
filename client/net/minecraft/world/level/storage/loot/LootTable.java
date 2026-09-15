@@ -11,12 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -38,20 +38,19 @@ public class LootTable implements Validatable {
    public static final long RANDOMIZE_SEED = 0L;
    public static final Codec<LootTable> DIRECT_CODEC;
    public static final Codec<Holder<LootTable>> CODEC;
+   public static final Codec<HolderSet<LootTable>> LIST_CODEC;
    public static final LootTable EMPTY;
    private final ContextKeySet paramSet;
    private final Optional<Identifier> randomSequence;
    private final List<LootPool> pools;
-   private final List<LootItemFunction> functions;
-   private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
+   private final Optional<Holder<LootItemFunction>> modifier;
 
-   private LootTable(final ContextKeySet paramSet, final Optional<Identifier> randomSequence, final List<LootPool> pools, final List<LootItemFunction> functions) {
+   private LootTable(final ContextKeySet paramSet, final Optional<Identifier> randomSequence, final List<LootPool> pools, final Optional<Holder<LootItemFunction>> modifier) {
       super();
       this.paramSet = paramSet;
       this.randomSequence = randomSequence;
       this.pools = pools;
-      this.functions = functions;
-      this.compositeFunction = LootItemFunctions.compose(functions);
+      this.modifier = modifier;
    }
 
    public static Consumer<ItemStack> createStackSplitter(final ServerLevel level, final Consumer<ItemStack> output) {
@@ -80,7 +79,7 @@ public class LootTable implements Validatable {
    public void getRandomItemsRaw(final LootContext context, final Consumer<ItemStack> output) {
       LootContext.VisitedEntry<?> breadcrumb = LootContext.createVisitedEntry(this);
       if (context.pushVisitedElement(breadcrumb)) {
-         Consumer<ItemStack> decoratedOutput = LootItemFunction.decorate(this.compositeFunction, output, context);
+         Consumer<ItemStack> decoratedOutput = LootItemFunction.decorate(this.modifier, output, context);
 
          for(LootPool pool : this.pools) {
             pool.addRandomItems(decoratedOutput, context);
@@ -130,7 +129,7 @@ public class LootTable implements Validatable {
 
    public void validate(final ValidationContext context) {
       Validatable.validate(context, "pools", this.pools);
-      Validatable.validate(context, "functions", this.functions);
+      Validatable.validateHolder(context, "modifier", this.modifier);
    }
 
    public void fill(final Container container, final LootParams params, final long optionalRandomSeed) {
@@ -212,14 +211,15 @@ public class LootTable implements Validatable {
    static {
       KEY_CODEC = ResourceKey.codec(Registries.LOOT_TABLE);
       DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((i) -> i.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((t) -> t.paramSet), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((t) -> t.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((t) -> t.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((t) -> t.functions)).apply(i, LootTable::new)));
-      CODEC = RegistryFileCodec.<Holder<LootTable>>create(Registries.LOOT_TABLE, DIRECT_CODEC);
-      EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
+      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((i) -> i.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((t) -> t.paramSet), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((t) -> t.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((t) -> t.pools), LootItemFunctions.CODEC.optionalFieldOf("modifier").forGetter((t) -> t.modifier)).apply(i, LootTable::new)));
+      CODEC = RegistryCodecs.holder(Registries.LOOT_TABLE, DIRECT_CODEC);
+      LIST_CODEC = RegistryCodecs.holderSet(Registries.LOOT_TABLE, DIRECT_CODEC);
+      EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), Optional.empty());
    }
 
    public static class Builder implements FunctionUserBuilder<Builder> {
       private final ImmutableList.Builder<LootPool> pools = ImmutableList.builder();
-      private final ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
+      private final ImmutableList.Builder<Holder<LootItemFunction>> functions = ImmutableList.builder();
       private ContextKeySet paramSet;
       private Optional<Identifier> randomSequence;
 
@@ -244,8 +244,8 @@ public class LootTable implements Validatable {
          return this;
       }
 
-      public Builder apply(final LootItemFunction.Builder function) {
-         this.functions.add(function.build());
+      public Builder apply(final Holder<LootItemFunction> function) {
+         this.functions.add(function);
          return this;
       }
 
@@ -254,7 +254,7 @@ public class LootTable implements Validatable {
       }
 
       public LootTable build() {
-         return new LootTable(this.paramSet, this.randomSequence, this.pools.build(), this.functions.build());
+         return new LootTable(this.paramSet, this.randomSequence, this.pools.build(), FunctionUserBuilder.buildFunction(this.functions.build()));
       }
    }
 }

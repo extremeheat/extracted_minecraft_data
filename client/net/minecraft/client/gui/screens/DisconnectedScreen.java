@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens;
 
-import java.net.URI;
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -9,7 +9,6 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
 
 public class DisconnectedScreen extends Screen {
    private static final Component TO_SERVER_LIST = Component.translatable("gui.toMenu");
@@ -46,8 +45,8 @@ public class DisconnectedScreen extends Screen {
       this.layout.addChild(new StringWidget(this.title, this.font));
       this.layout.addChild((new MultiLineTextWidget(this.details.reason(), this.font)).setMaxWidth(this.width - 50).setCentered(true));
       this.layout.defaultCellSetting().padding(2);
-      this.details.bugReportLink().ifPresent((bugReportLink) -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)bugReportLink, false)).width(200).build()));
-      this.details.report().ifPresent((report) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (button) -> Util.getPlatform().openPath(report.getParent())).width(200).build()));
+      this.details.bugReportLink().ifPresent((bugReportLink) -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, bugReportLink, false)).width(200).build()));
+      this.details.report().ifPresent((report) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (button) -> Blaze3D.openPath(report.getParent())).width(200).build()));
       Button backButton;
       if (this.minecraft.allowsMultiplayer()) {
          backButton = Button.builder(this.buttonText, (var1) -> this.minecraft.gui.setScreen(this.parent)).width(200).build();

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BaseFireBlock extends Block {
    private static final int SECONDS_ON_FIRE = 8;
@@ -33,8 +33,6 @@ public abstract class BaseFireBlock extends Block {
       super(properties);
       this.fireDamage = fireDamage;
    }
-
-   protected abstract MapCodec<? extends BaseFireBlock> codec();
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       return getState(context.getLevel(), context.getClickedPos());
@@ -158,7 +156,7 @@ public abstract class BaseFireBlock extends Block {
       return level.dimension() == Level.OVERWORLD || level.dimension() == Level.NETHER;
    }
 
-   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
+   public void spawnDestroyByEntityParticles(final Level level, final @Nullable Entity entity, final BlockPos pos, final BlockState state) {
    }
 
    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
@@ -183,21 +181,16 @@ public abstract class BaseFireBlock extends Block {
          return false;
       } else {
          BlockPos.MutableBlockPos testPos = pos.mutable();
-         boolean hasObsidian = false;
 
          for(Direction face : Direction.values()) {
-            if (level.getBlockState(testPos.set(pos).move(face)).is(Blocks.OBSIDIAN)) {
-               hasObsidian = true;
-               break;
+            BlockState state = level.getBlockState(testPos.set(pos).move(face));
+            if (PortalShape.FRAME.test(state)) {
+               Direction.Axis preferredAxis = forwardDirection.getAxis().isHorizontal() ? forwardDirection.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(level.getRandom());
+               return PortalShape.findEmptyPortalShape(level, pos, preferredAxis).isPresent();
             }
          }
 
-         if (!hasObsidian) {
-            return false;
-         } else {
-            Direction.Axis preferredAxis = forwardDirection.getAxis().isHorizontal() ? forwardDirection.getCounterClockWise().getAxis() : Direction.Plane.HORIZONTAL.getRandomAxis(level.getRandom());
-            return PortalShape.findEmptyPortalShape(level, pos, preferredAxis).isPresent();
-         }
+         return false;
       }
    }
 }

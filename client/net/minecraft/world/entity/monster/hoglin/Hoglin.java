@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -100,7 +101,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       }
    }
 
-   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage) {
+   protected void blockedByItem(final LivingEntity defender, final DamageSource source, final float damage, final boolean fullyBlocked) {
       if (this.isAdult()) {
          HoglinBase.throwTarget(this, defender);
       }
@@ -202,7 +203,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       return interactionSucceeded;
    }
 
-   public void handleEntityEvent(final byte id) {
+   public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.attackAnimationRemainingTicks = 10;
          this.makeSound(SoundEvents.HOGLIN_ATTACK);

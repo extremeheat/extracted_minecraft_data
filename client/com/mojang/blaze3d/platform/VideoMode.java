@@ -1,23 +1,37 @@
 package com.mojang.blaze3d.platform;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.sdl.SDLPixels;
+import org.lwjgl.sdl.SDL_DisplayMode;
+import org.lwjgl.sdl.SDL_PixelFormatDetails;
+import org.slf4j.Logger;
 
 public final class VideoMode {
+   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<VideoMode> CODEC = RecordCodecBuilder.create((instance) -> instance.group(Codec.INT.fieldOf("width").forGetter(VideoMode::getWidth), Codec.INT.fieldOf("height").forGetter(VideoMode::getHeight), Codec.INT.fieldOf("red_bits").forGetter(VideoMode::getRedBits), Codec.INT.fieldOf("green_bits").forGetter(VideoMode::getGreenBits), Codec.INT.fieldOf("blue_bits").forGetter(VideoMode::getBlueBits), Codec.FLOAT.fieldOf("refresh_rate").forGetter(VideoMode::getRefreshRate)).apply(instance, VideoMode::new));
+   private static final Gson GSON = new Gson();
    private final int width;
    private final int height;
    private final int redBits;
    private final int greenBits;
    private final int blueBits;
-   private final int refreshRate;
-   private static final Pattern PATTERN = Pattern.compile("(\\d+)x(\\d+)(?:@(\\d+)(?::(\\d+))?)?");
+   private final float refreshRate;
 
    public VideoMode(final int width, final int height, final int redBits, final int greenBits, final int blueBits, final int refreshRate) {
+      this(width, height, redBits, greenBits, blueBits, (float)refreshRate);
+   }
+
+   private VideoMode(final int width, final int height, final int redBits, final int greenBits, final int blueBits, final float refreshRate) {
       super();
       this.width = width;
       this.height = height;
@@ -27,24 +41,29 @@ public final class VideoMode {
       this.refreshRate = refreshRate;
    }
 
-   public VideoMode(final GLFWVidMode.Buffer buffer) {
+   public VideoMode(final SDL_DisplayMode mode) {
       super();
-      this.width = buffer.width();
-      this.height = buffer.height();
-      this.redBits = buffer.redBits();
-      this.greenBits = buffer.greenBits();
-      this.blueBits = buffer.blueBits();
-      this.refreshRate = buffer.refreshRate();
+      this.width = mode.w();
+      this.height = mode.h();
+      this.refreshRate = mode.refresh_rate();
+      SDL_PixelFormatDetails details = SDLPixels.SDL_GetPixelFormatDetails(mode.format());
+      this.redBits = details != null ? details.Rbits() : 8;
+      this.greenBits = details != null ? details.Gbits() : 8;
+      this.blueBits = details != null ? details.Bbits() : 8;
    }
 
-   public VideoMode(final GLFWVidMode mode) {
-      super();
-      this.width = mode.width();
-      this.height = mode.height();
-      this.redBits = mode.redBits();
-      this.greenBits = mode.greenBits();
-      this.blueBits = mode.blueBits();
-      this.refreshRate = mode.refreshRate();
+   public static Optional<VideoMode> read(final @Nullable String s) {
+      if (s == null) {
+         return Optional.empty();
+      } else {
+         try {
+            JsonElement json = JsonParser.parseString(s);
+            return CODEC.parse(JsonOps.INSTANCE, json).resultOrPartial((errorx) -> LOGGER.warn("Failed to parse video mode '{}': {}", s, errorx));
+         } catch (RuntimeException error) {
+            LOGGER.warn("Failed to parse video mode '{}'", s, error);
+            return Optional.empty();
+         }
+      }
    }
 
    public int getWidth() {
@@ -67,8 +86,13 @@ public final class VideoMode {
       return this.blueBits;
    }
 
-   public int getRefreshRate() {
+   public float getRefreshRate() {
       return this.refreshRate;
+   }
+
+   public String refreshRateLabel() {
+      float rate = this.getRefreshRate();
+      return (double)rate == Math.rint((double)rate) ? Integer.toString((int)rate) : String.format(Locale.ROOT, "%.2f", rate);
    }
 
    public boolean equals(final Object o) {
@@ -76,7 +100,7 @@ public final class VideoMode {
          return true;
       } else if (o != null && this.getClass() == o.getClass()) {
          VideoMode videoMode = (VideoMode)o;
-         return this.width == videoMode.width && this.height == videoMode.height && this.redBits == videoMode.redBits && this.greenBits == videoMode.greenBits && this.blueBits == videoMode.blueBits && this.refreshRate == videoMode.refreshRate;
+         return this.width == videoMode.width && this.height == videoMode.height && this.redBits == videoMode.redBits && this.greenBits == videoMode.greenBits && this.blueBits == videoMode.blueBits && Float.compare(this.refreshRate, videoMode.refreshRate) == 0;
       } else {
          return false;
       }
@@ -87,45 +111,13 @@ public final class VideoMode {
    }
 
    public String toString() {
-      return String.format(Locale.ROOT, "%sx%s@%s (%sbit)", this.width, this.height, this.refreshRate, this.redBits + this.greenBits + this.blueBits);
-   }
-
-   public static Optional<VideoMode> read(final @Nullable String s) {
-      if (s == null) {
-         return Optional.empty();
-      } else {
-         try {
-            Matcher m = PATTERN.matcher(s);
-            if (m.matches()) {
-               int width = Integer.parseInt(m.group(1));
-               int height = Integer.parseInt(m.group(2));
-               String rateString = m.group(3);
-               int rate;
-               if (rateString == null) {
-                  rate = 60;
-               } else {
-                  rate = Integer.parseInt(rateString);
-               }
-
-               String bitString = m.group(4);
-               int bits;
-               if (bitString == null) {
-                  bits = 24;
-               } else {
-                  bits = Integer.parseInt(bitString);
-               }
-
-               int componentBits = bits / 3;
-               return Optional.of(new VideoMode(width, height, componentBits, componentBits, componentBits, rate));
-            }
-         } catch (Exception var9) {
-         }
-
-         return Optional.empty();
-      }
+      return String.format(Locale.ROOT, "%sx%s@%s (%sbit)", this.width, this.height, this.refreshRateLabel(), this.redBits + this.greenBits + this.blueBits);
    }
 
    public String write() {
-      return String.format(Locale.ROOT, "%sx%s@%s:%s", this.width, this.height, this.refreshRate, this.redBits + this.greenBits + this.blueBits);
+      Optional var10000 = CODEC.encodeStart(JsonOps.INSTANCE, this).result();
+      Gson var10001 = GSON;
+      Objects.requireNonNull(var10001);
+      return (String)var10000.map(var10001::toJson).orElseThrow();
    }
 }

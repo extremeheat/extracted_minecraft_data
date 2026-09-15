@@ -9,7 +9,6 @@ import java.util.Objects;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
@@ -18,7 +17,6 @@ import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -29,7 +27,6 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
@@ -42,8 +39,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       this.blockModelResolver = context.getBlockModelResolver();
    }
 
-   protected AABB getBoundingBoxForCulling(final T entity) {
-      return entity.getBoundingBoxForCulling();
+   protected AABB getBoundingBoxForCulling(final T entity, final float partialTicks) {
+      return entity.getInterpolatedBoundingBox(partialTicks);
    }
 
    protected boolean affectedByCulling(final T entity) {
@@ -81,7 +78,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          float interpolationProgress = state.interpolationProgress;
          super.submit(state, poseStack, submitNodeCollector, camera);
          poseStack.pushPose();
-         poseStack.mulPose((Quaternionfc)this.calculateOrientation(renderState, state, new Quaternionf()));
+         poseStack.rotate(this.calculateOrientation(renderState, state, new Quaternionf()));
          Transformation transformation = (Transformation)renderState.transformation().get(interpolationProgress);
          poseStack.mulPose(transformation);
          this.submitInner(state, poseStack, submitNodeCollector, state.lightCoords, interpolationProgress);
@@ -181,14 +178,13 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
 
       public void submitInner(final ItemDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
          if (!state.item.isEmpty()) {
-            poseStack.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
+            poseStack.rotate(Axis.YP, 3.1415927F);
             state.item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          }
       }
    }
 
    public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState, TextDisplayEntityRenderState> {
-      private static final float TEXT_BACKGROUND_OFFSET = -0.01F;
       private final Font font;
 
       protected TextDisplayRenderer(final EntityRendererProvider.Context context) {
@@ -224,6 +220,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          Display.TextDisplay.TextRenderState renderState = state.textRenderState;
          byte flags = renderState.flags();
          boolean seeThrough = (flags & 2) != 0;
+         Font.DisplayMode textDisplayMode = seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET;
          boolean useDefaultBackground = (flags & 4) != 0;
          boolean shadow = (flags & 1) != 0;
          Display.TextDisplay.Align alignment = Display.TextDisplay.getAlign(flags);
@@ -248,15 +245,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          int height = cachedInfo.lines().size() * lineHeight - 1;
          pose.translate(1.0F - (float)width / 2.0F, (float)(-height), 0.0F);
          if (backgroundColor != 0) {
-            submitNodeCollector.submitCustomGeometry(poseStack, seeThrough ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (lambdaPose, buffer) -> {
-               buffer.addVertex(lambdaPose, -1.0F, -1.0F, -0.01F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, -1.0F, (float)height, -0.01F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, (float)width, (float)height, -0.01F).setColor(backgroundColor).setLight(lightCoords);
-               buffer.addVertex(lambdaPose, (float)width, -1.0F, -0.01F).setColor(backgroundColor).setLight(lightCoords);
-            });
+            submitNodeCollector.submitTextBackground(poseStack, -1.0F, -1.0F, (float)width, (float)height, backgroundColor, textDisplayMode, lightCoords);
          }
-
-         OrderedSubmitNodeCollector textCollector = submitNodeCollector.order(backgroundColor != 0 ? 1 : 0);
 
          for(Display.TextDisplay.CachedLine line : cachedInfo.lines()) {
             float var10000;
@@ -268,7 +258,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             }
 
             float offset = var10000;
-            textCollector.submitText(poseStack, offset, y, line.contents(), shadow, seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, lightCoords, textOpacity << 24 | 16777215, 0, 0);
+            submitNodeCollector.submitText(poseStack, offset, y, line.contents(), shadow, textDisplayMode, lightCoords, textOpacity << 24 | 16777215, 0, 0);
             y += (float)lineHeight;
          }
 

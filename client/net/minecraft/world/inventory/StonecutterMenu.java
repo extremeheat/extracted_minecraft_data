@@ -6,6 +6,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -230,7 +231,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
          slot.onTake(player, stack);
          if (slotIndex == 1) {
-            player.drop(stack, false);
+            player.drop(stack, false, Prediction.PREDICTED);
          }
 
          this.broadcastChanges();

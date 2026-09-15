@@ -2,13 +2,13 @@ package net.minecraft.client.gui.render;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -113,6 +113,7 @@ public class GuiRenderer implements AutoCloseable {
       this.prepare();
       profiler.popPush("upload");
       this.vertexBuffer.upload();
+      RenderSystem.resizeAllAutoStorageIndexBuffers();
       profiler.popPush("draw");
       this.draw();
       profiler.popPush("endFrame");
@@ -154,6 +155,11 @@ public class GuiRenderer implements AutoCloseable {
       this.addElementsToMeshes(GuiRenderState.TraverseRange.BEFORE_BLUR);
       this.firstDrawIndexAfterBlur = this.draws.size();
       this.addElementsToMeshes(GuiRenderState.TraverseRange.AFTER_BLUR);
+
+      for(Draw draw : this.draws) {
+         this.vertexBuffer.requestIndexCount(draw.draw);
+      }
+
    }
 
    private void addElementsToMeshes(final GuiRenderState.TraverseRange range) {
@@ -185,7 +191,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final int startIndex, final int endIndex) {
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty(), mainRenderTarget.useDepth ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty(), mainRenderTarget.hasDepth() ? mainRenderTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
@@ -324,7 +330,7 @@ public class GuiRenderer implements AutoCloseable {
       StagedVertexBuffer.ExecuteInfo executeInfo = this.vertexBuffer.getExecuteInfo(draw.draw);
       if (executeInfo != null) {
          RenderPipeline pipeline = draw.pipeline();
-         renderPass.setPipeline(pipeline);
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
          renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          ScreenRectangle scissorArea = draw.scissorArea();
          if (scissorArea != null) {
@@ -334,15 +340,15 @@ public class GuiRenderer implements AutoCloseable {
          }
 
          if (draw.textureSetup.texure0() != null) {
-            renderPass.bindTexture("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
+            renderPass.setUniform("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
          }
 
          if (draw.textureSetup.texure1() != null) {
-            renderPass.bindTexture("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
+            renderPass.setUniform("Sampler1", draw.textureSetup.texure1(), draw.textureSetup.sampler1());
          }
 
          if (draw.textureSetup.texure2() != null) {
-            renderPass.bindTexture("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
+            renderPass.setUniform("Sampler2", draw.textureSetup.texure2(), draw.textureSetup.sampler2());
          }
 
          renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());

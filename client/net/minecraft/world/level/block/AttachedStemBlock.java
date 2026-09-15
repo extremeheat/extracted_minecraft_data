@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -26,17 +24,12 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AttachedStemBlock extends VegetationBlock {
-   public static final MapCodec<AttachedStemBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((b) -> b.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("stem").forGetter((b) -> b.stem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((b) -> b.seed), TagKey.codec(Registries.BLOCK).fieldOf("support_blocks").forGetter((b) -> b.supportBlocks), propertiesCodec()).apply(i, AttachedStemBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final ResourceKey<Block> fruit;
    private final ResourceKey<Block> stem;
    private final ResourceKey<Item> seed;
    private final TagKey<Block> supportBlocks;
-
-   public MapCodec<AttachedStemBlock> codec() {
-      return CODEC;
-   }
 
    protected AttachedStemBlock(final ResourceKey<Block> stem, final ResourceKey<Block> fruit, final ResourceKey<Item> seed, final TagKey<Block> supportBlocks, final BlockBehaviour.Properties properties) {
       super(properties);

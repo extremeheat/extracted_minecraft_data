@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,12 +23,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WitherRoseBlock extends FlowerBlock {
-   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(i, WitherRoseBlock::new));
-
-   public MapCodec<WitherRoseBlock> codec() {
-      return CODEC;
-   }
-
    public WitherRoseBlock(final Holder<MobEffect> mobEffect, final float effectSeconds, final BlockBehaviour.Properties properties) {
       this(makeEffectList(mobEffect, effectSeconds), properties);
    }

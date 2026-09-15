@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -43,7 +44,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.DataLayer;
@@ -72,7 +72,7 @@ import net.minecraft.world.ticks.SavedTick;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, BlendingData.@Nullable Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, long @Nullable [] carvingMask, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, @Nullable ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
+public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, BlendingData.@Nullable Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, @Nullable ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
    private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
    private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
    private static final Logger LOGGER;
@@ -103,10 +103,9 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          boolean lightCorrect = chunkData.getBooleanOr("isLightOn", false);
          BlendingData.Packed blendingData = (BlendingData.Packed)chunkData.read("blending_data", BlendingData.Packed.CODEC).orElse((Object)null);
          BelowZeroRetrogen belowZeroRetrogen = (BelowZeroRetrogen)chunkData.read("below_zero_retrogen", BelowZeroRetrogen.CODEC).orElse((Object)null);
-         long[] carvingMask = (long[])chunkData.getLongArray("carving_mask").orElse((Object)null);
          Map<Heightmap.Types, long[]> heightmaps = new EnumMap(Heightmap.Types.class);
          chunkData.getCompound("Heightmaps").ifPresent((heightmapsTag) -> {
-            for(Heightmap.Types type : status.heightmapsAfter()) {
+            for(Heightmap.Types type : Heightmap.Types.values()) {
                heightmapsTag.getLongArray(type.getSerializationKey()).ifPresent((longs) -> heightmaps.put(type, longs));
             }
 
@@ -162,7 +161,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
             }
          }
 
-         return new SerializableChunkData(containerFactory, chunkPos, levelHeight.getMinSectionY(), lastUpdateTime, inhabitedTime, status, blendingData, belowZeroRetrogen, upgradeData, carvingMask, heightmaps, packedTicks, postProcessingSections, lightCorrect, sectionData, entities, blockEntities, structureData);
+         return new SerializableChunkData(containerFactory, chunkPos, levelHeight.getMinSectionY(), lastUpdateTime, inhabitedTime, status, blendingData, belowZeroRetrogen, upgradeData, heightmaps, packedTicks, postProcessingSections, lightCorrect, sectionData, entities, blockEntities, structureData);
       }
    }
 
@@ -228,15 +227,11 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       }
 
       chunk.setLightCorrect(this.lightCorrect);
-      EnumSet<Heightmap.Types> toPrime = EnumSet.noneOf(Heightmap.Types.class);
+      Set<Heightmap.Types> toPrime = EnumSet.copyOf(chunk.getPersistedStatus().heightmapsAfter());
 
-      for(Heightmap.Types type : chunk.getPersistedStatus().heightmapsAfter()) {
-         long[] heightmap = (long[])this.heightmaps.get(type);
-         if (heightmap != null) {
-            chunk.setHeightmap(type, heightmap);
-         } else {
-            toPrime.add(type);
-         }
+      for(Map.Entry<Heightmap.Types, long[]> entry : this.heightmaps.entrySet()) {
+         chunk.setHeightmap((Heightmap.Types)entry.getKey(), (long[])entry.getValue());
+         toPrime.remove(entry.getKey());
       }
 
       Heightmap.primeHeightmaps(chunk, toPrime);
@@ -261,10 +256,6 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
 
          for(CompoundTag blockEntity : this.blockEntities) {
             protoChunk.setBlockEntityNbt(blockEntity);
-         }
-
-         if (this.carvingMask != null) {
-            protoChunk.setCarvingMask(new CarvingMask(this.carvingMask, chunk.getMinY()));
          }
 
          return protoChunk;
@@ -307,29 +298,22 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          }
 
          List<CompoundTag> entities = new ArrayList();
-         long[] carvingMask = null;
          if (chunk.getPersistedStatus().getChunkType() == ChunkType.PROTOCHUNK) {
             ProtoChunk protoChunk = (ProtoChunk)chunk;
             entities.addAll(protoChunk.getEntities());
-            CarvingMask existingMask = protoChunk.getCarvingMask();
-            if (existingMask != null) {
-               carvingMask = existingMask.toArray();
-            }
          }
 
          Map<Heightmap.Types, long[]> heightmaps = new EnumMap(Heightmap.Types.class);
 
          for(Map.Entry<Heightmap.Types, Heightmap> entry : chunk.getHeightmaps()) {
-            if (chunk.getPersistedStatus().heightmapsAfter().contains(entry.getKey())) {
-               long[] data = ((Heightmap)entry.getValue()).getRawData();
-               heightmaps.put((Heightmap.Types)entry.getKey(), (long[])(([J)data).clone());
-            }
+            long[] data = ((Heightmap)entry.getValue()).getRawData();
+            heightmaps.put((Heightmap.Types)entry.getKey(), (long[])(([J)data).clone());
          }
 
          ChunkAccess.PackedTicks ticksForSerialization = chunk.getTicksForSerialization(level.getGameTime());
          ShortList[] postProcessingSections = (ShortList[])Arrays.stream(chunk.getPostProcessing()).map((shorts) -> shorts != null && !shorts.isEmpty() ? new ShortArrayList(shorts) : null).toArray((x$0) -> new ShortList[x$0]);
          CompoundTag structureData = packStructureData(StructurePieceSerializationContext.fromLevel(level), pos, chunk.getAllStarts(), chunk.getAllReferences());
-         return new SerializableChunkData(level.palettedContainerFactory(), pos, chunk.getMinSectionY(), level.getGameTime(), chunk.getInhabitedTime(), chunk.getPersistedStatus(), (BlendingData.Packed)Optionull.map(chunk.getBlendingData(), BlendingData::pack), chunk.getBelowZeroRetrogen(), chunk.getUpgradeData().copy(), carvingMask, heightmaps, ticksForSerialization, postProcessingSections, chunk.isLightCorrect(), sectionData, entities, blockEntities, structureData);
+         return new SerializableChunkData(level.palettedContainerFactory(), pos, chunk.getMinSectionY(), level.getGameTime(), chunk.getInhabitedTime(), chunk.getPersistedStatus(), (BlendingData.Packed)Optionull.map(chunk.getBlendingData(), BlendingData::pack), chunk.getBelowZeroRetrogen(), chunk.getUpgradeData().copy(), heightmaps, ticksForSerialization, postProcessingSections, chunk.isLightCorrect(), sectionData, entities, blockEntities, structureData);
       }
    }
 
@@ -385,9 +369,6 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
          ListTag entityTags = new ListTag();
          entityTags.addAll(this.entities);
          tag.put("entities", entityTags);
-         if (this.carvingMask != null) {
-            tag.putLongArray("carving_mask", this.carvingMask);
-         }
       }
 
       saveTicks(tag, this.packedTicks);

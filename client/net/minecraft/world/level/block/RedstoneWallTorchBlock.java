@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -22,13 +21,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
-   public static final MapCodec<RedstoneWallTorchBlock> CODEC = simpleCodec(RedstoneWallTorchBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty LIT;
-
-   public MapCodec<RedstoneWallTorchBlock> codec() {
-      return CODEC;
-   }
 
    protected RedstoneWallTorchBlock(final BlockBehaviour.Properties properties) {
       super(properties);

@@ -54,9 +54,9 @@ public abstract class AbstractCookingRecipe extends SingleItemRecipe {
       return List.of(new FurnaceRecipeDisplay(this.input().display(), SlotDisplay.AnyFuel.INSTANCE, new SlotDisplay.ItemStackSlotDisplay(this.result()), new SlotDisplay.ItemSlotDisplay(this.furnaceIcon()), this.cookingTime, this.experience));
    }
 
-   public static <T extends AbstractCookingRecipe> MapCodec<T> cookingMapCodec(final Factory<T> factory, final int defaultCookingTime) {
+   public static <T extends AbstractCookingRecipe> MapCodec<T> cookingMapCodec(final Factory<T> factory) {
       return RecordCodecBuilder.mapCodec((i) -> {
-         Products.P6 var10000 = i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), AbstractCookingRecipe.CookingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), Ingredient.CODEC.fieldOf("ingredient").forGetter(SingleItemRecipe::input), ItemStackTemplate.CODEC.fieldOf("result").forGetter(SingleItemRecipe::result), Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(AbstractCookingRecipe::experience), Codec.INT.optionalFieldOf("cookingtime", defaultCookingTime).forGetter(AbstractCookingRecipe::cookingTime));
+         Products.P6 var10000 = i.group(Recipe.CommonInfo.MAP_CODEC.forGetter((o) -> o.commonInfo), AbstractCookingRecipe.CookingBookInfo.MAP_CODEC.forGetter((o) -> o.bookInfo), Ingredient.CODEC.fieldOf("ingredient").forGetter(SingleItemRecipe::input), ItemStackTemplate.CODEC.fieldOf("result").forGetter(SingleItemRecipe::result), Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(AbstractCookingRecipe::experience), Codec.INT.fieldOf("cookingtime").forGetter(AbstractCookingRecipe::cookingTime));
          Objects.requireNonNull(factory);
          return var10000.apply(i, factory::create);
       });
